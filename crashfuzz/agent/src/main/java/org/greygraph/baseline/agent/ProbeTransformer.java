@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.LinkedHashSet;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -23,6 +24,17 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.AdviceAdapter;
 import org.objectweb.asm.commons.Method;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.InsnList;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LdcInsnNode;
+import org.objectweb.asm.tree.LookupSwitchInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TableSwitchInsnNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
 
 /** Injects generic event hooks into configured application packages. */
 final class ProbeTransformer implements ClassFileTransformer {
@@ -40,6 +52,12 @@ final class ProbeTransformer implements ClassFileTransformer {
     private static final Method FIELD_WRITE = new Method("fieldWrite",
             "(Ljava/lang/String;Ljava/lang/Object;)V");
     private static final Method BRANCH = new Method("branch",
+            "(Ljava/lang/String;Z)V");
+    private static final Method BLOCK = new Method("block",
+            "(Ljava/lang/String;)V");
+    private static final Method GLOBAL_BLOCK = new Method("globalBlock",
+            "(Ljava/lang/String;)V");
+    private static final Method GLOBAL_BRANCH = new Method("globalBranch",
             "(Ljava/lang/String;Z)V");
     private static final Method POINT = new Method("point",
             "(Ljava/lang/String;Ljava/lang/String;)V");
@@ -73,10 +91,13 @@ final class ProbeTransformer implements ClassFileTransformer {
 
     private final List<String> includes = new ArrayList<String>();
     private final List<String> exactClasses = new ArrayList<String>();
+    private final List<String> coveragePrefixes = new ArrayList<String>();
     private final List<String> methodRules = new ArrayList<String>();
     private final List<String> ioRules = new ArrayList<String>();
     private final boolean traceFields;
     private final boolean traceBranches;
+    private final boolean coverageBlocks;
+    private final boolean coverageBranches;
     private final String targetGuard;
     private final String targetCall;
     private final boolean debug;
@@ -92,6 +113,11 @@ final class ProbeTransformer implements ClassFileTransformer {
         for (String name : config.getProperty("include.classes", "").split(",")) {
             String normalized = name.trim().replace('.', '/');
             if (!normalized.isEmpty()) exactClasses.add(normalized);
+        }
+        for (String prefix : config.getProperty(
+                "coverage.include.prefixes", "").split(",")) {
+            String normalized = prefix.trim().replace('.', '/');
+            if (!normalized.isEmpty()) coveragePrefixes.add(normalized);
         }
         if (includes.isEmpty() && exactClasses.isEmpty()) {
             throw new IllegalArgumentException(
@@ -109,6 +135,10 @@ final class ProbeTransformer implements ClassFileTransformer {
                 config.getProperty("trace.fields", "true"));
         traceBranches = Boolean.parseBoolean(
                 config.getProperty("trace.branches", "false"));
+        coverageBlocks = Boolean.parseBoolean(
+                config.getProperty("coverage.blocks", "false"));
+        coverageBranches = Boolean.parseBoolean(
+                config.getProperty("coverage.branches", "false"));
         targetGuard = config.getProperty("target.guard", "").trim();
         targetCall = config.getProperty("target.call", "").trim();
         debug = Boolean.parseBoolean(config.getProperty("agent.debug", "false"));
@@ -125,7 +155,8 @@ final class ProbeTransformer implements ClassFileTransformer {
                             Class<?> classBeingRedefined,
                             ProtectionDomain protectionDomain,
                             byte[] bytes) {
-        if (className == null || !included(className)) return null;
+        if (className == null || (!included(className)
+                && !coverageIncluded(className))) return null;
         try {
             if (debug) System.err.println("adhoc-crashfuzz: instrumenting " + className);
             ClassReader reader = new ClassReader(bytes);
@@ -141,10 +172,30 @@ final class ProbeTransformer implements ClassFileTransformer {
                     MethodVisitor method = super.visitMethod(access, name,
                             descriptor, signature, exceptions);
                     if (method == null || (access & (Opcodes.ACC_ABSTRACT
-                            | Opcodes.ACC_NATIVE)) != 0
-                            || !allowedMethod(className, name)) return method;
-                    return new ProbeMethod(method, access, className, name,
-                            descriptor);
+                            | Opcodes.ACC_NATIVE)) != 0) return method;
+                    boolean traced = included(className)
+                            && allowedMethod(className, name);
+                    if (!traced && (!coverageIncluded(className)
+                            || (!coverageBlocks && !coverageBranches)))
+                        return method;
+                    MethodVisitor output = traced
+                            ? new ProbeMethod(method, access, className,
+                                    name, descriptor) : method;
+                    if (traced && !coverageBlocks) return output;
+                    final MethodVisitor destination = output;
+                    final boolean globalOnly = !traced;
+                    return new MethodNode(Opcodes.ASM9, access, name,
+                            descriptor, signature, exceptions) {
+                        @Override public void visitEnd() {
+                            super.visitEnd();
+                            if (coverageBlocks) instrumentBlocks(this,
+                                    className, name, descriptor, globalOnly);
+                            if (globalOnly && coverageBranches)
+                                instrumentGlobalBranches(this, className,
+                                        name, descriptor);
+                            accept(destination);
+                        }
+                    };
                 }
             }, ClassReader.EXPAND_FRAMES);
             return writer.toByteArray();
@@ -163,6 +214,14 @@ final class ProbeTransformer implements ClassFileTransformer {
             if (name.startsWith(prefix)) return true;
         }
         return exactClasses.contains(name);
+    }
+
+    private boolean coverageIncluded(String name) {
+        if (name.startsWith("org/greygraph/baseline/agent/")
+                || name.startsWith("org/objectweb/asm/")) return false;
+        for (String prefix : coveragePrefixes)
+            if (name.startsWith(prefix)) return true;
+        return false;
     }
 
     private boolean allowedMethod(String owner, String name) {
@@ -187,6 +246,105 @@ final class ProbeTransformer implements ClassFileTransformer {
     private static boolean conditional(int opcode) {
         return (opcode >= Opcodes.IFEQ && opcode <= Opcodes.IF_ACMPNE)
                 || opcode == Opcodes.IFNULL || opcode == Opcodes.IFNONNULL;
+    }
+
+    /** Insert probes at leaders in the original instruction stream.
+     *
+     * The tree is processed before ProbeMethod adds control-flow hooks, so
+     * BB ordinals remain stable for a fixed compiled system version.
+     */
+    private static void instrumentBlocks(MethodNode method, String owner,
+                                         String name, String descriptor,
+                                         boolean globalOnly) {
+        InsnList instructions = method.instructions;
+        Set<AbstractInsnNode> leaders = new LinkedHashSet<AbstractInsnNode>();
+        AbstractInsnNode first = nextInstruction(instructions.getFirst());
+        if (first != null) leaders.add(first);
+        for (AbstractInsnNode insn = instructions.getFirst(); insn != null;
+             insn = insn.getNext()) {
+            if (insn instanceof JumpInsnNode) {
+                leaders.add(nextInstruction(((JumpInsnNode) insn).label));
+                leaders.add(nextInstruction(insn.getNext()));
+            } else if (insn instanceof TableSwitchInsnNode) {
+                TableSwitchInsnNode branch = (TableSwitchInsnNode) insn;
+                leaders.add(nextInstruction(branch.dflt));
+                for (LabelNode label : branch.labels)
+                    leaders.add(nextInstruction(label));
+                leaders.add(nextInstruction(insn.getNext()));
+            } else if (insn instanceof LookupSwitchInsnNode) {
+                LookupSwitchInsnNode branch = (LookupSwitchInsnNode) insn;
+                leaders.add(nextInstruction(branch.dflt));
+                for (LabelNode label : branch.labels)
+                    leaders.add(nextInstruction(label));
+                leaders.add(nextInstruction(insn.getNext()));
+            } else if ((insn.getOpcode() >= Opcodes.IRETURN
+                        && insn.getOpcode() <= Opcodes.RETURN)
+                       || insn.getOpcode() == Opcodes.ATHROW) {
+                leaders.add(nextInstruction(insn.getNext()));
+            }
+        }
+        for (TryCatchBlockNode handler : method.tryCatchBlocks)
+            leaders.add(nextInstruction(handler.handler));
+        leaders.remove(null);
+        int index = 0;
+        // Iterate in bytecode order, independent of target traversal order.
+        for (AbstractInsnNode insn = instructions.getFirst(); insn != null;) {
+            AbstractInsnNode next = insn.getNext();
+            if (leaders.contains(insn)) {
+                String site = owner + "#" + name + descriptor + "#BB" + (++index);
+                InsnList probe = new InsnList();
+                probe.add(new LdcInsnNode(site));
+                probe.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
+                        HOOK.getInternalName(),
+                        globalOnly ? GLOBAL_BLOCK.getName() : BLOCK.getName(),
+                        globalOnly ? GLOBAL_BLOCK.getDescriptor()
+                                   : BLOCK.getDescriptor(), false));
+                instructions.insertBefore(insn, probe);
+            }
+            insn = next;
+        }
+    }
+
+    private static void instrumentGlobalBranches(MethodNode method,
+                                                  String owner, String name,
+                                                  String descriptor) {
+        InsnList instructions = method.instructions;
+        int index = 0;
+        for (AbstractInsnNode insn = instructions.getFirst(); insn != null;) {
+            AbstractInsnNode next = insn.getNext();
+            if (insn instanceof JumpInsnNode
+                    && conditional(insn.getOpcode())) {
+                JumpInsnNode original = (JumpInsnNode) insn;
+                String site = owner + "#" + name + descriptor
+                        + "#B" + (++index);
+                LabelNode taken = new LabelNode();
+                LabelNode continued = new LabelNode();
+                InsnList probe = new InsnList();
+                probe.add(new JumpInsnNode(insn.getOpcode(), taken));
+                probe.add(new LdcInsnNode(site));
+                probe.add(new InsnNode(Opcodes.ICONST_0));
+                probe.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
+                        HOOK.getInternalName(), GLOBAL_BRANCH.getName(),
+                        GLOBAL_BRANCH.getDescriptor(), false));
+                probe.add(new JumpInsnNode(Opcodes.GOTO, continued));
+                probe.add(taken);
+                probe.add(new LdcInsnNode(site));
+                probe.add(new InsnNode(Opcodes.ICONST_1));
+                probe.add(new MethodInsnNode(Opcodes.INVOKESTATIC,
+                        HOOK.getInternalName(), GLOBAL_BRANCH.getName(),
+                        GLOBAL_BRANCH.getDescriptor(), false));
+                probe.add(new JumpInsnNode(Opcodes.GOTO, original.label));
+                probe.add(continued);
+                instructions.insertBefore(insn, probe);
+                instructions.remove(insn);
+            }
+            insn = next;
+        }
+    }
+
+    private static AbstractInsnNode nextInstruction(AbstractInsnNode insn) {
+        while (insn != null && insn.getOpcode() < 0) insn = insn.getNext();
+        return insn;
     }
 
     private static final class LoaderClassWriter extends ClassWriter {

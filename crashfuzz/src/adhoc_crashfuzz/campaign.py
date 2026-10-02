@@ -12,7 +12,7 @@ from typing import Dict, List, Mapping, Optional, Sequence, Set
 from .backend import CommandResult, DockerBackend
 from .controller import EventServer, FaultController
 from .feedback import Candidate, Coverage, Delta, Queue
-from .graph import Closure, build_graph, read_events, target_closure
+from .graph import CausalGraph, Closure, build_graph, read_events, target_closure
 from .model import FaultSequence, PointKey, TargetSpec
 from .mutation import NodeGroup, ObservedPoint, mutate_one_fault
 
@@ -88,6 +88,7 @@ class Trial:
     last_injected_order: int
     triggered: bool
     closure: Closure
+    graph: CausalGraph
     workload: CommandResult
     checker: Optional[CommandResult]
     duration_s: float
@@ -141,7 +142,7 @@ class Campaign:
                                  self.settings.roles)
         trial = Trial(run_id, sequence, tuple(controller.points),
                       controller.last_injected_order, controller.complete,
-                      closure, workload, checker, duration_s,
+                      closure, graph, workload, checker, duration_s,
                       controller.error)
         result = {
             "run_id": run_id, "sequence": sequence.to_dict(),
@@ -153,6 +154,13 @@ class Campaign:
             "target_fatal": closure.fatal,
             "closure_nodes": len(closure.nodes),
             "closure_edges": len(closure.edges),
+            "closure_blocks": len(closure.block_features),
+            "closure_branch_outcomes": len(closure.branch_features),
+            "global_blocks": len({event.site for event, _ in graph.blocks}
+                                 | graph.global_blocks),
+            "global_branch_outcomes": len({
+                event.site + "|" + event.outcome
+                for event, _ in graph.branches} | graph.global_branches),
             "graph_gaps": graph.gaps[:200],
             "workload": _command(workload), "checker": _command(checker),
             "duration_s": duration_s, "controller_error": controller.error,
@@ -200,6 +208,9 @@ class Campaign:
                 new_point=point not in self._seen_points,
                 parent_new_edges=len(delta.edges),
                 parent_new_nodes=len(delta.nodes),
+                parent_new_blocks=len(delta.blocks),
+                parent_new_branches=len(delta.branches),
+                parent_new_global_blocks=len(delta.global_blocks),
                 parent_seconds=trial.duration_s))
         self._rng.shuffle(ranked)
         ranked.sort(key=lambda candidate: candidate.score(), reverse=True)
@@ -224,6 +235,17 @@ class Campaign:
                 "reproduced": any(r["triggered"] and r["target_fatal"]
                                   for r in outcomes)}
 
+    def _record_feedback(self, trial: Trial, delta: Delta) -> None:
+        path = self.settings.output_dir / "runs" / trial.run_id / "feedback.json"
+        path.write_text(json.dumps({
+            "new_closure_nodes": len(delta.nodes),
+            "new_closure_edges": len(delta.edges),
+            "new_closure_branch_outcomes": len(delta.branches),
+            "new_closure_blocks": len(delta.blocks),
+            "new_global_branch_outcomes": len(delta.global_branches),
+            "new_global_blocks": len(delta.global_blocks),
+        }, indent=2, sort_keys=True) + "\n")
+
     def run(self) -> dict:
         self.settings.output_dir.mkdir(parents=True, exist_ok=True)
         seed = self._trial(FaultSequence(), "seed")
@@ -245,7 +267,8 @@ class Campaign:
             raise RuntimeError("fault-free seed already reaches the target "
                                "exception; choose a cleaner oracle or workload")
         self._seed_points = {point.key for point in seed.points}
-        seed_delta = self.coverage.observe(seed.closure)
+        seed_delta = self.coverage.observe(seed.closure, seed.graph)
+        self._record_feedback(seed, seed_delta)
         self._offer_mutations(seed, seed_delta, force=True)
         findings = []
         tested = 1
@@ -258,7 +281,8 @@ class Campaign:
             if not trial.triggered:
                 continue
             matched_trials += 1
-            delta = self.coverage.observe(trial.closure)
+            delta = self.coverage.observe(trial.closure, trial.graph)
+            self._record_feedback(trial, delta)
             if trial.closure.fatal:
                 finding = {"run_id": trial.run_id,
                            "sequence": trial.sequence.to_dict(),
@@ -277,7 +301,11 @@ class Campaign:
                    "findings": len(findings),
                    "closure_nodes_seen": len(self.coverage.nodes),
                    "closure_edges_seen": len(self.coverage.edges),
-                   "branch_outcomes_seen": len(self.coverage.branches)}
+                   "branch_outcomes_seen": len(self.coverage.branches),
+                   "closure_blocks_seen": len(self.coverage.blocks),
+                   "global_blocks_seen": len(self.coverage.global_blocks),
+                   "global_branch_outcomes_seen": len(
+                       self.coverage.global_branches)}
         with (self.settings.output_dir / "summary.json").open(
                 "w", encoding="utf-8") as out:
             json.dump(summary, out, indent=2, sort_keys=True)

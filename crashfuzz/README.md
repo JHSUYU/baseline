@@ -18,10 +18,11 @@ directory.
 
 ```text
 configured target check + real workload
-  -> Java 8 probe: methods, fields, branches, boundary points, async handoffs
+  -> Java 8 probe: methods, fields, branches, basic blocks, I/O points, handoffs
   -> Docker controller: exact fault-point match, crash/reboot, journal
   -> per-run graph: CALL/RETURN, STATE_CANDIDATE, ASYNC, MESSAGE
-  -> target backward closure -> novel node/edge/branch features
+  -> target backward closure -> novel node/edge/block/branch features
+  -> broad basic-block and conditional-branch coverage -> exploration feedback
   -> one-more-fault mutation -> next trial
   -> fatal target in a concrete run -> replay and report
 ```
@@ -77,12 +78,23 @@ controller.host=host.docker.internal
 io.rules=java/io/FileOutputStream#write,java/nio/channels/SocketChannel#write
 trace.fields=true
 trace.branches=false
+coverage.blocks=true
+coverage.branches=true
+coverage.include.prefixes=org/apache/hadoop/hbase/
 target.guard=org/apache/.../TargetClass#method(Descriptor)#B3
 target.throw=org/apache/.../TargetClass#method(Descriptor)#L123
 ```
 
 `include.prefixes` selects application packages; `include.classes` selects
 exact classes, and `method.rules` can narrow the methods woven in each class.
+`coverage.blocks=true` adds stable `#BB<n>` probes to those detailed methods.
+`coverage.include.prefixes` also collects first-hit basic blocks and conditional
+branch outcomes in other classes under those prefixes without adding their
+methods to the causal graph. Detailed `BLOCK` and `BRANCH` events carry the
+current method span; only those events can be attributed to a target closure.
+The broad coverage-only events guide exploration but do not establish a causal
+edge to the target. Current branch coverage covers conditional JVM jumps;
+switch arms and exception edges are not yet counted as branch outcomes.
 `io.rules` matches callee owner and method at call sites; a trailing `*` is a
 prefix wildcard. It can select I/O calls or declared coordination boundaries.
 Each selected call reports `BEFORE` and `AFTER` fault points. The probe fsyncs its
@@ -167,8 +179,10 @@ saved separately.
   not yet connected across processes in the graph. The cloned
   `JHSUYU/hbase` master targets Java 17, so the first Java 8 run uses a
   separate `rel/2.4.8` worktree.
-- HDFS, Solr, and ZooKeeper still need cluster adapters and validated target
-  workloads. The HBase adapter is pinned to the tested 2.4.8 bytecode.
+- HDFS has targeted workloads and a fifty-candidate audit under
+  `examples/hdfs_random50/`. Solr and ZooKeeper still need cluster adapters
+  and validated target workloads. The HBase adapter is pinned to the tested
+  2.4.8 bytecode.
 - The current target report is a concrete candidate plus replay results.
   Automated sequence minimization and exact concurrent field read-from
   require additional implementation.

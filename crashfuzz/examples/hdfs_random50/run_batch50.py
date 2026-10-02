@@ -68,7 +68,10 @@ def properties_for(site: dict, extra_points: tuple[str, ...] = ()) -> tuple[str,
         "include.classes=" + ",".join(sorted(classes)),
         "method.rules=" + ",".join(sorted(methods)),
         "point.entries=" + ",".join(points),
-        "trace.fields=true", "trace.branches=true", "target.guard=",
+        "trace.fields=true", "trace.branches=true",
+        "coverage.blocks=true", "coverage.branches=true",
+        "coverage.include.prefixes=org/apache/hadoop/hdfs/",
+        "target.guard=",
         "adapter.hdfs.datatransfer=true", "adapter.hadoop.rpc=true",
     ]
     if site.get("compiled_target_call"):

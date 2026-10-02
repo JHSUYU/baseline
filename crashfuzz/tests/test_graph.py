@@ -10,6 +10,31 @@ def event(kind, node, process, seq, span, **extra):
 
 
 class GraphTests(unittest.TestCase):
+    def test_block_and_branch_coverage_keep_causal_scope(self):
+        records = [
+            event("METHOD_ENTER", "n", "p", 1, "1", site="path"),
+            event("BLOCK", "n", "p", 2, "1", site="path#BB1"),
+            event("BRANCH", "n", "p", 3, "1", site="path#B1",
+                  outcome="false"),
+            event("TARGET", "n", "p", 4, "1", site="check"),
+            event("METHOD_ENTER", "n", "p", 5, "2", site="other"),
+            event("BLOCK", "n", "p", 6, "2", site="other#BB1"),
+            event("GLOBAL_BLOCK", "n", "p", 7, "", site="library#BB1"),
+            event("GLOBAL_BRANCH", "n", "p", 8, "", site="library#B1",
+                  outcome="true"),
+        ]
+        graph = build_graph(records)
+        closure = target_closure(graph, TargetSpec("check"))
+        self.assertTrue(any("path#BB1" in b for b in closure.block_features))
+        self.assertFalse(any("other#BB1" in b for b in closure.block_features))
+        self.assertFalse(any("library#BB1" in b for b in closure.block_features))
+        self.assertEqual({"library#BB1"}, graph.global_blocks)
+        coverage = Coverage()
+        delta = coverage.observe(closure, graph)
+        self.assertIn("library#BB1", delta.global_blocks)
+        self.assertIn("library#B1|true", delta.global_branches)
+        self.assertFalse(coverage.observe(closure, graph).gained)
+
     def test_target_closure_follows_message_and_state_candidate(self):
         records = [
             event("METHOD_ENTER", "a", "pa", 1, "1", site="sender"),

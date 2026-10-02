@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 import random
 from typing import Dict, FrozenSet, Iterable, List, Optional, Set
 
-from .graph import Closure
+from .graph import CausalGraph, Closure
 from .model import FaultSequence, PointKey
 
 
@@ -15,10 +15,19 @@ class Delta:
     nodes: FrozenSet[str]
     edges: FrozenSet[str]
     branches: FrozenSet[str]
+    blocks: FrozenSet[str] = frozenset()
+    global_blocks: FrozenSet[str] = frozenset()
+    global_branches: FrozenSet[str] = frozenset()
 
     @property
     def gained(self) -> bool:
-        return bool(self.nodes or self.edges or self.branches)
+        return bool(self.nodes or self.edges or self.branches
+                    or self.blocks or self.global_blocks
+                    or self.global_branches)
+
+    @property
+    def target_gained(self) -> bool:
+        return bool(self.nodes or self.edges or self.branches or self.blocks)
 
 
 @dataclass
@@ -26,14 +35,31 @@ class Coverage:
     nodes: Set[str] = field(default_factory=set)
     edges: Set[str] = field(default_factory=set)
     branches: Set[str] = field(default_factory=set)
+    blocks: Set[str] = field(default_factory=set)
+    global_blocks: Set[str] = field(default_factory=set)
+    global_branches: Set[str] = field(default_factory=set)
 
-    def observe(self, closure: Closure) -> Delta:
+    def observe(self, closure: Closure,
+                graph: Optional[CausalGraph] = None) -> Delta:
+        block_sites = ({event.site for event, _ in graph.blocks}
+                       | graph.global_blocks
+                       if graph is not None else set())
+        branch_outcomes = ({event.site + "|" + event.outcome
+                            for event, _ in graph.branches}
+                           | graph.global_branches
+                           if graph is not None else set())
         delta = Delta(frozenset(closure.node_features - self.nodes),
                       frozenset(closure.edge_features - self.edges),
-                      frozenset(closure.branch_features - self.branches))
+                      frozenset(closure.branch_features - self.branches),
+                      frozenset(closure.block_features - self.blocks),
+                      frozenset(block_sites - self.global_blocks),
+                      frozenset(branch_outcomes - self.global_branches))
         self.nodes.update(closure.node_features)
         self.edges.update(closure.edge_features)
         self.branches.update(closure.branch_features)
+        self.blocks.update(closure.block_features)
+        self.global_blocks.update(block_sites)
+        self.global_branches.update(branch_outcomes)
         return delta
 
 
@@ -46,6 +72,9 @@ class Candidate:
     new_point: bool = False
     parent_new_edges: int = 0
     parent_new_nodes: int = 0
+    parent_new_blocks: int = 0
+    parent_new_branches: int = 0
+    parent_new_global_blocks: int = 0
     parent_seconds: float = 1.0
 
     def score(self) -> float:
@@ -55,6 +84,9 @@ class Candidate:
                 + 20.0 * self.new_point
                 + 12.0 * min(self.parent_new_edges, 8)
                 + 4.0 * min(self.parent_new_nodes, 8)
+                + 6.0 * min(self.parent_new_blocks, 8)
+                + 8.0 * min(self.parent_new_branches, 8)
+                + 1.0 * min(self.parent_new_global_blocks, 8)
                 + 5.0 * min(depth, 6)
                 + 10.0 / max(self.parent_seconds, 0.1))
 

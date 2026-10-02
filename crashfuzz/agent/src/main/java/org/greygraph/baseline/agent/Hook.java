@@ -18,11 +18,13 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Runtime event protocol, deliberately independent of system-specific code. */
@@ -44,6 +46,10 @@ public final class Hook {
     private static final Map<String, Integer> ROOT_COUNTS =
             new HashMap<String, Integer>();
     private static final WeakIds OBJECT_IDS = new WeakIds();
+    private static final Set<String> GLOBAL_BLOCKS = Collections.newSetFromMap(
+            new ConcurrentHashMap<String, Boolean>());
+    private static final Set<String> GLOBAL_BRANCHES = Collections.newSetFromMap(
+            new ConcurrentHashMap<String, Boolean>());
 
     private static String node;
     private static String targetGuard;
@@ -129,6 +135,7 @@ public final class Hook {
         final String site;
         final String context;
         final Map<String, Integer> counts = new HashMap<String, Integer>();
+        final Set<String> coveredBlocks = new HashSet<String>();
 
         Frame(long span, long parent, String site, String context) {
             this.span = span;
@@ -257,6 +264,33 @@ public final class Hook {
             target(targetGuard, targetThrow.isEmpty()
                     && taken == fatalBranchTaken);
         }
+    }
+
+    /** One event per basic block and invocation; repeated loop hits are cheap. */
+    public static void block(String site) {
+        Frame frame = STACK.get().peek();
+        if (frame == null) {
+            // Constructors can execute instructions before their first
+            // super() call, before AdviceAdapter creates a method span.
+            emit("BLOCK", site, null, null, false);
+        } else if (frame.coveredBlocks.add(site)) {
+            emit("BLOCK", site, frame, null, false);
+        }
+    }
+
+    /** Coverage-only classes do not create causal regions or per-hit traces. */
+    public static void globalBlock(String site) {
+        if (!GLOBAL_BLOCKS.add(site)) return;
+        emit("GLOBAL_BLOCK", site, null, null, false);
+        flush(false);
+    }
+
+    public static void globalBranch(String site, boolean taken) {
+        if (!GLOBAL_BRANCHES.add(site + "|" + taken)) return;
+        Map<String, Object> fields = new LinkedHashMap<String, Object>();
+        fields.put("outcome", Boolean.toString(taken));
+        emit("GLOBAL_BRANCH", site, null, fields, false);
+        flush(false);
     }
 
     public static void throwing(String site, Throwable throwable) {

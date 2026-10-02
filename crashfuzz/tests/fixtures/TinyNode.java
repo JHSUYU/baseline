@@ -8,11 +8,16 @@ import java.util.concurrent.TimeUnit;
 public final class TinyNode {
     private static int value;
 
+    private static int increment(int current) {
+        if (current == 0) return 1;
+        return current + 1;
+    }
+
     public static void main(String[] args) throws Exception {
         value = Integer.parseInt(args[1]);
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new Runnable() {
-            @Override public void run() { value = value + 1; }
+            @Override public void run() { value = increment(value); }
         });
         executor.shutdown();
         executor.awaitTermination(5, TimeUnit.SECONDS);

@@ -52,6 +52,9 @@ class CausalGraph:
     targets: List[Tuple[Event, OccurrenceId]] = field(default_factory=list)
     points: List[Tuple[Event, OccurrenceId]] = field(default_factory=list)
     branches: List[Tuple[Event, OccurrenceId]] = field(default_factory=list)
+    blocks: List[Tuple[Event, OccurrenceId]] = field(default_factory=list)
+    global_blocks: Set[str] = field(default_factory=set)
+    global_branches: Set[str] = field(default_factory=set)
     gaps: List[str] = field(default_factory=list)
 
     def add_edge(self, edge: Edge) -> None:
@@ -70,6 +73,7 @@ class Closure:
     node_features: frozenset
     edge_features: frozenset
     branch_features: frozenset
+    block_features: frozenset
     reached: bool
     fatal: bool
 
@@ -127,6 +131,12 @@ def build_graph(events: Iterable[Event]) -> CausalGraph:
         for event in process_events:
             if event.kind == "BOOT":
                 continue
+            if event.kind == "GLOBAL_BLOCK":
+                graph.global_blocks.add(event.site)
+                continue
+            if event.kind == "GLOBAL_BRANCH":
+                graph.global_branches.add(event.site + "|" + event.outcome)
+                continue
             epoch = event.epoch if event.epoch is not None else epochs[(node, process)]
             span = event.span or "ambient:{}:{}".format(event.thread, event.seq)
             identity = (node, epoch, process, span)
@@ -182,6 +192,8 @@ def build_graph(events: Iterable[Event]) -> CausalGraph:
                 graph.points.append((event, identity))
             elif event.kind == "BRANCH":
                 graph.branches.append((event, identity))
+            elif event.kind == "BLOCK":
+                graph.blocks.append((event, identity))
 
     for key, consumers in receives.items():
         producers = sends.get(key, [])
@@ -246,6 +258,10 @@ def target_closure(graph: CausalGraph, target: TargetSpec,
     branch_features = {"BRANCH|{}|{}|{}".format(
         roles.get(event.node, event.node), event.site, event.outcome)
         for event, identity in graph.branches if identity in members}
+    block_features = {"BLOCK|{}|{}|{}".format(
+        roles.get(event.node, event.node), event.site,
+        "restarted" if graph.nodes[identity].epoch > 0 else "initial")
+        for event, identity in graph.blocks if identity in members}
     node_features = {_node_feature(graph.nodes[member], roles)
                      for member in members}
     # Two replicas with the same role can execute the same target after a
@@ -258,6 +274,6 @@ def target_closure(graph: CausalGraph, target: TargetSpec,
         frozenset(members), frozenset(edges), frozenset(points),
         frozenset(node_features),
         frozenset(_edge_feature(edge, graph, roles) for edge in edges),
-        frozenset(branch_features), bool(hits),
+        frozenset(branch_features), frozenset(block_features), bool(hits),
         any(event.fatal for event, _ in hits),
     )

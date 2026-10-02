@@ -15,7 +15,8 @@ from typing import Any, Mapping, Optional, Tuple
 EVENT_KINDS = frozenset({
     "METHOD_ENTER", "METHOD_EXIT", "FIELD_READ", "FIELD_WRITE",
     "MESSAGE_SEND", "MESSAGE_RECV", "ASYNC_SEND", "ASYNC_RECV",
-    "BRANCH", "TARGET", "THROW", "FAULT_POINT", "BOOT",
+    "BRANCH", "BLOCK", "GLOBAL_BRANCH", "GLOBAL_BLOCK",
+    "TARGET", "THROW", "FAULT_POINT", "BOOT",
 })
 FAULT_KINDS = frozenset({"CRASH", "REBOOT"})
 

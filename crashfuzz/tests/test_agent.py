@@ -38,6 +38,7 @@ class AgentTests(unittest.TestCase):
                     "trace.dir=" + str(trace),
                     "io.rules=java/io/FileOutputStream#write",
                     "trace.fields=true", "trace.branches=true",
+                    "coverage.blocks=true",
                     "target.guard=" + guard, "target.throw=" + thrown,
                     "target.entry=" + entry,
                     "point.entries=" + point_entries,
@@ -51,12 +52,19 @@ class AgentTests(unittest.TestCase):
                 return process, read_events(trace)
 
             healthy, healthy_events = run("discover-healthy", 0)
+            repeated, repeated_events = run("discover-repeat", 0)
             fatal, fatal_events = run("discover-fatal", -2)
             self.assertEqual(0, healthy.returncode, healthy.stderr)
+            self.assertEqual(0, repeated.returncode, repeated.stderr)
+            self.assertEqual(
+                {e.site for e in healthy_events if e.kind == "BLOCK"},
+                {e.site for e in repeated_events if e.kind == "BLOCK"})
             self.assertNotEqual(0, fatal.returncode)
             self.assertIn("target failure", fatal.stderr)
             self.assertEqual(2, sum(event.kind == "FAULT_POINT"
                                     for event in healthy_events))
+            self.assertTrue(any(event.kind == "BLOCK"
+                                for event in healthy_events))
             self.assertTrue(any(event.kind == "ASYNC_RECV"
                                 for event in healthy_events))
             healthy_branches = {event.site: event.outcome
@@ -81,6 +89,7 @@ class AgentTests(unittest.TestCase):
             self.assertTrue(healthy_closure.reached)
             self.assertFalse(healthy_closure.fatal)
             self.assertTrue(fatal_closure.fatal)
+            self.assertTrue(healthy_closure.block_features)
             self.assertTrue(any(edge.kind == "ASYNC"
                                 for edge in fatal_graph.edges))
             self.assertTrue(any(edge.kind == "STATE_CANDIDATE"
@@ -100,6 +109,30 @@ class AgentTests(unittest.TestCase):
                 build_graph(entry_healthy), TargetSpec(thrown)).fatal)
             self.assertTrue(target_closure(
                 build_graph(entry_fatal), TargetSpec(thrown)).fatal)
+
+            # The worker is covered without creating a traced METHOD_ENTER
+            # region when it is outside method.rules.
+            global_trace = root / "global-only"
+            global_trace.mkdir()
+            global_config = root / "global-only.properties"
+            global_config.write_text("\n".join([
+                "include.prefixes=fixture/", "method.rules=fixture/TinyNode#main",
+                "coverage.include.prefixes=fixture/", "coverage.blocks=true",
+                "coverage.branches=true", "node.id=fixture-node",
+                "trace.dir=" + str(global_trace), "",
+            ]))
+            global_run = subprocess.run([
+                "java", "-javaagent:{}={}".format(AGENT, global_config),
+                "-cp", str(classes), "fixture.TinyNode",
+                str(root / "global-only.bin"), "0",
+            ], capture_output=True, text=True, timeout=30)
+            self.assertEqual(0, global_run.returncode, global_run.stderr)
+            global_events = read_events(global_trace)
+            self.assertTrue(any(e.kind == "GLOBAL_BLOCK"
+                                for e in global_events))
+            self.assertTrue(any(e.kind == "GLOBAL_BRANCH"
+                                for e in global_events))
+            self.assertTrue(any(e.kind == "BLOCK" for e in global_events))
 
 
 if __name__ == "__main__":
