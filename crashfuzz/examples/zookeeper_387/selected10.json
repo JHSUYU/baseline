@@ -1,0 +1,316 @@
+{
+  "cases": [
+    {
+      "agent_method": "org/apache/zookeeper/server/NIOServerCnxn#readLength(Ljava/nio/channels/SelectionKey;)Z",
+      "class": "org.apache.zookeeper.server.NIOServerCnxn",
+      "draw": 1,
+      "evidence_total": 1,
+      "exception": "java.io.IOException",
+      "guard_offset": 99,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.NIOServerCnxn: boolean readLength(java.nio.channels.SelectionKey)>",
+      "seed_guard_hits": 11,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.NIOServerCnxn: boolean readLength(java.nio.channels.SelectionKey)>#u32",
+      "site_kind": "throw",
+      "source_line": 565,
+      "target_guard": "org/apache/zookeeper/server/NIOServerCnxn#readLength(Ljava/nio/channels/SelectionKey;)Z#B5",
+      "target_throw": "org/apache/zookeeper/server/NIOServerCnxn#readLength(Ljava/nio/channels/SelectionKey;)Z#L565",
+      "throw_offset": 111,
+      "writer_methods": [
+        "org/apache/zookeeper/server/NIOServerCnxn#readConnectRequest()V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/DataTree#deleteNode(Ljava/lang/String;J)V",
+      "class": "org.apache.zookeeper.server.DataTree",
+      "draw": 2,
+      "evidence_total": 3,
+      "exception": "org.apache.zookeeper.KeeperException$NoNodeException",
+      "guard_offset": 42,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.DataTree: void deleteNode(java.lang.String,long)>",
+      "seed_guard_hits": 3,
+      "seed_guard_nodes": [
+        "zk1",
+        "zk2",
+        "zk3"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.DataTree: void deleteNode(java.lang.String,long)>#u12",
+      "site_kind": "throw",
+      "source_line": 558,
+      "target_guard": "org/apache/zookeeper/server/DataTree#deleteNode(Ljava/lang/String;J)V#B1",
+      "target_throw": "org/apache/zookeeper/server/DataTree#deleteNode(Ljava/lang/String;J)V#L558",
+      "throw_offset": 52,
+      "writer_methods": [
+        "org/apache/zookeeper/server/NodeHashMapImpl#clear()V",
+        "org/apache/zookeeper/server/NodeHashMapImpl#put(Ljava/lang/String;Lorg/apache/zookeeper/server/DataNode;)Lorg/apache/zookeeper/server/DataNode;",
+        "org/apache/zookeeper/server/NodeHashMapImpl#putWithoutDigest(Ljava/lang/String;Lorg/apache/zookeeper/server/DataNode;)Lorg/apache/zookeeper/server/DataNode;"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V",
+      "class": "org.apache.zookeeper.server.ZooKeeperServer",
+      "draw": 3,
+      "evidence_total": 6,
+      "exception": "org.apache.zookeeper.server.ServerCnxn$CloseRequestException",
+      "guard_offset": 284,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.ZooKeeperServer: void processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)>",
+      "seed_guard_hits": 1,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.ZooKeeperServer: void processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)>#u97",
+      "site_kind": "throw",
+      "source_line": 1441,
+      "target_guard": "org/apache/zookeeper/server/ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V#B7",
+      "target_throw": "org/apache/zookeeper/server/ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V#L1441",
+      "throw_offset": 376,
+      "writer_methods": [
+        "org/apache/zookeeper/server/DataTree#processTxn(Lorg/apache/zookeeper/txn/TxnHeader;Lorg/apache/jute/Record;Z)Lorg/apache/zookeeper/server/DataTree$ProcessTxnResult;",
+        "org/apache/zookeeper/server/ZKDatabase#clear()V",
+        "org/apache/zookeeper/server/ZooKeeperServer#startdata()V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/FinalRequestProcessor#processRequest(Lorg/apache/zookeeper/server/Request;)V",
+      "class": "org.apache.zookeeper.server.FinalRequestProcessor",
+      "draw": 4,
+      "evidence_total": 8,
+      "exception": "org.apache.zookeeper.KeeperException$NoNodeException",
+      "guard_offset": 2674,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.FinalRequestProcessor: void processRequest(org.apache.zookeeper.server.Request)>",
+      "seed_guard_hits": 1,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.FinalRequestProcessor: void processRequest(org.apache.zookeeper.server.Request)>#u514",
+      "site_kind": "throw",
+      "source_line": 519,
+      "target_guard": "org/apache/zookeeper/server/FinalRequestProcessor#processRequest(Lorg/apache/zookeeper/server/Request;)V#B23",
+      "target_throw": "org/apache/zookeeper/server/FinalRequestProcessor#processRequest(Lorg/apache/zookeeper/server/Request;)V#L519",
+      "throw_offset": 2684,
+      "writer_methods": [
+        "org/apache/zookeeper/server/NodeHashMapImpl#putWithoutDigest(Ljava/lang/String;Lorg/apache/zookeeper/server/DataNode;)Lorg/apache/zookeeper/server/DataNode;",
+        "org/apache/zookeeper/server/Request#setException(Lorg/apache/zookeeper/KeeperException;)V",
+        "org/apache/zookeeper/server/Request#setHdr(Lorg/apache/zookeeper/txn/TxnHeader;)V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/DataTree#getData(Ljava/lang/String;Lorg/apache/zookeeper/data/Stat;Lorg/apache/zookeeper/Watcher;)[B",
+      "class": "org.apache.zookeeper.server.DataTree",
+      "draw": 5,
+      "evidence_total": 4,
+      "exception": "org.apache.zookeeper.KeeperException$NoNodeException",
+      "guard_offset": 17,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.DataTree: byte[] getData(java.lang.String,org.apache.zookeeper.data.Stat,org.apache.zookeeper.Watcher)>",
+      "seed_guard_hits": 3,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.DataTree: byte[] getData(java.lang.String,org.apache.zookeeper.data.Stat,org.apache.zookeeper.Watcher)>#u9",
+      "site_kind": "throw",
+      "source_line": 706,
+      "target_guard": "org/apache/zookeeper/server/DataTree#getData(Ljava/lang/String;Lorg/apache/zookeeper/data/Stat;Lorg/apache/zookeeper/Watcher;)[B#B1",
+      "target_throw": "org/apache/zookeeper/server/DataTree#getData(Ljava/lang/String;Lorg/apache/zookeeper/data/Stat;Lorg/apache/zookeeper/Watcher;)[B#L706",
+      "throw_offset": 27,
+      "writer_methods": [
+        "org/apache/zookeeper/server/NodeHashMapImpl#put(Ljava/lang/String;Lorg/apache/zookeeper/server/DataNode;)Lorg/apache/zookeeper/server/DataNode;",
+        "org/apache/zookeeper/server/NodeHashMapImpl#putWithoutDigest(Ljava/lang/String;Lorg/apache/zookeeper/server/DataNode;)Lorg/apache/zookeeper/server/DataNode;",
+        "org/apache/zookeeper/server/NodeHashMapImpl#remove(Ljava/lang/String;)Lorg/apache/zookeeper/server/DataNode;"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/FinalRequestProcessor#handleGetDataRequest(Lorg/apache/jute/Record;Lorg/apache/zookeeper/server/ServerCnxn;Ljava/util/List;)Lorg/apache/jute/Record;",
+      "class": "org.apache.zookeeper.server.FinalRequestProcessor",
+      "draw": 6,
+      "evidence_total": 6,
+      "exception": "org.apache.zookeeper.KeeperException$NoNodeException",
+      "guard_offset": 29,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.FinalRequestProcessor: org.apache.jute.Record handleGetDataRequest(org.apache.jute.Record,org.apache.zookeeper.server.ServerCnxn,java.util.List)>",
+      "seed_guard_hits": 3,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.FinalRequestProcessor: org.apache.jute.Record handleGetDataRequest(org.apache.jute.Record,org.apache.zookeeper.server.ServerCnxn,java.util.List)>#u12",
+      "site_kind": "throw",
+      "source_line": 672,
+      "target_guard": "org/apache/zookeeper/server/FinalRequestProcessor#handleGetDataRequest(Lorg/apache/jute/Record;Lorg/apache/zookeeper/server/ServerCnxn;Ljava/util/List;)Lorg/apache/jute/Record;#B1",
+      "target_throw": "org/apache/zookeeper/server/FinalRequestProcessor#handleGetDataRequest(Lorg/apache/jute/Record;Lorg/apache/zookeeper/server/ServerCnxn;Ljava/util/List;)Lorg/apache/jute/Record;#L672",
+      "throw_offset": 39,
+      "writer_methods": [
+        "org/apache/zookeeper/server/NodeHashMapImpl#put(Ljava/lang/String;Lorg/apache/zookeeper/server/DataNode;)Lorg/apache/zookeeper/server/DataNode;",
+        "org/apache/zookeeper/server/ZKDatabase#clear()V",
+        "org/apache/zookeeper/server/ZooKeeperServer#startdata()V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/PrepRequestProcessor#getRecordForPath(Ljava/lang/String;)Lorg/apache/zookeeper/server/ZooKeeperServer$ChangeRecord;",
+      "class": "org.apache.zookeeper.server.PrepRequestProcessor",
+      "draw": 7,
+      "evidence_total": 10,
+      "exception": "org.apache.zookeeper.KeeperException$NoNodeException",
+      "guard_offset": 172,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.PrepRequestProcessor: org.apache.zookeeper.server.ZooKeeperServer$ChangeRecord getRecordForPath(java.lang.String)>",
+      "seed_guard_hits": 12,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.PrepRequestProcessor: org.apache.zookeeper.server.ZooKeeperServer$ChangeRecord getRecordForPath(java.lang.String)>#u48",
+      "site_kind": "throw",
+      "source_line": 187,
+      "target_guard": "org/apache/zookeeper/server/PrepRequestProcessor#getRecordForPath(Ljava/lang/String;)Lorg/apache/zookeeper/server/ZooKeeperServer$ChangeRecord;#B5",
+      "target_throw": "org/apache/zookeeper/server/PrepRequestProcessor#getRecordForPath(Ljava/lang/String;)Lorg/apache/zookeeper/server/ZooKeeperServer$ChangeRecord;#L187",
+      "throw_offset": 183,
+      "writer_methods": [
+        "org/apache/zookeeper/server/PrepRequestProcessor#addChangeRecord(Lorg/apache/zookeeper/server/ZooKeeperServer$ChangeRecord;)V",
+        "org/apache/zookeeper/server/TxnLogProposalIterator#next()Lorg/apache/zookeeper/server/quorum/Leader$Proposal;"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/ReferenceCountedACLCache#convertLong(Ljava/lang/Long;)Ljava/util/List;",
+      "class": "org.apache.zookeeper.server.ReferenceCountedACLCache",
+      "draw": 8,
+      "evidence_total": 5,
+      "exception": "java.lang.RuntimeException",
+      "guard_offset": 36,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.ReferenceCountedACLCache: java.util.List convertLong(java.lang.Long)>",
+      "seed_guard_hits": 29,
+      "seed_guard_nodes": [
+        "zk1",
+        "zk2",
+        "zk3"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.ReferenceCountedACLCache: java.util.List convertLong(java.lang.Long)>#u22",
+      "site_kind": "throw",
+      "source_line": 93,
+      "target_guard": "org/apache/zookeeper/server/ReferenceCountedACLCache#convertLong(Ljava/lang/Long;)Ljava/util/List;#B3",
+      "target_throw": "org/apache/zookeeper/server/ReferenceCountedACLCache#convertLong(Ljava/lang/Long;)Ljava/util/List;#L93",
+      "throw_offset": 76,
+      "writer_methods": [
+        "org/apache/zookeeper/server/ReferenceCountedACLCache#clear()V",
+        "org/apache/zookeeper/server/ReferenceCountedACLCache#convertAcls(Ljava/util/List;)Ljava/lang/Long;",
+        "org/apache/zookeeper/server/ReferenceCountedACLCache#deserialize(Lorg/apache/jute/InputArchive;)V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/SessionTrackerImpl#checkSession(JLjava/lang/Object;)V",
+      "class": "org.apache.zookeeper.server.SessionTrackerImpl",
+      "draw": 9,
+      "evidence_total": 2,
+      "exception": "org.apache.zookeeper.KeeperException$UnknownSessionException",
+      "guard_offset": 32,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>",
+      "seed_guard_hits": 9,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u13",
+      "site_kind": "throw",
+      "source_line": 313,
+      "target_guard": "org/apache/zookeeper/server/SessionTrackerImpl#checkSession(JLjava/lang/Object;)V#B1",
+      "target_throw": "org/apache/zookeeper/server/SessionTrackerImpl#checkSession(JLjava/lang/Object;)V#L313",
+      "throw_offset": 42,
+      "writer_methods": [
+        "org/apache/zookeeper/server/SessionTrackerImpl#removeSession(J)V",
+        "org/apache/zookeeper/server/SessionTrackerImpl#trackSession(JI)Z"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/NIOServerCnxnFactory#addCnxn(Lorg/apache/zookeeper/server/NIOServerCnxn;)V",
+      "class": "org.apache.zookeeper.server.NIOServerCnxnFactory",
+      "draw": 10,
+      "evidence_total": 2,
+      "exception": "java.io.IOException",
+      "guard_offset": 6,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.NIOServerCnxnFactory: void addCnxn(org.apache.zookeeper.server.NIOServerCnxn)>",
+      "seed_guard_hits": 1,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.NIOServerCnxnFactory: void addCnxn(org.apache.zookeeper.server.NIOServerCnxn)>#u12",
+      "site_kind": "throw",
+      "source_line": 798,
+      "target_guard": "org/apache/zookeeper/server/NIOServerCnxnFactory#addCnxn(Lorg/apache/zookeeper/server/NIOServerCnxn;)V#B1",
+      "target_throw": "org/apache/zookeeper/server/NIOServerCnxnFactory#addCnxn(Lorg/apache/zookeeper/server/NIOServerCnxn;)V#L798",
+      "throw_offset": 40,
+      "writer_methods": [
+        "org/apache/zookeeper/server/quorum/UnifiedServerSocket$UnifiedSocket#detectMode()V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/zookeeper/server/PrepRequestProcessor#pRequest2TxnCreate(ILorg/apache/zookeeper/server/Request;Lorg/apache/jute/Record;Z)V",
+      "class": "org.apache.zookeeper.server.PrepRequestProcessor",
+      "draw": 11,
+      "evidence_total": 2,
+      "exception": "org.apache.zookeeper.KeeperException$NoChildrenForEphemeralsException",
+      "guard_offset": 297,
+      "interaction_tags": [],
+      "method": "<org.apache.zookeeper.server.PrepRequestProcessor: void pRequest2TxnCreate(int,org.apache.zookeeper.server.Request,org.apache.jute.Record,boolean)>",
+      "reserve_for_draw": 7,
+      "seed_guard_hits": 2,
+      "seed_guard_nodes": [
+        "zk2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.zookeeper.server.PrepRequestProcessor: void pRequest2TxnCreate(int,org.apache.zookeeper.server.Request,org.apache.jute.Record,boolean)>#u68",
+      "site_kind": "throw",
+      "source_line": 704,
+      "target_guard": "org/apache/zookeeper/server/PrepRequestProcessor#pRequest2TxnCreate(ILorg/apache/zookeeper/server/Request;Lorg/apache/jute/Record;Z)V#B6",
+      "target_throw": "org/apache/zookeeper/server/PrepRequestProcessor#pRequest2TxnCreate(ILorg/apache/zookeeper/server/Request;Lorg/apache/jute/Record;Z)V#L704",
+      "throw_offset": 309,
+      "writer_methods": [
+        "org/apache/zookeeper/server/ZooKeeperServer#processTxn(Lorg/apache/zookeeper/server/Request;)Lorg/apache/zookeeper/server/DataTree$ProcessTxnResult;"
+      ]
+    }
+  ],
+  "classifier_decisions_sha256": "ec9283862f3190c991131e16aab9dea89be216a2d5f0c8db2373c7e5175c4092",
+  "mapped_direct": 98,
+  "replacement_seed": "20261002:zookeeper:reserve",
+  "requested": 10,
+  "selection_seed": "20261002:zookeeper",
+  "system": "zookeeper",
+  "workload_reached_server_guards": 28
+}

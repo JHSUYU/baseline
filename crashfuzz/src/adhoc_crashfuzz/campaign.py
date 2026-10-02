@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 import json
 from pathlib import Path
 import random
@@ -37,6 +37,7 @@ class Settings:
     matched_trial_limit: int = 0  # zero keeps exploring until max_runs
     allow_unreached_seed: bool = False
     max_site_occurrence: int = 0  # zero permits every observed occurrence
+    allow_site_occurrence_fallback: bool = False
 
     @classmethod
     def from_file(cls, path: Path) -> "Settings":
@@ -77,6 +78,8 @@ class Settings:
             matched_trial_limit=int(search.get("matched_trial_limit", 0)),
             allow_unreached_seed=bool(search.get("allow_unreached_seed", False)),
             max_site_occurrence=int(search.get("max_site_occurrence", 0)),
+            allow_site_occurrence_fallback=bool(search.get(
+                "allow_site_occurrence_fallback", False)),
         )
 
 
@@ -122,7 +125,10 @@ class Campaign:
         run_dir = self.settings.output_dir / "runs" / run_id
         run_dir.mkdir(parents=True, exist_ok=False)
         controller = FaultController(sequence, self.settings.backend,
-                                     run_dir / "point-events.jsonl")
+                                     run_dir / "point-events.jsonl",
+                                     armed=False,
+                                     allow_site_occurrence_fallback=(
+                                         self.settings.allow_site_occurrence_fallback))
         started = time.monotonic()
         with EventServer(controller, self.settings.controller_bind,
                          self.settings.controller_port) as server:
@@ -131,6 +137,7 @@ class Campaign:
             if prepared.returncode:
                 raise RuntimeError("cluster prepare failed in {}: {}".format(
                     run_id, prepared.stderr or prepared.stdout))
+            workload_start_wall_ms = controller.arm()
             workload = self.settings.backend.run_workload(run_dir)
             triggered_at_workload_end = controller.freeze()
             workload_end_wall_ms = int(time.time() * 1000)
@@ -138,11 +145,18 @@ class Campaign:
                        if triggered_at_workload_end and not workload.timed_out
                        else None)
         duration_s = time.monotonic() - started
-        # JVM trace files may receive checker and later daemon events before
-        # analysis. Only the workload prefix contributes search feedback.
-        events = [event for event in read_events(run_dir / "traces")
-                  if not event.wall_ms or event.wall_ms
-                  <= workload_end_wall_ms]
+        # Only workload events contribute search feedback. Cluster preparation
+        # and the later checker are outside the fault-injection window.
+        events = [
+            # A fresh short-lived client JVM is a new process, not a reboot of
+            # a fault-controlled server node. Keep its logical epoch at zero.
+            replace(event, epoch=0)
+            if event.node not in self.settings.backend.containers
+            and event.epoch is None else event
+            for event in read_events(run_dir / "traces")
+            if not event.wall_ms or (
+                workload_start_wall_ms <= event.wall_ms
+                <= workload_end_wall_ms)]
         graph = build_graph(events)
         closure = target_closure(graph, self.settings.target,
                                  self.settings.roles)
@@ -155,9 +169,19 @@ class Campaign:
             "run_id": run_id, "sequence": sequence.to_dict(),
             "triggered": trial.triggered, "injected": [
                 {"action": action.to_dict(), "order": order,
-                 "match_mode": controller.match_modes[order]}
+                 "match_mode": controller.match_modes[order],
+                 "observed_point": controller.points[order].key.to_dict(),
+                 "observed_epoch": controller.points[order].epoch}
                 for action, order in controller.injected],
             "point_count": len(trial.points), "target_reached": closure.reached,
+            "target_hits": [{"node": event.node, "epoch": identity[1],
+                             "site": event.site, "context": event.context,
+                             "process": event.process, "span": event.span,
+                             "fatal": event.fatal}
+                            for event, identity in graph.targets
+                            if self.settings.target.matches(event)
+                            and (self.settings.target.epoch is None
+                                 or identity[1] == self.settings.target.epoch)],
             "target_fatal": closure.fatal,
             "closure_nodes": len(closure.nodes),
             "closure_edges": len(closure.edges),
@@ -171,6 +195,7 @@ class Campaign:
             "graph_gaps": graph.gaps[:200],
             "workload": _command(workload), "checker": _command(checker),
             "duration_s": duration_s, "controller_error": controller.error,
+            "workload_start_wall_ms": workload_start_wall_ms,
             "workload_end_wall_ms": workload_end_wall_ms,
         }
         with (run_dir / "result.json").open("w", encoding="utf-8") as out:

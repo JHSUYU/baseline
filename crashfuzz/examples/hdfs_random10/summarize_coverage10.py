@@ -11,6 +11,7 @@ ROOT = HERE / "out_coverage10"
 
 
 def guard_outcomes(run_dir: Path, guard: str,
+                   workload_start_wall_ms: int,
                    workload_end_wall_ms: int) -> set[str]:
     outcomes: set[str] = set()
     for path in (run_dir / "traces").glob("trace-*.jsonl"):
@@ -22,8 +23,8 @@ def guard_outcomes(run_dir: Path, guard: str,
                     row = json.loads(line)
                 except json.JSONDecodeError:
                     continue  # A killed process may leave an incomplete tail.
-                if (row.get("site") == guard
-                        and int(row.get("wall_ms", 0))
+                if (row.get("site") == guard and workload_start_wall_ms
+                        <= int(row.get("wall_ms", 0))
                         <= workload_end_wall_ms):
                     outcomes.add(str(row.get("outcome")))
     return outcomes
@@ -44,6 +45,7 @@ def main() -> None:
             run_dir = path.parent
             run_outcomes = (guard_outcomes(
                 run_dir, detail["target_guard"],
+                int(result.get("workload_start_wall_ms", 0)),
                 int(result.get("workload_end_wall_ms", 2**63 - 1)))
                             if detail.get("target_guard") else set())
             outcomes.update(run_outcomes)
@@ -84,6 +86,8 @@ def main() -> None:
                 - (set(seed["guard_outcomes"]) if seed else set())),
             "seed": seed, "fault_trials": faults,
             "matched_fault_trials": sum(r["matched"] for r in faults),
+            "matched_faults_reaching_target": sum(
+                r["matched"] and r["target_reached"] for r in faults),
             "matched_actions": sum(r["matched_actions"] for r in faults),
             "partially_injected_fault_trials": sum(
                 r["matched_actions"] > 0 and not r["matched"]
@@ -91,8 +95,17 @@ def main() -> None:
             "new_global_blocks_in_matched_faults": sum(
                 r["feedback"].get("new_global_blocks", 0)
                 for r in faults if r["matched"]),
+            "new_global_branch_outcomes_in_matched_faults": sum(
+                r["feedback"].get("new_global_branch_outcomes", 0)
+                for r in faults if r["matched"]),
             "new_closure_blocks_in_matched_faults": sum(
                 r["feedback"].get("new_closure_blocks", 0)
+                for r in faults if r["matched"]),
+            "new_closure_edges_in_matched_faults": sum(
+                r["feedback"].get("new_closure_edges", 0)
+                for r in faults if r["matched"]),
+            "new_closure_nodes_in_matched_faults": sum(
+                r["feedback"].get("new_closure_nodes", 0)
                 for r in faults if r["matched"]),
             "new_closure_branch_outcomes_in_matched_faults": sum(
                 r["feedback"].get("new_closure_branch_outcomes", 0)
@@ -110,14 +123,18 @@ def main() -> None:
     path = HERE / "coverage10.json"
     path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     for row in rows:
-        print("{:02d} status={} faults={}/{} seed_guard={} any_guard={} "
-              "new_global_blocks={} new_closure_blocks={} "
+        print("{:02d} status={} faults={}/{} target_reached={} "
+              "seed_guard={} any_guard={} "
+              "new_global_blocks={} new_global_branches={} "
+              "new_closure_blocks={} "
               "new_closure_branches={} guard_flip={} fatal={}".format(
                   row["draw"], row["status"], row["matched_fault_trials"],
                   len(row["fault_trials"]),
+                  row["matched_faults_reaching_target"],
                   bool(row["seed"] and row["seed"]["target_reached"]),
                   ",".join(row["guard_outcomes_any"]) or "-",
                   row["new_global_blocks_in_matched_faults"],
+                  row["new_global_branch_outcomes_in_matched_faults"],
                   row["new_closure_blocks_in_matched_faults"],
                   row["new_closure_branch_outcomes_in_matched_faults"],
                   ",".join(row["fault_only_guard_outcomes"]) or "-",

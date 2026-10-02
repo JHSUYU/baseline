@@ -120,11 +120,14 @@ class TargetSpec:
     site: str
     node: str = ""
     context_prefix: str = ""
+    context: str = ""
+    epoch: Optional[int] = None
 
     def matches(self, event: Event) -> bool:
         return (event.kind == "TARGET" and event.site == self.site
                 and (not self.node or event.node == self.node)
-                and event.context.startswith(self.context_prefix))
+                and event.context.startswith(self.context_prefix)
+                and (not self.context or event.context == self.context))
 
 
 @dataclass(frozen=True)
@@ -133,22 +136,25 @@ class FaultAction:
     trigger: PointKey
     target_node: str
     site_occurrence: int = 0
+    trigger_epoch: int = 0
 
     def __post_init__(self) -> None:
         if (self.kind not in FAULT_KINDS or not self.target_node
-                or self.site_occurrence < 0):
+                or self.site_occurrence < 0 or self.trigger_epoch < 0):
             raise ValueError("invalid fault action")
 
     def to_dict(self) -> dict:
         return {"kind": self.kind, "trigger": self.trigger.to_dict(),
                 "target_node": self.target_node,
-                "site_occurrence": self.site_occurrence}
+                "site_occurrence": self.site_occurrence,
+                "trigger_epoch": self.trigger_epoch}
 
     @classmethod
     def from_dict(cls, row: Mapping[str, Any]) -> "FaultAction":
         return cls(str(row["kind"]), PointKey.from_dict(row["trigger"]),
                    str(row["target_node"]),
-                   int(row.get("site_occurrence", 0)))
+                   int(row.get("site_occurrence", 0)),
+                   int(row.get("trigger_epoch", 0)))
 
 
 @dataclass(frozen=True)

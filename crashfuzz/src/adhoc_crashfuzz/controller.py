@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 from pathlib import Path
+import re
 import socketserver
 import threading
 import time
@@ -21,15 +22,18 @@ class NodeControl(Protocol):
 
 class FaultController:
     def __init__(self, sequence: FaultSequence, backend: NodeControl,
-                 journal: Path):
+                 journal: Path, armed: bool = True,
+                 allow_site_occurrence_fallback: bool = False):
         self.sequence = sequence
         self.backend = backend
         self.journal = journal
         self.points: List[ObservedPoint] = []
         self.injected: List[tuple] = []  # (action, arrival order)
-        self.match_modes = {}  # arrival order -> exact or site_occurrence
+        self.match_modes = {}  # arrival order -> exact or shape_occurrence
         self.error = ""
         self._next = 0
+        self._armed = armed
+        self._allow_site_occurrence_fallback = allow_site_occurrence_fallback
         self._frozen = False
         self._epochs = {}
         self._site_counts = {}
@@ -44,6 +48,14 @@ class FaultController:
     def last_injected_order(self) -> int:
         return self.injected[-1][1] if self.injected else -1
 
+    def arm(self) -> int:
+        """Begin observing fault points after cluster preparation completes."""
+        with self._lock:
+            if self._frozen:
+                raise RuntimeError("cannot arm a frozen controller")
+            self._armed = True
+            return int(time.time() * 1000)
+
     def freeze(self) -> bool:
         """End fault injection at the workload boundary, before checkers run."""
         with self._lock:
@@ -57,7 +69,7 @@ class FaultController:
         except (KeyError, TypeError, ValueError) as invalid:
             return "ERROR invalid fault-point event: " + str(invalid)
         with self._lock:
-            if self._frozen:
+            if self._frozen or not self._armed:
                 return "CONTINUE"
             if self.error:
                 return "ERROR " + self.error
@@ -71,15 +83,19 @@ class FaultController:
             match_mode = ""
             if self._next < len(self.sequence.actions):
                 planned = self.sequence.actions[self._next]
-                if key == planned.trigger:
+                if epoch == planned.trigger_epoch and key == planned.trigger:
                     match_mode = "exact"
-                elif (planned.site_occurrence == site_occurrence
+                elif (self._allow_site_occurrence_fallback
+                      and epoch == planned.trigger_epoch
+                      and planned.site_occurrence == site_occurrence
                       and planned.site_occurrence > 0
                       and key.node == planned.trigger.node
                       and key.site == planned.trigger.site
                       and key.phase == planned.trigger.phase
-                      and key.ordinal == planned.trigger.ordinal):
-                    match_mode = "site_occurrence"
+                      and key.ordinal == planned.trigger.ordinal
+                      and _context_shape(key.context)
+                      == _context_shape(planned.trigger.context)):
+                    match_mode = "shape_occurrence"
             matched = bool(match_mode)
             record = {"order": order, "epoch": epoch, "point": key.to_dict(),
                       "site_occurrence": site_occurrence,
@@ -110,6 +126,11 @@ class FaultController:
             self.match_modes[order] = match_mode
             self._next += 1
             return "CONTINUE"
+
+
+def _context_shape(context: str) -> str:
+    """Drop unstable activation counts, retaining call and async handoffs."""
+    return re.sub(r"#\d+(?=/|$)", "#*", context)
 
 
 class _Server(socketserver.ThreadingTCPServer):

@@ -105,7 +105,9 @@ def main() -> None:
             "error": error[-3000:],
         })
         save(progress_path, progress)
-        print(name, status, "trials", len(trials), "matched actions",
+        print(name, status, "trials", len(trials), "matched fault trials",
+              sum(row["run_id"].startswith("run-") and row["triggered"]
+                  for row in trials), "matched actions",
               sum(row["matched_actions"] for row in trials), flush=True)
 
 

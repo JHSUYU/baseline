@@ -15,11 +15,14 @@ class FakeCluster:
     containers = {"n1": "fixture-1", "n2": "fixture-2"}
 
     def __init__(self, baseline_fatal=False, target_only_after_crash=False,
-                 checker_emits_coverage=False):
+                 checker_emits_coverage=False, prepare_emits_point=False,
+                 prepare_emits_coverage=False):
         self.dead = set()
         self.baseline_fatal = baseline_fatal
         self.target_only_after_crash = target_only_after_crash
         self.checker_emits_coverage = checker_emits_coverage
+        self.prepare_emits_point = prepare_emits_point
+        self.prepare_emits_coverage = prepare_emits_coverage
         self.run_dir = None
         self.port = 0
 
@@ -27,6 +30,26 @@ class FakeCluster:
         self.dead.clear()
         self.run_dir = run_dir
         self.port = port
+        if self.prepare_emits_point:
+            with socket.create_connection(("127.0.0.1", port), 5) as sock:
+                sock.sendall((json.dumps({
+                    "schema": 1, "kind": "FAULT_POINT", "node": "n1",
+                    "process": "p1", "seq": 0, "site": "io.write",
+                    "context": "root/request#1", "ordinal": 1,
+                    "phase": "BEFORE"}) + "\n").encode())
+                self.assert_continue(sock)
+            if self.dead:
+                raise AssertionError("fault fired during cluster preparation")
+        if self.prepare_emits_coverage:
+            trace_dir = run_dir / "traces"
+            trace_dir.mkdir(exist_ok=True)
+            with (trace_dir / "trace-n1-p1.jsonl").open("w") as out:
+                out.write(json.dumps({
+                    "schema": 1, "node": "n1", "process": "p1",
+                    "kind": "GLOBAL_BLOCK", "seq": 0,
+                    "site": "prepare#BB1",
+                    "wall_ms": int(time.time() * 1000) - 1000,
+                }) + "\n")
         return CommandResult(0, "", "")
 
     def kill_node(self, node):
@@ -49,8 +72,8 @@ class FakeCluster:
             rows.append(dict(base, kind="TARGET", seq=3, site="check",
                              fatal=self.baseline_fatal or "n1" in self.dead))
         trace_dir = self.run_dir / "traces"
-        trace_dir.mkdir()
-        with (trace_dir / "trace-n1-p1.jsonl").open("w") as out:
+        trace_dir.mkdir(exist_ok=True)
+        with (trace_dir / "trace-n1-p1.jsonl").open("a") as out:
             for row in rows:
                 out.write(json.dumps(row) + "\n")
         return CommandResult(0, "", "")
@@ -75,6 +98,27 @@ class FakeCluster:
 
 
 class CampaignTests(unittest.TestCase):
+    def test_prepare_events_do_not_become_faults_or_coverage(self):
+        with tempfile.TemporaryDirectory() as temp:
+            settings = Settings(
+                target=TargetSpec("check"), output_dir=Path(temp),
+                backend=FakeCluster(prepare_emits_point=True,
+                                    prepare_emits_coverage=True),
+                groups=(NodeGroup(frozenset({"n1", "n2"}), 1),),
+                roles={}, controller_bind="127.0.0.1",
+                controller_advertise="127.0.0.1", max_runs=2,
+                replay_count=0)
+            answer = Campaign(settings).run()
+            self.assertEqual(2, answer["tested"])
+            self.assertEqual(0, answer["global_blocks_seen"])
+            seed = json.loads((Path(temp) / "runs" / "seed-00001"
+                               / "result.json").read_text())
+            fault = json.loads((Path(temp) / "runs" / "run-00002"
+                                / "result.json").read_text())
+            self.assertEqual(1, seed["point_count"])
+            self.assertTrue(fault["triggered"])
+            self.assertEqual(1, fault["point_count"])
+
     def test_checker_coverage_does_not_guide_search(self):
         with tempfile.TemporaryDirectory() as temp:
             settings = Settings(

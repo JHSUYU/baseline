@@ -230,7 +230,8 @@ def target_closure(graph: CausalGraph, target: TargetSpec,
                    roles: Optional[Mapping[str, str]] = None) -> Closure:
     roles = roles or {}
     hits = [(event, identity) for event, identity in graph.targets
-            if target.matches(event)]
+            if target.matches(event)
+            and (target.epoch is None or identity[1] == target.epoch)]
     anchors = [identity for _, identity in hits]
     if not anchors:
         # A crash may interrupt the target method before its check. Preserve
@@ -241,8 +242,12 @@ def target_closure(graph: CausalGraph, target: TargetSpec,
         if method:
             anchors = [identity for identity, region in graph.nodes.items()
                        if region.site == method
+                       and (target.epoch is None
+                            or region.epoch == target.epoch)
                        and (not target.node or region.node == target.node)
-                       and region.context.startswith(target.context_prefix)]
+                       and region.context.startswith(target.context_prefix)
+                       and (not target.context
+                            or region.context == target.context)]
     pending = deque(anchors)
     members: Set[OccurrenceId] = set(pending)
     edges: Set[Edge] = set()

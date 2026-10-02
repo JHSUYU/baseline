@@ -28,6 +28,25 @@ def point_event(context, seq):
 
 
 class ControllerTests(unittest.TestCase):
+    def test_prepare_points_are_not_injected_or_counted(self):
+        with tempfile.TemporaryDirectory() as temp:
+            backend = FakeBackend()
+            action = FaultAction("CRASH", PointKey(
+                "hm1", "rpc#ENTRY", "root/request#1", 1), "hm1", 1)
+            controller = FaultController(FaultSequence((action,)), backend,
+                                         Path(temp) / "points.jsonl",
+                                         armed=False)
+            self.assertEqual("CONTINUE", controller.on_event(
+                point_event("root/request#1", 1)))
+            self.assertEqual([], controller.points)
+            self.assertEqual([], backend.killed)
+            controller.arm()
+            self.assertEqual("CONTINUE", controller.on_event(
+                point_event("root/request#1", 2)))
+            self.assertTrue(controller.complete)
+            self.assertEqual(1, len(controller.points))
+            self.assertEqual(["hm1"], backend.killed)
+
     def test_freeze_prevents_late_faults(self):
         with tempfile.TemporaryDirectory() as temp:
             backend = FakeBackend()
@@ -58,17 +77,72 @@ class ControllerTests(unittest.TestCase):
             self.assertEqual(action, FaultAction.from_dict(action.to_dict()))
 
             replay = FaultController(FaultSequence((action,)), backend,
-                                     Path(temp) / "replay.jsonl")
+                                     Path(temp) / "replay.jsonl",
+                                     allow_site_occurrence_fallback=True)
             for index in range(1, 8):
                 self.assertEqual("CONTINUE", replay.on_event(
                     point_event("root/request#" + str(index * 10 + 1),
                                 index)))
             self.assertTrue(replay.complete)
             self.assertEqual(["hm1"], backend.killed)
-            self.assertEqual("site_occurrence", replay.match_modes[6])
+            self.assertEqual("shape_occurrence", replay.match_modes[6])
             journal = [json.loads(line) for line in
                        (Path(temp) / "replay.jsonl").read_text().splitlines()]
-            self.assertEqual("site_occurrence", journal[-1]["match_mode"])
+            self.assertEqual("shape_occurrence", journal[-1]["match_mode"])
+
+    def test_relaxed_identity_still_requires_same_context_shape(self):
+        with tempfile.TemporaryDirectory() as temp:
+            backend = FakeBackend()
+            action = FaultAction("CRASH", PointKey(
+                "hm1", "rpc#ENTRY", "root/delete#10", 1), "hm1", 1)
+            replay = FaultController(FaultSequence((action,)), backend,
+                                     Path(temp) / "shape.jsonl",
+                                     allow_site_occurrence_fallback=True)
+            self.assertEqual("CONTINUE", replay.on_event(
+                point_event("root/truncate#11", 1)))
+            self.assertFalse(replay.complete)
+            self.assertEqual([], backend.killed)
+
+    def test_shape_occurrence_matches_same_async_path_after_root_shift(self):
+        with tempfile.TemporaryDirectory() as temp:
+            backend = FakeBackend()
+            planned = ("root/org/apache/hbase/Rpc#process()V#112"
+                       "/async:Procedure#1/org/apache/hbase/Check#run()V#1")
+            actual = ("root/org/apache/hbase/Rpc#process()V#137"
+                      "/async:Procedure#2/org/apache/hbase/Check#run()V#1")
+            action = FaultAction("CRASH", PointKey(
+                "hm1", "rpc#ENTRY", planned, 1), "hm1", 1)
+            replay = FaultController(FaultSequence((action,)), backend,
+                                     Path(temp) / "async-shape.jsonl",
+                                     allow_site_occurrence_fallback=True)
+            self.assertEqual("CONTINUE", replay.on_event(point_event(actual, 1)))
+            self.assertTrue(replay.complete)
+            self.assertEqual("shape_occurrence", replay.match_modes[0])
+
+    def test_strict_identity_does_not_match_shifted_context(self):
+        with tempfile.TemporaryDirectory() as temp:
+            backend = FakeBackend()
+            action = FaultAction("CRASH", PointKey(
+                "hm1", "rpc#ENTRY", "root/request#10", 1), "hm1", 1)
+            replay = FaultController(FaultSequence((action,)), backend,
+                                     Path(temp) / "strict.jsonl")
+            self.assertEqual("CONTINUE", replay.on_event(
+                point_event("root/request#11", 1)))
+            self.assertFalse(replay.complete)
+            self.assertEqual([], backend.killed)
+
+    def test_strict_identity_requires_same_epoch(self):
+        with tempfile.TemporaryDirectory() as temp:
+            backend = FakeBackend()
+            action = FaultAction("CRASH", PointKey(
+                "hm1", "rpc#ENTRY", "root/request#10", 1), "hm1",
+                trigger_epoch=1)
+            replay = FaultController(FaultSequence((action,)), backend,
+                                     Path(temp) / "epoch.jsonl")
+            self.assertEqual("CONTINUE", replay.on_event(
+                point_event("root/request#10", 1)))
+            self.assertFalse(replay.complete)
+            self.assertEqual([], backend.killed)
 
     def test_exact_context_remains_preferred(self):
         with tempfile.TemporaryDirectory() as temp:

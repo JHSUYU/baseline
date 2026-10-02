@@ -42,6 +42,8 @@ final class ProbeTransformer implements ClassFileTransformer {
     private static final Type HBASE_RPC = Type.getType(HBase248RpcHooks.class);
     private static final Type HDFS_TRANSFER = Type.getType(HdfsDataTransferHooks.class);
     private static final Type HADOOP_RPC = Type.getType(HadoopRpcHooks.class);
+    private static final Type ZOOKEEPER_RPC = Type.getType(ZooKeeperRpcHooks.class);
+    private static final Type SOLR_HTTP = Type.getType(SolrHttpHooks.class);
     private static final Method ENTER = new Method("enter",
             "(Ljava/lang/String;Ljava/lang/Object;)J");
     private static final Method ENTER_TASK = new Method("enterTask",
@@ -88,6 +90,12 @@ final class ProbeTransformer implements ClassFileTransformer {
     private static final Method HADOOP_RESPONSE_SEND = new Method("responseSend", "(Ljava/lang/Object;)V");
     private static final Method HADOOP_RESPONSE_RECV = new Method("responseReceive", "(ILjava/lang/Object;)V");
     private static final Method ASYNC_RECEIVE = new Method("asyncReceive", "(Ljava/lang/Object;)V");
+    private static final Method ZK_REQUEST_SEND = new Method("requestSend",
+            "(Ljava/lang/Object;Ljava/lang/Object;)V");
+    private static final Method ZK_REQUEST_RECEIVE = new Method("requestReceive",
+            "(Ljava/lang/Object;)V");
+    private static final Method SOLR_REQUEST_RECEIVE = new Method("requestReceive",
+            "(Ljava/lang/Object;)V");
 
     private final List<String> includes = new ArrayList<String>();
     private final List<String> exactClasses = new ArrayList<String>();
@@ -104,6 +112,8 @@ final class ProbeTransformer implements ClassFileTransformer {
     private final boolean hbase248Rpc;
     private final boolean hdfsDataTransfer;
     private final boolean hadoopRpc;
+    private final boolean zookeeperRpc;
+    private final boolean solrHttp;
 
     ProbeTransformer(Properties config) {
         for (String prefix : config.getProperty("include.prefixes", "").split(",")) {
@@ -148,6 +158,10 @@ final class ProbeTransformer implements ClassFileTransformer {
                 config.getProperty("adapter.hdfs.datatransfer", "false"));
         hadoopRpc = Boolean.parseBoolean(
                 config.getProperty("adapter.hadoop.rpc", "false"));
+        zookeeperRpc = Boolean.parseBoolean(
+                config.getProperty("adapter.zookeeper.rpc", "false"));
+        solrHttp = Boolean.parseBoolean(
+                config.getProperty("adapter.solr.http", "false"));
     }
 
     @Override
@@ -529,6 +543,24 @@ final class ProbeTransformer implements ClassFileTransformer {
                 loadArg(0);
                 invokeStatic(HOOK, ASYNC_SUBMIT);
             }
+            if (zookeeperRpc
+                    && owner.equals("org/apache/zookeeper/ClientCnxn$SendThread")
+                    && methodName.equals("sendPacket")) {
+                loadThis();
+                loadArg(0);
+                invokeStatic(ZOOKEEPER_RPC, ZK_REQUEST_SEND);
+            } else if (zookeeperRpc
+                    && (owner.equals("org/apache/zookeeper/server/PrepRequestProcessor")
+                    || owner.equals("org/apache/zookeeper/server/FinalRequestProcessor"))
+                    && methodName.equals("processRequest")) {
+                loadArg(0);
+                invokeStatic(ZOOKEEPER_RPC, ZK_REQUEST_RECEIVE);
+            }
+            if (solrHttp && owner.equals("org/apache/solr/servlet/HttpSolrCall")
+                    && methodName.equals("init")) {
+                loadThis();
+                invokeStatic(SOLR_HTTP, SOLR_REQUEST_RECEIVE);
+            }
         }
 
         @Override
@@ -728,6 +760,18 @@ final class ProbeTransformer implements ClassFileTransformer {
             if (oneTask || threadStart || hbaseDispatch || hadoopDispatch) {
                 dup();
                 invokeStatic(HOOK, ASYNC_SUBMIT);
+            }
+            if (zookeeperRpc
+                    && owner.equals("org/apache/zookeeper/ClientCnxnSocketNIO")
+                    && methodName.equals("doIO")
+                    && calleeOwner.equals("org/apache/zookeeper/ClientCnxn$Packet")
+                    && name.equals("createBB") && callDesc.equals("()V")) {
+                // The client has assigned the xid immediately before this
+                // call. Preserve Packet as createBB's receiver on the stack.
+                dup();
+                loadArg(1);
+                swap();
+                invokeStatic(ZOOKEEPER_RPC, ZK_REQUEST_SEND);
             }
             if (selectedCall) {
                 push(callSite);

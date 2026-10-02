@@ -121,6 +121,26 @@ class GraphTests(unittest.TestCase):
             self.assertTrue(any("TARGET_HOST" in feature
                                 for feature in delta.nodes))
 
+    def test_exact_target_context_and_epoch_select_one_occurrence(self):
+        graph = build_graph([
+            event("METHOD_ENTER", "n", "old", 1, "1", site="Check#go()V",
+                  context="root/request#1", wall_ms=100),
+            event("TARGET", "n", "old", 2, "1", site="Check#go()V#B1",
+                  context="root/request#1", wall_ms=101),
+            event("METHOD_ENTER", "n", "new", 1, "1", site="Check#go()V",
+                  context="root/request#2", wall_ms=200),
+            event("TARGET", "n", "new", 2, "1", site="Check#go()V#B1",
+                  context="root/request#2", wall_ms=201),
+        ])
+        selected = target_closure(graph, TargetSpec(
+            "Check#go()V#B1", node="n", context="root/request#2", epoch=1))
+        self.assertTrue(selected.reached)
+        self.assertEqual({1}, {identity[1] for identity in selected.nodes})
+        missing = target_closure(graph, TargetSpec(
+            "Check#go()V#B1", node="n", context="root/request#1", epoch=1))
+        self.assertFalse(missing.reached)
+        self.assertEqual(0, len(missing.nodes))
+
 
 if __name__ == "__main__":
     unittest.main()

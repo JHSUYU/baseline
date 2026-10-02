@@ -85,9 +85,9 @@ def mutate_one_fault(sequence: FaultSequence,
         proposals: List[FaultAction] = []
         if len(dead & group.members) < group.max_down:
             proposals.append(FaultAction("CRASH", point.key, node,
-                                         point.site_occurrence))
+                                         point.site_occurrence, point.epoch))
         proposals.extend(FaultAction("REBOOT", point.key, target,
-                                     point.site_occurrence)
+                                     point.site_occurrence, point.epoch)
                          for target in sorted(dead))
         for action in proposals:
             candidate = sequence.append(action)

@@ -1,0 +1,287 @@
+{
+  "cases": [
+    {
+      "agent_method": "org/apache/solr/servlet/HttpSolrCall#init()V",
+      "class": "org.apache.solr.servlet.HttpSolrCall",
+      "draw": 1,
+      "evidence_total": 7,
+      "exception": "org.apache.solr.common.SolrException",
+      "guard_offset": 240,
+      "interaction_tags": [
+        "zookeeper"
+      ],
+      "method": "<org.apache.solr.servlet.HttpSolrCall: void init()>",
+      "seed_guard_hits": 9,
+      "seed_guard_nodes": [
+        "solr1"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.servlet.HttpSolrCall: void init()>#u66",
+      "site_kind": "throw",
+      "source_line": 255,
+      "target_guard": "org/apache/solr/servlet/HttpSolrCall#init()V#B6",
+      "target_throw": "org/apache/solr/servlet/HttpSolrCall#init()V#L255",
+      "throw_offset": 255,
+      "writer_methods": [
+        "org/apache/solr/servlet/HttpSolrCall#init()V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/servlet/SolrRequestParsers$2#read()I",
+      "class": "org.apache.solr.servlet.SolrRequestParsers$2",
+      "draw": 2,
+      "evidence_total": 1,
+      "exception": "org.apache.solr.common.SolrException",
+      "guard_offset": 26,
+      "interaction_tags": [],
+      "method": "<org.apache.solr.servlet.SolrRequestParsers$2: int read()>",
+      "seed_guard_hits": 2282,
+      "seed_guard_nodes": [
+        "solr1",
+        "solr2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.servlet.SolrRequestParsers$2: int read()>#u18",
+      "site_kind": "throw",
+      "source_line": 308,
+      "target_guard": "org/apache/solr/servlet/SolrRequestParsers$2#read()I#B2",
+      "target_throw": "org/apache/solr/servlet/SolrRequestParsers$2#read()I#L308",
+      "throw_offset": 61,
+      "writer_methods": [
+        "org/apache/solr/servlet/SolrRequestParsers$2#read()I"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/update/DefaultSolrCoreState#getIndexWriter(Lorg/apache/solr/core/SolrCore;)Lorg/apache/solr/util/RefCounted;",
+      "class": "org.apache.solr.update.DefaultSolrCoreState",
+      "draw": 3,
+      "evidence_total": 1,
+      "exception": "org.apache.solr.common.SolrException",
+      "guard_offset": 15,
+      "interaction_tags": [
+        "http",
+        "zookeeper"
+      ],
+      "method": "<org.apache.solr.update.DefaultSolrCoreState: org.apache.solr.util.RefCounted getIndexWriter(org.apache.solr.core.SolrCore)>",
+      "seed_guard_hits": 128,
+      "seed_guard_nodes": [
+        "solr1",
+        "solr2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.update.DefaultSolrCoreState: org.apache.solr.util.RefCounted getIndexWriter(org.apache.solr.core.SolrCore)>#u10",
+      "site_kind": "throw",
+      "source_line": 121,
+      "target_guard": "org/apache/solr/update/DefaultSolrCoreState#getIndexWriter(Lorg/apache/solr/core/SolrCore;)Lorg/apache/solr/util/RefCounted;#B3",
+      "target_throw": "org/apache/solr/update/DefaultSolrCoreState#getIndexWriter(Lorg/apache/solr/core/SolrCore;)Lorg/apache/solr/util/RefCounted;#L121",
+      "throw_offset": 30,
+      "writer_methods": [
+        "org/apache/solr/core/IndexDeletionPolicyWrapper#updateLatestCommit(Ljava/util/List;)V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/update/TransactionLog#incref()V",
+      "class": "org.apache.solr.update.TransactionLog",
+      "draw": 4,
+      "evidence_total": 2,
+      "exception": "org.apache.solr.common.SolrException",
+      "guard_offset": 10,
+      "interaction_tags": [],
+      "method": "<org.apache.solr.update.TransactionLog: void incref()>",
+      "seed_guard_hits": 8,
+      "seed_guard_nodes": [
+        "solr1",
+        "solr2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.update.TransactionLog: void incref()>#u12",
+      "site_kind": "throw",
+      "source_line": 541,
+      "target_guard": "org/apache/solr/update/TransactionLog#incref()V#B1",
+      "target_throw": "org/apache/solr/update/TransactionLog#incref()V#L541",
+      "throw_offset": 42,
+      "writer_methods": [
+        "org/apache/solr/update/CdcrTransactionLog#incref()V",
+        "org/apache/solr/update/TransactionLog#try_incref()Z"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/search/QueryCommand#setFilterList(Ljava/util/List;)Lorg/apache/solr/search/QueryCommand;",
+      "class": "org.apache.solr.search.QueryCommand",
+      "draw": 5,
+      "evidence_total": 1,
+      "exception": "java.lang.IllegalArgumentException",
+      "guard_offset": 4,
+      "interaction_tags": [],
+      "method": "<org.apache.solr.search.QueryCommand: org.apache.solr.search.QueryCommand setFilterList(java.util.List)>",
+      "seed_guard_hits": 4,
+      "seed_guard_nodes": [
+        "solr1"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.search.QueryCommand: org.apache.solr.search.QueryCommand setFilterList(java.util.List)>#u6",
+      "site_kind": "throw",
+      "source_line": 83,
+      "target_guard": "org/apache/solr/search/QueryCommand#setFilterList(Ljava/util/List;)Lorg/apache/solr/search/QueryCommand;#B1",
+      "target_throw": "org/apache/solr/search/QueryCommand#setFilterList(Ljava/util/List;)Lorg/apache/solr/search/QueryCommand;#L83",
+      "throw_offset": 16,
+      "writer_methods": [
+        "org/apache/solr/search/QueryCommand#setFilter(Lorg/apache/solr/search/DocSet;)Lorg/apache/solr/search/QueryCommand;"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/common/util/FastInputStream#readByte()B",
+      "class": "org.apache.solr.common.util.FastInputStream",
+      "draw": 6,
+      "evidence_total": 11,
+      "exception": "java.io.EOFException",
+      "guard_offset": 23,
+      "interaction_tags": [],
+      "method": "<org.apache.solr.common.util.FastInputStream: byte readByte()>",
+      "seed_guard_hits": 7,
+      "seed_guard_nodes": [
+        "solr1"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.common.util.FastInputStream: byte readByte()>#u10",
+      "site_kind": "throw",
+      "source_line": 218,
+      "target_guard": "org/apache/solr/common/util/FastInputStream#readByte()B#B2",
+      "target_throw": "org/apache/solr/common/util/FastInputStream#readByte()B#L218",
+      "throw_offset": 33,
+      "writer_methods": [
+        "org/apache/solr/common/util/FastInputStream#readDirectUtf8(Lorg/apache/solr/common/util/ByteArrayUtf8CharSequence;I)Z",
+        "org/apache/solr/update/FSDataFastInputStream#seek(J)V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/common/util/FastInputStream#readFully([BII)V",
+      "class": "org.apache.solr.common.util.FastInputStream",
+      "draw": 7,
+      "evidence_total": 12,
+      "exception": "java.io.EOFException",
+      "guard_offset": 16,
+      "interaction_tags": [],
+      "method": "<org.apache.solr.common.util.FastInputStream: void readFully(byte[],int,int)>",
+      "seed_guard_hits": 945,
+      "seed_guard_nodes": [
+        "solr1",
+        "solr2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.common.util.FastInputStream: void readFully(byte[],int,int)>#u10",
+      "site_kind": "throw",
+      "source_line": 179,
+      "target_guard": "org/apache/solr/common/util/FastInputStream#readFully([BII)V#B2",
+      "target_throw": "org/apache/solr/common/util/FastInputStream#readFully([BII)V#L179",
+      "throw_offset": 26,
+      "writer_methods": [
+        "org/apache/solr/common/util/FastInputStream#readDirectUtf8(Lorg/apache/solr/common/util/ByteArrayUtf8CharSequence;I)Z",
+        "org/apache/solr/update/FSDataFastInputStream#seek(J)V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/update/DefaultSolrCoreState#lock(Ljava/util/concurrent/locks/Lock;)V",
+      "class": "org.apache.solr.update.DefaultSolrCoreState",
+      "draw": 8,
+      "evidence_total": 1,
+      "exception": "org.apache.solr.common.SolrException",
+      "guard_offset": 34,
+      "interaction_tags": [],
+      "method": "<org.apache.solr.update.DefaultSolrCoreState: void lock(java.util.concurrent.locks.Lock)>",
+      "seed_guard_hits": 136,
+      "seed_guard_nodes": [
+        "solr1",
+        "solr2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.update.DefaultSolrCoreState: void lock(java.util.concurrent.locks.Lock)>#u16",
+      "site_kind": "throw",
+      "source_line": 190,
+      "target_guard": "org/apache/solr/update/DefaultSolrCoreState#lock(Ljava/util/concurrent/locks/Lock;)V#B1",
+      "target_throw": "org/apache/solr/update/DefaultSolrCoreState#lock(Ljava/util/concurrent/locks/Lock;)V#L190",
+      "throw_offset": 59,
+      "writer_methods": [
+        "org/apache/solr/update/SolrCoreState#increfSolrCoreState()V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/core/SolrCore#openNewSearcher(ZZ)Lorg/apache/solr/util/RefCounted;",
+      "class": "org.apache.solr.core.SolrCore",
+      "draw": 9,
+      "evidence_total": 1,
+      "exception": "org.apache.solr.common.SolrException",
+      "guard_offset": 611,
+      "interaction_tags": [
+        "http",
+        "zookeeper"
+      ],
+      "method": "<org.apache.solr.core.SolrCore: org.apache.solr.util.RefCounted openNewSearcher(boolean,boolean)>",
+      "seed_guard_hits": 8,
+      "seed_guard_nodes": [
+        "solr1",
+        "solr2"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.core.SolrCore: org.apache.solr.util.RefCounted openNewSearcher(boolean,boolean)>#u160",
+      "site_kind": "throw",
+      "source_line": 2203,
+      "target_guard": "org/apache/solr/core/SolrCore#openNewSearcher(ZZ)Lorg/apache/solr/util/RefCounted;#B25",
+      "target_throw": "org/apache/solr/core/SolrCore#openNewSearcher(ZZ)Lorg/apache/solr/util/RefCounted;#L2203",
+      "throw_offset": 637,
+      "writer_methods": [
+        "org/apache/solr/core/IndexDeletionPolicyWrapper#updateLatestCommit(Ljava/util/List;)V"
+      ]
+    },
+    {
+      "agent_method": "org/apache/solr/client/solrj/impl/ConcurrentUpdateHttp2SolrClient#<init>(Lorg/apache/solr/client/solrj/impl/ConcurrentUpdateHttp2SolrClient$Builder;)V",
+      "class": "org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient",
+      "draw": 10,
+      "evidence_total": 2,
+      "exception": "java.lang.RuntimeException",
+      "guard_offset": 114,
+      "interaction_tags": [],
+      "method": "<org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient: void <init>(org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient$Builder)>",
+      "seed_guard_hits": 5,
+      "seed_guard_nodes": [
+        "solr1"
+      ],
+      "seed_guard_outcomes": [
+        "true"
+      ],
+      "site_id": "<org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient: void <init>(org.apache.solr.client.solrj.impl.ConcurrentUpdateHttp2SolrClient$Builder)>#u42",
+      "site_kind": "throw",
+      "source_line": 156,
+      "target_guard": "org/apache/solr/client/solrj/impl/ConcurrentUpdateHttp2SolrClient#<init>(Lorg/apache/solr/client/solrj/impl/ConcurrentUpdateHttp2SolrClient$Builder;)V#B1",
+      "target_throw": "org/apache/solr/client/solrj/impl/ConcurrentUpdateHttp2SolrClient#<init>(Lorg/apache/solr/client/solrj/impl/ConcurrentUpdateHttp2SolrClient$Builder;)V#L156",
+      "throw_offset": 158,
+      "writer_methods": [
+        "org/apache/solr/client/solrj/impl/ConcurrentUpdateHttp2SolrClient#setPollQueueTime(I)V"
+      ]
+    }
+  ],
+  "classifier_decisions_sha256": "8d4dbe61cb3aeed86e525a1a2c1467a5aa90c8b48d350247fad95ef20d9db0a6",
+  "mapped_direct": 305,
+  "requested": 10,
+  "selection_seed": "20261002:solr",
+  "system": "solr",
+  "workload_reached_server_guards": 11
+}

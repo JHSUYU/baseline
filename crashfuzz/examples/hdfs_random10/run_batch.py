@@ -60,6 +60,7 @@ def trial_rows(directory: Path) -> list[dict]:
         row = json.loads(path.read_text())
         rows.append({
             "run_id": row["run_id"],
+            "triggered": row["triggered"],
             "planned_actions": len(row["sequence"]["actions"]),
             "matched_actions": len(row["injected"]),
             "match_modes": [event.get("match_mode", "exact")
@@ -160,7 +161,9 @@ def main() -> None:
             "error": error[-3000:],
         })
         save(progress_path, progress)
-        print(name, status, "trials", len(trials), "matched",
+        print(name, status, "trials", len(trials), "matched fault trials",
+              sum(row["run_id"].startswith("run-") and row["triggered"]
+                  for row in trials), "matched actions",
               sum(row["matched_actions"] for row in trials), flush=True)
 
 
