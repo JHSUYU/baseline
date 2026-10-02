@@ -22,6 +22,10 @@ In particular, a mapped guard may execute safely; an exception at another
 location does not count as a coordination failure. Each run writes
 `result.json` and `feedback.json`, separating total and newly observed block
 and branch coverage, both globally and inside the target closure.
+The controller freezes fault matching when the workload returns; events from
+the later correctness checker are excluded from graph and coverage feedback
+using the recorded workload-end timestamp. A sequence counts as matched only
+when every planned action was injected before that boundary.
 
 To reproduce from `/users/ZhenyuLi/baseline/crashfuzz`:
 

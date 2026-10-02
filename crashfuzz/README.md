@@ -99,7 +99,9 @@ switch arms and exception edges are not yet counted as branch outcomes.
 prefix wildcard. It can select I/O calls or declared coordination boundaries.
 Each selected call reports `BEFORE` and `AFTER` fault points. The probe fsyncs its
 trace before asking the controller to act, retaining the crash prefix. The
-controller's advertised host and port can also come from
+controller freezes matching when the workload returns. The later checker
+cannot inject a fault, and its JVM events do not contribute search coverage.
+The controller's advertised host and port can also come from
 `ADHOCFUZZ_CONTROLLER_HOST` and `ADHOCFUZZ_CONTROLLER_PORT`; a cluster setup
 script should pass the dynamically chosen port from the campaign. Leave
 `controller.port` out of the properties file when using a dynamic port.

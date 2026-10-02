@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 import socket
 import tempfile
+import time
 import unittest
 
 from adhoc_crashfuzz.backend import CommandResult
@@ -13,10 +14,12 @@ from adhoc_crashfuzz.mutation import NodeGroup
 class FakeCluster:
     containers = {"n1": "fixture-1", "n2": "fixture-2"}
 
-    def __init__(self, baseline_fatal=False, target_only_after_crash=False):
+    def __init__(self, baseline_fatal=False, target_only_after_crash=False,
+                 checker_emits_coverage=False):
         self.dead = set()
         self.baseline_fatal = baseline_fatal
         self.target_only_after_crash = target_only_after_crash
+        self.checker_emits_coverage = checker_emits_coverage
         self.run_dir = None
         self.port = 0
 
@@ -59,10 +62,31 @@ class FakeCluster:
             raise AssertionError(answer)
 
     def check(self, _run_dir):
+        if self.checker_emits_coverage:
+            trace = self.run_dir / "traces" / "trace-n1-p1.jsonl"
+            with trace.open("a") as out:
+                out.write(json.dumps({
+                    "schema": 1, "node": "n1", "process": "p1",
+                    "kind": "GLOBAL_BLOCK", "seq": 99,
+                    "site": "checker#BB1",
+                    "wall_ms": int(time.time() * 1000) + 1000,
+                }) + "\n")
         return CommandResult(0, "", "")
 
 
 class CampaignTests(unittest.TestCase):
+    def test_checker_coverage_does_not_guide_search(self):
+        with tempfile.TemporaryDirectory() as temp:
+            settings = Settings(
+                target=TargetSpec("check"), output_dir=Path(temp),
+                backend=FakeCluster(checker_emits_coverage=True),
+                groups=(NodeGroup(frozenset({"n1", "n2"}), 1),),
+                roles={}, controller_bind="127.0.0.1",
+                controller_advertise="127.0.0.1", max_runs=2,
+                replay_count=0)
+            answer = Campaign(settings).run()
+            self.assertEqual(0, answer["global_blocks_seen"])
+
     def test_matched_trial_limit_stops_retry_campaign(self):
         with tempfile.TemporaryDirectory() as temp:
             settings = Settings(

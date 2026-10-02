@@ -10,7 +10,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE / "out_coverage10"
 
 
-def guard_outcomes(run_dir: Path, guard: str) -> set[str]:
+def guard_outcomes(run_dir: Path, guard: str,
+                   workload_end_wall_ms: int) -> set[str]:
     outcomes: set[str] = set()
     for path in (run_dir / "traces").glob("trace-*.jsonl"):
         with path.open() as handle:
@@ -21,7 +22,9 @@ def guard_outcomes(run_dir: Path, guard: str) -> set[str]:
                     row = json.loads(line)
                 except json.JSONDecodeError:
                     continue  # A killed process may leave an incomplete tail.
-                if row.get("site") == guard:
+                if (row.get("site") == guard
+                        and int(row.get("wall_ms", 0))
+                        <= workload_end_wall_ms):
                     outcomes.add(str(row.get("outcome")))
     return outcomes
 
@@ -39,14 +42,20 @@ def main() -> None:
         for path in sorted(directory.glob("*/result.json")):
             result = json.loads(path.read_text())
             run_dir = path.parent
-            run_outcomes = (guard_outcomes(run_dir, detail["target_guard"])
+            run_outcomes = (guard_outcomes(
+                run_dir, detail["target_guard"],
+                int(result.get("workload_end_wall_ms", 2**63 - 1)))
                             if detail.get("target_guard") else set())
             outcomes.update(run_outcomes)
             feedback_path = run_dir / "feedback.json"
             feedback = (json.loads(feedback_path.read_text())
                         if feedback_path.exists() else {})
             record = {"run_id": result["run_id"],
-                      "matched": bool(result["injected"]),
+                      "matched": bool(result["triggered"]),
+                      "planned_actions": len(result["sequence"]["actions"]),
+                      "matched_actions": len(result["injected"]),
+                      "fault_kinds": [step["action"]["kind"]
+                                      for step in result["injected"]],
                       "target_reached": result["target_reached"],
                       "target_fatal": result["target_fatal"],
                       "guard_outcomes": sorted(run_outcomes),
@@ -57,6 +66,7 @@ def main() -> None:
                       "closure_branch_outcomes": result.get(
                           "closure_branch_outcomes", 0),
                       "feedback": feedback,
+                      "workload_returncode": result["workload"]["returncode"],
                       "checker_returncode": (None if result["checker"] is None
                                              else result["checker"]["returncode"])}
             if result["run_id"].startswith("seed-"):
@@ -74,6 +84,10 @@ def main() -> None:
                 - (set(seed["guard_outcomes"]) if seed else set())),
             "seed": seed, "fault_trials": faults,
             "matched_fault_trials": sum(r["matched"] for r in faults),
+            "matched_actions": sum(r["matched_actions"] for r in faults),
+            "partially_injected_fault_trials": sum(
+                r["matched_actions"] > 0 and not r["matched"]
+                for r in faults),
             "new_global_blocks_in_matched_faults": sum(
                 r["feedback"].get("new_global_blocks", 0)
                 for r in faults if r["matched"]),
@@ -85,6 +99,12 @@ def main() -> None:
                 for r in faults if r["matched"]),
             "target_fatal_in_faults": any(
                 r["target_fatal"] for r in faults if r["matched"]),
+            "checker_failures_in_matched_faults": sum(
+                r["checker_returncode"] not in (0, None)
+                for r in faults if r["matched"]),
+            "checker_missing_in_matched_faults": sum(
+                r["checker_returncode"] is None
+                for r in faults if r["matched"]),
         })
     result = {"sample_size": 10, "rows": rows}
     path = HERE / "coverage10.json"

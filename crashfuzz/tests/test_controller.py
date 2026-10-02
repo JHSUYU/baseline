@@ -28,6 +28,20 @@ def point_event(context, seq):
 
 
 class ControllerTests(unittest.TestCase):
+    def test_freeze_prevents_late_faults(self):
+        with tempfile.TemporaryDirectory() as temp:
+            backend = FakeBackend()
+            action = FaultAction("CRASH", PointKey(
+                "hm1", "rpc#ENTRY", "root/request#1", 1), "hm1")
+            controller = FaultController(FaultSequence((action,)), backend,
+                                         Path(temp) / "late.jsonl")
+            self.assertFalse(controller.freeze())
+            self.assertEqual("CONTINUE", controller.on_event(
+                point_event("root/request#1", 1)))
+            self.assertFalse(controller.complete)
+            self.assertEqual([], backend.killed)
+            self.assertEqual([], controller.points)
+
     def test_site_occurrence_replays_when_rpc_context_shifts(self):
         with tempfile.TemporaryDirectory() as temp:
             backend = FakeBackend()

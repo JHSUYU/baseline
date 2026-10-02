@@ -32,9 +32,14 @@ def main() -> None:
     parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--runs-per-target", type=int, default=4)
+    parser.add_argument("--max-site-occurrence", type=int, default=0)
+    parser.add_argument("--output-name", default="out_coverage10")
     args = parser.parse_args()
     if not (1 <= args.start <= 10 and 1 <= args.limit <= 10
-            and args.start + args.limit <= 11 and args.runs_per_target >= 2):
+            and args.start + args.limit <= 11 and args.runs_per_target >= 2
+            and args.max_site_occurrence >= 0
+            and not Path(args.output_name).is_absolute()
+            and Path(args.output_name).name == args.output_name):
         raise ValueError("select draws 1..10 and at least two runs per target")
     os.environ["ADHOCFUZZ_ENABLE_ASSERTIONS"] = "1"
     os.environ["ADHOCFUZZ_HDFS_SITE_EXTRAS"] = json.dumps({
@@ -43,7 +48,7 @@ def main() -> None:
     })
     selection_bytes = (HERE / "mapped10.json").read_bytes()
     sites = json.loads(selection_bytes)["sites"]
-    root = HERE / "out_coverage10"
+    root = HERE / args.output_name
     root.mkdir(exist_ok=True)
     configs = root / "configs"
     configs.mkdir(exist_ok=True)
@@ -76,12 +81,14 @@ def main() -> None:
                            output_dir=directory,
                            max_runs=args.runs_per_target,
                            random_seed=20261001 + draw,
+                           max_site_occurrence=args.max_site_occurrence,
                            allow_unreached_seed=True)
         progress["targets"][name] = {
             "status": "running", "site_id": site["site_id"],
             "target_guard": guard,
             "target_throw": site["compiled_target_throw"],
             "campaign": CAMPAIGN.get(draw, "campaign.json"),
+            "max_site_occurrence": args.max_site_occurrence,
         }
         save(progress_path, progress)
         print(name, "starting", guard, flush=True)
@@ -98,7 +105,7 @@ def main() -> None:
             "error": error[-3000:],
         })
         save(progress_path, progress)
-        print(name, status, "trials", len(trials), "matched",
+        print(name, status, "trials", len(trials), "matched actions",
               sum(row["matched_actions"] for row in trials), flush=True)
 
 

@@ -132,16 +132,23 @@ class Campaign:
                 raise RuntimeError("cluster prepare failed in {}: {}".format(
                     run_id, prepared.stderr or prepared.stdout))
             workload = self.settings.backend.run_workload(run_dir)
+            triggered_at_workload_end = controller.freeze()
+            workload_end_wall_ms = int(time.time() * 1000)
             checker = (self.settings.backend.check(run_dir)
-                       if controller.complete and not workload.timed_out
+                       if triggered_at_workload_end and not workload.timed_out
                        else None)
         duration_s = time.monotonic() - started
-        events = read_events(run_dir / "traces")
+        # JVM trace files may receive checker and later daemon events before
+        # analysis. Only the workload prefix contributes search feedback.
+        events = [event for event in read_events(run_dir / "traces")
+                  if not event.wall_ms or event.wall_ms
+                  <= workload_end_wall_ms]
         graph = build_graph(events)
         closure = target_closure(graph, self.settings.target,
                                  self.settings.roles)
         trial = Trial(run_id, sequence, tuple(controller.points),
-                      controller.last_injected_order, controller.complete,
+                      controller.last_injected_order,
+                      triggered_at_workload_end,
                       closure, graph, workload, checker, duration_s,
                       controller.error)
         result = {
@@ -164,6 +171,7 @@ class Campaign:
             "graph_gaps": graph.gaps[:200],
             "workload": _command(workload), "checker": _command(checker),
             "duration_s": duration_s, "controller_error": controller.error,
+            "workload_end_wall_ms": workload_end_wall_ms,
         }
         with (run_dir / "result.json").open("w", encoding="utf-8") as out:
             json.dump(result, out, indent=2, sort_keys=True)

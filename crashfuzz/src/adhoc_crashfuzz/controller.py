@@ -30,6 +30,7 @@ class FaultController:
         self.match_modes = {}  # arrival order -> exact or site_occurrence
         self.error = ""
         self._next = 0
+        self._frozen = False
         self._epochs = {}
         self._site_counts = {}
         self._lock = threading.Lock()
@@ -43,6 +44,12 @@ class FaultController:
     def last_injected_order(self) -> int:
         return self.injected[-1][1] if self.injected else -1
 
+    def freeze(self) -> bool:
+        """End fault injection at the workload boundary, before checkers run."""
+        with self._lock:
+            self._frozen = True
+            return self.complete
+
     def on_event(self, row: dict) -> str:
         try:
             event = Event.from_dict(row)
@@ -50,6 +57,8 @@ class FaultController:
         except (KeyError, TypeError, ValueError) as invalid:
             return "ERROR invalid fault-point event: " + str(invalid)
         with self._lock:
+            if self._frozen:
+                return "CONTINUE"
             if self.error:
                 return "ERROR " + self.error
             order = len(self.points)
