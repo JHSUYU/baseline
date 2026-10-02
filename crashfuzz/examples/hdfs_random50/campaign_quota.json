@@ -1,0 +1,69 @@
+{
+  "target": {
+    "site": "discovery#TARGET"
+  },
+  "output_dir": "out_quota",
+  "controller": {
+    "bind": "0.0.0.0",
+    "advertise": "host.docker.internal",
+    "port": 0
+  },
+  "roles": {
+    "nn": "namenode",
+    "dn1": "datanode",
+    "dn2": "datanode",
+    "dn3": "datanode",
+    "client": "client"
+  },
+  "node_groups": [
+    {
+      "members": [
+        "nn"
+      ],
+      "max_down": 0
+    },
+    {
+      "members": [
+        "dn1",
+        "dn2",
+        "dn3"
+      ],
+      "max_down": 1
+    }
+  ],
+  "docker": {
+    "command": [
+      "sudo",
+      "-n",
+      "docker"
+    ],
+    "containers": {
+      "nn": "adhocfuzz-hdfs-key-nn",
+      "dn1": "adhocfuzz-hdfs-key-dn1",
+      "dn2": "adhocfuzz-hdfs-key-dn2",
+      "dn3": "adhocfuzz-hdfs-key-dn3"
+    },
+    "prepare": [
+      "python3",
+      "../hdfs_key/prepare.py"
+    ],
+    "workload": [
+      "python3",
+      "workload_quota.py"
+    ],
+    "checker": [
+      "python3",
+      "../hdfs_random10/checker.py"
+    ],
+    "workload_timeout_s": 480,
+    "command_timeout_s": 300
+  },
+  "search": {
+    "max_runs": 4,
+    "max_faults": 2,
+    "max_candidates_per_run": 100,
+    "exploration_probability": 0.2,
+    "replay_count": 2,
+    "random_seed": 20261001
+  }
+}

@@ -1,0 +1,613 @@
+{
+  "mapping": {
+    "old_yes": 225,
+    "new_yes": 203,
+    "ambiguous_groups": 0,
+    "paired_explicit_sites": 168
+  },
+  "coverage": {
+    "method_entries": 53,
+    "covered_candidates": 37,
+    "selected": 20,
+    "trace_dir": "/users/ZhenyuLi/baseline/crashfuzz/examples/hbase_300/out_discovery/runs/discovery-00001/traces"
+  },
+  "sites": [
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.master.janitor.ReportMakingVisitor: org.apache.hadoop.hbase.master.janitor.CatalogJanitorReport getReport()>#u5",
+      "old_line": 81,
+      "site_id": "<org.apache.hadoop.hbase.master.janitor.ReportMakingVisitor: org.apache.hadoop.hbase.master.janitor.CatalogJanitorReport getReport()>#u5",
+      "line": 82,
+      "class": "org.apache.hadoop.hbase.master.janitor.ReportMakingVisitor",
+      "method": "<org.apache.hadoop.hbase.master.janitor.ReportMakingVisitor: org.apache.hadoop.hbase.master.janitor.CatalogJanitorReport getReport()>",
+      "agent_method": "org/apache/hadoop/hbase/master/janitor/ReportMakingVisitor#getReport()Lorg/apache/hadoop/hbase/master/janitor/CatalogJanitorReport;",
+      "target_site": "org/apache/hadoop/hbase/master/janitor/ReportMakingVisitor#getReport()Lorg/apache/hadoop/hbase/master/janitor/CatalogJanitorReport;#L82",
+      "site_kind": "throw",
+      "exception": "java.lang.RuntimeException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.master.janitor.ReportMakingVisitor: boolean closed>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/master/janitor/ReportMakingVisitor#close()V"
+      ],
+      "seed_nodes": [
+        "hm1"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.master.HMaster: void checkInitialized()>#u6",
+      "old_line": 3335,
+      "site_id": "<org.apache.hadoop.hbase.master.HMaster: void checkInitialized()>#u6",
+      "line": 3401,
+      "class": "org.apache.hadoop.hbase.master.HMaster",
+      "method": "<org.apache.hadoop.hbase.master.HMaster: void checkInitialized()>",
+      "agent_method": "org/apache/hadoop/hbase/master/HMaster#checkInitialized()V",
+      "target_site": "org/apache/hadoop/hbase/master/HMaster#checkInitialized()V#L3401",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.PleaseHoldException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.master.HMaster: org.apache.hadoop.hbase.procedure2.ProcedureEvent initialized>",
+        "<org.apache.hadoop.hbase.procedure2.ProcedureEvent: boolean ready>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/procedure2/ProcedureEvent#suspend()V"
+      ],
+      "seed_nodes": [
+        "hm1"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.master.HMaster: void checkInitialized()>#u11",
+      "old_line": 3338,
+      "site_id": "<org.apache.hadoop.hbase.master.HMaster: void checkInitialized()>#u11",
+      "line": 3404,
+      "class": "org.apache.hadoop.hbase.master.HMaster",
+      "method": "<org.apache.hadoop.hbase.master.HMaster: void checkInitialized()>",
+      "agent_method": "org/apache/hadoop/hbase/master/HMaster#checkInitialized()V",
+      "target_site": "org/apache/hadoop/hbase/master/HMaster#checkInitialized()V#L3404",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.exceptions.MasterStoppedException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.master.HMaster: org.apache.hadoop.hbase.procedure2.ProcedureEvent initialized>",
+        "<org.apache.hadoop.hbase.procedure2.ProcedureEvent: boolean ready>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/procedure2/ProcedureEvent#suspend()V"
+      ],
+      "seed_nodes": [
+        "hm1"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.master.MasterRpcServices: void throwOnOldMaster(long,long)>#u21",
+      "old_line": 2592,
+      "site_id": "<org.apache.hadoop.hbase.master.MasterRpcServices: void throwOnOldMaster(long,long)>#u23",
+      "line": 2624,
+      "class": "org.apache.hadoop.hbase.master.MasterRpcServices",
+      "method": "<org.apache.hadoop.hbase.master.MasterRpcServices: void throwOnOldMaster(long,long)>",
+      "agent_method": "org/apache/hadoop/hbase/master/MasterRpcServices#throwOnOldMaster(JJ)V",
+      "target_site": "org/apache/hadoop/hbase/master/MasterRpcServices#throwOnOldMaster(JJ)V#L2624",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.MasterNotRunningException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.HBaseRpcServicesBase: org.apache.hadoop.hbase.HBaseServerBase server>",
+        "<org.apache.hadoop.hbase.master.HMaster: long masterActiveTime>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/util/IncrementingEnvironmentEdge#currentTime()J"
+      ],
+      "seed_nodes": [
+        "hm1"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkReadsEnabled()>#u13",
+      "old_line": 5144,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkReadsEnabled()>#u9",
+      "line": 5397,
+      "class": "org.apache.hadoop.hbase.regionserver.HRegion",
+      "method": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkReadsEnabled()>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/HRegion#checkReadsEnabled()V",
+      "target_site": "org/apache/hadoop/hbase/regionserver/HRegion#checkReadsEnabled()V#L5397",
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.regionserver.HRegion$WriteState: boolean readsEnabled>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: org.apache.hadoop.hbase.regionserver.HRegion$WriteState writestate>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/HRegion$WriteState#setReadsEnabled(Z)V"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.MultiVersionConcurrencyControl: boolean tryAdvanceTo(long,long)>#u21",
+      "old_line": 102,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.MultiVersionConcurrencyControl: boolean tryAdvanceTo(long,long)>#u14",
+      "line": 103,
+      "class": "org.apache.hadoop.hbase.regionserver.MultiVersionConcurrencyControl",
+      "method": "<org.apache.hadoop.hbase.regionserver.MultiVersionConcurrencyControl: boolean tryAdvanceTo(long,long)>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/MultiVersionConcurrencyControl#tryAdvanceTo(JJ)Z",
+      "target_site": "org/apache/hadoop/hbase/regionserver/MultiVersionConcurrencyControl#tryAdvanceTo(JJ)Z#L103",
+      "site_kind": "throw",
+      "exception": "java.lang.RuntimeException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.regionserver.MultiVersionConcurrencyControl: java.util.concurrent.atomic.AtomicLong readPoint>",
+        "<org.apache.hadoop.hbase.regionserver.MultiVersionConcurrencyControl: java.util.concurrent.atomic.AtomicLong writePoint>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/MultiVersionConcurrencyControl#complete(Lorg/apache/hadoop/hbase/regionserver/MultiVersionConcurrencyControl$WriteEntry;)Z"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.master.procedure.ProcedurePrepareLatch$CompatibilityLatch: void await()>#u13",
+      "old_line": 118,
+      "site_id": "<org.apache.hadoop.hbase.master.procedure.ProcedurePrepareLatch$CompatibilityLatch: void await()>#u13",
+      "line": 120,
+      "class": "org.apache.hadoop.hbase.master.procedure.ProcedurePrepareLatch$CompatibilityLatch",
+      "method": "<org.apache.hadoop.hbase.master.procedure.ProcedurePrepareLatch$CompatibilityLatch: void await()>",
+      "agent_method": "org/apache/hadoop/hbase/master/procedure/ProcedurePrepareLatch$CompatibilityLatch#await()V",
+      "target_site": "org/apache/hadoop/hbase/master/procedure/ProcedurePrepareLatch$CompatibilityLatch#await()V#L120",
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "evidence_total": 1,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.master.procedure.ProcedurePrepareLatch$CompatibilityLatch: java.io.IOException exception>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/procedure2/Procedure#setFailure(Lorg/apache/hadoop/hbase/procedure2/RemoteProcedureException;)V"
+      ],
+      "seed_nodes": [
+        "hm1"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],int)>#u62",
+      "old_line": 514,
+      "site_id": "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],int)>#u44",
+      "line": 447,
+      "class": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper",
+      "method": "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],int)>",
+      "agent_method": "org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper#setData(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;",
+      "target_site": "org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper#setData(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;#L447",
+      "site_kind": "throw",
+      "exception": "org.apache.zookeeper.KeeperException",
+      "evidence_total": 1,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.util.Bytes$LexicographicalComparerHolder: org.apache.hadoop.hbase.util.Bytes$Comparer BEST_COMPARER>",
+        "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper$1: int[] $SwitchMap$org$apache$zookeeper$KeeperException$Code>",
+        "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: org.apache.zookeeper.ZooKeeper zk>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper#reconnectAfterExpiration()V"
+      ],
+      "seed_nodes": [
+        "hm1"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: java.lang.String createNonSequential(java.lang.String,byte[],java.util.List,org.apache.zookeeper.CreateMode)>#u38",
+      "old_line": 656,
+      "site_id": "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: java.lang.String createNonSequential(java.lang.String,byte[],java.util.List,org.apache.zookeeper.CreateMode)>#u29",
+      "line": 582,
+      "class": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper",
+      "method": "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: java.lang.String createNonSequential(java.lang.String,byte[],java.util.List,org.apache.zookeeper.CreateMode)>",
+      "agent_method": "org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper#createNonSequential(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;",
+      "target_site": "org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper#createNonSequential(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;#L582",
+      "site_kind": "throw",
+      "exception": "org.apache.zookeeper.KeeperException",
+      "evidence_total": 1,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.util.Bytes$LexicographicalComparerHolder: org.apache.hadoop.hbase.util.Bytes$Comparer BEST_COMPARER>",
+        "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper$1: int[] $SwitchMap$org$apache$zookeeper$KeeperException$Code>",
+        "<org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper: org.apache.zookeeper.ZooKeeper zk>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper#reconnectAfterExpiration()V"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "hm2",
+        "rs1",
+        "rs2",
+        "rs3"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.Map doClose(boolean,org.apache.hadoop.hbase.monitoring.MonitoredTask)>#u199",
+      "old_line": 1781,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.Map doClose(boolean,org.apache.hadoop.hbase.monitoring.MonitoredTask)>#u177",
+      "line": 1834,
+      "class": "org.apache.hadoop.hbase.regionserver.HRegion",
+      "method": "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.Map doClose(boolean,org.apache.hadoop.hbase.monitoring.MonitoredTask)>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/HRegion#doClose(ZLorg/apache/hadoop/hbase/monitoring/MonitoredTask;)Ljava/util/Map;",
+      "target_site": "org/apache/hadoop/hbase/regionserver/HRegion#doClose(ZLorg/apache/hadoop/hbase/monitoring/MonitoredTask;)Ljava/util/Map;#L1834",
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "evidence_total": 1,
+      "truncated": true,
+      "read_fields": [
+        "<java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>",
+        "<org.apache.hadoop.hbase.coprocessor.ReadOnlyConfiguration: org.apache.hadoop.conf.Configuration conf>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.lang.Long timeoutForWriteLock>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.atomic.AtomicBoolean closed>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.locks.ReentrantReadWriteLock lock>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: org.apache.hadoop.conf.Configuration conf>",
+        "<org.apache.hadoop.hbase.util.EnvironmentEdgeManager: org.apache.hadoop.hbase.util.EnvironmentEdge delegate>",
+        "<org.apache.hadoop.hbase.util.IncrementingEnvironmentEdge: long timeIncrement>",
+        "<org.apache.hadoop.hbase.util.ManualEnvironmentEdge: long value>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/HRegion#doClose(ZLorg/apache/hadoop/hbase/monitoring/MonitoredTask;)Ljava/util/Map;"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.Map doClose(boolean,org.apache.hadoop.hbase.monitoring.MonitoredTask)>#u276",
+      "old_line": 1826,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.Map doClose(boolean,org.apache.hadoop.hbase.monitoring.MonitoredTask)>#u234",
+      "line": 1879,
+      "class": "org.apache.hadoop.hbase.regionserver.HRegion",
+      "method": "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.Map doClose(boolean,org.apache.hadoop.hbase.monitoring.MonitoredTask)>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/HRegion#doClose(ZLorg/apache/hadoop/hbase/monitoring/MonitoredTask;)Ljava/util/Map;",
+      "target_site": "org/apache/hadoop/hbase/regionserver/HRegion#doClose(ZLorg/apache/hadoop/hbase/monitoring/MonitoredTask;)Ljava/util/Map;#L1879",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.DroppedSnapshotException",
+      "evidence_total": 1,
+      "truncated": true,
+      "read_fields": [
+        "<java.util.concurrent.TimeUnit: java.util.concurrent.TimeUnit MILLISECONDS>",
+        "<org.apache.hadoop.hbase.coprocessor.ReadOnlyConfiguration: org.apache.hadoop.conf.Configuration conf>",
+        "<org.apache.hadoop.hbase.regionserver.CompositeImmutableSegment: long keySize>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.lang.Long timeoutForWriteLock>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.atomic.AtomicBoolean closed>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.locks.ReentrantReadWriteLock lock>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: org.apache.hadoop.conf.Configuration conf>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: org.apache.hadoop.hbase.regionserver.MemStoreSizing memStoreSizing>",
+        "<org.apache.hadoop.hbase.regionserver.MemStoreSize: long dataSize>",
+        "<org.apache.hadoop.hbase.regionserver.MemStoreSizing$1: org.apache.hadoop.hbase.regionserver.MemStoreSize mss>",
+        "<org.apache.hadoop.hbase.regionserver.NonThreadSafeMemStoreSizing: long dataSize>",
+        "<org.apache.hadoop.hbase.regionserver.Segment: org.apache.hadoop.hbase.regionserver.MemStoreSizing memStoreSizing>",
+        "<org.apache.hadoop.hbase.regionserver.ThreadSafeMemStoreSizing: java.util.concurrent.atomic.AtomicLong dataSize>",
+        "<org.apache.hadoop.hbase.util.EnvironmentEdgeManager: org.apache.hadoop.hbase.util.EnvironmentEdge delegate>",
+        "<org.apache.hadoop.hbase.util.IncrementingEnvironmentEdge: long timeIncrement>",
+        "<org.apache.hadoop.hbase.util.ManualEnvironmentEdge: long value>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/HRegion#doClose(ZLorg/apache/hadoop/hbase/monitoring/MonitoredTask;)Ljava/util/Map;"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkInterrupt()>#u15",
+      "old_line": 8504,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkInterrupt()>#u11",
+      "line": 8805,
+      "class": "org.apache.hadoop.hbase.regionserver.HRegion",
+      "method": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkInterrupt()>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/HRegion#checkInterrupt()V",
+      "target_site": "org/apache/hadoop/hbase/regionserver/HRegion#checkInterrupt()V#L8805",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.NotServingRegionException",
+      "evidence_total": 3,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.atomic.AtomicBoolean closing>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/NonThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/regionserver/ThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/util/IncrementingEnvironmentEdge#currentTime()J"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkInterrupt()>#u18",
+      "old_line": 8506,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkInterrupt()>#u14",
+      "line": 8807,
+      "class": "org.apache.hadoop.hbase.regionserver.HRegion",
+      "method": "<org.apache.hadoop.hbase.regionserver.HRegion: void checkInterrupt()>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/HRegion#checkInterrupt()V",
+      "target_site": "org/apache/hadoop/hbase/regionserver/HRegion#checkInterrupt()V#L8807",
+      "site_kind": "throw",
+      "exception": "java.io.InterruptedIOException",
+      "evidence_total": 3,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.atomic.AtomicBoolean closing>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/NonThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/regionserver/ThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/util/IncrementingEnvironmentEdge#currentTime()J"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void startRegionOperation(org.apache.hadoop.hbase.regionserver.Region$Operation)>#u39",
+      "old_line": 8221,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void startRegionOperation(org.apache.hadoop.hbase.regionserver.Region$Operation)>#u35",
+      "line": 8522,
+      "class": "org.apache.hadoop.hbase.regionserver.HRegion",
+      "method": "<org.apache.hadoop.hbase.regionserver.HRegion: void startRegionOperation(org.apache.hadoop.hbase.regionserver.Region$Operation)>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/HRegion#startRegionOperation(Lorg/apache/hadoop/hbase/regionserver/Region$Operation;)V",
+      "target_site": "org/apache/hadoop/hbase/regionserver/HRegion#startRegionOperation(Lorg/apache/hadoop/hbase/regionserver/Region$Operation;)V#L8522",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.NotServingRegionException",
+      "evidence_total": 3,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.atomic.AtomicBoolean closing>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation COMPACT_REGION>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation COMPACT_SWITCH>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation MERGE_REGION>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation SPLIT_REGION>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/NonThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/regionserver/ThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/util/IncrementingEnvironmentEdge#currentTime()J"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void startRegionOperation(org.apache.hadoop.hbase.regionserver.Region$Operation)>#u63",
+      "old_line": 8232,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.HRegion: void startRegionOperation(org.apache.hadoop.hbase.regionserver.Region$Operation)>#u55",
+      "line": 8533,
+      "class": "org.apache.hadoop.hbase.regionserver.HRegion",
+      "method": "<org.apache.hadoop.hbase.regionserver.HRegion: void startRegionOperation(org.apache.hadoop.hbase.regionserver.Region$Operation)>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/HRegion#startRegionOperation(Lorg/apache/hadoop/hbase/regionserver/Region$Operation;)V",
+      "target_site": "org/apache/hadoop/hbase/regionserver/HRegion#startRegionOperation(Lorg/apache/hadoop/hbase/regionserver/Region$Operation;)V#L8533",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.NotServingRegionException",
+      "evidence_total": 3,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.atomic.AtomicBoolean closed>",
+        "<org.apache.hadoop.hbase.regionserver.HRegion: java.util.concurrent.atomic.AtomicBoolean closing>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation COMPACT_REGION>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation COMPACT_SWITCH>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation MERGE_REGION>",
+        "<org.apache.hadoop.hbase.regionserver.Region$Operation: org.apache.hadoop.hbase.regionserver.Region$Operation SPLIT_REGION>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/regionserver/NonThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/regionserver/ThreadSafeMemStoreSizing#incMemStoreSize(JJJI)J",
+        "org/apache/hadoop/hbase/util/IncrementingEnvironmentEdge#currentTime()J"
+      ],
+      "seed_nodes": [
+        "hm1",
+        "rs1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.regionserver.RSRpcServices: void checkOpen()>#u48",
+      "old_line": 1578,
+      "site_id": "<org.apache.hadoop.hbase.regionserver.RSRpcServices: void checkOpen()>#u43",
+      "line": 1476,
+      "class": "org.apache.hadoop.hbase.regionserver.RSRpcServices",
+      "method": "<org.apache.hadoop.hbase.regionserver.RSRpcServices: void checkOpen()>",
+      "agent_method": "org/apache/hadoop/hbase/regionserver/RSRpcServices#checkOpen()V",
+      "target_site": "org/apache/hadoop/hbase/regionserver/RSRpcServices#checkOpen()V#L1476",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.ipc.ServerNotRunningYetException",
+      "evidence_total": 9,
+      "truncated": true,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.HBaseRpcServicesBase: org.apache.hadoop.hbase.HBaseServerBase server>",
+        "<org.apache.hadoop.hbase.regionserver.HRegionServer: boolean dataFsOk>",
+        "<org.apache.hadoop.hbase.regionserver.HRegionServer: java.util.concurrent.atomic.AtomicBoolean online>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/util/SortedList#add(Ljava/lang/Object;)Z",
+        "org/apache/hadoop/hbase/util/SortedList#addAll(ILjava/util/Collection;)Z",
+        "org/apache/hadoop/hbase/util/SortedList#addAll(Ljava/util/Collection;)Z"
+      ],
+      "seed_nodes": [
+        "rs1",
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.client.AsyncTableResultScanner: org.apache.hadoop.hbase.client.Result next()>#u11",
+      "old_line": 173,
+      "site_id": "<org.apache.hadoop.hbase.client.AsyncTableResultScanner: org.apache.hadoop.hbase.client.Result next()>#u11",
+      "line": 173,
+      "class": "org.apache.hadoop.hbase.client.AsyncTableResultScanner",
+      "method": "<org.apache.hadoop.hbase.client.AsyncTableResultScanner: org.apache.hadoop.hbase.client.Result next()>",
+      "agent_method": "org/apache/hadoop/hbase/client/AsyncTableResultScanner#next()Lorg/apache/hadoop/hbase/client/Result;",
+      "target_site": "org/apache/hadoop/hbase/client/AsyncTableResultScanner#next()Lorg/apache/hadoop/hbase/client/Result;#L173",
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.client.AsyncTableResultScanner: boolean closed>",
+        "<org.apache.hadoop.hbase.client.AsyncTableResultScanner: java.lang.Throwable error>",
+        "<org.apache.hadoop.hbase.client.AsyncTableResultScanner: java.util.Queue queue>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/client/AsyncTableResultScanner#next()Lorg/apache/hadoop/hbase/client/Result;"
+      ],
+      "seed_nodes": [
+        "hm1"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.io.hfile.HFileReaderImpl: java.util.Optional getFirstKey()>#u6",
+      "old_line": 196,
+      "site_id": "<org.apache.hadoop.hbase.io.hfile.HFileReaderImpl: java.util.Optional getFirstKey()>#u6",
+      "line": 210,
+      "class": "org.apache.hadoop.hbase.io.hfile.HFileReaderImpl",
+      "method": "<org.apache.hadoop.hbase.io.hfile.HFileReaderImpl: java.util.Optional getFirstKey()>",
+      "agent_method": "org/apache/hadoop/hbase/io/hfile/HFileReaderImpl#getFirstKey()Ljava/util/Optional;",
+      "target_site": "org/apache/hadoop/hbase/io/hfile/HFileReaderImpl#getFirstKey()Ljava/util/Optional;#L210",
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hbase.io.hfile.HFileReaderImpl$BlockIndexNotLoadedException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.io.hfile.HFileReaderImpl: org.apache.hadoop.hbase.io.hfile.HFileBlockIndex$CellBasedKeyBlockIndexReader dataBlockIndexReader>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/io/hfile/HFileReaderImpl#setDataBlockIndexReader(Lorg/apache/hadoop/hbase/io/hfile/HFileBlockIndex$CellBasedKeyBlockIndexReader;)V"
+      ],
+      "seed_nodes": [
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.io.hfile.HFileBlock$Writer: void writeHeaderAndData(org.apache.hadoop.fs.FSDataOutputStream)>#u24",
+      "old_line": 1032,
+      "site_id": "<org.apache.hadoop.hbase.io.hfile.HFileBlock$Writer: void writeHeaderAndData(org.apache.hadoop.fs.FSDataOutputStream)>#u17",
+      "line": 1032,
+      "class": "org.apache.hadoop.hbase.io.hfile.HFileBlock$Writer",
+      "method": "<org.apache.hadoop.hbase.io.hfile.HFileBlock$Writer: void writeHeaderAndData(org.apache.hadoop.fs.FSDataOutputStream)>",
+      "agent_method": "org/apache/hadoop/hbase/io/hfile/HFileBlock$Writer#writeHeaderAndData(Lorg/apache/hadoop/fs/FSDataOutputStream;)V",
+      "target_site": "org/apache/hadoop/hbase/io/hfile/HFileBlock$Writer#writeHeaderAndData(Lorg/apache/hadoop/fs/FSDataOutputStream;)V#L1032",
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "evidence_total": 1,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.io.hfile.HFileBlock$Writer: long startOffset>",
+        "<org.apache.hadoop.hbase.io.hfile.HFileBlock: int UNSET>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/io/hfile/HFileBlock$Writer#writeHeaderAndData(Lorg/apache/hadoop/fs/FSDataOutputStream;)V"
+      ],
+      "seed_nodes": [
+        "rs2"
+      ]
+    },
+    {
+      "old_site_id": "<org.apache.hadoop.hbase.io.hfile.CompoundBloomFilterWriter: void allocateNewChunk()>#u29",
+      "old_line": 196,
+      "site_id": "<org.apache.hadoop.hbase.io.hfile.CompoundBloomFilterWriter: void allocateNewChunk()>#u24",
+      "line": 198,
+      "class": "org.apache.hadoop.hbase.io.hfile.CompoundBloomFilterWriter",
+      "method": "<org.apache.hadoop.hbase.io.hfile.CompoundBloomFilterWriter: void allocateNewChunk()>",
+      "agent_method": "org/apache/hadoop/hbase/io/hfile/CompoundBloomFilterWriter#allocateNewChunk()V",
+      "target_site": "org/apache/hadoop/hbase/io/hfile/CompoundBloomFilterWriter#allocateNewChunk()V#L198",
+      "site_kind": "throw",
+      "exception": "java.lang.IllegalStateException",
+      "evidence_total": 3,
+      "truncated": false,
+      "read_fields": [
+        "<org.apache.hadoop.hbase.io.hfile.CompoundBloomFilterWriter: org.apache.hadoop.hbase.util.BloomFilterChunk chunk>",
+        "<org.apache.hadoop.hbase.util.BloomFilterChunk: int keyCount>"
+      ],
+      "evidence_kinds": [
+        "cross_event_writer"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hbase/io/hfile/CompoundBloomFilterWriter#enqueueReadyChunk(Z)V",
+        "org/apache/hadoop/hbase/util/BloomFilterChunk#setHashLoc(II)V"
+      ],
+      "seed_nodes": [
+        "rs2"
+      ]
+    }
+  ]
+}

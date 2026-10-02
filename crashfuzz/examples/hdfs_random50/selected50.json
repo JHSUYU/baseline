@@ -1,0 +1,1202 @@
+{
+  "system": "hdfs",
+  "version": "3.4.3",
+  "source": "/users/ZhenyuLi/GraphChecker/tools/coordination_classifier/out/hdfs.decisions.jsonl",
+  "source_sha256": "b0134a05446383c7e3435aeab24f06e281ad33b8b0cbafddf80342111196d400",
+  "population": 532,
+  "seed": 20261001,
+  "sampling": "first 10: Random(seed).sample(YES, 10); next 40: same RNG.sample(remaining YES, 40)",
+  "sites": [
+    {
+      "draw": 1,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry: void registerSlot(org.apache.hadoop.hdfs.ExtendedBlockId,org.apache.hadoop.hdfs.shortcircuit.ShortCircuitShm$SlotId,boolean)>#u18",
+      "class": "org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry: void registerSlot(org.apache.hadoop.hdfs.ExtendedBlockId,org.apache.hadoop.hdfs.shortcircuit.ShortCircuitShm$SlotId,boolean)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry#registerSlot(Lorg/apache/hadoop/hdfs/ExtendedBlockId;Lorg/apache/hadoop/hdfs/shortcircuit/ShortCircuitShm$SlotId;Z)V",
+      "line": 347,
+      "site_kind": "throw",
+      "exception": "java.lang.UnsupportedOperationException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry#registerSlot(Lorg/apache/hadoop/hdfs/ExtendedBlockId;Lorg/apache/hadoop/hdfs/shortcircuit/ShortCircuitShm$SlotId;Z)V#L347",
+      "truncated": false,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry: boolean enabled>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry#shutdown()V"
+      ]
+    },
+    {
+      "draw": 2,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService: void addVolume(org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsVolumeImpl)>#u7",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService: void addVolume(org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsVolumeImpl)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#addVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)V",
+      "line": 109,
+      "site_kind": "throw",
+      "exception": "java.lang.RuntimeException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#addVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)V#L109",
+      "truncated": false,
+      "evidence_total": 2,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService: java.util.Map executors>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#removeVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)V",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#shutdown()V"
+      ]
+    },
+    {
+      "draw": 3,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirAclOp: void unprotectedRemoveAcl(org.apache.hadoop.hdfs.server.namenode.FSDirectory,org.apache.hadoop.hdfs.server.namenode.INodesInPath)>#u49",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSDirAclOp",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSDirAclOp: void unprotectedRemoveAcl(org.apache.hadoop.hdfs.server.namenode.FSDirectory,org.apache.hadoop.hdfs.server.namenode.INodesInPath)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSDirAclOp#unprotectedRemoveAcl(Lorg/apache/hadoop/hdfs/server/namenode/FSDirectory;Lorg/apache/hadoop/hdfs/server/namenode/INodesInPath;)V",
+      "line": 232,
+      "site_kind": "throw",
+      "exception": "java.lang.IndexOutOfBoundsException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSDirAclOp#unprotectedRemoveAcl(Lorg/apache/hadoop/hdfs/server/namenode/FSDirectory;Lorg/apache/hadoop/hdfs/server/namenode/INodesInPath;)V#L232",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.fs.permission.AclEntryScope: org.apache.hadoop.fs.permission.AclEntryScope ACCESS>",
+        "<org.apache.hadoop.fs.permission.AclEntryType: org.apache.hadoop.fs.permission.AclEntryType GROUP>",
+        "<org.apache.hadoop.hdfs.server.namenode.AclTransformation: java.util.Comparator ACL_ENTRY_COMPARATOR>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSDirAclOp: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: org.apache.hadoop.hdfs.server.namenode.FSNamesystem namesystem>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.namenode.FSNamesystemLock fsLock>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystemLock: java.util.concurrent.locks.ReentrantReadWriteLock coarseLock>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeAttributes$SnapshotCopy: org.apache.hadoop.hdfs.server.namenode.AclFeature aclFeature>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference: org.apache.hadoop.hdfs.server.namenode.INode referred>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeWithAdditionalFields: org.apache.hadoop.hdfs.server.namenode.INode$Feature[] features>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodesInPath: org.apache.hadoop.hdfs.server.namenode.INode[] inodes>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff this$0>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff: int childrenSize>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeWithAdditionalFields#addFeature(Lorg/apache/hadoop/hdfs/server/namenode/INode$Feature;)V"
+      ]
+    },
+    {
+      "draw": 4,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSEditLog: void checkForGaps(java.util.List,long,long,boolean)>#u45",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSEditLog",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSEditLog: void checkForGaps(java.util.List,long,long,boolean)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSEditLog#checkForGaps(Ljava/util/List;JJZ)V",
+      "line": 1827,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSEditLog#checkForGaps(Ljava/util/List;JJZ)V#L1827",
+      "truncated": true,
+      "evidence_total": 7,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.EditLogFileInputStream: long firstTxId>",
+        "<org.apache.hadoop.hdfs.server.namenode.EditLogFileInputStream: long lastTxId>",
+        "<org.apache.hadoop.hdfs.server.namenode.RedundantEditLogInputStream: int curIdx>",
+        "<org.apache.hadoop.hdfs.server.namenode.RedundantEditLogInputStream: org.apache.hadoop.hdfs.server.namenode.EditLogInputStream[] streams>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: java.util.List children>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#addChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;I)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#removeChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;)Z",
+        "org/apache/hadoop/hdfs/server/namenode/RedundantEditLogInputStream#nextOp()Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp;"
+      ]
+    },
+    {
+      "draw": 5,
+      "site_id": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: void dumpBlockMeta(org.apache.hadoop.hdfs.protocol.Block,java.io.PrintWriter)>#u33",
+      "class": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager",
+      "method": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: void dumpBlockMeta(org.apache.hadoop.hdfs.protocol.Block,java.io.PrintWriter)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/blockmanagement/BlockManager#dumpBlockMeta(Lorg/apache/hadoop/hdfs/protocol/Block;Ljava/io/PrintWriter;)V",
+      "line": 976,
+      "site_kind": "assert",
+      "exception": "java.lang.AssertionError",
+      "target_throw": "org/apache/hadoop/hdfs/server/blockmanagement/BlockManager#dumpBlockMeta(Lorg/apache/hadoop/hdfs/protocol/Block;Ljava/io/PrintWriter;)V#L976",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap blocksMap>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap: org.apache.hadoop.util.GSet blocks>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.NumberReplicas$StoredReplicaState: org.apache.hadoop.hdfs.server.blockmanagement.NumberReplicas$StoredReplicaState LIVE>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff this$0>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff: int childrenSize>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlocksMap#close()V"
+      ]
+    },
+    {
+      "draw": 6,
+      "site_id": "<org.apache.hadoop.hdfs.server.blockmanagement.StorageTypeStats: void addStorage(org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo,org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor)>#u10",
+      "class": "org.apache.hadoop.hdfs.server.blockmanagement.StorageTypeStats",
+      "method": "<org.apache.hadoop.hdfs.server.blockmanagement.StorageTypeStats: void addStorage(org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo,org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/blockmanagement/StorageTypeStats#addStorage(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor;)V",
+      "line": 133,
+      "site_kind": "assert",
+      "exception": "java.lang.AssertionError",
+      "target_throw": "org/apache/hadoop/hdfs/server/blockmanagement/StorageTypeStats#addStorage(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor;)V#L133",
+      "truncated": false,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo: org.apache.hadoop.fs.StorageType storageType>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.StorageTypeStats: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.StorageTypeStats: org.apache.hadoop.fs.StorageType storageType>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo#updateFromStorage(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeStorage;)V"
+      ]
+    },
+    {
+      "draw": 7,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockSender: void <init>(org.apache.hadoop.hdfs.protocol.ExtendedBlock,long,long,boolean,boolean,boolean,org.apache.hadoop.hdfs.server.datanode.DataNode,java.lang.String,org.apache.hadoop.hdfs.server.datanode.CachingStrategy)>#u208",
+      "class": "org.apache.hadoop.hdfs.server.datanode.BlockSender",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.BlockSender: void <init>(org.apache.hadoop.hdfs.protocol.ExtendedBlock,long,long,boolean,boolean,boolean,org.apache.hadoop.hdfs.server.datanode.DataNode,java.lang.String,org.apache.hadoop.hdfs.server.datanode.CachingStrategy)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/BlockSender#<init>(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJZZZLorg/apache/hadoop/hdfs/server/datanode/DataNode;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V",
+      "line": 323,
+      "site_kind": "throw",
+      "exception": "java.io.FileNotFoundException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/BlockSender#<init>(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJZZZLorg/apache/hadoop/hdfs/server/datanode/DataNode;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V#L323",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.Block: long generationStamp>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: java.lang.String poolId>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: org.apache.hadoop.hdfs.protocol.Block block>",
+        "<org.apache.hadoop.hdfs.server.datanode.BlockSender: org.apache.hadoop.hdfs.server.datanode.Replica replica>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi data>",
+        "<org.apache.hadoop.hdfs.server.datanode.ReplicaInfo: org.apache.hadoop.hdfs.server.datanode.fsdataset.FsVolumeSpi volume>",
+        "<org.apache.hadoop.hdfs.server.datanode.ReplicaUnderRecovery: org.apache.hadoop.hdfs.server.datanode.LocalReplica original>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaMap volumeMap>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/DataNode#initStorage(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V"
+      ]
+    },
+    {
+      "draw": 8,
+      "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u20",
+      "class": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager",
+      "method": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>",
+      "agent_method": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B",
+      "line": 555,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException",
+      "target_throw": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B#L555",
+      "truncated": false,
+      "evidence_total": 6,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: java.util.Map allKeys>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#addKeys(Lorg/apache/hadoop/hdfs/security/token/block/ExportedBlockKeys;)V",
+        "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#generateKeys()V",
+        "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#updateKeys()Z"
+      ]
+    },
+    {
+      "draw": 9,
+      "site_id": "<org.apache.hadoop.hdfs.server.blockmanagement.CacheReplicationMonitor: void addNewPendingCached(int,org.apache.hadoop.hdfs.server.namenode.CachedBlock,java.util.List,java.util.List)>#u128",
+      "class": "org.apache.hadoop.hdfs.server.blockmanagement.CacheReplicationMonitor",
+      "method": "<org.apache.hadoop.hdfs.server.blockmanagement.CacheReplicationMonitor: void addNewPendingCached(int,org.apache.hadoop.hdfs.server.namenode.CachedBlock,java.util.List,java.util.List)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor#addNewPendingCached(ILorg/apache/hadoop/hdfs/server/namenode/CachedBlock;Ljava/util/List;Ljava/util/List;)V",
+      "line": 764,
+      "site_kind": "assert",
+      "exception": "java.lang.AssertionError",
+      "target_throw": "org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor#addNewPendingCached(ILorg/apache/hadoop/hdfs/server/namenode/CachedBlock;Ljava/util/List;Ljava/util/List;)V#L764",
+      "truncated": true,
+      "evidence_total": 12,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo: org.apache.hadoop.hdfs.server.blockmanagement.BlockUnderConstructionFeature uc>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap blocksMap>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager datanodeManager>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockUnderConstructionFeature: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState blockUCState>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap: org.apache.hadoop.util.GSet blocks>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.CacheReplicationMonitor: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.CacheReplicationMonitor: org.apache.hadoop.hdfs.server.blockmanagement.BlockManager blockManager>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor: org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor$CachedBlocksList pendingCached>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager: long staleInterval>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState COMPLETE>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: java.util.List children>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo#convertToBlockUnderConstruction(Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$BlockUCState;[Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;)V",
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlockUnderConstructionFeature#commit()V",
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlocksMap#close()V"
+      ]
+    },
+    {
+      "draw": 10,
+      "site_id": "<org.apache.hadoop.hdfs.protocol.CachePoolInfo: void validate(org.apache.hadoop.hdfs.protocol.CachePoolInfo)>#u33",
+      "class": "org.apache.hadoop.hdfs.protocol.CachePoolInfo",
+      "method": "<org.apache.hadoop.hdfs.protocol.CachePoolInfo: void validate(org.apache.hadoop.hdfs.protocol.CachePoolInfo)>",
+      "agent_method": "org/apache/hadoop/hdfs/protocol/CachePoolInfo#validate(Lorg/apache/hadoop/hdfs/protocol/CachePoolInfo;)V",
+      "line": 232,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.fs.InvalidRequestException",
+      "target_throw": "org/apache/hadoop/hdfs/protocol/CachePoolInfo#validate(Lorg/apache/hadoop/hdfs/protocol/CachePoolInfo;)V#L232",
+      "truncated": false,
+      "evidence_total": 3,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.CachePoolInfo: java.lang.Long limit>",
+        "<org.apache.hadoop.hdfs.protocol.CachePoolInfo: java.lang.Long maxRelativeExpiryMs>",
+        "<org.apache.hadoop.hdfs.protocol.CachePoolInfo: java.lang.Short defaultReplication>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/protocol/CachePoolInfo#setDefaultReplication(Ljava/lang/Short;)Lorg/apache/hadoop/hdfs/protocol/CachePoolInfo;",
+        "org/apache/hadoop/hdfs/protocol/CachePoolInfo#setLimit(Ljava/lang/Long;)Lorg/apache/hadoop/hdfs/protocol/CachePoolInfo;",
+        "org/apache/hadoop/hdfs/protocol/CachePoolInfo#setMaxRelativeExpiryMs(Ljava/lang/Long;)Lorg/apache/hadoop/hdfs/protocol/CachePoolInfo;"
+      ]
+    },
+    {
+      "draw": 11,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration getDNRegistrationForBP(java.lang.String)>#u16",
+      "class": "org.apache.hadoop.hdfs.server.datanode.DataNode",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration getDNRegistrationForBP(java.lang.String)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/DataNode#getDNRegistrationForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;",
+      "line": 2341,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/DataNode#getDNRegistrationForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;#L2341",
+      "truncated": false,
+      "evidence_total": 3,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.BPOfferService: org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration bpRegistration>",
+        "<org.apache.hadoop.hdfs.server.datanode.BlockPoolManager: java.util.Map bpByBlockPoolId>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.datanode.BlockPoolManager blockPoolManager>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/BPOfferService#registrationSucceeded(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V",
+        "org/apache/hadoop/hdfs/server/datanode/BlockPoolManager#addBlockPool(Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V",
+        "org/apache/hadoop/hdfs/server/datanode/BlockPoolManager#remove(Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V"
+      ]
+    },
+    {
+      "draw": 12,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer: void verifySoftwareVersion(org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration)>#u54",
+      "class": "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer: void verifySoftwareVersion(org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V",
+      "line": 1910,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.server.common.IncorrectVersionException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V#L1910",
+      "truncated": true,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.common.StorageInfo: long cTime>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSImage: org.apache.hadoop.hdfs.server.namenode.NNStorage storage>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.namenode.FSImage fsImage>",
+        "<org.apache.hadoop.hdfs.server.namenode.NameNode: org.apache.hadoop.hdfs.server.namenode.FSNamesystem namesystem>",
+        "<org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer: java.lang.String minimumDataNodeVersion>",
+        "<org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer: org.apache.hadoop.hdfs.server.namenode.NameNode nn>",
+        "<org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration: java.lang.String softwareVersion>",
+        "<org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration: org.apache.hadoop.hdfs.server.common.StorageInfo storageInfo>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/qjournal/server/Journal#doUpgrade(Lorg/apache/hadoop/hdfs/server/common/StorageInfo;)V",
+        "org/apache/hadoop/hdfs/server/common/StorageInfo#setcTime(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+        "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doUpgrade(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V"
+      ]
+    },
+    {
+      "draw": 13,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: org.apache.hadoop.hdfs.util.EnumCounters getStorageTypeDeltas(byte,long,short,short)>#u31",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSDirectory",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: org.apache.hadoop.hdfs.util.EnumCounters getStorageTypeDeltas(byte,long,short,short)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSDirectory#getStorageTypeDeltas(BJSS)Lorg/apache/hadoop/hdfs/util/EnumCounters;",
+      "line": 1168,
+      "site_kind": "check",
+      "exception": "",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSDirectory#getStorageTypeDeltas(BJSS)Lorg/apache/hadoop/hdfs/util/EnumCounters;#L1168",
+      "truncated": true,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.blockmanagement.BlockStoragePolicySuite storagePolicySuite>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockStoragePolicySuite: org.apache.hadoop.hdfs.protocol.BlockStoragePolicy[] policies>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.blockmanagement.BlockManager blockManager>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: java.util.List children>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#addChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;I)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#clearChildren()V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#removeChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;)Z"
+      ]
+    },
+    {
+      "draw": 14,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.DiskBalancer: void createWorkPlan(org.apache.hadoop.hdfs.server.diskbalancer.planner.NodePlan)>#u34",
+      "class": "org.apache.hadoop.hdfs.server.datanode.DiskBalancer",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.DiskBalancer: void createWorkPlan(org.apache.hadoop.hdfs.server.diskbalancer.planner.NodePlan)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/DiskBalancer#createWorkPlan(Lorg/apache/hadoop/hdfs/server/diskbalancer/planner/NodePlan;)V",
+      "line": 530,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.server.diskbalancer.DiskBalancerException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/DiskBalancer#createWorkPlan(Lorg/apache/hadoop/hdfs/server/diskbalancer/planner/NodePlan;)V#L530",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerVolume: java.lang.String uuid>",
+        "<org.apache.hadoop.hdfs.server.diskbalancer.planner.MoveStep: org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerVolume destinationVolume>",
+        "<org.apache.hadoop.hdfs.server.diskbalancer.planner.MoveStep: org.apache.hadoop.hdfs.server.diskbalancer.datamodel.DiskBalancerVolume sourceVolume>",
+        "<org.apache.hadoop.hdfs.server.diskbalancer.planner.NodePlan: java.util.List volumeSetPlans>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/diskbalancer/planner/NodePlan#addStep(Lorg/apache/hadoop/hdfs/server/diskbalancer/planner/Step;)V"
+      ]
+    },
+    {
+      "draw": 15,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.EditsDoubleBuffer: void close()>#u2",
+      "class": "org.apache.hadoop.hdfs.server.namenode.EditsDoubleBuffer",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.EditsDoubleBuffer: void close()>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer#close()V",
+      "line": 69,
+      "site_kind": "check",
+      "exception": "",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer#close()V#L69",
+      "truncated": false,
+      "evidence_total": 2,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.EditsDoubleBuffer: org.apache.hadoop.hdfs.server.namenode.EditsDoubleBuffer$TxnBuffer bufCurrent>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer#close()V",
+        "org/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer#setReadyToFlush()V"
+      ]
+    },
+    {
+      "draw": 16,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataNode: void registerBlockPoolWithSecretManager(org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration,java.lang.String)>#u15",
+      "class": "org.apache.hadoop.hdfs.server.datanode.DataNode",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.DataNode: void registerBlockPoolWithSecretManager(org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration,java.lang.String)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/DataNode#registerBlockPoolWithSecretManager(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;)V",
+      "line": 2119,
+      "site_kind": "throw",
+      "exception": "java.lang.RuntimeException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/DataNode#registerBlockPoolWithSecretManager(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;)V#L2119",
+      "truncated": false,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.security.token.block.ExportedBlockKeys: boolean isBlockTokenEnabled>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: boolean hasAnyBlockPoolRegistered>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: boolean isBlockTokenEnabled>",
+        "<org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration: org.apache.hadoop.hdfs.security.token.block.ExportedBlockKeys exportedKeys>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/protocol/DatanodeRegistration#setExportedKeys(Lorg/apache/hadoop/hdfs/security/token/block/ExportedBlockKeys;)V"
+      ]
+    },
+    {
+      "draw": 17,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.ReplicaHandler recoverRbwImpl(org.apache.hadoop.hdfs.server.datanode.ReplicaInPipeline,org.apache.hadoop.hdfs.protocol.ExtendedBlock,long,long,long)>#u83",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.ReplicaHandler recoverRbwImpl(org.apache.hadoop.hdfs.server.datanode.ReplicaInPipeline,org.apache.hadoop.hdfs.protocol.ExtendedBlock,long,long,long)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#recoverRbwImpl(Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInPipeline;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJJ)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaHandler;",
+      "line": 1746,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.server.datanode.ReplicaNotFoundException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#recoverRbwImpl(Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInPipeline;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJJ)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaHandler;#L1746",
+      "truncated": true,
+      "evidence_total": 3,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.Block: long generationStamp>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: org.apache.hadoop.hdfs.protocol.Block block>",
+        "<org.apache.hadoop.hdfs.server.datanode.LocalReplicaInPipeline: long bytesAcked>",
+        "<org.apache.hadoop.hdfs.server.datanode.LocalReplicaInPipeline: long bytesOnDisk>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/protocol/Block#readHelper(Ljava/io/DataInput;)V",
+        "org/apache/hadoop/hdfs/protocol/Block#setGenerationStamp(J)V",
+        "org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline#setBytesAcked(J)V"
+      ]
+    },
+    {
+      "draw": 18,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.Replica updateReplicaUnderRecovery(org.apache.hadoop.hdfs.protocol.ExtendedBlock,long,long,long)>#u63",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.Replica updateReplicaUnderRecovery(org.apache.hadoop.hdfs.protocol.ExtendedBlock,long,long,long)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#updateReplicaUnderRecovery(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJJ)Lorg/apache/hadoop/hdfs/server/datanode/Replica;",
+      "line": 3115,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#updateReplicaUnderRecovery(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJJ)Lorg/apache/hadoop/hdfs/server/datanode/Replica;#L3115",
+      "truncated": true,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.Block: long blockId>",
+        "<org.apache.hadoop.hdfs.protocol.Block: long numBytes>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: java.lang.String poolId>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: org.apache.hadoop.hdfs.protocol.Block block>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState FINALIZED>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState RBW>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState RUR>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState RWR>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState TEMPORARY>",
+        "<org.apache.hadoop.hdfs.server.datanode.LocalReplicaInPipeline: long bytesOnDisk>",
+        "<org.apache.hadoop.hdfs.server.datanode.ReplicaUnderRecovery: org.apache.hadoop.hdfs.server.datanode.LocalReplica original>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaMap volumeMap>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaMap: java.util.Map map>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline#setLastChecksumAndDataLen(J[B)V",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/ReplicaMap#addAndGet(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/ReplicaMap#cleanUpBlockPool(Ljava/lang/String;)V"
+      ]
+    },
+    {
+      "draw": 19,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader: void addNewBlock(org.apache.hadoop.hdfs.server.namenode.FSEditLogOp$AddBlockOp,org.apache.hadoop.hdfs.server.namenode.INodeFile,org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy)>#u57",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader: void addNewBlock(org.apache.hadoop.hdfs.server.namenode.FSEditLogOp$AddBlockOp,org.apache.hadoop.hdfs.server.namenode.INodeFile,org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader#addNewBlock(Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp;Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;Lorg/apache/hadoop/hdfs/protocol/ErasureCodingPolicy;)V",
+      "line": 1104,
+      "site_kind": "check",
+      "exception": "",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader#addNewBlock(Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp;Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;Lorg/apache/hadoop/hdfs/protocol/ErasureCodingPolicy;)V#L1104",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.FSEditLogOp$AddBlockOp: org.apache.hadoop.hdfs.protocol.Block penultimateBlock>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp#setPenultimateBlock(Lorg/apache/hadoop/hdfs/protocol/Block;)Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp;"
+      ]
+    },
+    {
+      "draw": 20,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataXceiver: void requestShortCircuitFds(org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.security.token.Token,org.apache.hadoop.hdfs.shortcircuit.ShortCircuitShm$SlotId,int,boolean)>#u29",
+      "class": "org.apache.hadoop.hdfs.server.datanode.DataXceiver",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.DataXceiver: void requestShortCircuitFds(org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.security.token.Token,org.apache.hadoop.hdfs.shortcircuit.ShortCircuitShm$SlotId,int,boolean)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/DataXceiver#requestShortCircuitFds(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/shortcircuit/ShortCircuitShm$SlotId;IZ)V",
+      "line": 375,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/DataXceiver#requestShortCircuitFds(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/shortcircuit/ShortCircuitShm$SlotId;IZ)V#L375",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.net.DomainPeer: org.apache.hadoop.net.unix.DomainSocket socket>",
+        "<org.apache.hadoop.hdfs.net.EncryptedPeer: org.apache.hadoop.hdfs.net.Peer enclosedPeer>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataXceiver: org.apache.hadoop.hdfs.net.Peer peer>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/DataXceiver#releaseSocket()V"
+      ]
+    },
+    {
+      "draw": 21,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService: boolean queryVolume(org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsVolumeImpl)>#u7",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService: boolean queryVolume(org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsVolumeImpl)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#queryVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)Z",
+      "line": 146,
+      "site_kind": "throw",
+      "exception": "java.lang.RuntimeException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#queryVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)Z#L146",
+      "truncated": false,
+      "evidence_total": 3,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.RamDiskAsyncLazyPersistService: java.util.Map executors>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#addExecutorForVolume(Ljava/lang/String;)V",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#removeVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)V",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/RamDiskAsyncLazyPersistService#shutdown()V"
+      ]
+    },
+    {
+      "draw": 22,
+      "site_id": "<org.apache.hadoop.hdfs.DataStreamer: void run()>#u202",
+      "class": "org.apache.hadoop.hdfs.DataStreamer",
+      "method": "<org.apache.hadoop.hdfs.DataStreamer: void run()>",
+      "agent_method": "org/apache/hadoop/hdfs/DataStreamer#run()V",
+      "line": 835,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/DataStreamer#run()V#L835",
+      "truncated": true,
+      "evidence_total": 2,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.DataStreamer: java.util.LinkedList ackQueue>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/DataStreamer#access$1002(Lorg/apache/hadoop/hdfs/DataStreamer;I)I",
+        "org/apache/hadoop/hdfs/DataStreamer#access$902(Lorg/apache/hadoop/hdfs/DataStreamer;J)J"
+      ]
+    },
+    {
+      "draw": 23,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry: org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry$NewShmInfo createNewMemorySegment(java.lang.String,org.apache.hadoop.net.unix.DomainSocket)>#u13",
+      "class": "org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry: org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry$NewShmInfo createNewMemorySegment(java.lang.String,org.apache.hadoop.net.unix.DomainSocket)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry#createNewMemorySegment(Ljava/lang/String;Lorg/apache/hadoop/net/unix/DomainSocket;)Lorg/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry$NewShmInfo;",
+      "line": 314,
+      "site_kind": "throw",
+      "exception": "java.lang.UnsupportedOperationException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry#createNewMemorySegment(Ljava/lang/String;Lorg/apache/hadoop/net/unix/DomainSocket;)Lorg/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry$NewShmInfo;#L314",
+      "truncated": false,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.ShortCircuitRegistry: boolean enabled>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/ShortCircuitRegistry#shutdown()V"
+      ]
+    },
+    {
+      "draw": 24,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: java.io.InputStream getBlockInputStream(org.apache.hadoop.hdfs.protocol.ExtendedBlock,long)>#u55",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: java.io.InputStream getBlockInputStream(org.apache.hadoop.hdfs.protocol.ExtendedBlock,long)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#getBlockInputStream(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;J)Ljava/io/InputStream;",
+      "line": 831,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#getBlockInputStream(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;J)Ljava/io/InputStream;#L831",
+      "truncated": true,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.Block: long blockId>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: java.lang.String poolId>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: org.apache.hadoop.hdfs.protocol.Block block>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaMap volumeMap>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaMap: java.util.Map map>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/ReplicaMap#add(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/ReplicaMap#addAndGet(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/ReplicaMap#cleanUpBlockPool(Ljava/lang/String;)V"
+      ]
+    },
+    {
+      "draw": 25,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.ReplicaHandler createTemporary(org.apache.hadoop.fs.StorageType,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,boolean)>#u116",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.ReplicaHandler createTemporary(org.apache.hadoop.fs.StorageType,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,boolean)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#createTemporary(Lorg/apache/hadoop/fs/StorageType;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Z)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaHandler;",
+      "line": 1889,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#createTemporary(Lorg/apache/hadoop/fs/StorageType;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Z)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaHandler;#L1889",
+      "truncated": true,
+      "evidence_total": 8,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.Block: long blockId>",
+        "<org.apache.hadoop.hdfs.protocol.Block: long generationStamp>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: java.lang.String poolId>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: org.apache.hadoop.hdfs.protocol.Block block>",
+        "<org.apache.hadoop.hdfs.server.datanode.DNConf: long xceiverStopTimeout>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.datanode.DNConf dnConf>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.DataNode datanode>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaMap volumeMap>",
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.ReplicaMap: java.util.Map map>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/protocol/Block#readHelper(Ljava/io/DataInput;)V",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/ReplicaMap#addAndGet(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;"
+      ]
+    },
+    {
+      "draw": 26,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.XAttrFormat: byte[] toBytes(java.util.List)>#u26",
+      "class": "org.apache.hadoop.hdfs.server.namenode.XAttrFormat",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.XAttrFormat: byte[] toBytes(java.util.List)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/XAttrFormat#toBytes(Ljava/util/List;)[B",
+      "line": 182,
+      "site_kind": "check",
+      "exception": "",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/XAttrFormat#toBytes(Ljava/util/List;)[B#L182",
+      "truncated": true,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: java.util.List children>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#addChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;I)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#clearChildren()V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#removeChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;)Z"
+      ]
+    },
+    {
+      "draw": 27,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.INodeReference$WithName: void assertReferences()>#u36",
+      "class": "org.apache.hadoop.hdfs.server.namenode.INodeReference$WithName",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.INodeReference$WithName: void assertReferences()>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/INodeReference$WithName#assertReferences()V",
+      "line": 612,
+      "site_kind": "throw",
+      "exception": "java.lang.IllegalStateException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/INodeReference$WithName#assertReferences()V#L612",
+      "truncated": true,
+      "evidence_total": 2,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference$WithCount: java.util.Comparator WITHNAME_COMPARATOR>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference$WithCount: java.util.List withNameList>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeReference$WithCount#addReference(Lorg/apache/hadoop/hdfs/server/namenode/INodeReference;)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeReference$WithCount#removeReference(Lorg/apache/hadoop/hdfs/server/namenode/INodeReference;)V"
+      ]
+    },
+    {
+      "draw": 28,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.datanode.BPOfferService getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)>#u15",
+      "class": "org.apache.hadoop.hdfs.server.datanode.DataNode",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.datanode.BPOfferService getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;",
+      "line": 1835,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;#L1835",
+      "truncated": false,
+      "evidence_total": 2,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: java.lang.String poolId>",
+        "<org.apache.hadoop.hdfs.server.datanode.BlockPoolManager: java.util.Map bpByBlockPoolId>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.datanode.BlockPoolManager blockPoolManager>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/BlockPoolManager#addBlockPool(Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V",
+        "org/apache/hadoop/hdfs/server/datanode/BlockPoolManager#remove(Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V"
+      ]
+    },
+    {
+      "draw": 29,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirConcatOp: org.apache.hadoop.hdfs.server.namenode.INodeFile[] verifySrcFiles(org.apache.hadoop.hdfs.server.namenode.FSDirectory,java.lang.String[],org.apache.hadoop.hdfs.server.namenode.INodesInPath,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker)>#u135",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSDirConcatOp",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSDirConcatOp: org.apache.hadoop.hdfs.server.namenode.INodeFile[] verifySrcFiles(org.apache.hadoop.hdfs.server.namenode.FSDirectory,java.lang.String[],org.apache.hadoop.hdfs.server.namenode.INodesInPath,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSDirConcatOp#verifySrcFiles(Lorg/apache/hadoop/hdfs/server/namenode/FSDirectory;[Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/INodesInPath;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;)[Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;",
+      "line": 179,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.HadoopIllegalArgumentException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSDirConcatOp#verifySrcFiles(Lorg/apache/hadoop/hdfs/server/namenode/FSDirectory;[Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/INodesInPath;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;)[Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;#L179",
+      "truncated": true,
+      "evidence_total": 7,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.FSDirectory$DirOp: org.apache.hadoop.hdfs.server.namenode.FSDirectory$DirOp WRITE>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: org.apache.hadoop.hdfs.server.namenode.INodeDirectory rootDir>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat: org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat BLOCK_LAYOUT_AND_REDUNDANCY>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat: org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat PREFERRED_BLOCK_SIZE>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat: org.apache.hadoop.hdfs.util.LongBitFormat BITS>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile: long header>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile: org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo[] blocks>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference$WithCount: java.util.List withNameList>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference: org.apache.hadoop.hdfs.server.namenode.INode referred>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodesInPath: int snapshotId>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodesInPath: org.apache.hadoop.hdfs.server.namenode.INode[] inodes>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff this$0>",
+        "<org.apache.hadoop.hdfs.util.LongBitFormat: int OFFSET>",
+        "<org.apache.hadoop.hdfs.util.LongBitFormat: long MASK>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeFile#clearBlocks()V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeFile#setFileReplication(S)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeReference$WithCount#addReference(Lorg/apache/hadoop/hdfs/server/namenode/INodeReference;)V"
+      ]
+    },
+    {
+      "draw": 30,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader: long applyEditLogOp(org.apache.hadoop.hdfs.server.namenode.FSEditLogOp,org.apache.hadoop.hdfs.server.namenode.FSDirectory,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,int,long)>#u692",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader: long applyEditLogOp(org.apache.hadoop.hdfs.server.namenode.FSEditLogOp,org.apache.hadoop.hdfs.server.namenode.FSDirectory,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,int,long)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader#applyEditLogOp(Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp;Lorg/apache/hadoop/hdfs/server/namenode/FSDirectory;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;IJ)J",
+      "line": 896,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.server.namenode.FSEditLogOp$RollingUpgradeOp$RollbackException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader#applyEditLogOp(Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp;Lorg/apache/hadoop/hdfs/server/namenode/FSDirectory;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;IJ)J#L896",
+      "truncated": false,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$RollingUpgradeStartupOption: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$RollingUpgradeStartupOption ROLLBACK>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$RollingUpgradeStartupOption rollingUpgradeStartupOption>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption ROLLINGUPGRADE>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader$1: int[] $SwitchMap$org$apache$hadoop$hdfs$server$namenode$FSEditLogOpCodes>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSEditLogOp: org.apache.hadoop.hdfs.server.namenode.FSEditLogOpCodes opCode>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption#setRollingUpgradeStartupOption(Ljava/lang/String;)V"
+      ]
+    },
+    {
+      "draw": 31,
+      "site_id": "<org.apache.hadoop.hdfs.util.LightWeightHashSet$LinkedSetIterator: java.lang.Object next()>#u22",
+      "class": "org.apache.hadoop.hdfs.util.LightWeightHashSet$LinkedSetIterator",
+      "method": "<org.apache.hadoop.hdfs.util.LightWeightHashSet$LinkedSetIterator: java.lang.Object next()>",
+      "agent_method": "org/apache/hadoop/hdfs/util/LightWeightHashSet$LinkedSetIterator#next()Ljava/lang/Object;",
+      "line": 556,
+      "site_kind": "throw",
+      "exception": "java.util.NoSuchElementException",
+      "target_throw": "org/apache/hadoop/hdfs/util/LightWeightHashSet$LinkedSetIterator#next()Ljava/lang/Object;#L556",
+      "truncated": true,
+      "evidence_total": 11,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.util.LightWeightHashSet$LinkedSetIterator: int expectedModification>",
+        "<org.apache.hadoop.hdfs.util.LightWeightHashSet$LinkedSetIterator: org.apache.hadoop.hdfs.util.LightWeightHashSet this$0>",
+        "<org.apache.hadoop.hdfs.util.LightWeightHashSet$LinkedSetIterator: org.apache.hadoop.hdfs.util.LightWeightHashSet$LinkedElement next>",
+        "<org.apache.hadoop.hdfs.util.LightWeightHashSet: int modification>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/util/LightWeightHashSet#clear()V",
+        "org/apache/hadoop/hdfs/util/LightWeightHashSet#pollToArray([Ljava/lang/Object;)[Ljava/lang/Object;"
+      ]
+    },
+    {
+      "draw": 32,
+      "site_id": "<org.apache.hadoop.hdfs.qjournal.client.QuorumCall: void checkAssertionErrors()>#u31",
+      "class": "org.apache.hadoop.hdfs.qjournal.client.QuorumCall",
+      "method": "<org.apache.hadoop.hdfs.qjournal.client.QuorumCall: void checkAssertionErrors()>",
+      "agent_method": "org/apache/hadoop/hdfs/qjournal/client/QuorumCall#checkAssertionErrors()V",
+      "line": 253,
+      "site_kind": "assert",
+      "exception": "java.lang.AssertionError",
+      "target_throw": "org/apache/hadoop/hdfs/qjournal/client/QuorumCall#checkAssertionErrors()V#L253",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.qjournal.client.QuorumCall: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.qjournal.client.QuorumCall: java.util.Map exceptions>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/qjournal/client/QuorumCall#addException(Ljava/lang/Object;Ljava/lang/Throwable;)V"
+      ]
+    },
+    {
+      "draw": 33,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.INodeReference$DstReference: void destroyAndCollectBlocks(org.apache.hadoop.hdfs.server.namenode.INode$ReclaimContext)>#u19",
+      "class": "org.apache.hadoop.hdfs.server.namenode.INodeReference$DstReference",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.INodeReference$DstReference: void destroyAndCollectBlocks(org.apache.hadoop.hdfs.server.namenode.INode$ReclaimContext)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/INodeReference$DstReference#destroyAndCollectBlocks(Lorg/apache/hadoop/hdfs/server/namenode/INode$ReclaimContext;)V",
+      "line": 877,
+      "site_kind": "check",
+      "exception": "",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/INodeReference$DstReference#destroyAndCollectBlocks(Lorg/apache/hadoop/hdfs/server/namenode/INode$ReclaimContext;)V#L877",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference$WithCount: java.util.List withNameList>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference: org.apache.hadoop.hdfs.server.namenode.INode referred>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeReference$WithCount#addReference(Lorg/apache/hadoop/hdfs/server/namenode/INodeReference;)V"
+      ]
+    },
+    {
+      "draw": 34,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader: void addNewBlock(org.apache.hadoop.hdfs.server.namenode.FSEditLogOp$AddBlockOp,org.apache.hadoop.hdfs.server.namenode.INodeFile,org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy)>#u15",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader: void addNewBlock(org.apache.hadoop.hdfs.server.namenode.FSEditLogOp$AddBlockOp,org.apache.hadoop.hdfs.server.namenode.INodeFile,org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader#addNewBlock(Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp;Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;Lorg/apache/hadoop/hdfs/protocol/ErasureCodingPolicy;)V",
+      "line": 1087,
+      "site_kind": "assert",
+      "exception": "java.lang.AssertionError",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader#addNewBlock(Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp;Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;Lorg/apache/hadoop/hdfs/protocol/ErasureCodingPolicy;)V#L1087",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.FSEditLogLoader: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSEditLogOp$AddBlockOp: org.apache.hadoop.hdfs.protocol.Block penultimateBlock>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile: org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo[] blocks>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp#setPenultimateBlock(Lorg/apache/hadoop/hdfs/protocol/Block;)Lorg/apache/hadoop/hdfs/server/namenode/FSEditLogOp$AddBlockOp;"
+      ]
+    },
+    {
+      "draw": 35,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.FileDiffList: void saveSelf2Snapshot(int,org.apache.hadoop.hdfs.server.namenode.INodeFile,org.apache.hadoop.hdfs.server.namenode.INodeFileAttributes,boolean)>#u14",
+      "class": "org.apache.hadoop.hdfs.server.namenode.snapshot.FileDiffList",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.snapshot.FileDiffList: void saveSelf2Snapshot(int,org.apache.hadoop.hdfs.server.namenode.INodeFile,org.apache.hadoop.hdfs.server.namenode.INodeFileAttributes,boolean)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/snapshot/FileDiffList#saveSelf2Snapshot(ILorg/apache/hadoop/hdfs/server/namenode/INodeFile;Lorg/apache/hadoop/hdfs/server/namenode/INodeFileAttributes;Z)V",
+      "line": 55,
+      "site_kind": "assert",
+      "exception": "java.lang.AssertionError",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/snapshot/FileDiffList#saveSelf2Snapshot(ILorg/apache/hadoop/hdfs/server/namenode/INodeFile;Lorg/apache/hadoop/hdfs/server/namenode/INodeFileAttributes;Z)V#L55",
+      "truncated": false,
+      "evidence_total": 3,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile: org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo[] blocks>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.FileDiffList: boolean $assertionsDisabled>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeFile#clearBlocks()V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeFile#setBlock(ILorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeFile#setBlocks([Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;)V"
+      ]
+    },
+    {
+      "draw": 36,
+      "site_id": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: void findAndMarkBlockAsCorrupt(org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.protocol.DatanodeInfo,java.lang.String,java.lang.String)>#u35",
+      "class": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager",
+      "method": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: void findAndMarkBlockAsCorrupt(org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.protocol.DatanodeInfo,java.lang.String,java.lang.String)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/blockmanagement/BlockManager#findAndMarkBlockAsCorrupt(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Ljava/lang/String;Ljava/lang/String;)V",
+      "line": 1913,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/blockmanagement/BlockManager#findAndMarkBlockAsCorrupt(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Ljava/lang/String;Ljava/lang/String;)V#L1913",
+      "truncated": true,
+      "evidence_total": 3,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.DatanodeID: java.lang.String datanodeUuid>",
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: org.apache.hadoop.hdfs.protocol.Block block>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap blocksMap>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager datanodeManager>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.namenode.Namesystem namesystem>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap: org.apache.hadoop.util.GSet blocks>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.DatanodeManager: java.util.Map datanodeMap>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.namenode.FSNamesystemLock fsLock>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystemLock: java.util.concurrent.locks.ReentrantReadWriteLock coarseLock>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlocksMap#close()V",
+        "org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager#addDatanode(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor;)V",
+        "org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager#wipeDatanode(Lorg/apache/hadoop/hdfs/protocol/DatanodeID;)V"
+      ]
+    },
+    {
+      "draw": 37,
+      "site_id": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfoContiguous: int numNodes()>#u16",
+      "class": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfoContiguous",
+      "method": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfoContiguous: int numNodes()>",
+      "agent_method": "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfoContiguous#numNodes()I",
+      "line": 108,
+      "site_kind": "assert",
+      "exception": "java.lang.AssertionError",
+      "target_throw": "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfoContiguous#numNodes()I#L108",
+      "truncated": false,
+      "evidence_total": 3,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo: java.lang.Object[] triplets>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfoContiguous: boolean $assertionsDisabled>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo#setNext(ILorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;)Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;",
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo#setPrevious(ILorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;)Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;",
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfoStriped#ensureCapacity(IZ)V"
+      ]
+    },
+    {
+      "draw": 38,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager: void checkNestedSnapshottable(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,java.lang.String)>#u40",
+      "class": "org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager: void checkNestedSnapshottable(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,java.lang.String)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager#checkNestedSnapshottable(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Ljava/lang/String;)V",
+      "line": 236,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.protocol.SnapshotException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager#checkNestedSnapshottable(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Ljava/lang/String;)V#L236",
+      "truncated": true,
+      "evidence_total": 7,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: java.util.List children>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager: boolean allowNestedSnapshots>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager: java.util.Map snapshottables>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#removeChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;)Z",
+        "org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager#addSnapshottable(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;)V",
+        "org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager#removeSnapshottable(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;)V"
+      ]
+    },
+    {
+      "draw": 39,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: void verifyMaxDirItems(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,java.lang.String)>#u15",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSDirectory",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: void verifyMaxDirItems(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,java.lang.String)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSDirectory#verifyMaxDirItems(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Ljava/lang/String;)V",
+      "line": 1298,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.protocol.FSLimitException$MaxDirectoryItemsExceededException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSDirectory#verifyMaxDirItems(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Ljava/lang/String;)V#L1298",
+      "truncated": true,
+      "evidence_total": 6,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: int maxDirItems>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSDirectory: org.apache.hadoop.hdfs.server.namenode.FSNamesystem namesystem>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: boolean imageLoaded>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeDirectory: java.util.List children>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff this$0>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff: int childrenSize>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature: org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiffList diffs>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/FSNamesystem#setImageLoaded(Z)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#addChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;I)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#removeChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;)Z"
+      ]
+    },
+    {
+      "draw": 40,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockReceiver: void receiveBlock(java.io.DataOutputStream,java.io.DataInputStream,java.io.DataOutputStream,java.lang.String,org.apache.hadoop.hdfs.util.DataTransferThrottler,org.apache.hadoop.hdfs.protocol.DatanodeInfo[],boolean)>#u470",
+      "class": "org.apache.hadoop.hdfs.server.datanode.BlockReceiver",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.BlockReceiver: void receiveBlock(java.io.DataOutputStream,java.io.DataInputStream,java.io.DataOutputStream,java.lang.String,org.apache.hadoop.hdfs.util.DataTransferThrottler,org.apache.hadoop.hdfs.protocol.DatanodeInfo[],boolean)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/BlockReceiver#receiveBlock(Ljava/io/DataOutputStream;Ljava/io/DataInputStream;Ljava/io/DataOutputStream;Ljava/lang/String;Lorg/apache/hadoop/hdfs/util/DataTransferThrottler;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Z)V",
+      "line": 1110,
+      "site_kind": "throw",
+      "exception": "java.io.InterruptedIOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/BlockReceiver#receiveBlock(Ljava/io/DataOutputStream;Ljava/io/DataInputStream;Ljava/io/DataOutputStream;Ljava/lang/String;Lorg/apache/hadoop/hdfs/util/DataTransferThrottler;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Z)V#L1110",
+      "truncated": false,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.BlockReceiver: org.apache.hadoop.hdfs.server.datanode.DataNode datanode>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: boolean shutdownForUpgrade>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/DataNode#shutdownDatanode(Z)V"
+      ]
+    },
+    {
+      "draw": 41,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.namenode.INodeFile checkUCBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock,java.lang.String)>#u43",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FSNamesystem",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.namenode.INodeFile checkUCBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock,java.lang.String)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FSNamesystem#checkUCBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;",
+      "line": 5925,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSNamesystem#checkUCBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;#L5925",
+      "truncated": true,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.ExtendedBlock: org.apache.hadoop.hdfs.protocol.Block block>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo: org.apache.hadoop.hdfs.server.blockmanagement.BlockUnderConstructionFeature uc>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager: org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap blocksMap>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlockUnderConstructionFeature: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState blockUCState>",
+        "<org.apache.hadoop.hdfs.server.blockmanagement.BlocksMap: org.apache.hadoop.util.GSet blocks>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState COMPLETE>",
+        "<org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState: org.apache.hadoop.hdfs.server.common.HdfsServerConstants$BlockUCState UNDER_CONSTRUCTION>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: boolean $assertionsDisabled>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.blockmanagement.BlockManager blockManager>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystem: org.apache.hadoop.hdfs.server.namenode.FSNamesystemLock fsLock>",
+        "<org.apache.hadoop.hdfs.server.namenode.FSNamesystemLock: java.util.concurrent.locks.ReentrantReadWriteLock coarseLock>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo#convertToBlockUnderConstruction(Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$BlockUCState;[Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;)V",
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlockUnderConstructionFeature#commit()V",
+        "org/apache/hadoop/hdfs/server/blockmanagement/BlocksMap#close()V"
+      ]
+    },
+    {
+      "draw": 42,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockReceiver: void receiveBlock(java.io.DataOutputStream,java.io.DataInputStream,java.io.DataOutputStream,java.lang.String,org.apache.hadoop.hdfs.util.DataTransferThrottler,org.apache.hadoop.hdfs.protocol.DatanodeInfo[],boolean)>#u472",
+      "class": "org.apache.hadoop.hdfs.server.datanode.BlockReceiver",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.BlockReceiver: void receiveBlock(java.io.DataOutputStream,java.io.DataInputStream,java.io.DataOutputStream,java.lang.String,org.apache.hadoop.hdfs.util.DataTransferThrottler,org.apache.hadoop.hdfs.protocol.DatanodeInfo[],boolean)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/BlockReceiver#receiveBlock(Ljava/io/DataOutputStream;Ljava/io/DataInputStream;Ljava/io/DataOutputStream;Ljava/lang/String;Lorg/apache/hadoop/hdfs/util/DataTransferThrottler;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Z)V",
+      "line": 1115,
+      "site_kind": "throw",
+      "exception": "java.lang.Throwable",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/BlockReceiver#receiveBlock(Ljava/io/DataOutputStream;Ljava/io/DataInputStream;Ljava/io/DataOutputStream;Ljava/lang/String;Lorg/apache/hadoop/hdfs/util/DataTransferThrottler;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Z)V#L1115",
+      "truncated": false,
+      "evidence_total": 4,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.BlockReceiver: org.apache.hadoop.hdfs.server.datanode.DataNode datanode>",
+        "<org.apache.hadoop.hdfs.server.datanode.BlockReceiver: org.apache.hadoop.util.Daemon responder>",
+        "<org.apache.hadoop.hdfs.server.datanode.DataNode: boolean shutdownForUpgrade>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/BlockReceiver#receiveBlock(Ljava/io/DataOutputStream;Ljava/io/DataInputStream;Ljava/io/DataOutputStream;Ljava/lang/String;Lorg/apache/hadoop/hdfs/util/DataTransferThrottler;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Z)V",
+        "org/apache/hadoop/hdfs/server/datanode/DataNode#shutdownDatanode(Z)V"
+      ]
+    },
+    {
+      "draw": 43,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.ReplicaInfo updateReplicaUnderRecovery(java.lang.String,org.apache.hadoop.hdfs.server.datanode.ReplicaInfo,long,long,long)>#u18",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetImpl: org.apache.hadoop.hdfs.server.datanode.ReplicaInfo updateReplicaUnderRecovery(java.lang.String,org.apache.hadoop.hdfs.server.datanode.ReplicaInfo,long,long,long)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#updateReplicaUnderRecovery(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;JJJ)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;",
+      "line": 3166,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl#updateReplicaUnderRecovery(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;JJJ)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;#L3166",
+      "truncated": false,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.ReplicaUnderRecovery: long recoveryId>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/ReplicaUnderRecovery#setRecoveryID(J)V"
+      ]
+    },
+    {
+      "draw": 44,
+      "site_id": "<org.apache.hadoop.hdfs.protocolPB.PBHelperClient: org.apache.hadoop.hdfs.protocol.proto.EncryptionZonesProtos$ZoneReencryptionStatusProto convert(org.apache.hadoop.hdfs.protocol.ZoneReencryptionStatus)>#u38",
+      "class": "org.apache.hadoop.hdfs.protocolPB.PBHelperClient",
+      "method": "<org.apache.hadoop.hdfs.protocolPB.PBHelperClient: org.apache.hadoop.hdfs.protocol.proto.EncryptionZonesProtos$ZoneReencryptionStatusProto convert(org.apache.hadoop.hdfs.protocol.ZoneReencryptionStatus)>",
+      "agent_method": "org/apache/hadoop/hdfs/protocolPB/PBHelperClient#convert(Lorg/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus;)Lorg/apache/hadoop/hdfs/protocol/proto/EncryptionZonesProtos$ZoneReencryptionStatusProto;",
+      "line": 3205,
+      "site_kind": "throw",
+      "exception": "java.lang.IllegalArgumentException",
+      "target_throw": "org/apache/hadoop/hdfs/protocolPB/PBHelperClient#convert(Lorg/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus;)Lorg/apache/hadoop/hdfs/protocol/proto/EncryptionZonesProtos$ZoneReencryptionStatusProto;#L3205",
+      "truncated": false,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.ZoneReencryptionStatus: org.apache.hadoop.hdfs.protocol.ZoneReencryptionStatus$State state>",
+        "<org.apache.hadoop.hdfs.protocolPB.PBHelperClient$2: int[] $SwitchMap$org$apache$hadoop$hdfs$protocol$ZoneReencryptionStatus$State>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus#access$202(Lorg/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus;Lorg/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus$State;)Lorg/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus$State;",
+        "org/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus#markZoneCompleted(Lorg/apache/hadoop/hdfs/protocol/proto/HdfsProtos$ReencryptionInfoProto;)V",
+        "org/apache/hadoop/hdfs/protocol/ZoneReencryptionStatus#markZoneSubmitted(Lorg/apache/hadoop/hdfs/protocol/proto/HdfsProtos$ReencryptionInfoProto;)V"
+      ]
+    },
+    {
+      "draw": 45,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature: void renameSnapshot(java.lang.String,java.lang.String,java.lang.String,long)>#u33",
+      "class": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature: void renameSnapshot(java.lang.String,java.lang.String,java.lang.String,long)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#renameSnapshot(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V",
+      "line": 135,
+      "site_kind": "throw",
+      "exception": "org.apache.hadoop.hdfs.protocol.SnapshotException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#renameSnapshot(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V#L135",
+      "truncated": false,
+      "evidence_total": 4,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.DFSUtilClient: java.lang.String UTF8_CSN>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature: java.util.List snapshotsByNames>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;",
+        "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#removeSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INode$ReclaimContext;Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Ljava/lang/String;JLorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;",
+        "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#renameSnapshot(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;J)V"
+      ]
+    },
+    {
+      "draw": 46,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat: long getBlockLayoutRedundancy(org.apache.hadoop.hdfs.protocol.BlockType,java.lang.Short,java.lang.Byte)>#u31",
+      "class": "org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.INodeFile$HeaderFormat: long getBlockLayoutRedundancy(org.apache.hadoop.hdfs.protocol.BlockType,java.lang.Short,java.lang.Byte)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/INodeFile$HeaderFormat#getBlockLayoutRedundancy(Lorg/apache/hadoop/hdfs/protocol/BlockType;Ljava/lang/Short;Ljava/lang/Byte;)J",
+      "line": 209,
+      "site_kind": "throw",
+      "exception": "java.lang.IllegalArgumentException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/INodeFile$HeaderFormat#getBlockLayoutRedundancy(Lorg/apache/hadoop/hdfs/protocol/BlockType;Ljava/lang/Short;Ljava/lang/Byte;)J#L209",
+      "truncated": true,
+      "evidence_total": 2,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.protocol.ErasureCodingPolicyInfo: org.apache.hadoop.hdfs.protocol.ErasureCodingPolicy policy>",
+        "<org.apache.hadoop.hdfs.server.namenode.ErasureCodingPolicyManager: java.util.Map policiesByID>",
+        "<org.apache.hadoop.hdfs.server.namenode.ErasureCodingPolicyManager: org.apache.hadoop.hdfs.server.namenode.ErasureCodingPolicyManager instance>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeFile$1: int[] $SwitchMap$org$apache$hadoop$hdfs$protocol$BlockType>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/ErasureCodingPolicyManager#addPolicy(Lorg/apache/hadoop/hdfs/protocol/ErasureCodingPolicy;)Lorg/apache/hadoop/hdfs/protocol/ErasureCodingPolicy;",
+        "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectoryWithSnapshotFeature$DirectoryDiff$2#initChildren()Ljava/util/List;"
+      ]
+    },
+    {
+      "draw": 47,
+      "site_id": "<org.apache.hadoop.hdfs.DataStreamer$ErrorState: void checkRestartingNodeDeadline(org.apache.hadoop.hdfs.protocol.DatanodeInfo[])>#u9",
+      "class": "org.apache.hadoop.hdfs.DataStreamer$ErrorState",
+      "method": "<org.apache.hadoop.hdfs.DataStreamer$ErrorState: void checkRestartingNodeDeadline(org.apache.hadoop.hdfs.protocol.DatanodeInfo[])>",
+      "agent_method": "org/apache/hadoop/hdfs/DataStreamer$ErrorState#checkRestartingNodeDeadline([Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;)V",
+      "line": 442,
+      "site_kind": "throw",
+      "exception": "java.lang.IllegalStateException",
+      "target_throw": "org/apache/hadoop/hdfs/DataStreamer$ErrorState#checkRestartingNodeDeadline([Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;)V#L442",
+      "truncated": false,
+      "evidence_total": 13,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.DataStreamer$ErrorState: int restartingNodeIndex>",
+        "<org.apache.hadoop.hdfs.DataStreamer$ErrorState: org.apache.hadoop.hdfs.DataStreamer$ErrorType error>",
+        "<org.apache.hadoop.hdfs.DataStreamer$ErrorType: org.apache.hadoop.hdfs.DataStreamer$ErrorType NONE>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/DataStreamer$ErrorState#initRestartingNode(ILjava/lang/String;Z)V",
+        "org/apache/hadoop/hdfs/DataStreamer$ErrorState#reset()V"
+      ]
+    },
+    {
+      "draw": 48,
+      "site_id": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetAsyncDiskService: void addVolume(org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsVolumeImpl)>#u10",
+      "class": "org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetAsyncDiskService",
+      "method": "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetAsyncDiskService: void addVolume(org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsVolumeImpl)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetAsyncDiskService#addVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)V",
+      "line": 138,
+      "site_kind": "throw",
+      "exception": "java.lang.RuntimeException",
+      "target_throw": "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetAsyncDiskService#addVolume(Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl;)V#L138",
+      "truncated": false,
+      "evidence_total": 2,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.datanode.fsdataset.impl.FsDatasetAsyncDiskService: java.util.Map executors>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetAsyncDiskService#removeVolume(Ljava/lang/String;)V",
+        "org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetAsyncDiskService#shutdown()V"
+      ]
+    },
+    {
+      "draw": 49,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FileJournalManager: void recoverUnfinalizedSegments()>#u45",
+      "class": "org.apache.hadoop.hdfs.server.namenode.FileJournalManager",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.FileJournalManager: void recoverUnfinalizedSegments()>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/FileJournalManager#recoverUnfinalizedSegments()V",
+      "line": 441,
+      "site_kind": "throw",
+      "exception": "java.io.IOException",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/FileJournalManager#recoverUnfinalizedSegments()V#L441",
+      "truncated": true,
+      "evidence_total": 5,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.FileJournalManager$EditLogFile: boolean hasCorruptHeader>",
+        "<org.apache.hadoop.hdfs.server.namenode.FileJournalManager$EditLogFile: boolean isInProgress>",
+        "<org.apache.hadoop.hdfs.server.namenode.FileJournalManager$EditLogFile: java.io.File file>",
+        "<org.apache.hadoop.hdfs.server.namenode.FileJournalManager: java.io.File currentInProgress>",
+        "<org.apache.hadoop.hdfs.server.namenode.FileJournalManager: org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory sd>",
+        "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectoryWithSnapshotFeature$DirectoryDiff$2: java.util.List children>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$1: java.util.List val$list>",
+        "<org.apache.hadoop.hdfs.util.ReadOnlyList$Util$2: org.apache.hadoop.hdfs.util.ReadOnlyList val$list>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#addChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;I)V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#clearChildren()V",
+        "org/apache/hadoop/hdfs/server/namenode/INodeDirectory#removeChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;)Z"
+      ]
+    },
+    {
+      "draw": 50,
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.INodeReference$DstReference: void destroyAndCollectBlocks(org.apache.hadoop.hdfs.server.namenode.INode$ReclaimContext)>#u37",
+      "class": "org.apache.hadoop.hdfs.server.namenode.INodeReference$DstReference",
+      "method": "<org.apache.hadoop.hdfs.server.namenode.INodeReference$DstReference: void destroyAndCollectBlocks(org.apache.hadoop.hdfs.server.namenode.INode$ReclaimContext)>",
+      "agent_method": "org/apache/hadoop/hdfs/server/namenode/INodeReference$DstReference#destroyAndCollectBlocks(Lorg/apache/hadoop/hdfs/server/namenode/INode$ReclaimContext;)V",
+      "line": 897,
+      "site_kind": "check",
+      "exception": "",
+      "target_throw": "org/apache/hadoop/hdfs/server/namenode/INodeReference$DstReference#destroyAndCollectBlocks(Lorg/apache/hadoop/hdfs/server/namenode/INode$ReclaimContext;)V#L897",
+      "truncated": true,
+      "evidence_total": 1,
+      "read_fields": [
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference$WithCount: java.util.List withNameList>",
+        "<org.apache.hadoop.hdfs.server.namenode.INodeReference: org.apache.hadoop.hdfs.server.namenode.INode referred>"
+      ],
+      "writer_methods": [
+        "org/apache/hadoop/hdfs/server/namenode/INodeReference$WithCount#addReference(Lorg/apache/hadoop/hdfs/server/namenode/INodeReference;)V"
+      ]
+    }
+  ]
+}
