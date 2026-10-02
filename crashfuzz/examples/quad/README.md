@@ -119,6 +119,7 @@ PYTHONPATH=src python3 examples/quad/run_candidates.py hbase \
 PYTHONPATH=src python3 examples/quad/audit10.py hbase \
   --variant shape --draws 2,4,8,9
 PYTHONPATH=src python3 examples/hbase_266/run_token_probe.py
+PYTHONPATH=src python3 examples/quad/audit_identity.py
 ```
 
 The mapping commands require GraphChecker decision files at

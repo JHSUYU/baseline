@@ -5,20 +5,20 @@
 The upgraded loop used a healthy workload to identify bytecode guards reached
 on server JVMs, drew a fixed random sample, and ran each selected check with
 its own fresh cluster and bounded crash/reboot trials. The controller injected
-only at observed fault points during the workload. For the three newly added
-systems, the strict trigger identity was `(node, process epoch, site,
-call/async context, ordinal, phase)`; every injected action recorded its
-planned and observed identities. The HDFS ten-check run preceded the epoch
-check and required all of those dimensions except epoch. Each run built a
-causal graph from call/return, observed state, asynchronous handoff, and
+only at observed fault points during the workload. The strict trigger identity
+was `(node, process epoch, site, call/async context, ordinal, phase)`; every
+injected action recorded its planned and observed identities. The first HDFS
+coverage run preceded epoch matching and is archived separately. Each run in
+the current table built a causal graph from call/return, observed state,
+asynchronous handoff, and
 correlated message events. The queue used target-closure graph novelty,
 basic-block coverage, and branch-outcome coverage when ranking the next
 sequence. A mapped exact throw and the independent post-fault checker were
 separate oracles. [Design and reproduction](README.md).
 
-| System | Valid checks | Fault trials | Full matches | Full matches reaching target guard | New closure branch outcomes | Exact target throws | Confirmed new bugs |
+| System | Selected checks | Fault trials | Full matches | Full matches reaching target guard | New closure branch outcomes | Exact target throws | Confirmed new bugs |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| HDFS 3.4.3, upgraded first-ten sample | 10 | 32 | 25 | 21 | 14 | 0 | 0 |
+| HDFS 3.4.3, upgraded first-ten sample | 10 | 32 | 23 | 19 | 12 | 0 | 0 |
 | HBase 2.6.6 | 10 | 29 | 11 | 10 | 4 | 0 | 0 |
 | ZooKeeper 3.8.7 | 10 | 25 | 17 | 17 | 8 | 0 | 0 |
 | Solr 8.11.4 | 10 | 23 | 19 | 18 | 28 | 0 | 0 |
@@ -31,6 +31,13 @@ safe. The [HDFS ten-check record](../hdfs_random10/COVERAGE10.md),
 [HBase audit](../hbase_266/audit10.json),
 [ZooKeeper audit](../zookeeper_387/audit10.json), and
 [Solr audit](../solr_8114/audit10.json) preserve the per-check counts.
+
+The [identity audit](identity_audit.json) checks planned versus observed
+trigger identities and each target hit's runtime identity. In the current
+HDFS search, draw 2 remained unobserved; a separate strict replay of its
+historical crash/reboot sequence reached the guard in two complete matches
+out of four attempts, without executing the target throw. The replay is
+excluded from the main table.
 
 The earlier [HDFS 50-candidate campaign](../hdfs_random50/RESULTS.md) is a
 separate CrashFuzz-style pilot. It selected 50 of the 532 HDFS candidates,

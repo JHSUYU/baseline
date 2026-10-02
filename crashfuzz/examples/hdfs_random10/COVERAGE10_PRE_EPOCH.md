@@ -1,4 +1,11 @@
-# HDFS 3.4.3: graph, basic-block, and branch feedback on ten checks
+# HDFS 3.4.3: archived pre-epoch ten-check run
+
+This report and `coverage10_pre_epoch.json` / `branches10_pre_epoch.json`
+preserve the first coverage run. Its raw `out_coverage10/` directory was
+archived locally as `out_archive/out_coverage10_pre_epoch.tar.zst` (with a
+SHA-256 sidecar) before the same ten checks were rerun with strict process
+epoch matching. References below to `out_coverage10/`, `coverage10.json`, and
+`branches10.json` describe that archived run.
 
 This campaign reruns the frozen first ten HDFS candidates in `selected10.json`
 and `mapped10.json`. Each check has its own healthy seed and fault trials
@@ -40,10 +47,7 @@ The controller arms fault matching only after cluster preparation and freezes
 it when the workload returns. Preparation and checker events are excluded
 from graph and coverage feedback using the recorded workload start and end
 timestamps. A sequence counts as matched only when every planned action was
-injected within that window. The current strict runtime trigger identity
-includes node, controller-managed process epoch, site, call/async context,
-ordinal, and phase; `../quad/identity_audit.json` checks each injected action
-against the durable controller journal. Broad first-hit JVM coverage can miss a block
+injected within that window. Broad first-hit JVM coverage can miss a block
 executed again in the workload if the same JVM already emitted its first-hit
 event during preparation; detailed target-region probes do not use that
 first-hit filter.
@@ -58,8 +62,6 @@ PYTHONPATH=src python3 examples/hdfs_random10/run_coverage10.py \
   --start 1 --limit 10 --runs-per-target 4
 PYTHONPATH=src python3 examples/hdfs_random10/summarize_coverage10.py
 PYTHONPATH=src python3 examples/hdfs_random10/export_branch10.py
-PYTHONPATH=src python3 examples/hdfs_random10/replay_recovery02.py
-PYTHONPATH=src python3 examples/quad/audit_identity.py
 ```
 
 Runs are sequential because they share a named HDFS Docker network and four
@@ -69,48 +71,31 @@ fault schedules, checker outputs, and feedback remain in `out_coverage10/`.
 
 ## Completed experiment
 
-All ten selected campaigns completed. There were 32 attempted fault trials:
-23 injected the entire planned sequence, 4 injected only a prefix, and 5
-injected nothing. All 29 individual injections used exact node, epoch, site,
-context, ordinal, and phase matching. Of the 23 fully matched trials, 19
+All ten selected checks completed. There were 32 attempted fault trials:
+25 injected the entire planned sequence, 3 injected only a prefix, and 4
+injected nothing. All 31 individual injections used exact node, site,
+context, ordinal, and phase matching. Of the 25 fully matched trials, 21
 reached the configured target guard. None reached its exact throw site, and
-none had a checker failure. The target closures gained 12 previously unseen
+none had a checker failure. The target closures gained 14 previously unseen
 branch outcomes across the fully matched trials.
 
 | Draw | Full matches | Target reached after full match | New closure branch outcomes |
 | ---: | ---: | ---: | ---: |
-| 1 | 2 | 0 | 0 |
-| 2 | 2 | 0 | 0 |
-| 3 | 3 | 3 | 0 |
-| 4 | 2 | 2 | 0 |
-| 5 | 1 | 1 | 0 |
+| 1 | 3 | 0 | 0 |
+| 2 | 2 | 1 | 2 |
+| 3 | 2 | 2 | 0 |
+| 4 | 3 | 3 | 0 |
+| 5 | 2 | 2 | 0 |
 | 6 | 2 | 2 | 0 |
 | 7 | 4 | 4 | 3 |
 | 8 | 2 | 2 | 8 |
 | 9 | 3 | 3 | 1 |
 | 10 | 2 | 2 | 0 |
 
-Draw 2's healthy seed and three new fault trials did not execute its guard.
-The first, pre-epoch [coverage run](COVERAGE10_PRE_EPOCH.md) had exposed that
-guard with a different crash/reboot sequence. The frozen sequence and its
-strict-identity replay are recorded separately below; they are not added to
-the 32 trials in this table. The other runs provide no reproduced target
-failure. The raw run records and `branches10.json` support the per-target
-counts above.
-
-## Draw 2 strict replay
-
-`recovery_sequence02.json` freezes the crash/reboot sequence from the
-[pre-epoch run](COVERAGE10_PRE_EPOCH.md). With the current strict controller,
-the fresh healthy seed did not reach the guard. Two of four replay attempts
-matched both actions exactly, including epoch, and reached the guard. Both
-passed readback and avoided the target throw. The other two attempts matched
-only the first crash action. [Replay summary](recovery_replay02.json) and
-`../quad/identity_audit.json` record these outcomes; raw traces are in
-`out_replay02_epoch/`. This is recovery-specific check reachability, not a
-confirmed HDFS bug. The replay attempts are separate from the main table.
-
-The previous raw ten-check run was archived locally as
-`out_archive/out_coverage10_pre_epoch.tar.zst` with a SHA-256 sidecar before
-this strict rerun. Its tracked summaries remain in
-`coverage10_pre_epoch.json` and `branches10_pre_epoch.json`.
+Draw 2 illustrates recovery-specific reachability: its healthy workload did
+not execute the guard, but one exactly matched crash/reboot trial did, with
+two new closure branch outcomes. The guard's observed outcome was safe, the
+exact throw did not execute, and the checker passed. This is new recovery
+behavior, not evidence of a new HDFS bug. The other runs also provide no
+reproduced target failure. The raw run records and `branches10.json` support
+the per-target counts above.
