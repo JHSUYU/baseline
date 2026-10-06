@@ -3,11 +3,11 @@
   "status": "quality_complete",
   "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
   "target_reached": true,
-  "fault_trials": 85,
-  "strict_injections": 84,
-  "target_after_fault": 69,
+  "fault_trials": 80,
+  "strict_injections": 80,
+  "target_after_fault": 65,
   "coverage_gain": 10,
-  "elapsed_seconds": 4966.590000000001,
+  "elapsed_seconds": 4205.04,
   "bug_mark": "none",
   "evidence": [
     "README.md",
@@ -17,70 +17,8 @@
     "work/run.sh",
     "work/campaign.py",
     "work/checkpoint.json",
-    "evidence/hbase08-coverage-io-80.tar.gz",
-    "evidence/legacy-trials/coverage-v3.json",
-    "evidence/legacy-trials/coverage-v6.json"
+    "evidence/hbase08-coverage-io-80.tar.gz"
   ],
-  "healthy_target_checks": 9,
-  "healthy_fatal_target_checks": 0,
-  "timing_note": "761.55 s is the previously recorded 498.74 s subset plus v4/v5/v6 healthy seeds (35.37, 35.65, 37.88 s), v6 ZK write-response fault trial (37.93 s), merged-core healthy compatibility run (35.79 s), and node1 isolated HBase source validation (3.51 s javac, 22.47 s static analysis, 21.36 s instrumentation, 32.85 s JUnit). It excludes earlier adapter compiles and static analysis and instrumentation passes; each fault trial is separately timed below.",
-  "coverage_metric": "New instrumented branch outcomes versus each version's healthy run: v3 watcher +19 (11 new methods); v6 ZooKeeper write response +4 (1 new method). These are scoped measurements.",
-  "unique_fault_points_tested": 2,
-  "fault_trial_details": [
-    {
-      "id": "zkchild-001",
-      "seconds": 36.15,
-      "matched": 0,
-      "target_after_fault": false,
-      "target_guard_count": 9,
-      "fatal_target_guard_count": 0,
-      "note": "Selector did not match; injection invalid."
-    },
-    {
-      "id": "zkchild-002",
-      "seconds": 36.39,
-      "matched": 1,
-      "target_after_fault": true,
-      "target_guard_count": 12,
-      "fatal_target_guard_count": 0,
-      "note": "Matched and applied; target retained."
-    },
-    {
-      "id": "zkchild-v2-001",
-      "seconds": 38.87,
-      "matched": 1,
-      "target_after_fault": true,
-      "target_guard_count": 12,
-      "fatal_target_guard_count": 0,
-      "note": "Matched and applied; target retained."
-    },
-    {
-      "id": "zkchild-v3-001",
-      "seconds": 39.28,
-      "matched": 1,
-      "target_after_fault": true,
-      "target_guard_count": 12,
-      "fatal_target_guard_count": 0,
-      "note": "Matched and applied; target retained; 19 new scoped branch outcomes."
-    },
-    {
-      "id": "zk-write-v6-001",
-      "seconds": 37.93,
-      "matched": 1,
-      "applied": 1,
-      "target_after_fault": true,
-      "target_guard_count": 9,
-      "fatal_target_guard_count": 0,
-      "new_branch_outcomes_vs_seed": 4,
-      "new_methods_vs_seed": 1,
-      "note": "Matched and applied; target retained; original JUnit exited 0; four new scoped branch outcomes."
-    }
-  ],
-  "matched_applied_trials": 4,
-  "coverage_gain_by_trial": {
-    "zkchild-v3-001": 19,
-    "zk-write-v6-001": 4
-  },
   "campaign_state": "graph_free_coverage_io_80_trial_campaign_complete",
   "next_fault_families": "Campaign complete. Additional trials require a new workload or a genuinely new related I/O family.",
   "methodology": "graph_free_original_junit_observed_zk_io_jacoco_feedback",
@@ -160,12 +98,90 @@
     "graphchecker_prewoven_jar": false,
     "graphchecker_region_skeleton": false,
     "static_map_or_closure_feedback": false,
-    "observed_io_identity": "I/O family, exact ZK path, production call site, hit ordinal, ordered runtime match"
+    "observed_io_identity": "I/O family, exact ZK path, production call site, hit ordinal, ordered runtime match",
+    "scope": "current 80-trial graph-free campaign only; legacy GraphChecker pilots are excluded from comparable totals"
   },
   "completion_reason": "Completed 80 distinct, strictly applied original-JUnit fault sequences through eight ordered faults. No exact target exception occurred. The final 16 strict target-retaining rounds added no production method/branch coverage or stable I/O family, so the conditional 128/10 extension did not open.",
   "source_audit_note": "At the selected ClusterSchemaServiceImpl.getNamespace null check, a normal return proves the false branch and NamespaceNotFoundException would prove the true branch. None occurred after injection. In HBase 2.6.6 CreateNamespaceProcedure, IOException during CREATE_NAMESPACE_UPDATE_ZK is retried because rollback is unsupported; the many recovered write-fault sequences are expected. ZKNamespaceManager watcher child-read failures abort the master and those target-lost trials are excluded from feedback.",
   "evidence_archive_sha256": "da3b791bbd2b632171729abe45d2a5dc885e7e373621ecdc5223775f8d459224",
   "evidence_archive_bytes": 4412382,
   "historical_trials_count": 5,
-  "current_method_trials_count": 80
+  "current_method_trials_count": 80,
+  "legacy_evidence": {
+    "methodology": "historical GraphChecker-instrumented, build-specific pilot; excluded from current graph-free baseline totals",
+    "fault_trials": 5,
+    "strict_injections": 4,
+    "target_after_fault": 4,
+    "elapsed_seconds": 761.55,
+    "healthy_target_checks": 9,
+    "healthy_fatal_target_checks": 0,
+    "timing_note": "761.55 s is the previously recorded 498.74 s subset plus v4/v5/v6 healthy seeds (35.37, 35.65, 37.88 s), v6 ZK write-response fault trial (37.93 s), merged-core healthy compatibility run (35.79 s), and node1 isolated HBase source validation (3.51 s javac, 22.47 s static analysis, 21.36 s instrumentation, 32.85 s JUnit). It excludes earlier adapter compiles and static analysis and instrumentation passes; each fault trial is separately timed below.",
+    "coverage_metric": "New instrumented branch outcomes versus each version's healthy run: v3 watcher +19 (11 new methods); v6 ZooKeeper write response +4 (1 new method). These are scoped measurements.",
+    "unique_fault_points_tested": 2,
+    "fault_trial_details": [
+      {
+        "id": "zkchild-001",
+        "seconds": 36.15,
+        "matched": 0,
+        "target_after_fault": false,
+        "target_guard_count": 9,
+        "fatal_target_guard_count": 0,
+        "note": "Selector did not match; injection invalid."
+      },
+      {
+        "id": "zkchild-002",
+        "seconds": 36.39,
+        "matched": 1,
+        "target_after_fault": true,
+        "target_guard_count": 12,
+        "fatal_target_guard_count": 0,
+        "note": "Matched and applied; target retained."
+      },
+      {
+        "id": "zkchild-v2-001",
+        "seconds": 38.87,
+        "matched": 1,
+        "target_after_fault": true,
+        "target_guard_count": 12,
+        "fatal_target_guard_count": 0,
+        "note": "Matched and applied; target retained."
+      },
+      {
+        "id": "zkchild-v3-001",
+        "seconds": 39.28,
+        "matched": 1,
+        "target_after_fault": true,
+        "target_guard_count": 12,
+        "fatal_target_guard_count": 0,
+        "note": "Matched and applied; target retained; 19 new scoped branch outcomes."
+      },
+      {
+        "id": "zk-write-v6-001",
+        "seconds": 37.93,
+        "matched": 1,
+        "applied": 1,
+        "target_after_fault": true,
+        "target_guard_count": 9,
+        "fatal_target_guard_count": 0,
+        "new_branch_outcomes_vs_seed": 4,
+        "new_methods_vs_seed": 1,
+        "note": "Matched and applied; target retained; original JUnit exited 0; four new scoped branch outcomes."
+      }
+    ],
+    "matched_applied_trials": 4,
+    "coverage_gain_by_trial": {
+      "zkchild-v3-001": 19,
+      "zk-write-v6-001": 4
+    },
+    "evidence": [
+      "evidence/legacy-trials/coverage-v3.json",
+      "evidence/legacy-trials/coverage-v6.json",
+      "evidence/legacy-trials/checkpoint-v4",
+      "evidence/legacy-trials/checkpoint-v5",
+      "evidence/legacy-trials/checkpoint-v6"
+    ]
+  },
+  "healthy_target_checks": 12,
+  "healthy_fatal_target_checks": 0,
+  "comparison_scope": "Only the current 80-trial ByteBuddy + JaCoCo campaign is counted in top-level fields and the 102-site checklist."
 }

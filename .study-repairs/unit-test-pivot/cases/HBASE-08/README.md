@@ -57,8 +57,9 @@ expected recovery path, not a confirmed bug.
 
 Five earlier fault trials remain in `result.json` and
 `evidence/legacy-trials/`. Four were strictly applied and retained the target.
-Their scoped coverage measurements use different builds and are reported
-separately from this homogeneous JaCoCo campaign. The current campaign's
+Those pilots used GraphChecker-instrumented HBase slices and different builds.
+They appear only under `legacy_evidence`; no historical trial, coverage, or
+time is included in the top-level 102-site checklist counts. The current campaign's
 budget is 80 new trials with up to eight faults, with a possible same-checkpoint
 extension to 128/ten if late rounds still expose new production coverage or
 I/O families. `result.current_campaign` separates its trial and coverage
@@ -98,8 +99,9 @@ the healthy run. It exposed one new stable I/O site; other new exact selectors
 were later hit ordinals of already seen sites. The last 16 trials added no
 production method, branch, or stable I/O family, so the conditional 128/ten
 extension did not open. The current method cost 4,205.04 seconds including
-the healthy run; the five earlier trials and their setup cost are reported
-separately in `result.json`. This is no bug candidate for this tested scope.
+the healthy run; the five earlier GraphChecker pilots and their setup cost are
+reported only under `legacy_evidence` in `result.json`. This is no bug
+candidate for this tested scope.
 
 `evidence/hbase08-coverage-io-80.tar.gz` contains the checkpoint and all
 healthy/fault logs and JaCoCo execution data. Its SHA-256 is
