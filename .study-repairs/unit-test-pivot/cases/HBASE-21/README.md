@@ -34,8 +34,9 @@ is used. The source checkout is read only; the executed HBase JAR and test JAR
 are original release artifacts.
 
 The queue favors new stable I/O sites, new production coverage, and I/O events
-nearer the target in the healthy run. It reduces the score of repeatedly tried
-first sites and skips fault patterns that have repeatedly removed the target.
+nearer the target in the healthy run, including the selected test namespace.
+It reduces the score of repeatedly tried or target-losing first sites and skips
+fault patterns that have repeatedly removed the target.
 The healthy event order is runtime feedback, not a reconstructed causal graph.
 
 The default search budget is 80 **strict, target-retaining** trials with at most

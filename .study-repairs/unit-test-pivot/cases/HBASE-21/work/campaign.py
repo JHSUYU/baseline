@@ -183,6 +183,12 @@ def queue_priority(entry, trials, healthy_order):
     # Cap the priority of descendants from a frequently tried first I/O site
     # so other observed sites receive trials as the queue grows.
     root_attempts = sum('~'.join(x['plan'][0].split('~')[:3]) == root_site for x in trials)
+    root_results = [x for x in trials if x['strict']
+                    and '~'.join(x['plan'][0].split('~')[:3]) == root_site]
+    root_loss_penalty = 30 if root_results and all(
+        not x['target_after_final_fault'] for x in root_results) else 0
+    selected_namespace_bonus = 15 if 'TestNamespaceAuditor_testRestoreSnapshotQuotaExceed' \
+        in entry['plan'][0] else 0
     same_root_multifaults = [x for x in trials if x['strict'] and len(x['plan']) >= 2
                              and '~'.join(x['plan'][0].split('~')[:3]) == root_site]
     exhausted_root = len(entry['plan']) >= 2 and len(same_root_multifaults) >= 4 \
@@ -204,7 +210,7 @@ def queue_priority(entry, trials, healthy_order):
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
         - (180 if exhausted_prefix else 0) - (120 if exhausted_root else 0) \
         - learned_target_loss_penalty - min(5 * root_attempts, 30) \
-        + temporal_proximity + depth_bonus
+        - root_loss_penalty + selected_namespace_bonus + temporal_proximity + depth_bonus
 
 
 def publish(state):
