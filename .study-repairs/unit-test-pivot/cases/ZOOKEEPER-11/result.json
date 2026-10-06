@@ -1,6 +1,6 @@
 {
   "case_id": "ZOOKEEPER-11",
-  "status": "quality_complete",
+  "status": "pending_budget_expansion",
   "cluster_test": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest.testReadCurrentEpochFromAcceptedEpochTmpFile",
   "target_reached": true,
   "selection_line": 1175,
@@ -18,16 +18,16 @@
   "strict_injections": 5,
   "target_after_fault": 2,
   "coverage_gain": 1,
-  "coverage_kind": "new_branch_outcome_pair_in_target_region_methods_plus_file_read",
+  "coverage_kind": "New scoped branch outcome pair in instrumented target and file-read methods",
   "global_branch_outcome_gain": 12,
   "bug_mark": "none",
-  "stopping_reason": "closure_equivalence_exhausted",
-  "healthy_exact_target_closure_fault_markers": 20,
-  "healthy_candidate_shared_location_fault_markers": 24,
-  "closure_partition": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-11/closure-partition.json",
-  "fault_model_limitation": "Conclusion is limited to the original embedded JUnit workload, observed target closure, and the available IOException/KeeperException doors. It does not establish behavior under deletion, corruption, crash/reboot, other workloads, or unobserved I/O.",
+  "stopping_reason": "legacy_five_trial_campaign_finished",
+  "fault_model_limitation": "The five trials cover only the original embedded JUnit workload and the checked file I/O exceptions used in those trials.",
   "source_inventory_only": false,
-  "evidence": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-11/README.md",
-  "trial_history": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-11/trials.json",
-  "reason": "The original three-peer JUnit passes and reaches the target guard. Five distinct full-occurrence IOException trials all injected strictly; two retained the selected exact target occurrence and guard after the fault, and none fired the selected IOException. Source control flow and the complete partition of 20 exact target-region file markers, plus 24 shared-location candidate markers, show that no available door can remove the tmp file before the selected guard while keeping that guard reachable. No new bug was confirmed."
+  "evidence": "README.md",
+  "trial_history": "trials.json",
+  "reason": "The original three-peer JUnit reached the target guard. Five distinct IOException trials all matched and applied; two retained the guard after the fault and neither fired its selected exception. No new bug was confirmed. The revised 48-trial budget and broader I/O diversity remain open.",
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4
 }

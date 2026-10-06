@@ -1,6 +1,6 @@
 {
   "case_id": "HDFS-12",
-  "status": "target_reached_pending_exact_key_state_edge",
+  "status": "pending_budget_expansion",
   "system": "HDFS 3.4.3",
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "function": "retrievePassword(BlockTokenIdentifier)",
@@ -10,7 +10,7 @@
   "resolved_throw_source_line": 512,
   "resolved_target_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)>#u37",
   "resolved_guard_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)>#u25",
-  "line_resolution_evidence": "Hadoop 3.4.3 source has Map.get at 509 and if (key == null) at 511. The released jar LineNumberTable maps new InvalidToken bytecode offset 84 to source line 512; selection line 514 is error-message continuation. GraphChecker STATIC_SCOPE_SITE resolves throw #u37 guarded by #u25 with false failure arm.",
+  "line_resolution_evidence": "Hadoop 3.4.3 source has Map.get at 509 and if (key == null) at 511. The released jar LineNumberTable maps new InvalidToken bytecode offset 84 to source line 512; selection line 514 is error-message continuation.",
   "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient[0] (key rotation), plus testEncryptedReadDefaultAlgorithmCipherSuite[0] (SASL read)",
   "cluster_nodes": "Original JUnit MiniDFSCluster.Builder(conf) default: one NameNode and one DataNode; testLongLivedClient restarts its encrypted cluster",
   "target_reached": true,
@@ -22,8 +22,6 @@
     true
   ],
   "healthy_target_fatal": false,
-  "target_region_id": "REGION.61e62f41-34c6-3a5d-b610-b639dc3f4838",
-  "graph_gap": "Four distinct DataXceiver target occurrences have hdfs/datanode/0#epoch0 identity and no BLOCKING gaps. Heartbeat, BPOfferService key imports, RPC, and SASL SERVER_READ are target-closure members. Shared Map state membership is CANDIDATE/SHARED_LOCATION_DEMAND_V1 with edgeEvidence=UNAVAILABLE; exact Map.put-to-Map.get read-from and NameNode command payload identity remain unproved.",
   "observed_fault_points": 194,
   "elapsed_seconds": 867.342,
   "elapsed_breakdown_seconds": {
@@ -44,17 +42,18 @@
     "key_update_new_method_entries": 0
   },
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record; .study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/record-start/healthy/trace/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/record-replay/healthy/trace/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trial-plans/manifest.json; .study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials; .study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials-retry",
-  "healthy_target_occurrence_count": 4,
-  "healthy_target_closure_server_read_fault_selectors": 4,
+  "evidence": [
+    "../../hdfs12/STATUS.md",
+    "evidence/legacy-fault-trials.json"
+  ],
   "lost_target_trials": 4,
   "target_exception_count": 0,
   "target_fatal_branch_count": 0,
   "coverage_gain_definition": "Distinct instrumented BRANCH (site,outcome) pairs in target-retaining fault runs versus each campaign's healthy trace union. Different static scopes are reported separately; timing effects may contribute.",
   "timing_note": "Sum of measured process durations in the two final original-JUnit campaigns; earlier feasibility probes and source review excluded.",
-  "status_scope": "Bounded HDFS-12 fault subcampaign complete: original encrypted-read and short-rotation JUnit methods, stable closure identity, SASL read, heartbeat response loss through five faults, direct Hadoop IPC request/response exceptions; no target InvalidToken observed.",
-  "stop_reason": "Equivalent fault families covered for this subcampaign. Six heartbeat response losses removed the DataNode/target, so that case is excluded by the target-after-fault oracle. Checklist remains pending exact producer-to-target key-state identity.",
-  "remaining_work": "Optional precision work: capture exact NameNode KeyUpdateCommand payload and DataNode Map.put/Map.get read-from edge; CANDIDATE closure edges were not promoted to EXACT.",
+  "status_scope": "The original encrypted-read and key-rotation cluster tests ran 22 fault trials across SASL reads, heartbeat responses, and Hadoop IPC requests and responses. Eighteen trials retained the target; no target InvalidToken was observed.",
+  "stop_reason": "The earlier subcampaign ended after 22 trials. Heartbeat response losses that removed the DataNode or target do not support the target oracle. The revised 48-trial budget and further I/O diversity remain open.",
+  "remaining_work": "Run additional target-retaining I/O fault families and ordered sequences, then reassess coverage and the target outcome.",
   "trial_results": [
     {
       "sequence": "first-eof",
@@ -74,7 +73,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:EOFException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u18",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/first-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "first-eof-then-second-eof",
@@ -94,7 +93,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:EOFException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u18",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/first-eof-then-second-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "first-eof-then-second-timeout",
@@ -114,7 +113,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u23",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/first-eof-then-second-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "first-timeout",
@@ -134,7 +133,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u23",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/first-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "first-timeout-then-second-eof",
@@ -154,7 +153,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:EOFException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u18",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/first-timeout-then-second-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "first-timeout-then-second-timeout",
@@ -174,7 +173,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u23",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/first-timeout-then-second-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "second-eof",
@@ -193,7 +192,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:EOFException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u18",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/second-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "second-timeout",
@@ -212,7 +211,7 @@
       "fault_marker": "FAULT:HDFS_SASL:SERVER_READ:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferServer: org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair doSaslHandshake(org.apache.hadoop.hdfs.net.Peer,java.io.OutputStream,java.io.InputStream,java.util.Map,javax.security.auth.callback.CallbackHandler)>#u23",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/server-door/record/second-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "all-three-key-update-responses-timeout",
@@ -234,7 +233,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/all-three-key-update-responses-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "first-and-second-key-update-responses-timeout",
@@ -256,7 +255,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/first-and-second-key-update-responses-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "first-key-update-response-timeout",
@@ -278,7 +277,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/first-key-update-response-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "five-key-update-responses-timeout",
@@ -300,7 +299,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/five-key-update-responses-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "four-key-update-responses-timeout",
@@ -322,7 +321,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/four-key-update-responses-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "ipc-first-key-update-request-connect-timeout",
@@ -344,7 +343,7 @@
       "fault_marker": "FAULT:HADOOP_IPC:REQUEST:ConnectTimeoutException",
       "fault_site": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u25",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/ipc-first-key-update-request-connect-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "ipc-first-key-update-response-eof",
@@ -366,7 +365,7 @@
       "fault_marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
       "fault_site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/ipc-first-key-update-response-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "ipc-first-key-update-response-io",
@@ -388,7 +387,7 @@
       "fault_marker": "FAULT:HADOOP_IPC:RESPONSE",
       "fault_site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/ipc-first-key-update-response-io/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "ipc-first-key-update-response-timeout",
@@ -410,7 +409,7 @@
       "fault_marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/ipc-first-key-update-response-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "second-and-third-key-update-responses-timeout",
@@ -432,7 +431,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/second-and-third-key-update-responses-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "second-key-update-response-timeout",
@@ -454,7 +453,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/second-key-update-response-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "six-key-update-responses-timeout",
@@ -476,7 +475,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/six-key-update-responses-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "third-key-update-response-timeout",
@@ -498,7 +497,7 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials/third-key-update-response-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     },
     {
       "sequence": "six-key-update-responses-timeout",
@@ -518,12 +517,9 @@
       "fault_marker": "FAULT:HDFS_HEARTBEAT:RESPONSE_LOST:SocketTimeoutException",
       "fault_site": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void offerService()>#u67",
       "source_key": "hdfs/datanode/0#epoch0",
-      "evidence": ".study-repairs/unit-test-pivot/hdfs12/producer-heartbeat-door/trials-retry/six-key-update-responses-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-fault-trials.json"
     }
   ],
-  "healthy_closure_addresses": 11,
-  "healthy_closure_fault_events": 85,
-  "healthy_closure_blocking_gaps": 0,
   "fully_applied_trials": 21,
   "campaigns": {
     "server_sasl": {
@@ -545,6 +541,8 @@
       "new_method_entries": 0
     }
   },
-  "tmux_session": "hdfs12-case",
-  "checkpoint": ".study-repairs/unit-test-pivot/cases/HDFS-12/result.json"
+  "checkpoint": ".study-repairs/unit-test-pivot/cases/HDFS-12/result.json",
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4
 }

@@ -1,6 +1,6 @@
 {
   "case_id": "HDFS-11",
-  "status": "pending_graph_precision",
+  "status": "pending_budget_expansion",
   "system": "HDFS 3.4.3",
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "function": "retrieveDataEncryptionKey(int, byte[])",
@@ -10,7 +10,7 @@
   "resolved_throw_source_line": 553,
   "resolved_target_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u20",
   "resolved_guard_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u8",
-  "line_resolution_evidence": "The historical selection line 555 points to the last line of the exception message. Hadoop 3.4.3 source puts Map.get at 551, if (key == null) at 552, and throw new at 553. Released jar javap LineNumberTable maps ifnonnull bytecode 25 to line 552, new InvalidEncryptionKeyException bytecode 28 to line 553, and string continuation bytecode 57 to line 555. GraphChecker STATIC_SCOPE_SITE role TARGET_SITE resolves to #u20 guarded by #u8 with false failure arm.",
+  "line_resolution_evidence": "The historical selection line 555 points to the last line of the exception message. Hadoop 3.4.3 source puts Map.get at 551, if (key == null) at 552, and throw new at 553. Released jar javap LineNumberTable maps ifnonnull bytecode 25 to line 552, new InvalidEncryptionKeyException bytecode 28 to line 553, and string continuation bytecode 57 to line 555.",
   "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]",
   "cluster_nodes": "MiniDFSCluster, one NameNode and one DataNode (builder defaults)",
   "target_reached": true,
@@ -20,8 +20,6 @@
     true
   ],
   "healthy_target_fatal": false,
-  "target_region_id": "REGION.53092d3e-263d-3a18-b7a5-ae5b437d96de",
-  "graph_gap": "Exact source-to-target Map.put\u2192Map.get state edge is missing. Healthy trace has same DataNode manager objectId=643, map objectId=648, integer keyId=562312551, and BlockKey objectId=634 at successful addKeys put and both target gets, with no observed intervening remove/clear; these object IDs prove intrarun correspondence only. GraphChecker retains producer/import as CANDIDATE and edgeEvidence=UNAVAILABLE. NN\u2192DN WIRE_FLOW is also a candidate, not a proven end-to-end read-from.",
   "observed_fault_points": 141,
   "fault_trials": 19,
   "strict_injections": 19,
@@ -48,19 +46,21 @@
     }
   },
   "timing_note": "Sum of measured SEED, weave, original JUnit, aggregate, and trial process durations from two final subcampaigns; concurrency means this is not wall clock. New nine-trial tmux campaign wall time was 132.911 s. Earlier feasibility probes and manual source review excluded.",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-11.md; .study-repairs/unit-test-pivot/hdfs11-server-door/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/summary.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hdfs11-server-door/trials; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/weave-manifest.json; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/healthy-final/trace; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/key-state-evidence.json; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/campaign-checkpoint.json; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final",
-  "status_scope": "Original JUnit [0] reached exact HDFS-11 guard after 16 of 19 strict trials across SASL server-read and producer/control-plane fault classes. The observed target closure classes have bounded representative trials; quality_complete awaits a generic exact local map-state edge and, separately, stronger NN\u2192DN wire read-from evidence.",
+  "evidence": [
+    "evidence/legacy-server-read-trials.json",
+    "evidence/legacy-key-path-trials.json",
+    "evidence/legacy-healthy-runs.json",
+    "evidence/legacy-key-observation.json"
+  ],
+  "status_scope": "The original MiniDFSCluster test reached the guard after 16 of 19 applied trials across SASL read and control-plane I/O faults. None produced the target exception.",
   "healthy_fault_points_observed": 141,
-  "healthy_target_occurrence_count": 2,
-  "healthy_target_occurrences_stable_across_replay": true,
-  "healthy_target_closure_server_read_fault_selectors": 4,
   "fault_events_applied": 30,
   "target_exception_count": 0,
   "target_fatal_branch_count": 0,
   "lost_target_trials": 3,
   "coverage_gain_definition": "Final 27-class key-path campaign: ten new instrumented branch (site,outcome) pairs and zero new METHOD_ENTER methods versus its own healthy seed; ordered third fault added zero methods or branch pairs beyond ordered two-fault trace. Earlier 22-class SASL server-read subcampaign had five branch pairs and is not numerically combined across scopes.",
-  "stop_reason": "Nine final key-path trials completed after ten earlier SASL server-read trials. All eight observed target-closure marker classes have representative fault trials. An ordered second control-plane fault gained recovery branches; a third added no method or branch outcome. Map.put\u2192Map.get remains CANDIDATE/edgeEvidence=UNAVAILABLE, so stop at pending_graph_precision instead of repeating equivalent faults.",
-  "remaining_work": "Generic Map.put/get/remove/clear exact state edge with stable cluster-incarnation and manager/map/key identities; link each get to the last surviving put and the returned value. Reaggregate HDFS-11, then revisit only newly proven target-closure fault points. NN\u2192DN protobuf pairing can be strengthened separately.",
+  "stop_reason": "The earlier 19-trial campaign ended after an ordered two-fault sequence added recovery branch outcomes; a third fault added no further coverage. The revised 48-trial budget and broader I/O exploration remain open.",
+  "remaining_work": "Expand observed I/O fault families and ordered sequences up to four faults, using target retention and coverage feedback.",
   "trial_results": [
     {
       "sequence": "first-eof",
@@ -75,7 +75,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "first-timeout",
@@ -90,7 +90,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "second-eof",
@@ -104,7 +104,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/second-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "second-timeout",
@@ -118,7 +118,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/second-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "first-eof-then-eof",
@@ -133,7 +133,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof-then-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "first-eof-then-timeout",
@@ -148,7 +148,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof-then-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "first-timeout-then-eof",
@@ -163,7 +163,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout-then-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "first-timeout-then-timeout",
@@ -178,7 +178,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout-then-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "first-eof-then-eof-then-eof",
@@ -193,7 +193,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof-then-eof-then-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "first-timeout-then-timeout-then-timeout",
@@ -208,7 +208,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout-then-timeout-then-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-server-read-trials.json"
     },
     {
       "sequence": "response-timeout",
@@ -225,7 +225,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "response-eof",
@@ -242,7 +242,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "request-connect-timeout",
@@ -259,7 +259,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/request-connect-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "response-io",
@@ -276,7 +276,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-io/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "client-sasl-send-1",
@@ -293,7 +293,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/client-sasl-send-1/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "request-io",
@@ -310,7 +310,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/request-io/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "client-sasl-send-2",
@@ -326,7 +326,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/client-sasl-send-2/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "response-eof-then-retry-timeout",
@@ -343,7 +343,7 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-eof-then-retry-timeout/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     },
     {
       "sequence": "response-eof-retry-timeout-then-heartbeat-eof",
@@ -360,36 +360,12 @@
         true
       ],
       "target_fatal_exceptions": 0,
-      "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-eof-retry-timeout-then-heartbeat-eof/trace/runtime_trace.jsonl"
+      "evidence": "evidence/legacy-key-path-trials.json"
     }
   ],
-  "legacy_server_read_target_region_id": "REGION.c0d9d80b-cf85-36a4-87a7-f409be7dd190",
   "legacy_server_read_healthy_fault_points_observed": 146,
-  "tmux_session": "hdfs11_key_final",
-  "checkpoint": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/campaign-checkpoint.json",
-  "key_path_healthy_target_closure_addresses": 14,
-  "key_path_healthy_target_closure_fault_observations": 51,
-  "key_path_healthy_target_closure_fault_classes": 8,
-  "key_path_healthy_blocking_gaps": 0,
-  "key_path_edge_evidence": "UNAVAILABLE",
-  "key_path_diagnostic_gaps": {
-    "ADMISSION_GAP": 10,
-    "OCCURRENCE_ADDRESS_SHARED": 3,
-    "LINEAGE_LOST": 2
-  },
-  "key_state_evidence": {
-    "manager_object_id": 643,
-    "map_object_id": 648,
-    "key_id": 562312551,
-    "block_key_object_id": 634,
-    "put_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: void addKeys(org.apache.hadoop.hdfs.security.token.block.ExportedBlockKeys)>#u23",
-    "put_sequence": 7251,
-    "get_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u6",
-    "get_sequences": [
-      10038,
-      10536
-    ],
-    "intervening_remove_or_clear_observed": false,
-    "scope": "within one healthy run only; GraphChecker has not materialized an exact edge"
-  }
+  "checkpoint": "evidence/legacy-key-path-trials.json",
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4
 }

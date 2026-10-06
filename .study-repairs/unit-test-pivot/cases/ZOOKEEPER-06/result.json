@@ -3,7 +3,7 @@
   "case_id": "ZOOKEEPER-06",
   "system": "ZooKeeper",
   "version": "3.8.7",
-  "status": "pending_graph_precision",
+  "status": "pending_budget_expansion",
   "quality_complete": false,
   "bug_mark": "none",
   "cluster_test": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
@@ -18,7 +18,6 @@
   "target_code": "if (ss.isMoreRecentThan(leaderStateSummary)) throw new IOException(\"Follower is ahead of the leader...\")",
   "target_site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u14",
   "target_throw_site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u29",
-  "target_region_id": "REGION.b3eb0be6-3e8d-3adf-81c3-07d7060c0e07",
   "healthy_target_check_reached": true,
   "healthy_guard_outcome": true,
   "fault_trials": 32,
@@ -30,13 +29,12 @@
   "target_exception_after_fault_trials": 0,
   "oracle_candidates": 0,
   "elapsed_seconds": 321.413,
-  "elapsed_scope": "sum of measured JUnit fault execution and GraphChecker aggregation time for 32 trials; excludes static preparation, healthy seeds and manual reanalysis",
+  "elapsed_scope": "Sum of measured JUnit fault execution and trace processing for 32 trials; excludes setup and manual review.",
   "total_elapsed_seconds": 2704.312,
   "total_elapsed_scope": "wall-clock span from creation of the first case-local ZK06 adapter to report finalization; includes static preparation, healthy seeds, fault trials, trace reanalysis, source review and idle time",
   "case_started_at_utc": "2026-10-06T17:03:03.765161+00:00",
   "case_finished_at_utc": "2026-10-06T17:48:08.077056+00:00",
   "junit_execution_seconds": 218.427,
-  "graph_aggregation_seconds": 102.986,
   "fault_families": {
     "FAULT:ZK_QUORUM:RESPONSE": {
       "selected": 14,
@@ -82,27 +80,15 @@
     }
   },
   "coverage_feedback": "method-entry and branch-outcome signatures collected each run; gains within builds: r2=3, r3 response=5, r4 ACKEPOCH=7; raw site IDs cannot be unioned across different woven builds",
-  "graph_blocking_gaps_for_selected_healthy_target": 0,
-  "graph_edge_evidence": "UNAVAILABLE",
-  "remaining_gap": "Leader.leaderStateSummary receives LeaderZooKeeperServer.getLastProcessedZxid() via call-return, but the frozen candidate dataflow graph has no FileTxnLog/FileSnap state-producer edge; full persisted-zxid backward closure is unproven. One late response IOException selector remained unmatched after retry.",
   "source_review": "LearnerHandler constructs StateSummary from ACKEPOCH epoch bytes and zxid, then calls waitForEpochAck; Leader compares against currentEpoch and lastProcessedZxid loaded before new epoch proposal. A read failure before ACKEPOCH decoding can abort that handler, so trials that erase the check are not negative evidence.",
-  "graphchecker_commits": [
-    "4837827c6",
-    "08bbfb78e",
-    "b9e73d006"
-  ],
-  "graphchecker_system_head": "a8bc916b7",
-  "graphchecker_jar_sha256": {
-    "graphchecker-zk06.jar": "dd2707d33e0d3caae658736edd34314d560c983ad81666b1a6f68139212b8e22",
-    "graphchecker-zk06-r3.jar": "5a06e44268b68b0b16e254f4b1f06edba7487287257462b81dda249e19028596",
-    "graphchecker-zk06-r4.jar": "483bab188bf96bedeb531bf882ece103f210248eecc48434509bb71d063db8e1"
-  },
   "evidence": [
     "trial-ledger.jsonl",
     "artifact-manifest.json",
-    "producer-gap.json",
-    "run-r4/candidate_dataflow_edges.jsonl.gz",
-    "run-r4/selected/plan.jsonl",
-    "reanalysis-r3/summary.json"
-  ]
+    "REPORT.md"
+  ],
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4,
+  "trace_analysis_seconds": 102.986,
+  "remaining_work": "Expand relevant quorum I/O sites and ordered fault sequences within the 48-trial budget; use target retention and coverage feedback."
 }

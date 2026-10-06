@@ -1,6 +1,6 @@
 {
   "case_id": "ZOOKEEPER-07",
-  "status": "closure_trial_completed_no_target_failure",
+  "status": "pending_budget_expansion",
   "system": "ZooKeeper 3.8.7",
   "source_file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
   "function": "registerWithLeader(int)",
@@ -11,12 +11,10 @@
   "resolved_target_site": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u66",
   "resolved_guard_site": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u51",
   "fatal_guard_outcome": true,
-  "line_resolution_evidence": "The selection line 525 is the final exception-message expression. ZooKeeper 3.8.7 source puts the else-if guard at 515 and throw new IOException at 522. GraphChecker STATIC_SCOPE_SITE TARGET_SITE #u66 is guarded by #u51 true, with preceding chain #u40 true and #u29 false.",
+  "line_resolution_evidence": "The selection line 525 is the final exception-message expression. ZooKeeper 3.8.7 source puts the else-if guard at 515 and throw new IOException at 522.",
   "cluster_test": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
   "cluster_nodes": "three original in-JVM QuorumPeer instances, each restarted once by the unmodified JUnit test",
   "source_checkout_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
-  "graphchecker_case_commit": "6ef51dd30",
-  "graphchecker_jar_sha256": "4f728d488cffa86af5b24b7727566b06c02ef09d0232f97f1852a274061e85d1",
   "target_reached": true,
   "healthy_target_method_entries": 4,
   "healthy_target_guard_hits": 2,
@@ -25,15 +23,6 @@
     false
   ],
   "healthy_target_fatal": false,
-  "target_region_id": "REGION.0635dd39-d01c-3e35-acc6-a3261bc55660",
-  "runtime_parent_region_id": "REGION.77ac7573-6fd5-35c3-b2e6-edccead64143",
-  "target_region_own_occurrences": true,
-  "healthy_same_peer_target_addresses_distinct": true,
-  "healthy_exact_target_plan_rows": 2,
-  "healthy_target_plan_blockers": 0,
-  "graph_gap": "No BLOCKING gaps in the final healthy or fault aggregate. Two unrelated leader-side OCCURRENCE_ADDRESS_SHARED gaps remain DIAGNOSTIC in the healthy plan; one remains in the fault plan, with one DIAGNOSTIC LINEAGE_LOST. The plan's targetClosureEvidence gives EXACT membership and parent containment but reports edgeEvidence=UNAVAILABLE, so a complete retained predecessor-edge proof is not claimed.",
-  "healthy_epoch_file_reads_peer_attributed": 6,
-  "healthy_leaderinfo_exact_send_receive_pairs": 4,
   "fault_door_marker": "FAULT:ZK_QUORUM:RESPONSE",
   "fault_door_site": "<org.apache.zookeeper.server.quorum.Learner: void readPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>#u6",
   "fault_trials": 3,
@@ -59,23 +48,20 @@
     "strict_fault_trial_runner": 6.058,
     "strict_fault_trial_aggregate": 3.663
   },
-  "timing_note": "Successful final steps only; native Surefire, builds, earlier exploratory and failed port-conflict runs are excluded. The static seed preceded the final opt-in runtime weave.",
+  "timing_note": "Measured successful setup, healthy test, and selected trial steps only; earlier exploratory and failed port-conflict runs are excluded.",
   "evidence": {
     "report": "REPORT.md",
     "machine_summary": "evidence.json",
-    "static_scope_map": "run/static/zk07/static_scope_map.jsonl",
-    "candidate_graph": "run/static/zk07/candidate_dataflow_edges.jsonl.gz",
-    "healthy_trace": "run/runtime/runtime_trace.jsonl",
-    "healthy_plan": "run/targets/zk07/runtime/concolic_region_plan.jsonl",
-    "healthy_summary": "run/runtime/record-summary.json",
     "fault_selector": "trial-03/plan.json",
-    "fault_trace": "trial-03/trace/runtime_trace.jsonl",
-    "fault_plan": "trial-03/targets/zk07/runtime/concolic_region_plan.jsonl",
     "fault_test_log": "trial-03/junit.log",
     "fault_exit": "trial-03/exit.json",
     "earlier_exploratory_trials": [
       "trial-01",
       "trial-02"
     ]
-  }
+  },
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4,
+  "reason": "The original rolling-restart JUnit reached the guard. All three trial faults matched and applied; only trial-03 met the historical strict selector criterion. The selected IOException was handled by follower retry, the target guard ran later on its nonfatal outcome, and the original test passed. The current 48-trial budget and further I/O families remain open."
 }

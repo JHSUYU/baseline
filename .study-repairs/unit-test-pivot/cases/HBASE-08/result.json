@@ -1,17 +1,83 @@
 {
   "case_id": "HBASE-08",
-  "status": "target_reached_pending_graph",
+  "status": "pending_budget_expansion",
   "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
   "target_reached": true,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
-  "elapsed_seconds": 120.44,
+  "fault_trials": 5,
+  "strict_injections": 4,
+  "target_after_fault": 4,
+  "coverage_gain": 19,
+  "elapsed_seconds": 761.55,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HBASE-08.md; .study-repairs/unit-test-pivot/hbase08/trace/aggregate/summary.json",
+  "evidence": [
+    "evidence/legacy-trials/coverage-v3.json",
+    "evidence/legacy-trials/coverage-v6.json",
+    "evidence/legacy-trials/checkpoint-v6/zk-write-v6-001.json",
+    "evidence/legacy-trials/fault-plans/zk-write-response-v6-001.json"
+  ],
   "healthy_target_checks": 9,
   "healthy_fatal_target_checks": 0,
-  "graph_gap": "BLOCKING OCCURRENCE_ADDRESS_SHARED; missing HBase RPC/node and exact namespace state causal edges",
-  "timing_note": "Sum of successful new-experiment steps: original JUnit 34.58 s + static target slice 22.44 s + GraphChecker recording weave 26.31 s + recorded JUnit 36.40 s + aggregation 0.71 s."
+  "timing_note": "761.55 s is the previously recorded 498.74 s subset plus v4/v5/v6 healthy seeds (35.37, 35.65, 37.88 s), v6 ZK write-response fault trial (37.93 s), merged-core healthy compatibility run (35.79 s), and node1 isolated HBase source validation (3.51 s javac, 22.47 s static analysis, 21.36 s instrumentation, 32.85 s JUnit). It excludes earlier adapter compiles and static analysis and instrumentation passes; each fault trial is separately timed below.",
+  "coverage_metric": "New instrumented branch outcomes versus each version's healthy run: v3 watcher +19 (11 new methods); v6 ZooKeeper write response +4 (1 new method). These are scoped measurements.",
+  "unique_fault_points_tested": 2,
+  "fault_trial_details": [
+    {
+      "id": "zkchild-001",
+      "seconds": 36.15,
+      "matched": 0,
+      "target_after_fault": false,
+      "target_guard_count": 9,
+      "fatal_target_guard_count": 0,
+      "note": "Selector did not match; injection invalid."
+    },
+    {
+      "id": "zkchild-002",
+      "seconds": 36.39,
+      "matched": 1,
+      "target_after_fault": true,
+      "target_guard_count": 12,
+      "fatal_target_guard_count": 0,
+      "note": "Matched and applied; target retained."
+    },
+    {
+      "id": "zkchild-v2-001",
+      "seconds": 38.87,
+      "matched": 1,
+      "target_after_fault": true,
+      "target_guard_count": 12,
+      "fatal_target_guard_count": 0,
+      "note": "Matched and applied; target retained."
+    },
+    {
+      "id": "zkchild-v3-001",
+      "seconds": 39.28,
+      "matched": 1,
+      "target_after_fault": true,
+      "target_guard_count": 12,
+      "fatal_target_guard_count": 0,
+      "note": "Matched and applied; target retained; 19 new scoped branch outcomes."
+    },
+    {
+      "id": "zk-write-v6-001",
+      "seconds": 37.93,
+      "matched": 1,
+      "applied": 1,
+      "target_after_fault": true,
+      "target_guard_count": 9,
+      "fatal_target_guard_count": 0,
+      "new_branch_outcomes_vs_seed": 4,
+      "new_methods_vs_seed": 1,
+      "note": "Matched and applied; target retained; original JUnit exited 0; four new scoped branch outcomes."
+    }
+  ],
+  "matched_applied_trials": 4,
+  "coverage_gain_by_trial": {
+    "zkchild-v3-001": 19,
+    "zk-write-v6-001": 4
+  },
+  "campaign_state": "legacy_five_trial_campaign_finished",
+  "next_fault_families": "Run additional target-retaining I/O sites and ordered fault sequences within the 48-trial, four-fault budget.",
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4
 }
