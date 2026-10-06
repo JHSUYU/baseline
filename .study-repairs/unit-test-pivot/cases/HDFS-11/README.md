@@ -87,3 +87,12 @@ target-retaining trial for extra selected exceptions, absence of a successful
 new-key lookup after a rejection, and original-JUnit failure after a selected
 exception. It reports such outcomes as source-review candidates, not confirmed
 bugs.
+
+At completed trial 72, the expiry campaign's selection policy was updated at
+the checkpoint without repeating a completed trial. The unfinished trial 73
+remains the active sequence to replay. Subsequent choices favor I/O families
+whose earlier strict trials preserved the target, with every fifth choice
+reserved for broader exploration. If fewer than 24 of the first 80 trials
+retain the target, the budget extends to 128 trials and ten faults; the
+existing novelty-based extension also remains. The exact resume boundary is
+in `independent/expiry/scheduler-handoff.json`.
