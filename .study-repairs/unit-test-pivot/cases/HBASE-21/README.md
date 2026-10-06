@@ -56,6 +56,11 @@ campaign to 128 trials and ten faults. The `hbase21-campaign` tmux session runs
 the campaign on node1; the `hbase21-result-pull` tmux session atomically copies
 its result to node0 for the 102-site checklist.
 
+Short partial JVM runs stopped deliberately while installing queue changes are
+listed in `work/operator_preemptions.json`, separate from the completed trial
+ledger. Their time is included in wall time; none is counted as a strict or
+effective fault trial.
+
 An exception with the healthy target signature is marked expected. A changed
 signature or test failure is only a candidate until the HBase source and a
 clean replay establish an invariant or interface violation.
