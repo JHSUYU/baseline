@@ -37,6 +37,17 @@ def mirror_once() -> dict[str, dict]:
         if row['case_id'] != case_id:
             raise RuntimeError('wrong remote case')
         progress[case_id] = row
+    if progress['SOLR-36']['fault_trials'] != progress['SOLR-37']['fault_trials']:
+        raise RuntimeError('shared sequence progress is inconsistent')
+    subprocess.run((*SSH, 'cd ' + str(HERE) + ' && python3 audit_identity.py >/dev/null'),
+                   check=True)
+    identity: dict[str, dict] = {}
+    for case_id in progress:
+        remote = str(HERE / f'campaign/identity-audit-{case_id}.json')
+        identity[case_id] = json.loads(
+            subprocess.check_output((*SSH, 'cat', remote), text=True))
+        if identity[case_id]['fault_trials'] != progress[case_id]['fault_trials']:
+            raise RuntimeError(f'{case_id} changed while auditing identity')
     for case_id, row in progress.items():
         result_path = HERE.parent.parent / case_id / 'result.json'
         result = json.loads(result_path.read_text())
@@ -60,8 +71,14 @@ def mirror_once() -> dict[str, dict]:
             baseline_seconds=BASELINE_SECONDS,
             fault_trials=row['fault_trials'],
             strict_injections=row['strict_injections'],
-            target_after_fault=row['post_fault_target_reach_trials'],
-            post_fault_target_reach_trials=row['post_fault_target_reach_trials'],
+            target_after_fault=identity[case_id][
+                'strict_postfault_same_last_fault_child_or_collection_scope'],
+            post_fault_target_reach_trials=identity[case_id][
+                'strict_postfault_same_last_fault_child_or_collection_scope'],
+            post_fault_any_child_trials=identity[case_id][
+                'strict_postfault_any_child'],
+            logical_identity_audit={key: value for key, value in identity[case_id].items()
+                                    if key != 'trials'},
             target_exception_after_fault_trials=row['target_exception_after_fault_trials'],
             elapsed_seconds=round(BASELINE_SECONDS + row['elapsed_seconds'], 3),
             coverage_gain=row['production_probe_gain'],

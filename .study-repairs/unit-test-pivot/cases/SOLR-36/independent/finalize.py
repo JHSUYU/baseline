@@ -38,7 +38,9 @@ def main() -> None:
                 break
         time.sleep(30)
     subprocess.run(('ssh', *SSH_OPTIONS, 'ZhenyuLi@node2',
-                    'cd ' + REMOTE_DIR + ' && python3 audit_campaign.py'), check=True)
+                    'cd ' + REMOTE_DIR
+                    + ' && python3 audit_campaign.py && python3 audit_identity.py'),
+                   check=True)
     reports = {}
     for case_id in ('SOLR-36', 'SOLR-37'):
         name = f'campaign/final-audit-{case_id}.json'
@@ -46,11 +48,24 @@ def main() -> None:
                         'ZhenyuLi@node2:' + REMOTE_DIR + '/' + name,
                         str(HERE / name)), check=True)
         report = json.loads((HERE / name).read_text())
+        identity_name = f'campaign/identity-audit-{case_id}.json'
+        subprocess.run(('rsync', '-a', '-e', 'ssh ' + ' '.join(SSH_OPTIONS),
+                        'ZhenyuLi@node2:' + REMOTE_DIR + '/' + identity_name,
+                        str(HERE / identity_name)), check=True)
+        identity = json.loads((HERE / identity_name).read_text())
+        report['logical_identity_audit'] = {
+            key: value for key, value in identity.items() if key != 'trials'}
         reports[case_id] = report
         result_path = HERE.parent.parent / case_id / 'result.json'
         result = json.loads(result_path.read_text())
         result.update(
             campaign_final_audit=report,
+            logical_identity_audit=report['logical_identity_audit'],
+            target_after_fault=(
+                identity['strict_postfault_same_last_fault_child_or_collection_scope']),
+            post_fault_target_reach_trials=(
+                identity['strict_postfault_same_last_fault_child_or_collection_scope']),
+            post_fault_any_child_trials=identity['strict_postfault_any_child'],
             production_methods_gain=report['new_production_methods'],
             production_branch_outcomes_gain=report['new_production_branch_outcomes'],
             io_family_gain=report['new_semantic_io_families'],
