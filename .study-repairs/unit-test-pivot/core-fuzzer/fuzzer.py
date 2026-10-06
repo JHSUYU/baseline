@@ -844,6 +844,7 @@ def validate(config: dict[str, Any]) -> None:
 
 def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
     completed = state["completed"]
+    sequences = list(completed_sequences(state))
     results = [json.loads(Path(item["result"]).read_text())
                for item in completed]
     candidates = [item for item, result in zip(completed, results)
@@ -878,6 +879,12 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "status": status,
         "target_reached": seed.get("target_reached"),
         "fault_trials": len(completed),
+        "single_fault_trials": sum(len(sequence) == 1 for sequence in sequences),
+        "multi_fault_trials": sum(len(sequence) > 1 for sequence in sequences),
+        "first_fault_families_tested": len({
+            fault_family(sequence[0]) for sequence in sequences}),
+        "last_fault_families_tested": len({
+            fault_family(sequence[-1]) for sequence in sequences}),
         "strict_injections": sum(bool(result.get("strict_injection"))
                                  for result in results),
         "post_fault_target_reach_trials": sum(

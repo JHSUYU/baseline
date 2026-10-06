@@ -166,7 +166,8 @@ still requires source review and replay before confirmation.
 The result table lives at `cases/<CASE-ID>/result.json`. It includes the
 system, test, target status, strict injections, post-fault target reach and
 lost-target trial counts, target-exception-after-fault count, oracle candidate
-count, coverage gain, evidence path, graph gaps, and
+count, coverage gain, first/last I/O fault-family diversity, single/multiple
+fault trial counts, evidence path, graph gaps, and
 `setup_seconds`, `build_seconds`, `seed_seconds`, `fault_seconds`,
 `aggregate_seconds`, `total_elapsed_seconds`. `setup_seconds` and
 `build_seconds` are supplied by the case when those stages ran outside the

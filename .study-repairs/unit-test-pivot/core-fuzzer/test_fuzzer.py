@@ -548,6 +548,9 @@ class FuzzerTest(unittest.TestCase):
             self.assertGreaterEqual(item["elapsed_seconds"], 2.5)
             self.assertEqual(item["seed_seconds"], 2.5)
             self.assertGreater(item["aggregate_seconds"], 0)
+            self.assertEqual(item["single_fault_trials"], 1)
+            self.assertEqual(item["multi_fault_trials"], 0)
+            self.assertEqual(item["first_fault_families_tested"], 1)
 
     def test_exact_target_exception_survives_faulted_state_graph_gap(self):
         with tempfile.TemporaryDirectory() as temp:
