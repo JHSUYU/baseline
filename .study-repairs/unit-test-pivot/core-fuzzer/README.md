@@ -64,9 +64,13 @@ and `{case_dir}`. The driver rejects traces outside those workspaces.
 
 `target.method` and `target.exception_type` are exact. `target.site_id` pins
 the target branch checked after the final fault; its observed outcomes and
-change relative to the healthy run are saved as evidence. If no site is supplied, a
-method or branch event in the target call after that fault is the weaker
-reach criterion. `target.occurrence` can pin one runtime target occurrence.
+change relative to the healthy run are saved as evidence. For checks with
+alternative final branches, `target.check_site_ids` lists the exact branch
+sites; final sites can also be derived from `fatal_guard_paths`. A later
+method exit alone does not count as reaching one of those checks. If no
+check site is supplied, a method or branch event in the target call after
+that fault is the weaker reach criterion. `target.occurrence` can pin one
+runtime target occurrence.
 For a call-site check such as `Journal.checkRequest#u78`, set
 `target.check_events` to `["CALL_SITE_RETURN", "CALL_SITE_THROW"]`, and set
 `target.throw_site_id` to the same exact site. `target.throw_event` can be

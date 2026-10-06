@@ -244,13 +244,15 @@ def trace_feedback(path: Path, target: dict[str, Any],
     guard_paths = (fatal_guard_paths(target) if
                    ("fatal_guard_paths" in target or "fatal_guards" in target)
                    else [])
-    check_events = set(target.get("check_events", ["BRANCH"] if
-                                  target.get("site_id") else []))
+    configured_check_sites = target.get("check_site_ids") or []
     # Earlier guards can merely enter the function or an outer branch. The
     # final decision on a throw route is the selected check to retain after
     # the fault; Solr's alternative routes end at different branch sites.
-    check_sites = ({path[-1]["siteId"] for path in guard_paths} or
+    check_sites = (set(configured_check_sites) or
+                   {path[-1]["siteId"] for path in guard_paths} or
                    ({target["site_id"]} if target.get("site_id") else set()))
+    check_events = set(target.get("check_events", ["BRANCH"] if
+                                  check_sites else []))
     branch_rows = sorted((e for e in events if e.get("event") == "BRANCH"),
                          key=lambda e: e.get("seq", -1))
 
@@ -272,7 +274,7 @@ def trace_feedback(path: Path, target: dict[str, Any],
 
     check_rows = [e for e in events
                   if e.get("event") in check_events and
-                  e.get("siteId") == target.get("site_id") and
+                  e.get("siteId") in check_sites and
                   in_target_event(e) and
                   (not e["event"].startswith("CALL_SITE_") or
                    paired_call_site(e))]
@@ -291,8 +293,8 @@ def trace_feedback(path: Path, target: dict[str, Any],
                                   "METHOD_EXIT_THROW", "EXPLICIT_THROW"} and
             in_target_event(e) and e.get("seq", -1) > applied_seq >= 0
             for e in events))
-    target_reached = target_reached or target_site_seen
-    if target.get("site_id"):
+    target_reached = target_site_seen if check_sites else target_reached
+    if check_sites:
         target_site_after_fault = target_reached_after_fault
 
     def check_outcome(event: dict[str, Any]) -> Any:
@@ -741,8 +743,14 @@ def validate(config: dict[str, Any]) -> None:
             not isinstance(check_events, list) or not check_events or
             any(event not in allowed_checks for event in check_events)):
         raise ValueError("target.check_events must list supported check events")
-    if check_events and not target.get("site_id"):
-        raise ValueError("target.check_events requires exact site_id")
+    check_site_ids = target.get("check_site_ids", [])
+    if (not isinstance(check_site_ids, list) or
+            any(not isinstance(site, str) or "#u" not in site
+                for site in check_site_ids)):
+        raise ValueError("target.check_site_ids needs exact site IDs")
+    has_guards = "fatal_guards" in target or "fatal_guard_paths" in target
+    if check_events and not (target.get("site_id") or check_site_ids or has_guards):
+        raise ValueError("target.check_events requires exact check site IDs")
     throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
     if throw_event not in {"METHOD_EXIT_THROW", "EXPLICIT_THROW", "CALL_SITE_THROW"}:
         raise ValueError("target.throw_event must name a supported throw event")
@@ -757,7 +765,6 @@ def validate(config: dict[str, Any]) -> None:
             raise ValueError("explicit_throw_site_id differs from throw_method")
         if target.get("throw_site_id") and explicit_site != target["throw_site_id"]:
             raise ValueError("explicit_throw_site_id differs from throw_site_id")
-    has_guards = "fatal_guards" in target or "fatal_guard_paths" in target
     if has_guards:
         fatal_guard_paths(target)
     coverage_exclude_sites = target.get("coverage_exclude_sites", [])

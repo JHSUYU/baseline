@@ -114,6 +114,53 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_alternative_final_guards_require_exact_post_fault_check(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            first, second = TARGET + '#u34', TARGET + '#u43'
+            target = {
+                'method': TARGET,
+                'exception_type': 'example.TargetException',
+                'fatal_guard_paths': [
+                    [{'siteId': first, 'outcome': True}],
+                    [{'siteId': second, 'outcome': True}],
+                ],
+            }
+            base = [
+                {'event': 'METHOD_ENTER', 'seq': 1, 'method': TARGET,
+                 'callId': 10},
+                {'event': 'BRANCH', 'seq': 2, 'method': TARGET,
+                 'callId': 10, 'siteId': first, 'outcome': False},
+                marker(A, 'FAULT_APPLIED', 3, faultId=fingerprint(A)),
+            ]
+            unrelated_throw = base + [
+                {'event': 'METHOD_EXIT_THROW', 'seq': 4,
+                 'method': TARGET, 'callId': 10,
+                 'runtimeType': 'example.TargetException'},
+            ]
+            path = root / 'trace.jsonl'
+            jsonl(path, unrelated_throw)
+            feedback = trace_feedback(path, target)
+            self.assertFalse(feedback['target_reached_after_fault'])
+            self.assertFalse(feedback['oracle'])
+
+            reached = base + [
+                {'event': 'BRANCH', 'seq': 4, 'method': TARGET,
+                 'callId': 10, 'siteId': second, 'outcome': True},
+                {'event': 'METHOD_EXIT_THROW', 'seq': 5,
+                 'method': TARGET, 'callId': 10,
+                 'runtimeType': 'example.TargetException'},
+            ]
+            jsonl(path, reached)
+            feedback = trace_feedback(path, target)
+            self.assertTrue(feedback['target_reached_after_fault'])
+            self.assertTrue(feedback['oracle'])
+            self.assertEqual(feedback['target_outcomes_after_fault'], [True])
+
+            target['check_site_ids'] = [first, second]
+            feedback = trace_feedback(path, target)
+            self.assertTrue(feedback['target_reached_after_fault'])
+
     def test_runtime_occurrence_accepts_arbitrary_nonempty_identity(self):
         observed = marker(A, 'FAULT_POINT_OBSERVED', 1)
         self.assertEqual(point_from_event(observed), A)
