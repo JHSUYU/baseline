@@ -36,3 +36,24 @@ default is 64 new trials with up to six faults, with a possible same-checkpoint
 extension to 128/eight if late rounds still expose new production coverage or
 I/O identities. `result.current_campaign` separates its trial and coverage
 counts from the five historical trials.
+
+## Instrumentation provenance
+
+The runtime classpath in `work/run.sh` uses the Apache HBase 2.6.6 binary
+distribution under `/users/ZhenyuLi/.baseline-deps/hbase-2.6.6`, including
+the original `hbase-server-2.6.6-tests.jar`. The production server JAR is
+SHA-256 `27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696`;
+the test JAR is
+`b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5`;
+the ZooKeeper integration JAR is
+`6ad67305af4910e61e324034cab9ce0f50b966ce203c195581daeff552a8b957`.
+The corresponding read-only source checkout is revision
+`d5f63f523c065f963992ea4e74db268d17816631` (`rel/2.6.6`).
+
+The only instrumentation supplied to the JVM is the case-local ByteBuddy
+`agent.jar` built from `work/src/HBase08Agent.java` (SHA-256
+`5d30e7bf93db0d7bdeb9f3b1da7ef2f2db2a1fe76cd5bf65082ea910eb8c78af`)
+and JaCoCo 0.8.15. The I/O identities are recorded at runtime by that agent;
+the case uses no GraphChecker prewoven JAR, region skeleton, static map,
+closure, or graph feedback. The source checkout is used only for inspecting
+the selected check and its original JUnit.
