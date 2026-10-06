@@ -1,13 +1,18 @@
 {
   "case_id": "HDFS-49",
-  "status": "test_identified",
+  "status": "no_cluster_test",
   "cluster_test": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestSnapshot#testSnapshot",
-  "target_reached": null,
+  "target_reached": false,
   "elapsed_seconds": 0,
   "fault_trials": 0,
   "strict_injections": 0,
   "target_after_fault": 0,
   "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+  "target_source_line": 188,
+  "target_function": "DirectorySnapshottableFeature.addSnapshot",
+  "target_code": "if (n + 1 > snapshotQuota) throw new SnapshotException(...)",
+  "source_review": "The mapped TestSnapshot#testSnapshot repeatedly creates unique snapshots under the default quota, and does not lower that quota. A scan of original Hadoop 3.4.3 HDFS test sources finds no setSnapshotQuota call and no snapshot-quota-exceeded exception test. TestSnapshot#testAllowAndDisallowSnapshot confirms root quota 0 after disallow but does not create a snapshot then. No original embedded-cluster JUnit was found that exercises the selected quota-exceeded arm; no fault trial is claimed.",
+  "evidence": "HDFS-TEST-MAP.json#HDFS-49; Hadoop 3.4.3 DirectorySnapshottableFeature.java:184-191; TestSnapshot.java:238-275,420-458; source test-tree search for setSnapshotQuota and quota-exceeded assertions."
 }
