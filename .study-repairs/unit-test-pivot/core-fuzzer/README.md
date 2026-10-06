@@ -68,6 +68,14 @@ case, set:
   `throw_site_id` when supplied. The oracle follows `parentCallId` from
   that throw back to the selected target call. `target.site_id` is optional
   controller summary context; the Python oracle uses the fatal guards.
+  For a selected `throw` caught inside the same Java method, set
+  `target.throw_event` to `EXPLICIT_THROW` and provide the exact
+  `target.explicit_throw_site_id`. The GraphChecker hook records the
+  executed `ThrowStmt` before local catch handling; the default
+  `METHOD_EXIT_THROW` oracle only sees exceptions escaping a method.
+  The explicit site must belong to `throw_method` and, when supplied,
+  equal `throw_site_id`. Calibrate its woven site ID against the original
+  JUnit test before using it for trials.
 - `seed.trace`, `seed.closure_plan`: healthy `runtime_trace.jsonl` and
   `concolic_region_plan.jsonl`. Provide `seed.command` to generate them or
   `seed.elapsed_seconds`/`seed.timing_manifest` if already generated. The
@@ -122,7 +130,8 @@ closure feedback from a blocked trial enters the corpus.
 
 A target exception candidate requires all of the following in the selected
 target call or a descendant and after the last applied fault: the exact
-expected `METHOD_EXIT_THROW.runtimeType` from `throw_method`, target
+expected exception `runtimeType` from `throw_method` at the selected
+`METHOD_EXIT_THROW` or `EXPLICIT_THROW` event, target
 occurrence, and one complete ordered fatal guard route in the throw call.
 An exception in the same method without
 those guards is recorded as `target_exception_unlinked`; it is not marked

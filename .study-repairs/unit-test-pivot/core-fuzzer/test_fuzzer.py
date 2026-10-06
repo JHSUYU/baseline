@@ -361,6 +361,65 @@ class FuzzerTest(unittest.TestCase):
             self.assertTrue(verdict["target_after_fault"])
             self.assertFalse(verdict["oracle"])
 
+    def test_explicit_throw_oracle_handles_local_catch_and_exact_site(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            _, plan = seed_files(root)
+            closure = read_closure(plan, TARGET)
+            throw_site = TARGET + "#u12"
+            trace = root / "caught.jsonl"
+            events = [
+                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
+                 "faultId": "f", **POINT},
+                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
+                 "method": TARGET, "callId": 10,
+                 "occurrenceAddress": OCC_TARGET},
+                {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
+                 "siteId": SITE, "callId": 10, "outcome": True},
+                {"schemaVersion": 3, "event": "EXPLICIT_THROW", "seq": 4,
+                 "method": TARGET, "callId": 10, "siteId": throw_site,
+                 "runtimeType": "example.TargetException"},
+                {"schemaVersion": 3, "event": "METHOD_EXIT_NORMAL", "seq": 5,
+                 "method": TARGET, "callId": 10},
+            ]
+            jsonl(trace, events)
+            target = {"method": TARGET, "site_id": SITE,
+                      "fatal_guards": [{"siteId": SITE, "outcome": True}],
+                      "exception_type": "example.TargetException"}
+            self.assertFalse(trace_feedback(trace, closure, target)["oracle"])
+            explicit = {**target, "throw_event": "EXPLICIT_THROW",
+                        "explicit_throw_site_id": throw_site}
+            feedback = trace_feedback(trace, closure, explicit)
+            self.assertTrue(feedback["oracle"])
+            self.assertEqual(feedback["target_fatal_exception_count"], 1)
+            self.assertFalse(trace_feedback(trace, closure,
+                                            {**explicit,
+                                             "explicit_throw_site_id": TARGET + "#u99"})
+                             ["oracle"])
+            events[2]["seq"] = 0
+            jsonl(trace, events)
+            self.assertFalse(trace_feedback(trace, closure, explicit)["oracle"])
+
+    def test_explicit_throw_config_requires_same_method_and_site(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            trace, plan = seed_files(root)
+            runner = root / "unused.py"
+            runner.write_text("pass\n")
+            config = trial_config(root, trace, plan, runner)
+            config["target"]["throw_event"] = "EXPLICIT_THROW"
+            with self.assertRaisesRegex(ValueError, "explicit_throw_site_id"):
+                validate(config)
+            config["target"]["explicit_throw_site_id"] = (
+                "<example.Other: void check()>#u12")
+            with self.assertRaisesRegex(ValueError, "differs from throw_method"):
+                validate(config)
+            config["target"]["explicit_throw_site_id"] = TARGET + "#u12"
+            validate(config)
+            config["target"]["throw_site_id"] = TARGET + "#u13"
+            with self.assertRaisesRegex(ValueError, "differs from throw_site_id"):
+                validate(config)
+
     def test_alternative_fatal_guard_paths_do_not_require_both_routes(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

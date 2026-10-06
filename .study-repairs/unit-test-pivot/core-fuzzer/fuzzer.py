@@ -252,6 +252,7 @@ def trace_feedback(path: Path, closure: dict[str, Any],
     target_calls: set[int] = set()
     call_parents: dict[int, int] = {}
     summary: dict[str, Any] = {}
+    throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
     events = list(rows(path))
     for event in events:
         kind = event.get("event")
@@ -283,8 +284,10 @@ def trace_feedback(path: Path, closure: dict[str, Any],
             site = event.get("siteId")
             if site:
                 coverage.add("BRANCH:" + site + ":" + str(event.get("outcome")))
-        elif kind == "METHOD_EXIT_THROW":
-            if event.get("method") == target.get("throw_method", target["method"]):
+        elif kind == throw_event:
+            if (event.get("method") == target.get("throw_method", target["method"])
+                    and (throw_event != "EXPLICIT_THROW" or
+                         event.get("siteId") == target.get("explicit_throw_site_id"))):
                 exceptions.append(event)
     def in_target_call(call_id: Any) -> bool:
         seen: set[int] = set()
@@ -737,7 +740,23 @@ def validate(config: dict[str, Any]) -> None:
             not isinstance(config["target"]["request_api"], str) or
             not config["target"]["request_api"]):
         raise ValueError("target.request_api must be a nonempty semantic operation")
+    throw_event = config["target"].get("throw_event", "METHOD_EXIT_THROW")
+    if throw_event not in {"METHOD_EXIT_THROW", "EXPLICIT_THROW"}:
+        raise ValueError("target.throw_event must name a supported throw event")
+    if throw_event == "EXPLICIT_THROW" and (
+            not isinstance(config["target"].get("explicit_throw_site_id"), str)
+            or "#u" not in config["target"]["explicit_throw_site_id"]):
+        raise ValueError("EXPLICIT_THROW requires exact explicit_throw_site_id")
     load_target_policy(config["target"])
+    if throw_event == "EXPLICIT_THROW":
+        explicit_site = config["target"]["explicit_throw_site_id"]
+        throw_method = config["target"].get("throw_method",
+                                            config["target"]["method"])
+        if explicit_site.split("#u", 1)[0] != throw_method:
+            raise ValueError("explicit_throw_site_id differs from throw_method")
+        if (config["target"].get("throw_site_id") and
+                explicit_site != config["target"]["throw_site_id"]):
+            raise ValueError("explicit_throw_site_id differs from throw_site_id")
     if not config["target"].get("region_id"):
         raise ValueError("target requires static region_id or scope_map + throw_site_id")
     fatal_guard_paths(config["target"])
