@@ -102,11 +102,15 @@ def normalize_trial_counts(record: dict, update: dict,
             break
 
     # Some ledgers count fault *events* in strict_injections and others count
-    # fully applied *sequences*. Derive a separate comparable trial count.
+    # fully applied *sequences*. A phase-local matched_applied_trials must not
+    # override a plausible full-case strict_injections count.
     for candidate in ("fully_applied_trials", "strict_trials",
                       "strict_injection_trials",
-                      "fully_matched_fault_sequences", "matched_applied_trials"):
-        if candidate in update:
+                      "fully_matched_fault_sequences", "strict_injections",
+                      "matched_applied_trials"):
+        if (candidate in update and
+                (candidate != "strict_injections" or
+                 update[candidate] <= update.get("fault_trials", 0))):
             record["fully_applied_trials"] = update[candidate]
             break
     else:
