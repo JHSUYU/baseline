@@ -510,6 +510,7 @@
   "shared_campaign_id": "SOLR-14-15-16-original-split-tests",
   "shared_invocation": "SOLR-14/15/16:SplitShardTest#doTest:healthy-04+healthy-05",
   "source_identity": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
+  "source_window_limit": "In unchanged ShardSplitTest#testSplitWithChaosMonkey, the monkey stops the parent leader only after child shard replicas exist, whereas SplitShardCmd reads the parent live znode for SOLR-14 before child creation. The native exception faults did not supply an earlier parent-stop event; first-read-null remains an uncovered workload/fault-window gap.",
   "status": "first_guard_reached_fatal_null_branch_not_observed",
   "strict_injections": 162,
   "supplemental_elapsed_seconds": 1142.55,
@@ -673,5 +674,5 @@
   "total_measured_execution_seconds": 5571.542,
   "total_strict_fault_trials_all_workloads": 169,
   "trial_accounting": "The same SplitShardTest and ShardSplitTest trials test all three checks; counts and elapsed time are shared across these rows.",
-  "updated_at": 1791325899.0776372
+  "updated_at": 1791327804.56196
 }
