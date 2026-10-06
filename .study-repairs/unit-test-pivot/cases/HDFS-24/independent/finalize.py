@@ -170,6 +170,7 @@ def main() -> None:
         result["completed_at_utc"] = datetime.now(timezone.utc).isoformat()
         atomic_json(case / "result.json", result)
         prefix = "independent" if case_id == cases[0] else f"../{cases[0]}/independent"
+        instrumentation_prefix = "../HDFS-24/independent" if case_id == "HDFS-26" else prefix
         detail = result["coverage_gain_detail"]
         readme = (
             f"# {case_id} independent original-JUnit fault campaign\n\n"
@@ -209,8 +210,8 @@ def main() -> None:
             "Evidence: [result](result.json), [trial ledger](trial-ledger.csv), "
             f"[checkpoint]({prefix}/evidence/campaign-state.json), "
             f"[healthy manifest]({prefix}/evidence/healthy/manifest.json), "
-            f"[ASM probe]({prefix}/src/HdfsStorageProbe.java), "
-            f"[patcher]({prefix}/src/PatchHdfsStorage.java).\n")
+            f"[ASM probe]({instrumentation_prefix}/src/HdfsStorageProbe.java), "
+            f"[patcher]({instrumentation_prefix}/src/PatchHdfsStorage.java).\n")
         tmp = case / "README.md.tmp"
         tmp.write_text(readme)
         tmp.replace(case / "README.md")
