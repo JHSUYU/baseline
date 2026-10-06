@@ -32,3 +32,11 @@ sequences only after an exact injection and a subsequent execution of the
 second-recovery check on journalnode-2. One interrupted calibration sequence
 was left in the checkpoint's `current` field and requeued on restart; no
 completed round was repeated.
+
+After 33 completed trials, the queue selector was changed at a checkpoint to
+give every third selection to the deepest available sequence, regardless of
+whether its last fault is RPC or file I/O. This exercises combinations within
+the eight-fault budget while the other rounds continue to sample both I/O
+families. The interrupted in-flight sequence was requeued, and all 33
+completed sequence IDs were preserved; see
+`independent/evidence/scheduler-handoff.json`.

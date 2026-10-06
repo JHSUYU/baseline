@@ -214,17 +214,14 @@ def mutate(trace: list[dict], sequence: list[dict], max_faults: int) -> list[lis
 
 
 def choose_queue_index(queue: list[list[dict]], completed: int) -> int:
-    """Favor target-retaining committed-ID writes while sampling RPC and depth."""
+    """Balance recovery file I/O, RPC, and multi-fault sequences."""
     writes = [i for i, item in enumerate(queue) if "FILE:" in item[-1]["marker"]]
     rpc = [i for i, item in enumerate(queue) if "RPC:" in item[-1]["marker"]]
-    if completed >= 80 and completed % 3 == 0:
-        deep = [i for i, item in enumerate(queue) if len(item) >= 3]
+    if completed >= 32 and completed % 3 == 0:
+        deep = [i for i, item in enumerate(queue) if len(item) >= 2]
         if deep:
-            return max(deep, key=lambda i: (len(queue[i]), -i))
-    if completed >= 30 and completed % 3 == 0:
-        deep = [i for i in writes if len(queue[i]) >= 2]
-        if deep:
-            return max(deep, key=lambda i: (len(queue[i]), -i))
+            return max(deep, key=lambda i: (len(queue[i]),
+                                            "FILE:" in queue[i][-1]["marker"], -i))
     if completed % 4 == 3 and rpc:
         return min(rpc, key=lambda i: (len(queue[i]), i))
     if writes:
