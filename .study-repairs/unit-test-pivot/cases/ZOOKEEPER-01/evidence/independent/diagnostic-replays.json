@@ -1,0 +1,43 @@
+{
+  "replays": [
+    {
+      "elapsed_seconds": 5.606,
+      "ephemeral_owner_matches_original_guard_session": true,
+      "junit_assertion": "=> org.opentest4j.AssertionFailedError: expected: <null> but was: <4294967298,4294967298,1791322058307,1791322058307,0,0,0,144150883461103616,2,0,4294967298",
+      "junit_exit": 1,
+      "observed_ephemeral_owner_hex": "2002076fac20000",
+      "original_trial": "trial-040",
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@3"
+      ],
+      "replay_run": "replay-040-01",
+      "selected_target_throw_after_fault": 0,
+      "strict": true,
+      "target_after_fault": true,
+      "target_guard_sessions_after_fault": [
+        "2002076fac20000",
+        "2002076fac20001"
+      ]
+    },
+    {
+      "elapsed_seconds": 5.855,
+      "ephemeral_owner_matches_original_guard_session": true,
+      "junit_assertion": "=> org.opentest4j.AssertionFailedError: expected: <null> but was: <4294967298,4294967298,1791322058603,1791322058603,0,0,0,144150883472244736,2,0,4294967298",
+      "junit_exit": 1,
+      "observed_ephemeral_owner_hex": "2002076fb6c0000",
+      "original_trial": "trial-050",
+      "plan": [
+        "org.apache.zookeeper.server.NIOServerCnxn#readPayload:180:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@3"
+      ],
+      "replay_run": "replay-050-01",
+      "selected_target_throw_after_fault": 0,
+      "strict": true,
+      "target_after_fault": true,
+      "target_guard_sessions_after_fault": [
+        "2002076fb6c0000",
+        "2002076fb6c0001"
+      ]
+    }
+  ],
+  "source_review": "SessionUpgradeQuorumTest.makeSureEphemeralIsGone:237-253 creates an ephemeral asynchronously, calls ZooKeeper.close, then immediately checks that a new client sees no node. ClientCnxn.close:1536-1548 submits closeSession over the same connection; ClientCnxnSocketNIO.doIO:119 writes the outgoing packet; SessionTrackerImpl.run:160-170 expires sessions on its queue. The injected client write or server read may interrupt closeSession delivery, so immediate ephemeral deletion is not established by the faulted test. Exact checkSession:316 guard remains nonfatal and its line317 throw is absent. The exact packet type at each injected I/O ordinal was not recorded; classify this as a reproducible secondary assertion under fault, not a confirmed defect at the selected check. The assertion payloads report ephemeralOwner equal to the first session ID whose checkSession guard was observed in each replay, confirming the persisted node belongs to the original client session."
+}

@@ -1,9 +1,21 @@
 # ZOOKEEPER-01: closing-session check
 
-**Current 102-check status: pending independent recorder replay.** The 64
-trials below remain historical evidence in `legacy-graph-result.json`. Their
-runtime recorder used GraphChecker-prewoven classes derived from a static
-skeleton, so they do not complete the graph-independent runtime campaign.
+**Current 102-check status: quality_complete.** The independent recorder replay
+below completed the new budget. The 64 trials in the historical section remain
+in `legacy-graph-result.json` and are excluded from current counts because
+their runtime recorder used prewoven classes derived from a static skeleton.
+
+## Independent recorder replay
+
+The unchanged ZooKeeper 3.8.7 `SessionUpgradeQuorumTest.testCloseSessionWhileUpgradeOnLeader` passed under a pure JUnit Platform launcher and a case-local ASM agent rebuilt from source. The healthy run took 4.630 seconds and evaluated the exact `SessionTrackerImpl.checkSession` guard at line 316 twice, with no line 317 `KeeperException.SessionExpiredException` throw. An unchanged `SessionTrackerTest.testAddSessionAfterSessionExpiry` positive control passed and recorded the selected throw once. The original class files at commit `9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae` were copied into a fresh case-specific worktree. The independent JVM classpath, agent, and launcher contain no GraphChecker or skeleton component. `evidence/independent/audit.json` verifies their hashes and recomputes all trial verdicts from raw JVM events.
+
+The primary budget was 80 original-cluster JUnit trials with at most eight ordered faults. An automatic extension signal at trial 80 saw only `SessionTrackerImpl.run:175-177`, which source review identified as background-thread catch/exit lines, not a new selected-check branch, production method, or target-pre I/O family. Four already-started provisional extension trials were completed and retained in the ledger; two used nine faults. The campaign therefore contains **84 independent trials**, 58 fully matched and applied fault plans, 49 strict trials that reached the exact target guard after the final fault, and no selected throw. The recorder observed 76 distinct target-pre I/O site and ordinal positions. The source-reviewed stop leaves 501 feedback-generated plans queued; this is a budget result, not selector-frontier exhaustion.
+
+Eleven JUnit runs failed: five quorum startup assertions, four connection losses on `/node-1`, and two `assertNull` failures because `/node-1` remained present. Only the latter two retained the exact target guard; both used one fault, and both reproduced with the same strict selector, target reach, and assertion failure in separate original-JUnit runs. The selected `SessionExpiredException` remained absent in all four runs. The assertion payload's `ephemeralOwner` equals the first client session ID recorded at the target guard in each replay, confirming that the persistent node belongs to the original session. The test creates the ephemeral asynchronously, calls `ZooKeeper.close`, and immediately expects a new client to see no node. Source inspection shows that `ClientCnxn.close` must send `closeSession` over the connection and `SessionTrackerImpl` expires sessions later. An injected client write or server read can interrupt the close path, so immediate deletion is not established by this faulted test. The exact outgoing packet type at each selected I/O ordinal was not recorded. These are reproducible secondary assertions under the injected fault, not a confirmed defect at the selected guard; `evidence/independent/diagnostic-replays.json` records both replays and the source review.
+
+Target-retaining runs added 42 production line-coverage items relative to the healthy run, mainly in client reconnect/cleanup, server I/O exception handling, and background session-tracker shutdown. The late shutdown lines did not qualify for extension. The 84 fault JVMs took 937.713 seconds in aggregate and 485.041 seconds of wall time across two workers; including the healthy, positive-control, and two diagnostic replay JVMs, the recorded total is 961.566 seconds. Every plan, elapsed time, exact match, target result, and outcome is in `evidence/independent/trial-summary.csv`; the raw 88-JVM archive is `evidence/independent/raw-runs.tar.gz` (SHA-256 `ee7ecf6081846710612d09739d30cbacf6f4b583cdd7a268f9cc711c1025d79b`).
+
+## Historical campaign
 
 ## Completed coverage/I/O campaign
 
