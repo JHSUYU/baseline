@@ -82,6 +82,9 @@ def mirror_once() -> dict[str, dict]:
             target_exception_after_fault_trials=row['target_exception_after_fault_trials'],
             elapsed_seconds=round(BASELINE_SECONDS + row['elapsed_seconds'], 3),
             coverage_gain=row['production_probe_gain'],
+            coverage_gain_scope=('Raw production-only JaCoCo probe feedback from the '
+                                 'frozen scheduler; final method/branch union excludes '
+                                 'trials without a postfault guard on the affected child.'),
             campaign=row,
             reason=('Unchanged original ShardSplitTest.test embedded-cluster JUnit. '
                     'Two passing healthy ASM records reach both exact guard sites; '

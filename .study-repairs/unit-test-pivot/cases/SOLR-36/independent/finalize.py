@@ -69,6 +69,9 @@ def main() -> None:
             production_methods_gain=report['new_production_methods'],
             production_branch_outcomes_gain=report['new_production_branch_outcomes'],
             io_family_gain=report['new_semantic_io_families'],
+            coverage_gain_scope=('Raw production-only JaCoCo probe feedback from the '
+                                 'frozen scheduler; audited methods and branches use '
+                                 'only same-logical-child postfault trials.'),
             status=('target_exception_candidate_source_review'
                     if report['strict_exact_target_throw_trials'] else
                     'campaign_budget_complete_source_audit_pending'),
