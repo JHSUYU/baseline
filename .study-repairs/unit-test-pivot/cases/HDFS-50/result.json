@@ -1,13 +1,48 @@
 {
-  "case_id": "HDFS-50",
-  "status": "test_identified",
-  "cluster_test": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "budget": {
+    "max_faults": 4,
+    "max_trials": 48
+  },
+  "budget_decision": {
+    "actual_max_faults_applied": 2,
+    "default_max_faults": 4,
+    "default_trials": 48,
+    "extend_to_96x6": false,
+    "reason": "No new production method, branch-count or probe coverage in trials 37-48; no new I/O family was observed near the boundary. The original unit test reaches the same expected duplicate guard in 22 exact post-fault runs."
+  },
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "case_id": "HDFS-50",
+  "cluster_test": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+  "coverage": {
+    "branches": 6643,
+    "methods": 6805,
+    "probes": 23341
+  },
+  "coverage_gain": 22,
+  "elapsed_seconds": 522.992,
+  "evidence": "cases/HDFS-50/evidence/campaign-state.json",
+  "fault_trials": 48,
+  "finished_at_utc": "2026-10-06T18:51:19.502100+00:00",
+  "healthy": {
+    "elapsed_seconds": 12.156,
+    "expected_duplicate_throws": 1,
+    "junit_exit": 0,
+    "target_calls": 3
+  },
+  "new_bug": false,
+  "outcome_review": "40/48 exact full-sequence injections; 22/48 retained sn0#2 after the final fault. All 22 took duplicate=true and emitted exactly the one healthy expected same-name SnapshotException. No new target exception or confirmed bug.",
+  "semantic_classification": "weak_candidate_local_duplicate_name_guard",
+  "source_assessment": "DirectorySnapshottableFeature.searchSnapshot binary-searches its own snapshotsByNames list; addSnapshot inserts into that list. Original JUnit deliberately repeats sn0 and expects this SnapshotException. No multi-hop or cross-node coordination dependency is evidenced by this target check.",
+  "status": "quality_complete",
+  "strict_injections": 40,
+  "target_after_fault": 22,
+  "target_exception_baseline": {
+    "exception": "org.apache.hadoop.hdfs.protocol.SnapshotException",
+    "expected_count_per_healthy_test": 1,
+    "invocation_id": "sn0#2",
+    "new_fault_induced_count": 0
+  },
+  "target_reached": true,
+  "trial_ledger": "trial-ledger.csv",
+  "trial_metadata_count": 48
 }
