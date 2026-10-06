@@ -158,10 +158,12 @@ def publish_rs(rs: dict | None) -> None:
               len(effective_rows) >= state["budget_total"] else
               "pending_additional_unique_trials" if state["stop_reason"] else
               "fuzzing_shared_execution")
+    if result.get("candidate_screening") == "screened_out_non_adhoc":
+        status = "source_excluded"
     result.update({
         "status": status,
         "methodology": "coverage_io_independent_bytebuddy_jacoco_shared_junit",
-        "methodology_note": "Original TestRegionMove JUnit. HBASE-31 target outcomes, exact I/O matches, production coverage and timing are projected into independent checkpoints from HBASE-12's unique JVM executions.",
+        "methodology_note": "Original TestRegionMove JUnit. HBASE-31 target outcomes, exact I/O matches, production coverage and timing are projected into independent checkpoints from HBASE-12's unique JVM executions. A separate original regression test and source review classify this site as a non-adhoc direct start-code guard.",
         "shared_execution": True,
         "execution_shared_with": "HBASE-12/independent/unique",
         "instrumentation_provenance": {
