@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""Resumable, target-guided exception trials over one original JUnit test.
+"""Resumable, target-guided fault trials over one original cluster JUnit test.
 
-GraphChecker owns static slicing, the runtime region plan, weaving, and the
-JUnit invocation.  This driver consumes those artifacts and reruns the same
-test with exact GraphChecker fault selectors.  It never edits the test or the
-system under test.
+The coverage_io mode uses observed I/O and method/branch coverage to explore
+fault sequences. It uses exact runtime fault selectors and the same workload
+for every trial.
 """
 
 from __future__ import annotations
@@ -60,133 +59,6 @@ def fingerprint(value: Any) -> str:
     return hashlib.sha256(canonical.encode()).hexdigest()[:20]
 
 
-def read_closure(path: Path, target_method: str,
-                 target_occurrence: str | None = None,
-                 target_region_id: str | None = None,
-                 allowed_target_request_apis: set[str] | None = None,
-                 allowed_target_occurrences: set[str] | None = None) -> dict[str, Any]:
-    """Read only target-rooted GraphChecker demand-walk membership evidence."""
-    plans = list(rows(path))
-    catalog = [r for r in plans if r.get("kind") == "CONCOLIC_RUNTIME_MODEL_CATALOG"]
-    selected = [r for r in plans if r.get("kind") == "CONCOLIC_REGION_PLAN"]
-    targets = [r for r in selected if r.get("targetMethod") == target_method
-               and (target_occurrence is None or
-                    r.get("occurrenceId") == target_occurrence)
-               and (allowed_target_request_apis is None or
-                    r.get("requestApi") in allowed_target_request_apis)
-               and (allowed_target_occurrences is None or
-                    r.get("occurrenceId") in allowed_target_occurrences)
-               and any(g.get("kind") == "TARGET_REACH_CLOSURE"
-                       for g in r.get("closureGoals", []))]
-    gaps = [g for r in catalog for g in r.get("gaps", [])]
-    if not targets:
-        raise ValueError(f"no target region for {target_method} "
-                         f"occurrence={target_occurrence} "
-                         f"requestApi={allowed_target_request_apis} "
-                         f"allowedOccurrences={allowed_target_occurrences} in {path}")
-    target_addresses = {str(r["occurrenceId"]) for r in targets}
-    addresses = set(target_addresses)
-    evidence_tiers: dict[str, str] = {}
-    evidence_missing: list[str] = []
-    if len(catalog) != 1:
-        gaps.append({"kind": "RUNTIME_MODEL_CATALOG_COUNT",
-                     "cls": "BLOCKING", "subject": path.as_posix(),
-                     "actual": len(catalog)})
-    if target_region_id and not any(
-            row.get("regionId") == target_region_id for row in targets):
-        folded = any(target_region_id in row.get("foldedRegionIds", [])
-                     for row in targets)
-        gaps.append({"kind": ("TARGET_REGION_FOLDED_ONLY" if folded else
-                              "TARGET_REGION_RUNTIME_OCCURRENCE_MISSING"),
-                     "cls": "BLOCKING", "subject": target_region_id,
-                     "detail": "the target region needs its own runtime plan row"})
-    for row in selected:
-        address = str(row.get("occurrenceId", ""))
-        evidence = row.get("targetClosureEvidence")
-        if (isinstance(evidence, dict) and
-                evidence.get("kind") == "TARGET_CLOSURE_MEMBERSHIP" and
-                evidence.get("targetOccurrence") not in target_addresses):
-            # A multi-target plan may contain another root's valid closure.
-            # Its members say nothing about this target's backward walk.
-            continue
-        if not isinstance(evidence, dict) or (
-                evidence.get("kind") != "TARGET_CLOSURE_MEMBERSHIP" or
-                evidence.get("schemaVersion") != 1 or
-                evidence.get("occurrence") != address or
-                evidence.get("targetOccurrence") not in target_addresses or
-                evidence.get("evidenceTier") not in {"EXACT", "CANDIDATE"}):
-            evidence_missing.append(address)
-            continue
-        addresses.add(address)
-        evidence_tiers[address] = evidence["evidenceTier"]
-    if "" in addresses:
-        raise ValueError(f"PLAN has a region without occurrenceId: {path}")
-    if evidence_missing:
-        gaps.append({"kind": "CLOSURE_MEMBER_EVIDENCE_MISSING",
-                     "cls": "BLOCKING", "subject": path.as_posix(),
-                     "occurrences": evidence_missing})
-    return {
-        "addresses": sorted(addresses),
-        "target_addresses": sorted(target_addresses),
-        "target_request_apis": sorted({r["requestApi"] for r in targets
-                                       if isinstance(r.get("requestApi"), str) and
-                                       r["requestApi"]}),
-        "evidence_tiers": evidence_tiers,
-        "evidence_missing": evidence_missing,
-        "edges_unavailable": any(
-            isinstance(r.get("targetClosureEvidence"), dict) and
-            r["targetClosureEvidence"].get("edgeEvidence") == "UNAVAILABLE"
-            for r in selected),
-        "region_count": len(selected),
-        "target_region_id": target_region_id,
-        "target_region_explicit": bool(target_region_id and any(
-            row.get("regionId") == target_region_id for row in targets)),
-        "gaps": gaps,
-        "blocking_gaps": [g for g in gaps if g.get("cls") == "BLOCKING"],
-    }
-
-
-def load_target_policy(target: dict[str, Any]) -> None:
-    """Use GraphChecker TARGET_SITE's declared fatal arms, never guess them."""
-    if target.get("throw_site_id"):
-        declared_throw_method = target["throw_site_id"].split("#u", 1)[0]
-        if target.get("throw_method") and \
-                target["throw_method"] != declared_throw_method:
-            raise ValueError("throw_method differs from throw_site_id's method")
-        target["throw_method"] = declared_throw_method
-    explicit_paths = "fatal_guard_paths" in target or "fatal_guards" in target
-    if explicit_paths and target.get("region_id"):
-        return
-    scope = target.get("scope_map")
-    throw_site = target.get("throw_site_id")
-    if not scope or not throw_site:
-        if explicit_paths:
-            return
-        raise ValueError("target needs fatal guards or scope_map + throw_site_id")
-    matches = [row for row in rows(Path(scope))
-               if row.get("role") == "TARGET_SITE" and
-               row.get("siteId") == throw_site]
-    if len(matches) != 1:
-        raise ValueError(f"expected one TARGET_SITE for {throw_site}: {scope}")
-    row = matches[0]
-    if target.get("region_id") and row.get("regionId") != target["region_id"]:
-        raise ValueError("target region_id differs from TARGET_SITE regionId")
-    if not target.get("region_id"):
-        target["region_id"] = row.get("regionId")
-    if explicit_paths:
-        return
-    guards = row.get("guards", [])
-    outcomes = row.get("guardOutcomes", [])
-    if len(guards) != len(outcomes) or not guards:
-        raise ValueError(f"TARGET_SITE has no complete guard policy: {throw_site}")
-    target["fatal_guards"] = [
-        {"siteId": site, "outcome": outcome}
-        for site, outcome in zip(guards, outcomes)
-        if isinstance(outcome, bool)]
-    if len(target["fatal_guards"]) != len(guards):
-        raise ValueError(f"TARGET_SITE has an undecidable fatal arm: {throw_site}")
-
-
 def fatal_guard_paths(target: dict[str, Any]) -> list[list[dict[str, Any]]]:
     """Alternative bytecode routes to one selected throw site.
 
@@ -219,7 +91,7 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
             event.get("schemaVersion") != TRACE_SCHEMA or
             not isinstance(marker, str) or not marker.startswith("FAULT:") or
             not isinstance(site, str) or "#u" not in site or
-            not isinstance(address, str) or "/region/" not in address or
+            not isinstance(address, str) or not address.strip() or
             not isinstance(ordinal, int) or ordinal < 1):
         return None
     point = {"marker": marker, "siteId": site,
@@ -229,10 +101,19 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
     return point
 
 
-def trace_feedback(path: Path, closure: dict[str, Any],
-                   target: dict[str, Any]) -> dict[str, Any]:
-    addresses = set(closure["addresses"])
-    target_addresses = set(closure["target_addresses"])
+def in_io_scope(point: dict[str, Any], scope: dict[str, Any] | None) -> bool:
+    """A coarse static hint may reduce the I/O corpus; identity remains exact."""
+    if not scope:
+        return True
+    prefixes = scope.get("marker_prefixes", [])
+    sites = scope.get("site_ids", [])
+    return ((not prefixes or any(point["marker"].startswith(p) for p in prefixes))
+            and (not sites or point["siteId"] in sites))
+
+
+def trace_feedback(path: Path, target: dict[str, Any],
+                   io_scope: dict[str, Any] | None = None) -> dict[str, Any]:
+    target_occurrence = target.get("occurrence")
     points: dict[str, dict[str, Any]] = {}
     point_events: list[dict[str, Any]] = []
     matched: list[dict[str, Any]] = []
@@ -251,6 +132,8 @@ def trace_feedback(path: Path, closure: dict[str, Any],
     exceptions: list[dict[str, Any]] = []
     target_calls: set[int] = set()
     call_parents: dict[int, int] = {}
+    target_entries: dict[int, int] = {}
+    target_exits: dict[int, int] = {}
     summary: dict[str, Any] = {}
     throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
     coverage_exclude_sites = set(target.get("coverage_exclude_sites", []))
@@ -259,7 +142,7 @@ def trace_feedback(path: Path, closure: dict[str, Any],
         kind = event.get("event")
         if kind in FAULT_EVENTS:
             point = point_from_event(event)
-            if point and point["occurrence"] in addresses:
+            if point and in_io_scope(point, io_scope):
                 points[fingerprint(point)] = point
                 if kind == "FAULT_POINT_OBSERVED":
                     point_events.append({"point": point, "seq": event.get("seq", -1)})
@@ -277,7 +160,11 @@ def trace_feedback(path: Path, closure: dict[str, Any],
             if method:
                 coverage.add("METHOD:" + method)
             if (method == target["method"] and
-                    event.get("occurrenceAddress") in target_addresses and
+                    isinstance(call_id, int)):
+                target_entries[call_id] = event.get("seq", -1)
+            if (method == target["method"] and
+                    (not target_occurrence or
+                     event.get("occurrenceAddress") == target_occurrence) and
                     isinstance(call_id, int)):
                 target_reached = True
                 target_calls.add(call_id)
@@ -285,26 +172,85 @@ def trace_feedback(path: Path, closure: dict[str, Any],
             site = event.get("siteId")
             if site and site not in coverage_exclude_sites:
                 coverage.add("BRANCH:" + site + ":" + str(event.get("outcome")))
-        elif kind == throw_event:
+        elif kind in {"CALL_SITE_ENTER", "CALL_SITE_RETURN", "CALL_SITE_THROW"}:
+            site = event.get("siteId")
+            if site and site not in coverage_exclude_sites:
+                coverage.add("CALL_SITE:" + site + ":" + kind)
+        if kind == throw_event:
             if (event.get("method") == target.get("throw_method", target["method"])
                     and (throw_event != "EXPLICIT_THROW" or
                          event.get("siteId") == target.get("explicit_throw_site_id"))):
                 exceptions.append(event)
-    def in_target_call(call_id: Any) -> bool:
+        if (kind in {"METHOD_EXIT_NORMAL", "METHOD_EXIT_THROW"} and
+                event.get("method") == target["method"] and
+                isinstance(event.get("callId"), int)):
+            target_exits[event["callId"]] = event.get("seq", -1)
+    def target_call_owner(call_id: Any) -> int | None:
         seen: set[int] = set()
         while isinstance(call_id, int) and call_id > 0 and call_id not in seen:
             if call_id in target_calls:
-                return True
+                return call_id
             seen.add(call_id)
             call_id = call_parents.get(call_id)
+        return None
+
+    def in_target_call(call_id: Any) -> bool:
+        return target_call_owner(call_id) is not None
+
+    def target_owner(event: dict[str, Any]) -> int | None:
+        owner = target_call_owner(event.get("callId"))
+        if owner is not None:
+            return owner
+        if event.get("method") != target["method"]:
+            return None
+        seq = event.get("seq", -1)
+        enclosing = [call_id for call_id, entered in target_entries.items()
+                     if entered <= seq <= target_exits.get(call_id, float("inf"))]
+        return enclosing[0] if len(enclosing) == 1 and enclosing[0] in target_calls else None
+
+    def in_target_event(event: dict[str, Any]) -> bool:
+        if target_owner(event) is not None:
+            return True
+        # Some recorder hooks emit callId=0 for bytecode events. The exact
+        # method and site still identify the selected check when no runtime
+        # occurrence restriction was requested.
+        if event.get("method") != target["method"]:
+            return False
+        if not target_occurrence or event.get("occurrenceAddress") == target_occurrence:
+            return True
         return False
 
+    call_site_enters: dict[tuple[Any, ...], list[int]] = {}
+    for event in events:
+        if (event.get("event") == "CALL_SITE_ENTER" and
+                isinstance(event.get("invocationId"), int) and
+                event["invocationId"] > 0):
+            key = (event.get("method"), event.get("siteId"),
+                   event["invocationId"], event.get("sourceKey"),
+                   event.get("tid"))
+            call_site_enters.setdefault(key, []).append(event.get("seq", -1))
+
+    def paired_call_site(event: dict[str, Any]) -> bool:
+        if event.get("event") == "CALL_SITE_ENTER":
+            return isinstance(event.get("invocationId"), int) and event["invocationId"] > 0
+        invocation = event.get("invocationId")
+        key = (event.get("method"), event.get("siteId"), invocation,
+               event.get("sourceKey"), event.get("tid"))
+        return (isinstance(invocation, int) and invocation > 0 and
+                any(seq < event.get("seq", -1)
+                    for seq in call_site_enters.get(key, [])))
+
     applied_seq = max((e.get("seq", -1) for e in applied), default=-1)
-    guard_paths = fatal_guard_paths(target)
+    guard_paths = (fatal_guard_paths(target) if
+                   ("fatal_guard_paths" in target or "fatal_guards" in target)
+                   else [])
+    check_events = set(target.get("check_events", ["BRANCH"] if
+                                  target.get("site_id") else []))
     # Earlier guards can merely enter the function or an outer branch. The
     # final decision on a throw route is the selected check to retain after
     # the fault; Solr's alternative routes end at different branch sites.
-    check_sites = {path[-1]["siteId"] for path in guard_paths}
+    check_sites = ({path[-1]["siteId"] for path in guard_paths} or
+                   ({target["site_id"]} if target.get("site_id") else set()))
     branch_rows = sorted((e for e in events if e.get("event") == "BRANCH"),
                          key=lambda e: e.get("seq", -1))
 
@@ -324,44 +270,92 @@ def trace_feedback(path: Path, closure: dict[str, Any],
                 return None
         return max(cursors)
 
-    target_site_seen = any(
-        e.get("event") == "BRANCH" and
-        e.get("siteId") == target.get("site_id") and
-        in_target_call(e.get("callId")) for e in events)
+    check_rows = [e for e in events
+                  if e.get("event") in check_events and
+                  e.get("siteId") == target.get("site_id") and
+                  in_target_event(e) and
+                  (not e["event"].startswith("CALL_SITE_") or
+                   paired_call_site(e))]
+    target_site_seen = bool(check_rows)
     target_guard_seen = any(
         e.get("event") == "BRANCH" and
         e.get("siteId") in check_sites and
-        in_target_call(e.get("callId")) for e in events)
+        in_target_event(e) for e in events) or target_site_seen
     # A target invocation that happened only before the injected fault cannot
     # validate this trial. The check itself must execute again after the last
     # applied fault, including when its method was entered before that fault.
-    target_reached_after_fault = any(
-        e.get("event") == "BRANCH" and
-        e.get("siteId") in check_sites and
-        in_target_call(e.get("callId")) and
-        e.get("seq", -1) > applied_seq >= 0 for e in events)
+    target_reached_after_fault = (
+        any(e.get("seq", -1) > applied_seq >= 0 for e in check_rows)
+        if check_events else
+        any(e.get("event") in {"METHOD_ENTER", "BRANCH", "METHOD_EXIT_NORMAL",
+                                  "METHOD_EXIT_THROW", "EXPLICIT_THROW"} and
+            in_target_event(e) and e.get("seq", -1) > applied_seq >= 0
+            for e in events))
+    target_reached = target_reached or target_site_seen
     if target.get("site_id"):
-        target_site_after_fault = any(
-            e.get("event") == "BRANCH" and
-            e.get("siteId") == target["site_id"] and
-            in_target_call(e.get("callId")) and
-            e.get("seq", -1) > applied_seq >= 0 for e in events)
+        target_site_after_fault = target_reached_after_fault
+
+    def check_outcome(event: dict[str, Any]) -> Any:
+        return (event.get("outcome") if event.get("event") == "BRANCH" else
+                event.get("event"))
+
+    target_outcomes = [check_outcome(e) for e in check_rows]
+    target_outcomes_after_fault = [check_outcome(e) for e in check_rows
+                                   if e.get("seq", -1) > applied_seq >= 0]
+    required_throw_site = target.get("throw_site_id")
+    if not required_throw_site and "CALL_SITE_THROW" in check_events:
+        required_throw_site = target.get("site_id")
+    site_throws = [e for e in events
+                   if e.get("event") == "CALL_SITE_THROW" and
+                   e.get("siteId") == required_throw_site and
+                   in_target_event(e) and paired_call_site(e)]
     expected = target["exception_type"]
+
+    def expected_type_seen(thrown: dict[str, Any]) -> bool:
+        if thrown.get("runtimeType") == expected:
+            return True
+        if throw_event != "CALL_SITE_THROW":
+            return False
+        # The recorder's CALL_SITE_THROW currently carries no exception
+        # class. Pair its invocation, then use the enclosing typed method
+        # exit as the exception oracle.
+        owner = target_owner(thrown)
+        return owner is not None and any(
+                   e.get("event") == "METHOD_EXIT_THROW" and
+                   e.get("method") == target.get("throw_method", target["method"]) and
+                   e.get("runtimeType") == expected and
+                   target_owner(e) == owner and
+                   e.get("seq", -1) > thrown.get("seq", -1)
+                   for e in events)
+
     for thrown in exceptions:
-        if thrown.get("runtimeType") == expected and \
-                in_target_call(thrown.get("callId")):
+        if (expected_type_seen(thrown) and in_target_event(thrown) and
+                (throw_event != "CALL_SITE_THROW" or
+                 (thrown.get("siteId") == required_throw_site and
+                  paired_call_site(thrown)))):
             target_exception = True
             target_exception_count += 1
             completed_paths = [path_last_seq(path, thrown.get("callId"),
                                              thrown.get("seq", -1))
                                for path in guard_paths]
-            fatal_in_call = any(last is not None for last in completed_paths)
+            guard_ok = (any(last is not None for last in completed_paths)
+                        if guard_paths else True)
+            site_before_throw = [e for e in site_throws
+                                 if e.get("seq", -1) <= thrown.get("seq", -1) and
+                                 target_owner(e) == target_owner(thrown)]
+            fatal_in_call = guard_ok and (
+                bool(site_before_throw) if required_throw_site else True)
             if fatal_in_call:
                 target_fatal_exception_count += 1
             if thrown.get("seq", -1) > applied_seq >= 0:
                 target_after_fault = True
-                if any(last is not None and last > applied_seq
-                       for last in completed_paths):
+                guard_after = (any(last is not None and last > applied_seq
+                                   for last in completed_paths)
+                               if guard_paths else target_reached_after_fault)
+                site_after = (any(e.get("seq", -1) > applied_seq
+                                  for e in site_before_throw)
+                              if required_throw_site else True)
+                if guard_after and site_after:
                     target_guard_after_fault = True
     # If an exact target site is declared, a method-level throw alone is
     # insufficient: it could simply propagate an unrelated nested failure.
@@ -381,6 +375,8 @@ def trace_feedback(path: Path, closure: dict[str, Any],
         "target_reached_after_fault": target_reached_after_fault,
         "target_site_seen": target_site_seen,
         "target_site_after_fault": target_site_after_fault,
+        "target_outcomes": target_outcomes,
+        "target_outcomes_after_fault": target_outcomes_after_fault,
         "target_guard_seen": target_guard_seen,
         "target_guard_after_fault": target_guard_after_fault,
         "target_exception": target_exception,
@@ -423,6 +419,24 @@ def fault_family(point: dict[str, Any]) -> str:
                         ("marker", "siteId", "sourceKey")})
 
 
+def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
+                       result: dict[str, Any], max_faults: int) -> None:
+    """Extend an admitted run with one I/O actually seen after its final fault."""
+    if (len(sequence) >= max_faults or result.get("status") not in
+            {"checked", "target_exception_candidate",
+             "baseline_exception_recurrence", "target_exception_unlinked"}):
+        return
+    new_io = set(result.get("new_io_families", []))
+    for observed in result.get("point_events", []):
+        point = observed["point"]
+        if (observed.get("seq", -1) > result.get("last_applied_seq", -1)
+                and point not in sequence):
+            enqueue(state, sequence + [point],
+                    priority=10 * result.get("new_coverage_count", 0) +
+                    (50 if fault_family(point) in new_io else 0) +
+                    (3 if result["status"] == "target_exception_candidate" else 0))
+
+
 def completed_sequences(state: dict[str, Any]) -> Iterable[list[dict[str, Any]]]:
     """Read old checkpoints without replaying their completed trials."""
     for completed in state["completed"]:
@@ -463,24 +477,20 @@ def choose_next_sequence(state: dict[str, Any]) -> int:
         sequence = item["sequence"]
         root_penalty = (root_counts.get(fault_family(sequence[0]), 0)
                         if len(sequence) > 1 else 0)
-        return (root_penalty,
-                family_counts.get(fault_family(sequence[-1]), 0),
+        return (family_counts.get(fault_family(sequence[-1]), 0),
+                root_penalty,
                 -item["priority"], item["created"], index)
 
     return min(eligible, key=rank)[0]
 
 
 def write_trial(path: Path, sequence: list[dict[str, Any]],
-                target: dict[str, Any], closure: dict[str, Any]) -> None:
-    region_ids = {address.split("/region/", 1)[1].split("/ctx:", 1)[0]
-                  for address in closure["target_addresses"]}
+                target: dict[str, Any]) -> None:
     trial = {"schemaVersion": 1, "faults": [
         {"faultId": fingerprint(point), **point, "value": True}
         for point in sequence]}
     if target.get("site_id"):
         trial["targetSiteId"] = target["site_id"]
-    if len(region_ids) == 1:
-        trial["targetRegionId"] = next(iter(region_ids))
     atomic_json(path, trial)
 
 
@@ -528,19 +538,18 @@ def ensure_seed(config: dict[str, Any], state: dict[str, Any],
                 case_dir: Path) -> None:
     seed = config["seed"]
     trace = Path(seed["trace"])
-    plan = Path(seed["closure_plan"])
     seed_command_seconds = None
-    if not (trace.is_file() and plan.is_file()):
+    if not trace.is_file():
         command = seed.get("command")
         if not command:
-            raise FileNotFoundError(f"seed artifacts missing: {trace}, {plan}")
+            raise FileNotFoundError(f"seed trace missing: {trace}")
         context = {"case_dir": str(case_dir), "trace_dir": str(trace.parent)}
         environment = {**os.environ, **config.get("env", {}),
                        "TMPDIR": config["workspaces"]["temp"],
                        "CAUSYNTH_LOCAL_SCRATCH": config["workspaces"]["temp"]}
         result = run_command(command, context, Path(config["cwd"]),
-                             environment,
-                             case_dir / "seed-command", config["timeout_seconds"])
+                             environment, case_dir / "seed-command",
+                             config["timeout_seconds"])
         atomic_json(case_dir / "seed-command" / "result.json", result)
         seed_command_seconds = result["elapsed_seconds"]
         state["active_runtime_seconds"] += seed_command_seconds
@@ -559,8 +568,7 @@ def ensure_seed(config: dict[str, Any], state: dict[str, Any],
         elif timing:
             data = json.loads(Path(timing).read_text())
             seed_command_seconds = sum(float(data.get(stage, {}).get("seconds", 0))
-                                       for stage in ("compile", "weave", "runtime",
-                                                     "aggregate", "static"))
+                                       for stage in ("compile", "weave", "runtime"))
         else:
             seed_command_seconds = float(seed["elapsed_seconds"])
         if not state.get("seed_timing_recorded"):
@@ -568,33 +576,21 @@ def ensure_seed(config: dict[str, Any], state: dict[str, Any],
             state["seed_runtime_seconds"] += seed_command_seconds
             state["seed_timing_recorded"] = True
             atomic_json(case_dir / "state.json", state)
-    closure = read_closure(plan, config["target"]["method"],
-                           config["target"].get("occurrence"),
-                           config["target"].get("region_id"),
-                           allowed_target_request_apis=(
-                               {config["target"]["request_api"]}
-                               if config["target"].get("request_api") else None))
-    feedback = trace_feedback(trace, closure, config["target"])
-    state["seed"] = {
-        "trace": str(trace), "closure_plan": str(plan),
-        "closure": closure, "feedback": feedback,
-        "target_reached": feedback["target_reached"], "recorded_at": time.time(),
-        "elapsed_seconds": seed_command_seconds,
-    }
+    feedback = trace_feedback(trace, config["target"], config.get("io_scope"))
+    state["seed"] = {"trace": str(trace), "feedback": feedback,
+                     "target_reached": feedback["target_reached"],
+                     "recorded_at": time.time(),
+                     "elapsed_seconds": seed_command_seconds}
     state["coverage"] = feedback["coverage"]
-    state["closure_members"] = closure["evidence_tiers"]
-    if closure["blocking_gaps"]:
-        state["status"] = "graph_gap"
-        return
-    if not feedback["target_reached"] or not feedback["target_guard_seen"]:
+    state["io_families"] = sorted({fault_family(p) for p in feedback["points"]})
+    if not feedback["target_reached"]:
         state["status"] = "healthy_target_unreached"
         return
     if not feedback["points"]:
-        state["status"] = "no_closure_fault_points"
+        state["status"] = "no_io_fault_points"
         return
     for point in feedback["points"]:
-        tier = closure["evidence_tiers"].get(point["occurrence"], "CANDIDATE")
-        enqueue(state, [point], priority=50 if tier == "EXACT" else 20)
+        enqueue(state, [point], priority=20)
 
 
 def process_trial(config: dict[str, Any], state: dict[str, Any],
@@ -606,8 +602,7 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     else:
         trial_dir.mkdir(parents=True, exist_ok=True)
         selector_file = trial_dir / "fault-trial.json"
-        write_trial(selector_file, active["sequence"], config["target"],
-                    state["seed"]["closure"])
+        write_trial(selector_file, active["sequence"], config["target"])
         active["attempt"] = active.get("attempt", 0) + 1
         atomic_json(case_dir / "state.json", state)
         attempt_dir = trial_dir / f"attempt-{active['attempt']:02d}"
@@ -628,8 +623,6 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
                "CAUSYNTH_FAULT_TRIAL": str(selector_file)}
         env.update({key: value.format_map(context)
                     for key, value in config["trial"].get("env", {}).items()})
-        # GraphChecker experiments/lib/execute.sh passes this option to the
-        # stock JUnit JVM; a custom trial command can also use {fault_trial}.
         options = env.get("CAUSYNTH_WORKLOAD_JAVA_OPTS", "")
         env["CAUSYNTH_WORKLOAD_JAVA_OPTS"] = (
             options + " -Dcausynth.fault.trial=" + str(selector_file)).strip()
@@ -642,90 +635,51 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
         trace = Path(config["trial"].get(
             "trace_path", "{trace_dir}/runtime_trace.jsonl").format_map(context))
         allowed_trace_roots = [case_dir.resolve()] + [
-            Path(config["workspaces"][name]).resolve()
-            for name in ("graphchecker", "system_test", "temp")]
+            Path(value).resolve() for value in config["workspaces"].values()]
         resolved_trace = trace.resolve()
         if not trace.is_absolute() or not any(
                 resolved_trace == root or root in resolved_trace.parents
                 for root in allowed_trace_roots):
             raise ValueError(f"trial trace must stay in a per-case workspace: {trace}")
-        dynamic_closure = None
-        aggregate = config["trial"].get("aggregate_command")
-        if trace.is_file() and aggregate:
-            aggregate_dir = trial_dir / "aggregate"
-            aggregate_dir.mkdir(exist_ok=True)
-            context["aggregate_dir"] = str(aggregate_dir)
-            aggregate_result = run_command(aggregate, context,
-                                           Path(config["cwd"]), env,
-                                           aggregate_dir,
-                                           config["timeout_seconds"])
-            result["aggregate"] = aggregate_result
-            state["active_runtime_seconds"] += aggregate_result["elapsed_seconds"]
-            state["aggregate_runtime_seconds"] += aggregate_result["elapsed_seconds"]
-            atomic_json(case_dir / "state.json", state)
-            plan = Path(config["trial"]["closure_plan"].format_map(context))
-            if aggregate_result["exit"] == 0 and plan.is_file():
-                try:
-                    dynamic_closure = read_closure(
-                        plan, config["target"]["method"],
-                        config["target"].get("occurrence"),
-                        config["target"].get("region_id"),
-                        allowed_target_request_apis=(
-                            set(state["seed"]["closure"]["target_request_apis"])
-                            if not config["target"].get("occurrence") and
-                            state["seed"]["closure"]["target_request_apis"]
-                            else None),
-                        allowed_target_occurrences=(
-                            set(state["seed"]["closure"]["target_addresses"])
-                            if not config["target"].get("occurrence") and not
-                            state["seed"]["closure"]["target_request_apis"]
-                            else None))
-                    result["dynamic_closure_plan"] = str(plan)
-                except ValueError as error:
-                    result["dynamic_graph_error"] = str(error)
         if trace.is_file():
-            feedback = trace_feedback(trace, dynamic_closure or state["seed"]["closure"],
-                                      config["target"])
-            result.update(feedback)
+            result.update(trace_feedback(trace, config["target"],
+                                         config.get("io_scope")))
             result["trace"] = str(trace)
-            result["dynamic_graph"] = dynamic_closure is not None
-            result["blocking_graph_gaps"] = (
-                dynamic_closure or state["seed"]["closure"])["blocking_gaps"]
-            result["closure_members"] = (
-                dynamic_closure or state["seed"]["closure"])["evidence_tiers"]
         else:
             result.update({"trace": None, "matched_count": 0,
                            "applied_count": 0, "target_reached": False,
+                           "target_reached_after_fault": False,
                            "oracle": False, "coverage": [], "points": []})
         result["sequence_id"] = active["id"]
         result["fault_count"] = len(active["sequence"])
         result["attempt"] = active["attempt"]
         result["completed_at"] = time.time()
-        atomic_json(result_file, result)
-    graph_blocked = bool(state["seed"]["closure"]["blocking_gaps"] or
-                         result.get("blocking_graph_gaps"))
+        atomic_json(attempt_dir / "result.json", result)
     selector_matched = strict_injection(result, active["sequence"])
-    # Selector identity is proved by the runtime controller. A fault can
-    # legitimately erase a versioned state edge in the faulted graph; keep
-    # that graph gap separate from whether the selected fault was applied.
-    strict = selector_matched and not state["seed"]["closure"]["blocking_gaps"]
-    graph_feedback_valid = not graph_blocked and bool(result.get("dynamic_graph"))
+    if (not selector_matched and not result_file.is_file() and
+            active.get("attempt", 0) <= config["budget"].get(
+                "max_unmatched_retries", 1)):
+        # Re-execute a selector whose observed I/O was absent in this run.
+        # Each attempt and its runtime cost remain in the checkpoint.
+        atomic_json(case_dir / "state.json", state)
+        process_trial(config, state, case_dir, active)
+        return
     result["selector_matched"] = selector_matched
-    result["strict_injection"] = strict
-    result["graph_feedback_valid"] = graph_feedback_valid
+    result["strict_injection"] = selector_matched
     baseline_fatal_count = state["seed"]["feedback"].get(
         "target_fatal_exception_count", 0)
     result["baseline_target_fatal_exception_count"] = baseline_fatal_count
     result["differential_target_exception"] = bool(
         result.get("target_fatal_exception_count", 0) > baseline_fatal_count)
+    baseline_outcomes = set(state["seed"]["feedback"].get("target_outcomes", []))
+    result["target_outcome_changed"] = bool(
+        set(result.get("target_outcomes_after_fault", [])) - baseline_outcomes)
     if not selector_matched:
         status = "unmatched"
     elif not result.get("target_reached_after_fault"):
         status = "lost_target"
     elif result["oracle"] and result["differential_target_exception"]:
         status = "target_exception_candidate"
-    elif not graph_feedback_valid:
-        status = "graph_gap"
     elif result["oracle"]:
         status = "baseline_exception_recurrence"
     elif result.get("target_after_fault"):
@@ -736,120 +690,120 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
         status = "checked"
     old_coverage = set(state["coverage"])
     observed_coverage = set(result.get("coverage", [])) - old_coverage
-    old_members = state.get("closure_members", {})
-    observed_members = {key: tier for key, tier in
-                        result.get("closure_members", {}).items()
-                        if key not in old_members}
-    admitted = graph_feedback_valid and status in {
-        "checked", "target_exception_candidate", "baseline_exception_recurrence"}
+    old_io = set(state.get("io_families", []))
+    observed_io = {fault_family(point) for point in result.get("points", [])} - old_io
+    admitted = status in {"checked", "target_exception_candidate",
+                          "baseline_exception_recurrence",
+                          "target_exception_unlinked"}
     new_coverage = observed_coverage if admitted else set()
-    new_members = observed_members if admitted else {}
-    if admitted:
-        state["closure_members"] = {**old_members,
-                                    **result.get("closure_members", {})}
+    new_io = observed_io if admitted else set()
     result["observed_new_coverage_count"] = len(observed_coverage)
-    result["observed_new_closure_member_count"] = len(observed_members)
     result["new_coverage_count"] = len(new_coverage)
-    result["new_closure_member_count"] = len(new_members)
-    result["new_exact_closure_members"] = sum(
-        tier == "EXACT" for tier in new_members.values())
+    result["observed_new_io_count"] = len(observed_io)
+    result["new_io_count"] = len(new_io)
+    result["new_io_families"] = sorted(new_io)
     result["status"] = status
     atomic_json(result_file, result)
-    if status == "graph_gap":
-        state["status"] = "graph_gap"
-        state["queue"] = []
     if admitted:
         state["coverage"] = sorted(old_coverage | set(result.get("coverage", [])))
+        state["io_families"] = sorted(old_io | {
+            fault_family(point) for point in result.get("points", [])})
     state["completed"].append({"id": active["id"], "number": active["number"],
                                "status": status, "result": str(result_file),
                                "elapsed_seconds": result["elapsed_seconds"],
                                "sequence": active["sequence"]})
-    if admitted and \
-            len(active["sequence"]) < config["budget"]["max_faults"]:
-        for observed in result.get("point_events", []):
-            point = observed["point"]
-            if (observed.get("seq", -1) > result.get("last_applied_seq", -1)
-                    and point not in active["sequence"]):
-                tier = result.get("closure_members", {}).get(
-                    point["occurrence"], "CANDIDATE")
-                member_novelty = 50 if tier == "EXACT" else 20
-                if point["occurrence"] not in new_members:
-                    member_novelty = 0
-                enqueue(state, active["sequence"] + [point],
-                        priority=10 * len(new_coverage) +
-                        member_novelty +
-                        (3 if status == "target_exception_candidate" else 0))
+    enqueue_extensions(state, active["sequence"], result,
+                       config["budget"]["max_faults"])
     state["active"] = None
 
 
 def validate(config: dict[str, Any]) -> None:
+    if config.get("selection_mode", "coverage_io") != "coverage_io":
+        raise ValueError("only selection_mode=coverage_io is supported")
     needed = {"case_id", "system", "test_class", "test_method", "target",
               "cwd", "seed", "trial", "budget", "timeout_seconds",
               "workspaces"}
     missing = needed - config.keys()
     if missing:
         raise ValueError(f"missing config keys: {sorted(missing)}")
-    if not config["target"].get("method") or not config["target"].get("exception_type"):
+    target = config["target"]
+    if not target.get("method") or not target.get("exception_type"):
         raise ValueError("target requires exact method and exception_type")
-    if "request_api" in config["target"] and (
-            not isinstance(config["target"]["request_api"], str) or
-            not config["target"]["request_api"]):
-        raise ValueError("target.request_api must be a nonempty semantic operation")
-    throw_event = config["target"].get("throw_event", "METHOD_EXIT_THROW")
-    if throw_event not in {"METHOD_EXIT_THROW", "EXPLICIT_THROW"}:
+    if target.get("throw_site_id"):
+        throw_method = target["throw_site_id"].split("#u", 1)[0]
+        if target.get("throw_method") and target["throw_method"] != throw_method:
+            raise ValueError("throw_method differs from throw_site_id's method")
+        target["throw_method"] = throw_method
+    check_events = target.get("check_events")
+    allowed_checks = {"BRANCH", "CALL_SITE_ENTER", "CALL_SITE_RETURN",
+                      "CALL_SITE_THROW"}
+    if check_events is not None and (
+            not isinstance(check_events, list) or not check_events or
+            any(event not in allowed_checks for event in check_events)):
+        raise ValueError("target.check_events must list supported check events")
+    if check_events and not target.get("site_id"):
+        raise ValueError("target.check_events requires exact site_id")
+    throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
+    if throw_event not in {"METHOD_EXIT_THROW", "EXPLICIT_THROW", "CALL_SITE_THROW"}:
         raise ValueError("target.throw_event must name a supported throw event")
-    if throw_event == "EXPLICIT_THROW" and (
-            not isinstance(config["target"].get("explicit_throw_site_id"), str)
-            or "#u" not in config["target"]["explicit_throw_site_id"]):
-        raise ValueError("EXPLICIT_THROW requires exact explicit_throw_site_id")
-    load_target_policy(config["target"])
+    if throw_event == "CALL_SITE_THROW" and not (
+            target.get("throw_site_id") or target.get("site_id")):
+        raise ValueError("CALL_SITE_THROW requires throw_site_id or site_id")
     if throw_event == "EXPLICIT_THROW":
-        explicit_site = config["target"]["explicit_throw_site_id"]
-        throw_method = config["target"].get("throw_method",
-                                            config["target"]["method"])
-        if explicit_site.split("#u", 1)[0] != throw_method:
+        explicit_site = target.get("explicit_throw_site_id")
+        if not isinstance(explicit_site, str) or "#u" not in explicit_site:
+            raise ValueError("EXPLICIT_THROW requires exact explicit_throw_site_id")
+        if explicit_site.split("#u", 1)[0] != target.get("throw_method", target["method"]):
             raise ValueError("explicit_throw_site_id differs from throw_method")
-        if (config["target"].get("throw_site_id") and
-                explicit_site != config["target"]["throw_site_id"]):
+        if target.get("throw_site_id") and explicit_site != target["throw_site_id"]:
             raise ValueError("explicit_throw_site_id differs from throw_site_id")
-    if not config["target"].get("region_id"):
-        raise ValueError("target requires static region_id or scope_map + throw_site_id")
-    fatal_guard_paths(config["target"])
-    coverage_exclude_sites = config["target"].get("coverage_exclude_sites", [])
+    has_guards = "fatal_guards" in target or "fatal_guard_paths" in target
+    if has_guards:
+        fatal_guard_paths(target)
+    coverage_exclude_sites = target.get("coverage_exclude_sites", [])
     if (not isinstance(coverage_exclude_sites, list) or
             any(not isinstance(site, str) or "#u" not in site
                 for site in coverage_exclude_sites)):
         raise ValueError("target.coverage_exclude_sites needs exact site IDs")
-    if any(guard["siteId"] in coverage_exclude_sites
-           for path in fatal_guard_paths(config["target"])
-           for guard in path):
+    if has_guards and any(guard["siteId"] in coverage_exclude_sites
+                          for path in fatal_guard_paths(target)
+                          for guard in path):
         raise ValueError("cannot exclude a fatal target guard from coverage")
+    scope = config.get("io_scope", {})
+    if not isinstance(scope, dict) or any(
+            not isinstance(scope.get(key, []), list) or
+            any(not isinstance(item, str) or not item
+                for item in scope.get(key, []))
+            for key in ("marker_prefixes", "site_ids")):
+        raise ValueError("io_scope needs marker_prefixes/site_ids string lists")
     if not isinstance(config["trial"].get("command"), list):
         raise ValueError("trial.command must be an argv list, never a shell string")
     if (not config["seed"].get("command") and
             "elapsed_seconds" not in config["seed"] and
             "timing_manifest" not in config["seed"]):
         raise ValueError("precomputed seed requires elapsed_seconds or timing_manifest")
-    if (not isinstance(config["trial"].get("aggregate_command"), list) or
-            not config["trial"].get("closure_plan")):
-        raise ValueError("trial requires GraphChecker aggregate_command and closure_plan")
-    if config["budget"]["max_trials"] < 1 or config["budget"]["max_faults"] < 1:
+    budget = config["budget"]
+    budget.setdefault("max_trials", 48)
+    budget.setdefault("max_faults", 4)
+    if budget["max_trials"] < 1 or budget["max_faults"] < 1:
         raise ValueError("budgets must be positive")
+    if (not isinstance(budget.get("max_unmatched_retries", 1), int) or
+            budget.get("max_unmatched_retries", 1) < 0):
+        raise ValueError("max_unmatched_retries must be nonnegative")
     workspaces = config["workspaces"]
-    for name in ("graphchecker", "system_test", "temp"):
+    required = ("system_test", "temp")
+    for name in required:
         if name not in workspaces or not Path(workspaces[name]).is_absolute():
             raise ValueError(f"workspaces.{name} must be an absolute per-case path")
-    paths = [Path(workspaces[name]).resolve() for name in
-             ("graphchecker", "system_test", "temp")]
+    paths = [Path(value).resolve() for value in workspaces.values()]
     if len(set(paths)) != len(paths):
-        raise ValueError("GraphChecker, system test, and temp workspaces must differ")
+        raise ValueError("per-case workspaces must differ")
     shared = [Path(value).resolve() for value in config.get("shared_readonly_roots", [])]
     for path in paths:
         if any(path == root or root in path.parents for root in shared):
             raise ValueError(f"workspace must be outside shared source: {path}")
-    cwd = Path(config["cwd"]).resolve()
-    if cwd not in paths[:2]:
-        raise ValueError("cwd must be the case's GraphChecker or system test workspace")
+    if Path(config["cwd"]).resolve() not in paths:
+        raise ValueError("cwd must be a per-case workspace")
 
 
 def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
@@ -862,8 +816,6 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
     status = state.get("status", "recorded_seed")
     if candidates and status not in TERMINAL:
         status = "candidate_review"
-    elif any(result.get("status") == "graph_gap" for result in results):
-        status = "graph_gap"
     elif completed and not state.get("finished"):
         status = "fuzzing"
     seed = state.get("seed") or {}
@@ -872,9 +824,8 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
     build_seconds = float(state.get("build_seconds", 0))
     seed_seconds = float(state.get("seed_runtime_seconds", 0))
     fault_seconds = float(state.get("fault_runtime_seconds", 0))
-    aggregate_seconds = float(state.get("aggregate_runtime_seconds", 0))
-    total_seconds = round(setup_seconds + build_seconds + seed_seconds + fault_seconds +
-                          aggregate_seconds, 3)
+    total_seconds = round(setup_seconds + build_seconds + seed_seconds +
+                          fault_seconds, 3)
     record = {
         "schema_version": SCHEMA,
         "case_id": state["case_id"], "system": state["system"],
@@ -882,7 +833,6 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "target_method": state.get("target_method"),
         "target_throw_method": state.get("target_throw_method"),
         "target_throw_site_id": state.get("target_throw_site_id"),
-        "target_region_id": state.get("target_region_id"),
         "target_source_file": state.get("target_source_file"),
         "target_source_line": state.get("target_source_line"),
         "target_code": state.get("target_code"),
@@ -906,22 +856,22 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
                                   for result in results),
         "target_exception_after_fault_trials": sum(
             bool(result.get("target_after_fault")) for result in results),
+        "target_outcome_changed_trials": sum(
+            bool(result.get("target_outcome_changed")) for result in results),
         "oracle_candidates": len(candidates),
         "coverage_gain": max(0, len(state.get("coverage", [])) - initial_coverage),
+        "io_family_gain": max(0, len(state.get("io_families", [])) - len({
+            fault_family(point) for point in
+            seed.get("feedback", {}).get("points", [])})),
         "setup_seconds": round(setup_seconds, 3),
         "build_seconds": round(build_seconds, 3),
         "seed_seconds": round(seed_seconds, 3),
         "fault_seconds": round(fault_seconds, 3),
-        "aggregate_seconds": round(aggregate_seconds, 3),
         "total_elapsed_seconds": total_seconds,
         "elapsed_seconds": total_seconds,
         "bug_mark": "candidate" if candidates else "none",
         "evidence": candidates[0]["result"] if candidates else
                     (completed[-1]["result"] if completed else None),
-        "graph_blocking_gaps": (
-            len(seed.get("closure", {}).get("blocking_gaps", [])) +
-            sum(len(result.get("blocking_graph_gaps", [])) for result in results)),
-        "graph_edges_unavailable": seed.get("closure", {}).get("edges_unavailable"),
         "started_at": state.get("started"),
         "updated_at": time.time(),
     }
@@ -929,7 +879,7 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
 
 
 class CaseLease:
-    """One cross-host owner; stale takeover requires both TTL and free flock."""
+    """One host-local owner; stale takeover requires TTL and free flock."""
 
     def __init__(self, case_dir: Path, ttl: int = 120, interval: int = 15):
         self.case_dir = case_dir
@@ -1011,8 +961,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("active_runtime_seconds", 0.0)
             state.setdefault("seed_runtime_seconds", 0.0)
             state.setdefault("fault_runtime_seconds", 0.0)
-            state.setdefault("aggregate_runtime_seconds", 0.0)
-            state.setdefault("closure_members", {})
+            state.setdefault("io_families", [])
             state.setdefault("setup_seconds", float(config.get("setup_seconds", 0)))
             state.setdefault("build_seconds", float(config.get("build_seconds", 0)))
             state.setdefault("target_method", config["target"]["method"])
@@ -1020,7 +969,6 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                 "throw_method", config["target"]["method"]))
             state.setdefault("target_throw_site_id", config["target"].get(
                 "throw_site_id"))
-            state.setdefault("target_region_id", config["target"].get("region_id"))
             state.setdefault("target_source_file", config["target"].get("source_file"))
             state.setdefault("target_source_line", config["target"].get("source_line"))
             state.setdefault("target_code", config["target"].get("code"))
@@ -1036,7 +984,6 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "target_throw_method": config["target"].get(
                          "throw_method", config["target"]["method"]),
                      "target_throw_site_id": config["target"].get("throw_site_id"),
-                     "target_region_id": config["target"]["region_id"],
                      "target_source_file": config["target"].get("source_file"),
                      "target_source_line": config["target"].get("source_line"),
                      "target_code": config["target"].get("code"),
@@ -1044,10 +991,9 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                          "coverage_exclude_sites", []),
                      "config_digest": config_digest, "seed": None,
                      "coverage": [], "queue": [], "seen_sequences": [],
-                     "closure_members": {}, "active_runtime_seconds": 0.0,
+                     "io_families": [], "active_runtime_seconds": 0.0,
                      "seed_runtime_seconds": 0.0,
                      "fault_runtime_seconds": 0.0,
-                     "aggregate_runtime_seconds": 0.0,
                      "setup_seconds": float(config.get("setup_seconds", 0)),
                      "build_seconds": float(config.get("build_seconds", 0)),
                      "active": None, "completed": [], "started": time.time()}
@@ -1068,15 +1014,22 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             ensure_seed(config, state, case_dir)
             atomic_json(path, state)
             write_case_result(case_dir, state)
-        if state.get("status") in {"graph_gap", "no_closure_fault_points",
+        if state.get("status") in {"no_io_fault_points",
                                    "healthy_target_unreached"}:
             state["finished"] = False
             atomic_json(path, state)
             write_case_result(case_dir, state)
             return state
+        # A larger max_faults budget can grow from saved actual traces even
+        # when the previous run ended exactly at its old depth limit.
+        for completed in state["completed"]:
+            sequence = completed.get("sequence")
+            if isinstance(sequence, list) and sequence:
+                result = json.loads(Path(completed["result"]).read_text())
+                enqueue_extensions(state, sequence, result,
+                                   config["budget"]["max_faults"])
         max_runtime = config["budget"].get("max_seconds", 1e18)
-        while (state.get("status") != "graph_gap" and
-               len(state["completed"]) < config["budget"]["max_trials"] and
+        while (len(state["completed"]) < config["budget"]["max_trials"] and
                (state["active"] or state["active_runtime_seconds"] < max_runtime) and
                (state["queue"] or state["active"])):
             if state["active"] is None:
@@ -1087,8 +1040,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             atomic_json(path, state)
             write_case_result(case_dir, state)
         state["last_updated"] = time.time()
-        state["finished"] = bool(state.get("status") != "graph_gap" and
-                                 not state["active"] and
+        state["finished"] = bool(not state["active"] and
                                  (not state["queue"] or
                                   len(state["completed"]) >= config["budget"]["max_trials"] or
                                   state["active_runtime_seconds"] >= max_runtime))

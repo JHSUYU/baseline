@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""Exercise the command-line campaign, including checkpoint resume.
+"""Exercise the graph-free command-line campaign and checkpoint resume.
 
-The fixture uses the plan and trace row shapes emitted by the integrated
-GraphChecker unit-test-core JAR.  It intentionally avoids starting a system
-cluster, so this checks the generic driver protocol only.
+This synthetic trace checks the driver protocol without starting a cluster.
 """
 
 import argparse
@@ -12,8 +10,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from test_fuzzer import (FAKE_RUNNER, OCC_TARGET, SITE, TARGET,
-                         seed_files, trial_config)
+from test_fuzzer import fixture
 
 
 def main() -> int:
@@ -22,13 +19,7 @@ def main() -> int:
     args = parser.parse_args()
     root = args.out.resolve()
     root.mkdir(parents=True, exist_ok=True)
-    trace, plan = seed_files(root)
-    runner = root / "fixture_trial.py"
-    runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
-                      "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
-                      FAKE_RUNNER)
-    config = trial_config(root, trace, plan, runner)
-    config["target"]["occurrence"] = OCC_TARGET
+    config = fixture(root, max_trials=1, max_faults=1)
     config_file = root / "case.json"
     config_file.write_text(json.dumps(config, indent=2) + "\n")
     command = [sys.executable, str(Path(__file__).with_name("fuzzer.py")),

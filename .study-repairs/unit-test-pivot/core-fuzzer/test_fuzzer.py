@@ -4,670 +4,308 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fuzzer import (CaseLease, campaign, choose_next_sequence, read_closure,
-                    strict_injection, trace_feedback, validate)
+from fuzzer import (campaign, fingerprint, point_from_event, strict_injection,
+                    trace_feedback, validate)
+
+TARGET = '<example.Target: void check()>'
+SITE = TARGET + '#u8'
+A = {'marker': 'FAULT:TEST:REQUEST',
+     'siteId': '<example.Transport: void receive()>#u2',
+     'occurrence': 'node/request/io-1', 'hitOrdinal': 1}
+B = {'marker': 'FAULT:TEST:RECOVERY',
+     'siteId': '<example.Recovery: void read()>#u3',
+     'occurrence': 'node/recovery/io-1', 'hitOrdinal': 1}
 
 
-TARGET = "<example.Target: void check()>"
-SITE = TARGET + "#u8"
-DOOR = "<example.Transport: void receive()>#u2"
-OCC_TARGET = "node#epoch0/region/REGION.target/ctx:Lost:UNKNOWN/idx:target@0"
-OCC_DOOR = "node#epoch0/region/REGION.door/ctx:Lost:UNKNOWN/idx:door@0"
-POINT = {"marker": "FAULT:TEST:REQUEST", "siteId": DOOR,
-         "occurrenceAddress": OCC_DOOR, "hitOrdinal": 1}
-
-
-def jsonl(path, values):
+def jsonl(path, events):
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("".join(json.dumps(x) + "\n" for x in values))
+    path.write_text(''.join(json.dumps(event) + '\n' for event in events))
 
 
-def seed_files(root, extra=False):
-    trace = root / "seed" / "runtime_trace.jsonl"
-    plan = root / "seed" / "concolic_region_plan.jsonl"
-    jsonl(plan, [
-        {"kind": "CONCOLIC_RUNTIME_MODEL_CATALOG", "gaps": []},
-        {"kind": "CONCOLIC_REGION_PLAN", "occurrenceId": OCC_DOOR,
-         "regionId": "REGION.door",
-         "targetMethod": "<example.Transport: void receive()>",
-         "targetClosureEvidence": {
-             "schemaVersion": 1, "kind": "TARGET_CLOSURE_MEMBERSHIP",
-             "occurrence": OCC_DOOR,
-             "targetOccurrence": OCC_TARGET, "evidenceTier": "CANDIDATE",
-             "edgeEvidence": "UNAVAILABLE"},
-         "closureGoals": [{"kind": "REGION_PATH_CLOSURE"}]},
-        {"kind": "CONCOLIC_REGION_PLAN", "occurrenceId": OCC_TARGET,
-         "regionId": "REGION.target",
-         "targetMethod": TARGET,
-         "targetClosureEvidence": {
-             "schemaVersion": 1, "kind": "TARGET_CLOSURE_MEMBERSHIP",
-             "occurrence": OCC_TARGET,
-             "targetOccurrence": OCC_TARGET, "evidenceTier": "EXACT",
-             "edgeEvidence": "UNAVAILABLE"},
-         "closureGoals": [{"kind": "TARGET_REACH_CLOSURE"}]},
-    ])
-    events = [
-        {"schemaVersion": 3, "event": "FAULT_POINT_OBSERVED", "seq": 1,
-         **POINT},
-        {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
-         "method": TARGET, "callId": 10,
-         "occurrenceAddress": OCC_TARGET},
-        {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
-         "method": TARGET, "callId": 10, "siteId": SITE,
-         "outcome": False},
-    ]
-    if extra:
-        events.append({"schemaVersion": 3, "event": "FAULT_POINT_OBSERVED",
-                       "seq": 4, **{**POINT, "hitOrdinal": 2}})
-    jsonl(trace, events)
-    return trace, plan
+def marker(point, event, seq, **extra):
+    return {'schemaVersion': 3, 'event': event, 'seq': seq,
+            'marker': point['marker'], 'siteId': point['siteId'],
+            'occurrenceAddress': point['occurrence'],
+            'hitOrdinal': point['hitOrdinal'], **extra}
 
 
-FAKE_RUNNER = '''
+RUNNER = r'''
 import json, os
 from pathlib import Path
-trial = json.loads(Path(os.environ["CAUSYNTH_FAULT_TRIAL"]).read_text())
-fault = trial["faults"][0]
-trace = Path(os.environ["CAUSYNTH_TRACE_OUTPUT_DIR"]) / "runtime_trace.jsonl"
+trial = json.loads(Path(os.environ['CAUSYNTH_FAULT_TRIAL']).read_text())
+trace = Path(os.environ['CAUSYNTH_TRACE_OUTPUT_DIR']) / 'runtime_trace.jsonl'
 trace.parent.mkdir(parents=True, exist_ok=True)
-rows = [
-    {"schemaVersion":3,"event":"FAULT_POINT_OBSERVED","seq":1,
-     **{k:fault[k] for k in ("marker","siteId","occurrence","hitOrdinal")}},
-    {"schemaVersion":3,"event":"FAULT_MATCHED","seq":2,"faultId":fault["faultId"],
-     "marker":fault["marker"],"siteId":fault["siteId"],
-     "occurrenceAddress":fault["occurrence"],"hitOrdinal":fault["hitOrdinal"]},
-    {"schemaVersion":3,"event":"FAULT_APPLIED","seq":3,"faultId":fault["faultId"],
-     "marker":fault["marker"],"siteId":fault["siteId"],
-     "occurrenceAddress":fault["occurrence"],"hitOrdinal":fault["hitOrdinal"]},
-    {"schemaVersion":3,"event":"METHOD_ENTER","seq":4,"method":TARGET,
-     "callId":10,"occurrenceAddress":OCC_TARGET},
-    {"schemaVersion":3,"event":"BRANCH","seq":5,"method":TARGET,
-     "callId":10,"siteId":SITE,"outcome":True},
-    {"schemaVersion":3,"event":"METHOD_EXIT_THROW","seq":6,"method":TARGET,
-     "callId":10,"runtimeType":"example.TargetException"},
-]
-rows[0]["occurrenceAddress"] = rows[0].pop("occurrence")
-trace.write_text("".join(json.dumps(row)+"\\n" for row in rows))
+mode = os.environ.get('MODE', 'normal')
+attempt = int(os.environ.get('ATTEMPT', '1'))
+rows = []
+seq = 0
+if mode == 'pre_target':
+    rows.extend([
+        {'schemaVersion':3,'event':'METHOD_ENTER','seq':1,
+         'method':TARGET,'callId':10},
+        {'schemaVersion':3,'event':'BRANCH','seq':2,
+         'method':TARGET,'siteId':SITE,'callId':10,'outcome':False}])
+    seq = 2
+for point in trial['faults']:
+    identity = {k:point[k] for k in ('marker','siteId','hitOrdinal')}
+    identity['occurrenceAddress'] = point['occurrence']
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'FAULT_POINT_OBSERVED',
+                 'seq':seq,**identity})
+    if mode == 'unmatched' and attempt == 1:
+        break
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'FAULT_MATCHED','seq':seq,
+                 'faultId':point['faultId'],**identity})
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'FAULT_APPLIED','seq':seq,
+                 'faultId':point['faultId'],**identity})
+if len(trial['faults']) == 1:
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'FAULT_POINT_OBSERVED','seq':seq,
+                 'marker':B['marker'],'siteId':B['siteId'],
+                 'occurrenceAddress':B['occurrence'],
+                 'hitOrdinal':B['hitOrdinal']})
+if mode not in ('lost', 'pre_target'):
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'METHOD_ENTER','seq':seq,
+                 'method':'<example.Recovery: void run()>','callId':20})
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'METHOD_ENTER','seq':seq,
+                 'method':TARGET,'callId':10})
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'BRANCH','seq':seq,
+                 'method':TARGET,'siteId':SITE,'callId':10,'outcome':True})
+    seq += 1
+    rows.append({'schemaVersion':3,'event':'METHOD_EXIT_THROW','seq':seq,
+                 'method':TARGET,'callId':10,
+                 'runtimeType':'example.TargetException'})
+trace.write_text(''.join(json.dumps(row)+'\n' for row in rows))
 '''
 
 
-def trial_config(root, trace, plan, runner, max_trials=1, max_seconds=100):
-    for name in ("graphchecker", "system", "tmp"):
-        (root / name).mkdir(exist_ok=True)
-    return {"case_id": "CHECK-01", "system": "example",
-            "test_class": "example.OriginalClusterTest",
-            "test_method": "testOriginal", "cwd": str(root / "graphchecker"),
-            "workspaces": {"graphchecker": str(root / "graphchecker"),
-                           "system_test": str(root / "system"),
-                           "temp": str(root / "tmp")},
-            "shared_readonly_roots": [],
-            "target": {"method": TARGET, "site_id": SITE,
-                       "region_id": "REGION.target",
-                       "fatal_guards": [{"siteId": SITE, "outcome": True}],
-                       "exception_type": "example.TargetException"},
-            "seed": {"trace": str(trace), "closure_plan": str(plan),
-                     "elapsed_seconds": 2.5},
-            "trial": {"command": [sys.executable, str(runner)],
-                      "aggregate_command": ["/bin/cp", str(plan),
-                                            "{aggregate_dir}/plan.jsonl"],
-                      "closure_plan": "{aggregate_dir}/plan.jsonl"},
-            "budget": {"max_trials": max_trials, "max_faults": 1,
-                       "max_seconds": max_seconds},
-            "timeout_seconds": 10}
+def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
+    work = root / 'system'
+    temp = root / 'tmp'
+    work.mkdir()
+    temp.mkdir()
+    seed = root / 'seed.jsonl'
+    jsonl(seed, [marker(A, 'FAULT_POINT_OBSERVED', 1),
+                 {'schemaVersion': 3, 'event': 'METHOD_ENTER', 'seq': 2,
+                  'method': TARGET, 'callId': 10},
+                 {'schemaVersion': 3, 'event': 'BRANCH', 'seq': 3,
+                  'method': TARGET, 'callId': 10, 'siteId': SITE,
+                  'outcome': False}])
+    runner = root / 'runner.py'
+    runner.write_text('TARGET=' + repr(TARGET) + '\nSITE=' + repr(SITE) +
+                      '\nB=' + repr(B) + '\n' + RUNNER)
+    return {'case_id': 'CHECK-01', 'system': 'example',
+            'test_class': 'example.OriginalClusterTest',
+            'test_method': 'testOriginal', 'cwd': str(work),
+            'workspaces': {'system_test': str(work), 'temp': str(temp)},
+            'target': {'method': TARGET, 'site_id': SITE,
+                       'exception_type': 'example.TargetException'},
+            'seed': {'trace': str(seed), 'elapsed_seconds': 1.0},
+            'trial': {'command': [sys.executable, str(runner)],
+                      'env': {'MODE': mode, 'ATTEMPT': '{attempt}'}},
+            'budget': {'max_trials': max_trials, 'max_faults': max_faults,
+                       'max_unmatched_retries': 1},
+            'timeout_seconds': 10}
 
 
-class FuzzerTest(unittest.TestCase):
-    def test_scheduler_balances_width_depth_and_fault_families_on_resume(self):
+class CoverageIoTest(unittest.TestCase):
+    def test_runtime_occurrence_accepts_arbitrary_nonempty_identity(self):
+        observed = marker(A, 'FAULT_POINT_OBSERVED', 1)
+        self.assertEqual(point_from_event(observed), A)
+        self.assertIsNone(point_from_event({**observed,
+                                            'occurrenceAddress': '  '}))
+
+    def test_call_site_check_and_typed_throw_differential(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            a = {"marker": "FAULT:TEST:REQUEST", "siteId": DOOR,
-                 "occurrence": OCC_DOOR, "hitOrdinal": 1}
-            retry_a = {**a, "occurrence": OCC_DOOR + ".retry",
-                       "hitOrdinal": 2}
-            b = {**a, "siteId": TARGET + "#u30"}
-            c = {**a, "siteId": TARGET + "#u31"}
-            old_trial = root / "old" / "result.json"
-            old_trial.parent.mkdir()
-            (old_trial.parent / "fault-trial.json").write_text(
-                json.dumps({"schemaVersion": 1, "faults": [a]}))
-            state = {"completed": [{"result": str(old_trial)}],
-                     "queue": [
-                         {"sequence": [retry_a], "priority": 100,
-                          "created": 1},
-                         {"sequence": [b], "priority": 20, "created": 2}]}
-            # A legacy completed trial is recovered from its selector file;
-            # another occurrence of the same I/O site does not outrank B.
-            self.assertEqual(choose_next_sequence(state), 1)
-            state["completed"].append({"sequence": [b]})
-            state["completed"].append({"sequence": [a, c]})
-            state["queue"].extend([
-                {"sequence": [a, c], "priority": 100, "created": 3},
-                {"sequence": [b, c], "priority": 1, "created": 4}])
-            # With two singles and one extension done, explore a different
-            # first-fault family before extending A again.
-            self.assertEqual(choose_next_sequence(state), 3)
-            state["completed"].append({"sequence": [b, c]})
-            self.assertEqual(choose_next_sequence(state), 0)
+            config = fixture(root, max_trials=1, max_faults=1)
+            journal = '<example.Journal: void checkRequest()>'
+            site = journal + '#u78'
+            expected = 'java.lang.IllegalArgumentException'
 
-    def test_strict_requires_applied_identity_and_order(self):
-        selector = {"marker": POINT["marker"], "siteId": POINT["siteId"],
-                    "occurrence": POINT["occurrenceAddress"], "hitOrdinal": 1}
-        self.assertFalse(strict_injection(
-            {"matched_count": 1, "applied_count": 1,
-             "applied_points": [], "applied_fault_ids": []}, [selector]))
-        self.assertTrue(strict_injection(
-            {"matched_count": 1, "applied_count": 1,
-             "applied_points": [selector],
-             "applied_fault_ids": [__import__("fuzzer").fingerprint(selector)]},
-            [selector]))
+            def call(seq, invocation, call_id):
+                return [
+                    {'schemaVersion': 3, 'event': 'METHOD_ENTER', 'seq': seq,
+                     'method': journal, 'callId': call_id,
+                     'occurrenceAddress': 'journal/request/check-1'},
+                    {'schemaVersion': 3, 'event': 'CALL_SITE_ENTER',
+                     'seq': seq + 1, 'method': journal, 'callId': 0,
+                     'siteId': site, 'invocationId': invocation},
+                    {'schemaVersion': 3, 'event': 'CALL_SITE_THROW',
+                     'seq': seq + 2, 'method': journal, 'callId': 0,
+                     'siteId': site, 'invocationId': invocation,
+                     'runtimeType': ''},
+                    {'schemaVersion': 3, 'event': 'METHOD_EXIT_THROW',
+                     'seq': seq + 3, 'method': journal, 'callId': call_id,
+                     'runtimeType': expected}]
 
-    def test_claim_blocks_second_owner_and_takes_expired_claim(self):
-        with tempfile.TemporaryDirectory() as temp:
-            case = Path(temp) / "CHECK-01"
-            with CaseLease(case, ttl=1, interval=1):
-                with self.assertRaisesRegex(RuntimeError, "already claimed"):
-                    with CaseLease(case, ttl=1, interval=1):
-                        pass
-            (case / "claim.d").mkdir()
-            (case / "claim.d" / "lease.json").write_text(json.dumps({
-                "owner": "dead", "heartbeat": 0}))
-            with CaseLease(case, ttl=1, interval=1):
-                self.assertTrue((case / "claim.d" / "lease.json").exists())
-            self.assertEqual(len(list(case.glob("claim.stale.*.d"))), 1)
+            target = {'method': journal, 'site_id': site,
+                      'occurrence': 'journal/request/check-1',
+                      'throw_site_id': site,
+                      'check_events': ['CALL_SITE_RETURN', 'CALL_SITE_THROW'],
+                      'throw_event': 'CALL_SITE_THROW',
+                      'exception_type': expected}
+            config['target'] = target
+            seed = Path(config['seed']['trace'])
+            jsonl(seed, [marker(A, 'FAULT_POINT_OBSERVED', 1)] + call(2, 100, 10))
+            trial_rows = (call(1, 101, 10) +
+                          [marker(A, 'FAULT_POINT_OBSERVED', 5),
+                           marker(A, 'FAULT_MATCHED', 6,
+                                  faultId=fingerprint(A)),
+                           marker(A, 'FAULT_APPLIED', 7,
+                                  faultId=fingerprint(A))] +
+                          call(8, 102, 11))
+            # The first call precedes the fault; only the second validates
+            # post-final-fault target reach. Both count for the healthy
+            # differential, which therefore rises from one to two.
+            runner = root / 'callsite_runner.py'
+            runner.write_text(
+                'import json, os\nfrom pathlib import Path\n'
+                'rows = ' + repr(trial_rows) + '\n'
+                'p = Path(os.environ["CAUSYNTH_TRACE_OUTPUT_DIR"]) / '
+                '"runtime_trace.jsonl"\n'
+                'p.parent.mkdir(parents=True, exist_ok=True)\n'
+                'p.write_text("".join(json.dumps(e)+"\\n" for e in rows))\n')
+            config['trial']['command'] = [sys.executable, str(runner)]
+            state = campaign(config, root / 'out')
+            result = json.loads(Path(state['completed'][0]['result']).read_text())
+            self.assertEqual(result['status'], 'target_exception_candidate')
+            self.assertEqual(result['baseline_target_fatal_exception_count'], 1)
+            self.assertEqual(result['target_fatal_exception_count'], 2)
+            self.assertEqual(result['target_outcomes_after_fault'],
+                             ['CALL_SITE_THROW'])
+            self.assertTrue(result['target_reached_after_fault'])
+            self.assertTrue(result['strict_injection'])
+            # A throw without its matching invocation is no target check.
+            bad = root / 'unpaired.jsonl'
+            invalid = json.loads(json.dumps(trial_rows))
+            invalid[-2]['invocationId'] = 999
+            jsonl(bad, invalid)
+            feedback = trace_feedback(bad, target)
+            self.assertFalse(feedback['target_reached_after_fault'])
+            self.assertFalse(feedback['oracle'])
+            returned = root / 'returned.jsonl'
+            normal = json.loads(json.dumps(trial_rows))
+            normal[-2]['event'] = 'CALL_SITE_RETURN'
+            normal[-1]['event'] = 'METHOD_EXIT_NORMAL'
+            normal[-1]['runtimeType'] = ''
+            jsonl(returned, normal)
+            feedback = trace_feedback(returned, target)
+            self.assertTrue(feedback['target_reached_after_fault'])
+            self.assertEqual(feedback['target_outcomes_after_fault'],
+                             ['CALL_SITE_RETURN'])
+            self.assertFalse(feedback['oracle'])
 
-    def test_no_membership_proof_means_no_non_target_fault_point(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            trace, plan = seed_files(root)
-            lines = [json.loads(line) for line in plan.read_text().splitlines()]
-            del lines[1]["targetClosureEvidence"]
-            jsonl(plan, lines)
-            closure = read_closure(plan, TARGET)
-            self.assertEqual(closure["addresses"], [OCC_TARGET])
-            self.assertEqual(closure["blocking_gaps"][0]["kind"],
-                             "CLOSURE_MEMBER_EVIDENCE_MISSING")
-            feedback = trace_feedback(trace, closure,
-                                      {"method": TARGET,
-                                       "fatal_guards": [{"siteId": SITE,
-                                                         "outcome": True}],
-                                       "exception_type": "example.TargetException"})
-            self.assertEqual(feedback["points"], [])
-
-    def test_blocking_seed_gap_stops_before_fault_trial(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            trace, plan = seed_files(root)
-            plan_rows = [json.loads(line) for line in plan.read_text().splitlines()]
-            del plan_rows[1]["targetClosureEvidence"]
-            jsonl(plan, plan_rows)
-            runner = root / "should_not_run.py"
-            runner.write_text("raise RuntimeError('fault trial ran despite graph gap')\n")
-            state = campaign(trial_config(root, trace, plan, runner),
-                             root / "results")
-            self.assertEqual(state["status"], "graph_gap")
-            self.assertEqual(state["completed"], [])
-            self.assertEqual(state["queue"], [])
-            item = json.loads((root / "results" / "CHECK-01" /
-                               "result.json").read_text())
-            self.assertEqual(item["status"], "graph_gap")
-            self.assertEqual(item["fault_trials"], 0)
-
-    def test_target_occurrence_filter(self):
-        with tempfile.TemporaryDirectory() as temp:
-            _, plan = seed_files(Path(temp))
-            self.assertEqual(read_closure(plan, TARGET, OCC_TARGET)
-                             ["target_addresses"], [OCC_TARGET])
-            with self.assertRaisesRegex(ValueError, "no target region"):
-                read_closure(plan, TARGET, OCC_DOOR)
-
-    def test_target_request_api_excludes_other_operation(self):
-        with tempfile.TemporaryDirectory() as temp:
-            _, plan = seed_files(Path(temp))
-            plan_rows = [json.loads(line) for line in plan.read_text().splitlines()]
-            plan_rows[2]["requestApi"] = "operation-a(arg=false)"
-            other = json.loads(json.dumps(plan_rows[2]))
-            other["occurrenceId"] = OCC_TARGET + ".other"
-            other["requestApi"] = "operation-a(arg=true)"
-            other["targetClosureEvidence"]["occurrence"] = other["occurrenceId"]
-            other["targetClosureEvidence"]["targetOccurrence"] = other["occurrenceId"]
-            jsonl(plan, plan_rows + [other])
-            allowed = read_closure(
-                plan, TARGET, allowed_target_request_apis={"operation-a(arg=false)"})
-            self.assertEqual(allowed["target_addresses"], [OCC_TARGET])
-            self.assertEqual(allowed["target_request_apis"],
-                             ["operation-a(arg=false)"])
-            with self.assertRaisesRegex(ValueError, "no target region"):
-                read_closure(plan, TARGET,
-                             allowed_target_request_apis={"operation-b"})
-
-    def test_declared_throw_method_cannot_disagree_with_site(self):
+    def test_graph_free_seed_discovers_io_and_mutates_actual_sequence(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            trace, plan = seed_files(root)
-            runner = root / "unused.py"
-            runner.write_text("pass\n")
-            config = trial_config(root, trace, plan, runner)
-            config["target"]["throw_site_id"] = TARGET + "#u8"
-            config["target"]["throw_method"] = "<example.Other: void check()>"
-            with self.assertRaisesRegex(ValueError, "throw_method differs"):
-                validate(config)
-
-    def test_other_target_membership_is_not_a_missing_proof(self):
-        with tempfile.TemporaryDirectory() as temp:
-            _, plan = seed_files(Path(temp))
-            lines = [json.loads(line) for line in plan.read_text().splitlines()]
-            other = "node#epoch0/region/REGION.other/ctx:Other/idx:other@0"
-            lines.append({"kind": "CONCOLIC_REGION_PLAN", "occurrenceId": other,
-                          "targetMethod": "<example.Other: void check()>",
-                          "targetClosureEvidence": {
-                              "schemaVersion": 1,
-                              "kind": "TARGET_CLOSURE_MEMBERSHIP",
-                              "occurrence": other, "targetOccurrence": other,
-                              "evidenceTier": "EXACT",
-                              "edgeEvidence": "UNAVAILABLE"},
-                          "closureGoals": [{"kind": "TARGET_REACH_CLOSURE"}]})
-            jsonl(plan, lines)
-            closure = read_closure(plan, TARGET)
-            self.assertNotIn(other, closure["addresses"])
-            self.assertEqual(closure["blocking_gaps"], [])
-
-    def test_folded_target_region_is_not_runtime_target_proof(self):
-        with tempfile.TemporaryDirectory() as temp:
-            _, plan = seed_files(Path(temp))
-            lines = [json.loads(line) for line in plan.read_text().splitlines()]
-            lines[2]["foldedRegionIds"] = ["REGION.nested.target"]
-            jsonl(plan, lines)
-            closure = read_closure(plan, TARGET,
-                                   target_region_id="REGION.nested.target")
-            self.assertFalse(closure["target_region_explicit"])
-            self.assertEqual(closure["blocking_gaps"][0]["kind"],
-                             "TARGET_REGION_FOLDED_ONLY")
-
-    def test_exact_target_occurrence_and_post_fault_branch(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            trace, plan = seed_files(root)
-            closure = read_closure(plan, TARGET)
-            healthy = trace_feedback(trace, closure,
-                                     {"method": TARGET, "site_id": SITE,
-                                      "fatal_guards": [{"siteId": SITE,
-                                                        "outcome": True}],
-                                      "exception_type": "example.TargetException"})
-            self.assertTrue(healthy["target_reached"])
-            self.assertEqual(len(healthy["points"]), 1)
-            self.assertFalse(healthy["oracle"])
-            other = root / "other.jsonl"
-            jsonl(other, [
-                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
-                 **POINT},
-                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
-                 "method": TARGET, "callId": 99,
-                 "occurrenceAddress": OCC_DOOR},
-                {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
-                 "siteId": SITE, "callId": 99},
-                {"schemaVersion": 3, "event": "METHOD_EXIT_THROW", "seq": 4,
-                 "method": TARGET, "callId": 99,
-                 "runtimeType": "example.TargetException"},
-            ])
-            verdict = trace_feedback(other, closure,
-                                     {"method": TARGET, "site_id": SITE,
-                                      "fatal_guards": [{"siteId": SITE,
-                                                        "outcome": True}],
-                                      "exception_type": "example.TargetException"})
-            self.assertFalse(verdict["oracle"])
-
-    def test_synthetic_fault_guard_is_excluded_from_coverage_only(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            trace, plan = seed_files(root)
-            synthetic = TARGET + "#u99"
-            events = [json.loads(line) for line in trace.read_text().splitlines()]
-            events.append({"schemaVersion": 3, "event": "BRANCH", "seq": 4,
-                           "method": TARGET, "callId": 10,
-                           "siteId": synthetic, "outcome": False})
-            jsonl(trace, events)
-            closure = read_closure(plan, TARGET)
-            target = {"method": TARGET,
-                      "fatal_guards": [{"siteId": SITE, "outcome": True}],
-                      "exception_type": "example.TargetException",
-                      "coverage_exclude_sites": [synthetic]}
-            feedback = trace_feedback(trace, closure, target)
-            self.assertIn("BRANCH:" + SITE + ":False", feedback["coverage"])
-            self.assertNotIn("BRANCH:" + synthetic + ":False",
-                             feedback["coverage"])
-            runner = root / "unused.py"
-            runner.write_text("pass\n")
-            config = trial_config(root, trace, plan, runner)
-            config["target"]["coverage_exclude_sites"] = [SITE]
-            with self.assertRaisesRegex(ValueError, "fatal target guard"):
-                validate(config)
-
-    def test_target_seen_only_before_fault_is_lost(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            trace, plan = seed_files(root)
-            runner = root / "pre_target_runner.py"
-            reordered = FAKE_RUNNER.replace(
-                "trace.write_text(",
-                "rows = [rows[0], rows[3], rows[4], rows[1], rows[2]]\n"
-                "for i, row in enumerate(rows, 1): row['seq'] = i\n"
-                "trace.write_text(")
-            runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
-                              "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
-                              reordered)
-            state = campaign(trial_config(root, trace, plan, runner),
-                             root / "results")
-            result = json.loads(Path(state["completed"][0]["result"]).read_text())
-            self.assertTrue(result["target_reached"])
-            self.assertFalse(result["target_reached_after_fault"])
-            self.assertEqual(result["status"], "lost_target")
-            self.assertFalse(result["oracle"])
-            summary = json.loads((root / "results" / "CHECK-01" /
-                                  "result.json").read_text())
-            self.assertEqual(summary["bug_mark"], "none")
-            self.assertEqual(summary["status"], "no_valid_target_trial")
-            self.assertEqual(summary["lost_target_trials"], 1)
-
-    def test_nested_throw_must_descend_from_target_call(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            _, plan = seed_files(root)
-            closure = read_closure(plan, TARGET)
-            child = "<example.Child: void fatalCheck()>"
-            guard = child + "#u4"
-            faulted = root / "nested.jsonl"
-            jsonl(faulted, [
-                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
-                 "faultId": "f", **POINT},
-                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
-                 "method": TARGET, "callId": 10, "parentCallId": 0,
-                 "occurrenceAddress": OCC_TARGET},
-                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 3,
-                 "method": child, "callId": 11, "parentCallId": 10},
-                {"schemaVersion": 3, "event": "BRANCH", "seq": 4,
-                 "siteId": guard, "callId": 11, "outcome": True},
-                {"schemaVersion": 3, "event": "METHOD_EXIT_THROW", "seq": 5,
-                 "method": child, "callId": 11,
-                 "runtimeType": "example.TargetException"},
-            ])
-            target = {"method": TARGET, "throw_method": child,
-                      "fatal_guards": [{"siteId": guard, "outcome": True}],
-                      "exception_type": "example.TargetException"}
-            self.assertTrue(trace_feedback(faulted, closure, target)["oracle"])
-            lines = [json.loads(line) for line in faulted.read_text().splitlines()]
-            lines[2]["parentCallId"] = 99
-            jsonl(faulted, lines)
-            self.assertFalse(trace_feedback(faulted, closure, target)["oracle"])
-            unrelated = root / "unrelated.jsonl"
-            jsonl(unrelated, [
-                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
-                 **POINT},
-                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
-                 "method": TARGET, "callId": 10,
-                 "occurrenceAddress": OCC_TARGET},
-                {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
-                 "siteId": SITE, "callId": 10, "outcome": False},
-                {"schemaVersion": 3, "event": "METHOD_EXIT_THROW", "seq": 4,
-                 "method": TARGET, "callId": 10,
-                 "runtimeType": "example.TargetException"},
-            ])
-            verdict = trace_feedback(unrelated, closure,
-                                     {"method": TARGET,
-                                      "fatal_guards": [{"siteId": SITE,
-                                                        "outcome": True}],
-                                      "exception_type": "example.TargetException"})
-            self.assertTrue(verdict["target_after_fault"])
-            self.assertFalse(verdict["oracle"])
-
-    def test_explicit_throw_oracle_handles_local_catch_and_exact_site(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            _, plan = seed_files(root)
-            closure = read_closure(plan, TARGET)
-            throw_site = TARGET + "#u12"
-            trace = root / "caught.jsonl"
-            events = [
-                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
-                 "faultId": "f", **POINT},
-                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
-                 "method": TARGET, "callId": 10,
-                 "occurrenceAddress": OCC_TARGET},
-                {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
-                 "siteId": SITE, "callId": 10, "outcome": True},
-                {"schemaVersion": 3, "event": "EXPLICIT_THROW", "seq": 4,
-                 "method": TARGET, "callId": 10, "siteId": throw_site,
-                 "runtimeType": "example.TargetException"},
-                {"schemaVersion": 3, "event": "METHOD_EXIT_NORMAL", "seq": 5,
-                 "method": TARGET, "callId": 10},
-            ]
-            jsonl(trace, events)
-            target = {"method": TARGET, "site_id": SITE,
-                      "fatal_guards": [{"siteId": SITE, "outcome": True}],
-                      "exception_type": "example.TargetException"}
-            self.assertFalse(trace_feedback(trace, closure, target)["oracle"])
-            explicit = {**target, "throw_event": "EXPLICIT_THROW",
-                        "explicit_throw_site_id": throw_site}
-            feedback = trace_feedback(trace, closure, explicit)
-            self.assertTrue(feedback["oracle"])
-            self.assertEqual(feedback["target_fatal_exception_count"], 1)
-            self.assertFalse(trace_feedback(trace, closure,
-                                            {**explicit,
-                                             "explicit_throw_site_id": TARGET + "#u99"})
-                             ["oracle"])
-            events[2]["seq"] = 0
-            jsonl(trace, events)
-            self.assertFalse(trace_feedback(trace, closure, explicit)["oracle"])
-
-    def test_explicit_throw_config_requires_same_method_and_site(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            trace, plan = seed_files(root)
-            runner = root / "unused.py"
-            runner.write_text("pass\n")
-            config = trial_config(root, trace, plan, runner)
-            config["target"]["throw_event"] = "EXPLICIT_THROW"
-            with self.assertRaisesRegex(ValueError, "explicit_throw_site_id"):
-                validate(config)
-            config["target"]["explicit_throw_site_id"] = (
-                "<example.Other: void check()>#u12")
-            with self.assertRaisesRegex(ValueError, "differs from throw_method"):
-                validate(config)
-            config["target"]["explicit_throw_site_id"] = TARGET + "#u12"
+            config = fixture(root)
             validate(config)
-            config["target"]["throw_site_id"] = TARGET + "#u13"
-            with self.assertRaisesRegex(ValueError, "differs from throw_site_id"):
-                validate(config)
+            state = campaign(config, root / 'out')
+            self.assertEqual(len(state['completed']), 2)
+            self.assertEqual([len(c['sequence']) for c in state['completed']],
+                             [1, 2])
+            self.assertEqual(state['completed'][1]['sequence'], [A, B])
+            results = [json.loads(Path(c['result']).read_text())
+                       for c in state['completed']]
+            self.assertTrue(all(r['strict_injection'] for r in results))
+            self.assertEqual(results[0]['new_io_count'], 1)
+            self.assertGreater(results[0]['new_coverage_count'], 0)
+            self.assertEqual(results[1]['applied_fault_ids'],
+                             [fingerprint(A), fingerprint(B)])
+            self.assertEqual(results[0]['target_outcomes_after_fault'], [True])
+            self.assertTrue(results[0]['target_outcome_changed'])
+            summary = json.loads((root / 'out/CHECK-01/result.json').read_text())
+            self.assertEqual(summary['status'], 'candidate_review')
+            self.assertEqual(summary['bug_mark'], 'candidate')
+            self.assertEqual(summary['io_family_gain'], 1)
+            self.assertEqual(summary['target_outcome_changed_trials'], 2)
+            self.assertEqual(summary['aggregate_seconds'] if
+                             'aggregate_seconds' in summary else 0, 0)
+            self.assertFalse(list((root / 'out').rglob('*plan*')))
+            again = campaign(config, root / 'out')
+            self.assertEqual(again['completed'], state['completed'])
 
-    def test_alternative_fatal_guard_paths_do_not_require_both_routes(self):
+    def test_lost_target_discards_feedback_and_descendants(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            _, plan = seed_files(root)
-            closure = read_closure(plan, TARGET)
-            a = TARGET + "#u11"
-            b = TARGET + "#u20"
-            outer = TARGET + "#u2"
-            target = {"method": TARGET,
-                      "exception_type": "example.TargetException",
-                      "fatal_guard_paths": [
-                          [{"siteId": outer, "outcome": True},
-                           {"siteId": a, "outcome": True}],
-                          [{"siteId": outer, "outcome": True},
-                           {"siteId": b, "outcome": False}]]}
-            for last_site, last_outcome in ((a, True), (b, False)):
-                trace = root / ("route-a.jsonl" if last_site == a
-                                else "route-b.jsonl")
-                jsonl(trace, [
-                    {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
-                     "faultId": "f", **POINT},
-                    {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
-                     "method": TARGET, "callId": 10,
-                     "occurrenceAddress": OCC_TARGET},
-                    {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
-                     "siteId": outer, "callId": 10, "outcome": True},
-                    {"schemaVersion": 3, "event": "BRANCH", "seq": 4,
-                     "siteId": last_site, "callId": 10,
-                     "outcome": last_outcome},
-                    {"schemaVersion": 3, "event": "METHOD_EXIT_THROW",
-                     "seq": 5, "method": TARGET, "callId": 10,
-                     "runtimeType": "example.TargetException"},
-                ])
-                feedback = trace_feedback(trace, closure, target)
-                self.assertTrue(feedback["oracle"])
-                self.assertEqual(feedback["target_fatal_exception_count"], 1)
-            # A branch seen only before the fault cannot validate a replay.
-            lines = [json.loads(line) for line in trace.read_text().splitlines()]
-            lines[0]["seq"] = 4
-            jsonl(trace, lines)
-            self.assertFalse(trace_feedback(trace, closure, target)["oracle"])
-            # Reaching only the common outer condition is not reaching either
-            # selected check after the fault.
-            jsonl(trace, [
-                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
-                 "faultId": "f", **POINT},
-                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
-                 "method": TARGET, "callId": 10,
-                 "occurrenceAddress": OCC_TARGET},
-                {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
-                 "siteId": outer, "callId": 10, "outcome": True},
-            ])
-            self.assertFalse(trace_feedback(trace, closure, target)
-                             ["target_reached_after_fault"])
-            # A fault between an outer guard and the decisive guard still
-            # exposes a post-fault fatal check.
-            jsonl(trace, [
-                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 1,
-                 "method": TARGET, "callId": 10,
-                 "occurrenceAddress": OCC_TARGET},
-                {"schemaVersion": 3, "event": "BRANCH", "seq": 2,
-                 "siteId": outer, "callId": 10, "outcome": True},
-                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 3,
-                 "faultId": "f", **POINT},
-                {"schemaVersion": 3, "event": "BRANCH", "seq": 4,
-                 "siteId": a, "callId": 10, "outcome": True},
-                {"schemaVersion": 3, "event": "METHOD_EXIT_THROW", "seq": 5,
-                 "method": TARGET, "callId": 10,
-                 "runtimeType": "example.TargetException"},
-            ])
-            self.assertTrue(trace_feedback(trace, closure, target)["oracle"])
+            config = fixture(root, mode='lost')
+            state = campaign(config, root / 'out')
+            result = json.loads(Path(state['completed'][0]['result']).read_text())
+            self.assertEqual(result['status'], 'lost_target')
+            self.assertEqual(result['new_io_count'], 0)
+            self.assertEqual(state['queue'], [])
+            self.assertEqual(len(state['io_families']), 1)
 
-    def test_one_trial_persists_and_does_not_repeat(self):
+    def test_unmatched_retry_is_bounded_and_resume_keeps_one_trial(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            trace, plan = seed_files(root)
-            runner = root / "fake_runner.py"
-            runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
-                              "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
-                              FAKE_RUNNER)
-            config = trial_config(root, trace, plan, runner)
-            first = campaign(config, root / "results")
-            self.assertEqual(len(first["completed"]), 1)
-            self.assertEqual(first["completed"][0]["status"],
-                             "target_exception_candidate")
-            self.assertFalse((root / "results" / "CHECK-01" /
-                              "claim.d").exists())
-            second = campaign(config, root / "results")
-            self.assertEqual(len(second["completed"]), 1)
-            self.assertEqual(second["completed"][0]["result"],
-                             first["completed"][0]["result"])
-            item = json.loads((root / "results" / "CHECK-01" /
-                               "result.json").read_text())
-            self.assertGreaterEqual(item["elapsed_seconds"], 2.5)
-            self.assertEqual(item["seed_seconds"], 2.5)
-            self.assertGreater(item["aggregate_seconds"], 0)
-            self.assertEqual(item["single_fault_trials"], 1)
-            self.assertEqual(item["multi_fault_trials"], 0)
-            self.assertEqual(item["first_fault_families_tested"], 1)
+            config = fixture(root, mode='unmatched', max_trials=1)
+            state = campaign(config, root / 'out')
+            self.assertEqual(len(state['completed']), 1)
+            result = json.loads(Path(state['completed'][0]['result']).read_text())
+            self.assertEqual(result['attempt'], 2)
+            self.assertTrue(result['strict_injection'])
+            self.assertEqual(len(list((root / 'out/CHECK-01/trials').glob(
+                '*/attempt-*/result.json'))), 2)
+            self.assertEqual(len(campaign(config, root / 'out')['completed']), 1)
 
-    def test_exact_target_exception_survives_faulted_state_graph_gap(self):
+    def test_budget_depth_expansion_uses_saved_trace(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            trace, plan = seed_files(root)
-            faulted_plan = root / "faulted-plan.jsonl"
-            plan_rows = [json.loads(line) for line in plan.read_text().splitlines()]
-            plan_rows[0]["gaps"] = [{"kind": "STATE_WRITER_MISSING",
-                                     "cls": "BLOCKING",
-                                     "subject": "missing namespace entry"}]
-            jsonl(faulted_plan, plan_rows)
-            runner = root / "fake_runner.py"
-            runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
-                              "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
-                              FAKE_RUNNER)
-            config = trial_config(root, trace, plan, runner)
-            config["trial"]["aggregate_command"][1] = str(faulted_plan)
-            state = campaign(config, root / "results")
-            trial = json.loads(Path(state["completed"][0]["result"]).read_text())
-            self.assertEqual(trial["status"], "target_exception_candidate")
-            self.assertTrue(trial["strict_injection"])
-            self.assertFalse(trial["graph_feedback_valid"])
-            self.assertTrue(trial["differential_target_exception"])
-            self.assertEqual(trial["new_coverage_count"], 0)
-            summary = json.loads((root / "results/CHECK-01/result.json").read_text())
-            self.assertEqual(summary["status"], "candidate_review")
+            config = fixture(root, max_trials=1, max_faults=1)
+            first = campaign(config, root / 'out')
+            self.assertEqual(len(first['completed']), 1)
+            self.assertEqual(first['queue'], [])
+            config['budget']['max_trials'] = 2
+            config['budget']['max_faults'] = 2
+            resumed = campaign(config, root / 'out')
+            self.assertEqual(len(resumed['completed']), 2)
+            self.assertEqual(resumed['completed'][1]['sequence'], [A, B])
+            self.assertEqual(resumed['completed'][0]['result'],
+                             first['completed'][0]['result'])
 
-    def test_trial_environment_and_trace_path_are_case_scoped(self):
+    def test_default_budget_is_48_trials_and_four_faults(self):
+        with tempfile.TemporaryDirectory() as temp:
+            config = fixture(Path(temp))
+            config['budget'] = {}
+            validate(config)
+            self.assertEqual(config['budget']['max_trials'], 48)
+            self.assertEqual(config['budget']['max_faults'], 4)
+
+    def test_exact_selector_and_target_check_after_final_fault(self):
+        point = dict(A)
+        applied = {'matched_count': 1, 'applied_count': 1,
+                   'applied_points': [point],
+                   'applied_fault_ids': [fingerprint(point)]}
+        self.assertTrue(strict_injection(applied, [point]))
+        self.assertFalse(strict_injection({**applied, 'applied_points': [B]},
+                                          [point]))
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            trace, plan = seed_files(root)
-            runner = root / "fake_runner.py"
-            runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
-                              "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
-                              FAKE_RUNNER)
-            config = trial_config(root, trace, plan, runner)
-            config["trial"]["env"] = {
-                "CAUSYNTH_TRACE_OUTPUT_DIR": "{trial_dir}/system-trace"}
-            config["trial"]["trace_path"] = (
-                "{trial_dir}/system-trace/runtime_trace.jsonl")
-            state = campaign(config, root / "results")
-            self.assertEqual(state["completed"][0]["status"],
-                             "target_exception_candidate")
-            result = json.loads(Path(state["completed"][0]["result"]).read_text())
-            self.assertIn("system-trace", result["trace"])
+            config = fixture(root, mode='pre_target', max_trials=1)
+            state = campaign(config, root / 'out')
+            result = json.loads(Path(state['completed'][0]['result']).read_text())
+            self.assertTrue(result['target_reached'])
+            self.assertFalse(result['target_reached_after_fault'])
+            self.assertEqual(result['status'], 'lost_target')
 
-    def test_expected_healthy_exception_requires_differential(self):
+    def test_coarse_io_scope_filters_without_changing_exact_identity(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
-            trace, plan = seed_files(root)
-            healthy = [json.loads(line) for line in trace.read_text().splitlines()]
-            healthy[-1]["outcome"] = True
-            healthy.append({"schemaVersion": 3,
-                            "event": "METHOD_EXIT_THROW", "seq": 4,
-                            "method": TARGET, "callId": 10,
-                            "runtimeType": "example.TargetException"})
-            jsonl(trace, healthy)
-            runner = root / "fake_runner.py"
-            runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
-                              "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
-                              FAKE_RUNNER)
-            state = campaign(trial_config(root, trace, plan, runner),
-                             root / "results")
-            trial = json.loads(Path(state["completed"][0]["result"]).read_text())
-            self.assertTrue(trial["oracle"])
-            self.assertFalse(trial["differential_target_exception"])
-            self.assertEqual(trial["status"], "baseline_exception_recurrence")
-            summary = json.loads((root / "results" / "CHECK-01" /
-                                  "result.json").read_text())
-            self.assertEqual(summary["bug_mark"], "none")
-
-    def test_resume_budget_ignores_offline_wall_time(self):
-        with tempfile.TemporaryDirectory() as temp:
-            root = Path(temp)
-            trace, plan = seed_files(root, extra=True)
-            runner = root / "fake_runner.py"
-            runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
-                              "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
-                              FAKE_RUNNER)
-            config = trial_config(root, trace, plan, runner, max_trials=1)
-            first = campaign(config, root / "results")
-            self.assertEqual(len(first["completed"]), 1)
-            self.assertEqual(len(first["queue"]), 1)
-            state_path = root / "results" / "CHECK-01" / "state.json"
-            state = json.loads(state_path.read_text())
-            state["started"] = 1  # simulated long disconnect
-            state_path.write_text(json.dumps(state))
-            config["budget"]["max_trials"] = 2
-            second = campaign(config, root / "results")
-            self.assertEqual(len(second["completed"]), 2)
+            config = fixture(root, max_trials=1)
+            config['io_scope'] = {'marker_prefixes': ['FAULT:TEST:REQUEST']}
+            state = campaign(config, root / 'out')
+            result = json.loads(Path(state['completed'][0]['result']).read_text())
+            self.assertEqual(result['new_io_count'], 0)
+            self.assertEqual(state['queue'], [])
+            self.assertEqual(state['completed'][0]['sequence'], [A])
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     unittest.main()
