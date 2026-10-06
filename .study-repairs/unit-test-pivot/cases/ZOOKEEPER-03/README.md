@@ -1,5 +1,10 @@
 # ZOOKEEPER-03: `SessionTrackerImpl.setOwner`
 
+**Current 102-check status: pending independent recorder replay.** The 96
+trials below remain historical evidence in `legacy-graph-result.json`. Their
+runtime recorder used a precomputed GraphChecker identity skeleton, so they
+do not complete the graph-independent runtime campaign.
+
 The selected check is at `zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java:330`:
 
 ```java

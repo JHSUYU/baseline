@@ -1,5 +1,11 @@
 # HDFS-08: journal writer-epoch check
 
+**Current 102-check status: pending independent recorder replay.** The 64
+trials below are preserved as historical evidence in `legacy-graph-result.json`.
+Their I/O recorder was GraphChecker-prewoven; the first 48 trials also loaded
+a region skeleton. They do not count as completion of the graph-independent
+runtime campaign.
+
 The selected Hadoop 3.4.3 check is `Journal.checkRequest(RequestInfo)` in
 `hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java`.
 The guard starts at line 486 and throws `IOException` at line 487 when a

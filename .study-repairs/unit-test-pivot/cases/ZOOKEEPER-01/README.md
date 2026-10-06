@@ -1,5 +1,10 @@
 # ZOOKEEPER-01: closing-session check
 
+**Current 102-check status: pending independent recorder replay.** The 64
+trials below remain historical evidence in `legacy-graph-result.json`. Their
+runtime recorder used GraphChecker-prewoven classes derived from a static
+skeleton, so they do not complete the graph-independent runtime campaign.
+
 ## Completed coverage/I/O campaign
 
 An unchanged `testCloseSessionWhileUpgradeOnLeader` JUnit healthy run in
