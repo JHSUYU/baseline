@@ -1,14 +1,88 @@
 {
   "case_id": "HBASE-24",
-  "status": "test_identified",
-  "cluster_test": "TestZKProcedureControllers.testSimpleZKCohortMemberController",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "status": "quality_complete",
+  "cluster_test": "org.apache.hadoop.hbase.procedure.TestZKProcedure#testMultipleMembers",
+  "target_reached": true,
+  "elapsed_seconds": 2453.33,
+  "fault_trials": 92,
+  "strict_injections": 85,
+  "target_after_fault": 80,
+  "coverage_gain": 8,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-24",
-  "source_audit_note": "This directly exercises the ZK member controller with PB-magic input. Prior mapped TestFlushTableProcedureWithDoNotSupportFlushTableMaster.testFlushFallback does not establish target reach."
+  "evidence": [
+    "README.md",
+    "evidence/hbase24-graphfree-80.tar.gz",
+    "work/checkpoint.json",
+    "work/src/HBase24Agent.java",
+    "work/run.sh"
+  ],
+  "source_audit_note": "Source lines 204-218 read znode bytes and reject an invalid protobuf magic prefix; the IllegalArgumentException is handled in startNewSubprocedure and converted to a member abort. This is a protocol encoding guard, without the multi-hop state comparison expected of strong ad hoc coordination. All observed post-fault magic checks remained valid; injected KeeperExceptions often made the original JUnit fail or time out, which is separate from the selected target exception.",
+  "methodology": "graph_free_original_junit_member_scoped_zk_io_jacoco_feedback",
+  "current_campaign": {
+    "healthy_elapsed_seconds": 17.95,
+    "healthy_magic_checks": 4,
+    "healthy_related_io_events": 44,
+    "healthy_coverage": {
+      "classes": {
+        "org/apache/hadoop/hbase/procedure/ZKProcedureUtil": {
+          "methods": 23,
+          "branches": 18,
+          "lines": 48
+        },
+        "org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs": {
+          "methods": 11,
+          "branches": 15,
+          "lines": 78
+        },
+        "org/apache/hadoop/hbase/zookeeper/ZKUtil": {
+          "methods": 21,
+          "branches": 44,
+          "lines": 116
+        }
+      },
+      "methods": 55,
+      "branches": 77,
+      "lines": 242
+    },
+    "attempted_trials": 92,
+    "strict_trials": 85,
+    "effective_trials": 80,
+    "strict_post_fault_target_trials": 80,
+    "strict_post_fault_bad_magic_trials": 0,
+    "requested_fault_events": 261,
+    "applied_fault_events": 252,
+    "new_production_methods": 1,
+    "new_production_branches": 8,
+    "new_io_sites": 0,
+    "elapsed_seconds": 2453.33,
+    "queue_length": 1201,
+    "budget": {
+      "effective_trials": 80,
+      "max_attempts": 240,
+      "max_faults": 8
+    },
+    "checkpoint": "work/checkpoint.json",
+    "junit_passed_trials": 12,
+    "junit_failed_trials": 80,
+    "max_observed_fault_sequence_length": 5,
+    "late_novelty_in_final_16_effective_trials": false,
+    "budget_extended": false,
+    "raw_log_audit": "92/92 plans, applied selectors, elapsed values and target outcomes match the checkpoint; JaCoCo union recomputed; no invalid magic in any raw trace"
+  },
+  "fully_applied_trials": 85,
+  "candidate_signature_count": 0,
+  "check_classification": "protocol_format_guard_static_candidate_false_positive",
+  "instrumentation_provenance": {
+    "method": "case_local_ByteBuddy_runtime_IO_and_target_probe_plus_JaCoCo_0.8.15",
+    "graphchecker_runtime": false,
+    "prewoven_classes": false,
+    "static_skeleton_or_map": false,
+    "graph_or_closure_feedback": false,
+    "hbase_source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+    "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "hbase_server_tests_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+    "agent_source_sha256": "20118eeeee0c48fc63f2fa955d6248cee438a250352719c61205b39956c888b0",
+    "agent_jar_sha256": "bacbe0e7d683401ffcc32110f254c297a5d26608aafc5eff90ec7c7b3af29ce9"
+  },
+  "evidence_archive_sha256": "88786ac969a6d6ea638c577f5514ff8e44412d97f50ba3fea40bdaaa908b822c"
 }

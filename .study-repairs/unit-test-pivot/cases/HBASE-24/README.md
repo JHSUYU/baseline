@@ -49,3 +49,34 @@ atomically recorded in `work/checkpoint.json` and `result.json`. The campaign
 and supervisor run in tmux sessions `hbase24_fuzz` and `hbase24_supervisor`
 and resume from an interrupted trial. All mutable data is case-local;
 per-trial MiniZK data is removed only after its result is checkpointed.
+
+## Completed result
+
+The campaign finished its default budget: 92 distinct attempts, 85 strictly
+applied plans, and 80 trials in which a PB-magic check executed after the
+last fault. The plans requested 261 checked ZooKeeper exceptions and applied
+252. The deepest tested plan contained five faults. Healthy calibration plus
+all attempts took 2453.33 seconds. The 80 admitted trials added one covered
+production method and eight covered branches; they added no stable I/O site.
+The final 16 admitted trials added no method, branch, or I/O-site coverage,
+so the conditional 128-trial extension did not apply.
+
+Every observed PB-magic check returned true. No selected target exception
+occurred, and there is no new-bug candidate at this check. Twelve faulted
+JUnit runs passed and 80 failed, often through procedure abort or timeout
+after an injected ZooKeeper exception. These JUnit failures are recorded
+separately from the selected guard result and are not labeled as coordination
+bugs by this target-exception oracle.
+
+The source-level classification is a likely static-selection false positive:
+this guard validates the encoding of one procedure znode's data and handles
+bad encoding locally by sending a member abort. It does not compare the
+multi-hop distributed state seen in the motivating ad hoc coordination case.
+This classification does not change the recorded runtime result.
+
+All 92 raw logs were re-parsed to confirm fault order, runtime identity,
+target-after-fault, JUnit status, and per-trial elapsed time. The JaCoCo union
+was recomputed and matched the checkpoint; the late-novelty gate was checked
+again. The complete checkpoint, logs, JaCoCo execution files, agent binary,
+and runner source are in `evidence/hbase24-graphfree-80.tar.gz` (SHA-256
+`88786ac969a6d6ea638c577f5514ff8e44412d97f50ba3fea40bdaaa908b822c`).
