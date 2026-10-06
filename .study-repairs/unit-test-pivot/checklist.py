@@ -201,6 +201,10 @@ def markdown(items: list[dict]) -> str:
         "Fully applied trials matched and injected every selected fault. "
         "Target after fault counts check reach, not target exceptions. "
         "Coverage gain is the case's reported feedback; its provenance is in the result.",
+        "New and resumed campaigns use 64 trials / at most 6 faults, with "
+        "a conditional 128 / 8 extension when production coverage or observed "
+        "I/O still grows near the limit. Completed earlier budgets remain "
+        "recorded as run; they are not replayed.",
         "",
         "Status: " + ", ".join(f"{key}={value}" for key, value in sorted(counts.items())),
         "", "| Check | System | Source | Function | Check code | Cluster test | "
