@@ -14,6 +14,15 @@ The unmodified HBase 2.6.6 `TestRegionMove.testDisableAndMove` calls `admin.unas
 
 The exact sequence reproduced in **two independent clean runs** of the same selector: `replay_unassign.log` (49.18 s) and `replay_unassign_002.log` (46.41 s). Each run injected exactly one response timeout after a successful underlying RPC, reached B2 on the retry, and produced `JUNIT found=1 succeeded=0 failed=1`. Full logs are on node1 under `cases/HBASE-11/independent/`; paths are recorded in `independent/client-candidate.json`. These diagnostic replays are excluded from the 80-trial campaign budget. Original shared trial `HBASE-10/gf_0001` independently showed the same sequence. A secondary clean replay of `AssignRegion` response loss (`replay_assign.log`, 50.19 s) showed the symmetric `CLOSED -> OPEN` transition, duplicate assign rejection, and JUnit failure.
 
+The replay plan is [`independent/replay-unassign.plan`](independent/replay-unassign.plan). On node1, the existing case-local runner can reproduce it with:
+
+```sh
+cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-10/independent
+./run.sh run hbase11_repro ../../HBASE-11/independent/replay-unassign.plan
+```
+
+Use a fresh suffix for each run so the embedded cluster has separate temporary files and ports. The plan hashes the stable RPC response family plus its first occurrence; it does not depend on a fixed socket port.
+
 ## Source review and contract boundary
 
 - `HBaseAdmin.java:1594-1618` rebuilds `AssignRegionRequest` or `UnassignRegionRequest` from the same region inside the retried callable; `HBaseAdmin.java:3170-3180` uses `RpcRetryingCallerImpl.callWithRetries`.
