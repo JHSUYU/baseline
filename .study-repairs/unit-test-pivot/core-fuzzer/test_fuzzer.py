@@ -316,6 +316,32 @@ class FuzzerTest(unittest.TestCase):
                                       "exception_type": "example.TargetException"})
             self.assertFalse(verdict["oracle"])
 
+    def test_synthetic_fault_guard_is_excluded_from_coverage_only(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            trace, plan = seed_files(root)
+            synthetic = TARGET + "#u99"
+            events = [json.loads(line) for line in trace.read_text().splitlines()]
+            events.append({"schemaVersion": 3, "event": "BRANCH", "seq": 4,
+                           "method": TARGET, "callId": 10,
+                           "siteId": synthetic, "outcome": False})
+            jsonl(trace, events)
+            closure = read_closure(plan, TARGET)
+            target = {"method": TARGET,
+                      "fatal_guards": [{"siteId": SITE, "outcome": True}],
+                      "exception_type": "example.TargetException",
+                      "coverage_exclude_sites": [synthetic]}
+            feedback = trace_feedback(trace, closure, target)
+            self.assertIn("BRANCH:" + SITE + ":False", feedback["coverage"])
+            self.assertNotIn("BRANCH:" + synthetic + ":False",
+                             feedback["coverage"])
+            runner = root / "unused.py"
+            runner.write_text("pass\n")
+            config = trial_config(root, trace, plan, runner)
+            config["target"]["coverage_exclude_sites"] = [SITE]
+            with self.assertRaisesRegex(ValueError, "fatal target guard"):
+                validate(config)
+
     def test_target_seen_only_before_fault_is_lost(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

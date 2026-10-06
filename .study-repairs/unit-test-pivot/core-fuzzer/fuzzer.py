@@ -253,6 +253,7 @@ def trace_feedback(path: Path, closure: dict[str, Any],
     call_parents: dict[int, int] = {}
     summary: dict[str, Any] = {}
     throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
+    coverage_exclude_sites = set(target.get("coverage_exclude_sites", []))
     events = list(rows(path))
     for event in events:
         kind = event.get("event")
@@ -282,7 +283,7 @@ def trace_feedback(path: Path, closure: dict[str, Any],
                 target_calls.add(call_id)
         elif kind == "BRANCH":
             site = event.get("siteId")
-            if site:
+            if site and site not in coverage_exclude_sites:
                 coverage.add("BRANCH:" + site + ":" + str(event.get("outcome")))
         elif kind == throw_event:
             if (event.get("method") == target.get("throw_method", target["method"])
@@ -814,6 +815,15 @@ def validate(config: dict[str, Any]) -> None:
     if not config["target"].get("region_id"):
         raise ValueError("target requires static region_id or scope_map + throw_site_id")
     fatal_guard_paths(config["target"])
+    coverage_exclude_sites = config["target"].get("coverage_exclude_sites", [])
+    if (not isinstance(coverage_exclude_sites, list) or
+            any(not isinstance(site, str) or "#u" not in site
+                for site in coverage_exclude_sites)):
+        raise ValueError("target.coverage_exclude_sites needs exact site IDs")
+    if any(guard["siteId"] in coverage_exclude_sites
+           for path in fatal_guard_paths(config["target"])
+           for guard in path):
+        raise ValueError("cannot exclude a fatal target guard from coverage")
     if not isinstance(config["trial"].get("command"), list):
         raise ValueError("trial.command must be an argv list, never a shell string")
     if (not config["seed"].get("command") and
@@ -876,6 +886,7 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "target_source_file": state.get("target_source_file"),
         "target_source_line": state.get("target_source_line"),
         "target_code": state.get("target_code"),
+        "coverage_exclude_sites": state.get("coverage_exclude_sites", []),
         "status": status,
         "target_reached": seed.get("target_reached"),
         "fault_trials": len(completed),
@@ -1013,6 +1024,8 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("target_source_file", config["target"].get("source_file"))
             state.setdefault("target_source_line", config["target"].get("source_line"))
             state.setdefault("target_code", config["target"].get("code"))
+            state.setdefault("coverage_exclude_sites",
+                             config["target"].get("coverage_exclude_sites", []))
             if state.get("status") in TERMINAL:
                 return state
         else:
@@ -1027,6 +1040,8 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "target_source_file": config["target"].get("source_file"),
                      "target_source_line": config["target"].get("source_line"),
                      "target_code": config["target"].get("code"),
+                     "coverage_exclude_sites": config["target"].get(
+                         "coverage_exclude_sites", []),
                      "config_digest": config_digest, "seed": None,
                      "coverage": [], "queue": [], "seen_sequences": [],
                      "closure_members": {}, "active_runtime_seconds": 0.0,

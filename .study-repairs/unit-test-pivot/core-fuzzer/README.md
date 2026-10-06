@@ -77,6 +77,12 @@ case, set:
   The explicit site must belong to `throw_method` and, when supplied,
   equal `throw_site_id`. Calibrate its woven site ID against the original
   JUnit test before using it for trials.
+  If an injected fault door adds a synthetic branch to an otherwise
+  production method, put its exact site ID in
+  `target.coverage_exclude_sites`. This removes the branch from coverage
+  feedback while retaining all target-guard and exception observations.
+  Source/bytecode inspection must justify each exclusion; fatal target
+  guards cannot be excluded.
 - `seed.trace`, `seed.closure_plan`: healthy `runtime_trace.jsonl` and
   `concolic_region_plan.jsonl`. Provide `seed.command` to generate them or
   `seed.elapsed_seconds`/`seed.timing_manifest` if already generated. The
