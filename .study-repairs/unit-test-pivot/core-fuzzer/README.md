@@ -22,9 +22,10 @@ checks the exception oracle, writes `cases/CHECK-01/result.json`, then resumes
 the same case and proves it does not repeat the completed trial. The fixture
 proves the driver protocol; it is not a distributed-system bug report.
 
-The current integrated GraphChecker JAR used for the plan/fault schema is
-`/users/ZhenyuLi/.graphchecker-builds/unit-test-core-dd4bcd000-2572d2fee254.jar`
-(commit `dd4bcd000`). It is read-only. The opt-in
+The core GraphChecker JAR used for the current plan/fault schema is
+`/users/ZhenyuLi/.graphchecker-builds/unit-test-core-e73b2c09c-cd27a01fd058.jar`
+(commit `e73b2c09c`). System-specific case branches use their own immutable
+JARs; record each JAR digest in the case evidence. The opt-in
 `-Dcausynth.region.preserve.failure-target=true` setting, together with
 `-Dcausynth.region.skeletons=<static skeletons path>`, preserves a static
 `FAILURE_TARGET_ENTRY` as its own runtime region in both recording and replay.
@@ -116,6 +117,15 @@ and optional `targetSiteId`/`targetRegionId`. Each selector has a unique
 `sourceKey`, and `value:true`. The Java controller emits
 `schemaVersion:3,faultSchemaVersion:1` events. The driver calls an injection
 *strict* only if every `FAULT_APPLIED` has the requested identity and order.
+
+The queue alternates breadth and depth as both become available: one-fault
+seeds and extensions of previously tested sequences receive comparable trial
+slots. Within a slot, it first prefers an untested I/O fault family
+(`marker`, `siteId`, `sourceKey`), then coverage priority. For extensions it
+also prefers a first-fault family with fewer completed trials. Full
+occurrence addresses still govern injection identity; this grouping only
+guides scheduling. Existing completed selectors are read from the checkpoint
+so increasing the budget does not rerun them.
 
 ## Evidence and decisions
 

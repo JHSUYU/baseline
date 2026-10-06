@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fuzzer import (CaseLease, campaign, read_closure, strict_injection,
-                    trace_feedback, validate)
+from fuzzer import (CaseLease, campaign, choose_next_sequence, read_closure,
+                    strict_injection, trace_feedback, validate)
 
 
 TARGET = "<example.Target: void check()>"
@@ -117,6 +117,38 @@ def trial_config(root, trace, plan, runner, max_trials=1, max_seconds=100):
 
 
 class FuzzerTest(unittest.TestCase):
+    def test_scheduler_balances_width_depth_and_fault_families_on_resume(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            a = {"marker": "FAULT:TEST:REQUEST", "siteId": DOOR,
+                 "occurrence": OCC_DOOR, "hitOrdinal": 1}
+            retry_a = {**a, "occurrence": OCC_DOOR + ".retry",
+                       "hitOrdinal": 2}
+            b = {**a, "siteId": TARGET + "#u30"}
+            c = {**a, "siteId": TARGET + "#u31"}
+            old_trial = root / "old" / "result.json"
+            old_trial.parent.mkdir()
+            (old_trial.parent / "fault-trial.json").write_text(
+                json.dumps({"schemaVersion": 1, "faults": [a]}))
+            state = {"completed": [{"result": str(old_trial)}],
+                     "queue": [
+                         {"sequence": [retry_a], "priority": 100,
+                          "created": 1},
+                         {"sequence": [b], "priority": 20, "created": 2}]}
+            # A legacy completed trial is recovered from its selector file;
+            # another occurrence of the same I/O site does not outrank B.
+            self.assertEqual(choose_next_sequence(state), 1)
+            state["completed"].append({"sequence": [b]})
+            state["completed"].append({"sequence": [a, c]})
+            state["queue"].extend([
+                {"sequence": [a, c], "priority": 100, "created": 3},
+                {"sequence": [b, c], "priority": 1, "created": 4}])
+            # With two singles and one extension done, explore a different
+            # first-fault family before extending A again.
+            self.assertEqual(choose_next_sequence(state), 3)
+            state["completed"].append({"sequence": [b, c]})
+            self.assertEqual(choose_next_sequence(state), 0)
+
     def test_strict_requires_applied_identity_and_order(self):
         selector = {"marker": POINT["marker"], "siteId": POINT["siteId"],
                     "occurrence": POINT["occurrenceAddress"], "hitOrdinal": 1}

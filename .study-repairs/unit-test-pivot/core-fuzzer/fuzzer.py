@@ -416,6 +416,59 @@ def enqueue(state: dict[str, Any], sequence: list[dict[str, Any]],
                            "priority": priority, "created": time.time()})
 
 
+def fault_family(point: dict[str, Any]) -> str:
+    """Stable I/O identity for scheduling; an occurrence can vary on retry."""
+    return fingerprint({key: point.get(key) for key in
+                        ("marker", "siteId", "sourceKey")})
+
+
+def completed_sequences(state: dict[str, Any]) -> Iterable[list[dict[str, Any]]]:
+    """Read old checkpoints without replaying their completed trials."""
+    for completed in state["completed"]:
+        sequence = completed.get("sequence")
+        if sequence is None:
+            selector = Path(completed["result"]).parent / "fault-trial.json"
+            if selector.is_file():
+                sequence = json.loads(selector.read_text()).get("faults")
+        if isinstance(sequence, list) and sequence:
+            yield sequence
+
+
+def choose_next_sequence(state: dict[str, Any]) -> int:
+    """Balance new I/O sites with deeper sequences and diversify roots.
+
+    Coverage remains a priority within each diversity tier. This prevents
+    one coverage-rich seed from filling a bounded campaign with descendants
+    before other observed fault sites have been tested.
+    """
+    previous = list(completed_sequences(state))
+    single_done = sum(len(sequence) == 1 for sequence in previous)
+    multi_done = len(previous) - single_done
+    preferred_length = 1 if single_done <= multi_done else 2
+    eligible = [(index, item) for index, item in enumerate(state["queue"])
+                if (len(item["sequence"]) == 1) == (preferred_length == 1)]
+    if not eligible:
+        eligible = list(enumerate(state["queue"]))
+    family_counts: dict[str, int] = {}
+    root_counts: dict[str, int] = {}
+    for sequence in previous:
+        last = fault_family(sequence[-1])
+        root = fault_family(sequence[0])
+        family_counts[last] = family_counts.get(last, 0) + 1
+        root_counts[root] = root_counts.get(root, 0) + 1
+
+    def rank(entry: tuple[int, dict[str, Any]]) -> tuple[Any, ...]:
+        index, item = entry
+        sequence = item["sequence"]
+        root_penalty = (root_counts.get(fault_family(sequence[0]), 0)
+                        if len(sequence) > 1 else 0)
+        return (root_penalty,
+                family_counts.get(fault_family(sequence[-1]), 0),
+                -item["priority"], item["created"], index)
+
+    return min(eligible, key=rank)[0]
+
+
 def write_trial(path: Path, sequence: list[dict[str, Any]],
                 target: dict[str, Any], closure: dict[str, Any]) -> None:
     region_ids = {address.split("/region/", 1)[1].split("/ctx:", 1)[0]
@@ -708,7 +761,8 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
         state["coverage"] = sorted(old_coverage | set(result.get("coverage", [])))
     state["completed"].append({"id": active["id"], "number": active["number"],
                                "status": status, "result": str(result_file),
-                               "elapsed_seconds": result["elapsed_seconds"]})
+                               "elapsed_seconds": result["elapsed_seconds"],
+                               "sequence": active["sequence"]})
     if admitted and \
             len(active["sequence"]) < config["budget"]["max_faults"]:
         for observed in result.get("point_events", []):
@@ -1004,8 +1058,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                (state["active"] or state["active_runtime_seconds"] < max_runtime) and
                (state["queue"] or state["active"])):
             if state["active"] is None:
-                state["queue"].sort(key=lambda x: (-x["priority"], x["created"]))
-                item = state["queue"].pop(0)
+                item = state["queue"].pop(choose_next_sequence(state))
                 state["active"] = {**item, "number": len(state["completed"]) + 1}
                 atomic_json(path, state)
             process_trial(config, state, case_dir, state["active"])
