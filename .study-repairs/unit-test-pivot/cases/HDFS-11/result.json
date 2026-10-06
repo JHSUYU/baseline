@@ -1,0 +1,39 @@
+{
+  "case_id": "HDFS-11",
+  "status": "target_reached_pending_graph",
+  "system": "HDFS 3.4.3",
+  "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+  "function": "retrieveDataEncryptionKey(int, byte[])",
+  "check_code": "key = allKeys.get(keyId); if (key == null) throw new InvalidEncryptionKeyException(...)",
+  "selection_line": 555,
+  "resolved_check_line": 552,
+  "resolved_throw_source_line": 553,
+  "resolved_target_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u20",
+  "resolved_guard_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u8",
+  "line_resolution_evidence": "The historical selection line 555 points to the last line of the exception message. Hadoop 3.4.3 source puts Map.get at 551, if (key == null) at 552, and throw new at 553. Released jar javap LineNumberTable maps ifnonnull bytecode 25 to line 552, new InvalidEncryptionKeyException bytecode 28 to line 553, and string continuation bytecode 57 to line 555. GraphChecker STATIC_SCOPE_SITE role TARGET_SITE resolves to #u20 guarded by #u8 with false failure arm.",
+  "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]",
+  "cluster_nodes": "MiniDFSCluster, one NameNode and one DataNode (builder defaults)",
+  "target_reached": true,
+  "healthy_target_guard_hits": 2,
+  "healthy_target_branch_outcomes": [
+    true,
+    true
+  ],
+  "healthy_target_fatal": false,
+  "target_region_id": "REGION.c0d9d80b-cf85-36a4-87a7-f409be7dd190",
+  "graph_gap": "BLOCKING OCCURRENCE_ADDRESS_SHARED for two target-region activations; key-import path CANDIDATE SHARED_LOCATION_DEMAND_V1 with edgeEvidence UNAVAILABLE",
+  "observed_fault_points": 142,
+  "fault_trials": 0,
+  "strict_injections": 0,
+  "target_after_fault": 0,
+  "coverage_gain": 0,
+  "bug_mark": "none",
+  "elapsed_seconds": 40.41,
+  "elapsed_breakdown_seconds": {
+    "static_seed": 29.194,
+    "original_junit_instrumented": 10.148,
+    "graph_aggregate": 1.068
+  },
+  "timing_note": "Measured successful steps only; previously generated Soot weave build time is not included, so this is not a completed-case total.",
+  "evidence": ".study-repairs/unit-test-pivot/HDFS-11.md; .study-repairs/unit-test-pivot/hdfs11-param-expanded/manifest.json; .study-repairs/unit-test-pivot/hdfs11-param-expanded/trace/summary.json; .study-repairs/unit-test-pivot/hdfs11-param-expanded/trace/concolic_region_plan.jsonl"
+}

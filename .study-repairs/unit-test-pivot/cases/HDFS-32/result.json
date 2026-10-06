@@ -1,0 +1,41 @@
+{
+  "case_id": "HDFS-32",
+  "status": "target_reached_pending_graph",
+  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
+  "target_reached": true,
+  "elapsed_seconds": 114.905,
+  "fault_trials": 0,
+  "strict_injections": 0,
+  "target_after_fault": 0,
+  "coverage_gain": 0,
+  "bug_mark": "none",
+  "evidence": ".study-repairs/unit-test-pivot/hdfs32/graph-nonfatal/manifest.json and trace/summary.json: original testDfsAdminDeleteBlockPool JUnit passed; target guard reached twice, both true, zero target fatal occurrences. Earlier testDeleteBlockPool healthy trace at graph-seed/manifest.json reached region 5 times and deliberately caught 2 target IOExceptions. No fault injected. Neither trace has EXCHANGE/FAULT door events, so strict closure I/O membership is pending.",
+  "elapsed_breakdown_seconds": {
+    "native_junit": 21.39,
+    "static_graph": 27.435,
+    "weave": 23.748,
+    "adapter_compile": 1.57,
+    "instrumented_junit": 24.611,
+    "graph_aggregate": 2.446,
+    "nonfatal_adapter_compile": 2.141,
+    "nonfatal_instrumented_junit": 10.346,
+    "nonfatal_graph_aggregate": 1.218
+  },
+  "target_region_id": "REGION.10878e59-8e3c-3d04-a34c-7cd16fd5e446",
+  "target_guard_site": "<org.apache.hadoop.hdfs.server.datanode.DataNode: void deleteBlockPool(java.lang.String,boolean)>#u9",
+  "healthy_target_branch_outcomes": [true, true],
+  "healthy_target_fatal": false,
+  "expected_fatal_healthy_test": {
+    "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
+    "region_occurrences": 5,
+    "target_guard_false_count": 2,
+    "expected_target_exceptions": 2,
+    "graph_lineage_gap_count": 1,
+    "evidence": ".study-repairs/unit-test-pivot/hdfs32/graph-seed/manifest.json and trace/summary.json"
+  },
+  "nonfatal_graph_event_counts": {
+    "exchange": 0,
+    "fault": 0,
+    "gap": 0
+  }
+}

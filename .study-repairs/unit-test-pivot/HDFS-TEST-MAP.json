@@ -1,0 +1,1436 @@
+{
+  "schema_version": 1,
+  "source_version": "Apache Hadoop 3.4.3",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+  "selection_source": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/selection102.json",
+  "count": 38,
+  "source_only": true,
+  "runtime_target_hits_verified": 0,
+  "status_counts": {
+    "inferred": 23,
+    "direct_test_target": 12,
+    "no_cluster_test": 1,
+    "setup_only": 2
+  },
+  "rows": [
+    {
+      "case_id": "HDFS-01",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java",
+        "line": 518,
+        "function": "<org.apache.hadoop.hdfs.DFSInputStream: org.apache.hadoop.hdfs.protocol.LocatedBlock fetchBlockAt(long,long,boolean)>#u33",
+        "code": "if (newBlocks == null || newBlocks.locatedBlockCount() == 0) { throw new EOFException(\"Could not find target position \" + offset); }",
+        "target_site": "org/apache/hadoop/hdfs/DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;#B5",
+        "guard_line": 517
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestPread",
+      "test_method": "testPreadDFS",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java:473",
+        "constructor_quote": "MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).numDataNodes(3).build(); FileSystem fileSys = cluster.getFileSystem(); fileSys.setVerifyChecksum(verifyChecksum);",
+        "test_relation": "testPreadDFS calls dfsPreadTest twice; helper builds 3-DN MiniDFSCluster and calls pReadFile plus datanodeRestartTest",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "inferred",
+      "skip_reason": "fetchBlockAt guard is private and not explicitly invoked in test source; verify exact runtime branch",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java:518",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java:517",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java:271",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java:273",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java:461",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java:479",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java:480"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;#B5",
+      "target_exception": "java.io.EOFException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-07",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 932,
+        "function": "<org.apache.hadoop.hdfs.qjournal.server.Journal: void acceptRecovery(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo,org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$SegmentStateProto,java.net.URL)>#u116",
+        "code": "TextFormat.shortDebugString(segment) + \": would discard already-committed txn \" + committedTxnId.get() + \" ; journal id: \" + journalId); }",
+        "target_site": "org/apache/hadoop/hdfs/qjournal/server/Journal#acceptRecovery(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;Lorg/apache/hadoop/hdfs/qjournal/protocol/QJournalProtocolProtos$SegmentStateProto;Ljava/net/URL;)V#B9"
+      },
+      "test_class": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager",
+      "test_method": "testRecoverAfterIncompleteRecovery",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java",
+      "cluster_evidence": {
+        "kind": "MiniJournalCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "constructor_quote": "cluster = new MiniJournalCluster.Builder(conf) .baseDir(GenericTestUtils.getRandomizedTestDir().getAbsolutePath()) .build();",
+        "test_relation": "@Before builds MiniJournalCluster; test invokes recoverUnfinalizedSegments after mocked finalization failure and JournalNode restart",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "inferred",
+      "skip_reason": "test recovery RPC path is source-related, but exact Journal.acceptRecovery branch needs runtime confirmation",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:932",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:105",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:540",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:543",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:553",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:566",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:574"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/qjournal/server/Journal#acceptRecovery(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;Lorg/apache/hadoop/hdfs/qjournal/protocol/QJournalProtocolProtos$SegmentStateProto;Ljava/net/URL;)V#B9",
+      "target_exception": "java.lang.AssertionError",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-08",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 489,
+        "function": "<org.apache.hadoop.hdfs.qjournal.server.Journal: void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>#u23",
+        "code": "throw new IOException(\"IPC's epoch \" + reqInfo.getEpoch() + \" is less than the last promised epoch \" + lastPromisedEpoch.get() + \" ; journal id: \" + journalId); } else if (reqInfo.getEpoch() > lastPromisedEpoch.get()) { // A newer client has arrived. Fence any previous writers by updating",
+        "target_site": "org/apache/hadoop/hdfs/qjournal/server/Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V#B1"
+      },
+      "test_class": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager",
+      "test_method": "testSingleWriter",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java",
+      "cluster_evidence": {
+        "kind": "MiniJournalCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "constructor_quote": "cluster = new MiniJournalCluster.Builder(conf) .baseDir(GenericTestUtils.getRandomizedTestDir().getAbsolutePath()) .build();",
+        "test_relation": "@Before builds MiniJournalCluster; testSingleWriter writes and finalizes two QJM segments through writeSegment",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:489",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:105",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:156",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:157",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:163",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:89",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:110",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:111"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/qjournal/server/Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V#B1",
+      "target_exception": "java.io.IOException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-09",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 504,
+        "function": "<org.apache.hadoop.hdfs.qjournal.server.Journal: void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>#u78",
+        "code": "if (reqInfo.hasCommittedTxId()) { Preconditions.checkArgument( reqInfo.getCommittedTxId() >= committedTxnId.get(), \"Client trying to move committed txid backward from \" +",
+        "target_site": "org/apache/hadoop/hdfs/qjournal/server/Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V#L504->org/apache/hadoop/util/Preconditions#checkArgument"
+      },
+      "test_class": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager",
+      "test_method": "testSingleWriter",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java",
+      "cluster_evidence": {
+        "kind": "MiniJournalCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "constructor_quote": "cluster = new MiniJournalCluster.Builder(conf) .baseDir(GenericTestUtils.getRandomizedTestDir().getAbsolutePath()) .build();",
+        "test_relation": "@Before builds MiniJournalCluster; testSingleWriter writes and finalizes two QJM segments through writeSegment",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:504",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:105",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:156",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:157",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:163",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:89",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:110",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:111"
+      ],
+      "target_guard": null,
+      "target_exception": "java.lang.IllegalArgumentException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-10",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 520,
+        "function": "<org.apache.hadoop.hdfs.qjournal.server.Journal: void checkWriteRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>#u23",
+        "code": "throw new IOException(\"IPC's epoch \" + reqInfo.getEpoch() + \" is not the current writer epoch  \" + lastWriterEpoch.get() + \" ; journal id: \" + journalId); } }",
+        "target_site": "org/apache/hadoop/hdfs/qjournal/server/Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V#B1"
+      },
+      "test_class": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager",
+      "test_method": "testSingleWriter",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java",
+      "cluster_evidence": {
+        "kind": "MiniJournalCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "constructor_quote": "cluster = new MiniJournalCluster.Builder(conf) .baseDir(GenericTestUtils.getRandomizedTestDir().getAbsolutePath()) .build();",
+        "test_relation": "@Before builds MiniJournalCluster; testSingleWriter writes and finalizes two QJM segments through writeSegment",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java:520",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:105",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:117",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:156",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:157",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java:163",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:89",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:110",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/QJMTestUtil.java:111"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/qjournal/server/Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V#B1",
+      "target_exception": "java.io.IOException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-11",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 555,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+        "code": "if (key == null) {\nthrow new InvalidEncryptionKeyException(\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());",
+        "target_site": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B#B1"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B#B1",
+      "target_exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException",
+      "test_class": "org.apache.hadoop.hdfs.TestEncryptedTransfer",
+      "test_method": "testEncryptedReadDefaultAlgorithmCipherSuite",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:138",
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:149"
+        ],
+        "test_relation": "Owner test invokes the encrypted-read helper after an unencrypted cluster restart; data-encryption key lookup is on the transfer path. Parameterized test needs the existing isolated one-instance adapter. Exact target region/guard must be observed.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:210"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Owner test invokes the encrypted-read helper after an unencrypted cluster restart; data-encryption key lookup is on the transfer path. Parameterized test needs the existing isolated one-instance adapter. Exact target region/guard must be observed.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:555",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:138",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:149",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:210"
+      ]
+    },
+    {
+      "case_id": "HDFS-12",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 514,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)",
+        "code": "if (key == null) {\nthrow new InvalidToken(\"Can't re-compute password for \"\n+ identifier + \", since the required block key (keyID=\"\n+ identifier.getKeyId() + \") doesn't exist.\");",
+        "target_site": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B#B2"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B#B2",
+      "target_exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+      "test_class": "org.apache.hadoop.hdfs.TestEncryptedTransfer",
+      "test_method": "testEncryptedReadDefaultAlgorithmCipherSuite",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:138",
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:149"
+        ],
+        "test_relation": "Owner test invokes encrypted read after enabling transfer encryption and block tokens; DataNode retrievePassword is on the token validation path. Parameterized test needs the existing isolated one-instance adapter. Exact target region/guard must be observed.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:210"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Owner test invokes encrypted read after enabling transfer encryption and block tokens; DataNode retrievePassword is on the token validation path. Parameterized test needs the existing isolated one-instance adapter. Exact target region/guard must be observed.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:514",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:138",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:149",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:210"
+      ]
+    },
+    {
+      "case_id": "HDFS-13",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 432,
+        "function": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: void checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode)>#u40",
+        "code": "checkAccess(id, userId, block, mode); if (!MessageDigest.isEqual(retrievePassword(id), token.getPassword())) { throw new InvalidToken(\"Block token with \" + id + \" doesn't have the correct token password\"); }",
+        "target_site": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V#B1"
+      },
+      "test_class": null,
+      "test_method": null,
+      "test_source": null,
+      "cluster_evidence": {
+        "kind": null,
+        "constructor_source": null,
+        "constructor_quote": null,
+        "test_relation": "No named test method or test source is recorded for this selected check",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "no_cluster_test",
+      "skip_reason": "no_cluster_test",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:432",
+        "/users/ZhenyuLi/baseline/crashfuzz/examples/study_hdfs/manifest.json"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V#B1",
+      "target_exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-14",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 412,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode,org.apache.hadoop.fs.StorageType[],java.lang.String[])",
+        "code": "if (!MessageDigest.isEqual(retrievePassword(id), token.getPassword())) {\nthrow new InvalidToken(\"Block token with \" + id\n+ \" doesn't have the correct token password\");",
+        "target_site": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V#B1"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V#B1",
+      "target_exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+      "test_class": "org.apache.hadoop.hdfs.TestEncryptedTransfer",
+      "test_method": "testEncryptedReadDefaultAlgorithmCipherSuite",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:138",
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:149"
+        ],
+        "test_relation": "Owner test invokes encrypted read over block-token protected data transfer; checkAccess calls retrievePassword then checks password equality. Parameterized test needs the existing isolated one-instance adapter. Exact target region/guard must be observed.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:210"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Owner test invokes encrypted read over block-token protected data transfer; checkAccess calls retrievePassword then checks password equality. Parameterized test needs the existing isolated one-instance adapter. Exact target region/guard must be observed.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:412",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:138",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:149",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java:210"
+      ]
+    },
+    {
+      "case_id": "HDFS-15",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
+        "line": 447,
+        "function": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo: java.util.List commitBlock(org.apache.hadoop.hdfs.protocol.Block)>#u23",
+        "code": "+ block.getBlockId() + \", expected id = \" + getBlockId()); } Preconditions.checkState(!isComplete()); uc.commit(); this.setNumBytes(block.getNumBytes());",
+        "target_site": "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo#commitBlock(Lorg/apache/hadoop/hdfs/protocol/Block;)Ljava/util/List;#L447->org/apache/hadoop/util/Preconditions#checkState"
+      },
+      "test_class": "org.apache.hadoop.hdfs.security.token.block.TestBlockToken",
+      "test_method": "testBlockTokenInLastLocatedBlockLegacy",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java:516",
+        "constructor_quote": "MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf) .numDataNodes(1).build(); cluster.waitActive();",
+        "test_relation": "testBlockTokenInLastLocatedBlockLegacy delegates to helper that builds 1-DN MiniDFSCluster and writes/closes an under-construction file",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "inferred",
+      "skip_reason": "test checks token kind; BlockInfo.commitBlock target is only an inferred side effect",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java:447",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java:509",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java:516",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java:526",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java:541",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java:545",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java:547"
+      ],
+      "target_guard": null,
+      "target_exception": "java.lang.IllegalStateException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-16",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
+        "line": 428,
+        "function": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo: java.util.List setGenerationStampAndVerifyReplicas(long)>#u9",
+        "code": "public List<ReplicaUnderConstruction> setGenerationStampAndVerifyReplicas( long genStamp) { Preconditions.checkState(uc != null && !isComplete()); // Set the generation stamp for the block. setGenerationStamp(genStamp);",
+        "target_site": "org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo#setGenerationStampAndVerifyReplicas(J)Ljava/util/List;#L428->org/apache/hadoop/util/Preconditions#checkState"
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestClientProtocolForPipelineRecovery",
+      "test_method": "testUpdatePipeLineAfterDNReg",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:769",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf).numDataNodes(2).build(); cluster.waitActive(); FileSystem fileSys = cluster.getFileSystem();",
+        "test_relation": "test method builds 2-DN MiniDFSCluster and explicitly calls updateBlockForPipeline and streamer.updatePipeline twice",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java:428",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:765",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:769",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:790",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:795",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:799",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java:4968"
+      ],
+      "target_guard": null,
+      "target_exception": "java.lang.IllegalStateException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-17",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+        "line": 2851,
+        "function": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo: void <init>(org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo,org.apache.hadoop.hdfs.protocol.Block,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState)>#u10",
+        "code": "StatefulBlockInfo(BlockInfo storedBlock, Block reportedBlock, ReplicaState reportedState) { Preconditions.checkArgument(!storedBlock.isComplete()); this.storedBlock = storedBlock; this.reportedBlock = reportedBlock;",
+        "target_site": "org/apache/hadoop/hdfs/server/blockmanagement/BlockManager$StatefulBlockInfo#<init>(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V#L2851->org/apache/hadoop/util/Preconditions#checkArgument"
+      },
+      "test_class": "org.apache.hadoop.hdfs.server.namenode.TestAddStripedBlocks",
+      "test_method": "testAddUCReplica",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:89",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf).numDataNodes(groupSize).build(); cluster.waitActive(); dfs = cluster.getFileSystem();",
+        "test_relation": "@Before setup builds MiniDFSCluster(groupSize DNs); test manually sends incremental and full block reports for striped UC replicas",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java:2851",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:86",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:89",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:282",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:315",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:320",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:334",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java:350",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java:3467"
+      ],
+      "target_guard": null,
+      "target_exception": "java.lang.IllegalArgumentException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-18",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java",
+        "line": 537,
+        "function": "<org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor: void injectStorage(org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo)>#u41",
+        "code": "parent.childAddStorage(getName(), type); } storageMap.put(s.getStorageID(), s); } else { assert storage == s : \"found \" + storage + \" expected \" + s; }",
+        "target_site": "org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor#injectStorage(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;)V#B6",
+        "guard_line": 533
+      },
+      "test_class": "org.apache.hadoop.hdfs.server.aliasmap.TestSecureAliasMap",
+      "test_method": "testSecureConnectionToAliasMap",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java:127",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numNodes) .storageTypes( new StorageType[] {StorageType.DISK, StorageType.PROVIDED})",
+        "test_relation": "test builds 1-DN MiniDFSCluster with DISK and PROVIDED storage; later reads provided volume/alias map",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "setup_only",
+      "skip_reason": "injectStorage is reached through provided-storage registration/report handling, not explicitly called by the test body; require runtime target hit",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java:537",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java:533",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java:120",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java:127",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java:128",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java:135",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java:151",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java:135"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor#injectStorage(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;)V#B6",
+      "target_exception": "java.lang.AssertionError",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-19",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+        "line": 769,
+        "function": "<org.apache.hadoop.hdfs.server.datanode.BPOfferService: boolean processCommandFromActive(org.apache.hadoop.hdfs.server.protocol.DatanodeCommand,java.net.InetSocketAddress)>#u97",
+        "code": "case DatanodeProtocol.DNA_FINALIZE: String bp = ((FinalizeCommand) cmd).getBlockPoolId(); LOG.info(\"Got finalize command for block pool \" + bp); assert getBlockPoolId().equals(bp) : \"BP \" + getBlockPoolId() + \" received DNA_FINALIZE \" + \"for other block pool \" + bp;",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z#B4",
+        "guard_line": 765
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestDFSFinalize",
+      "test_method": "testFinalize",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:132",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf) .format(false) .manageDataDfsDirs(false)",
+        "test_relation": "test builds MiniDFSCluster from staged current/previous layouts, calls finalizeCluster and triggerBlockReports, then repeats without previous",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java:769",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java:765",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:109",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:132",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:138",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:139",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:147",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:148",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:162",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:168",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java:169"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z#B4",
+      "target_exception": "java.lang.AssertionError",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-20",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+        "line": 606,
+        "function": "<org.apache.hadoop.hdfs.server.datanode.BPOfferService: void updateActorStatesFromHeartbeat(org.apache.hadoop.hdfs.server.datanode.BPServiceActor,org.apache.hadoop.hdfs.server.protocol.NNHAStatusHeartbeat)>#u98",
+        "code": "if (bpServiceToActive == actor) { assert txid >= lastActiveClaimTxId; lastActiveClaimTxId = txid; }",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BPOfferService#updateActorStatesFromHeartbeat(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/NNHAStatusHeartbeat;)V#B12"
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestClientProtocolForPipelineRecovery",
+      "test_method": "testPipelineRecoveryOnOOB",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:310",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf).numDataNodes(numDataNodes).build(); cluster.waitActive(); FileSystem fileSys = cluster.getFileSystem();",
+        "test_relation": "test builds 1-DN MiniDFSCluster, issues shutdownDatanode upgrade, restarts DN and closes append stream",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "inferred",
+      "skip_reason": "test exercises restart/OOB; heartbeat txid assertion is asynchronous and exact reach needs runtime evidence",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java:606",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:304",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:310",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:324",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:331",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java:337"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BPOfferService#updateActorStatesFromHeartbeat(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/NNHAStatusHeartbeat;)V#B12",
+      "target_exception": "java.lang.AssertionError",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-21",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+        "line": 290,
+        "function": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void checkNNVersion(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)>#u12",
+        "code": "String nnVersion = nsInfo.getSoftwareVersion(); String minimumNameNodeVersion = dnConf.getMinimumNameNodeVersion(); if (VersionUtil.compareVersions(nnVersion, minimumNameNodeVersion) < 0) { IncorrectVersionException ive = new IncorrectVersionException( minimumNameNodeVersion, nnVersion, \"NameNode\", \"DataNode\"); LOG.warn(ive.getMessage()); throw ive;",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BPServiceActor#checkNNVersion(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V#B1",
+        "guard_line": 284
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestDFSInputStream",
+      "test_method": "testSkipWithRemoteBlockReader",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSInputStream.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSInputStream.java:90",
+        "constructor_quote": "MiniDFSCluster cluster = new MiniDFSCluster.Builder(conf).build(); try { testSkipInner(cluster);",
+        "test_relation": "test builds MiniDFSCluster and calls testSkipInner; BPServiceActor.checkNNVersion is a startup handshake path, not skip logic",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "setup_only",
+      "skip_reason": "target is startup version check; owner test read/skip operations do not specifically exercise it",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java:290",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java:284",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSInputStream.java:88",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSInputStream.java:90",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSInputStream.java:92",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSInputStream.java:54"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BPServiceActor#checkNNVersion(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V#B1",
+      "target_exception": "org.apache.hadoop.hdfs.server.common.IncorrectVersionException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-22",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 396,
+        "function": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#u73",
+        "code": "if (getNamespaceID() != nsInfo.getNamespaceID()) { throw new IOException(\"Incompatible namespaceIDs in \" + sd.getRoot().getCanonicalPath() + \": namenode namespaceID = \" + nsInfo.getNamespaceID() + \"; datanode namespaceID = \" + getNamespaceID());",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B9",
+        "guard_line": 392
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestDFSStartupVersions",
+      "test_method": "testVersions",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0) .format(false) .manageDataDfsDirs(false)",
+        "test_relation": "testVersions builds 0-DN MiniDFSCluster, creates DataNode VERSION variants, then starts one DN per variant",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:396",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:392",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:242",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:263",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:268",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:270",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:274"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B9",
+      "target_exception": "java.io.IOException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-23",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 401,
+        "function": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#u93",
+        "code": "if (!blockpoolID.equals(nsInfo.getBlockPoolID())) { throw new IOException(\"Incompatible blockpoolIDs in \" + sd.getRoot().getCanonicalPath() + \": namenode blockpoolID = \" + nsInfo.getBlockPoolID() + \"; datanode blockpoolID = \" + blockpoolID);",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B10",
+        "guard_line": 398
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestDFSStartupVersions",
+      "test_method": "testVersions",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0) .format(false) .manageDataDfsDirs(false)",
+        "test_relation": "testVersions builds 0-DN MiniDFSCluster, creates DataNode VERSION variants, then starts one DN per variant",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:401",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:398",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:242",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:263",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:268",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:270",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:274"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B10",
+      "target_exception": "java.io.IOException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-24",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 424,
+        "function": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#u137",
+        "code": "// layoutVersion == LAYOUT_VERSION && this.cTime > nsInfo.cTime // must shutdown throw new IOException(\"Datanode state: LV = \" + this.getLayoutVersion() + \" CTime = \" + this.getCTime() + \" is newer than the namespace state: LV = \" + nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B15",
+        "guard_line": 419
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestDFSUpgrade",
+      "test_method": "testUpgrade",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java:207",
+        "constructor_quote": "return new MiniDFSCluster.Builder(conf).numDataNodes(0) .format(false) .manageDataDfsDirs(false)",
+        "test_relation": "testUpgrade calls createCluster (0-DN MiniDFSCluster), prepares upgrade storage states and starts DNs expected to fail",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "inferred",
+      "skip_reason": "newer fsscTime test can fail in DataStorage before BlockPoolSliceStorage target; verify exact runtime branch",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:424",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:419",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java:225",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java:233",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java:251",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java:265",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java:302",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java:315"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B15",
+      "target_exception": "java.io.IOException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-25",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 186,
+        "function": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory loadStorageDirectory(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.datanode.StorageLocation,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#u54",
+        "code": "if (getCTime() != nsInfo.getCTime()) { throw new IOException(\"Datanode CTime (=\" + getCTime() + \") is not equal to namenode CTime (=\" + nsInfo.getCTime() + \")\"); }",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#loadStorageDirectory(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/datanode/StorageLocation;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;#B2",
+        "guard_line": 184
+      },
+      "test_class": "org.apache.hadoop.hdfs.TestDFSStartupVersions",
+      "test_method": "testVersions",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "constructor_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "constructor_quote": "cluster = new MiniDFSCluster.Builder(conf).numDataNodes(0) .format(false) .manageDataDfsDirs(false)",
+        "test_relation": "testVersions builds 0-DN MiniDFSCluster, creates DataNode VERSION variants, then starts one DN per variant",
+        "runtime_target_hit_verified": false
+      },
+      "target_reach_status": "direct_test_target",
+      "skip_reason": "",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:186",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java:184",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:242",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:263",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:268",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:270",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:274"
+      ],
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#loadStorageDirectory(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/datanode/StorageLocation;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;#B2",
+      "target_exception": "java.io.IOException",
+      "runtime_target_hit_verified": false
+    },
+    {
+      "case_id": "HDFS-26",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 626,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "code": "if (!(prevInfo.getLayoutVersion() >=\nDataNodeLayoutVersion.getCurrentLayoutVersion() &&\nprevInfo.getCTime() <= nsInfo.getCTime())) { // cannot rollback\nthrow new InconsistentFSStateException(bpSd.getRoot(),\n\"Cannot rollback to a newer state.\\nDatanode previous state: LV = \"\n+ prevInfo.getLayoutVersion() + \" CTime = \" + prevInfo.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ DataNodeLayoutVersion.getCurrentLayoutVersion() + \" CTime = \"\n+ nsInfo.getCTime());",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V#B4"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V#B4",
+      "target_exception": "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException",
+      "test_class": "org.apache.hadoop.hdfs.TestDFSRollback",
+      "test_method": "testRollback",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:162",
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:180"
+        ],
+        "test_relation": "Rollback test has valid and invalid storage states; exact guard outcome needs runtime trace.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:185"
+      ],
+      "static_path_assessment": "method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Rollback test has valid and invalid storage states; exact guard outcome needs runtime trace.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:162",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:180",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:185"
+      ]
+    },
+    {
+      "case_id": "HDFS-27",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 510,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doUpgrade(java.lang.String,org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,java.io.File,java.io.File,java.io.File,int,org.apache.hadoop.conf.Configuration)",
+        "code": "assert this.namespaceID == nsInfo.getNamespaceID()\n: \"Data-node and name-node layout versions must be the same.\";",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doUpgrade(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V#B2"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doUpgrade(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V#B2",
+      "target_exception": "java.lang.AssertionError",
+      "test_class": "org.apache.hadoop.hdfs.TestDatanodeLayoutUpgrade",
+      "test_method": "testUpgradeToIdBasedLayout",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDatanodeLayoutUpgrade.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDatanodeLayoutUpgrade.java:52",
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.java:152"
+        ],
+        "test_relation": "Upgrade is driven through upgradeAndVerify; target B2 has not been observed.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDatanodeLayoutUpgrade.java:47"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Upgrade is driven through upgradeAndVerify; target B2 has not been observed.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDatanodeLayoutUpgrade.java:52",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.java:152",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDatanodeLayoutUpgrade.java:47"
+      ]
+    },
+    {
+      "case_id": "HDFS-28",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "line": 539,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getDatanodeID(java.lang.String)",
+        "code": "if (bpos == null) {\nthrow new IOException(\"No block pool offer service for bpid=\" + bpid);",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;#B1"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;#B1",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2",
+      "test_method": "testRecoveryTimeout",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:980"
+        ],
+        "test_relation": "Delayed recovery enters recovery worker, but missing BPOS guard is not established.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java:321",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:989",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java:131"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Delayed recovery enters recovery worker, but missing BPOS guard is not established.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:980",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java:321",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:989",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java:131"
+      ]
+    },
+    {
+      "case_id": "HDFS-29",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "line": 578,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getActiveNamenodeForBP(java.lang.String)",
+        "code": "if (bpos == null) {\nthrow new IOException(\"No block pool offer service for bpid=\" + bpid);",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;#B1"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;#B1",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2",
+      "test_method": "testRecoveryTimeout",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:980"
+        ],
+        "test_relation": "Active NN lookup is on recovery path; null BPOS guard is not established.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java:321",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:1008",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java:189"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Active NN lookup is on recovery path; null BPOS guard is not established.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:980",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java:321",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:1008",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java:189"
+      ]
+    },
+    {
+      "case_id": "HDFS-30",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "line": 583,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getActiveNamenodeForBP(java.lang.String)",
+        "code": "if (activeNN == null) {\nthrow new IOException(\n\"Block pool \" + bpid + \" has not recognized an active NN\");",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;#B2"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;#B2",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2",
+      "test_method": "testRecoveryTimeout",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:980"
+        ],
+        "test_relation": "Active NN lookup is on recovery path; null active NN guard is not established.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java:321",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:1008",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java:476"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Active NN lookup is on recovery path; null active NN guard is not established.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:980",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery2.java:321",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestBlockRecovery.java:1008",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java:476"
+      ]
+    },
+    {
+      "case_id": "HDFS-31",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "line": 1835,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)",
+        "code": "if (bpos == null) {\nthrow new IOException(\"cannot locate OfferService thread for bp=\"+\nblock.getBlockPoolId());",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;#B1"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;#B1",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.server.datanode.TestDiskError",
+      "test_method": "testDataTransferWhenBytesPerChecksumIsZero",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java:77"
+        ],
+        "test_relation": "transferBlock calls getBPOSForBlock; test's registered block pool should take the nonthrowing branch.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java:268",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:2834"
+      ],
+      "static_path_assessment": "direct_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "transferBlock calls getBPOSForBlock; test's registered block pool should take the nonthrowing branch.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java:77",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java:268",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:2834"
+      ]
+    },
+    {
+      "case_id": "HDFS-32",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "line": 3822,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.deleteBlockPool(java.lang.String,boolean)",
+        "code": "if (blockPoolManager.get(blockPoolId) != null) {\nLOG.warn(\"The block pool {} is still running, cannot be deleted.\",\nblockPoolId);\nthrow new IOException(\n\"The block pool is still running. First do a refreshNamenodes to \" +\n\"shutdown the block pool service\");",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/DataNode#deleteBlockPool(Ljava/lang/String;Z)V#B1"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/DataNode#deleteBlockPool(Ljava/lang/String;Z)V#B1",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool",
+      "test_method": "testDeleteBlockPool",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java:50"
+        ],
+        "test_relation": "Test intentionally expects IOException for a running block pool and for nonforced deletion with files; runtime region identity still unmeasured.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java:70",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java:84"
+      ],
+      "static_path_assessment": "direct_guard_test",
+      "target_reach_status": "direct_test_target",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Test intentionally expects IOException for a running block pool and for nonforced deletion with files; runtime region identity still unmeasured.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java:50",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java:70",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java:84"
+      ]
+    },
+    {
+      "case_id": "HDFS-33",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 259,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder.build()",
+        "code": "assert bpStorage != null;",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/DataStorage$VolumeBuilder#build()V#B5"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/DataStorage$VolumeBuilder#build()V#B5",
+      "target_exception": "java.lang.AssertionError",
+      "test_class": "org.apache.hadoop.hdfs.server.datanode.TestDataNodeHotSwapVolumes",
+      "test_method": "testAddOneNewVolume",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java:119",
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java:403"
+        ],
+        "test_relation": "Hot swap configures an added volume; assertion B5 is not shown to fire.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java:410"
+      ],
+      "static_path_assessment": "indirect_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Hot swap configures an added volume; assertion B5 is not shown to fire.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java:119",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java:403",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java:410"
+      ]
+    },
+    {
+      "case_id": "HDFS-34",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 744,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "code": "if (!federationSupported &&\ngetNamespaceID() != nsInfo.getNamespaceID()) {\nthrow new IOException(\"Incompatible namespaceIDs in \"\n+ sd.getRoot().getCanonicalPath() + \": namenode namespaceID = \"\n+ nsInfo.getNamespaceID() + \"; datanode namespaceID = \"\n+ getNamespaceID());",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B6"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B6",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.TestDFSStartupVersions",
+      "test_method": "testVersions",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249"
+        ],
+        "test_relation": "Version matrix starts DataNodes with prepared VERSION files; identify exact variant for B6 at runtime.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:260",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:270"
+      ],
+      "static_path_assessment": "direct_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Version matrix starts DataNodes with prepared VERSION files; identify exact variant for B6 at runtime.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:260",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:270"
+      ]
+    },
+    {
+      "case_id": "HDFS-35",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 752,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "code": "if (federationSupported\n&& !getClusterID().equals(nsInfo.getClusterID())) {\nthrow new IOException(\"Incompatible clusterIDs in \"\n+ sd.getRoot().getCanonicalPath() + \": namenode clusterID = \"\n+ nsInfo.getClusterID() + \"; datanode clusterID = \" + getClusterID());",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B8"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B8",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.TestDFSStartupVersions",
+      "test_method": "testVersions",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249"
+        ],
+        "test_relation": "Version matrix starts DataNodes with prepared VERSION files; identify exact variant for B8 at runtime.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:260",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:270"
+      ],
+      "static_path_assessment": "direct_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Version matrix starts DataNodes with prepared VERSION files; identify exact variant for B8 at runtime.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:249",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:260",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java:270"
+      ]
+    },
+    {
+      "case_id": "HDFS-37",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 947,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "code": "if (!(prevInfo.getLayoutVersion() >=\nDataNodeLayoutVersion.getCurrentLayoutVersion()\n&& prevInfo.getCTime() <= nsInfo.getCTime())) {  // cannot rollback\nthrow new InconsistentFSStateException(sd.getRoot(),\n\"Cannot rollback to a newer state.\\nDatanode previous state: LV = \"\n+ prevInfo.getLayoutVersion() + \" CTime = \" + prevInfo.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ DataNodeLayoutVersion.getCurrentLayoutVersion() + \" CTime = \"\n+ nsInfo.getCTime());",
+        "target_site": "org/apache/hadoop/hdfs/server/datanode/DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V#B4"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/datanode/DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V#B4",
+      "target_exception": "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException",
+      "test_class": "org.apache.hadoop.hdfs.TestDFSRollback",
+      "test_method": "testRollback",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:162"
+        ],
+        "test_relation": "DataNode rollback tests valid and invalid states; exact guard outcome needs runtime trace.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:169"
+      ],
+      "static_path_assessment": "method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "DataNode rollback tests valid and invalid states; exact guard outcome needs runtime trace.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:162",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java:169"
+      ]
+    },
+    {
+      "case_id": "HDFS-39",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+        "line": 132,
+        "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
+        "code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) {\nthrow new RetriableException(\nnew NotReplicatedYetException(\"append: lastBlock=\"\n+ lastBlock + \" of src=\" + path\n+ \" is COMMITTED but not yet COMPLETE.\"));",
+        "target_site": "org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;#B12"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;#B12",
+      "target_exception": "org.apache.hadoop.ipc.RetriableException",
+      "test_class": "org.apache.hadoop.hdfs.TestFileAppend",
+      "test_method": "testAppendTwice",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:314"
+        ],
+        "test_relation": "Original test expects lease AlreadyBeingCreatedException, not COMMITTED-but-incomplete branch at line 132.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:333",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:342"
+      ],
+      "static_path_assessment": "method_only_guard_unmatched",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "Original test expects lease AlreadyBeingCreatedException, not COMMITTED-but-incomplete branch at line 132.",
+      "source_review_note": "Original test expects lease AlreadyBeingCreatedException, not COMMITTED-but-incomplete branch at line 132.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:314",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:333",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:342"
+      ]
+    },
+    {
+      "case_id": "HDFS-40",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+        "line": 138,
+        "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
+        "code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) {\nthrow new RetriableException(\nnew NotReplicatedYetException(\"append: lastBlock=\"\n+ lastBlock + \" of src=\" + path\n+ \" is COMMITTED but not yet COMPLETE.\"));\n} else if (lastBlock.isComplete()\n&& !blockManager.isSufficientlyReplicated(lastBlock)) {\nthrow new IOException(\"append: lastBlock=\" + lastBlock + \" of src=\"\n+ path + \" is not sufficiently replicated yet.\");",
+        "target_site": "org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;#B14"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;#B14",
+      "target_exception": "java.io.IOException",
+      "test_class": "org.apache.hadoop.hdfs.TestFileAppend",
+      "test_method": "testAppendTwice",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:314"
+        ],
+        "test_relation": "Original test expects lease AlreadyBeingCreatedException, not insufficient replication at line 138.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:333",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:342"
+      ],
+      "static_path_assessment": "method_only_guard_unmatched",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "Original test expects lease AlreadyBeingCreatedException, not insufficient replication at line 138.",
+      "source_review_note": "Original test expects lease AlreadyBeingCreatedException, not insufficient replication at line 138.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:314",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:333",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java:342"
+      ]
+    },
+    {
+      "case_id": "HDFS-43",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java",
+        "line": 117,
+        "function": "org.apache.hadoop.hdfs.server.namenode.FSDirTruncateOp.truncate(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,long,java.lang.String,java.lang.String,long,org.apache.hadoop.hdfs.server.namenode.INode$BlocksMapUpdateInfo,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker)",
+        "code": "if (newLength == truncateLength) {\nreturn new TruncateResult(false, fsd.getAuditFileInfo(iip));\n} else {\nthrow new AlreadyBeingCreatedException(\nRecoverLeaseOp.TRUNCATE_FILE.getExceptionMessage(src,\nclientName, clientMachine, src + \" is being truncated.\"));",
+        "target_site": "org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp#truncate(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;JLorg/apache/hadoop/hdfs/server/namenode/INode$BlocksMapUpdateInfo;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;)Lorg/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp$TruncateResult;#B9"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp#truncate(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;JLorg/apache/hadoop/hdfs/server/namenode/INode$BlocksMapUpdateInfo;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;)Lorg/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp$TruncateResult;#B9",
+      "target_exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+      "test_class": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate",
+      "test_method": "testTruncateTwiceTogether",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java:109"
+        ],
+        "test_relation": "Second overlapping truncate expects already-being-truncated error; runtime region identity unmeasured.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java:236",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java:277"
+      ],
+      "static_path_assessment": "direct_guard_test",
+      "target_reach_status": "direct_test_target",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Second overlapping truncate expects already-being-truncated error; runtime region identity unmeasured.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java:109",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java:236",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java:277"
+      ]
+    },
+    {
+      "case_id": "HDFS-48",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+        "line": 356,
+        "function": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory.replaceChild(org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INodeMap)",
+        "code": "Preconditions.checkState(oldChild == children.get(i)\n|| oldChild == children.get(i).asReference().getReferredINode()\n.asReference().getReferredINode());",
+        "target_site": null
+      },
+      "target_guard": null,
+      "target_exception": "java.lang.IllegalStateException",
+      "test_class": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestRenameWithSnapshots",
+      "test_method": "testRenameUndo_1",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java:108"
+        ],
+        "test_relation": "Test invokes replaceChild and rename rollback; Preconditions.checkState outcome requires runtime verification.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java:1355",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java:1361"
+      ],
+      "static_path_assessment": "direct_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Test invokes replaceChild and rename rollback; Preconditions.checkState outcome requires runtime verification.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java:108",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java:1355",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java:1361"
+      ]
+    },
+    {
+      "case_id": "HDFS-49",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+        "line": 189,
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature.addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)",
+        "code": "if (n + 1 > snapshotQuota) {\nthrow new SnapshotException(\"Failed to add snapshot: there are already \"\n+ n + \" snapshot(s) and the snapshot quota is \"\n+ snapshotQuota);",
+        "target_site": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;#B1"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;#B1",
+      "target_exception": "org.apache.hadoop.hdfs.protocol.SnapshotException",
+      "test_class": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestSnapshot",
+      "test_method": "testSnapshot",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java:121"
+        ],
+        "test_relation": "Test creates unique snapshots under normal quota; quota-exceeded branch at line 189 is not established.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java:238",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java:269"
+      ],
+      "static_path_assessment": "method_only_guard_unmatched",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "Test creates unique snapshots under normal quota; quota-exceeded branch at line 189 is not established.",
+      "source_review_note": "Test creates unique snapshots under normal quota; quota-exceeded branch at line 189 is not established.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java:121",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java:238",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java:269"
+      ]
+    },
+    {
+      "case_id": "HDFS-50",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+        "line": 199,
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature.addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)",
+        "code": "if (i >= 0) {\nthrow new SnapshotException(\"Failed to add snapshot: there is already a \"\n+ \"snapshot with the same name \\\"\" + Snapshot.getSnapshotName(s) + \"\\\".\");",
+        "target_site": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;#B2"
+      },
+      "target_guard": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;#B2",
+      "target_exception": "org.apache.hadoop.hdfs.protocol.SnapshotException",
+      "test_class": "org.apache.hadoop.hdfs.TestSnapshotCommands",
+      "test_method": "testCreateSnapshot",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java:48"
+        ],
+        "test_relation": "Corrects prior normal-snapshot mapping; test creates duplicate sn0 and expects same-name failure.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java:98",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java:103"
+      ],
+      "static_path_assessment": "direct_guard_test",
+      "target_reach_status": "direct_test_target",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Corrects prior normal-snapshot mapping; test creates duplicate sn0 and expects same-name failure.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java:48",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java:98",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java:103"
+      ]
+    },
+    {
+      "case_id": "HDFS-52",
+      "selected_in_102": true,
+      "check_source": {
+        "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+        "line": 467,
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver.serializeSnapshotSection(java.io.OutputStream)",
+        "code": "if (i % FSImageFormatProtobuf.Saver.CHECK_CANCEL_INTERVAL == 0) {\ncontext.checkCancelled();\n}\n}\n}\nPreconditions.checkState(i == sm.getNumSnapshots());",
+        "target_site": null
+      },
+      "target_guard": null,
+      "target_exception": "java.lang.IllegalStateException",
+      "test_class": "org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot",
+      "test_method": "testSaveLoadImage",
+      "test_source": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java",
+      "cluster_evidence": {
+        "kind": "MiniDFSCluster",
+        "source_paths": [
+          "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java:84"
+        ],
+        "test_relation": "Snapshot image save invokes serialization; snapshot-count Preconditions.checkState outcome requires runtime verification.",
+        "runtime_target_hit_verified": false
+      },
+      "operation_evidence": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java:238",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java:290"
+      ],
+      "static_path_assessment": "direct_method_path",
+      "target_reach_status": "inferred",
+      "runtime_target_hit_verified": false,
+      "skip_reason": "",
+      "source_review_note": "Snapshot image save invokes serialization; snapshot-count Preconditions.checkState outcome requires runtime verification.",
+      "evidence_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java:84",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java:238",
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java:290"
+      ]
+    }
+  ]
+}

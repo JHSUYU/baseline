@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "system": "zookeeper",
+  "version": "3.8.7",
+  "source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+  "selection": ".study-repairs/unit-test-pivot/selection102.json",
+  "claim": "source inventory; GraphChecker target reach and fault trials require separate evidence",
+  "cases": [
+    {
+      "case_id": "ZOOKEEPER-01",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+        "line": 317,
+        "function": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(long,java.lang.Object)",
+        "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u18",
+        "check_code": "if (session.isClosing()) {\nthrow new KeeperException.SessionExpiredException();"
+      },
+      "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest",
+        "method": "testCloseSessionWhileUpgradeOnLearner",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/SessionUpgradeQuorumTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "@BeforeEach starts three MainThread participants with local sessions and upgrade enabled; the test submits asynchronous ephemeral creation, closes the session, reconnects, and checks cleanup.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "No exact B2/fatal branch trace; the delayed close may reach the check, but is not guaranteed.",
+      "smoke_status": "not_run",
+      "expected_exception": "KeeperException.SessionExpiredException",
+      "expected_exception_reason": "Closing session is intentionally rejected.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-02",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+        "line": 323,
+        "function": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(long,java.lang.Object)",
+        "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u27",
+        "check_code": "if (session.owner == null) {\nsession.owner = owner;\n} else if (session.owner != owner) {\nthrow new KeeperException.SessionMovedException();"
+      },
+      "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.test.QuorumTest",
+        "method": "testSessionMoved",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumTest.java",
+        "participant_or_peer_count": 5
+      },
+      "cluster_evidence": "QuorumBase starts five peers; the test reconnects one session to another peer, then uses the stale client.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "Old client may be closed before the B4 request; exact branch unverified.",
+      "smoke_status": "not_run",
+      "expected_exception": "KeeperException.SessionMovedException",
+      "expected_exception_reason": "Stale session owner is intentionally rejected; client may see ConnectionLossException.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-03",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+        "line": 330,
+        "function": "org.apache.zookeeper.server.SessionTrackerImpl.setOwner(long,java.lang.Object)",
+        "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void setOwner(long,java.lang.Object)>#u12",
+        "check_code": "if (session == null || session.isClosing()) {\nthrow new KeeperException.SessionExpiredException();"
+      },
+      "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest",
+        "method": "testCloseSessionWhileUpgradeOnLearner",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/SessionUpgradeQuorumTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "@BeforeEach starts three participants; delayed asynchronous ephemeral create races with close and reconnect.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "Normal setOwner follows trackSession; missing or closing state at setOwner is unverified.",
+      "smoke_status": "not_run",
+      "expected_exception": "KeeperException.SessionExpiredException",
+      "expected_exception_reason": "Owner assignment to missing or closing session is intentionally rejected.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-04",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+        "line": 1441,
+        "function": "org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)",
+        "site_id": "<org.apache.zookeeper.server.ZooKeeperServer: void processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)>#u97",
+        "check_code": "throw new CloseRequestException(msg, ServerCnxn.DisconnectReason.CLIENT_ZXID_AHEAD);"
+      },
+      "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.server.ConnectionMetricsTest",
+        "method": "testRevalidateCount",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/ConnectionMetricsTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "QuorumUtil(1) starts three peers; one live ZooKeeper client changes server list and reconnects to a second peer.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "No acknowledged write precedes the peer switch, so zxid-ahead throw is not guaranteed.",
+      "smoke_status": "not_run",
+      "expected_exception": "ServerCnxn.CloseRequestException: CLIENT_ZXID_AHEAD",
+      "expected_exception_reason": "Server rejects a client that has seen a zxid newer than its local DataTree.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-05",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java",
+        "line": 103,
+        "function": "org.apache.zookeeper.server.quorum.Follower.followLeader()",
+        "site_id": "<org.apache.zookeeper.server.quorum.Follower: void followLeader()>#u68",
+        "check_code": "if (newEpoch < self.getAcceptedEpoch()) {\nLOG.error(\"Proposed leader epoch \"\n+ ZxidUtils.zxidToString(newEpochZxid)\n+ \" is less than our accepted epoch \"\n+ ZxidUtils.zxidToString(self.getAcceptedEpoch()));\nthrow new IOException(\"Error: Epoch of leader is lower\");"
+      },
+      "proposed_cluster_test": null,
+      "cluster_test": {
+        "class": "org.apache.zookeeper.test.QuorumRestartTest",
+        "method": "testRollingRestart",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "QuorumUtil(1,2) starts three peers; the method shuts down, restarts, and waits for each peer to rejoin in turn.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "GraphChecker target branch trace delegated to ZK05 agent.",
+      "smoke_status": "delegated",
+      "expected_exception": "java.io.IOException: Error: Epoch of leader is lower",
+      "expected_exception_reason": "Follower safety check rejects a proposed leader epoch below its accepted epoch.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-06",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java",
+        "line": 1475,
+        "function": "org.apache.zookeeper.server.quorum.Leader.waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)",
+        "site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u29",
+        "check_code": "if (ss.isMoreRecentThan(leaderStateSummary)) {\nthrow new IOException(\"Follower is ahead of the leader, leader summary: \"\n+ leaderStateSummary.getCurrentEpoch()\n+ \" (current epoch), \"\n+ leaderStateSummary.getLastZxid()\n+ \" (last zxid)\");"
+      },
+      "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.test.QuorumRestartTest",
+        "method": "testRollingRestart",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "The three-peer rolling restart repeats leader election and ACKEPOCH handshakes after persisted-state reuse.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "Call is plausible during rejoin; B3 ahead-of-leader outcome has no new trace.",
+      "smoke_status": "not_run",
+      "expected_exception": "java.io.IOException: Follower is ahead of the leader",
+      "expected_exception_reason": "Leader rejects a follower StateSummary more recent than its own.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-07",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+        "line": 525,
+        "function": "org.apache.zookeeper.server.quorum.Learner.registerWithLeader(int)",
+        "site_id": "<org.apache.zookeeper.server.quorum.Learner: long registerWithLeader(int)>#u66",
+        "check_code": "throw new IOException(\"Leaders epoch, \"\n+ newEpoch\n+ \" is less than accepted epoch, \"\n+ self.getAcceptedEpoch());"
+      },
+      "proposed_cluster_test": "QuorumRestartTest.testRollingRestart",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.test.QuorumRestartTest",
+        "method": "testRollingRestart",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "The three-peer rolling restart forces learner registration with the elected leader after each restart.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "Native Surefire smoke passed (1 test, 3.178 s); GraphChecker branch and message edge trace delegated.",
+      "smoke_status": "native_junit_passed_graphchecker_pending",
+      "expected_exception": "java.io.IOException: Leaders epoch is less than accepted epoch",
+      "expected_exception_reason": "Learner rejects a LEADERINFO epoch below its accepted epoch.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-08",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerSessionTracker.java",
+        "line": 174,
+        "function": "org.apache.zookeeper.server.quorum.LearnerSessionTracker.checkSession(long,java.lang.Object)",
+        "site_id": "<org.apache.zookeeper.server.quorum.LearnerSessionTracker: void checkSession(long,java.lang.Object)>#u13",
+        "check_code": "if (!isGlobalSession(sessionId)) {\nthrow new SessionExpiredException();"
+      },
+      "proposed_cluster_test": null,
+      "cluster_test": null,
+      "cluster_evidence": "Exact non-cluster positive control: SessionTrackerCheckTest.testLearnerSessionTracker; closest three-peer candidate ReadOnlyModeTest.testReadOnlyClient uses local sessions and read-only request processing.",
+      "target_reach_status": "no_existing_cluster_test_shown_to_reach_selected_region",
+      "target_reach_reason": "No unmodified real-quorum JUnit test shown to reach selected B2: valid local read returns from local tracker before B2; other-peer rejection is not proven to traverse this server path.",
+      "smoke_status": "not_run",
+      "expected_exception": "KeeperException.SessionExpiredException",
+      "expected_exception_reason": "Unknown session absent from local and global maps is intentionally rejected.",
+      "no_cluster_test_reason": "No unmodified real-quorum JUnit test shown to reach selected B2: valid local read returns from local tracker before B2; other-peer rejection is not proven to traverse this server path.",
+      "alternative_tests": [
+        "org.apache.zookeeper.test.ReadOnlyModeTest.testReadOnlyClient",
+        "org.apache.zookeeper.test.SessionUpgradeTest.testLocalSessionsWithoutEphemeralOnFollower"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-09",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerSessionTracker.java",
+        "line": 191,
+        "function": "org.apache.zookeeper.server.quorum.LearnerSessionTracker.setOwner(long,java.lang.Object)",
+        "site_id": "<org.apache.zookeeper.server.quorum.LearnerSessionTracker: void setOwner(long,java.lang.Object)>#u11",
+        "check_code": "if (!isGlobalSession(sessionId)) {\nthrow e;"
+      },
+      "proposed_cluster_test": null,
+      "cluster_test": null,
+      "cluster_evidence": "Closest three-peer candidate ReadOnlyModeTest.testSessionEstablishment creates a local session on read-only server; SessionUpgradeQuorumTest.testCloseSessionWhileUpgradeOnLearner exercises a nearby upgrade race.",
+      "target_reach_status": "no_existing_cluster_test_shown_to_reach_selected_region",
+      "target_reach_reason": "No unmodified real-quorum JUnit test shown to reach selected B2: normal trackSession then setOwner returns before B2; no test establishes missing/closing local session at setOwner.",
+      "smoke_status": "not_run",
+      "expected_exception": "KeeperException.SessionExpiredException",
+      "expected_exception_reason": "Missing or closing local session that is not global is intentionally rejected.",
+      "no_cluster_test_reason": "No unmodified real-quorum JUnit test shown to reach selected B2: normal trackSession then setOwner returns before B2; no test establishes missing/closing local session at setOwner.",
+      "alternative_tests": [
+        "org.apache.zookeeper.test.ReadOnlyModeTest.testSessionEstablishment",
+        "org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest.testCloseSessionWhileUpgradeOnLearner"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-10",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java",
+        "line": 371,
+        "function": "org.apache.zookeeper.server.quorum.ObserverMaster.removeProposedPacket(long)",
+        "site_id": "<org.apache.zookeeper.server.quorum.ObserverMaster: org.apache.zookeeper.server.quorum.QuorumPacket removeProposedPacket(long)>#u28",
+        "check_code": "if (pkt.getZxid() != zxid) {\nfinal String m = String.format(\n\"Unexpected proposal packet on commit ack, expected zxid 0x%d got zxid 0x%d\",\nzxid,\npkt.getZxid());\nLOG.error(m);\nthrow new RuntimeException(m);"
+      },
+      "proposed_cluster_test": "ObserverMasterTest.testInOrderCommits(true)",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.test.ObserverMasterTest",
+        "method": "testInOrderCommits(true)",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ObserverMasterTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "ObserverMasterTestBase.setUp starts two participants and one observer with observerMasterPort; parameterized true invocation sends 10,001 asynchronous writes via observer and follower.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "The method is @ParameterizedTest with true/false; GraphChecker runner needs true invocation selection. Exact B3 mismatch unverified.",
+      "smoke_status": "not_run",
+      "expected_exception": "java.lang.RuntimeException: Unexpected proposal packet on commit ack",
+      "expected_exception_reason": "A commit zxid different from the queued proposal is a protocol-order violation; ordinary successful commits should not trigger it.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-11",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "line": 1175,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "site_id": "<org.apache.zookeeper.server.quorum.QuorumPeer: void loadDataBase()>#u46",
+        "check_code": "if (currentTmp.exists()) {\nlong epochOfTmp = readLongFromFile(currentTmp.getName());\nLOG.info(\"{} found. Setting current epoch to {}.\", currentTmp, epochOfTmp);\nsetCurrentEpoch(epochOfTmp);\n} else {\nthrow new IOException(\n\"The current epoch, \" + ZxidUtils.zxidToString(currentEpoch)\n+ \", is older than the last zxid, \" + lastProcessedZxid);"
+      },
+      "proposed_cluster_test": "CurrentEpochWriteFailureTest.testReadCurrentEpochFromAcceptedEpochTmpFile",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest",
+        "method": "testReadCurrentEpochFromAcceptedEpochTmpFile",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "LaunchServers(3), write data, restart, lower first peer currentEpoch, add currentEpoch.tmp with latest epoch, restart and assert availability.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "Source stages epochOfZxid > currentEpoch, but tmp exists so the selected IOException throw should not occur; exact runtime guard trace pending.",
+      "smoke_status": "not_run",
+      "expected_exception": "java.io.IOException: current epoch older than last zxid",
+      "expected_exception_reason": "This guard rejects an unrecoverable epoch mismatch when no temporary epoch file exists.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-12",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "line": 1197,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "site_id": "<org.apache.zookeeper.server.quorum.QuorumPeer: void loadDataBase()>#u76",
+        "check_code": "if (acceptedEpoch < currentEpoch) {\nthrow new IOException(\"The accepted epoch, \"\n+ ZxidUtils.zxidToString(acceptedEpoch)\n+ \" is less than the current epoch, \"\n+ ZxidUtils.zxidToString(currentEpoch));"
+      },
+      "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest",
+        "method": "testReadCurrentEpochFromAcceptedEpochTmpFile",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "Same three-peer disk-epoch recovery test restarts a peer using persisted epoch files and currentEpoch.tmp.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "No source step makes acceptedEpoch lower than recovered currentEpoch; B3 false or not reached, pending trace.",
+      "smoke_status": "not_run",
+      "expected_exception": "java.io.IOException: accepted epoch less than current epoch",
+      "expected_exception_reason": "Persisted accepted epoch must not trail current epoch.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    },
+    {
+      "case_id": "ZOOKEEPER-13",
+      "check_source": {
+        "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ReadOnlyZooKeeperServer.java",
+        "line": 126,
+        "function": "org.apache.zookeeper.server.quorum.ReadOnlyZooKeeperServer.validateSession(org.apache.zookeeper.server.ServerCnxn,long)",
+        "site_id": "<org.apache.zookeeper.server.quorum.ReadOnlyZooKeeperServer: void validateSession(org.apache.zookeeper.server.ServerCnxn,long)>#u18",
+        "check_code": "if (((LearnerSessionTracker) sessionTracker).isGlobalSession(sessionId)) {\nString msg = \"Refusing global session reconnection in RO mode \" + cnxn.getRemoteSocketAddress();\nLOG.info(msg);\nthrow new ServerCnxn.CloseRequestException(msg, ServerCnxn.DisconnectReason.RENEW_GLOBAL_SESSION_IN_RO_MODE);"
+      },
+      "proposed_cluster_test": "ReadOnlyModeTest.testGlobalSessionInRO",
+      "cluster_test": {
+        "class": "org.apache.zookeeper.test.ReadOnlyModeTest",
+        "method": "testGlobalSessionInRO",
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
+        "participant_or_peer_count": 3
+      },
+      "cluster_evidence": "QuorumUtil(1) starts three peers; shutdown of one peer leaves a read-only server; test tries global-session renewal, then enables local sessions and reconnects.",
+      "target_reach_status": "not_verified",
+      "target_reach_reason": "Exact target event trace pending; the JUnit method deliberately expects global renewal to fail.",
+      "smoke_status": "not_run",
+      "expected_exception": "ServerCnxn.CloseRequestException: RENEW_GLOBAL_SESSION_IN_RO_MODE",
+      "expected_exception_reason": "Global session reconnection in read-only mode is intentionally refused.",
+      "no_cluster_test_reason": null,
+      "alternative_tests": []
+    }
+  ]
+}

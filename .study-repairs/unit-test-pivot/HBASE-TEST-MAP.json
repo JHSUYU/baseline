@@ -1,0 +1,788 @@
+{
+  "schema_version": 1,
+  "source_tag": "rel/2.6.6",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "selection_count": 30,
+  "cases": [
+    {
+      "case_id": "HBASE-01",
+      "check_source": {
+        "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
+        "line": 1106,
+        "function": "org.apache.hadoop.hbase.client.ConnectionImplementation.locateRegionInMeta(org.apache.hadoop.hbase.TableName,byte[],boolean,boolean,int)",
+        "code": "if (isDeadServer(serverName)) {\nthrow new RegionServerStoppedException(\n\"hbase:meta says the region \" + regionInfo.getRegionNameAsString()\n+ \" is managed by the server \" + serverName + \", but it is dead.\");",
+        "guard_identity": "org/apache/hadoop/hbase/client/ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;#B23",
+        "throw_identity": "org/apache/hadoop/hbase/client/ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;#L1106"
+      },
+      "original_mapping_test": "TestConnectionImplementation.testMetaLookupThreadPoolCreated",
+      "test_class_method": "TestConnectionImplementation.testMetaLookupThreadPoolCreated",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java",
+      "test_method_line": 1179,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java",
+        "setup_line": 125
+      },
+      "static_relation": "indirect target method via relocateRegion",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Healthy relocation creates a meta lookup pool. The dead-server exception is not expected."
+    },
+    {
+      "case_id": "HBASE-02",
+      "check_source": {
+        "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
+        "line": 911,
+        "function": "org.apache.hadoop.hbase.client.ConnectionImplementation.relocateRegion(org.apache.hadoop.hbase.TableName,byte[],int)",
+        "code": "if (!tableName.equals(TableName.META_TABLE_NAME) && isTableDisabled(tableName)) {\nthrow new TableNotEnabledException(tableName.getNameAsString() + \" is disabled.\");",
+        "guard_identity": "org/apache/hadoop/hbase/client/ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;#B2",
+        "throw_identity": "org/apache/hadoop/hbase/client/ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;#L911"
+      },
+      "original_mapping_test": "TestConnectionImplementation.testMetaLookupThreadPoolCreated",
+      "test_class_method": "TestConnectionImplementation.testMetaLookupThreadPoolCreated",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java",
+      "test_method_line": 1179,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java",
+        "setup_line": 125
+      },
+      "static_relation": "direct relocateRegion call at test line 1189",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Test relocates an enabled table; disabled-table exception is not expected."
+    },
+    {
+      "case_id": "HBASE-04",
+      "check_source": {
+        "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+        "line": 1263,
+        "function": "org.apache.hadoop.hbase.client.HBaseAdmin.flushAsync(org.apache.hadoop.hbase.TableName,java.util.List)",
+        "code": "if (!isTableEnabled(tableName)) {\nthrow new TableNotEnabledException(tableName.getNameAsString());",
+        "guard_identity": "org/apache/hadoop/hbase/client/HBaseAdmin#flushAsync(Lorg/apache/hadoop/hbase/TableName;Ljava/util/List;)Ljava/util/concurrent/Future;#B1",
+        "throw_identity": "org/apache/hadoop/hbase/client/HBaseAdmin#flushAsync(Lorg/apache/hadoop/hbase/TableName;Ljava/util/List;)Ljava/util/concurrent/Future;#L1263"
+      },
+      "original_mapping_test": "TestMobStoreScanner.testMobStoreScanner",
+      "test_class_method": "TestMobStoreScanner.testMobStoreScanner",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/mob/TestMobStoreScanner.java",
+      "test_method_line": 139,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/mob/TestMobStoreScanner.java",
+        "setup_line": 87
+      },
+      "static_relation": "indirect admin.flush calls in test helpers",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Helpers call admin.flush repeatedly; TableNotEnabledException is not expected."
+    },
+    {
+      "case_id": "HBASE-07",
+      "check_source": {
+        "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+        "line": 2788,
+        "function": "org.apache.hadoop.hbase.client.HBaseAdmin.restoreSnapshot(java.lang.String,boolean,boolean)",
+        "code": "if (!isTableDisabled(tableName)) {\nthrow new TableNotDisabledException(tableName);",
+        "guard_identity": "org/apache/hadoop/hbase/client/HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V#B2",
+        "throw_identity": "org/apache/hadoop/hbase/client/HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V#L2788"
+      },
+      "original_mapping_test": "TestRestoreFlushSnapshotFromClient.testRestoreSnapshot",
+      "test_class_method": "TestRestoreFlushSnapshotFromClient.testRestoreSnapshot",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/snapshot/TestRestoreFlushSnapshotFromClient.java",
+      "test_method_line": 154,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/snapshot/TestRestoreFlushSnapshotFromClient.java",
+        "setup_line": 76
+      },
+      "static_relation": "direct restoreSnapshot at test lines 159 and 168",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "The table is disabled before both restores; TableNotDisabledException is not expected."
+    },
+    {
+      "case_id": "HBASE-08",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java",
+        "line": 116,
+        "function": "org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(java.lang.String)",
+        "code": "if (nsd == null) throw new NamespaceNotFoundException(name);",
+        "guard_identity": "org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl#getNamespace(Ljava/lang/String;)Lorg/apache/hadoop/hbase/NamespaceDescriptor;#B1",
+        "throw_identity": "org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl#getNamespace(Ljava/lang/String;)Lorg/apache/hadoop/hbase/NamespaceDescriptor;#L116"
+      },
+      "original_mapping_test": "TestNamespaceAuditor.testTableOperations",
+      "test_class_method": "TestNamespaceAuditor.testTableOperations",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+      "test_method_line": 138,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+        "setup_line": 112
+      },
+      "static_relation": "namespace create/get at test lines 144-146",
+      "target_reach_status": "delegated_independent_smoke",
+      "smoke_status": "delegated_HBASE08",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Existing namespace lookup is tested; target NamespaceNotFoundException is not expected. Independent HBASE08 smoke owns runtime result."
+    },
+    {
+      "case_id": "HBASE-10",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "line": 757,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "code": "if (regionNode.getProcedure() != null) {\nthrow new HBaseIOException(\nregionNode + \" is currently in transition; pid=\" + regionNode.getProcedure().getProcId());",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V#B1",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V#L757"
+      },
+      "original_mapping_test": "TestRegionMove.testDisableAndMove",
+      "test_class_method": "TestRegionMove.testDisableAndMove",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+      "test_method_line": 76,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+        "setup_line": 60
+      },
+      "static_relation": "admin unassign/move/assign traverses preTransitCheck",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "In-transition guard B1 is not explicitly asserted; target branch needs runtime verification."
+    },
+    {
+      "case_id": "HBASE-11",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "line": 760,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "code": "if (!regionNode.isInState(expectedStates)) {\nthrow new DoNotRetryRegionException(UNEXPECTED_STATE_REGION + regionNode);",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V#B2",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V#L760"
+      },
+      "original_mapping_test": "TestRegionMove.testDisableAndMove",
+      "test_class_method": "TestRegionMove.testDisableAndMove",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+      "test_method_line": 76,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+        "setup_line": 60
+      },
+      "static_relation": "move after unassign at test lines 106-113",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": true,
+      "reason": "The test explicitly catches DoNotRetryRegionException for an unassigned region; this is expected behavior."
+    },
+    {
+      "case_id": "HBASE-12",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "line": 763,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "code": "if (isTableDisabled(regionNode.getTable())) {\nthrow new DoNotRetryIOException(regionNode.getTable() + \" is disabled for \" + regionNode);",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V#B3",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V#L763"
+      },
+      "original_mapping_test": "TestRegionMove.testDisableAndMove",
+      "test_class_method": "TestRegionMove.testDisableAndMove",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+      "test_method_line": 76,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+        "setup_line": 60
+      },
+      "static_relation": "move after disableTable at test lines 117-125",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": true,
+      "reason": "The test explicitly catches DoNotRetryIOException for a disabled table. A post-fault target hit must be distinguished from this healthy expected hit."
+    },
+    {
+      "case_id": "HBASE-13",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "line": 495,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "code": "if (MetaTableAccessor.hasMergeRegions(env.getMasterServices().getConnection(), ri)) {\nString msg = \"Skip merging \" + regionNamesToLog + \", because a parent, \"\n+ RegionInfo.getShortNameToLog(ri) + \", has a merge qualifier \"\n+ \"(if a 'merge column' in parent, it was recently merged but still has outstanding \"\n+ \"references to its parents that must be cleared before it can participate in merge -- \"\n+ \"major compact it to hurry clearing of its references)\";\nLOG.warn(msg);\nthrow new MergeRegionException(msg);",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z#B6",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z#L495"
+      },
+      "original_mapping_test": "TestMergeTableRegionsProcedure.testMergeTwoRegions",
+      "test_class_method": "TestMergeTableRegionsProcedure.testMergeTwoRegions",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java",
+      "test_method_line": 167,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java",
+        "setup_line": 104
+      },
+      "static_relation": "submits MergeTableRegionsProcedure at test lines 184-189",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Normal merge checks stale merge-parent metadata; failure arm B6 is not expected."
+    },
+    {
+      "case_id": "HBASE-14",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "line": 500,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "code": "if (state == null) {\nthrow new UnknownRegionException(\nRegionInfo.getShortNameToLog(ri) + \" UNKNOWN (Has it been garbage collected?)\");",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z#B7",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z#L500"
+      },
+      "original_mapping_test": "TestMergeTableRegionsProcedure.testMergeTwoRegions",
+      "test_class_method": "TestMergeTableRegionsProcedure.testMergeTwoRegions",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java",
+      "test_method_line": 167,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java",
+        "setup_line": 104
+      },
+      "static_relation": "submits MergeTableRegionsProcedure at test lines 184-189",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Normal merge checks region state existence; UnknownRegionException arm B7 is not expected."
+    },
+    {
+      "case_id": "HBASE-15",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "line": 503,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "code": "if (!state.isOpened()) {\nthrow new MergeRegionException(\"Unable to merge regions that are NOT online: \" + ri);",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z#B8",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z#L503"
+      },
+      "original_mapping_test": "TestMergeTableRegionsProcedure.testMergeTwoRegions",
+      "test_class_method": "TestMergeTableRegionsProcedure.testMergeTwoRegions",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java",
+      "test_method_line": 167,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java",
+        "setup_line": 104
+      },
+      "static_relation": "submits MergeTableRegionsProcedure at test lines 184-189",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Normal merge checks region OPEN state; offline-region MergeRegionException arm B8 is not expected."
+    },
+    {
+      "case_id": "HBASE-16",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+        "line": 371,
+        "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+        "code": "if (regionNode.isInState(State.CLOSING)) {\n// This is possible, think the target RS crashes and restarts immediately, the close region\n// operation will return a NotServingRegionException soon, we can only recover after SCP takes\n// care of this RS. So here we throw an IOException to let upper layer to retry with backoff.\nsetNextState(RegionStateTransitionState.REGION_STATE_TRANSITION_CLOSE);\nthrow new HBaseIOException(\"Failed to close region\");",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;#B3",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;#L371"
+      },
+      "original_mapping_test": null,
+      "test_class_method": "TestCloseRegionWhileRSCrash.testRetryBackoff",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestCloseRegionWhileRSCrash.java",
+      "test_method_line": 162,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestCloseRegionWhileRSCrash.java",
+        "setup_line": 144
+      },
+      "static_relation": "region move concurrent with RS crash at test lines 170-186",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": true,
+      "reason": "Test intentionally checks close retry/backoff during RS crash; an internal Failed-to-close HBaseIOException can be normal recovery, not automatically a bug."
+    },
+    {
+      "case_id": "HBASE-17",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+        "line": 379,
+        "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+        "code": "assert regionNode.isInState(State.ABNORMALLY_CLOSED);",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;#B5",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;#L379"
+      },
+      "original_mapping_test": null,
+      "test_class_method": "TestRaceBetweenSCPAndTRSP.test",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestRaceBetweenSCPAndTRSP.java",
+      "test_method_line": 129,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestRaceBetweenSCPAndTRSP.java",
+        "setup_line": 117
+      },
+      "static_relation": "TRSP region opening races ServerCrashProcedure at test lines 143-171",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Closest real cluster test to abnormal close state; no explicit ABNORMALLY_CLOSED assertion or branch-hit evidence."
+    },
+    {
+      "case_id": "HBASE-18",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+        "line": 325,
+        "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmOpened(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+        "code": "if (retries > env.getAssignmentManager().getAssignRetryImmediatelyMaxAttempts()) {\n// Throw exception to backoff and retry when failed open too many times\nthrow new HBaseIOException(\n\"Failed confirm OPEN of \" + regionNode + \" (remote log may yield more detail on why).\");",
+        "guard_identity": "org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure#confirmOpened(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;#B4",
+        "throw_identity": "org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure#confirmOpened(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;#L325"
+      },
+      "original_mapping_test": null,
+      "test_class_method": "TestTransitRegionStateProcedure.testRecoveryAndDoubleExecutionUnassignAndAssign",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestTransitRegionStateProcedure.java",
+      "test_method_line": 143,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestTransitRegionStateProcedure.java",
+        "setup_line": 60
+      },
+      "static_relation": "direct TRSP unassign and assign at test lines 148-154",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Healthy test drives confirmOpened. Retry-exhausted backoff arm B4 requires faults; mock-only TestAMServerFailedOpen tests failed-open exceptions but is not a MiniHBaseCluster test."
+    },
+    {
+      "case_id": "HBASE-19",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "line": 135,
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "code": "if (\nthis.unmodifiedTableDescriptor.getColumnFamilyCount()\n!= this.modifiedTableDescriptor.getColumnFamilyCount()\n) {\nthrow new HBaseIOException(\n\"Cannot add or remove column families when this modification \" + \"won't reopen regions.\");",
+        "guard_identity": "org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V#B7",
+        "throw_identity": "org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V#L135"
+      },
+      "original_mapping_test": "TestModifyTableProcedure.testModifyWillNotReopenRegions",
+      "test_class_method": "TestModifyTableProcedure.testModifyWillNotReopenRegions",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java",
+      "test_method_line": 593,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestTableDDLProcedureBase.java",
+        "setup_line": 43
+      },
+      "static_relation": "direct ModifyTableProcedure with reopenRegions=false",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": true,
+      "reason": "The test deliberately adds a column family and catches the target HBaseIOException at test lines 635-648."
+    },
+    {
+      "case_id": "HBASE-20",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "line": 139,
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "code": "if (isCoprocModified()) {\nthrow new HBaseIOException(\n\"Can not modify Coprocessor when table modification won't reopen regions\");",
+        "guard_identity": "org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V#B8",
+        "throw_identity": "org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V#L139"
+      },
+      "original_mapping_test": "TestModifyTableProcedure.testModifyWillNotReopenRegions",
+      "test_class_method": "TestModifyTableProcedure.testModifyWillNotReopenRegions",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java",
+      "test_method_line": 593,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestTableDDLProcedureBase.java",
+        "setup_line": 43
+      },
+      "static_relation": "direct ModifyTableProcedure with reopenRegions=false",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": true,
+      "reason": "The test deliberately adds a coprocessor and catches the target HBaseIOException at test lines 679-692."
+    },
+    {
+      "case_id": "HBASE-21",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "line": 133,
+        "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)",
+        "code": "if (\n(currentStatus.getRegionCount() - regionCountOfTable + incr)\n> TableNamespaceManager.getMaxRegions(nspdesc)\n) {\nthrow new QuotaExceededException(\"The table \" + name.getNameAsString()\n+ \" region count cannot be updated as it would exceed maximum number \"\n+ \"of regions allowed in the namespace.  The total number of regions permitted is \"\n+ TableNamespaceManager.getMaxRegions(nspdesc));",
+        "guard_identity": "org/apache/hadoop/hbase/namespace/NamespaceStateManager#checkAndUpdateNamespaceRegionCount(Lorg/apache/hadoop/hbase/TableName;I)V#B3",
+        "throw_identity": "org/apache/hadoop/hbase/namespace/NamespaceStateManager#checkAndUpdateNamespaceRegionCount(Lorg/apache/hadoop/hbase/TableName;I)V#L133"
+      },
+      "original_mapping_test": "TestNamespaceAuditor.testRestoreSnapshotQuotaExceed",
+      "test_class_method": "TestNamespaceAuditor.testRestoreSnapshotQuotaExceed",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+      "test_method_line": 701,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+        "setup_line": 112
+      },
+      "static_relation": "restore snapshot after lowering namespace region quota",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": true,
+      "reason": "Test explicitly expects RestoreSnapshotException caused by target QuotaExceededException at test lines 729-738."
+    },
+    {
+      "case_id": "HBASE-22",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "line": 172,
+        "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)",
+        "code": "if (\n(currentStatus.getRegionCount() + numRegions) > TableNamespaceManager.getMaxRegions(nspdesc)\n) {\nthrow new QuotaExceededException(\n\"The table \" + table.getNameAsString() + \" is not allowed to have \" + numRegions\n+ \" regions. The total number of regions permitted is only \"\n+ TableNamespaceManager.getMaxRegions(nspdesc) + \", while current region count is \"\n+ currentStatus.getRegionCount()\n+ \". This may be transient, please retry later if there are any\"\n+ \" ongoing split operations in the namespace.\");",
+        "guard_identity": "org/apache/hadoop/hbase/namespace/NamespaceStateManager#checkAndUpdateNamespaceTableCount(Lorg/apache/hadoop/hbase/TableName;I)V#B4",
+        "throw_identity": "org/apache/hadoop/hbase/namespace/NamespaceStateManager#checkAndUpdateNamespaceTableCount(Lorg/apache/hadoop/hbase/TableName;I)V#L172"
+      },
+      "original_mapping_test": "TestNamespaceAuditor.testTableOperations",
+      "test_class_method": "TestNamespaceAuditor.testTableOperations",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+      "test_method_line": 138,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+        "setup_line": 112
+      },
+      "static_relation": "third table after max-tables=2 at test lines 176-185",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": true,
+      "reason": "Third table creation deliberately exceeds namespace table quota and catches expected IOException."
+    },
+    {
+      "case_id": "HBASE-23",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator.java",
+        "line": 131,
+        "function": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator.sendGlobalBarrierReached(org.apache.hadoop.hbase.procedure.Procedure,java.util.List)",
+        "code": "if (!ProtobufUtil.isPBMagicPrefix(dataFromMember)) {\nString msg =\n\"Failed to get data from finished node or data is illegally formatted: \" + znode;\nLOG.error(msg);\nthrow new IOException(msg);",
+        "guard_identity": "org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V#B5",
+        "throw_identity": "org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V#L131"
+      },
+      "original_mapping_test": null,
+      "test_class_method": "TestZKProcedureControllers.testZKCoordinatorControllerWithSingleMemberCohort",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedureControllers.java",
+      "test_method_line": 154,
+      "cluster_evidence": {
+        "kind": "MiniZKCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedureControllers.java",
+        "setup_line": 69
+      },
+      "static_relation": "direct sendGlobalBarrierReached via helper at test line 213",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Real embedded ZooKeeper test with a mocked coordinator/member. It sends valid PB data; malformed-member-data IOException arm B5 is not expected."
+    },
+    {
+      "case_id": "HBASE-24",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs.java",
+        "line": 210,
+        "function": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs.startNewSubprocedure(java.lang.String)",
+        "code": "if (!ProtobufUtil.isPBMagicPrefix(data)) {\nString msg =\n\"Data in for starting procedure \" + opName + \" is illegally formatted (no pb magic). \"\n+ \"Killing the procedure: \" + Bytes.toString(data);\nLOG.error(msg);\nthrow new IllegalArgumentException(msg);",
+        "guard_identity": "org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V#B2",
+        "throw_identity": "org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V#L210"
+      },
+      "original_mapping_test": "TestFlushTableProcedureWithDoNotSupportFlushTableMaster.testFlushFallback",
+      "test_class_method": "TestZKProcedureControllers.testSimpleZKCohortMemberController",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedureControllers.java",
+      "test_method_line": 82,
+      "cluster_evidence": {
+        "kind": "MiniZKCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedureControllers.java",
+        "setup_line": 69
+      },
+      "static_relation": "acquire znode callback enters startNewSubprocedure at test lines 116-123",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "This directly exercises the ZK member controller with PB-magic input. Prior mapped TestFlushTableProcedureWithDoNotSupportFlushTableMaster.testFlushFallback does not establish target reach."
+    },
+    {
+      "case_id": "HBASE-27",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+        "line": 1053,
+        "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)",
+        "code": "if (this.stopped) {\nthrow new IOException(\"Received the shutdown message while waiting.\");",
+        "guard_identity": "org/apache/hadoop/hbase/regionserver/HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V#B2",
+        "throw_identity": "org/apache/hadoop/hbase/regionserver/HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V#L1053"
+      },
+      "original_mapping_test": null,
+      "test_class_method": null,
+      "test_source": null,
+      "test_method_line": null,
+      "cluster_evidence": {
+        "kind": null,
+        "setup_source": null,
+        "setup_line": null
+      },
+      "static_relation": "no suitable existing cluster test found",
+      "target_reach_status": "no_test",
+      "smoke_status": "not_run",
+      "no_cluster_test": true,
+      "expected_exception_in_original_test": false,
+      "reason": "Target is the private RegionServer startup wait on master/cluster-status znode plus simultaneous stop. TestRegionServerNoMaster starts the RS before stopping master, so it does not test this startup race."
+    },
+    {
+      "case_id": "HBASE-28",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+        "line": 2487,
+        "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.putUpWebUI()",
+        "code": "if (!Addressing.isLocalAddress(InetAddress.getByName(addr))) {\nString msg = \"Failed to start http info server. Address \" + addr\n+ \" does not belong to this host. Correct configuration parameter: \"\n+ (isMaster ? \"hbase.master.info.bindAddress\" : \"hbase.regionserver.info.bindAddress\");\nLOG.error(msg);\nthrow new IOException(msg);",
+        "guard_identity": "org/apache/hadoop/hbase/regionserver/HRegionServer#putUpWebUI()V#B3",
+        "throw_identity": "org/apache/hadoop/hbase/regionserver/HRegionServer#putUpWebUI()V#L2487"
+      },
+      "original_mapping_test": "TestInfoServers.testInfoServersRedirect",
+      "test_class_method": "TestInfoServers.testInfoServersRedirect",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java",
+      "test_method_line": 84,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java",
+        "setup_line": 60
+      },
+      "static_relation": "web UI startup calls putUpWebUI; test validates redirect",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Default info bind address is local/any, so invalid bind-address IOException is not expected. This is a configuration check, not a strong coordination seed."
+    },
+    {
+      "case_id": "HBASE-29",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "line": 2263,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "code": "if (!regionName.equals(entry.getKey().getEncodedRegionName())) {\nthrow new NotServingRegionException(\"Replay request contains entries from multiple \"\n+ \"regions. First region:\" + regionName.toStringUtf8() + \" , other region:\"\n+ entry.getKey().getEncodedRegionName());",
+        "guard_identity": "org/apache/hadoop/hbase/regionserver/RSRpcServices#replay(Lorg/apache/hbase/thirdparty/com/google/protobuf/RpcController;Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryRequest;)Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryResponse;#B7",
+        "throw_identity": "org/apache/hadoop/hbase/regionserver/RSRpcServices#replay(Lorg/apache/hbase/thirdparty/com/google/protobuf/RpcController;Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryRequest;)Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryResponse;#L2263"
+      },
+      "original_mapping_test": "TestRegionReplicaReplicationEndpoint.testRegionReplicaReplicationWith2Replicas",
+      "test_class_method": "TestRegionReplicaReplicationEndpoint.testRegionReplicaReplicationWith2Replicas",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+      "test_method_line": 310,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "setup_line": 121
+      },
+      "static_relation": "two-replica writes cause async replay RPCs",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Healthy replay batches have one encoded region; mixed-region IOException is not expected."
+    },
+    {
+      "case_id": "HBASE-30",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "line": 2298,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "code": "if (result[i] != OperationStatus.SUCCESS) {\nthrow new IOException(result[i].getExceptionMsg());",
+        "guard_identity": "org/apache/hadoop/hbase/regionserver/RSRpcServices#replay(Lorg/apache/hbase/thirdparty/com/google/protobuf/RpcController;Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryRequest;)Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryResponse;#B20",
+        "throw_identity": "org/apache/hadoop/hbase/regionserver/RSRpcServices#replay(Lorg/apache/hbase/thirdparty/com/google/protobuf/RpcController;Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryRequest;)Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$ReplicateWALEntryResponse;#L2298"
+      },
+      "original_mapping_test": "TestRegionReplicaReplicationEndpoint.testRegionReplicaReplicationWith2Replicas",
+      "test_class_method": "TestRegionReplicaReplicationEndpoint.testRegionReplicaReplicationWith2Replicas",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+      "test_method_line": 310,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "setup_line": 121
+      },
+      "static_relation": "two-replica writes cause async replay RPCs",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Healthy doReplayBatchOp returns SUCCESS; non-success IOException is not expected."
+    },
+    {
+      "case_id": "HBASE-31",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "line": 2011,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(long)",
+        "code": "if (regionServer.serverName.getStartcode() != serverStartCode) {\nthrow new ServiceException(new DoNotRetryIOException(\n\"This RPC was intended for a \" + \"different server with startCode: \" + serverStartCode\n+ \", this server is: \" + regionServer.serverName));",
+        "guard_identity": "org/apache/hadoop/hbase/regionserver/RSRpcServices#throwOnWrongStartCode(J)V#B1",
+        "throw_identity": "org/apache/hadoop/hbase/regionserver/RSRpcServices#throwOnWrongStartCode(J)V#L2011"
+      },
+      "original_mapping_test": "TestRegionMove.testDisableAndMove",
+      "test_class_method": "TestRegionMove.testDisableAndMove",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+      "test_method_line": 76,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+        "setup_line": 60
+      },
+      "static_relation": "move likely exercises RS open/close RPC startcode check",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "The two deliberately caught move exceptions come from AssignmentManager, not RSRpcServices.throwOnWrongStartCode. No stale startcode is sent."
+    },
+    {
+      "case_id": "HBASE-32",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java",
+        "line": 136,
+        "function": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler.triggerFlushInPrimaryRegion(org.apache.hadoop.hbase.regionserver.HRegion)",
+        "code": "if (\nex instanceof TableNotFoundException\n|| connection.isTableDisabled(region.getRegionInfo().getTable())\n) {\nreturn;\n}\nthrow ex;",
+        "guard_identity": "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V#B7",
+        "throw_identity": "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V#L136"
+      },
+      "original_mapping_test": null,
+      "test_class_method": "TestRegionReplicaFailover.testSecondaryRegionKill",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java",
+      "test_method_line": 202,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java",
+        "setup_line": 83
+      },
+      "static_relation": "replica recovery calls triggerFlushInPrimaryRegion",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Test kills a secondary RS and waits for replica recovery; primary flush IOException is not expected."
+    },
+    {
+      "case_id": "HBASE-33",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+        "line": 141,
+        "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+        "code": "if (zkWatcher.getWatcher().isAborted()) {\nLOG.error(\"ZKWatcher is abort\");\nthrow new InvalidToken(\n\"Token keys could not be sync from zookeeper\" + \" because of ZKWatcher abort\");",
+        "guard_identity": "org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B#B3",
+        "throw_identity": "org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B#L141"
+      },
+      "original_mapping_test": null,
+      "test_class_method": "TestTokenAuthentication.testTokenCreation",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java",
+      "test_method_line": 418,
+      "cluster_evidence": {
+        "kind": "MiniZKCluster + standalone TokenServer",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java",
+        "setup_line": 377
+      },
+      "static_relation": "direct valid-token retrievePassword at test lines 417-426",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "No existing test found for simultaneous missing allKeys entry and aborted ZooKeeper watcher; this test has valid key and only supplies a healthy call path."
+    },
+    {
+      "case_id": "HBASE-34",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+        "line": 160,
+        "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+        "code": "if (masterKey == null) {\nthrow new InvalidToken(\"Unknown master key for token (id=\" + identifier.getKeyId() + \")\");",
+        "guard_identity": "org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B#B7",
+        "throw_identity": "org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B#L160"
+      },
+      "original_mapping_test": "TestGenerateDelegationToken.testOnlyToken",
+      "test_class_method": "TestGenerateDelegationToken.testOnlyToken",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestGenerateDelegationToken.java",
+      "test_method_line": 128,
+      "cluster_evidence": {
+        "kind": "LocalHBaseCluster + MiniZK/DFS",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/SecureTestCluster.java",
+        "setup_line": 91
+      },
+      "static_relation": "token authentication calls retrievePassword",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Test expects AccessDeniedException from token generation under token auth, not target InvalidToken after key refresh. Cluster setup delegates to SecureTestCluster.setUpCluster at lines 71-92."
+    },
+    {
+      "case_id": "HBASE-35",
+      "check_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/HBaseFsck.java",
+        "line": 2720,
+        "function": "org.apache.hadoop.hbase.util.HBaseFsck$3.visit(org.apache.hadoop.hbase.client.Result)",
+        "code": "if (previous == null) {\nregionInfoMap.put(hri.getEncodedName(), new HbckRegionInfo(m));\n} else if (previous.getMetaEntry() == null) {\nprevious.setMetaEntry(m);\n} else {\nthrow new IOException(\"Two entries in hbase:meta are same \" + previous);",
+        "guard_identity": "org/apache/hadoop/hbase/util/HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z#B11",
+        "throw_identity": "org/apache/hadoop/hbase/util/HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z#L2720"
+      },
+      "original_mapping_test": "TestHBaseFsckReplication.test",
+      "test_class_method": "TestHBaseFsckReplication.test",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/util/TestHBaseFsckReplication.java",
+      "test_method_line": 57,
+      "cluster_evidence": {
+        "kind": "MiniHBaseCluster",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/util/TestHBaseFsckReplication.java",
+        "setup_line": 48
+      },
+      "static_relation": "doFsck traverses hbase:meta entries",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Test creates undeleted replication queues, not duplicate hbase:meta entries. Its expected errors are unrelated to target duplicate-region IOException."
+    },
+    {
+      "case_id": "HBASE-37",
+      "check_source": {
+        "path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+        "line": 206,
+        "function": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker.getMasterInfoPort(org.apache.hadoop.hbase.zookeeper.ZKWatcher)",
+        "code": "if (data == null) {\nthrow new IOException(\"Can't get master address from ZooKeeper; znode data == null\");",
+        "guard_identity": "org/apache/hadoop/hbase/zookeeper/MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I#B1",
+        "throw_identity": "org/apache/hadoop/hbase/zookeeper/MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I#L206"
+      },
+      "original_mapping_test": "TestRSStatusPage.testStatusPage",
+      "test_class_method": "TestRSStatusPage.testStatusPage",
+      "test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java",
+      "test_method_line": 94,
+      "cluster_evidence": {
+        "kind": "LocalHBaseCluster + MiniZK/DFS",
+        "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java",
+        "setup_line": 64
+      },
+      "static_relation": "master.getActiveMasterInfoPort calls target via ActiveMasterManager",
+      "target_reach_status": "not_measured",
+      "smoke_status": "not_run",
+      "no_cluster_test": false,
+      "expected_exception_in_original_test": false,
+      "reason": "Active-master znode is normally present. Target null-znode IOException is not expected; setup also starts LocalHBaseCluster at test line 76."
+    }
+  ]
+}

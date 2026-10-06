@@ -71,8 +71,12 @@ def markdown(items: list[dict]) -> str:
         "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ]
     for row in items:
+        line = row.get("resolved_check_line") or row["source_line"]
+        source = f"{row['source_path']}:{line}"
+        if line != row["source_line"]:
+            source += f" (selection line {row['source_line']})"
         values = [row["case_id"], row["system"],
-                  f"{row['source_path']}:{row['source_line']}", row["function"],
+                  source, row["function"],
                   row.get("check_code"),
                   row.get("cluster_test") or row.get("proposed_cluster_test"),
                   row.get("elapsed_seconds"), row.get("fault_trials"),
