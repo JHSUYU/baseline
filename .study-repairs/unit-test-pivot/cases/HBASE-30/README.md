@@ -6,6 +6,13 @@ The selected check is in the unchanged HBase 2.6.6
 is at line 2297, immediately after `doReplayBatchOp` returns. The checklist
 anchor at line 2298 is the `IOException` thrown if any returned
 `OperationStatus` is not the shared `OperationStatus.SUCCESS` object.
+The local `ReplayBatchOperation` can return statuses such as
+`BAD_FAMILY`, `SANITY_CHECK_FAILURE`, or `STORE_TOO_BUSY` when a replayed
+mutation is rejected. Such a status causes the selected exception by design;
+its occurrence alone would not establish a new coordination bug. The replay
+decoder constructs only Put/Delete mutations from WAL cells, so the
+separately allocated success statuses for Increment/Append in the shared
+batch implementation do not explain this test's normal path.
 
 The unchanged original embedded-cluster JUnit
 `TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas`
