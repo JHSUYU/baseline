@@ -1,0 +1,78 @@
+{
+  "applied_faults": 3,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T22:24:08.421177+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-20/independent-ha-hot/campaign-v2/trial-36/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 8951,
+    "METHOD": 8019,
+    "PROBE": 28730
+  },
+  "coverage_ids": 45700,
+  "junit_exit": 0,
+  "junit_seconds": 29.633,
+  "last_applied_seq": 210,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-20/independent-ha-hot/campaign-v2/trial-36/manifest.json",
+  "matched_faults": 3,
+  "new_coverage_count": 3,
+  "new_coverage_ids": [
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:400",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:401",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:402"
+  ],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [],
+  "number": 36,
+  "observed_io_points": 174,
+  "other_context_guard_after_last_fault_count": 1,
+  "requested_faults": 3,
+  "seconds": 39.735,
+  "selection_reason": "mutated trial-03 from observed post-fault I/O seq 213",
+  "sequence": [
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.sendHeartbeat",
+      "endpoint": "bpos2:actor3",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    },
+    {
+      "api": "ClientNamenodeProtocolTranslatorPB.create",
+      "endpoint": "nn1",
+      "exception": "EOFException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    },
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.sendHeartbeat",
+      "endpoint": "bpos1:actor2",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 11
+    }
+  ],
+  "sequence_id": "09cb056d90390df29540",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    29
+  ],
+  "target_context_expected": {
+    "actor_instance": 3,
+    "bpos_instance": 2,
+    "healthy_prior_claim": 5,
+    "healthy_txid": 8,
+    "requires_prior_claim": true,
+    "source_guard_ordinal": 5
+  },
+  "target_exception_after_fault_count": 0,
+  "target_exception_any_context_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_outcomes_after_fault": [
+    true
+  ],
+  "test_method": "testStandbyIsHot",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-20/independent-ha-hot/campaign-v2/trial-36/trace/runtime_trace.jsonl",
+  "trial": "trial-36"
+}

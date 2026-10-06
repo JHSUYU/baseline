@@ -1,13 +1,112 @@
 {
-  "case_id": "HDFS-20",
-  "status": "test_identified",
-  "cluster_test": "org.apache.hadoop.hdfs.TestClientProtocolForPipelineRecovery#testPipelineRecoveryOnOOB",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "applied_fault_events": 86,
+  "baseline_max_faults_per_sequence": 8,
+  "baseline_trial_budget": 80,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "case_id": "HDFS-20",
+  "check_code": "assert txid >= lastActiveClaimTxId;",
+  "cluster_nodes": "OOB phase 1 NameNode + 1 DataNode; restart phase 2 NameNodes + 1 DataNode; repeated-claim phase 2 NameNodes + 3 DataNodes",
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.ha.TestStandbyIsHot#testStandbyIsHot",
+  "cluster_tests": [
+    {
+      "phase": "original-oob",
+      "test": "org.apache.hadoop.hdfs.TestClientProtocolForPipelineRecovery#testPipelineRecoveryOnOOB",
+      "trials": 14
+    },
+    {
+      "phase": "original-ha-restart",
+      "test": "org.apache.hadoop.hdfs.server.namenode.ha.TestStandbyIsHot#testDatanodeRestarts",
+      "trials": 6
+    },
+    {
+      "phase": "original-ha-repeated-claim",
+      "test": "org.apache.hadoop.hdfs.server.namenode.ha.TestStandbyIsHot#testStandbyIsHot",
+      "trials": 60
+    }
+  ],
+  "cluster_type": "MiniDFSCluster",
+  "completed_at_utc": "2026-10-06T22:39:37.566149+00:00",
+  "coverage_gain": {
+    "BRANCH_UNIT": 139,
+    "METHOD": 27,
+    "PROBE": 250
+  },
+  "coverage_gain_interpretation": "Deduplicated union of fault-added IDs relative to each phase's original-JUnit healthy baseline.",
+  "elapsed_seconds": 3013.249,
+  "evidence": {
+    "aggregate_audit": "independent-ha-hot/audit_total.py",
+    "checkpoint": "independent-coverage-io/campaign/checkpoint.json",
+    "coverage_provenance": "coverage-provenance.json",
+    "excluded_legacy_probe": "independent-ha-hot/legacy-endpoint-collision/exclusion.json",
+    "hot_audit": "independent-ha-hot/campaign-v2/audit.json",
+    "hot_checkpoint": "independent-ha-hot/campaign-v2/checkpoint.json",
+    "hot_coverage_archive": "independent-ha-hot/coverage-evidence-v2.tar.gz",
+    "hot_healthy_trace": "independent-ha-hot/healthy/identity-fixed/trace/runtime_trace.jsonl",
+    "hot_source_provenance": "independent-ha-hot/source-provenance.json",
+    "hot_trial_dir": "independent-ha-hot/campaign-v2/trial-XX/",
+    "hot_trial_ledger": "independent-ha-hot/campaign-v2/trial-ledger.csv",
+    "independent_healthy_coverage": "independent-coverage-io/healthy/instrumented/coverage.tsv",
+    "independent_healthy_probe": "independent-coverage-io/healthy/instrumented/manifest.json",
+    "independent_healthy_trace": "independent-coverage-io/healthy/instrumented/trace/runtime_trace.jsonl",
+    "independent_original_junit": "independent-coverage-io/healthy/original/manifest.json",
+    "independent_source_provenance": "independent-coverage-io/source-provenance.json",
+    "oob_checkpoint": "independent-coverage-io/campaign/checkpoint.json",
+    "oob_coverage_archive": "independent-coverage-io/coverage-evidence.tar.gz",
+    "oob_trial_ledger": "independent-coverage-io/campaign/trial-ledger.csv",
+    "restart_checkpoint": "independent-ha/campaign/checkpoint.json",
+    "restart_coverage_archive": "independent-ha/coverage-evidence.tar.gz",
+    "restart_trial_ledger": "independent-ha/campaign/trial-ledger.csv",
+    "trial_dir": "independent-coverage-io/campaign/trial-XX/",
+    "trial_ledger": "independent-coverage-io/campaign/trial-ledger.csv"
+  },
+  "excluded_legacy_trials": 1,
+  "fault_trials": 80,
+  "fully_applied_trials": 62,
+  "function": "BPOfferService.updateActorStatesFromHeartbeat(BPServiceActor, NNHAStatusHeartbeat)",
+  "healthy_phases": [
+    {
+      "original_seconds": 18.403,
+      "phase": "original-oob",
+      "probe_seconds": 21.947
+    },
+    {
+      "original_seconds": 15.036,
+      "phase": "original-ha-restart",
+      "probe_seconds": 19.28
+    },
+    {
+      "original_seconds": 23.945,
+      "phase": "original-ha-repeated-claim",
+      "probe_seconds": 28.605
+    }
+  ],
+  "healthy_probe_elapsed_seconds": 28.605,
+  "healthy_probe_exit": 0,
+  "healthy_probe_io_points": 170,
+  "healthy_probe_restart_bpos_guard_count": 2,
+  "healthy_probe_target_guard_count": 30,
+  "healthy_test_elapsed_seconds": 23.945,
+  "healthy_test_exit": 0,
+  "matched_fault_events": 86,
+  "max_realized_ordered_faults": 3,
+  "methodology": "coverage_io_source_probes_no_graph",
+  "oracle_candidates": 0,
+  "post_fault_target_reach_trials": 59,
+  "requested_fault_events": 108,
+  "runtime_identity": "RPC API, actor-thread-bound BPOS/actor endpoint role, per-role ordinal, exception; target requires the same actor and at least its healthy prior claim",
+  "selection_line": 606,
+  "selection_policy_version": "actor_thread_identity_v4_depth_quota",
+  "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+  "status": "quality_complete",
+  "stop_reason": "Case total budget reached; no new production method/branch or stable I/O family in the repeated-claim phase's final eight trials.",
+  "strict_injection_trials": 62,
+  "strict_injections": 62,
+  "system": "HDFS 3.4.3",
+  "target_after_fault": 59,
+  "target_exception_after_fault_trials": 0,
+  "target_exception_any_context_after_fault_trials": 0,
+  "target_exception_type": "java.lang.AssertionError",
+  "target_reached": true,
+  "updated_at_utc": "2026-10-06T22:39:38.485556+00:00",
+  "workload_timeout_trials": 0
 }
