@@ -14,8 +14,8 @@ import tempfile
 HERE = Path(__file__).resolve().parent
 SELECTION = HERE / "selection102.json"
 RESULTS = HERE / "cases"
-TERMINAL = {"no_cluster_test", "source_excluded", "quality_complete",
-            "confirmed_bug"}
+TERMINAL = {"no_cluster_test", "no_valid_target_trial", "source_excluded",
+            "quality_complete", "confirmed_bug"}
 SYSTEM_NAMES = {
     "hdfs": "HDFS 3.4.3",
     "hbase": "HBase 2.6.6",
