@@ -21,7 +21,7 @@ The hit ordinal is required to match a specific retry during injection. For
 coverage-guided I/O novelty, the stable point is family + znode path + call
 site; repeated retries at the same point are counted separately as exact
 selectors but not as new I/O sites. The final-16-round extension decision
-also uses stable I/O sites.
+uses new stable I/O families or production method/branch coverage.
 
 `work/src/HBase08Agent.java` is a case-local ByteBuddy agent; `work/run.sh`
 launches the original JUnit in a fresh data directory, with JaCoCo enabled for
@@ -38,10 +38,11 @@ distinct masters have aborted. Such a trial is recorded as target lost and
 contributes no coverage feedback; the watchdog only terminates this case's
 own JUnit JVM.
 `work/supervisor.py` runs in `hbase08_supervisor`. It resumes the same
-checkpoint if the campaign process exits unexpectedly. At 64 new trials it
-automatically extends to 128/eight faults only if at least one of the final
+checkpoint if the campaign process exits unexpectedly. It continues the
+original 64/six-fault checkpoint to 80/eight faults. At 80 new trials it
+automatically extends to 128/ten faults only if at least one of the final
 16 strict, target-retaining trials adds a production method, branch, or
-observed I/O selector. Neither path repeats a completed trial.
+stable I/O family. Neither path repeats a completed trial.
 Sequence selection favors unseen I/O fault identities and late recovery I/O.
 After 24 trials, it also favors deeper valid sequences so the allocated
 six-fault budget is exercised. Repeated sequences that eliminate the selected
@@ -58,9 +59,9 @@ Five earlier fault trials remain in `result.json` and
 `evidence/legacy-trials/`. Four were strictly applied and retained the target.
 Their scoped coverage measurements use different builds and are reported
 separately from this homogeneous JaCoCo campaign. The current campaign's
-default is 64 new trials with up to six faults, with a possible same-checkpoint
-extension to 128/eight if late rounds still expose new production coverage or
-I/O identities. `result.current_campaign` separates its trial and coverage
+budget is 80 new trials with up to eight faults, with a possible same-checkpoint
+extension to 128/ten if late rounds still expose new production coverage or
+I/O families. `result.current_campaign` separates its trial and coverage
 counts from the five historical trials.
 
 ## Instrumentation provenance

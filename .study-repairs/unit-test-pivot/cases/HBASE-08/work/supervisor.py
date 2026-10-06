@@ -34,21 +34,25 @@ def io_sites(log_path):
     return {'~'.join(selector.split('~')[:3]) for selector in selectors}
 
 
+def io_families(log_path):
+    return {site.split('~', 1)[0] for site in io_sites(log_path)}
+
+
 def late_novelty(state):
-    healthy = io_sites(HERE / 'logs/healthy2.log')
+    healthy = io_families(HERE / 'logs/healthy2.log')
     seen = set(healthy)
     trials = state['trials']
     for trial in trials[:-16]:
         if trial['strict'] and trial['target_after_final_fault']:
-            seen.update(io_sites(CASE / trial['log']))
+            seen.update(io_families(CASE / trial['log']))
     for trial in trials[-16:]:
         if not (trial['strict'] and trial['target_after_final_fault']):
             continue
-        current = io_sites(CASE / trial['log'])
-        novel_site = bool(current - seen)
+        current = io_families(CASE / trial['log'])
+        novel_family = bool(current - seen)
         seen.update(current)
         if (trial.get('new_production_methods', 0)
-                + trial.get('new_production_branches', 0) > 0 or novel_site):
+                + trial.get('new_production_branches', 0) > 0 or novel_family):
             return True
     return False
 
@@ -68,17 +72,17 @@ def main():
         if result.get('status') == 'candidate_review':
             say(f'candidate_review after {n}; awaiting source review')
             return
-        if not state['queue'] and not (n == 64 and late_novelty(state)):
+        if not state['queue'] and not (n == 80 and late_novelty(state)):
             say(f'stop at {n}: candidate queue exhausted')
             return
-        if n < 64:
-            trials, faults = 64, 6
-            say(f'resume interrupted campaign at {n}/64')
-        elif n == 64 and late_novelty(state):
-            trials, faults = 128, 8
-            say('late production coverage or I/O novelty; extend 64/6 to 128/8')
-        elif 64 < n < 128 and state.get('depth_expanded_to', 0) == 8:
-            trials, faults = 128, 8
+        if n < 80:
+            trials, faults = 80, 8
+            say(f'resume or extend campaign at {n}/80 with eight-fault depth')
+        elif n == 80 and late_novelty(state):
+            trials, faults = 128, 10
+            say('late production coverage or stable I/O family; extend 80/8 to 128/10')
+        elif 80 < n < 128 and state.get('depth_expanded_to', 0) == 10:
+            trials, faults = 128, 10
             say(f'resume interrupted extension at {n}/128')
         else:
             say(f'stop at {n}: no extension criterion or budget finished')
