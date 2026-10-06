@@ -66,3 +66,8 @@ The supplementary 80-trial, eight-exception campaign runs in tmux session
 `independent/expiry/campaign-state.json`, `expiry-trial-ledger.csv`, and
 `expiry-result.json`. The main result remains separate while both workloads
 are running. No GraphChecker runtime or graph closure is involved.
+The case-local `independent/expiry/audit.py` additionally checks every strict,
+target-retaining trial for extra selected exceptions, absence of a successful
+new-key lookup after a rejection, and original-JUnit failure after a selected
+exception. It reports such outcomes as source-review candidates, not confirmed
+bugs.
