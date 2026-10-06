@@ -108,14 +108,12 @@ def known_target_loss_plan(entry, trials):
     if len(entry['plan']) < 2:
         return False
     final_path = entry['plan'][-1].split('~')[1]
-    if entry['plan'][-1].split('~')[0] == 'ZK_WRITE' \
-        and final_path in ('/hbase/namespace/default', '/hbase/namespace/hbase'):
-        system_writes = [x for x in trials if x['strict'] and len(x['plan']) >= 2
-                         and x['plan'][-1].split('~')[0] == 'ZK_WRITE'
-                         and x['plan'][-1].split('~')[1]
-                         in ('/hbase/namespace/default', '/hbase/namespace/hbase')]
-        if len(system_writes) >= 2 and all(
-            not x['target_after_final_fault'] for x in system_writes):
+    if final_path in ('/hbase/namespace/default', '/hbase/namespace/hbase'):
+        system_namespace_events = [x for x in trials if x['strict'] and len(x['plan']) >= 2
+                                   and x['plan'][-1].split('~')[1]
+                                   in ('/hbase/namespace/default', '/hbase/namespace/hbase')]
+        if len(system_namespace_events) >= 2 and all(
+            not x['target_after_final_fault'] for x in system_namespace_events):
             return True
     final_site = io_site(entry['plan'][-1])
     analogous = [x for x in trials if x['strict'] and len(x['plan']) >= 2
