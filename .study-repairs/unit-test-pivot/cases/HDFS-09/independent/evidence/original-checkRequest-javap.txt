@@ -1,0 +1,146 @@
+  private synchronized void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo) throws java.io.IOException;
+    Code:
+       0: aload_1
+       1: invokevirtual #150                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+       4: aload_0
+       5: getfield      #44                 // Field lastPromisedEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+       8: invokevirtual #88                 // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      11: lcmp
+      12: ifge          72
+      15: new           #94                 // class java/io/IOException
+      18: dup
+      19: new           #53                 // class java/lang/StringBuilder
+      22: dup
+      23: invokespecial #54                 // Method java/lang/StringBuilder."<init>":()V
+      26: ldc           #151                // String IPC's epoch
+      28: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      31: aload_1
+      32: invokevirtual #150                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+      35: invokevirtual #96                 // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;
+      38: ldc           #152                // String  is less than the last promised epoch
+      40: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      43: aload_0
+      44: getfield      #44                 // Field lastPromisedEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+      47: invokevirtual #88                 // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      50: invokevirtual #96                 // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;
+      53: ldc           #70                 // String  ; journal id:
+      55: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      58: aload_0
+      59: getfield      #18                 // Field journalId:Ljava/lang/String;
+      62: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      65: invokevirtual #58                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      68: invokespecial #98                 // Method java/io/IOException."<init>":(Ljava/lang/String;)V
+      71: athrow
+      72: aload_1
+      73: invokevirtual #150                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+      76: aload_0
+      77: getfield      #44                 // Field lastPromisedEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+      80: invokevirtual #88                 // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      83: lcmp
+      84: ifle          95
+      87: aload_0
+      88: aload_1
+      89: invokevirtual #150                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+      92: invokespecial #99                 // Method updateLastPromisedEpoch:(J)V
+      95: aload_0
+      96: aload_1
+      97: invokevirtual #153                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getIpcSerialNumber:()J
+     100: aload_0
+     101: getfield      #12                 // Field currentEpochIpcSerial:J
+     104: lcmp
+     105: ifle          112
+     108: iconst_1
+     109: goto          113
+     112: iconst_0
+     113: ldc           #154                // String IPC serial %s from client %s was not higher than prior highest IPC serial %s ; journal id: %s
+     115: iconst_4
+     116: anewarray     #78                 // class java/lang/Object
+     119: dup
+     120: iconst_0
+     121: aload_1
+     122: invokevirtual #153                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getIpcSerialNumber:()J
+     125: invokestatic  #155                // Method java/lang/Long.valueOf:(J)Ljava/lang/Long;
+     128: aastore
+     129: dup
+     130: iconst_1
+     131: invokestatic  #108                // Method org/apache/hadoop/ipc/Server.getRemoteIp:()Ljava/net/InetAddress;
+     134: aastore
+     135: dup
+     136: iconst_2
+     137: aload_0
+     138: getfield      #12                 // Field currentEpochIpcSerial:J
+     141: invokestatic  #155                // Method java/lang/Long.valueOf:(J)Ljava/lang/Long;
+     144: aastore
+     145: dup
+     146: iconst_3
+     147: aload_0
+     148: getfield      #18                 // Field journalId:Ljava/lang/String;
+     151: aastore
+     152: invokespecial #113                // Method checkSync:(ZLjava/lang/String;[Ljava/lang/Object;)V
+     155: aload_0
+     156: aload_1
+     157: invokevirtual #153                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getIpcSerialNumber:()J
+     160: putfield      #12                 // Field currentEpochIpcSerial:J
+     163: aload_1
+     164: invokevirtual #156                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.hasCommittedTxId:()Z
+     167: ifeq          253
+     170: aload_1
+     171: invokevirtual #157                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getCommittedTxId:()J
+     174: aload_0
+     175: getfield      #34                 // Field committedTxnId:Lorg/apache/hadoop/hdfs/util/BestEffortLongFile;
+     178: invokevirtual #89                 // Method org/apache/hadoop/hdfs/util/BestEffortLongFile.get:()J
+     181: lcmp
+     182: iflt          189
+     185: iconst_1
+     186: goto          190
+     189: iconst_0
+     190: new           #53                 // class java/lang/StringBuilder
+     193: dup
+     194: invokespecial #54                 // Method java/lang/StringBuilder."<init>":()V
+     197: ldc           #158                // String Client trying to move committed txid backward from
+     199: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     202: aload_0
+     203: getfield      #34                 // Field committedTxnId:Lorg/apache/hadoop/hdfs/util/BestEffortLongFile;
+     206: invokevirtual #89                 // Method org/apache/hadoop/hdfs/util/BestEffortLongFile.get:()J
+     209: invokevirtual #96                 // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;
+     212: ldc           #106                // String  to
+     214: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     217: aload_1
+     218: invokevirtual #157                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getCommittedTxId:()J
+     221: invokevirtual #96                 // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;
+     224: ldc           #70                 // String  ; journal id:
+     226: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     229: aload_0
+     230: getfield      #18                 // Field journalId:Ljava/lang/String;
+     233: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     236: invokevirtual #58                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+     239: invokestatic  #159                // Method org/apache/hadoop/util/Preconditions.checkArgument:(ZLjava/lang/Object;)V
+     242: aload_0
+     243: getfield      #34                 // Field committedTxnId:Lorg/apache/hadoop/hdfs/util/BestEffortLongFile;
+     246: aload_1
+     247: invokevirtual #157                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getCommittedTxId:()J
+     250: invokevirtual #160                // Method org/apache/hadoop/hdfs/util/BestEffortLongFile.set:(J)V
+     253: return
+    LineNumberTable:
+      line 486: 0
+      line 487: 15
+      line 489: 47
+      line 490: 72
+      line 493: 87
+      line 497: 95
+      line 499: 122
+      line 500: 131
+      line 497: 152
+      line 501: 155
+      line 503: 163
+      line 504: 170
+      line 505: 171
+      line 507: 206
+      line 504: 239
+      line 510: 242
+      line 512: 253
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0     254     0  this   Lorg/apache/hadoop/hdfs/qjournal/server/Journal;
+          0     254     1 reqInfo   Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;
+
