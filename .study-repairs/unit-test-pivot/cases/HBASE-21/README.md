@@ -46,7 +46,9 @@ attempt cap and a 9,000-second wall-clock cap measured from the healthy run's
 completion. Plans with repeated target loss under the same prefix are skipped.
 For multi-fault plans, two observed losses at the same stable final I/O site
 also skip further combinations at that site. Hit ordinal and exception kind
-remain part of each exact injection selector. If only such plans remain, the
+remain part of each exact injection selector. System namespace `default` and
+`hbase` writes share a target-loss family after independent multi-fault losses.
+If only such plans remain, the
 campaign stops with an explicit queue reason. The result records
 both total attempts and valid target-retaining trials, plus elapsed test time
 and wall time. A checkpoint and each trial's log, JaCoCo execution file,
