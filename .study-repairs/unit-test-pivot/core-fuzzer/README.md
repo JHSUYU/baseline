@@ -97,7 +97,12 @@ distinct gains for methods, branch outcomes, and call-site events;
 `coverage_gain` is their combined ID count.
 
 `io_scope` is an optional coarse hint. Its `marker_prefixes` and `site_ids`
-arrays filter instrumented I/O points for scheduling. Leave it out to use all
+arrays filter instrumented I/O points for scheduling. `source_keys` and
+`source_key_prefixes` optionally restrict the stable runtime source/peer key.
+For example, an encrypted HDFS DataNode mirror workload may select a
+`DN->DN:writeBlock:` source prefix, whereas proxy movement uses
+`DN->DN:replaceBlock:`. The instrumentation must actually emit those I/O
+points; the scope cannot create a missing path. Leave it out to use all
 valid fault markers emitted in the test. A fault selector still includes its
 full runtime `marker`, `siteId`, `occurrence`, `hitOrdinal`, and optional
 `sourceKey`. The controller must report every applied selector with the same

@@ -107,8 +107,14 @@ def in_io_scope(point: dict[str, Any], scope: dict[str, Any] | None) -> bool:
         return True
     prefixes = scope.get("marker_prefixes", [])
     sites = scope.get("site_ids", [])
+    source_keys = scope.get("source_keys", [])
+    source_prefixes = scope.get("source_key_prefixes", [])
+    source_key = point.get("sourceKey", "")
     return ((not prefixes or any(point["marker"].startswith(p) for p in prefixes))
-            and (not sites or point["siteId"] in sites))
+            and (not sites or point["siteId"] in sites)
+            and (not source_keys or source_key in source_keys)
+            and (not source_prefixes or any(source_key.startswith(p)
+                                            for p in source_prefixes)))
 
 
 def trace_feedback(path: Path, target: dict[str, Any],

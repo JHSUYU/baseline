@@ -1,0 +1,51 @@
+{
+  "classification": "known_bug_path_control_not_new_bug",
+  "upstream_issue": "HDFS-17967",
+  "hadoop_version": "3.4.3",
+  "runs": {
+    "write_healthy": {
+      "directory": "write-probe-01",
+      "junit_returncode": 0,
+      "elapsed_seconds": 25.133,
+      "injected_outbound_faults": 0,
+      "outbound_sasl_attempts_on_path": 1,
+      "selected_allkeys_guard_checks": 3,
+      "selected_allkeys_guard_throws": 0,
+      "operation_path_error_logged": false
+    },
+    "write_fault": {
+      "directory": "write-fault-01",
+      "junit_returncode": 0,
+      "elapsed_seconds": 21.24,
+      "injected_outbound_faults": 1,
+      "outbound_sasl_attempts_on_path": 1,
+      "selected_allkeys_guard_checks": 3,
+      "selected_allkeys_guard_throws": 0,
+      "operation_path_error_logged": true
+    },
+    "replace_healthy": {
+      "directory": "replace-probe-01",
+      "junit_returncode": 0,
+      "elapsed_seconds": 43.855,
+      "injected_outbound_faults": 0,
+      "outbound_sasl_attempts_on_path": 15,
+      "selected_allkeys_guard_checks": 75,
+      "selected_allkeys_guard_throws": 0,
+      "operation_path_error_logged": false
+    },
+    "replace_fault": {
+      "directory": "replace-fault-01",
+      "junit_returncode": 0,
+      "elapsed_seconds": 35.856,
+      "injected_outbound_faults": 1,
+      "outbound_sasl_attempts_on_path": 15,
+      "selected_allkeys_guard_checks": 74,
+      "selected_allkeys_guard_throws": 0,
+      "operation_path_error_logged": true
+    }
+  },
+  "evidence_archive": "evidence/hdfs17967-outbound-controls.tar.gz",
+  "evidence_sha256": "fbcc5ca9956591ba226b0939ad34a8c6963bb2325d9932ca0be1e23bf78c3b7a",
+  "graphchecker_runtime": false,
+  "note": "Synthetic outbound SASL exception; original JUnits recover at a higher layer. This control demonstrates missing local retries but not a new failure or an actual allKeys.get(keyId) miss."
+}

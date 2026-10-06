@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fuzzer import (campaign, fingerprint, point_from_event, strict_injection,
+from fuzzer import (campaign, fingerprint, in_io_scope, point_from_event, strict_injection,
                     trace_feedback, validate, write_case_result)
 
 TARGET = '<example.Target: void check()>'
@@ -118,6 +118,17 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_io_scope_can_keep_a_specific_cross_node_source(self):
+        mirror = {**A, 'sourceKey': 'DN->DN:writeBlock:bp1:blk7'}
+        proxy = {**A, 'sourceKey': 'DN->DN:replaceBlock:bp1:blk7'}
+        scope = {'marker_prefixes': ['FAULT:TEST:'],
+                 'source_key_prefixes': ['DN->DN:writeBlock:']}
+        self.assertTrue(in_io_scope(mirror, scope))
+        self.assertFalse(in_io_scope(proxy, scope))
+        self.assertFalse(in_io_scope(A, scope))
+        self.assertTrue(in_io_scope(mirror, {'source_keys': [mirror['sourceKey']]}))
+        self.assertFalse(in_io_scope(proxy, {'source_keys': [mirror['sourceKey']]}))
+
     def test_summary_counts_only_fully_applied_target_trials(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
