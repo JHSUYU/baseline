@@ -136,6 +136,7 @@ def publish(state, status='running_coverage_io_campaign'):
                    'target_reached': True,
                    'fault_trials': len(trials),
                    'strict_injections': sum(x['strict'] for x in trials),
+                   'fully_applied_trials': sum(x['strict'] for x in trials),
                    'target_after_fault': sum(x['target_after_fault'] for x in trials),
                    'elapsed_seconds': elapsed,
                    'coverage_gain': state['coverage_union']['branches'] - state['healthy_coverage']['branches'],
