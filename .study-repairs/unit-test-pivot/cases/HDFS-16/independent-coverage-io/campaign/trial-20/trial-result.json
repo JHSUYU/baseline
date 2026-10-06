@@ -1,0 +1,69 @@
+{
+  "applied_faults": 3,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T20:51:59.993800+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-20/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 7501,
+    "METHOD": 7273,
+    "PROBE": 25282
+  },
+  "coverage_ids": 40056,
+  "junit_exit": 1,
+  "junit_seconds": 14.808,
+  "last_applied_seq": 42,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-20/manifest.json",
+  "matched_faults": 3,
+  "new_coverage_count": 0,
+  "new_coverage_ids": [],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [],
+  "number": 20,
+  "observed_io_points": 37,
+  "other_context_guard_after_last_fault_count": 0,
+  "requested_faults": 3,
+  "seconds": 24.263,
+  "selection_reason": "mutated trial-09 from observed post-fault I/O seq 40",
+  "sequence": [
+    {
+      "api": "ClientNamenodeProtocolTranslatorPB.updatePipeline",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    },
+    {
+      "api": "editLog:durable",
+      "exception": "IOException",
+      "marker": "FILE_FLUSH",
+      "ordinal": 15
+    },
+    {
+      "api": "ClientNamenodeProtocolTranslatorPB.complete",
+      "exception": "SocketTimeoutException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    }
+  ],
+  "sequence_id": "3ab92d6523f518a62e85",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    2
+  ],
+  "target_context_expected": {
+    "block_id": 1073741825,
+    "caller": "BlockInfo.commitBlock",
+    "proposed_generation_stamp": 1002,
+    "source_guard_ordinal": 2
+  },
+  "target_exception_after_fault_count": 0,
+  "target_exception_any_context_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_outcomes_after_fault": [
+    true
+  ],
+  "test_method": "testUpdatePipeLineAfterDNReg",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-20/trace/runtime_trace.jsonl",
+  "trial": "trial-20"
+}

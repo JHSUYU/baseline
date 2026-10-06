@@ -1,0 +1,75 @@
+{
+  "applied_faults": 4,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T20:44:37.599681+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-12/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 7498,
+    "METHOD": 7254,
+    "PROBE": 25246
+  },
+  "coverage_ids": 39998,
+  "junit_exit": 1,
+  "junit_seconds": 15.456,
+  "last_applied_seq": 44,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-12/manifest.json",
+  "matched_faults": 4,
+  "new_coverage_count": 0,
+  "new_coverage_ids": [],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [],
+  "number": 12,
+  "observed_io_points": 35,
+  "other_context_guard_after_last_fault_count": 0,
+  "requested_faults": 4,
+  "seconds": 24.911,
+  "selection_reason": "mutated trial-10 from observed post-fault I/O seq 42",
+  "sequence": [
+    {
+      "api": "ClientNamenodeProtocolTranslatorPB.updatePipeline",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    },
+    {
+      "api": "editLog:durable",
+      "exception": "IOException",
+      "marker": "FILE_FLUSH",
+      "ordinal": 15
+    },
+    {
+      "api": "editLog:durable",
+      "exception": "IOException",
+      "marker": "FILE_FLUSH",
+      "ordinal": 16
+    },
+    {
+      "api": "ClientNamenodeProtocolTranslatorPB.complete",
+      "exception": "EOFException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    }
+  ],
+  "sequence_id": "60feb87cc983093ae276",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    2
+  ],
+  "target_context_expected": {
+    "block_id": 1073741825,
+    "caller": "BlockInfo.commitBlock",
+    "proposed_generation_stamp": 1002,
+    "source_guard_ordinal": 2
+  },
+  "target_exception_after_fault_count": 0,
+  "target_exception_any_context_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_outcomes_after_fault": [
+    true
+  ],
+  "test_method": "testUpdatePipeLineAfterDNReg",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-12/trace/runtime_trace.jsonl",
+  "trial": "trial-12"
+}

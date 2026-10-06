@@ -1,0 +1,59 @@
+{
+  "applied_faults": 2,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T21:10:56.813868+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-52/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 5784,
+    "METHOD": 6054,
+    "PROBE": 20452
+  },
+  "coverage_ids": 32290,
+  "junit_exit": 1,
+  "junit_seconds": 18.198,
+  "last_applied_seq": 25,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-52/manifest.json",
+  "matched_faults": 2,
+  "new_coverage_count": 0,
+  "new_coverage_ids": [],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [],
+  "number": 52,
+  "observed_io_points": 29,
+  "other_context_guard_after_last_fault_count": 0,
+  "requested_faults": 2,
+  "seconds": 30.44,
+  "selection_reason": "mutated trial-22 from observed post-fault I/O seq 28",
+  "sequence": [
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.registerDatanode",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 2
+    },
+    {
+      "api": "ClientNamenodeProtocolTranslatorPB.addBlock",
+      "exception": "EOFException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    }
+  ],
+  "sequence_id": "c1123aff3fec6be56517",
+  "status": "lost_target",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [],
+  "target_context_expected": {
+    "block_id": 1073741825,
+    "caller": "BlockManager.updateLastBlock",
+    "proposed_generation_stamp": 1002,
+    "source_guard_ordinal": 1
+  },
+  "target_exception_after_fault_count": 0,
+  "target_exception_any_context_after_fault_count": 0,
+  "target_guard_after_last_fault": false,
+  "target_guard_after_last_fault_count": 0,
+  "target_outcomes_after_fault": [],
+  "test_method": "testUpdatePipeLineAfterDNReg",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-16/independent-coverage-io/campaign/trial-52/trace/runtime_trace.jsonl",
+  "trial": "trial-52"
+}
