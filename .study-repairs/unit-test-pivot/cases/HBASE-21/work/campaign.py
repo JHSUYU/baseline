@@ -97,14 +97,25 @@ def effective_count(state):
     return sum(x['strict'] and x['target_after_final_fault'] for x in state['trials'])
 
 
-def repeated_target_loss_prefix(entry, trials):
+def known_target_loss_plan(entry, trials):
     prefix = entry['plan'][:-1]
     siblings = [x for x in trials if x['strict'] and x['plan'][:-1] == prefix]
-    return len(siblings) >= 2 and all(not x['target_after_final_fault'] for x in siblings)
+    if len(siblings) >= 2 and all(not x['target_after_final_fault'] for x in siblings):
+        return True
+    # Two distinct ordered prefixes have already shown that a later fault to
+    # a system namespace write prevents either master reaching the target.
+    last_path = entry['plan'][-1].split('~')[1]
+    if len(entry['plan']) < 2 or last_path not in ('/hbase/namespace/default',
+                                                   '/hbase/namespace/hbase'):
+        return False
+    equivalent_losses = [x for x in trials if x['strict'] and not x['target_after_final_fault']
+                         and len(x['plan']) >= 2 and x['plan'][-1].split('~')[1]
+                         in ('/hbase/namespace/default', '/hbase/namespace/hbase')]
+    return len(equivalent_losses) >= 2
 
 
 def viable_queue_count(state):
-    return sum(not repeated_target_loss_prefix(q, state['trials']) for q in state['queue'])
+    return sum(not known_target_loss_plan(q, state['trials']) for q in state['queue'])
 
 
 def target_signature(target):
@@ -313,7 +324,7 @@ def main():
         else:
             if inflight:
                 INFLIGHT.unlink()
-            state['queue'].sort(key=lambda q: (repeated_target_loss_prefix(q, state['trials']),
+            state['queue'].sort(key=lambda q: (known_target_loss_plan(q, state['trials']),
                                                -queue_priority(q, state['trials']),
                                                q['parent_seconds'], ';'.join(q['plan'])))
             entry = state['queue'].pop(0)
@@ -401,7 +412,8 @@ def main():
     elif time.time() - state['started_unix'] >= MAX_WALL_SECONDS:
         result['status'] = 'wall_cap_pending_source_review'
     elif state['queue'] and viable_queue_count(state) == 0:
-        result['status'] = 'only_target_loss_prefixes_pending_source_review'
+        result['status'] = 'only_evidenced_target_loss_plans_pending_source_review'
+        result['queue_stop_reason'] = 'repeated_prefix_or_system_namespace_write_lost_target'
     else:
         result['status'] = 'queue_exhausted_pending_source_review'
     atomic_json(RESULT, result)

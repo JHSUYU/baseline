@@ -18,7 +18,7 @@ terminal = {
     "queue_exhausted_pending_source_review",
     "attempt_cap_pending_source_review",
     "wall_cap_pending_source_review",
-    "only_target_loss_prefixes_pending_source_review",
+    "only_evidenced_target_loss_plans_pending_source_review",
     "candidate_review",
 }
 
