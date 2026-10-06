@@ -132,9 +132,11 @@ def queue_priority(entry, trials):
                              and '~'.join(x['plan'][0].split('~')[:3]) == root_site]
     exhausted_root = len(entry['plan']) >= 2 and len(same_root_multifaults) >= 8 \
         and all(not x['target_after_final_fault'] for x in same_root_multifaults)
+    depth = len(entry['plan'])
+    depth_bonus = (18 if len(trials) >= 40 else 10 if len(trials) >= 24 else 0) * (depth - 1)
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
-        - (60 if exhausted_prefix else 0) - (80 if exhausted_root else 0)
+        - (60 if exhausted_prefix else 0) - (80 if exhausted_root else 0) + depth_bonus
 
 
 def publish(state):
