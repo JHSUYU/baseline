@@ -19,6 +19,7 @@ RNG = random.Random(8)
 MAX_TRIALS = int(os.environ.get('HBASE21_MAX_TRIALS', '80'))
 MAX_FAULTS = int(os.environ.get('HBASE21_MAX_FAULTS', '8'))
 MAX_ATTEMPTS = int(os.environ.get('HBASE21_MAX_ATTEMPTS', '180'))
+MAX_WALL_SECONDS = int(os.environ.get('HBASE21_MAX_WALL_SECONDS', '9000'))
 
 
 def atomic_json(path, obj):
@@ -94,6 +95,16 @@ def guard_executed(target):
 
 def effective_count(state):
     return sum(x['strict'] and x['target_after_final_fault'] for x in state['trials'])
+
+
+def repeated_target_loss_prefix(entry, trials):
+    prefix = entry['plan'][:-1]
+    siblings = [x for x in trials if x['strict'] and x['plan'][:-1] == prefix]
+    return len(siblings) >= 2 and all(not x['target_after_final_fault'] for x in siblings)
+
+
+def viable_queue_count(state):
+    return sum(not repeated_target_loss_prefix(q, state['trials']) for q in state['queue'])
 
 
 def target_signature(target):
@@ -204,9 +215,11 @@ def publish(state):
         'new_io_sites': len(set(map(io_site, state['observed_selectors']))
                             - set(map(io_site, state['healthy_selectors']))),
         'elapsed_seconds': state['healthy']['elapsed_seconds'] + sum(x['elapsed_seconds'] or 0 for x in state['trials']),
+        'wall_seconds_since_healthy': round(time.time() - state['started_unix'], 2),
         'queue_length': len(state['queue']),
+        'viable_queue_length': viable_queue_count(state),
         'budget': {'effective_trials': MAX_TRIALS, 'max_faults': MAX_FAULTS,
-                   'max_attempts': MAX_ATTEMPTS},
+                   'max_attempts': MAX_ATTEMPTS, 'max_wall_seconds': MAX_WALL_SECONDS},
         'checkpoint': str(CHECKPOINT.relative_to(CASE))}
     result['fault_trials'] = len(state['trials'])
     result['effective_trials'] = result['current_campaign']['effective_budget_trials']
@@ -253,6 +266,7 @@ def expand_completed_depth(state):
 def main():
     if CHECKPOINT.exists():
         state = json.loads(CHECKPOINT.read_text())
+        state.setdefault('started_unix', (HERE / 'logs/healthy.exit').stat().st_mtime)
         expand_completed_depth(state)
     else:
         healthy_log = HERE / 'logs/healthy.log'
@@ -276,9 +290,13 @@ def main():
                  'healthy_selectors': sorted(set(x['selector'] for x in trace['io'])),
                  'observed_selectors': sorted(set(x['selector'] for x in trace['io'])),
                  'queue': queue, 'seen_plans': sorted(seen), 'trials': [],
+                 'started_unix': healthy_exit.stat().st_mtime,
                  'depth_expanded_to': MAX_FAULTS}
         save_state(state)
-    while effective_count(state) < MAX_TRIALS and len(state['trials']) < MAX_ATTEMPTS and state['queue']:
+    save_state(state)
+    while (effective_count(state) < MAX_TRIALS and len(state['trials']) < MAX_ATTEMPTS
+           and time.time() - state['started_unix'] < MAX_WALL_SECONDS
+           and state['queue'] and viable_queue_count(state) > 0):
         for q in state['queue']:
             q['wait'] += 1
         number = len(state['trials']) + 1
@@ -292,7 +310,8 @@ def main():
         else:
             if inflight:
                 INFLIGHT.unlink()
-            state['queue'].sort(key=lambda q: (-queue_priority(q, state['trials']),
+            state['queue'].sort(key=lambda q: (repeated_target_loss_prefix(q, state['trials']),
+                                               -queue_priority(q, state['trials']),
                                                q['parent_seconds'], ';'.join(q['plan'])))
             entry = state['queue'].pop(0)
             atomic_json(INFLIGHT, {'id': suffix, 'plan': entry['plan']})
@@ -376,6 +395,10 @@ def main():
         result['status'] = 'budget_complete_pending_source_review'
     elif len(state['trials']) >= MAX_ATTEMPTS:
         result['status'] = 'attempt_cap_pending_source_review'
+    elif time.time() - state['started_unix'] >= MAX_WALL_SECONDS:
+        result['status'] = 'wall_cap_pending_source_review'
+    elif state['queue'] and viable_queue_count(state) == 0:
+        result['status'] = 'only_target_loss_prefixes_pending_source_review'
     else:
         result['status'] = 'queue_exhausted_pending_source_review'
     atomic_json(RESULT, result)

@@ -36,7 +36,11 @@ are original release artifacts.
 The default search budget is 80 **strict, target-retaining** trials with at most
 eight ordered faults. Unmatched plans and trials that lose the target are kept
 in the ledger but do not consume that effective budget. The loop has a 180
-attempt safety cap. A checkpoint and each trial's log, JaCoCo execution file,
+attempt cap and a 9,000-second wall-clock cap measured from the healthy run's
+completion. If all queued plans extend prefixes that repeatedly lose the
+target, the campaign stops with an explicit queue reason. The result records
+both total attempts and valid target-retaining trials, plus elapsed test time
+and wall time. A checkpoint and each trial's log, JaCoCo execution file,
 duration, match/application counts, target state, and JUnit outcome are stored
 under `work/` on node1. At the 80-trial checkpoint, new production coverage or
 a new stable I/O site in the last 16 effective trials can extend the same
