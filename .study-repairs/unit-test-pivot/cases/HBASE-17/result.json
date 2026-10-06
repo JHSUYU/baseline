@@ -1,14 +1,100 @@
 {
   "case_id": "HBASE-17",
-  "status": "test_identified",
-  "cluster_test": "TestRaceBetweenSCPAndTRSP.test",
-  "target_reached": null,
-  "elapsed_seconds": 0,
+  "system": "hbase",
+  "version": "2.6.6",
+  "status": "no_cluster_test",
+  "status_detail": "target_not_reached_no_suitable_original_test_among_five_audited",
+  "methodology": "graph_free_original_junit_reachability_audit",
+  "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+  "source_line": 379,
+  "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed",
+  "check_code": "assert regionNode.isInState(State.ABNORMALLY_CLOSED);",
+  "target_guard": "confirmClosed#B5",
+  "target_exception": "java.lang.AssertionError",
+  "cluster_test": null,
+  "target_reached": false,
   "fault_trials": 0,
   "strict_injections": 0,
   "target_after_fault": 0,
   "coverage_gain": 0,
-  "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-17",
-  "source_audit_note": "Closest real cluster test to abnormal close state; no explicit ABNORMALLY_CLOSED assertion or branch-hit evidence."
+  "coverage_note": "No fault campaign or JaCoCo collection: no audited original cluster test reached the selected guard.",
+  "bug_mark": "not_evaluated",
+  "elapsed_seconds": 319.25,
+  "elapsed_seconds_scope": "Five original no-fault cluster JUnit runs (240.61 s) plus two probe-validation replays (39.60 and 39.04 s); source review and one-time probe compilation excluded.",
+  "healthy_tests": [
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestRaceBetweenSCPAndTRSP.test",
+      "elapsed_seconds": 38.24,
+      "junit": "passed",
+      "confirm_closed_entries": 1,
+      "entry_states": {"CLOSED": 1},
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/race_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestSCPGetRegionsRace.test",
+      "elapsed_seconds": 44.39,
+      "junit": "passed",
+      "confirm_closed_entries": 1,
+      "entry_states": {"CLOSED": 1},
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/scp_race_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash.testRetryBackoff",
+      "elapsed_seconds": 64.32,
+      "junit": "passed",
+      "confirm_closed_entries": 5,
+      "entry_states": {"CLOSING": 5},
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/close_rs_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestTransitRegionStateProcedure.testRecoveryAndDoubleExecutionUnassignAndAssign",
+      "elapsed_seconds": 39.01,
+      "junit": "passed",
+      "confirm_closed_entries": 3,
+      "entry_states": {"CLOSED": 3},
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/double_exec_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestRegionMoveAndAbandon.test",
+      "elapsed_seconds": 54.65,
+      "junit": "passed",
+      "confirm_closed_entries": 2,
+      "entry_states": {"CLOSED": 2},
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/abandon_healthy.log"
+    }
+  ],
+  "probe_validation": {
+    "limitation": "The initial RegionStateNode.isInState advice was not woven (zero total isInState calls), so its exactB5=0 counter is not evidence for the first five tests. The confirmClosed entry observer did work, and all 12 entries had CLOSED or CLOSING state. Source branch order excludes the target assertion for those entries.",
+    "fix": "Use Object advice arguments so RegionStateNode is not loaded before its ByteBuddy transformer is installed.",
+    "replays": [
+      {
+        "test": "TestRaceBetweenSCPAndTRSP.test",
+        "elapsed_seconds": 39.60,
+        "junit": "passed",
+        "is_in_state_calls": 30,
+        "abnormally_closed_argument_calls": 0,
+        "exact_b5_calls": 0,
+        "log": "node1:cases/HBASE-17/independent/race_probe_valid.log",
+        "note": "Auxiliary state-description reflection failed; isInState advice and JUnit still ran."
+      },
+      {
+        "test": "TestRaceBetweenSCPAndTRSP.test",
+        "elapsed_seconds": 39.04,
+        "junit": "passed",
+        "confirm_closed_entries": 1,
+        "entry_states": {"CLOSED": 1},
+        "is_in_state_calls": 31,
+        "abnormally_closed_argument_calls": 0,
+        "exact_b5_calls": 0,
+        "log": "node1:cases/HBASE-17/independent/race_probe_final.log"
+      }
+    ]
+  },
+  "source_audit_note": "The original source checks CLOSED first and returns, then CLOSING and throws HBaseIOException. Only another state reaches line 379. Across five relevant original mini-cluster JUnits, all 12 observed confirmClosed entries were CLOSED or CLOSING. No suitable original test reached B5 in this bounded audit; no fault campaign was run and no bug conclusion is drawn.",
+  "evidence": "cases/HBASE-17/README.md"
 }

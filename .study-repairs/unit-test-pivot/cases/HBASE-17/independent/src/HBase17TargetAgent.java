@@ -6,7 +6,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import org.apache.hadoop.hbase.master.RegionState.State;
-import org.apache.hadoop.hbase.master.assignment.RegionStateNode;
 
 /** Case-local exact observer for confirmClosed's ABNORMALLY_CLOSED assertion. */
 public class HBase17TargetAgent {
@@ -29,6 +28,15 @@ public class HBase17TargetAgent {
     return false;
   }
 
+  public static String describeNode(Object node) {
+    try {
+      Object state = node.getClass().getMethod("getState").invoke(node);
+      return "state=" + state;
+    } catch (ReflectiveOperationException error) {
+      return "node=" + node.getClass().getName() + " describeError=" + error;
+    }
+  }
+
   public static void premain(String args, Instrumentation inst) {
     Runtime.getRuntime().addShutdownHook(new Thread(() ->
       System.err.println("HBASE17 TOTAL confirmClosed=" + CONFIRM_HITS.get()
@@ -49,7 +57,7 @@ public class HBase17TargetAgent {
 
   public static class IsInState {
     @Advice.OnMethodEnter
-    public static int enter(@Advice.This RegionStateNode node,
+    public static int enter(@Advice.This Object node,
                             @Advice.Argument(0) State[] expected) {
       HBase17TargetAgent.hitInState();
       if (expected == null || expected.length != 1
@@ -58,9 +66,7 @@ public class HBase17TargetAgent {
       if (!HBase17TargetAgent.calledByConfirmClosed()) return -1;
       int ordinal = HBase17TargetAgent.nextB5();
       System.err.println("HBASE17 B5_ENTER ordinal=" + ordinal
-        + " table=" + node.getTable().getNameAsString()
-        + " region=" + node.getRegionInfo().getEncodedName()
-        + " state=" + node.getState());
+        + " " + HBase17TargetAgent.describeNode(node));
       return ordinal;
     }
 
@@ -73,12 +79,10 @@ public class HBase17TargetAgent {
 
   public static class ConfirmClosed {
     @Advice.OnMethodEnter
-    public static int enter(@Advice.Argument(1) RegionStateNode node) {
+    public static int enter(@Advice.Argument(1) Object node) {
       int ordinal = HBase17TargetAgent.nextConfirm();
       System.err.println("HBASE17 CONFIRM_ENTER ordinal=" + ordinal
-        + " table=" + node.getTable().getNameAsString()
-        + " region=" + node.getRegionInfo().getEncodedName()
-        + " state=" + node.getState());
+        + " " + HBase17TargetAgent.describeNode(node));
       return ordinal;
     }
 
