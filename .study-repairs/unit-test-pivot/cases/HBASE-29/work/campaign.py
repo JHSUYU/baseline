@@ -109,8 +109,16 @@ def priority(q, trials):
                              + x['plan'][-1].split('~')[4:]) for x in trials)
     same_prefix = [x for x in trials if x['strict'] and x['plan'][:-1] == q['plan'][:-1]]
     dead_prefix = len(same_prefix) >= 4 and all(not x['target_after_fault'] for x in same_prefix)
+    depth = len(q['plan'])
+    effective_deep = sum(x['effective'] and len(x['plan']) >= 3 for x in trials)
+    effective_deeper = sum(x['effective'] and len(x['plan']) >= 4 for x in trials)
+    deep_quota = max(0, (len(trials) - 35) // 4)
+    deeper_quota = max(0, (len(trials) - 55) // 8)
+    depth_bonus = (55 if depth >= 3 and effective_deep < deep_quota else 0)
+    depth_bonus += 35 if depth >= 4 and effective_deeper < deeper_quota else 0
     return (q['score'] + (22 if not tried[site_kind] else 0)
             + (12 if len(q['plan']) >= 2 and len(trials) >= 20 else 0) * (len(q['plan']) - 1)
+            + depth_bonus - 15 * max(0, depth - 4)
             + min(q['wait'] // 8, 8) - (80 if dead_prefix else 0)
             - min(q['parent_seconds'] / 25, 8) - min(ordinal, 120))
 
