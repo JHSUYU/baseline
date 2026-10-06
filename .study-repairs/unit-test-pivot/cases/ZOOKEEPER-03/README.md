@@ -1,9 +1,19 @@
 # ZOOKEEPER-03: `SessionTrackerImpl.setOwner`
 
-**Current 102-check status: pending independent recorder replay.** The 96
-trials below remain historical evidence in `legacy-graph-result.json`. Their
-runtime recorder used a precomputed GraphChecker identity skeleton, so they
-do not complete the graph-independent runtime campaign.
+**Current 102-check status: quality_complete.** The independent recorder replay
+below completed 80 new fault trials. The 96 trials in the historical section
+remain in `legacy-graph-result.json` and are excluded from current counts
+because their runtime recorder used a precomputed identity skeleton.
+
+## Independent recorder replay
+
+The unchanged ZooKeeper 3.8.7 `QuorumTest.testSessionMoved` passed under a pure JUnit Platform launcher and a case-local ASM agent rebuilt from source. The healthy run took 3.931 seconds, evaluated the exact `SessionTrackerImpl.setOwner` guard at line 329 eleven times for the same session ID, and did not execute the line 330 `KeeperException.SessionExpiredException` throw. No original JUnit positive control for this specific `setOwner` throw was found; the exact guard and throw bytecode were reviewed against the source line table. The class files were copied from the original build at commit `9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae` into this case's clean worktree. The independent classpath, agent, and launcher contain no GraphChecker or skeleton component; `evidence/independent/audit.json` verifies their hashes and rechecks every trial from raw JVM events.
+
+The new campaign completed 80 original cluster JUnit fault trials with a maximum of eight ordered I/O faults. All 80 plans matched and applied in order, totaling 376 fault applications. Thirty-one trials reached the exact `setOwner` guard after their final fault; their JUnit runs passed, and none reached the selected throw. Forty-nine JUnit runs failed after losing the target path: 22 connection losses while creating `/sessionMoveTest`, 16 connection losses during later `/` operations, seven failed sync assertions, and four injected epoch-file startup failures. No target-retaining JUnit failure was observed. The admitted faulted runs added eight production lines, from `NIOServerCnxn` I/O exception handling and `SessionTrackerImpl` shutdown handling; source review found no new failure of the selected session-owner check.
+
+The final eight target-retaining trials added no new production line, method, or stable target-pre I/O family, so the conditional 128-trial extension was not triggered. The recorder observed 217 distinct target-pre I/O site and ordinal positions. At the 80-trial ceiling, 415 feedback-generated plans remained queued; the result is budget complete and does not claim selector-frontier exhaustion. `evidence/independent/trial-summary.csv` lists each ordered plan, elapsed time, exact match, target retention, and outcome. The raw 81-JVM archive is `evidence/independent/raw-runs.tar.gz` (SHA-256 `8d5c82ba483aa97584734b48ed566b9a1714425617627d45f7e307edfd14b9f9`). The fault JVMs took 535.583 seconds in aggregate and 274.083 seconds of wall time across two workers; including the healthy JVM, the recorded total is 539.514 seconds. No new target exception or source-supported bug was found.
+
+## Historical campaign
 
 The selected check is at `zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java:330`:
 
