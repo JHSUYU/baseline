@@ -43,6 +43,11 @@ status and the resulting target `IOException` are candidates requiring source
 and replay review, not automatically new bugs. The implementation uses no
 GraphChecker runtime, graph, closure, prewoven class, skeleton or static map.
 
-The runner and probes compile independently. Its own healthy calibration and
-campaign are pending while HBASE-24 and HBASE-29 use the local cluster-test
-resources.
+The independent healthy calibration passed the unchanged JUnit in 68.92
+seconds. It observed 109 replay RPCs for the selected table and replica 1,
+1002 batch returns and 1000 status comparisons. All compared statuses were
+the `SUCCESS` singleton. The returns referenced one encoded region, always
+replica 1. JaCoCo recorded five instructions and the normal branch at source
+line 2297; the exception line 2298 was unexecuted. The seeded campaign runs
+in separate `hbase30_fuzz` and `hbase30_supervisor` tmux sessions while
+HBASE-29 continues its own experiment.
