@@ -1,6 +1,6 @@
 {
   "case_id": "HDFS-52",
-  "status": "test_identified",
+  "status": "mapped_pending_smoke",
   "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot#testSaveLoadImage",
   "target_reached": null,
   "elapsed_seconds": 0,
@@ -9,5 +9,10 @@
   "target_after_fault": 0,
   "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+  "target_source_line": 467,
+  "target_function": "FSImageFormatPBSnapshot.Saver.serializeSnapshotSection(OutputStream)",
+  "target_code": "Preconditions.checkState(i == sm.getNumSnapshots())",
+  "source_review": "The original TestFSImageWithSnapshot#testSaveLoadImage uses a MiniDFSCluster, takes snapshots s1..s5, and repeatedly calls checkImage, which saves an FSImage to a file, shuts down, restarts the cluster, reloads that image, and compares namesystem state. The saver serializes snapshot roots and then checks serialized count i against SnapshotManager.getNumSnapshots(). This is a direct workload for the selected check; exact runtime guard identity and pre-target file/RPC I/O still require calibration.",
+  "evidence": "HDFS-TEST-MAP.json#HDFS-52; Hadoop 3.4.3 FSImageFormatPBSnapshot.java:440-468; TestFSImageWithSnapshot.java:238-305."
 }
