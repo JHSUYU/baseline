@@ -128,6 +128,15 @@ def sync() -> bool:
         "source_campaign_created_utc": state["source_campaign_created_utc"],
         "updated_at_utc": current.isoformat(),
     })
+    if client_candidate:
+        result["source_review"] = (
+            "Healthy TestRegionMove intentionally throws B2 on both move calls. "
+            "After a successful assign/unassign RPC response is replaced by a timeout, "
+            "HBaseAdmin retries the already completed transition and B2 correctly "
+            "rejects the duplicate request. The externally visible Admin result and "
+            "original-JUnit failure are recorded separately as an unconfirmed "
+            "client-level candidate; the injected timeout itself is not a bug."
+        )
     atomic_json(TRIALS, rows)
     atomic_json(RESULT, result)
     print("SYNC", CASE_ID, len(rows), "effective", len(effective),
