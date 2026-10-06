@@ -1,6 +1,6 @@
 {
   "case_id": "HDFS-11",
-  "status": "target_reached_pending_graph",
+  "status": "quality_complete",
   "system": "HDFS 3.4.3",
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "function": "retrieveDataEncryptionKey(int, byte[])",
@@ -21,19 +21,183 @@
   ],
   "healthy_target_fatal": false,
   "target_region_id": "REGION.c0d9d80b-cf85-36a4-87a7-f409be7dd190",
-  "graph_gap": "BLOCKING OCCURRENCE_ADDRESS_SHARED for two target-region activations; key-import path CANDIDATE SHARED_LOCATION_DEMAND_V1 with edgeEvidence UNAVAILABLE",
-  "observed_fault_points": 142,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "graph_gap": "No BLOCKING occurrence gap after stable DataNode request identity; key-import path CANDIDATE SHARED_LOCATION_DEMAND_V1 and edgeEvidence=UNAVAILABLE, not a proven causal read-from edge",
+  "observed_fault_points": 146,
+  "fault_trials": 10,
+  "strict_injections": 10,
+  "target_after_fault": 8,
+  "coverage_gain": 5,
   "bug_mark": "none",
-  "elapsed_seconds": 40.41,
+  "elapsed_seconds": 279.28,
   "elapsed_breakdown_seconds": {
-    "static_seed": 29.194,
-    "original_junit_instrumented": 10.148,
-    "graph_aggregate": 1.068
+    "static_seed": 38.939,
+    "region_state_weave": 20.027,
+    "healthy_junit_two_runs": 21.29,
+    "healthy_aggregate_two_runs": 2.537,
+    "fault_trial_jvms_ten_runs": 186.596,
+    "faulted_aggregates_eight_runs": 9.891
   },
-  "timing_note": "Measured successful steps only; previously generated Soot weave build time is not included, so this is not a completed-case total.",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-11.md; .study-repairs/unit-test-pivot/hdfs11-param-expanded/manifest.json; .study-repairs/unit-test-pivot/hdfs11-param-expanded/trace/summary.json; .study-repairs/unit-test-pivot/hdfs11-param-expanded/trace/concolic_region_plan.jsonl"
+  "timing_note": "Sum of measured process durations in final campaign; some fault trials ran concurrently, so not wall clock; earlier feasibility work and manual source review excluded",
+  "evidence": ".study-repairs/unit-test-pivot/HDFS-11.md; .study-repairs/unit-test-pivot/hdfs11-server-door/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/summary.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hdfs11-server-door/trials",
+  "status_scope": "Bounded original JUnit [0] MiniDFSCluster campaign with real server SASL read EOF/timeout, up to three ordered faults; other workloads/key-rotation schedules untested",
+  "healthy_fault_points_observed": 146,
+  "healthy_target_occurrence_count": 2,
+  "healthy_target_occurrences_stable_across_replay": true,
+  "healthy_target_closure_server_read_fault_selectors": 4,
+  "fault_events_applied": 18,
+  "target_exception_count": 0,
+  "target_fatal_branch_count": 0,
+  "lost_target_trials": 2,
+  "coverage_gain_definition": "Five new instrumented branch (site,outcome) pairs across trial union versus healthy; zero new methods; no new branch outcome at three faults",
+  "stop_reason": "Target-specific feedback queue exhausted after exact one-, two-, and representative three-fault SASL read sequences: later retries repeat the same closure region and fault-site class; three-fault runs add no branch or method coverage and no target failure",
+  "trial_results": [
+    {
+      "sequence": "first-eof",
+      "elapsed_seconds": 11.25,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "first-timeout",
+      "elapsed_seconds": 12.306,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "second-eof",
+      "elapsed_seconds": 11.356,
+      "junit_exit": 1,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": false,
+      "target_guard_outcomes": [
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/second-eof/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "second-timeout",
+      "elapsed_seconds": 11.695,
+      "junit_exit": 1,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": false,
+      "target_guard_outcomes": [
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/second-timeout/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "first-eof-then-eof",
+      "elapsed_seconds": 20.894,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof-then-eof/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "first-eof-then-timeout",
+      "elapsed_seconds": 19.783,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof-then-timeout/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "first-timeout-then-eof",
+      "elapsed_seconds": 17.292,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout-then-eof/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "first-timeout-then-timeout",
+      "elapsed_seconds": 21.197,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout-then-timeout/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "first-eof-then-eof-then-eof",
+      "elapsed_seconds": 28.802,
+      "junit_exit": 0,
+      "requested_faults": 3,
+      "matched_faults": 3,
+      "applied_faults": 3,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-eof-then-eof-then-eof/trace/runtime_trace.jsonl"
+    },
+    {
+      "sequence": "first-timeout-then-timeout-then-timeout",
+      "elapsed_seconds": 32.021,
+      "junit_exit": 0,
+      "requested_faults": 3,
+      "matched_faults": 3,
+      "applied_faults": 3,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout-then-timeout-then-timeout/trace/runtime_trace.jsonl"
+    }
+  ]
 }

@@ -14,6 +14,12 @@ SELECTION = HERE / "selection102.json"
 RESULTS = HERE / "cases"
 TERMINAL = {"no_cluster_test", "source_excluded", "quality_complete",
             "confirmed_bug"}
+SYSTEM_NAMES = {
+    "hdfs": "HDFS 3.4.3",
+    "hbase": "HBase 2.6.6",
+    "solr": "Solr 8.11.4",
+    "zookeeper": "ZooKeeper 3.8.7",
+}
 
 
 def rows() -> list[dict]:
@@ -47,6 +53,9 @@ def rows() -> list[dict]:
                 if update.get("case_id") != case_id:
                     raise ValueError(f"wrong case_id in {path}")
                 record.update(update)
+            # Per-case results can use a short system key or a display name.
+            # Keep the 102-row ledger consistent regardless of worker format.
+            record["system"] = SYSTEM_NAMES[entry["system"].lower()]
             result.append(record)
     result.sort(key=lambda row: (row["system"], row["case_id"]))
     if len(result) != 102 or len({row["case_id"] for row in result}) != 102:
