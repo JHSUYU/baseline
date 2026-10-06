@@ -96,3 +96,24 @@ reserved for broader exploration. If fewer than 24 of the first 80 trials
 retain the target, the budget extends to 128 trials and ten faults; the
 existing novelty-based extension also remains. The exact resume boundary is
 in `independent/expiry/scheduler-handoff.json`.
+
+The supplement finished all 128 trials under the ten-fault limit: 121 exact
+ordered injections and 46 strict runs that reached the selected key lookup
+after the final fault. All 46 passed the original JUnit. Every such run had
+exactly the one stale-key exception expected by this JUnit, followed by a
+successful lookup with a present replacement key. The independent trace audit
+found no additional selected exception or unresolved key-refresh failure.
+The supplement took 3,584.545 seconds. Together with the 80-trial ordinary
+read campaign, this check has 208 trials, 200 exact injections, 83
+target-retaining trials, and 6,032.198 seconds of measured execution.
+
+The original Hadoop source establishes the oracle: the JUnit waits until the
+old key disappears on the DataNode, calls `getFileChecksum`, asserts that the
+client cleared its cached key exactly once, then retries and compares the
+checksum. `BlockTokenSecretManager.retrieveDataEncryptionKey` throws when
+`allKeys.get(keyId)` is null. Therefore the one stale-key exception is the
+tested recovery behavior, not a newly discovered failure. The per-trial
+records are in `expiry-trial-ledger.csv`; the full audit is in
+`independent/expiry/audit-result.json`, with compact original traces and
+manifests in `expiry-evidence.tar.gz`. Both original workloads are marked
+`quality_complete`; no new bug is confirmed for HDFS-11.
