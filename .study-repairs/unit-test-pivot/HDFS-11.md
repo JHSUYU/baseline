@@ -2,19 +2,26 @@
 
 ## Result and exact site
 
-**The server-read subcampaign is complete; the full HDFS-11 check remains pending.**
-Ten exact SASL read fault trials found no target exception. The key-import
-control-plane path is still only a `CANDIDATE` closure member with
-`edgeEvidence=UNAVAILABLE`, and producer-side RPC/I/O doors have not been
-tested. The checklist therefore does not mark this check `quality_complete`.
+**Status: `pending_graph_precision`, with no observed HDFS-11 target exception.**
+The unchanged owner test reached the exact guard in a healthy run. Across
+19 strict trials, every requested fault matched and applied; 16 trials
+reached the target again after injection, while three lost it. Ten trials
+covered the DataNode SASL server read and nine covered the registration/key
+producer path, IPC request/response, and client SASL send. The healthy trace
+correlates the actual `allKeys.put` with both `allKeys.get` calls by map,
+integer key, and returned `BlockKey` identity, but GraphChecker still marks
+that relationship `CANDIDATE` with `edgeEvidence=UNAVAILABLE`. This is the
+reason for the pending precision status, not an observed failure.
 The check is `BlockTokenSecretManager.retrieveDataEncryptionKey(int, byte[])` in
 Hadoop 3.4.3. `allKeys.get(keyId)` is at source line 551, `key == null` is
 line 552, and `InvalidEncryptionKeyException` starts at line 553. The old
 selection line 555 is the continuation of its message. Released bytecode
 maps `ifnonnull` offset 25 to line 552, exception allocation offset 28 to
 line 553, and message continuation offset 57 to line 555. GraphChecker
-resolves `TARGET_SITE #u20`, guard `#u8`, fatal outcome `false`, in region
-`REGION.c0d9d80b-cf85-36a4-87a7-f409be7dd190`.
+resolves `TARGET_SITE #u20`, guard `#u8`, fatal outcome `false`. The final
+27-class graph gives it region
+`REGION.53092d3e-263d-3a18-b7a5-ae5b437d96de`; the earlier 22-class
+SASL-only graph used `REGION.c0d9d80b-cf85-36a4-87a7-f409be7dd190`.
 
 The workload is the **unmodified original** JUnit4 child
 `org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]`.
@@ -27,8 +34,8 @@ trusted-channel resolver and does not exercise this check. The generic
 
 ## Static graph, runtime identity, and actual I/O doors
 
-The static SEED used 22 extracted Hadoop application classes, 485 Hadoop
-classpath jars, and released 3.4.3 binary. The healthy recording reaches
+The first static SEED used 22 extracted Hadoop application classes, 485 Hadoop
+classpath jars, and released 3.4.3 binary. Its healthy recording reaches
 the exact guard twice, both with `outcome=true`. Initial DataNode
 registration imports NameNode-exported keys into `allKeys`; the trace
 observes `Map.put` and the later `Map.get` on the same receiver object and
@@ -51,8 +58,8 @@ matched SEND/RECEIVE pairs. The target full occurrence addresses and all
 four server-read fault selectors were byte-for-byte identical across the
 two scratch-cluster runs.
 
-The stock client-side `HDFS_SASL:REQUEST` door is outside this target
-closure. The isolated [server-door builder](hdfs11-server-door/build.py)
+The stock client-side `HDFS_SASL:REQUEST` door is outside the first 22-class
+target closure. The isolated [server-door builder](hdfs11-server-door/build.py)
 adds EOF and socket-timeout faults at the real server SASL message read,
 immediately before `DataTransferSaslUtil.readSaslMessageWithHandshakeSecret`.
 It supplies a classpath catalog-resource overlay, then runs GraphChecker
@@ -136,6 +143,116 @@ aggregations is **279.280 s**. Trials ran partly in parallel, so this is
 summed active run time rather than wall clock. Earlier feasibility probes
 and manual source review are excluded.
 
+## Registration/key path: final nine strict trials
+
+The isolated [key-path builder](hdfs11-key-path/wire_plus/build_wire.py)
+expanded the final SEED to 27 Hadoop classes and used GraphChecker’s IPC
+request/response bridge, DataNode actor source/root hook, NameNode source
+identity, and the two selected protobuf `WIRE_FLOW` mappings for block-key
+ID and expiry. The source is the unchanged Hadoop 3.4.3 JAR; these are
+recording/door overlays. SEED and region-state weave exited zero in 46.948 s
+and 23.283 s. The final [healthy original JUnit run](hdfs11-key-path/wire_plus/healthy-final/manifest.json)
+exited zero in 11.059 s; aggregate took 2.572 s. It recorded two normal
+HDFS-11 guards, 14 target-closure occurrence addresses, 51 fault-marker
+observations, eight marker/site classes, and no `BLOCKING` gap. The 10
+`ADMISSION_GAP`, three shared-occurrence, and two lost-lineage diagnostics
+remain explicit. The original JUnit operations and assertions were not
+modified.
+
+The final healthy [runtime trace](hdfs11-key-path/wire_plus/healthy-final/trace/runtime_trace.jsonl)
+and [extracted map history](hdfs11-key-path/wire_plus/key-state-evidence.json)
+show this exact, **within-run** correspondence in the second MiniDFSCluster:
+
+| Operation | Event sequence | Manager | `allKeys` map | Integer `keyId` | `BlockKey` |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `addKeys` `Map.put`, site `#u23` | 7251–7254 | 643 | 648 | 562312551 | 634 written |
+| First target `Map.get`, site `#u6` | 10038–10040 | 643 | 648 | 562312551 | 634 returned |
+| Second target `Map.get`, site `#u6` | 10536–10538 | 643 | 648 | 562312551 | 634 returned |
+
+The trace has no intervening `remove` or `clear` call on map 648. The
+`Integer` wrapper objects differ, so object identity alone would miss the
+matching key; the integer value is recovered from the adjacent `valueOf`
+call. These IDs are run-local and are **not** stable fault selectors. The
+actual target guard remains normal. Static/runtime planning admits the
+DataNode `BPServiceActor`/`BPOfferService` import region by
+`SHARED_LOCATION_DEMAND_V1` and the NameNode protobuf producer by
+`WIRE_PRODUCER_V1`, both as `CANDIDATE`; there is no certified cross-process
+wire read-from or local map-state edge.
+
+The closure’s 51 markers partition into five IPC request/response
+marker/site classes (45 observations), one client SASL request class (two),
+and two server SASL read classes (four). The first six classes are represented
+by the new trials; the server read classes were represented by the ten
+earlier trials. The IPC trials select the second cluster’s DataNode actor
+root and actual registration response/send sites. Exact full occurrence,
+source, site, and hit ordinal matched for every step. For each ordered
+mutation, its new marker was also present in the preceding faulted trace’s
+target closure. `targetAfterFault` refers to a guard after the *last* fault.
+
+| New sequence | JVM time | Matched/applied | Target after last fault | Original JUnit | HDFS-11 fatal |
+| --- | ---: | ---: | --- | --- | --- |
+| Registration response EOF | 12.507 s | 1/1 | Yes | Pass | No |
+| Registration response timeout | 12.454 s | 1/1 | Yes | Pass | No |
+| Registration request connect timeout | 12.449 s | 1/1 | Yes | Pass | No |
+| Registration response I/O error | 12.909 s | 1/1 | Yes | Pass | No |
+| Registration request I/O error | 16.077 s | 1/1 | Yes | Pass | No |
+| First client SASL send I/O error | 15.006 s | 1/1 | Yes | Pass | No |
+| Second client SASL send I/O error | 13.749 s | 1/1 | No; target lost | Fail after injected I/O error | No |
+| Response EOF → retry timeout | 22.207 s | 2/2 | Yes | Pass | No |
+| Response EOF → retry timeout → heartbeat response EOF | 32.046 s | 3/3 | Yes | Pass | No |
+
+All nine final trial traces aggregate with the exact `REGION.53092d3e...`
+target and zero `BLOCKING` gaps. The two-fault trial exposes 10 new
+instrumented branch `(site,outcome)` pairs versus the final healthy seed,
+including `BlockTokenSecretManager.updateKeys(long)#u5=true`, heartbeat
+handling, and IPC retry outcomes. It adds zero methods. The three-fault
+trial adds zero further method or branch outcomes; the target guard remains
+normal. This is coverage feedback, not proof that a fault changed key
+membership. The [atomic checkpoint](hdfs11-key-path/wire_plus/campaign-checkpoint.json)
+records nine completed trials and supports resume without rerunning them;
+the run used tmux session `hdfs11_key_final`. Measured active process time
+for final SEED, weave, healthy run/aggregate, nine trial JVMs, and nine
+trial aggregates is **264.624 s**. Combined with the earlier SASL campaign,
+HDFS-11 used **543.904 s** of measured active process time, 19 trials, 30
+applied fault events, 16 target-retaining trials, three lost-target trials,
+and zero target fatal outcomes. The final nine-trial tmux phase took 132.911 s
+wall time with two independent JVM trials in parallel.
+
+### Exact state edge needed before revisiting HDFS-11
+
+The smallest reusable repair is to reuse GraphChecker’s versioned
+`StateDoors` (`GraphChecker-unit-hbase`, commit `a79170360`) instead of
+assuming a causal edge from two region locations. Instrument the successful
+`Map.put` in `BlockTokenSecretManager.addKeys` (Hadoop 3.4.3 source line 235;
+Soot `#u23`) and the returned `Map.get` in
+`retrieveDataEncryptionKey` (line 551; Soot `#u6`); the same adapter can
+record `retrievePassword` for related HDFS checks. The adapter must keep a
+side-table entry for each live `(cluster incarnation, DataNode epoch,
+blockPoolId, manager/map instance, integer keyId)`. On successful put,
+assign a unique state version and emit `STATE_WRITE`; keep the actual
+`BlockKey` identity in the side table for checking. On get, read the returned
+value **and the same
+entry’s version** while still under the manager’s monitor and emit
+`STATE_READ`. Repeated writes to the same key must get distinct versions;
+absence without a certified writer/removal remains an explicit gap. Include
+`removeExpiredKeys` iterator removal (line 216), `clearAllKeysForTesting`
+(line 572), and any other remove/clear path so a stale put is never joined
+across deletion. A get should link only to the unique last surviving write
+of the same entry and value. The version must be created at mutation time;
+a later separate lookup or `BlockKey` object identity alone cannot certify
+the read. Runtime map/object IDs help validate one run, while a deterministic
+cluster/manager generation gives replayable identity and separates the two
+MiniDFSClusters that currently both appear as `hdfs/datanode/0#epoch0`.
+
+`StateDoors` already emits versioned `STATE_WRITE`/`STATE_READ` rows and its
+aggregator joins a unique earlier writer on `(sourceKey, stateKey, version)`;
+it reports missing or ambiguous writers as gaps. That mechanism can be
+reused once the HDFS adapter certifies the atomic version. The existing
+block-key ID/expiry `WIRE_FLOW` mapping and IPC call ID are a separate
+NameNode→DataNode candidate path; they still require exact request/response
+and command identity to prove an end-to-end producer edge. No further
+equivalent fault trials are scheduled until the map-state edge is available.
+
 ## Source-level interpretation
 
 The NameNode makes and exports current/next block keys. Initial DataNode
@@ -148,7 +265,7 @@ actually missing key, the server sends an unknown-key SASL response;
 and retry once. An observed target exception would first be a candidate
 requiring replay and source-level failure analysis. Here it never occurred.
 
-Reproduce the healthy seed with:
+Reproduce the earlier SASL-only healthy seed with:
 
 ```sh
 python3 .study-repairs/unit-test-pivot/hdfs11-server-door/build.py
@@ -159,8 +276,26 @@ python3 .study-repairs/unit-test-pivot/hdfs11-param-smoke.py \
   --server-door --sasl-identity
 ```
 
-Each exact JSON selector is in [trial-plans](hdfs11-server-door/trial-plans);
+For the final 27-class graph and unchanged original JUnit `[0]` child, run:
+
+```sh
+python3 .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/prepare_weave.py
+python3 .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/build_sasl.py
+python3 .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/build_wire.py
+python3 .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/run_wire.py \
+  --output .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/healthy-reproduction
+python3 .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/evidence.py \
+  --trace .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/healthy-reproduction/trace/runtime_trace.jsonl \
+  --output .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/healthy-reproduction/key-state-evidence.json
+```
+
+The recorded nine fault trials and exact plans are in
+[trials-final](hdfs11-key-path/wire_plus/trials-final) and
+[trial-plans](hdfs11-key-path/wire_plus/trial-plans). The resumable
+[campaign.py](hdfs11-key-path/wire_plus/campaign.py) skips completed
+checkpoint entries. For the earlier campaign, each exact JSON selector is in
+[trial-plans](hdfs11-server-door/trial-plans);
 for example, add `--fault-trial .study-repairs/unit-test-pivot/hdfs11-server-door/trial-plans/first-eof.json`
 to the final command. Trial logs, manifests and traces are in
-[trials](hdfs11-server-door/trials). The terminal checklist record is
+[trials](hdfs11-server-door/trials). The checklist record is
 [result.json](cases/HDFS-11/result.json).

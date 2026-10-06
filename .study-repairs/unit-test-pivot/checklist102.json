@@ -99,20 +99,20 @@
       "site_id": "<org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl: org.apache.hadoop.hbase.NamespaceDescriptor getNamespace(java.lang.String)>#u7",
       "proposed_cluster_test": "TestNamespaceAuditor.testTableOperations",
       "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
-      "status": "fault_tested_no_target_exception",
+      "status": "pending_additional_fault_families",
       "target_reached": true,
       "fault_trials": 5,
       "strict_injections": 4,
       "fully_applied_trials": 4,
       "target_after_fault": 4,
       "coverage_gain": 19,
-      "elapsed_seconds": 645.57,
+      "elapsed_seconds": 681.36,
       "bug_mark": "none",
-      "evidence": ".study-repairs/unit-test-pivot/HBASE-08.md; .study-repairs/unit-test-pivot/hbase08/coverage-v3.json; .study-repairs/unit-test-pivot/hbase08/coverage-v6.json; .study-repairs/unit-test-pivot/hbase08/graph-fixes/fixture-v6/faulted-zk-write/aggregate/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hbase08/checkpoint-v6/zk-write-v6-001.json",
+      "evidence": ".study-repairs/unit-test-pivot/HBASE-08.md; .study-repairs/unit-test-pivot/hbase08/coverage-v3.json; .study-repairs/unit-test-pivot/hbase08/coverage-v6.json; .study-repairs/unit-test-pivot/hbase08/graph-fixes/fixture-v6/faulted-zk-write/aggregate/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hbase08/checkpoint-v6/zk-write-v6-001.json; .study-repairs/unit-test-pivot/hbase08/trace-merged-seed/aggregate-merged/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hbase08/graph-fixes/fixture-merged",
       "healthy_target_checks": 9,
       "healthy_fatal_target_checks": 0,
       "graph_gap": "No BLOCKING state gap in either qualified v3 watcher trial or v6 ZK write-response trial after generic exact-path finalizer; v6 has two DIAGNOSTIC pre-window built-in namespace reads, and other unrelated RPC diagnostics.",
-      "timing_note": "645.57 s is the previously recorded 498.74 s subset plus v4/v5/v6 healthy seeds (35.37, 35.65, 37.88 s) and v6 ZK write-response fault trial (37.93 s). It excludes adapter compile, v4-v6 static/weave passes and offline graph aggregation; each fault trial is separately timed below.",
+      "timing_note": "681.36 s is the previously recorded 498.74 s subset plus v4/v5/v6 healthy seeds (35.37, 35.65, 37.88 s), v6 ZK write-response fault trial (37.93 s), and merged-core healthy compatibility run (35.79 s). It excludes adapter compile, v4-v6 static/weave passes and offline graph aggregation; each fault trial is separately timed below.",
       "coverage_metric": "Per-version new GraphChecker-instrumented branch outcomes versus that version’s healthy seed: v3 watcher +19 (11 new methods), v6 ZK write response +4 (1 new method). Not full-system basic-block coverage; these gains are not additive across different woven slices.",
       "unique_fault_points_tested": 2,
       "fault_trial_details": [
@@ -172,7 +172,22 @@
       "coverage_gain_by_trial": {
         "zkchild-v3-001": 19,
         "zk-write-v6-001": 4
-      }
+      },
+      "merged_core_validation": {
+        "jar": "/users/ZhenyuLi/.graphchecker-builds/unit-test-hbase-a79170360-4d58ea5e02b3.jar",
+        "sha256": "4d58ea5e02b3ae465c179f858ca57b17170e9567dfbd17b3b1e09e2d437d3cb6",
+        "healthy_junit_exit": 0,
+        "healthy_elapsed_seconds": 35.79,
+        "target_guard_count": 9,
+        "fatal_target_guard_count": 0,
+        "exact_state_hops": 2,
+        "blocking_gaps": 0,
+        "negative_fixtures_passed": true,
+        "trace": "hbase08/trace-merged-seed/runtime_trace.jsonl",
+        "plan": "hbase08/trace-merged-seed/aggregate-merged/concolic_region_plan.jsonl"
+      },
+      "campaign_state": "pending_expansion_after_two_qualified_closure_points",
+      "next_fault_families": "Additional target-preserving watcher/RPC variants or multi-fault sequences from the observed dynamic closure; no unrelated file-I/O point is currently certified in the selected closure."
     },
     {
       "case_id": "HBASE-10",
@@ -1194,16 +1209,16 @@
       "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u20",
       "proposed_cluster_test": "TestEncryptedTransfer.testEncryptedReadDefaultAlgorithmCipherSuite",
       "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]",
-      "status": "target_reached_pending_key_state_coverage",
+      "status": "pending_graph_precision",
       "target_reached": true,
-      "fault_trials": 10,
-      "strict_injections": 10,
-      "fully_applied_trials": 10,
-      "target_after_fault": 8,
-      "coverage_gain": 5,
-      "elapsed_seconds": 279.28,
+      "fault_trials": 19,
+      "strict_injections": 19,
+      "fully_applied_trials": 19,
+      "target_after_fault": 16,
+      "coverage_gain": 10,
+      "elapsed_seconds": 543.904,
       "bug_mark": "none",
-      "evidence": ".study-repairs/unit-test-pivot/HDFS-11.md; .study-repairs/unit-test-pivot/hdfs11-server-door/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/summary.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hdfs11-server-door/trials",
+      "evidence": ".study-repairs/unit-test-pivot/HDFS-11.md; .study-repairs/unit-test-pivot/hdfs11-server-door/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/summary.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hdfs11-server-door/trials; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/weave-manifest.json; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/healthy-final/trace; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/key-state-evidence.json; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/campaign-checkpoint.json; .study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final",
       "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
       "selection_line": 555,
       "resolved_check_line": 552,
@@ -1218,30 +1233,40 @@
         true
       ],
       "healthy_target_fatal": false,
-      "target_region_id": "REGION.c0d9d80b-cf85-36a4-87a7-f409be7dd190",
-      "graph_gap": "No BLOCKING occurrence gap after stable DataNode request identity; key-import path CANDIDATE SHARED_LOCATION_DEMAND_V1 and edgeEvidence=UNAVAILABLE, not a proven causal read-from edge",
-      "observed_fault_points": 146,
+      "target_region_id": "REGION.53092d3e-263d-3a18-b7a5-ae5b437d96de",
+      "graph_gap": "Exact source-to-target Map.put→Map.get state edge is missing. Healthy trace has same DataNode manager objectId=643, map objectId=648, integer keyId=562312551, and BlockKey objectId=634 at successful addKeys put and both target gets, with no observed intervening remove/clear; these object IDs prove intrarun correspondence only. GraphChecker retains producer/import as CANDIDATE and edgeEvidence=UNAVAILABLE. NN→DN WIRE_FLOW is also a candidate, not a proven end-to-end read-from.",
+      "observed_fault_points": 141,
       "elapsed_breakdown_seconds": {
-        "static_seed": 38.939,
-        "region_state_weave": 20.027,
-        "healthy_junit_two_runs": 21.29,
-        "healthy_aggregate_two_runs": 2.537,
-        "fault_trial_jvms_ten_runs": 186.596,
-        "faulted_aggregates_eight_runs": 9.891
+        "server_read_campaign": {
+          "static_seed": 38.939,
+          "region_state_weave": 20.027,
+          "healthy_junit_two_runs": 21.29,
+          "healthy_aggregate_two_runs": 2.537,
+          "fault_trial_jvms_ten_runs": 186.596,
+          "faulted_aggregates_eight_runs": 9.891
+        },
+        "key_path_campaign": {
+          "static_seed": 46.948,
+          "region_state_weave": 23.283,
+          "healthy_junit": 11.059,
+          "healthy_aggregate": 2.572,
+          "fault_trial_jvms_nine_runs": 149.404,
+          "faulted_aggregates_nine_runs": 31.358
+        }
       },
-      "timing_note": "Sum of measured process durations in final campaign; some fault trials ran concurrently, so not wall clock; earlier feasibility work and manual source review excluded",
-      "status_scope": "Server SASL read EOF/timeout subcampaign complete for original JUnit [0], up to three ordered faults; the overall check remains pending producer-side key-import identity and fault coverage",
-      "healthy_fault_points_observed": 146,
+      "timing_note": "Sum of measured SEED, weave, original JUnit, aggregate, and trial process durations from two final subcampaigns; concurrency means this is not wall clock. New nine-trial tmux campaign wall time was 132.911 s. Earlier feasibility probes and manual source review excluded.",
+      "status_scope": "Original JUnit [0] reached exact HDFS-11 guard after 16 of 19 strict trials across SASL server-read and producer/control-plane fault classes. The observed target closure classes have bounded representative trials; quality_complete awaits a generic exact local map-state edge and, separately, stronger NN→DN wire read-from evidence.",
+      "healthy_fault_points_observed": 141,
       "healthy_target_occurrence_count": 2,
       "healthy_target_occurrences_stable_across_replay": true,
       "healthy_target_closure_server_read_fault_selectors": 4,
-      "fault_events_applied": 18,
+      "fault_events_applied": 30,
       "target_exception_count": 0,
       "target_fatal_branch_count": 0,
-      "lost_target_trials": 2,
-      "coverage_gain_definition": "Five new instrumented branch (site,outcome) pairs across trial union versus healthy; zero new methods; no new branch outcome at three faults",
-      "stop_reason": "Server-read subqueue exhausted after exact one-, two-, and representative three-fault SASL sequences; full target closure remains pending because key-import read-from is only CANDIDATE with edgeEvidence=UNAVAILABLE and producer-side RPC/I/O fault classes have not been tested",
-      "remaining_work": "Trace NameNode block-key export through DataNode registration/key-update RPC into addKeys/allKeys with stable source and request identities, then test eligible pre-target fault doors in that producer path while retaining the exact HDFS-11 target guard",
+      "lost_target_trials": 3,
+      "coverage_gain_definition": "Final 27-class key-path campaign: ten new instrumented branch (site,outcome) pairs and zero new METHOD_ENTER methods versus its own healthy seed; ordered third fault added zero methods or branch pairs beyond ordered two-fault trace. Earlier 22-class SASL server-read subcampaign had five branch pairs and is not numerically combined across scopes.",
+      "stop_reason": "Nine final key-path trials completed after ten earlier SASL server-read trials. All eight observed target-closure marker classes have representative fault trials. An ordered second control-plane fault gained recovery branches; a third added no method or branch outcome. Map.put→Map.get remains CANDIDATE/edgeEvidence=UNAVAILABLE, so stop at pending_graph_precision instead of repeating equivalent faults.",
+      "remaining_work": "Generic Map.put/get/remove/clear exact state edge with stable cluster-incarnation and manager/map/key identities; link each get to the last surviving put and the returned value. Reaggregate HDFS-11, then revisit only newly proven target-closure fault points. NN→DN protobuf pairing can be strengthened separately.",
       "trial_results": [
         {
           "sequence": "first-eof",
@@ -1390,8 +1415,189 @@
           ],
           "target_fatal_exceptions": 0,
           "evidence": ".study-repairs/unit-test-pivot/hdfs11-server-door/trials/first-timeout-then-timeout-then-timeout/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "response-timeout",
+          "campaign": "key_path",
+          "elapsed_seconds": 12.454,
+          "aggregate_seconds": 3.43,
+          "junit_exit": 0,
+          "requested_faults": 1,
+          "matched_faults": 1,
+          "applied_faults": 1,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-timeout/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "response-eof",
+          "campaign": "key_path",
+          "elapsed_seconds": 12.507,
+          "aggregate_seconds": 3.524,
+          "junit_exit": 0,
+          "requested_faults": 1,
+          "matched_faults": 1,
+          "applied_faults": 1,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-eof/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "request-connect-timeout",
+          "campaign": "key_path",
+          "elapsed_seconds": 12.449,
+          "aggregate_seconds": 4.344,
+          "junit_exit": 0,
+          "requested_faults": 1,
+          "matched_faults": 1,
+          "applied_faults": 1,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/request-connect-timeout/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "response-io",
+          "campaign": "key_path",
+          "elapsed_seconds": 12.909,
+          "aggregate_seconds": 3.985,
+          "junit_exit": 0,
+          "requested_faults": 1,
+          "matched_faults": 1,
+          "applied_faults": 1,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-io/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "client-sasl-send-1",
+          "campaign": "key_path",
+          "elapsed_seconds": 15.006,
+          "aggregate_seconds": 3.729,
+          "junit_exit": 0,
+          "requested_faults": 1,
+          "matched_faults": 1,
+          "applied_faults": 1,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/client-sasl-send-1/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "request-io",
+          "campaign": "key_path",
+          "elapsed_seconds": 16.077,
+          "aggregate_seconds": 3.626,
+          "junit_exit": 0,
+          "requested_faults": 1,
+          "matched_faults": 1,
+          "applied_faults": 1,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/request-io/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "client-sasl-send-2",
+          "campaign": "key_path",
+          "elapsed_seconds": 13.749,
+          "aggregate_seconds": 2.371,
+          "junit_exit": 1,
+          "requested_faults": 1,
+          "matched_faults": 1,
+          "applied_faults": 1,
+          "target_after_fault": false,
+          "target_guard_outcomes": [
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/client-sasl-send-2/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "response-eof-then-retry-timeout",
+          "campaign": "key_path",
+          "elapsed_seconds": 22.207,
+          "aggregate_seconds": 3.425,
+          "junit_exit": 0,
+          "requested_faults": 2,
+          "matched_faults": 2,
+          "applied_faults": 2,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-eof-then-retry-timeout/trace/runtime_trace.jsonl"
+        },
+        {
+          "sequence": "response-eof-retry-timeout-then-heartbeat-eof",
+          "campaign": "key_path",
+          "elapsed_seconds": 32.046,
+          "aggregate_seconds": 2.924,
+          "junit_exit": 0,
+          "requested_faults": 3,
+          "matched_faults": 3,
+          "applied_faults": 3,
+          "target_after_fault": true,
+          "target_guard_outcomes": [
+            true,
+            true
+          ],
+          "target_fatal_exceptions": 0,
+          "evidence": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/trials-final/response-eof-retry-timeout-then-heartbeat-eof/trace/runtime_trace.jsonl"
         }
-      ]
+      ],
+      "legacy_server_read_target_region_id": "REGION.c0d9d80b-cf85-36a4-87a7-f409be7dd190",
+      "legacy_server_read_healthy_fault_points_observed": 146,
+      "tmux_session": "hdfs11_key_final",
+      "checkpoint": ".study-repairs/unit-test-pivot/hdfs11-key-path/wire_plus/campaign-checkpoint.json",
+      "key_path_healthy_target_closure_addresses": 14,
+      "key_path_healthy_target_closure_fault_observations": 51,
+      "key_path_healthy_target_closure_fault_classes": 8,
+      "key_path_healthy_blocking_gaps": 0,
+      "key_path_edge_evidence": "UNAVAILABLE",
+      "key_path_diagnostic_gaps": {
+        "ADMISSION_GAP": 10,
+        "OCCURRENCE_ADDRESS_SHARED": 3,
+        "LINEAGE_LOST": 2
+      },
+      "key_state_evidence": {
+        "manager_object_id": 643,
+        "map_object_id": 648,
+        "key_id": 562312551,
+        "block_key_object_id": 634,
+        "put_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: void addKeys(org.apache.hadoop.hdfs.security.token.block.ExportedBlockKeys)>#u23",
+        "put_sequence": 7251,
+        "get_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u6",
+        "get_sequences": [
+          10038,
+          10536
+        ],
+        "intervening_remove_or_clear_observed": false,
+        "scope": "within one healthy run only; GraphChecker has not materialized an exact edge"
+      }
     },
     {
       "case_id": "HDFS-12",
