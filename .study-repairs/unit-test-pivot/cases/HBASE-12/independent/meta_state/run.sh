@@ -27,7 +27,7 @@ case "${1:?build, run, or coverage}" in
     data_dir="$case_dir/data-$suffix"
     mkdir -p "$data_dir/tmp"
     export HBASE_HOME="$hbase_dist"
-    exec timeout 480s /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' \
+    exec timeout 240s /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' \
       "$java_bin" -Xmx5g \
         -javaagent:"$shared_dir/org.jacoco.agent-0.8.15-runtime.jar=destfile=$case_dir/$suffix.exec,includes=$coverage_includes" \
         -javaagent:"$shared_dir/agent.jar" \
