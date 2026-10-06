@@ -1,0 +1,107 @@
+#!/usr/bin/env python3
+"""Render the 102-check unit-test campaign from isolated case results."""
+
+from __future__ import annotations
+
+from collections import Counter
+import argparse
+import json
+from pathlib import Path
+
+
+HERE = Path(__file__).resolve().parent
+SELECTION = HERE / "selection102.json"
+RESULTS = HERE / "cases"
+TERMINAL = {"no_cluster_test", "source_excluded", "quality_complete",
+            "confirmed_bug"}
+
+
+def rows() -> list[dict]:
+    selected = json.loads(SELECTION.read_text())
+    result = []
+    for entry in selected["checks"]:
+            case_id = entry["case_id"]
+            record = {
+                "case_id": case_id,
+                "system": entry["system"],
+                "source_path": entry["source_path"],
+                "source_line": entry["source_line"],
+                "function": entry["function"],
+                "check_code": entry.get("check_code"),
+                "site_id": entry["site_id"],
+                "proposed_cluster_test": entry.get("proposed_cluster_test"),
+                "cluster_test": None,
+                "status": "pending_test_search",
+                "target_reached": None,
+                "fault_trials": 0,
+                "strict_injections": 0,
+                "target_after_fault": 0,
+                "coverage_gain": 0,
+                "elapsed_seconds": 0,
+                "bug_mark": "none",
+                "evidence": None,
+            }
+            path = RESULTS / case_id / "result.json"
+            if path.exists():
+                update = json.loads(path.read_text())
+                if update.get("case_id") != case_id:
+                    raise ValueError(f"wrong case_id in {path}")
+                record.update(update)
+            result.append(record)
+    result.sort(key=lambda row: (row["system"], row["case_id"]))
+    if len(result) != 102 or len({row["case_id"] for row in result}) != 102:
+        raise ValueError("selection must contain exactly 102 distinct checks")
+    return result
+
+
+def markdown(items: list[dict]) -> str:
+    def cell(value: object) -> str:
+        if value is None:
+            return ""
+        return str(value).replace("|", "&#124;").replace("\n", "<br>")
+
+    counts = Counter(row["status"] for row in items)
+    lines = [
+        "# Unit-test cluster fuzz checklist (102 checks)", "",
+        "This is the new campaign. Legacy Docker trials are not counted.", "",
+        "Status: " + ", ".join(f"{key}={value}" for key, value in sorted(counts.items())),
+        "", "| Check | System | Source | Function | Check code | Cluster test | "
+        "Time (s) | Fault trials | Strict injections | Target after fault | "
+        "Coverage gain | Result | Bug | Evidence |",
+        "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+    ]
+    for row in items:
+        values = [row["case_id"], row["system"],
+                  f"{row['source_path']}:{row['source_line']}", row["function"],
+                  row.get("check_code"),
+                  row.get("cluster_test") or row.get("proposed_cluster_test"),
+                  row.get("elapsed_seconds"), row.get("fault_trials"),
+                  row.get("strict_injections"), row.get("target_after_fault"),
+                  row.get("coverage_gain"), row["status"], row.get("bug_mark"),
+                  row.get("evidence")]
+        lines.append("| " + " | ".join(map(cell, values)) + " |")
+    return "\n".join(lines) + "\n"
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("command", choices=("render", "pending", "summary"))
+    args = parser.parse_args()
+    items = rows()
+    if args.command == "pending":
+        for row in items:
+            if row["status"] not in TERMINAL:
+                print(row["case_id"])
+    elif args.command == "summary":
+        print(json.dumps(dict(Counter(row["status"] for row in items)),
+                         sort_keys=True))
+    else:
+        (HERE / "checklist102.json").write_text(
+            json.dumps({"schema_version": 1, "rows": items},
+                       ensure_ascii=False, indent=2) + "\n")
+        (HERE / "checklist102.md").write_text(markdown(items))
+        print(f"rendered {len(items)} rows")
+
+
+if __name__ == "__main__":
+    main()
