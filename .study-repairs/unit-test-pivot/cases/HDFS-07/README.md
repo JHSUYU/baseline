@@ -1,4 +1,4 @@
-# HDFS-07: independent recorder replay pending
+# HDFS-07: independent original-JUnit campaign complete
 
 The earlier 24 fault trials used a static-analysis/region-woven recorder. Those trials are preserved in [legacy-graph-result.json](legacy-graph-result.json) and excluded from the current graph-independent campaign. The original cluster JUnit and target check must be recorded with case-local I/O/coverage probes before new trials count.
 
@@ -53,3 +53,26 @@ to 49 before and after filtering, and every method/branch gain was unchanged.
 The raw JaCoCo exec files remain available, while the compressed
 `campaign-state.pre-production-coverage.json.gz` and
 `coverage-migration-v3.json` record the exact handoff.
+
+## Final result
+
+The independent campaign finished all 80 planned trials without repeating a
+completed sequence. Its [raw-event audit](independent/evidence/audit-result.json)
+recomputed 80 exact ordered injections and 53 trials in which the selected
+`journalnode-2` second-recovery check ran after the final fault. No trial
+triggered the selected `AssertionError`; the deepest executed sequence had
+three faults. Production branch coverage increased by 21 branch counters over
+the healthy run. The original test writes transaction 5 to only one
+JournalNode, then recovers to transaction 4. The selected assertion rejects a
+shorter replacement only if it would discard an already committed
+transaction. Some original-JUnit runs failed when an injected I/O exception
+prevented quorum, but those failures are recorded separately from the target
+assertion and are not counted as a new bug.
+
+The [per-trial ledger](independent-trial-ledger.csv) records each sequence,
+elapsed time, injection match, target outcome, coverage gain, and JUnit exit.
+The [evidence archive](HDFS-07-independent-evidence.tar.gz) contains original
+healthy and faulted trace/manifest/log/JaCoCo records without temporary
+JournalNode scratch data; its checksum is in
+[independent-archive-manifest.json](independent-archive-manifest.json).
+The earlier 24 graph-based trials remain excluded.
