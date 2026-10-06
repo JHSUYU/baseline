@@ -1,63 +1,67 @@
-# GraphChecker guided exception fuzzing for ad hoc checks
+# Cluster unit test exception fuzzing baseline
 
 ## Scope
 
 The campaign contains 102 selected checks: 38 HDFS 3.4.3, 30 HBase 2.6.6,
 21 Solr 8.11.4, and 13 ZooKeeper 3.8.7. The selected source locations and
-proposed original tests are in
+candidate tests are in
 [selection102.json](.study-repairs/unit-test-pivot/selection102.json). A
-selected check is a hypothesis, not a confirmed coordination bug.
+selected check is a hypothesis; a failed test alone does not establish a new
+coordination bug.
 
 Each check uses an **existing cluster based unit test from the system's own
-repository**. The test's original operations and assertions remain the
-workload. A small generic JUnit runner or recording adapter may open a trace
-window around that test. If no suitable existing cluster test reaches the
-exact check, record `no_cluster_test` and move to the next check. Tests that
-fail before the target or intentionally expect the target exception need
-separate source review before they can support a bug claim.
+repository**. Its original operations and assertions supply the workload. A
+small runner may select the test method and start or stop recording. If no
+suitable existing cluster test reaches the check, record `no_cluster_test`
+and continue to the next case. Tests that fail before the check or expect its
+exception require source review before they can support a bug claim.
 
 ## One check's execution
 
-1. Pin the system version, test method, exact target branch/throw, and
-   GraphChecker static scope. Start the original embedded cluster test from
-   a clean fixture with no injected fault. Verify the target check's region
-   and nonfatal branch in the trace.
-2. Use GraphChecker's static analysis and bytecode weaving to record method,
-   branch, asynchronous, RPC/message, and state provenance events. Build the
-   runtime causal graph and compute the backward closure rooted at the exact
-   target occurrence. Runtime node identity and cross-boundary links must be
-   explicit; an unregistered node or missing transport edge is a graph gap.
-3. Collect fault markers in that closure, plus method and branch coverage.
-   A trial selector names the I/O site, region occurrence address, marker,
-   and hit ordinal. Inject an exception only when that selector matches.
-4. Rerun the **same original unit test** from a clean fixture. Record whether
-   every requested exception was actually applied, whether the target region
-   still exists afterward, and whether its exact fatal check was reached.
-   Rebuild the graph and coverage from this trial. Append one later legal
-   fault to promising sequences and prioritize new target closure behavior
-   and branch outcomes, with bounded exploration of globally new coverage.
-5. A fatal target outcome is a candidate observation. Replay the same matched
-   sequence from clean fixtures and inspect the specific source path before
-   marking a new bug. A test failure, timeout, or unrelated exception alone
-   does not satisfy the target oracle.
+1. Pin the system version, original test method, target source location,
+   target guard, and exception outcome. Run the test from a clean fixture
+   without an injected fault. Confirm that the exact target executes and
+   record its observed nonfatal outcomes and baseline method, branch, and
+   line coverage where available.
+2. Instrument exception capable I/O calls exercised by that workload,
+   including file, network, RPC, and storage operations relevant to the
+   target. Record each site's stable identity, operation, node or process,
+   invocation count, exception type, and whether it executed. Validate each
+   injected exception type against the call site's declared behavior.
+3. Select a concrete observed I/O site and hit ordinal, then rerun the
+   **same original unit test** from a clean fixture. Record whether the
+   requested exception matched and was applied, whether the target executed
+   afterward, the target's outcome, the JUnit result, elapsed time, and
+   coverage. A missed injection is an invalid trial. A trial that ends before
+   the target is recorded as `lost_target` and cannot establish a target bug.
+4. Prioritize further trials using newly observed target outcomes and method,
+   branch, or line coverage. Extend a promising trial with one later legal
+   fault when the budget permits. Keep the selected sites, hit ordinals,
+   actual injection evidence, and clean-fixture replay steps in a case-local
+   trial ledger.
+5. Treat an observed fatal target outcome as a candidate. Replay its matched
+   fault sequence from clean fixtures and inspect the source path and the
+   test's expected behavior before calling it a new bug. A timeout, unrelated
+   exception, or JUnit failure by itself is insufficient.
 
-A trial that removes the target region is recorded as `lost_target` and is not
-used as evidence for that check. The trial queue stops when its per-check
-budget expires or there is no valid sequence left. The budget is set for the
-runtime of the original test and the size of its target closure; the recorded
-elapsed time and effective trials, not a requested budget, are reported.
+The default budget is 48 fault trials with at most four I/O exceptions in a
+sequence. If new production coverage or a new I/O family still appears near
+that limit, extend the same checkpoint to 96 trials and at most six faults.
+Stop earlier only after recording why the observed relevant I/O families are
+equivalent or exhausted. Report effective trials and measured elapsed time.
+Healthy test execution, source mapping, and instrumentation setup are
+prerequisites, not completed fuzz checks.
 
-## Isolation and progress
+## Parallel execution and progress
 
-One agent owns one check at a time. At most ten agents run concurrently,
-including the coordinator. Each case has its own GraphChecker worktree,
-source/test workspace, temporary directory, trace, fault selectors, and
-`cases/<CASE-ID>/result.json`. A case lease prevents two agents from running
-it at once. Results are written atomically; after interruption the campaign
-resumes unfinished work and skips terminal cases.
+Each agent owns one case at a time. Agents use separate source/test
+workspaces, temporary directories, logs, and case-local fault plans. A case
+lease prevents duplicate execution. Results are written atomically so an
+interrupted campaign can resume unfinished cases while retaining completed
+trial records.
 
 [checklist102.md](.study-repairs/unit-test-pivot/checklist102.md) records the
-system, file, function, check code, chosen original test, elapsed time,
-strictly applied fault trials, target-after-fault count, coverage feedback,
-and bug review state for every selected check. Source mapping and a healthy
-unit test alone do not count as a high quality completed fuzz check.
+selected location, original test, elapsed time, applied fault trials,
+target-after-fault observations, coverage feedback, and bug review state for
+every check. The per-case `result.json` and trial ledger hold the supporting
+evidence.

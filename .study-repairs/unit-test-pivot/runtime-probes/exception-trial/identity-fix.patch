@@ -1,0 +1,20 @@
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/ExceptionTrialController.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/ExceptionTrialController.java
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/ExceptionTrialController.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/ExceptionTrialController.java
+@@ -73,7 +73,7 @@
+         String occurrence = enclosing.isEmpty()
+                 ? roleOccurrence(sourceKey) : enclosing.get(0);
+         String occurrenceId = occurrenceId(occurrence);
+-        String key = marker + "\n" + siteId + "\n" + occurrenceId;
++        String key = marker + "\n" + siteId + "\n" + occurrence;
+         int ordinal = hitCounts.containsKey(key) ? hitCounts.get(key) + 1 : 1;
+         hitCounts.put(key, ordinal);
+         CausynthTraceRecorder.faultTrialEvent("FAULT_POINT_OBSERVED",
+@@ -82,6 +82,7 @@
+                 false, false, null, "");
+         if (active == null || !active.marker.equals(marker)
+                 || !active.siteId.equals(siteId)
++                || !active.occurrence.equals(occurrence)
+                 || !active.occurrenceId.equals(occurrenceId)
+                 || !active.sourceKey.isEmpty()
+                 && !active.sourceKey.equals(sourceKey)

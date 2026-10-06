@@ -1,0 +1,369 @@
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+@@ -366,6 +366,7 @@
+         synchronized (LOCK) {
+             writeTraceLine(event);
+         }
++        ExceptionTrialController.observedTargetRegion(region, id);
+         return id;
+     }
+ 
+@@ -531,6 +532,7 @@
+         ExecutionEvent event = branchEvent(callId, method, unitIndex);
+         event.outcome = outcome;
+         emitExecutionEvent(event);
++        ExceptionTrialController.observedTargetBranch(event.siteId, event.id);
+         RecordingPlant.decided(event.siteId, event.outcome);
+     }
+ 
+@@ -559,6 +561,7 @@
+         event.outcome = event.successorIndex == null ? null
+                 : successorIndex < caseCount;
+         emitExecutionEvent(event);
++        ExceptionTrialController.observedTargetBranch(event.siteId, event.id);
+         RecordingPlant.decided(event.siteId, event.outcome);
+     }
+ 
+@@ -1098,6 +1101,63 @@
+                     "siteId", siteId,
+                     "occurrenceAddress", occurrence,
+                     "atAnchor", atAnchor);
++        }
++    }
++
++    /** One native exception trial observation; v3 is the enclosing trace. */
++    static long faultTrialEvent(String kind, String faultId, String marker,
++                                String siteId, String occurrenceAddress,
++                                String occurrenceId, String sourceKey,
++                                int hitOrdinal, boolean value,
++                                boolean matched, boolean applied,
++                                Boolean targetAfterFault, String detail) {
++        synchronized (LOCK) {
++            long seq = EVENT_COUNTER.incrementAndGet();
++            writeTraceRow(
++                    "schemaVersion", 3,
++                    "faultSchemaVersion", 1,
++                    "event", kind,
++                    "seq", seq,
++                    "faultId", faultId,
++                    "marker", marker,
++                    "siteId", siteId,
++                    "occurrenceAddress", occurrenceAddress,
++                    "occurrenceId", occurrenceId,
++                    "sourceKey", sourceKey,
++                    "hitOrdinal", hitOrdinal,
++                    "value", value,
++                    "matched", matched,
++                    "applied", applied,
++                    "targetAfterFault", targetAfterFault,
++                    "detail", detail);
++            return seq;
++        }
++    }
++
++    static void faultTrialSummary(String faultId, String marker,
++                                  String siteId, String occurrenceAddress,
++                                  String occurrenceId, String sourceKey,
++                                  int hitOrdinal, int requested,
++                                  int matched, int applied,
++                                  Boolean targetAfterFault) {
++        synchronized (LOCK) {
++            writeTraceRow(
++                    "schemaVersion", 3,
++                    "faultSchemaVersion", 1,
++                    "event", "FAULT_TRIAL_SUMMARY",
++                    "seq", EVENT_COUNTER.incrementAndGet(),
++                    "faultId", faultId,
++                    "marker", marker,
++                    "siteId", siteId,
++                    "occurrenceAddress", occurrenceAddress,
++                    "occurrenceId", occurrenceId,
++                    "sourceKey", sourceKey,
++                    "hitOrdinal", hitOrdinal,
++                    "requested", requested,
++                    "matched", matched,
++                    "applied", applied,
++                    "targetConfigured", targetAfterFault != null,
++                    "targetAfterFault", targetAfterFault);
+         }
+     }
+ 
+@@ -1344,6 +1404,10 @@
+     }
+ 
+     private static void shutdown() {
++        // Snapshot trial status while the trace is still writable.  Do not
++        // acquire the recorder lock before the controller lock: marker
++        // evaluation obtains them in the opposite order.
++        ExceptionTrialController.summarize();
+         synchronized (LOCK) {
+             if (traceWriter != null) {
+                 try {
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/ConcolicRegionRuntime.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/ConcolicRegionRuntime.java
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/ConcolicRegionRuntime.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/ConcolicRegionRuntime.java
+@@ -738,7 +738,7 @@
+      * here.  External caller (workload trees); keep the name.
+      */
+     public static boolean materializeSymbolicBoolean(String name) {
+-        return RecordingPlant.marker(name);
++        return ExceptionTrialController.marker(name);
+     }
+ 
+ 
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/ExceptionTrialController.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/ExceptionTrialController.java
+new file mode 100644
+--- /dev/null
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/ExceptionTrialController.java
+@@ -0,0 +1,250 @@
++package edu.uva.liftlab.graphchecker.runtime;
++
++import com.google.gson.JsonArray;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonParser;
++import edu.uva.liftlab.graphchecker.contract.OccurrenceAddress;
++
++import java.io.IOException;
++import java.nio.charset.StandardCharsets;
++import java.nio.file.Files;
++import java.nio.file.Paths;
++import java.util.ArrayList;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
++
++/**
++ * Opt-in, ordered fault controller for a recording of one original JUnit test.
++ * DoorWeave still owns the exception type and the actual throw.  This class
++ * only answers its existing FAULT:* boolean marker and records the decision.
++ */
++final class ExceptionTrialController {
++    static final String PROPERTY = "causynth.fault.trial";
++    private static final ExceptionTrialController INSTANCE =
++            new ExceptionTrialController();
++
++    private final TrialPlan plan;
++    private final Map<String, Integer> hitCounts = new HashMap<>();
++    private int nextFault;
++    private long appliedSeq;
++    private boolean targetRegionAfterFault;
++    private boolean targetBranchAfterFault;
++    private boolean summarized;
++
++    private ExceptionTrialController() {
++        String file = System.getProperty(PROPERTY, "").trim();
++        plan = file.isEmpty() ? null : TrialPlan.read(file);
++        if (plan != null && RecordingPlant.planting()) {
++            throw new IllegalStateException("-D" + PROPERTY
++                    + " and -D" + RecordingPlant.PROPERTY
++                    + " cannot control the same marker");
++        }
++    }
++
++    /** A marker the pre-analysis DoorWeave inserted, or another marker. */
++    static boolean marker(String name) {
++        if (name == null || !name.startsWith("FAULT:")) {
++            return RecordingPlant.marker(name);
++        }
++        if (!RecordingWindow.opened()) {
++            return RecordingPlant.marker(name);
++        }
++        boolean selected = INSTANCE.evaluate(name);
++        return selected || RecordingPlant.marker(name);
++    }
++
++    /**
++     * Serializes selection across threads.  A selector's ordinal counts only
++     * this marker at this exact call site and occurrence ID, not unrelated
++     * transport calls elsewhere in the JVM.
++     */
++    private synchronized boolean evaluate(String marker) {
++        CausynthTraceRecorder.ActiveCallSiteContext callSite =
++                CausynthTraceRecorder.currentCallSiteContext();
++        String siteId = callSite == null ? "" : callSite.siteId();
++        List<String> enclosing = CausynthTraceRecorder.enclosingOccurrences();
++        Fault active = plan == null || nextFault >= plan.faults.size()
++                ? null : plan.faults.get(nextFault);
++        SourceRef source = RuntimeTraceContext.currentSource();
++        String sourceKey = source == null ? "" : source.key();
++        String occurrence = enclosing.isEmpty()
++                ? roleOccurrence(sourceKey) : enclosing.get(0);
++        String occurrenceId = occurrenceId(occurrence);
++        String key = marker + "\n" + siteId + "\n" + occurrence;
++        int ordinal = hitCounts.containsKey(key) ? hitCounts.get(key) + 1 : 1;
++        hitCounts.put(key, ordinal);
++        CausynthTraceRecorder.faultTrialEvent("FAULT_POINT_OBSERVED",
++                active == null ? "" : active.faultId, marker, siteId,
++                occurrence, occurrenceId, sourceKey, ordinal, false,
++                false, false, null, "");
++        if (active == null || !active.marker.equals(marker)
++                || !active.siteId.equals(siteId)
++                || !active.occurrence.equals(occurrence)
++                || !active.occurrenceId.equals(occurrenceId)
++                || !active.sourceKey.isEmpty()
++                && !active.sourceKey.equals(sourceKey)
++                || active.hitOrdinal != ordinal) {
++            return false;
++        }
++        CausynthTraceRecorder.faultTrialEvent("FAULT_MATCHED",
++                active.faultId, marker, siteId, occurrence, occurrenceId,
++                sourceKey, ordinal, true, true, false, null, "");
++        appliedSeq = CausynthTraceRecorder.faultTrialEvent("FAULT_APPLIED",
++                active.faultId, marker, siteId, occurrence, occurrenceId,
++                sourceKey, ordinal, true, true, true, null, "");
++        nextFault++;
++        // Target reach is about the state after the final applied fault.
++        targetRegionAfterFault = false;
++        targetBranchAfterFault = false;
++        return true;
++    }
++
++    /** No region yet: use GraphChecker's actual role occurrence if named. */
++    private static String roleOccurrence(String sourceKey) {
++        if (sourceKey.isEmpty()) return "";
++        OccurrenceAddress role = Identity.currentOccurrence(sourceKey);
++        return role == null ? "" : role.render();
++    }
++
++    private static String occurrenceId(String address) {
++        return address.isEmpty() ? ""
++                : OccurrenceAddress.parse(address).id();
++    }
++
++    static void observedTargetRegion(String regionId, long seq) {
++        synchronized (INSTANCE) {
++            if (INSTANCE.plan != null && INSTANCE.nextFault > 0
++                    && seq > INSTANCE.appliedSeq
++                    && !INSTANCE.plan.targetRegionId.isEmpty()
++                    && INSTANCE.plan.targetRegionId.equals(regionId)) {
++                INSTANCE.targetRegionAfterFault = true;
++            }
++        }
++    }
++
++    static void observedTargetBranch(String siteId, long seq) {
++        synchronized (INSTANCE) {
++            if (INSTANCE.plan != null && INSTANCE.nextFault > 0
++                    && seq > INSTANCE.appliedSeq
++                    && !INSTANCE.plan.targetSiteId.isEmpty()
++                    && INSTANCE.plan.targetSiteId.equals(siteId)) {
++                INSTANCE.targetBranchAfterFault = true;
++            }
++        }
++    }
++
++    /** Called before CausynthTraceRecorder closes its trace at JVM exit. */
++    static void summarize() {
++        INSTANCE.writeSummary();
++    }
++
++    private synchronized void writeSummary() {
++        if (plan == null || summarized) return;
++        summarized = true;
++        boolean complete = nextFault == plan.faults.size();
++        Boolean targetAfterFault = plan.targetRegionId.isEmpty()
++                && plan.targetSiteId.isEmpty() ? null
++                : complete && (!plan.targetSiteId.isEmpty()
++                ? targetBranchAfterFault : targetRegionAfterFault);
++        Fault last = plan.faults.get(plan.faults.size() - 1);
++        CausynthTraceRecorder.faultTrialSummary(
++                last.faultId, last.marker, last.siteId,
++                last.occurrence, last.occurrenceId, last.sourceKey,
++                last.hitOrdinal, plan.faults.size(), nextFault, nextFault,
++                targetAfterFault);
++    }
++
++    private static final class Fault {
++        final String faultId;
++        final String marker;
++        final String siteId;
++        final String occurrence;
++        final String occurrenceId;
++        final String sourceKey;
++        final int hitOrdinal;
++
++        private Fault(JsonObject row) {
++            if (!row.has("value") || !row.get("value").getAsBoolean()) {
++                throw new IllegalArgumentException("fault row must have"
++                        + " value=true");
++            }
++            faultId = required(row, "faultId");
++            marker = required(row, "marker");
++            siteId = required(row, "siteId");
++            occurrence = required(row, "occurrence");
++            occurrenceId = OccurrenceAddress.parse(occurrence).id();
++            sourceKey = optional(row, "sourceKey");
++            hitOrdinal = row.has("hitOrdinal")
++                    ? row.get("hitOrdinal").getAsInt() : 0;
++            if (!marker.startsWith("FAULT:") || hitOrdinal <= 0) {
++                throw new IllegalArgumentException("fault row requires a"
++                        + " FAULT marker and positive hitOrdinal");
++            }
++        }
++    }
++
++    private static final class TrialPlan {
++        final List<Fault> faults;
++        final String targetRegionId;
++        final String targetSiteId;
++
++        private TrialPlan(JsonObject row) {
++            if (!row.has("schemaVersion")
++                    || row.get("schemaVersion").getAsInt() != 1) {
++                throw new IllegalArgumentException("fault trial must have"
++                        + " schemaVersion=1");
++            }
++            faults = new ArrayList<>();
++            if (row.has("faults")) {
++                JsonArray array = row.getAsJsonArray("faults");
++                for (int index = 0; index < array.size(); index++) {
++                    faults.add(new Fault(array.get(index).getAsJsonObject()));
++                }
++            } else {
++                // A single object remains useful for a hand-written trial.
++                faults.add(new Fault(row));
++            }
++            if (faults.isEmpty()) {
++                throw new IllegalArgumentException("fault trial has no faults");
++            }
++            Set<String> ids = new HashSet<>();
++            for (Fault fault : faults) {
++                if (!ids.add(fault.faultId)) {
++                    throw new IllegalArgumentException("duplicate faultId "
++                            + fault.faultId);
++                }
++            }
++            targetRegionId = optional(row, "targetRegionId");
++            targetSiteId = optional(row, "targetSiteId");
++        }
++
++        static TrialPlan read(String file) {
++            try {
++                String json = new String(Files.readAllBytes(Paths.get(file)),
++                        StandardCharsets.UTF_8);
++                return new TrialPlan(new JsonParser().parse(json)
++                        .getAsJsonObject());
++            } catch (IOException | RuntimeException failure) {
++                throw new IllegalStateException("invalid -D" + PROPERTY
++                        + "=" + file + ": " + failure.getMessage(), failure);
++            }
++        }
++
++    }
++
++    private static String required(JsonObject row, String key) {
++        String value = optional(row, key);
++        if (value.isEmpty()) {
++            throw new IllegalArgumentException("fault trial has no " + key);
++        }
++        return value;
++    }
++
++    private static String optional(JsonObject row, String key) {
++        return row.has(key) && !row.get(key).isJsonNull()
++                ? row.get(key).getAsString().trim() : "";
++    }
++}
