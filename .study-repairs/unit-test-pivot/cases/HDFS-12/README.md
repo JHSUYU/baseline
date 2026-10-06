@@ -6,9 +6,10 @@ embedded-cluster JUnit
 The default `MiniDFSCluster` has one NameNode and one DataNode. Two independent
 healthy instrumented runs both passed and each reached the selected
 `BlockTokenSecretManager.retrievePassword` null-key check twice. Both checks
-found the requested key. The related original `testLongLivedClient[0]` also
-passed without instrumentation, but its planned key expiry and 15-second sleep
-make the shorter JUnit a better seed for this target.
+found the requested key. The shorter JUnit seeded the first bounded campaign;
+the related original `testLongLivedClient[0]` is now also being run in an
+independent supplement because it rotates block-token keys during a
+15-second sleep and then reaches this lookup with a new key ID.
 
 Case-local ASM hooks record the precise `retrievePassword` null-key check and
 its `InvalidToken` throw. Other hooks observe the three actual socket-read
@@ -32,3 +33,17 @@ is a candidate for replay and source review, not automatically a new bug.
 The earlier 22 region-woven trials remain in
 [legacy-graph-result.json](legacy-graph-result.json) and do not contribute to
 the current campaign's counts.
+
+## Long-lived-client control-plane supplement
+
+The unchanged `testLongLivedClient[0]` passed under case-local instrumentation
+and reached this selected lookup four times using two key IDs. Its healthy
+trace also observed seven DataNode heartbeat RPCs and three received
+active-NameNode key-update commands between the early and late checks. Two
+exact one-fault calibrations, one at a heartbeat and one at a key-update
+command, both preserved the late target checks and passed JUnit. The
+independent 80-trial coverage/I/O campaign is live in node2 tmux
+`hdfs12-control-campaign` and mirrored into the 102-case table by node0 tmux
+`hdfs12-control-sync`. The [supplement details](independent/long-lived/control-plane/README.md)
+give the runtime identities, budgets, checkpoint and result files. Its
+trials remain separate from the 128 completed ordinary-read trials.
