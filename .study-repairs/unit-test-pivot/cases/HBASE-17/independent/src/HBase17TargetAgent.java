@@ -12,9 +12,13 @@ import org.apache.hadoop.hbase.master.assignment.RegionStateNode;
 public class HBase17TargetAgent {
   private static final AtomicInteger B5_HITS = new AtomicInteger();
   private static final AtomicInteger CONFIRM_HITS = new AtomicInteger();
+  private static final AtomicInteger INSTATE_HITS = new AtomicInteger();
+  private static final AtomicInteger ABNORMAL_HITS = new AtomicInteger();
 
   public static int nextB5() { return B5_HITS.incrementAndGet(); }
   public static int nextConfirm() { return CONFIRM_HITS.incrementAndGet(); }
+  public static void hitInState() { INSTATE_HITS.incrementAndGet(); }
+  public static void hitAbnormal() { ABNORMAL_HITS.incrementAndGet(); }
 
   public static boolean calledByConfirmClosed() {
     for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
@@ -28,7 +32,9 @@ public class HBase17TargetAgent {
   public static void premain(String args, Instrumentation inst) {
     Runtime.getRuntime().addShutdownHook(new Thread(() ->
       System.err.println("HBASE17 TOTAL confirmClosed=" + CONFIRM_HITS.get()
-        + " exactB5=" + B5_HITS.get())));
+        + " exactB5=" + B5_HITS.get()
+        + " isInState=" + INSTATE_HITS.get()
+        + " abnormalExpected=" + ABNORMAL_HITS.get())));
     new AgentBuilder.Default()
       .type(named("org.apache.hadoop.hbase.master.assignment.RegionStateNode"))
       .transform((builder, type, loader, module, domain) -> builder.visit(
@@ -45,9 +51,11 @@ public class HBase17TargetAgent {
     @Advice.OnMethodEnter
     public static int enter(@Advice.This RegionStateNode node,
                             @Advice.Argument(0) State[] expected) {
+      HBase17TargetAgent.hitInState();
       if (expected == null || expected.length != 1
-          || expected[0] != State.ABNORMALLY_CLOSED
-          || !HBase17TargetAgent.calledByConfirmClosed()) return -1;
+          || expected[0] != State.ABNORMALLY_CLOSED) return -1;
+      HBase17TargetAgent.hitAbnormal();
+      if (!HBase17TargetAgent.calledByConfirmClosed()) return -1;
       int ordinal = HBase17TargetAgent.nextB5();
       System.err.println("HBASE17 B5_ENTER ordinal=" + ordinal
         + " table=" + node.getTable().getNameAsString()
