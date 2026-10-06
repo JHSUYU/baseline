@@ -1,0 +1,33 @@
+{
+  "case_id": "ZOOKEEPER-11",
+  "status": "pending_budget_expansion",
+  "cluster_test": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest.testReadCurrentEpochFromAcceptedEpochTmpFile",
+  "target_reached": true,
+  "selection_line": 1175,
+  "resolved_outer_guard_line": 1165,
+  "resolved_check_line": 1169,
+  "resolved_throw_source_line": 1174,
+  "elapsed_seconds": 420.606,
+  "elapsed_breakdown_seconds": {
+    "native_junit": 17.595,
+    "static_slice": 96.011,
+    "healthy_graph_record": 21,
+    "fault_trials_total": 286
+  },
+  "fault_trials": 5,
+  "strict_injections": 5,
+  "target_after_fault": 2,
+  "coverage_gain": 1,
+  "coverage_kind": "New scoped branch outcome pair in instrumented target and file-read methods",
+  "global_branch_outcome_gain": 12,
+  "bug_mark": "none",
+  "stopping_reason": "legacy_five_trial_campaign_finished",
+  "fault_model_limitation": "The five trials cover only the original embedded JUnit workload and the checked file I/O exceptions used in those trials.",
+  "source_inventory_only": false,
+  "evidence": "README.md",
+  "trial_history": "trials.json",
+  "reason": "The original three-peer JUnit reached the target guard. Five distinct IOException trials all matched and applied; two retained the guard after the fault and neither fired its selected exception. No new bug was confirmed. The revised 48-trial budget and broader I/O diversity remain open.",
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4
+}

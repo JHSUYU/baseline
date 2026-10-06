@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-06",
+  "system": "ZooKeeper",
+  "version": "3.8.7",
+  "status": "pending_budget_expansion",
+  "quality_complete": false,
+  "bug_mark": "none",
+  "cluster_test": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+  "cluster": "original JUnit three-peer in-JVM QuorumUtil; rolling restart of peers 1, 2, 3",
+  "target_file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java",
+  "target_function": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>",
+  "target_condition_line": 1471,
+  "target_throw_lines": [
+    1472,
+    1475
+  ],
+  "target_code": "if (ss.isMoreRecentThan(leaderStateSummary)) throw new IOException(\"Follower is ahead of the leader...\")",
+  "target_site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u14",
+  "target_throw_site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u29",
+  "healthy_target_check_reached": true,
+  "healthy_guard_outcome": true,
+  "fault_trials": 32,
+  "selected_fault_events": 35,
+  "applied_fault_events": 32,
+  "fully_matched_fault_sequences": 29,
+  "unmatched_fault_sequences": 3,
+  "target_check_after_fault_trials": 7,
+  "target_exception_after_fault_trials": 0,
+  "oracle_candidates": 0,
+  "elapsed_seconds": 321.413,
+  "elapsed_scope": "Sum of measured JUnit fault execution and trace processing for 32 trials; excludes setup and manual review.",
+  "total_elapsed_seconds": 2704.312,
+  "total_elapsed_scope": "wall-clock span from creation of the first case-local ZK06 adapter to report finalization; includes static preparation, healthy seeds, fault trials, trace reanalysis, source review and idle time",
+  "case_started_at_utc": "2026-10-06T17:03:03.765161+00:00",
+  "case_finished_at_utc": "2026-10-06T17:48:08.077056+00:00",
+  "junit_execution_seconds": 218.427,
+  "fault_families": {
+    "FAULT:ZK_QUORUM:RESPONSE": {
+      "selected": 14,
+      "applied": 12,
+      "target_retained_trials": 2,
+      "unique_selected": 8,
+      "unique_applied": 7
+    },
+    "FAULT:ZK_QUORUM:RESPONSE:EOFException": {
+      "selected": 9,
+      "applied": 8,
+      "target_retained_trials": 2,
+      "unique_selected": 8,
+      "unique_applied": 8
+    },
+    "FAULT:ZOOKEEPER_FILE:READ": {
+      "selected": 2,
+      "applied": 2,
+      "target_retained_trials": 0,
+      "unique_selected": 2,
+      "unique_applied": 2
+    },
+    "FAULT:ZOOKEEPER_FILE:WRITE": {
+      "selected": 6,
+      "applied": 6,
+      "target_retained_trials": 2,
+      "unique_selected": 6,
+      "unique_applied": 6
+    },
+    "FAULT:ZOOKEEPER_QUORUM_ACKEPOCH:READ": {
+      "selected": 2,
+      "applied": 2,
+      "target_retained_trials": 1,
+      "unique_selected": 2,
+      "unique_applied": 2
+    },
+    "FAULT:ZOOKEEPER_QUORUM_ACKEPOCH:READ:EOFException": {
+      "selected": 2,
+      "applied": 2,
+      "target_retained_trials": 0,
+      "unique_selected": 2,
+      "unique_applied": 2
+    }
+  },
+  "coverage_feedback": "method-entry and branch-outcome signatures collected each run; gains within builds: r2=3, r3 response=5, r4 ACKEPOCH=7; raw site IDs cannot be unioned across different woven builds",
+  "source_review": "LearnerHandler constructs StateSummary from ACKEPOCH epoch bytes and zxid, then calls waitForEpochAck; Leader compares against currentEpoch and lastProcessedZxid loaded before new epoch proposal. A read failure before ACKEPOCH decoding can abort that handler, so trials that erase the check are not negative evidence.",
+  "evidence": [
+    "trial-ledger.jsonl",
+    "artifact-manifest.json",
+    "REPORT.md"
+  ],
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4,
+  "trace_analysis_seconds": 102.986,
+  "remaining_work": "Expand relevant quorum I/O sites and ordered fault sequences within the 48-trial budget; use target retention and coverage feedback."
+}

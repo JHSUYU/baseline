@@ -1,0 +1,371 @@
+{
+  "case_id": "HDFS-11",
+  "status": "pending_budget_expansion",
+  "system": "HDFS 3.4.3",
+  "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+  "function": "retrieveDataEncryptionKey(int, byte[])",
+  "check_code": "key = allKeys.get(keyId); if (key == null) throw new InvalidEncryptionKeyException(...)",
+  "selection_line": 555,
+  "resolved_check_line": 552,
+  "resolved_throw_source_line": 553,
+  "resolved_target_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u20",
+  "resolved_guard_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u8",
+  "line_resolution_evidence": "The historical selection line 555 points to the last line of the exception message. Hadoop 3.4.3 source puts Map.get at 551, if (key == null) at 552, and throw new at 553. Released jar javap LineNumberTable maps ifnonnull bytecode 25 to line 552, new InvalidEncryptionKeyException bytecode 28 to line 553, and string continuation bytecode 57 to line 555.",
+  "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]",
+  "cluster_nodes": "MiniDFSCluster, one NameNode and one DataNode (builder defaults)",
+  "target_reached": true,
+  "healthy_target_guard_hits": 2,
+  "healthy_target_branch_outcomes": [
+    true,
+    true
+  ],
+  "healthy_target_fatal": false,
+  "observed_fault_points": 141,
+  "fault_trials": 19,
+  "strict_injections": 19,
+  "target_after_fault": 16,
+  "coverage_gain": 10,
+  "bug_mark": "none",
+  "elapsed_seconds": 543.904,
+  "elapsed_breakdown_seconds": {
+    "server_read_campaign": {
+      "static_seed": 38.939,
+      "region_state_weave": 20.027,
+      "healthy_junit_two_runs": 21.29,
+      "healthy_aggregate_two_runs": 2.537,
+      "fault_trial_jvms_ten_runs": 186.596,
+      "faulted_aggregates_eight_runs": 9.891
+    },
+    "key_path_campaign": {
+      "static_seed": 46.948,
+      "region_state_weave": 23.283,
+      "healthy_junit": 11.059,
+      "healthy_aggregate": 2.572,
+      "fault_trial_jvms_nine_runs": 149.404,
+      "faulted_aggregates_nine_runs": 31.358
+    }
+  },
+  "timing_note": "Sum of measured SEED, weave, original JUnit, aggregate, and trial process durations from two final subcampaigns; concurrency means this is not wall clock. New nine-trial tmux campaign wall time was 132.911 s. Earlier feasibility probes and manual source review excluded.",
+  "evidence": [
+    "evidence/legacy-server-read-trials.json",
+    "evidence/legacy-key-path-trials.json",
+    "evidence/legacy-healthy-runs.json",
+    "evidence/legacy-key-observation.json"
+  ],
+  "status_scope": "The original MiniDFSCluster test reached the guard after 16 of 19 applied trials across SASL read and control-plane I/O faults. None produced the target exception.",
+  "healthy_fault_points_observed": 141,
+  "fault_events_applied": 30,
+  "target_exception_count": 0,
+  "target_fatal_branch_count": 0,
+  "lost_target_trials": 3,
+  "coverage_gain_definition": "Final 27-class key-path campaign: ten new instrumented branch (site,outcome) pairs and zero new METHOD_ENTER methods versus its own healthy seed; ordered third fault added zero methods or branch pairs beyond ordered two-fault trace. Earlier 22-class SASL server-read subcampaign had five branch pairs and is not numerically combined across scopes.",
+  "stop_reason": "The earlier 19-trial campaign ended after an ordered two-fault sequence added recovery branch outcomes; a third fault added no further coverage. The revised 48-trial budget and broader I/O exploration remain open.",
+  "remaining_work": "Expand observed I/O fault families and ordered sequences up to four faults, using target retention and coverage feedback.",
+  "trial_results": [
+    {
+      "sequence": "first-eof",
+      "elapsed_seconds": 11.25,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "first-timeout",
+      "elapsed_seconds": 12.306,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "second-eof",
+      "elapsed_seconds": 11.356,
+      "junit_exit": 1,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": false,
+      "target_guard_outcomes": [
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "second-timeout",
+      "elapsed_seconds": 11.695,
+      "junit_exit": 1,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": false,
+      "target_guard_outcomes": [
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "first-eof-then-eof",
+      "elapsed_seconds": 20.894,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "first-eof-then-timeout",
+      "elapsed_seconds": 19.783,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "first-timeout-then-eof",
+      "elapsed_seconds": 17.292,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "first-timeout-then-timeout",
+      "elapsed_seconds": 21.197,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "first-eof-then-eof-then-eof",
+      "elapsed_seconds": 28.802,
+      "junit_exit": 0,
+      "requested_faults": 3,
+      "matched_faults": 3,
+      "applied_faults": 3,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "first-timeout-then-timeout-then-timeout",
+      "elapsed_seconds": 32.021,
+      "junit_exit": 0,
+      "requested_faults": 3,
+      "matched_faults": 3,
+      "applied_faults": 3,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-server-read-trials.json"
+    },
+    {
+      "sequence": "response-timeout",
+      "campaign": "key_path",
+      "elapsed_seconds": 12.454,
+      "aggregate_seconds": 3.43,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "response-eof",
+      "campaign": "key_path",
+      "elapsed_seconds": 12.507,
+      "aggregate_seconds": 3.524,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "request-connect-timeout",
+      "campaign": "key_path",
+      "elapsed_seconds": 12.449,
+      "aggregate_seconds": 4.344,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "response-io",
+      "campaign": "key_path",
+      "elapsed_seconds": 12.909,
+      "aggregate_seconds": 3.985,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "client-sasl-send-1",
+      "campaign": "key_path",
+      "elapsed_seconds": 15.006,
+      "aggregate_seconds": 3.729,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "request-io",
+      "campaign": "key_path",
+      "elapsed_seconds": 16.077,
+      "aggregate_seconds": 3.626,
+      "junit_exit": 0,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "client-sasl-send-2",
+      "campaign": "key_path",
+      "elapsed_seconds": 13.749,
+      "aggregate_seconds": 2.371,
+      "junit_exit": 1,
+      "requested_faults": 1,
+      "matched_faults": 1,
+      "applied_faults": 1,
+      "target_after_fault": false,
+      "target_guard_outcomes": [
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "response-eof-then-retry-timeout",
+      "campaign": "key_path",
+      "elapsed_seconds": 22.207,
+      "aggregate_seconds": 3.425,
+      "junit_exit": 0,
+      "requested_faults": 2,
+      "matched_faults": 2,
+      "applied_faults": 2,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    },
+    {
+      "sequence": "response-eof-retry-timeout-then-heartbeat-eof",
+      "campaign": "key_path",
+      "elapsed_seconds": 32.046,
+      "aggregate_seconds": 2.924,
+      "junit_exit": 0,
+      "requested_faults": 3,
+      "matched_faults": 3,
+      "applied_faults": 3,
+      "target_after_fault": true,
+      "target_guard_outcomes": [
+        true,
+        true
+      ],
+      "target_fatal_exceptions": 0,
+      "evidence": "evidence/legacy-key-path-trials.json"
+    }
+  ],
+  "legacy_server_read_healthy_fault_points_observed": 146,
+  "checkpoint": "evidence/legacy-key-path-trials.json",
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4
+}

@@ -1,0 +1,72 @@
+{
+  "case_id": "HDFS-14",
+  "status": "pending_budget_expansion",
+  "system": "HDFS 3.4.3",
+  "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+  "function": "checkAccess(Token<BlockTokenIdentifier>, String, ExtendedBlock, AccessMode, StorageType[], String[])",
+  "check_code": "if (!MessageDigest.isEqual(retrievePassword(id), token.getPassword())) throw new InvalidToken(\"... correct token password\")",
+  "selection_line": 412,
+  "resolved_guard_site": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: void checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode,org.apache.hadoop.fs.StorageType[],java.lang.String[])>#u33",
+  "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]",
+  "cluster_nodes": "Original MiniDFSCluster builder defaults: one NameNode and one DataNode; original test rebuilds the cluster with data transfer encryption and block tokens enabled.",
+  "workload": "Unmodified released Hadoop 3.4.3 JUnit method; write, read, checksum, rebuild with encryption, encrypted read and checksum.",
+  "target_reached": true,
+  "healthy_target_guard_hits": 2,
+  "healthy_target_branch_outcomes": [
+    true,
+    true
+  ],
+  "healthy_target_fatal": false,
+  "observed_fault_points": 147,
+  "fault_trials": 2,
+  "strict_injections": 2,
+  "target_after_fault": 1,
+  "coverage_gain": 0,
+  "coverage_note": "No new production method, branch site, or branch outcome relative to healthy. The first trial adds one synthetic DoorWeave fault-guard outcome; excluded from production coverage gain.",
+  "trials": [
+    {
+      "selector": "hdfs14/trial-sasl-first.json",
+      "exception": "java.io.IOException: symbolic FAULT:HDFS_SASL:REQUEST",
+      "junit_exit": 0,
+      "matched": 1,
+      "applied": 1,
+      "target_after_fault": true,
+      "target_guard_hits_after_fault": 2,
+      "target_fatal": false,
+      "outcome": "original test retried; token check remained healthy"
+    },
+    {
+      "selector": "hdfs14/trial-sasl-second.json",
+      "exception": "java.io.IOException: symbolic FAULT:HDFS_SASL:REQUEST",
+      "junit_exit": 1,
+      "matched": 1,
+      "applied": 1,
+      "target_after_fault": false,
+      "target_guard_hits_after_fault": 0,
+      "target_fatal": false,
+      "outcome": "discarded: the injected exception removed the remaining target activation"
+    }
+  ],
+  "bug_mark": "none",
+  "elapsed_seconds": 98.265,
+  "elapsed_breakdown_seconds": {
+    "static_seed": 36.403,
+    "soot_weave": 22.319,
+    "adapter_build": 2.877,
+    "healthy_junit": 11.461,
+    "healthy_aggregate": 1.724,
+    "strict_first_junit": 10.548,
+    "strict_first_aggregate": 1.168,
+    "strict_second_junit": 10.496,
+    "strict_second_aggregate": 1.269
+  },
+  "timing_note": "Sum of measured successful pipeline stages for this scoped run, excluding shell and analysis overhead; the earlier obsolete identity run is excluded.",
+  "evidence": [
+    "../../hdfs14/README.md",
+    "evidence/legacy-sasl-trials.json"
+  ],
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4,
+  "remaining_work": "Expand from two SASL request trials to additional relevant I/O sites and ordered fault sequences within the 48-trial budget."
+}

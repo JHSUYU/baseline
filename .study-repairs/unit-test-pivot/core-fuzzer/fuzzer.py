@@ -804,8 +804,8 @@ def validate(config: dict[str, Any]) -> None:
             "timing_manifest" not in config["seed"]):
         raise ValueError("precomputed seed requires elapsed_seconds or timing_manifest")
     budget = config["budget"]
-    budget.setdefault("max_trials", 64)
-    budget.setdefault("max_faults", 6)
+    budget.setdefault("max_trials", 80)
+    budget.setdefault("max_faults", 8)
     if budget["max_trials"] < 1 or budget["max_faults"] < 1:
         raise ValueError("budgets must be positive")
     if (not isinstance(budget.get("max_unmatched_retries", 1), int) or

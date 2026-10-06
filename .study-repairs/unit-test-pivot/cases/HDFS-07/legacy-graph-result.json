@@ -1,0 +1,313 @@
+{
+  "case_id": "HDFS-07",
+  "status": "pending_budget_expansion",
+  "system": "HDFS 3.4.3",
+  "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+  "function": "Journal.acceptRecovery(RequestInfo, SegmentStateProto, URL)",
+  "selection_line": 926,
+  "check_code": "if (txnRange(currentSegment).contains(committedTxnId.get()) && !txnRange(segment).contains(committedTxnId.get())) throw new AssertionError(\"Cannot replace segment ...\")",
+  "resolved_guard_site": "<org.apache.hadoop.hdfs.qjournal.server.Journal: void acceptRecovery(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo,org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$SegmentStateProto,java.net.URL)>#u97",
+  "resolved_throw_site": "<org.apache.hadoop.hdfs.qjournal.server.Journal: void acceptRecovery(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo,org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$SegmentStateProto,java.net.URL)>#u116",
+  "fatal_guard_outcome": false,
+  "cluster_test": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testRecoverAfterIncompleteRecovery",
+  "cluster_nodes": 3,
+  "workload": "Unmodified Hadoop 3.4.3 JUnit method and its embedded three-JournalNode MiniJournalCluster; JUnitCore wrapper preserves the original @Before, @After and @Rule lifecycle.",
+  "healthy_runtime_seconds": 7.439,
+  "healthy_aggregate_seconds": 1.97,
+  "healthy_target_guard_hits": 1,
+  "healthy_target_guard_outcomes": [
+    true
+  ],
+  "healthy_fault_points": 145,
+  "hadoop_ipc_request_sends": 46,
+  "hadoop_ipc_request_receives": 46,
+  "fault_trials": 24,
+  "requested_fault_events": 25,
+  "matched_fault_events": 24,
+  "applied_fault_events": 24,
+  "strict_injection_trials": 23,
+  "strict_target_after_fault_trials": 3,
+  "target_fatal_trials": 0,
+  "unmatched_trials": 1,
+  "target_lost_trials": 20,
+  "healthy_method_coverage": 82,
+  "healthy_branch_outcome_coverage": 104,
+  "target_retaining_production_coverage_gain": 0,
+  "coverage_note": "Each target-retaining trial adds one raw branch outcome at a synthetic DoorWeave fault guard in Client.getRpcResponse; no new production method or branch outcome is observed. The two-fault extension was explored from that raw feedback but does not count as a production coverage gain.",
+  "alternate_unmodified_tests": {
+    "testNewerVersionOfSegmentWins": {
+      "junit_exit": 0,
+      "runtime_seconds": 8.542,
+      "exact_guard_reached": false
+    },
+    "testNewerVersionOfSegmentWins2": {
+      "junit_exit": 0,
+      "runtime_seconds": 8.542,
+      "exact_guard_reached": false
+    },
+    "testInProgressRecovery": {
+      "junit_exit": 0,
+      "runtime_seconds": 6.586,
+      "exact_guard_reached": false
+    },
+    "testCrashAtBeginningOfSegment": {
+      "junit_exit": 0,
+      "runtime_seconds": 7.288,
+      "exact_guard_reached": false
+    }
+  },
+  "bug_mark": "none",
+  "started_at_utc": "2026-10-06T17:05:27.346555+00:00",
+  "updated_at_utc": "2026-10-06T17:43:42.971675+00:00",
+  "elapsed_seconds": 2295.625,
+  "trial_runtime_total_seconds": 169.891,
+  "timing_note": "Full case wall time is inferred from the measured static stage start through this report checkpoint, including setup, failed builds, analysis, four alternate JUnit probes and 24 trials. Every trial records its own measured runtime; the first five pre-batch wall values are measured stage sums and lower bounds.",
+  "trial_history": "trials.json",
+  "evidence": "README.md",
+  "trial_ledger": [
+    {
+      "id": "trial-01",
+      "runtime_seconds": 6.835,
+      "measured_trial_wall_seconds": 8.605,
+      "trial_wall_lower_bound_only": true,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "trial-02",
+      "runtime_seconds": 6.434,
+      "measured_trial_wall_seconds": 8.006,
+      "trial_wall_lower_bound_only": true,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "trial-03",
+      "runtime_seconds": 7.688,
+      "measured_trial_wall_seconds": 10.274,
+      "trial_wall_lower_bound_only": true,
+      "requested_faults": 1,
+      "applied_faults": 0,
+      "target_after_last_fault": false,
+      "outcome": "unmatched"
+    },
+    {
+      "id": "trial-04",
+      "runtime_seconds": 7.291,
+      "measured_trial_wall_seconds": 8.961,
+      "trial_wall_lower_bound_only": true,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "trial-05",
+      "runtime_seconds": 6.887,
+      "measured_trial_wall_seconds": 8.456,
+      "trial_wall_lower_bound_only": true,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-01",
+      "runtime_seconds": 7.991,
+      "measured_trial_wall_seconds": 12.388,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": true,
+      "outcome": "target_nonfatal"
+    },
+    {
+      "id": "control-rpc-02",
+      "runtime_seconds": 7.389,
+      "measured_trial_wall_seconds": 9.639,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-03",
+      "runtime_seconds": 7.489,
+      "measured_trial_wall_seconds": 9.677,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-04",
+      "runtime_seconds": 7.137,
+      "measured_trial_wall_seconds": 9.387,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-05",
+      "runtime_seconds": 7.237,
+      "measured_trial_wall_seconds": 9.665,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-06",
+      "runtime_seconds": 7.388,
+      "measured_trial_wall_seconds": 9.514,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-07",
+      "runtime_seconds": 7.238,
+      "measured_trial_wall_seconds": 9.588,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-08",
+      "runtime_seconds": 6.937,
+      "measured_trial_wall_seconds": 9.21,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-09",
+      "runtime_seconds": 6.787,
+      "measured_trial_wall_seconds": 8.914,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-10",
+      "runtime_seconds": 6.333,
+      "measured_trial_wall_seconds": 8.478,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-11",
+      "runtime_seconds": 6.936,
+      "measured_trial_wall_seconds": 9.106,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-12",
+      "runtime_seconds": 6.686,
+      "measured_trial_wall_seconds": 8.861,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-13",
+      "runtime_seconds": 6.536,
+      "measured_trial_wall_seconds": 8.545,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-14",
+      "runtime_seconds": 6.485,
+      "measured_trial_wall_seconds": 8.501,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "control-rpc-15",
+      "runtime_seconds": 6.887,
+      "measured_trial_wall_seconds": 9.026,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "followup-eof",
+      "runtime_seconds": 7.286,
+      "measured_trial_wall_seconds": 12.108,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": true,
+      "outcome": "target_nonfatal"
+    },
+    {
+      "id": "followup-timeout",
+      "runtime_seconds": 7.639,
+      "measured_trial_wall_seconds": 12.222,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": true,
+      "outcome": "target_nonfatal"
+    },
+    {
+      "id": "followup-paxos",
+      "runtime_seconds": 7.288,
+      "measured_trial_wall_seconds": 9.74,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 1,
+      "applied_faults": 1,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    },
+    {
+      "id": "followup-mutation",
+      "runtime_seconds": 7.087,
+      "measured_trial_wall_seconds": 9.628,
+      "trial_wall_lower_bound_only": false,
+      "requested_faults": 2,
+      "applied_faults": 2,
+      "target_after_last_fault": false,
+      "outcome": "target_lost"
+    }
+  ],
+  "reason": "The original three-JournalNode cluster test reaches the guard. Of 24 trials, 23 had strict injection; three retained the guard, all on its nonfatal arm. Most other faults ended the quorum test before this check. No target AssertionError or new bug was observed. The coverage and I/O trial budget remains open.",
+  "methodology": "legacy_trials_reassessed_for_coverage_io",
+  "baseline_trial_budget": 48,
+  "baseline_max_faults_per_sequence": 4
+}
