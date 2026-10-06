@@ -64,13 +64,20 @@ def cov(paths):
     if p.returncode:
         return {'error': p.stderr[-1500:]}
     classes = {}
+    target = {}
     for line in p.stdout.splitlines():
         m = re.fullmatch(r'COVERAGE class=(\S+) methods=(\d+) branches=(\d+) lines=(\d+)', line)
         if m:
             classes[m[1]] = {'methods': int(m[2]), 'branches': int(m[3]), 'lines': int(m[4])}
+        m = re.fullmatch(r'TARGET line=(2297|2298) instructions=(\d+)(?: branches=(\d+))?', line)
+        if m:
+            target[m[1]] = {'instructions': int(m[2]),
+                            'branches': int(m[3]) if m[3] is not None else None}
     if len(classes) != 5:
         return {'error': 'Expected five production classes, got ' + repr(classes)}
-    return {'classes': classes,
+    if set(target) != {'2297', '2298'}:
+        return {'error': 'Missing selected source-line coverage: ' + repr(target)}
+    return {'classes': classes, 'target': target,
             'methods': sum(x['methods'] for x in classes.values()),
             'branches': sum(x['branches'] for x in classes.values()),
             'lines': sum(x['lines'] for x in classes.values())}
@@ -142,6 +149,7 @@ def publish(state, status='running_coverage_io_campaign'):
         'healthy_status_comparisons': sum(x['statuses'] for x in state['healthy']['guards']),
         'healthy_related_io_events': len(state['healthy']['io']),
         'healthy_coverage': state['healthy_coverage'],
+        'cumulative_target_source_lines': state['coverage_union']['target'],
         'attempted_trials': len(trials), 'strict_trials': sum(x['strict'] for x in trials),
         'effective_trials': effective_count(state),
         'strict_post_fault_target_trials': sum(x['target_after_fault'] for x in trials),
@@ -189,6 +197,13 @@ def main():
         baseline = cov([HERE / 'logs/healthy.exec'])
         if 'error' in baseline:
             raise RuntimeError(baseline['error'])
+        if (baseline['target']['2297']['instructions'] <= 0
+                or baseline['target']['2297']['branches'] <= 0
+                or baseline['target']['2298']['instructions'] != 0
+                or any(x['non_success'] for x in healthy['guards'])
+                or not any(x['statuses'] > 0 and x['replica'] == 1
+                           for x in healthy['guards'])):
+            raise RuntimeError('Healthy run did not verify the selected status comparison')
         state = {'healthy': healthy, 'healthy_coverage': baseline,
                  'coverage_union': baseline,
                  'coverage_execs': [str(HERE / 'logs/healthy.exec')],
