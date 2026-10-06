@@ -1,0 +1,38 @@
+{
+  "case_id": "ZOOKEEPER-01",
+  "case_local_artifacts": {
+    "agent": {
+      "jar_entries_checked": 9,
+      "path": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-01/evidence/independent/agent/independent-agent.jar",
+      "sha256": "ce2d62fa9356c9b0d946c5334535c8e7f4881e072546cacbb587c2a9ef9a107a"
+    },
+    "runner": {
+      "jar_entries_checked": 4,
+      "path": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-01/evidence/independent/runner/independent-runner.jar",
+      "sha256": "9034aeb5934171b359c8a660c68de1d854e9838af66882277a69c511d7d4aaf8"
+    }
+  },
+  "fault_identity": "direct SocketChannel read/write and QuorumPeer epoch FileReader I/O site plus global ordinal",
+  "forbidden_legacy_component_in_classpath_or_artifact_or_selected_class": false,
+  "historical_trials_excluded": 64,
+  "independent_classpath_entries": 84,
+  "independent_classpath_sha256": "8a14c28cd2151428c8cc290c458705a2e6c50229bd8da1259ab89f3160e7dd61",
+  "legacy_graph_or_skeleton_artifacts_read_for_selection_or_execution": false,
+  "original_source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+  "original_test": "org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest#testCloseSessionWhileUpgradeOnLeader",
+  "original_test_classes_byte_identical_to_unwoven_build": true,
+  "runtime_feedback_inputs": [
+    "case-local Probe events.tsv",
+    "case-local Probe coverage.tsv"
+  ],
+  "selected_production_class_sha256": {
+    "org/apache/zookeeper/ClientCnxn$SendThread": "7212e73d51c35f9e9ebc5c560333710cc951be542f5babcd06c065677a1c4d26",
+    "org/apache/zookeeper/ClientCnxnSocketNIO": "3ad3b8464a2105348379a5d9b6427b71c435db828d98439ae5b468313fa93a70",
+    "org/apache/zookeeper/server/NIOServerCnxn": "91fbd4dcb2a9309de5d265c25e882f40ed660d9bf30a6dcf51dbfccfcc0964e3",
+    "org/apache/zookeeper/server/SessionTrackerImpl": "494df026851e1d06853ee2264684f2966199d898501031bb38f7b4c2dc631c1e",
+    "org/apache/zookeeper/server/quorum/QuorumPeer": "cdcb7a67d5905fef27a8e36824b5d504c8df2c907dfac1a3cb8af6e3abbb6052"
+  },
+  "selected_production_classes_byte_identical_to_unwoven_build": true,
+  "target_identity": "SessionTrackerImpl.checkSession guard line 316; explicit SessionExpiredException ATHROW line 317",
+  "trial_jvms_verified": 84
+}
