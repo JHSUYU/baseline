@@ -1,5 +1,11 @@
 # Coverage guided fault campaign for cluster tests
 
+`original_hdfs_junit.py` is a small calibration helper for an unchanged
+Hadoop 3.4.3 embedded-cluster JUnit method. It runs one method with its
+native fixture in a fresh scratch directory and records JUnit outcome,
+elapsed time, and a raw JaCoCo file. It does not instrument target checks or
+inject faults, so a passing run alone never completes a candidate.
+
 `fuzzer.py` reruns one existing cluster based JUnit test and injects faults at
 I/O points observed in that test. It reads a healthy runtime trace to find the
 target check, exact fault selectors, and initial method/branch coverage. Each
