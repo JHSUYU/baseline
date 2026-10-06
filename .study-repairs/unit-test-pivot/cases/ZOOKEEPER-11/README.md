@@ -52,3 +52,13 @@ The trace also has 24 markers outside the exact target region, admitted only as 
 Under this **observed closure, original JUnit workload, and IOException/KeeperException door model**, the queue is exhausted by operation/timing equivalence. Five strict trials represent the viable behavioral classes; two retain the selected target and neither fires its exception. The stopping reason is `closure_equivalence_exhausted`, not a claim about arbitrary filesystem failures, alternate workloads, or defects elsewhere. The three failing trials are expected consequences of injected errors and are **not** coordination bugs.
 
 The case-local GraphChecker adapter and experiment declarations are archived in `adapter-source/` so the trial can be resumed without relying on `/tmp` worktree edits. The target spec continues to use line 1174, while the original selection manifest remains at line 1175.
+
+## Trace storage
+
+The 16 completed `runtime_trace.jsonl` and `schedule.jsonl` streams under
+`../../zk11-graphchecker/{record1,record2,record3,trial1,...,trial5}/runtime/`
+are stored as `.jsonl.gz`. Each archive was decompressed and verified against
+its original SHA-256 before the uncompressed copy was removed. Sizes and both
+hashes are in `trace-archive-manifest.json`. To reaggregate an archived run,
+restore the required stream with `gzip -dk <file>.jsonl.gz`; the case results
+and trial selectors have not changed.
