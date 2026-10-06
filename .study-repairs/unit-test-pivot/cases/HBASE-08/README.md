@@ -84,3 +84,23 @@ and JaCoCo 0.8.15. The I/O identities are recorded at runtime by that agent;
 the case uses no GraphChecker prewoven JAR, region skeleton, static map,
 closure, or graph feedback. The source checkout is used only for inspecting
 the selected check and its original JUnit.
+
+## Completed result
+
+The graph-free campaign completed 80 distinct, strictly applied trials with
+up to eight ordered faults. Sixty-five trials reached the selected method
+after the final fault; 64 also reached it for the test namespace
+`TestNamespaceAuditor_np2`. Sixty-four original JUnit executions passed; 15
+trials lost the selected method after all faults and were excluded from
+coverage feedback. No trial threw the selected `NamespaceNotFoundException`.
+The accepted-trial union added two production methods and ten branches over
+the healthy run. It exposed one new stable I/O site; other new exact selectors
+were later hit ordinals of already seen sites. The last 16 trials added no
+production method, branch, or stable I/O family, so the conditional 128/ten
+extension did not open. The current method cost 4,205.04 seconds including
+the healthy run; the five earlier trials and their setup cost are reported
+separately in `result.json`. This is no bug candidate for this tested scope.
+
+`evidence/hbase08-coverage-io-80.tar.gz` contains the checkpoint and all
+healthy/fault logs and JaCoCo execution data. Its SHA-256 is
+`da3b791bbd2b632171729abe45d2a5dc885e7e373621ecdc5223775f8d459224`.
