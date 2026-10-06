@@ -124,8 +124,12 @@ def queue_priority(entry, trials):
         and x['plan'][:-1] == prefix
         and '~'.join(x['plan'][-1].split('~')[:3]) == site
         for x in trials)
+    prefix_trials = [x for x in trials if x['strict'] and x['plan'][:-1] == prefix]
+    exhausted_prefix = len(prefix_trials) >= 4 and all(
+        not x['target_after_final_fault'] for x in prefix_trials)
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
-        + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0)
+        + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
+        - (60 if exhausted_prefix else 0)
 
 
 def publish(state):
