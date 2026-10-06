@@ -4,7 +4,7 @@
   "source_archive": "https://downloads.apache.org/lucene/solr/8.11.4/solr-8.11.4-src.tgz",
   "source_sha512": "5b073efbd45dbc465e78b8bb849a22805f919e25716b60ceccbd1d04b51e4940e96adee6683d26f453ddb32f5649c7457f3a570eb1dd7cec5689dbe936726748",
   "source_root": ".study-repairs/unit-test-pivot/source/solr-8.11.4",
-  "interpretation": "Source mapping only. No embedded JUnit smoke or fault trial is claimed by this map.",
+  "interpretation": "All rows map source tests. SOLR-22 additionally has a measured original embedded JUnit and coverage-guided I/O fault campaign; current counts are in its case result and the 102-row checklist.",
   "cases": [
     {
       "case_id": "SOLR-01",
@@ -517,13 +517,13 @@
         258
       ],
       "operation": "Adds and commits documents, restarts a PULL replica and reloads the collection; this can request an old index generation.",
-      "target_status": "Existing SolrCloudTestCase is identified; the exception is caught in ReplicationHandler, so source review is required after runtime target verification. Do not exclude without running the original test.",
-      "caveat": "Source observation only; exact target reach and post-fault behavior unverified.",
-      "status": "test_identified_expected_exception",
-      "target_reached": null,
-      "smoke_status": "not_run",
+      "target_status": "IndexDeletionPolicyWrapper.java:177 rejects an unavailable old generation. The original embedded test and current runtime probes reached this exact target with nonfatal outcomes. ReplicationHandler.getFileList catches this exception, but DirectoryFileStream.initWrite reaches the same method through saveCommitPoint without that catch.",
+      "caveat": "Measured fault-trial counts are in the per-case result. The target guard has two alternative fatal paths; a target throw needs exact path, caller and downstream outcome review before a bug claim.",
+      "status": "healthy_target_reached",
+      "target_reached": true,
+      "smoke_status": "passed_healthy_runtime_recording",
       "cluster_evidence": "SolrCloudTestCase; two Jetty nodes, setup lines 81-88",
-      "expected_exception_reason": "IndexDeletionPolicyWrapper.java:177 intentionally throws for an unavailable old generation. ReplicationHandler.java:669-676 catches precisely this IllegalStateException and returns 'invalid index generation'. The selected target exception alone is expected handling, so it is excluded from the target-exception-only oracle."
+      "expected_exception_reason": null
     },
     {
       "case_id": "SOLR-31",
