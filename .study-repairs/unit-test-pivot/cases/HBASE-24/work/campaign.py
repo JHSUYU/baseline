@@ -103,8 +103,12 @@ def priority(q, trials):
                              + x['plan'][-1].split('~')[4:]) for x in trials)
     same_prefix = [x for x in trials if x['strict'] and x['plan'][:-1] == q['plan'][:-1]]
     dead_prefix = len(same_prefix) >= 4 and all(not x['target_after_fault'] for x in same_prefix)
+    depth = len(q['plan'])
+    # The selected PB check disappears under many four/five-fault prefixes.
+    # Prefer viable two/three-fault continuations while retaining deeper seeds.
+    target_viability = 10 * max(0, min(depth, 3) - 1) - 20 * max(0, depth - 3)
     return (q['score'] + (22 if not tried[site_kind] else 0)
-            + (12 if len(q['plan']) >= 2 and len(trials) >= 20 else 0) * (len(q['plan']) - 1)
+            + target_viability
             + min(q['wait'] // 8, 8) - (80 if dead_prefix else 0)
             - min(q['parent_seconds'] / 25, 8))
 
