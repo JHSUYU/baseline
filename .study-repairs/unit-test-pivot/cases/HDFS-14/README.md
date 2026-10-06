@@ -31,3 +31,28 @@ selected throw is a candidate for replay and source review.
 The prior two region-woven trials are preserved in
 [legacy-graph-result.json](legacy-graph-result.json) and excluded from the
 current campaign.
+
+## Completed result and source review
+
+The 80-trial budget extended to 128 because valid trial 79 added production
+`LeaseRenewer` method/branch coverage. The campaign then completed 128 exact
+ordered injections, with 51 trials reaching this same password comparison
+after the final exception. Every one of those 51 original JUnit runs passed;
+their post-fault checks each used one key ID and found equal passwords. No
+selected `InvalidToken` was thrown. The deepest tested sequence had four
+exceptions, and the final eight trials added no valid production method,
+covered branch count, or stable I/O family. Total healthy plus fault-trial
+runtime was 4,132.810 seconds. Each trial's duration and outcome are in
+`independent-trial-ledger.csv`; the independent trace audit is
+`independent/audit-summary.json` (zero discrepancies).
+The checkpoint and all 128 compact trial plans, traces, and manifests are
+also preserved in `independent/compact-evidence.tar.gz`, with SHA-256 in
+`independent/compact-evidence-index.json`.
+
+Released Hadoop 3.4.3 source lines 411–414 call `checkAccess(id, ...)`, then
+recompute the token password and compare it with the password carried by the
+token. A mismatch would throw the selected `InvalidToken`. The exact hook
+observed no mismatch in any strict post-fault trial, so this case has no new
+bug candidate. These faults exercised the encrypted data-transfer SASL reads
+on the original one-DataNode fixture; they do not claim to cover a separate
+NameNode key-delivery failure.
