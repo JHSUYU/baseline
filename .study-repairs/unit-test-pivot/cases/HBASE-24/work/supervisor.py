@@ -33,7 +33,7 @@ def start(effective, attempts, faults):
 
 def families(path):
     lines = path.read_text(errors='replace')
-    return {x.split('~', 1)[0]
+    return {'~'.join(x.split('~')[:3])
             for x in re.findall(r'HBASE24 IO seq=\d+ selector=(\S+)', lines)}
 
 
