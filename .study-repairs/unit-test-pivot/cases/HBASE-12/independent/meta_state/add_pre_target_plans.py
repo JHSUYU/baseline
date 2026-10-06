@@ -2,14 +2,24 @@
 """Append healthy-observed TableState writes that precede HBASE-12 B3."""
 
 import json
+import os
+import sys
+import time
 
 from campaign import PLANS, STATE, save, utc
 
 
 def main() -> None:
-    state = json.loads(STATE.read_text())
-    if state["phase"] != "complete" or len(state["completed"]) != 6:
-        raise SystemExit("Finish the six original META write plans before extending")
+    wait = "--wait" in sys.argv
+    while True:
+        state = json.loads(STATE.read_text())
+        if state["phase"] == "complete":
+            break
+        if not wait:
+            raise SystemExit("Finish the six original META write plans before extending")
+        time.sleep(15)
+    if len(state["completed"]) != 6:
+        raise SystemExit("Expected exactly six original META write plans")
     healthy = state["healthy"]
     first_b3 = min(visit["line_index"] for visit in healthy["target_visits"]
                    if visit["b3_evaluated"])
@@ -43,7 +53,11 @@ def main() -> None:
         "same healthy trace; the initial six DISABLING/DISABLED writes follow both B3 "
         "evaluations. Same recorder and production coverage scope; prior trials retained.")
     save(STATE, state)
-    print("APPENDED", len(choices), "pre-target plans; total", len(state["choices"]))
+    print("APPENDED", len(choices), "pre-target plans; total", len(state["choices"]),
+          flush=True)
+    if wait:
+        os.chdir(STATE.parent)
+        os.execv(sys.executable, [sys.executable, "-u", str(STATE.parent / "campaign.py")])
 
 
 if __name__ == "__main__":
