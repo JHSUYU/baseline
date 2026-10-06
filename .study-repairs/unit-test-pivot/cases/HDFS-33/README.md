@@ -34,3 +34,5 @@ order and the same selected assertion executes after the last fault. The
 selected assertion throw is a replay and source-review candidate, not an
 automatic bug verdict. The campaign is running; no final negative result is
 claimed yet.
+The stopping target is 80 strict target-retaining trials, bounded by 180 total
+attempts or 9,000 seconds. Every attempted trial is recorded separately.

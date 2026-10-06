@@ -26,3 +26,8 @@ IPC response reads, records production JaCoCo coverage, and resumes from an
 atomic checkpoint in `independent/evidence`. A trial is relevant only if its
 ordered faults applied and a selected guard ran afterward. This campaign is
 still running, so its result is not yet a completed negative finding.
+The stopping target is 80 strict target-retaining trials, bounded by 180 total
+attempts or 9,000 seconds. Early faults in the in-progress snapshot-record
+write abort the image save before the count guard, as expected from the
+source. Those attempts remain in the ledger, while subsequent selection
+favors observed IPC reads that may preserve a later save.

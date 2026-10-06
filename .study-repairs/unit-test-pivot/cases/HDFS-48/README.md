@@ -22,3 +22,5 @@ from an atomic checkpoint in `independent/evidence`. A fault trial is counted
 as target-relevant only when the exact ordered injection was applied and the
 selected rollback guard ran afterward. The campaign is still running; a
 passing healthy check or a test failure elsewhere does not establish a bug.
+The stopping target is 80 strict target-retaining trials, bounded by 180 total
+attempts or 9,000 seconds; each attempted trial remains in the ledger.
