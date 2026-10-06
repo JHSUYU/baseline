@@ -92,6 +92,7 @@ def normalize_trial_counts(record: dict, update: dict,
     # counters; the exact exception count remains in the original result.
     for candidate in ("post_fault_target_reach_trials",
                       "strict_target_after_fault_trials",
+                      "strict_target_after_fault",
                       "target_check_after_fault_trials",
                       "target_after_fault_trials"):
         if candidate in update:
