@@ -187,6 +187,11 @@ def queue_priority(entry, trials, healthy_order):
     # namespace setup sites still remain eligible through the bounded score.
     healthy_rank = healthy_order.get(root_selector, len(healthy_order) - 1)
     temporal_proximity = 20 * (healthy_rank + 1) // max(len(healthy_order), 1)
+    final_selector = entry['plan'][-1].rsplit('~', 1)[0]
+    final_rank = healthy_order.get(final_selector, len(healthy_order) - 1)
+    late_window_start = 3 * len(healthy_order) // 4
+    early_setup_penalty = 35 * int(healthy_rank < late_window_start)
+    early_setup_penalty += 35 * int(final_rank < late_window_start)
     # Cap the priority of descendants from a frequently tried first I/O site
     # so other observed sites receive trials as the queue grows.
     root_attempts = sum('~'.join(x['plan'][0].split('~')[:3]) == root_site for x in trials)
@@ -217,7 +222,8 @@ def queue_priority(entry, trials, healthy_order):
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
         - (180 if exhausted_prefix else 0) - (120 if exhausted_root else 0) \
         - learned_target_loss_penalty - min(5 * root_attempts, 30) \
-        - root_loss_penalty + selected_namespace_bonus + temporal_proximity + depth_bonus
+        - root_loss_penalty - early_setup_penalty \
+        + selected_namespace_bonus + temporal_proximity + depth_bonus
 
 
 def publish(state):

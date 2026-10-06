@@ -35,6 +35,10 @@ are original release artifacts.
 
 The queue favors new stable I/O sites, new production coverage, and I/O events
 nearer the target in the healthy run, including the selected test namespace.
+Healthy events in the first three quarters of the trace receive a bounded
+score penalty because namespace initialization faults repeatedly lost the
+target; they remain
+eligible if later I/O candidates are exhausted.
 It reduces the score of repeatedly tried or target-losing first sites and skips
 fault patterns that have repeatedly removed the target.
 The healthy event order is runtime feedback, not a reconstructed causal graph.
