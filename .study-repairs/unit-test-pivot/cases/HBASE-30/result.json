@@ -1,7 +1,11 @@
 {
   "case_id": "HBASE-30",
-  "status": "test_identified",
-  "cluster_test": "TestRegionReplicaReplicationEndpoint.testRegionReplicaReplicationWith2Replicas",
+  "system": "HBase 2.6.6",
+  "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+  "source_line": 2298,
+  "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay",
+  "status": "instrumented_pending_healthy_run",
+  "cluster_test": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
   "target_reached": null,
   "elapsed_seconds": 0,
   "fault_trials": 0,
@@ -9,6 +13,7 @@
   "target_after_fault": 0,
   "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-30",
-  "source_audit_note": "Healthy doReplayBatchOp returns SUCCESS; non-success IOException is not expected."
+  "evidence": ["README.md", "work/src/HBase30Agent.java", "work/run.sh"],
+  "source_audit_note": "The guard compares each doReplayBatchOp return status by identity with OperationStatus.SUCCESS; source line 2297 is the predicate and line 2298 is the IOException. No HBASE-30 healthy run has yet been counted.",
+  "methodology": "graph_free_original_junit_replay_rpc_io_jacoco_feedback"
 }
