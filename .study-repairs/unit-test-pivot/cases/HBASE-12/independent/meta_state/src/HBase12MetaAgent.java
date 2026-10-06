@@ -18,7 +18,7 @@ import org.apache.hadoop.hbase.client.TableState;
 
 /** Independent TableState I/O recorder for the original HBASE-12 JUnit. */
 public class HBase12MetaAgent {
-  static final String TEST_TABLE = "testDisableAndMove";
+  public static final String TEST_TABLE = "testDisableAndMove";
   static final ConcurrentHashMap<String, AtomicInteger> HITS = new ConcurrentHashMap<>();
   static final List<Fault> PLAN = new ArrayList<>();
   static int nextFault;
@@ -52,11 +52,11 @@ public class HBase12MetaAgent {
       .installOn(inst);
   }
 
-  static int hit(String family) {
+  public static int hit(String family) {
     return HITS.computeIfAbsent(family, ignored -> new AtomicInteger()).incrementAndGet();
   }
 
-  static String id(String family, int ordinal) {
+  public static String id(String family, int ordinal) {
     try {
       byte[] digest = MessageDigest.getInstance("SHA-256")
         .digest((family + "|" + ordinal).getBytes("UTF-8"));
@@ -66,13 +66,13 @@ public class HBase12MetaAgent {
     } catch (Exception error) { throw new IllegalStateException(error); }
   }
 
-  static synchronized String take(String pointId, boolean possible) {
+  public static synchronized String take(String pointId, boolean possible) {
     if (!possible || nextFault >= PLAN.size() || !PLAN.get(nextFault).id.equals(pointId))
       return "";
     return PLAN.get(nextFault++).kind;
   }
 
-  static synchronized void applied() { applied++; }
+  public static synchronized void applied() { applied++; }
 
   public static class MetaRead {
     @Advice.OnMethodEnter
