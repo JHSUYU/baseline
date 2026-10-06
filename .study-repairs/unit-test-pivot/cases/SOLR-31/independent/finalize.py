@@ -39,17 +39,24 @@ def main() -> None:
         time.sleep(30)
 
     subprocess.run(('ssh', *SSH_OPTIONS, 'ZhenyuLi@node2',
-                    'cd ' + REMOTE_DIR + ' && python3 audit_campaign_coverage.py'),
+                    'cd ' + REMOTE_DIR
+                    + ' && python3 audit_campaign_coverage.py'
+                    + ' && python3 audit_io_novelty.py'),
                    check=True)
     for name in ('campaign/production-coverage-audit.json',
+                 'campaign/semantic-io-audit.json',
                  'campaign/state.json'):
         subprocess.run(('rsync', '-a', '-e', 'ssh ' + ' '.join(SSH_OPTIONS),
                         'ZhenyuLi@node2:' + REMOTE_DIR + '/' + name,
                         str(HERE / name)), check=True)
     audit = json.loads((HERE / 'campaign/production-coverage-audit.json').read_text())
+    io_audit = json.loads((HERE / 'campaign/semantic-io-audit.json').read_text())
     result = json.loads(RESULT.read_text())
     result.update(
         coverage_audit=audit,
+        io_novelty_audit=io_audit,
+        io_family_gain=io_audit['valid_semantic_io_family_gain'],
+        raw_io_family_gain=io_audit['valid_raw_io_family_gain'],
         production_methods_gain=audit['new_production_methods'],
         production_branch_outcomes_gain=audit['new_production_branch_outcomes'],
         status=('target_exception_candidate_source_review'
@@ -64,6 +71,7 @@ def main() -> None:
         'fault_trials': progress['fault_trials'],
         'status': progress['status'],
         'coverage_audit': audit,
+        'io_novelty_audit': io_audit,
     }, indent=2, sort_keys=True) + '\n')
 
 
