@@ -1,0 +1,75 @@
+{
+  "applied_faults": 1,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T20:21:19.616202+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-45/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 1347,
+    "METHOD": 1427,
+    "PROBE": 4772
+  },
+  "coverage_ids": 7546,
+  "instrumentation_version": "paxos_hook_v2",
+  "junit_exit": 0,
+  "junit_seconds": 9.393,
+  "last_applied_seq": 45,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-45/manifest.json",
+  "matched_faults": 1,
+  "new_coverage_count": 12,
+  "new_coverage_ids": [
+    "METHOD\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel$1.onFailure(Ljava/lang/Throwable;)V",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel$1:1",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:188",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:189",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:190",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:192",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:193",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:194",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:195",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:196",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:197",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel:201"
+  ],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [],
+  "number": 45,
+  "observed_io_points": 60,
+  "other_context_guard_after_last_fault_count": 9,
+  "requested_faults": 1,
+  "seconds": 18.126,
+  "selection_reason": "healthy I/O seq 43",
+  "sequence": [
+    {
+      "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "node": "jn2",
+      "ordinal": 1
+    }
+  ],
+  "sequence_id": "21335ff13da8a85bd7f8",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    1
+  ],
+  "target_context_expected": {
+    "caller": "finalizeLogSegment",
+    "journal_id": "test-journal",
+    "node": "jn2",
+    "segment_end_txid": 3,
+    "segment_start_txid": 1,
+    "source_guard_ordinal": 1,
+    "source_request_epoch": 2,
+    "source_request_serial": 2
+  },
+  "target_exception_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_outcomes_after_fault": [
+    true
+  ],
+  "test_method": "testChangeWritersLogsInSync",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-45/trace/runtime_trace.jsonl",
+  "trial": "trial-45"
+}

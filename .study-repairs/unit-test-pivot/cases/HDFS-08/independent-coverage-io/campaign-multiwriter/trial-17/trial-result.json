@@ -1,0 +1,69 @@
+{
+  "applied_faults": 2,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T20:10:15.201185+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-17/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 1347,
+    "METHOD": 1428,
+    "PROBE": 4763
+  },
+  "coverage_ids": 7538,
+  "instrumentation_version": "source_probes_v1",
+  "junit_exit": 0,
+  "junit_seconds": 9.743,
+  "last_applied_seq": 67,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-17/manifest.json",
+  "matched_faults": 2,
+  "new_coverage_count": 0,
+  "new_coverage_ids": [],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [],
+  "number": 17,
+  "observed_io_points": 54,
+  "other_context_guard_after_last_fault_count": 5,
+  "requested_faults": 2,
+  "seconds": 18.972,
+  "selection_reason": "mutated trial-01 from observed post-fault I/O seq 64",
+  "sequence": [
+    {
+      "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "node": "jn2",
+      "ordinal": 2
+    },
+    {
+      "api": "QJournalProtocolTranslatorPB.lambda$acceptRecovery$12",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "node": "jn1",
+      "ordinal": 1
+    }
+  ],
+  "sequence_id": "0679d4856c49abfd5b4f",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    1
+  ],
+  "target_context_expected": {
+    "caller": "finalizeLogSegment",
+    "journal_id": "test-journal",
+    "node": "jn2",
+    "segment_end_txid": 3,
+    "segment_start_txid": 1,
+    "source_guard_ordinal": 1,
+    "source_request_epoch": 2,
+    "source_request_serial": 2
+  },
+  "target_exception_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_outcomes_after_fault": [
+    true
+  ],
+  "test_method": "testChangeWritersLogsInSync",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-17/trace/runtime_trace.jsonl",
+  "trial": "trial-17"
+}

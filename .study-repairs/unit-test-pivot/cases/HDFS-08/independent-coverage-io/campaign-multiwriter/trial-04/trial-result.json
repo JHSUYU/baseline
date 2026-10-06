@@ -1,0 +1,117 @@
+{
+  "applied_faults": 4,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T20:05:51.288000+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-04/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 1359,
+    "METHOD": 1430,
+    "PROBE": 4793
+  },
+  "coverage_ids": 7582,
+  "instrumentation_version": "source_probes_v1",
+  "junit_exit": 0,
+  "junit_seconds": 8.992,
+  "last_applied_seq": 75,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-04/manifest.json",
+  "matched_faults": 4,
+  "new_coverage_count": 31,
+  "new_coverage_ids": [
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/server/Journal.finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V:650:2",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/server/Journal.finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V:651:1",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/server/Journal.finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V:658:1",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/server/Journal.finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V:674:2",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream.close()V:150:1",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream.close()V:158:1",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream.close()V:164:1",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream.close()V:164:2",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer.close()V:73:1",
+    "METHOD\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream.close()V",
+    "METHOD\torg/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer.close()V",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/protocolPB/QJournalProtocolServerSideTranslatorPB:91",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/protocolPB/QJournalProtocolServerSideTranslatorPB:92",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/server/Journal:193",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/server/Journal:194",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/server/Journal:195",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/server/Journal:197",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/server/Journal:198",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/server/Journal:199",
+    "PROBE\torg/apache/hadoop/hdfs/qjournal/server/Journal:202",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:19",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:23",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:24",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:27",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:28",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:29",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:30",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditLogFileOutputStream:32",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer:10",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer:5",
+    "PROBE\torg/apache/hadoop/hdfs/server/namenode/EditsDoubleBuffer:6"
+  ],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [
+    "EPOCH_FILE_WRITE:last-promised-epoch:set:jn2:5"
+  ],
+  "number": 4,
+  "observed_io_points": 57,
+  "other_context_guard_after_last_fault_count": 3,
+  "requested_faults": 4,
+  "seconds": 17.977,
+  "selection_reason": "mutated trial-03 from observed post-fault I/O seq 74",
+  "sequence": [
+    {
+      "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "node": "jn2",
+      "ordinal": 2
+    },
+    {
+      "api": "last-promised-epoch:set",
+      "exception": "IOException",
+      "marker": "EPOCH_FILE_WRITE",
+      "node": "jn2",
+      "ordinal": 2
+    },
+    {
+      "api": "last-promised-epoch:set",
+      "exception": "IOException",
+      "marker": "EPOCH_FILE_WRITE",
+      "node": "jn2",
+      "ordinal": 3
+    },
+    {
+      "api": "last-promised-epoch:set",
+      "exception": "IOException",
+      "marker": "EPOCH_FILE_WRITE",
+      "node": "jn2",
+      "ordinal": 4
+    }
+  ],
+  "sequence_id": "b8e9ee1ddb47d8475458",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    1
+  ],
+  "target_context_expected": {
+    "caller": "finalizeLogSegment",
+    "journal_id": "test-journal",
+    "node": "jn2",
+    "segment_end_txid": 3,
+    "segment_start_txid": 1,
+    "source_guard_ordinal": 1,
+    "source_request_epoch": 2,
+    "source_request_serial": 2
+  },
+  "target_exception_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_outcomes_after_fault": [
+    true
+  ],
+  "test_method": "testChangeWritersLogsInSync",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign-multiwriter/trial-04/trace/runtime_trace.jsonl",
+  "trial": "trial-04"
+}

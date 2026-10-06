@@ -1,0 +1,4987 @@
+{
+  "budget": {
+    "max_faults": 8,
+    "max_trials": 80
+  },
+  "case_id": "HDFS-08",
+  "completed": [
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:57:26.323408+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-01/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 9.092,
+      "last_applied_seq": 76,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-01/manifest.json",
+      "matched_faults": 1,
+      "new_coverage_count": 11,
+      "new_coverage_ids": [
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall.checkAssertionErrors()V:247:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall.checkAssertionErrors()V:248:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall.checkAssertionErrors()V:250:1",
+        "METHOD\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall$1.onFailure(Ljava/lang/Throwable;)V",
+        "METHOD\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall.addException(Ljava/lang/Object;Ljava/lang/Throwable;)V",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall$1:1",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:118",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:79",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:86",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:90",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:91"
+      ],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 1,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 1,
+      "seconds": 17.542,
+      "selection_reason": "healthy I/O seq 74",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "9823b96395700b405458",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-01/trace/runtime_trace.jsonl",
+      "trial": "trial-01"
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:57:45.927854+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-02/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 9.943,
+      "last_applied_seq": 52,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-02/manifest.json",
+      "matched_faults": 1,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 2,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 9,
+      "requested_faults": 1,
+      "seconds": 19.019,
+      "selection_reason": "healthy I/O seq 50",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ab8ab9e608261c6e9561",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        1
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-02/trace/runtime_trace.jsonl",
+      "trial": "trial-02"
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:58:04.189820+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-03/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 8.941,
+      "last_applied_seq": 78,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-03/manifest.json",
+      "matched_faults": 2,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 3,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 2,
+      "seconds": 17.646,
+      "selection_reason": "mutated trial-02 from observed post-fault I/O seq 76",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "f5e4b173f63271053a3f",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-03/trace/runtime_trace.jsonl",
+      "trial": "trial-03"
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:58:22.402941+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-04/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 9.09,
+      "last_applied_seq": 78,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-04/manifest.json",
+      "matched_faults": 2,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 4,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 2,
+      "seconds": 17.563,
+      "selection_reason": "mutated trial-02 from observed post-fault I/O seq 76",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "5c23f65dedc353ca250c",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-04/trace/runtime_trace.jsonl",
+      "trial": "trial-04"
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:58:40.857653+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-05/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 9.292,
+      "last_applied_seq": 78,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-05/manifest.json",
+      "matched_faults": 2,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 5,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 2,
+      "seconds": 17.813,
+      "selection_reason": "mutated trial-02 from observed post-fault I/O seq 76",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "b5c34fadb94b141c8c12",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-05/trace/runtime_trace.jsonl",
+      "trial": "trial-05"
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:58:59.050385+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-06/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 8.793,
+      "last_applied_seq": 76,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-06/manifest.json",
+      "matched_faults": 2,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 6,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 1,
+      "requested_faults": 2,
+      "seconds": 17.528,
+      "selection_reason": "mutated trial-02 from observed post-fault I/O seq 74",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "8b3d17f5700b24ba62ed",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-06/trace/runtime_trace.jsonl",
+      "trial": "trial-06"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:59:17.328046+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-07/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 9.041,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-07/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 44,
+      "new_coverage_ids": [
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.waitForWriteQuorum(Lorg/apache/hadoop/hdfs/qjournal/client/QuorumCall;ILjava/lang/String;)Ljava/util/Map;:142:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall.rethrowException(Ljava/lang/String;)V:304:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:47:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:52:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:65:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:65:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:66:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:66:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:73:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;:75:1",
+        "METHOD\torg/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet.getMajorityString()Ljava/lang/String;",
+        "METHOD\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall.rethrowException(Ljava/lang/String;)V",
+        "METHOD\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.<init>(Ljava/lang/String;)V",
+        "METHOD\torg/apache/hadoop/hdfs/qjournal/client/QuorumException.create(Ljava/lang/String;Ljava/util/Map;Ljava/util/Map;)Lorg/apache/hadoop/hdfs/qjournal/client/QuorumException;",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet:38",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet:39",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet:40",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/AsyncLoggerSet:44",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:96",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:98",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumCall:99",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:0",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:10",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:11",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:12",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:13",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:14",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:15",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:16",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:17",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:18",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:19",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:2",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:22",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:23",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:25",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:26",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:27",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:3",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:4",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:6",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:7",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:8",
+        "PROBE\torg/apache/hadoop/hdfs/qjournal/client/QuorumException:9"
+      ],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 7,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 17.629,
+      "selection_reason": "mutated trial-06 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "9f8b9275f8c9e9768543",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-07/trace/runtime_trace.jsonl",
+      "trial": "trial-07"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:59:36.339616+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-08/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 9.594,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-08/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 8,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 18.379,
+      "selection_reason": "mutated trial-06 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "1e5067bc7c2a860cab98",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-08/trace/runtime_trace.jsonl",
+      "trial": "trial-08"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T19:59:54.966475+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-09/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 9.04,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-09/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 9,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 17.881,
+      "selection_reason": "mutated trial-06 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "0d2cf4995a4a1b052ec7",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-09/trace/runtime_trace.jsonl",
+      "trial": "trial-09"
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:00:13.286099+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-10/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 9.443,
+      "last_applied_seq": 76,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-10/manifest.json",
+      "matched_faults": 2,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 10,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 1,
+      "requested_faults": 2,
+      "seconds": 17.689,
+      "selection_reason": "mutated trial-02 from observed post-fault I/O seq 74",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "3a997731154ebf40cfb6",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-10/trace/runtime_trace.jsonl",
+      "trial": "trial-10"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:00:32.103536+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-11/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 9.596,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-11/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 11,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 18.175,
+      "selection_reason": "mutated trial-10 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "8d988d3f97d95cbd56ca",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-11/trace/runtime_trace.jsonl",
+      "trial": "trial-11"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:00:50.591405+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-12/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 8.792,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-12/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 12,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 17.863,
+      "selection_reason": "mutated trial-10 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "508ddd06c35923f44f46",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-12/trace/runtime_trace.jsonl",
+      "trial": "trial-12"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:01:09.616933+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-13/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 9.593,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-13/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 13,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 18.318,
+      "selection_reason": "mutated trial-10 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "87f82ad46eca4c1517e2",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-13/trace/runtime_trace.jsonl",
+      "trial": "trial-13"
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:01:28.355357+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-14/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1075,
+        "METHOD": 1204,
+        "PROBE": 3997
+      },
+      "coverage_ids": 6276,
+      "junit_exit": 0,
+      "junit_seconds": 9.192,
+      "last_applied_seq": 76,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-14/manifest.json",
+      "matched_faults": 2,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 14,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 1,
+      "requested_faults": 2,
+      "seconds": 18.076,
+      "selection_reason": "mutated trial-02 from observed post-fault I/O seq 74",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "0ce490386a152ec5f7c2",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-14/trace/runtime_trace.jsonl",
+      "trial": "trial-14"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:01:47.805557+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-15/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 9.942,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-15/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 15,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 18.724,
+      "selection_reason": "mutated trial-14 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "760399d4669ae44edfd5",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-15/trace/runtime_trace.jsonl",
+      "trial": "trial-15"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:02:07.913015+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-16/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 10.093,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-16/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 16,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 19.48,
+      "selection_reason": "mutated trial-14 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "3374ad5b1e4c94de6e2c",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-16/trace/runtime_trace.jsonl",
+      "trial": "trial-16"
+    },
+    {
+      "applied_faults": 3,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-06T20:02:26.774488+00:00",
+      "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-17/coverage.tsv",
+      "coverage_by_kind": {
+        "BRANCH_UNIT": 1085,
+        "METHOD": 1208,
+        "PROBE": 4027
+      },
+      "coverage_ids": 6320,
+      "junit_exit": 1,
+      "junit_seconds": 9.393,
+      "last_applied_seq": 80,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-17/manifest.json",
+      "matched_faults": 3,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "number": 17,
+      "observed_io_points": 54,
+      "other_context_guard_after_last_fault_count": 0,
+      "requested_faults": 3,
+      "seconds": 18.21,
+      "selection_reason": "mutated trial-14 from observed post-fault I/O seq 78",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "d507af56eeefe8dbd609",
+      "status": "checked",
+      "strict_injection": true,
+      "target_actual_guard_ordinals_after_fault": [
+        2
+      ],
+      "target_context_expected": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      },
+      "target_exception_after_fault_count": 0,
+      "target_guard_after_last_fault": true,
+      "target_guard_after_last_fault_count": 1,
+      "target_outcomes_after_fault": [
+        true
+      ],
+      "test_method": "testSingleWriter",
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-08/independent-coverage-io/campaign/trial-17/trace/runtime_trace.jsonl",
+      "trial": "trial-17"
+    }
+  ],
+  "current": null,
+  "extension_budget": {
+    "max_faults": 10,
+    "max_trials": 128
+  },
+  "healthy_io_points": 54,
+  "healthy_target_guards": 2,
+  "queue": [
+    {
+      "priority": 173,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 74",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "938f6ba0f506b9f5134c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 173,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 74",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "62bc952c5ac5c7f76381",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 173,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 50",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "7d744e78c2478708e4e9",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 173,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 50",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "e3308af13b28f8dff8d9",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 168,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 72",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "3a4a8e5b747e3a5395ab",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 72",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "814002db5ba86b96ddc6",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 72",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "9331295e3d0303e4f177",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 168,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 70",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "5f42566e360db1ebb938",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 70",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "d038d18d28f7359adf6a",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 70",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "540af09661f9e28b8e14",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 168,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 48",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "1ff6910ea70e1177176f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 48",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "c89de8f2059359f84c2e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 48",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "4680197ba07a48d0985d",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 168,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 46",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "19f3e18659a6a324fb19",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 46",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "933c09c9603f333c3b5a",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 165,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 46",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "65c375013e74531c0f44",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 166,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 23",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "73d1c64748258565142e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 163,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 23",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "1ae416d56442f85f5624",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 163,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 23",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "e6f3a29a71717848be93",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 161,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 24",
+      "sequence": [
+        {
+          "api": "last-promised-epoch:set",
+          "exception": "IOException",
+          "marker": "EPOCH_FILE_WRITE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ce090308dd65ec77a075",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 158,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 21",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "a9812583c6a891ab3e74",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 155,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 21",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "001817ea1722f8e72e22",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 155,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 21",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "36fc8fb8845c2c86d6ea",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 158,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 19",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "10a9e5e126e230a06c23",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 155,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 19",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "7fb1f9c80c2d062874b7",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 155,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 19",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$newEpoch$3",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ab158ad7f4a05833c55f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 153,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 22",
+      "sequence": [
+        {
+          "api": "last-promised-epoch:set",
+          "exception": "IOException",
+          "marker": "EPOCH_FILE_WRITE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "bc788c3eb580e146c8b2",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 153,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 20",
+      "sequence": [
+        {
+          "api": "last-promised-epoch:set",
+          "exception": "IOException",
+          "marker": "EPOCH_FILE_WRITE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "9fd86d716bd986775f77",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 146,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 35",
+      "sequence": [
+        {
+          "api": "last-writer-epoch:set",
+          "exception": "IOException",
+          "marker": "EPOCH_FILE_WRITE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ffbc4a4456efbdd18e28",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 138,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 31",
+      "sequence": [
+        {
+          "api": "last-writer-epoch:set",
+          "exception": "IOException",
+          "marker": "EPOCH_FILE_WRITE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "830884d0d4c593faaf30",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 138,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 27",
+      "sequence": [
+        {
+          "api": "last-writer-epoch:set",
+          "exception": "IOException",
+          "marker": "EPOCH_FILE_WRITE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "f5cde55caf7b5e9ef787",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 136,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 67",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "0c26ff18d588f8a2029d",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 133,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 67",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "76f82863ee675641df6c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 133,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 67",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "9df54dbf3f8d3ccc1802",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 136,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 43",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "21335ff13da8a85bd7f8",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 133,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 43",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "e588aded50921e4ffd41",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 133,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 43",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "56495c7816b9bb9c8f27",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 128,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 64",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "9a4d6981eba2e08c7fd7",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 64",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "f080e103f07ac8d967bb",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 64",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "993fa21c82a8b6c72a10",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 128,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 61",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "de01cb2e73df3df55625",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 61",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "be0320968534dda3a3b3",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 61",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "139d755003640c399406",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 128,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 40",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "8c2b009dc39ab00adfc8",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 40",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "93faf25c49f60cf67ff9",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 40",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "39b58d256247f9357e01",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 128,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 37",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "2f36df2d42a9bc43fb55",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 37",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "b7520f920e00ff60f795",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 125,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 37",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "a90d9254850d3463764f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 121,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 69",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "8791295697f9282bffab",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 121,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 60",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "40d97dc438c379a93d94",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 121,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 45",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000001:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "7c91e553313aa3708e8e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 121,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 36",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000001:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "2d5cf93b66234abf5859",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 66",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "f4e569f45b52c88a782f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 63",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "1a6e8619a286de8267e6",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 57",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "8b05187aa145bb4bb2e3",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 54",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "e545e3bcb90fe81f4ee1",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 42",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000001:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "d8e4aaa253bdaf53c1be",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 39",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000001:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "65fbe03ce8909d6085e6",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 32",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000001:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "13a8e070333f0747a86c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 113,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 28",
+      "sequence": [
+        {
+          "api": "edits_inprogress_0000000000000000001:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "5a7bc7472e766cf2cc81",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 86,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 58",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "d67d281e66aa550e01bd",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 58",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "cb90afacdb4720a3fdf1",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 58",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "a2e522aee530e54a7e07",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 86,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 33",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "59d4a5ff3f53a8b4172c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 33",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "e671d6cac391a8075225",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 33",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ab7dd6efe68379ee2803",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 86,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 18",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "32d92310b02862a78df4",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 18",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "a51798d010f08efdd5f2",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 18",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "0b9319b1c81230e5247c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 86,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 15",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "e4a2e672f108c5d6d90f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 15",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "60d6512b0ec718f697a6",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 15",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "d7d10f83efaf69c20d50",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 86,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 11",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "595c7a127ef9639312be",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 11",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "9ce0adb8276113772a94",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 11",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "9e07b513fc6d501f2382",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 86,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 8",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "563b0dd1fa3d6f2c7a47",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 8",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "e54774eef0d627b8bc76",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 8",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "a81fabd99af70319b571",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 86,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 5",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "20c5f55b29a04f0b9a3f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 5",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "5581ce46afaf37b8949e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 83,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 5",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "4b27378cff852d83dc4f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 55",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "4986f6b10e7d9efbd522",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 55",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "222bf09c03b5ead1e5dd",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 55",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "312e5e569e3d42621188",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 52",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "2e1bf2709139928f8151",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 52",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "05f87a8e2fc6a2d8265e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 52",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "d18996bebdd30c1e82b3",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 29",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "bf085c2ab4f5a7b2f439",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 29",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "9eea65f19a8846791070",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 29",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "269af865bc0778000577",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 25",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "46f7a9f2db49382359b1",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 25",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "fba9cd1e78bbf2da23e0",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 25",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$startLogSegment$6",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ed6b05b481ae1e972d37",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 17",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ba67fd3d93461667fa52",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 17",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "5f706689813d92f36c80",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 17",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "57ffcfdbffd0891040ab",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 16",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "ec8e1ec80db06305c16d",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 16",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "b894e62377c4aa25d52e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 16",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$getJournalState$1",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "a37f347cc8f9d1104e46",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 14",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "394705a05cb0f2361fb3",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 14",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "539579a8a1dbd555be9c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 14",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "73b84cb6cf7970d12851",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 13",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "2bcda5da027a207812f7",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 13",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "94f650c8c754b8826b74",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 13",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$format$2",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "456fec089c2d6c08a50c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 12",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "07a9f54abcf210efd3b3",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 12",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "5c735b6ded9ac594be9a",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 12",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "5bf3c0982343e247c704",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 10",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "dda2cc01ca327906a20b",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 10",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "7c3ce3611480f4803b5a",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 10",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 3
+        }
+      ],
+      "sequence_id": "5a74f5690aa09eaee117",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 9",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "fc4d338d6138dcb2193a",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 9",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "77b99b9970ad962f76dc",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 9",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "8135cf4d5cc1d9d9e78d",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 7",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "554945c2396aa0ea0d19",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 7",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "7e0a52af89e4d2459919",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 7",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "5af026ded909b02bd758",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 6",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "f0b6858f50bcdaf6ffef",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 6",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "23839cf6ebe3cd04c10e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 6",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "df3ad818b8afcc8c63fc",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 78,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 4",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "394a55b76a84adfd7830",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 4",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "dc24b499ad4ca5661fe4",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 75,
+      "queued_after_trial": 0,
+      "reason": "healthy I/O seq 4",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$isFormatted$0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "2ccb634af961fd17abc3",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 3,
+        "segment_start_txid": 1,
+        "source_guard_ordinal": 1,
+        "source_request_epoch": 1,
+        "source_request_serial": 2
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 72",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "fead2908e5219ea9ff7c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 72",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "4a9d202115ce40a4d931",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 72",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "56b87cfd52face99053b",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 69",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "031c5203ebea0253a639",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 69",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "84c5ab3c15c575d921ef",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 69",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "b1648a0e5003a133c482",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 66",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "e14ac63a94fccbe0170c",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 66",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "a7a1e45f31ace8f799ac",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 66",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn1",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "a4606fa4bccb1e8af6a1",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 63",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "50a6b8e0c52d7054a0a7",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 63",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "1bc460a8d563aed1174e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 63",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$journal$4",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn0",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "c7caafdc2fb6731a3a8a",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 71",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn2",
+          "ordinal": 2
+        }
+      ],
+      "sequence_id": "8f36fcce177e2b5c8a8f",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    },
+    {
+      "priority": 200,
+      "queued_after_trial": 2,
+      "reason": "mutated trial-02 from observed post-fault I/O seq 62",
+      "sequence": [
+        {
+          "api": "QJournalProtocolTranslatorPB.lambda$finalizeLogSegment$7",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE",
+          "node": "jn2",
+          "ordinal": 1
+        },
+        {
+          "api": "edits_inprogress_0000000000000000004:durable",
+          "exception": "IOException",
+          "marker": "EDITLOG_FLUSH",
+          "node": "jn2",
+          "ordinal": 1
+        }
+      ],
+      "sequence_id": "14607a786ccad121562e",
+      "target_context": {
+        "caller": "finalizeLogSegment",
+        "journal_id": "test-journal",
+        "node": "jn2",
+        "segment_end_txid": 4,
+        "segment_start_txid": 4,
+        "source_guard_ordinal": 2,
+        "source_request_epoch": 1,
+        "source_request_serial": 5
+      }
+    }
+  ],
+  "schema_version": 1,
+  "seen_sequence_ids": [
+    "9823b96395700b405458",
+    "938f6ba0f506b9f5134c",
+    "62bc952c5ac5c7f76381",
+    "ab8ab9e608261c6e9561",
+    "7d744e78c2478708e4e9",
+    "e3308af13b28f8dff8d9",
+    "3a4a8e5b747e3a5395ab",
+    "814002db5ba86b96ddc6",
+    "9331295e3d0303e4f177",
+    "5f42566e360db1ebb938",
+    "d038d18d28f7359adf6a",
+    "540af09661f9e28b8e14",
+    "1ff6910ea70e1177176f",
+    "c89de8f2059359f84c2e",
+    "4680197ba07a48d0985d",
+    "19f3e18659a6a324fb19",
+    "933c09c9603f333c3b5a",
+    "65c375013e74531c0f44",
+    "73d1c64748258565142e",
+    "1ae416d56442f85f5624",
+    "e6f3a29a71717848be93",
+    "ce090308dd65ec77a075",
+    "a9812583c6a891ab3e74",
+    "001817ea1722f8e72e22",
+    "36fc8fb8845c2c86d6ea",
+    "10a9e5e126e230a06c23",
+    "7fb1f9c80c2d062874b7",
+    "ab158ad7f4a05833c55f",
+    "bc788c3eb580e146c8b2",
+    "9fd86d716bd986775f77",
+    "ffbc4a4456efbdd18e28",
+    "830884d0d4c593faaf30",
+    "f5cde55caf7b5e9ef787",
+    "0c26ff18d588f8a2029d",
+    "76f82863ee675641df6c",
+    "9df54dbf3f8d3ccc1802",
+    "21335ff13da8a85bd7f8",
+    "e588aded50921e4ffd41",
+    "56495c7816b9bb9c8f27",
+    "9a4d6981eba2e08c7fd7",
+    "f080e103f07ac8d967bb",
+    "993fa21c82a8b6c72a10",
+    "de01cb2e73df3df55625",
+    "be0320968534dda3a3b3",
+    "139d755003640c399406",
+    "8c2b009dc39ab00adfc8",
+    "93faf25c49f60cf67ff9",
+    "39b58d256247f9357e01",
+    "2f36df2d42a9bc43fb55",
+    "b7520f920e00ff60f795",
+    "a90d9254850d3463764f",
+    "8791295697f9282bffab",
+    "40d97dc438c379a93d94",
+    "7c91e553313aa3708e8e",
+    "2d5cf93b66234abf5859",
+    "f4e569f45b52c88a782f",
+    "1a6e8619a286de8267e6",
+    "8b05187aa145bb4bb2e3",
+    "e545e3bcb90fe81f4ee1",
+    "d8e4aaa253bdaf53c1be",
+    "65fbe03ce8909d6085e6",
+    "13a8e070333f0747a86c",
+    "5a7bc7472e766cf2cc81",
+    "d67d281e66aa550e01bd",
+    "cb90afacdb4720a3fdf1",
+    "a2e522aee530e54a7e07",
+    "59d4a5ff3f53a8b4172c",
+    "e671d6cac391a8075225",
+    "ab7dd6efe68379ee2803",
+    "32d92310b02862a78df4",
+    "a51798d010f08efdd5f2",
+    "0b9319b1c81230e5247c",
+    "e4a2e672f108c5d6d90f",
+    "60d6512b0ec718f697a6",
+    "d7d10f83efaf69c20d50",
+    "595c7a127ef9639312be",
+    "9ce0adb8276113772a94",
+    "9e07b513fc6d501f2382",
+    "563b0dd1fa3d6f2c7a47",
+    "e54774eef0d627b8bc76",
+    "a81fabd99af70319b571",
+    "20c5f55b29a04f0b9a3f",
+    "5581ce46afaf37b8949e",
+    "4b27378cff852d83dc4f",
+    "4986f6b10e7d9efbd522",
+    "222bf09c03b5ead1e5dd",
+    "312e5e569e3d42621188",
+    "2e1bf2709139928f8151",
+    "05f87a8e2fc6a2d8265e",
+    "d18996bebdd30c1e82b3",
+    "bf085c2ab4f5a7b2f439",
+    "9eea65f19a8846791070",
+    "269af865bc0778000577",
+    "46f7a9f2db49382359b1",
+    "fba9cd1e78bbf2da23e0",
+    "ed6b05b481ae1e972d37",
+    "ba67fd3d93461667fa52",
+    "5f706689813d92f36c80",
+    "57ffcfdbffd0891040ab",
+    "ec8e1ec80db06305c16d",
+    "b894e62377c4aa25d52e",
+    "a37f347cc8f9d1104e46",
+    "394705a05cb0f2361fb3",
+    "539579a8a1dbd555be9c",
+    "73b84cb6cf7970d12851",
+    "2bcda5da027a207812f7",
+    "94f650c8c754b8826b74",
+    "456fec089c2d6c08a50c",
+    "07a9f54abcf210efd3b3",
+    "5c735b6ded9ac594be9a",
+    "5bf3c0982343e247c704",
+    "dda2cc01ca327906a20b",
+    "7c3ce3611480f4803b5a",
+    "5a74f5690aa09eaee117",
+    "fc4d338d6138dcb2193a",
+    "77b99b9970ad962f76dc",
+    "8135cf4d5cc1d9d9e78d",
+    "554945c2396aa0ea0d19",
+    "7e0a52af89e4d2459919",
+    "5af026ded909b02bd758",
+    "f0b6858f50bcdaf6ffef",
+    "23839cf6ebe3cd04c10e",
+    "df3ad818b8afcc8c63fc",
+    "394a55b76a84adfd7830",
+    "dc24b499ad4ca5661fe4",
+    "2ccb634af961fd17abc3",
+    "f5e4b173f63271053a3f",
+    "5c23f65dedc353ca250c",
+    "b5c34fadb94b141c8c12",
+    "8b3d17f5700b24ba62ed",
+    "3a997731154ebf40cfb6",
+    "0ce490386a152ec5f7c2",
+    "fead2908e5219ea9ff7c",
+    "4a9d202115ce40a4d931",
+    "56b87cfd52face99053b",
+    "031c5203ebea0253a639",
+    "84c5ab3c15c575d921ef",
+    "b1648a0e5003a133c482",
+    "e14ac63a94fccbe0170c",
+    "a7a1e45f31ace8f799ac",
+    "a4606fa4bccb1e8af6a1",
+    "50a6b8e0c52d7054a0a7",
+    "1bc460a8d563aed1174e",
+    "c7caafdc2fb6731a3a8a",
+    "8f36fcce177e2b5c8a8f",
+    "14607a786ccad121562e",
+    "9f8b9275f8c9e9768543",
+    "1e5067bc7c2a860cab98",
+    "0d2cf4995a4a1b052ec7",
+    "8d988d3f97d95cbd56ca",
+    "508ddd06c35923f44f46",
+    "87f82ad46eca4c1517e2",
+    "760399d4669ae44edfd5",
+    "3374ad5b1e4c94de6e2c",
+    "d507af56eeefe8dbd609"
+  ],
+  "started_at_utc": "2026-10-06T19:57:08.183302+00:00"
+}

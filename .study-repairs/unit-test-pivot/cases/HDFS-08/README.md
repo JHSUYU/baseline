@@ -1,10 +1,27 @@
 # HDFS-08: journal writer-epoch check
 
-**Current 102-check status: pending independent recorder replay.** The 64
-trials below are preserved as historical evidence in `legacy-graph-result.json`.
-Their I/O recorder was GraphChecker-prewoven; the first 48 trials also loaded
-a region skeleton. They do not count as completion of the graph-independent
-runtime campaign.
+**Current 102-check status: independent coverage and I/O campaign complete.**
+The new method and evidence are in
+[`independent-coverage-io/README.md`](independent-coverage-io/README.md).
+Its unchanged `testSingleWriter` reached the exact selected source guard on
+the `jn2` finalizations of segments 1–3 and 4–4. After 17 independent
+single-writer trials, the remaining combined budget moved to the original
+`testChangeWritersLogsInSync` JUnit, which reached the `jn2` recovery
+finalization of segment 1–3 under epoch 2. Both independent stages have
+their own checkpoints and do not reuse the old recorder. The 64 trials described
+below are historical evidence in `legacy-graph-result.json`. Their I/O
+recorder was GraphChecker-prewoven; the first 48 trials also loaded a region
+skeleton. They do not count toward the independent campaign.
+
+The independent campaign completed 80 trials in 1,469.479 measured active
+seconds: 77 strictly injected, 69 retaining the exact `jn2` segment guard
+after the final fault, and zero exact target exceptions or confirmed new bugs.
+Combined new HDFS production coverage was 17 method IDs and 35 branch units.
+The final eight trials added no new method, branch unit, or stable I/O family;
+therefore the conditional 128-trial extension did not apply. The case result,
+both checkpoint stages, combined ledger, and 80-trial audit are in the linked
+independent directory. The historical 64 prewoven trials are excluded from all
+these counts.
 
 The selected Hadoop 3.4.3 check is `Journal.checkRequest(RequestInfo)` in
 `hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java`.
@@ -16,7 +33,7 @@ by `Journal.finalizeLogSegment` during
 being fenced is expected behavior; an exact exception would require source
 review and same-selector replay before any bug claim.
 
-## Workload and budget
+## Historical workload and budget (GraphChecker-prewoven recorder)
 
 The unchanged `TestQuorumJournalManager#testSingleWriter` and
 `#testChangeWritersLogsInSync` JUnit methods use their original embedded
@@ -65,12 +82,13 @@ GraphChecker instrumentation**, even though its fault decisions are graph
 free. The two segments are explicitly marked in the checkpoint and trial
 table.
 
-[`coverage-io-trials.csv`](coverage-io-trials.csv) records every trial's
+[`coverage-io-trials.csv`](coverage-io-trials.csv) records every legacy trial's
 duration, requested/matched/applied counts, target retention, coverage gain,
 bug mark, selector IDs, and trace path. The resumable
-[`coverage-io-checkpoint.json`](coverage-io-checkpoint.json) holds complete
-selectors and feedback; [`result.json`](result.json) feeds the 102-check
-table. Each completed trial has its own manifest and result. The old 40-trial
+[`coverage-io-checkpoint.json`](coverage-io-checkpoint.json) holds legacy
+selectors and feedback; the current [`result.json`](result.json) feeds the
+102-check table from the independent campaign. Each legacy completed trial
+has its own manifest and result. The old 40-trial
 `trial-summary.csv` is retained as historical evidence.
 
 For adjacent journal checks, the immutable HDFS 3.4.3 distribution and
