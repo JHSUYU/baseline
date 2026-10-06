@@ -217,7 +217,8 @@ def queue_priority(entry, trials, healthy_order):
         for x in trials)
     learned_target_loss_penalty = min(25 * lost_system_after_root, 125) if system_namespace else 0
     depth = len(entry['plan'])
-    depth_bonus = (18 if len(trials) >= 40 else 10 if len(trials) >= 24 else 0) * (depth - 1)
+    depth_bonus = (18 if len(trials) >= 40 else 10 if len(trials) >= 24 else 0) \
+        * (min(depth, 6) - 1) - 20 * max(depth - 6, 0)
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
         - (180 if exhausted_prefix else 0) - (120 if exhausted_root else 0) \

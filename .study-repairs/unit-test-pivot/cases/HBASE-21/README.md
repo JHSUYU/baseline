@@ -42,6 +42,9 @@ eligible if later I/O candidates are exhausted.
 It reduces the score of repeatedly tried or target-losing first sites and skips
 fault patterns that have repeatedly removed the target.
 The healthy event order is runtime feedback, not a reconstructed causal graph.
+As in CrashFuzz's priority scheme, deeper sequences receive a boost through
+six faults and a decreasing score after six. The eight-fault maximum remains
+reachable.
 
 The default search budget is 80 **strict, target-retaining** trials with at most
 eight ordered faults. Unmatched plans and trials that lose the target are kept
