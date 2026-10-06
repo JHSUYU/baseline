@@ -2,11 +2,14 @@
 """Bounded graph-free fault campaign, updating this case after each JUnit run."""
 
 import csv
+import io
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
 import sys
+import tempfile
 import time
 
 
@@ -18,7 +21,18 @@ RESULT = CASE / 'result.json'
 SUMMARY = HERE / 'trials-summary.json'
 TABLE = CASE / 'trial-summary.csv'
 README = CASE / 'README.md'
-MAX_TRIALS = 48
+MAX_TRIALS = 128
+
+
+def atomic_text(path, content):
+    with tempfile.NamedTemporaryFile(mode='w', dir=str(path.parent),
+                                     prefix=path.name + '.', suffix='.tmp',
+                                     delete=False) as out:
+        out.write(content)
+        out.flush()
+        os.fsync(out.fileno())
+        temporary = Path(out.name)
+    os.replace(str(temporary), str(path))
 
 
 def parse_events(path):
@@ -97,18 +111,23 @@ def save(trials, seed_coverage, seed_io):
                'healthy_io_sites': sorted(seed_io), 'trials': trials,
                'union_new_coverage_items_vs_seed': len(union_cov),
                'union_new_io_sites_vs_seed': sorted(union_io)}
-    SUMMARY.write_text(json.dumps(summary, indent=2) + '\n')
+    atomic_text(SUMMARY, json.dumps(summary, indent=2) + '\n')
     fields = ['id', 'site', 'hit_ordinal', 'elapsed_seconds', 'junit_exit_code',
               'exact_selector_matches', 'applied_injections', 'target_after_fault',
               'target_throw_after_fault', 'new_coverage_items_vs_seed',
               'new_io_sites_vs_seed', 'bug_mark']
-    with TABLE.open('w', newline='') as out:
-        writer = csv.DictWriter(out, fieldnames=fields, extrasaction='ignore')
+    out = io.StringIO(newline='')
+    try:
+        writer = csv.DictWriter(out, fieldnames=fields, extrasaction='ignore',
+                                lineterminator='\n')
         writer.writeheader()
         for row in trials:
             r = dict(row)
             r['new_io_sites_vs_seed'] = ';'.join(row['new_io_sites_vs_seed'])
             writer.writerow(r)
+        atomic_text(TABLE, out.getvalue())
+    finally:
+        out.close()
     data = json.loads(RESULT.read_text())
     run_times = []
     run_starts = []
@@ -119,7 +138,8 @@ def save(trials, seed_coverage, seed_io):
         run_times.append(elapsed)
         run_starts.append(path.stat().st_mtime - elapsed)
     data.update({
-        'status': 'fault_campaign_running', 'fault_trials': len(trials),
+        'status': 'fuzzing', 'fault_trials': len(trials),
+        'strict_trials': sum(bool(row['strict']) for row in trials),
         'strict_injections': sum(row['applied_injections'] for row in trials if row['strict']),
         'exact_selector_matches': sum(row['exact_selector_matches'] for row in trials),
         'applied_injections': sum(row['applied_injections'] for row in trials),
@@ -136,7 +156,7 @@ def save(trials, seed_coverage, seed_io):
         'trial_results': str(SUMMARY.relative_to(Path('/users/ZhenyuLi/baseline'))),
         'bug_mark': 'none',
     })
-    RESULT.write_text(json.dumps(data, indent=2) + '\n')
+    atomic_text(RESULT, json.dumps(data, indent=2) + '\n')
     lines = [
         '# ZOOKEEPER-04: client zxid ahead', '',
         'The selected check is the `LCMP@283; IFLE@284` guard at ZooKeeperServer.java:1431. '
@@ -172,7 +192,7 @@ def save(trials, seed_coverage, seed_io):
     lines += ['', 'The table and `result.json` are rewritten after each completed run. '
               'Full logs and trace files are in `/users/ZhenyuLi/zk04-runs/`; '
               'the compact machine-readable record is `evidence/trials-summary.json`.']
-    README.write_text('\n'.join(lines) + '\n')
+    atomic_text(README, '\n'.join(lines) + '\n')
 
 
 def main():

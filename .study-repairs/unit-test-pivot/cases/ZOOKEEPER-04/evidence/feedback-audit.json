@@ -1,19 +1,20 @@
 {
   "methodology": "direct runtime I/O site + global hit ordinal; no graph/static/aggregate/closure",
-  "trace_count": 26,
-  "trial_count": 25,
-  "observed_distinct_io_occurrences": 21,
-  "observed_pre_target_occurrences": 16,
-  "exact_applied_occurrences": 18,
+  "trace_count": 30,
+  "trial_count": 29,
+  "max_faults_per_trial": 8,
+  "observed_distinct_io_occurrences": 25,
+  "observed_pre_target_occurrences": 20,
+  "exact_applied_occurrences": 22,
   "untried_observed_pre_target_occurrences": [
-    "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@6"
+    "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@10"
   ],
-  "untried_with_fewer_than_four_prior_faults": [],
+  "untried_within_fault_budget": [],
   "minimum_prior_applied_faults_for_untried_pretarget_occurrences": {
-    "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@6": 4
+    "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@10": 8
   },
   "late_only_occurrences": [
-    "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@7",
+    "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@11",
     "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@5",
     "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@6",
     "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@7",
@@ -31,9 +32,13 @@
     "sequence-03b",
     "sequence-04b",
     "feedback-01",
-    "feedback-02"
+    "feedback-02",
+    "budget5-01b",
+    "budget6-01",
+    "budget7-01",
+    "budget8-01"
   ],
-  "target_preserving_trial_count": 12,
+  "target_preserving_trial_count": 16,
   "observed_new_coverage_items": [
     "org.apache.zookeeper.ClientCnxn$SendThread\tcleanup\t1398",
     "org.apache.zookeeper.ClientCnxn$SendThread\tcleanup\t1399"

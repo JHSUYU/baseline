@@ -14,6 +14,8 @@ RUNS = Path('/users/ZhenyuLi/zk04-runs')
 def main():
     summary = json.loads(campaign.SUMMARY.read_text())
     trials = summary['trials']
+    result = json.loads(campaign.RESULT.read_text())
+    maximum_faults = int(result.get('max_faults_per_trial', 4))
     traces = [campaign.SEED] + [RUNS / row['id'] for row in trials]
     potential = {}
     prior_fault_counts = {}
@@ -39,7 +41,7 @@ def main():
                 exact_attempted.add(e['detail'][0] + '@@' + e['detail'][1])
     untried = sorted(set(potential) - exact_attempted)
     budget_feasible_untried = [key for key in untried
-                               if min(prior_fault_counts[key]) < 4]
+                               if min(prior_fault_counts[key]) < maximum_faults]
     late_only = sorted(set(observed) - set(potential))
     target_preserving = [row['id'] for row in trials
                          if row['strict'] and row['target_after_fault']]
@@ -53,11 +55,12 @@ def main():
         'methodology': 'direct runtime I/O site + global hit ordinal; no graph/static/aggregate/closure',
         'trace_count': len(traces),
         'trial_count': len(trials),
+        'max_faults_per_trial': maximum_faults,
         'observed_distinct_io_occurrences': len(observed),
         'observed_pre_target_occurrences': len(potential),
         'exact_applied_occurrences': len(exact_attempted),
         'untried_observed_pre_target_occurrences': untried,
-        'untried_with_fewer_than_four_prior_faults': budget_feasible_untried,
+        'untried_within_fault_budget': budget_feasible_untried,
         'minimum_prior_applied_faults_for_untried_pretarget_occurrences': {
             key: min(prior_fault_counts[key]) for key in untried},
         'late_only_occurrences': late_only,
@@ -71,7 +74,7 @@ def main():
         'scope_limit': 'Only bytecode-selected direct client TCP calls and QuorumPeer epoch open calls exposed by this original JUnit were eligible. This audit does not prove absence of uninstrumented I/O or every possible schedule.',
     }
     path = HERE / 'feedback-audit.json'
-    path.write_text(json.dumps(output, indent=2) + '\n')
+    campaign.atomic_text(path, json.dumps(output, indent=2) + '\n')
     print(json.dumps({k: v for k, v in output.items()
                       if k not in ('late_only_occurrences', 'observed_new_coverage_items',
                                    'admitted_new_coverage_items')}, indent=2))

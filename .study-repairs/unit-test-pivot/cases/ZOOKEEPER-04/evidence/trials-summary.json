@@ -784,6 +784,230 @@
       ],
       "junit_symptoms": [],
       "bug_mark": "none"
+    },
+    {
+      "id": "budget5-01b",
+      "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@1;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@2;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@3;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@4;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@6",
+      "label": "write#1+write#2+write#3+write#4+write#6",
+      "hit_ordinal": "1+2+3+4+6",
+      "fault_plan": [
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 1
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 2
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 3
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 4
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 6
+        }
+      ],
+      "elapsed_seconds": 21.539,
+      "junit_exit_code": 0,
+      "exact_selector_matches": 5,
+      "applied_injections": 5,
+      "strict": true,
+      "target_seen_anytime": true,
+      "target_after_fault": true,
+      "target_guard_entries_after_fault": 1,
+      "target_throw_after_fault": 0,
+      "target_throw_anytime": 0,
+      "new_coverage_items_vs_seed": 0,
+      "new_io_sites_vs_seed": [],
+      "new_coverage_items": [],
+      "observed_io_sites": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.server.quorum.QuorumPeer#readLongFromFile:2186:java.io.FileReader#<init>(Ljava/io/File;)V"
+      ],
+      "junit_symptoms": [],
+      "bug_mark": "none",
+      "runner": "zk04.OriginalJUnitRunner via JUnit Platform Launcher 1.6.2",
+      "fault_budget": 6
+    },
+    {
+      "id": "budget6-01",
+      "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@1;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@2;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@3;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@4;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@6;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@7",
+      "label": "write#1+write#2+write#3+write#4+write#6+write#7",
+      "hit_ordinal": "1+2+3+4+6+7",
+      "fault_plan": [
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 1
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 2
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 3
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 4
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 6
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 7
+        }
+      ],
+      "elapsed_seconds": 23.48,
+      "junit_exit_code": 0,
+      "exact_selector_matches": 6,
+      "applied_injections": 6,
+      "strict": true,
+      "target_seen_anytime": true,
+      "target_after_fault": true,
+      "target_guard_entries_after_fault": 1,
+      "target_throw_after_fault": 0,
+      "target_throw_anytime": 0,
+      "new_coverage_items_vs_seed": 0,
+      "new_io_sites_vs_seed": [],
+      "new_coverage_items": [],
+      "observed_io_sites": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.server.quorum.QuorumPeer#readLongFromFile:2186:java.io.FileReader#<init>(Ljava/io/File;)V"
+      ],
+      "junit_symptoms": [],
+      "bug_mark": "none",
+      "runner": "zk04.OriginalJUnitRunner via JUnit Platform Launcher 1.6.2",
+      "fault_budget": 6
+    },
+    {
+      "id": "budget7-01",
+      "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@1;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@2;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@3;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@4;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@6;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@7;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@8",
+      "label": "write#1+write#2+write#3+write#4+write#6+write#7+write#8",
+      "hit_ordinal": "1+2+3+4+6+7+8",
+      "fault_plan": [
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 1
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 2
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 3
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 4
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 6
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 7
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 8
+        }
+      ],
+      "elapsed_seconds": 26.397,
+      "junit_exit_code": 0,
+      "exact_selector_matches": 7,
+      "applied_injections": 7,
+      "strict": true,
+      "target_seen_anytime": true,
+      "target_after_fault": true,
+      "target_guard_entries_after_fault": 1,
+      "target_throw_after_fault": 0,
+      "target_throw_anytime": 0,
+      "new_coverage_items_vs_seed": 0,
+      "new_io_sites_vs_seed": [],
+      "new_coverage_items": [],
+      "observed_io_sites": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.server.quorum.QuorumPeer#readLongFromFile:2186:java.io.FileReader#<init>(Ljava/io/File;)V"
+      ],
+      "junit_symptoms": [],
+      "bug_mark": "none",
+      "runner": "zk04.OriginalJUnitRunner via JUnit Platform Launcher 1.6.2",
+      "fault_budget": 8
+    },
+    {
+      "id": "budget8-01",
+      "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@1;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@2;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@3;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@4;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@6;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@7;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@8;org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@9",
+      "label": "write#1+write#2+write#3+write#4+write#6+write#7+write#8+write#9",
+      "hit_ordinal": "1+2+3+4+6+7+8+9",
+      "fault_plan": [
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 1
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 2
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 3
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 4
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 6
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 7
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 8
+        },
+        {
+          "site": "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+          "hit_ordinal": 9
+        }
+      ],
+      "elapsed_seconds": 25.246,
+      "junit_exit_code": 0,
+      "exact_selector_matches": 8,
+      "applied_injections": 8,
+      "strict": true,
+      "target_seen_anytime": true,
+      "target_after_fault": true,
+      "target_guard_entries_after_fault": 1,
+      "target_throw_after_fault": 0,
+      "target_throw_anytime": 0,
+      "new_coverage_items_vs_seed": 0,
+      "new_io_sites_vs_seed": [],
+      "new_coverage_items": [],
+      "observed_io_sites": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I",
+        "org.apache.zookeeper.server.quorum.QuorumPeer#readLongFromFile:2186:java.io.FileReader#<init>(Ljava/io/File;)V"
+      ],
+      "junit_symptoms": [],
+      "bug_mark": "none",
+      "runner": "zk04.OriginalJUnitRunner via JUnit Platform Launcher 1.6.2",
+      "fault_budget": 8
     }
   ],
   "union_new_coverage_items_vs_seed": 2,
