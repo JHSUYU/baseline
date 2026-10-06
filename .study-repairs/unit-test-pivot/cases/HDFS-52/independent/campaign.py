@@ -207,6 +207,11 @@ def main() -> None:
     for job in state["queue"]:
         if job["plan"][-1].startswith("FSImageSnapshot."):
             job["priority"] = min(job["priority"], 1)
+        elif job["plan"][-1].startswith("Client.getRpcResponse|main|"):
+            # An injected main-thread response read caused the original JUnit
+            # to exit before another substantive save. Exercise the observed
+            # heartbeat and worker reads before spending the queue on main.
+            job["priority"] = min(job["priority"], 2)
     state["stop_reason"] = None
     effective = lambda: sum(x["exact_order_applied"] and x["target_after_fault"]
                             for x in state["completed"])
