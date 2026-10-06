@@ -83,6 +83,11 @@ def guard_executed(target):
     return target['exception'] == 'none' or target['exception'] == 'org.apache.hadoop.hbase.NamespaceNotFoundException'
 
 
+def io_site(selector):
+    """Stable I/O point; the final ordinal is used only for exact fault matching."""
+    return '~'.join(selector.split('~')[:3])
+
+
 def mutate(queue, seen, prefix, candidates, novelty, parent_seconds):
     unique = list(dict.fromkeys(candidates))
     # A deterministic shuffle spreads trials across site, path, and hit ordinal.
@@ -158,6 +163,8 @@ def publish(state):
         'new_production_methods': state['coverage_union']['methods'] - state['healthy_coverage']['methods'],
         'new_production_branches': state['coverage_union']['branches'] - state['healthy_coverage']['branches'],
         'new_io_selectors': len(state['observed_selectors'] - set(state['healthy_selectors'])) if isinstance(state['observed_selectors'], set) else len(set(state['observed_selectors']) - set(state['healthy_selectors'])),
+        'new_io_sites': len(set(map(io_site, state['observed_selectors']))
+                            - set(map(io_site, state['healthy_selectors']))),
         'elapsed_seconds': state['healthy']['elapsed_seconds'] + sum(x['elapsed_seconds'] or 0 for x in state['trials']),
         'queue_length': len(state['queue']),
         'budget': {'trials': MAX_TRIALS, 'max_faults': MAX_FAULTS},
@@ -296,11 +303,13 @@ def main():
             old = set(state['observed_selectors'])
             state['observed_selectors'] = sorted(old | set(x['selector'] for x in trace['io']))
             item['new_io_selectors'] = len(set(state['observed_selectors']) - old)
+            item['new_io_sites'] = len(set(map(io_site, state['observed_selectors']))
+                                       - set(map(io_site, old)))
             if requested < MAX_FAULTS:
                 seen = set(state['seen_plans'])
                 mutate(state['queue'], seen, entry['plan'], available_events(trace, last_fault_line),
                        item.get('new_production_branches', 0) + item.get('new_production_methods', 0)
-                       + item['new_io_selectors'], trace['elapsed_seconds'] or 300)
+                       + item['new_io_sites'], trace['elapsed_seconds'] or 300)
                 state['seen_plans'] = sorted(seen)
         state['trials'].append(item)
         save_state(state)

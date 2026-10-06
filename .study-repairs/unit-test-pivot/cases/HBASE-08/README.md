@@ -17,6 +17,11 @@ events come from `ZKUtil.createWithParents`, `updateExistingNodeData`, and
 `getChildDataAndWatchForNewChildren` when called by `ZKNamespaceManager`.
 Faults in the namespace creation path can therefore change cache update and
 watcher behavior before subsequent lookups.
+The hit ordinal is required to match a specific retry during injection. For
+coverage-guided I/O novelty, the stable point is family + znode path + call
+site; repeated retries at the same point are counted separately as exact
+selectors but not as new I/O sites. The final-16-round extension decision
+also uses stable I/O sites.
 
 `work/src/HBase08Agent.java` is a case-local ByteBuddy agent; `work/run.sh`
 launches the original JUnit in a fresh data directory, with JaCoCo enabled for
@@ -37,6 +42,17 @@ checkpoint if the campaign process exits unexpectedly. At 64 new trials it
 automatically extends to 128/eight faults only if at least one of the final
 16 strict, target-retaining trials adds a production method, branch, or
 observed I/O selector. Neither path repeats a completed trial.
+Sequence selection favors unseen I/O fault identities and late recovery I/O.
+After 24 trials, it also favors deeper valid sequences so the allocated
+six-fault budget is exercised. Repeated sequences that eliminate the selected
+target are demoted using their observed failure prefix.
+
+The source explains why a finite chain of namespace ZK write faults can still
+complete: `CreateNamespaceProcedure.executeFromState` catches `IOException`
+in the `CREATE_NAMESPACE_UPDATE_ZK` state. That state does not support rollback,
+so the procedure logs a retriable error and executes the state again. A later
+successful write lets the original test reach the namespace lookup. This is an
+expected recovery path, not a confirmed bug.
 
 Five earlier fault trials remain in `result.json` and
 `evidence/legacy-trials/`. Four were strictly applied and retained the target.

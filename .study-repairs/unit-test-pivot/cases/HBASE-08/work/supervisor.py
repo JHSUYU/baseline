@@ -2,6 +2,7 @@
 """Resume a crashed tmux campaign, then conditionally extend the same checkpoint."""
 import json
 from pathlib import Path
+import re
 import subprocess
 import time
 
@@ -25,12 +26,31 @@ def tmux_start(name, command):
         subprocess.run(['tmux', 'new-session', '-d', '-s', name, command], check=True)
 
 
-def late_novelty(trials):
-    return any(x['strict'] and x['target_after_final_fault']
-               and (x.get('new_production_methods', 0)
-                    + x.get('new_production_branches', 0)
-                    + x.get('new_io_selectors', 0) > 0)
-               for x in trials[-16:])
+def io_sites(log_path):
+    text = log_path.read_text(errors='replace')
+    selectors = re.findall(r'HBASE08 IO seq=\d+ selector=(\S+)', text)
+    # The hit ordinal locates an exact runtime event but repeated retries of
+    # the same call site and znode are not new I/O points for feedback.
+    return {'~'.join(selector.split('~')[:3]) for selector in selectors}
+
+
+def late_novelty(state):
+    healthy = io_sites(HERE / 'logs/healthy2.log')
+    seen = set(healthy)
+    trials = state['trials']
+    for trial in trials[:-16]:
+        if trial['strict'] and trial['target_after_final_fault']:
+            seen.update(io_sites(CASE / trial['log']))
+    for trial in trials[-16:]:
+        if not (trial['strict'] and trial['target_after_final_fault']):
+            continue
+        current = io_sites(CASE / trial['log'])
+        novel_site = bool(current - seen)
+        seen.update(current)
+        if (trial.get('new_production_methods', 0)
+                + trial.get('new_production_branches', 0) > 0 or novel_site):
+            return True
+    return False
 
 
 def main():
@@ -48,13 +68,13 @@ def main():
         if result.get('status') == 'candidate_review':
             say(f'candidate_review after {n}; awaiting source review')
             return
-        if not state['queue'] and not (n == 64 and late_novelty(state['trials'])):
+        if not state['queue'] and not (n == 64 and late_novelty(state)):
             say(f'stop at {n}: candidate queue exhausted')
             return
         if n < 64:
             trials, faults = 64, 6
             say(f'resume interrupted campaign at {n}/64')
-        elif n == 64 and late_novelty(state['trials']):
+        elif n == 64 and late_novelty(state):
             trials, faults = 128, 8
             say('late production coverage or I/O novelty; extend 64/6 to 128/8')
         elif 64 < n < 128 and state.get('depth_expanded_to', 0) == 8:
