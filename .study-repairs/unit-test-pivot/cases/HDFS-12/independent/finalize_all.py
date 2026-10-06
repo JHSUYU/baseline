@@ -74,6 +74,7 @@ def main() -> None:
     control = audit["long_lived_control"]
     assert ordinary["completed"] == control["completed"] == 128
     assert ordinary["target_retaining"] >= 20 and control["target_retaining"] >= 20
+    assert control["rotated_key_target_retaining"] == control["target_retaining"]
     assert ordinary["target_throw_events"] == control["target_throw_events"] == 0
     assert all(trial["bug_mark"] == "none"
                for state in (main_state, control_state) for trial in state["completed"])
@@ -86,6 +87,7 @@ def main() -> None:
     extra["audit"] = {"file": "independent/audit-all.json",
                       "strict": control["strict"],
                       "target_retaining": control["target_retaining"],
+                      "rotated_key_target_retaining": control["rotated_key_target_retaining"],
                       "target_throw_events": 0}
     extra["source_review"] = (
         "The original long-lived-client JUnit rotates block-token keys, then "
@@ -118,6 +120,7 @@ def main() -> None:
         "trial_ledger": "independent/long-lived/control-plane/trial-ledger.csv",
         "fault_trials": 128, "strict_injections": control["strict"],
         "target_after_fault": control["target_retaining"],
+        "rotated_key_target_after_fault": control["rotated_key_target_retaining"],
         "elapsed_seconds": control["elapsed_seconds"],
         "target_exception_after_fault_trials": 0,
         "coverage_gain": extra["coverage_gain"],

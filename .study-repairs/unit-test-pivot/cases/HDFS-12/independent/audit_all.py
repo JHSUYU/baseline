@@ -36,6 +36,11 @@ def audit_trial(trial: dict) -> dict:
     last = applied[-1]["seq"] if exact else None
     checks = [row for row in events if row["event"] == "TARGET_CHECK"
               and row.get("siteId") == CHECK and last is not None and row["seq"] > last]
+    all_checks = [row for row in events if row["event"] == "TARGET_CHECK"
+                  and row.get("siteId") == CHECK]
+    first_key = all_checks[0].get("keyId") if all_checks else None
+    rotated_key_after_fault = bool(checks) and any(
+        row.get("keyId") != first_key for row in checks)
     throws = [row for row in events if row["event"] == "TARGET_THROW"
               and row.get("siteId") == THROW
               and row.get("exception") ==
@@ -51,6 +56,7 @@ def audit_trial(trial: dict) -> dict:
     assert manifest["returncode"] == trial["junit_exit"], trial["id"]
     assert manifest["elapsed_seconds"] == trial["elapsed_seconds"], trial["id"]
     return {"id": trial["id"], "exact": exact, "target_after_fault": bool(checks),
+            "rotated_key_after_fault": rotated_key_after_fault,
             "target_throw_events": len(throws), "junit_exit": manifest["returncode"],
             "elapsed_seconds": manifest["elapsed_seconds"],
             "requested_faults": len(sequence), "matched_faults": len(matched),
@@ -67,6 +73,9 @@ def main() -> None:
                         "strict": sum(row["exact"] for row in trials),
                         "target_retaining": sum(row["exact"] and row["target_after_fault"]
                                                 for row in trials),
+                        "rotated_key_target_retaining": sum(
+                            row["exact"] and row["rotated_key_after_fault"]
+                            for row in trials),
                         "target_throw_events": sum(row["target_throw_events"] for row in trials),
                         "junit_pass": sum(row["junit_exit"] == 0 for row in trials),
                         "elapsed_seconds": round(state["healthy_seconds"] +
