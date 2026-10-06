@@ -1,0 +1,41 @@
+{
+  "case_id": "ZOOKEEPER-01",
+  "system": "ZooKeeper 3.8.7",
+  "selection_algorithm": {
+    "mode": "coverage_io",
+    "fuzzer": "/users/ZhenyuLi/zk01-unit/core-fuzzer/fuzzer.py",
+    "feedback": [
+      "exact observed I/O point identity",
+      "production method coverage",
+      "production branch outcome coverage",
+      "exact selected target guard and explicit throw"
+    ],
+    "runtime_graph_or_closure_read": false,
+    "runtime_skeleton_or_static_scope_map_read_by_fuzzer": false
+  },
+  "runtime_recorder": {
+    "implementation": "GraphChecker runtime JAR plus prewoven ZooKeeper class files",
+    "jar": "/users/ZhenyuLi/zk01-unit/graphchecker-client.jar",
+    "jar_sha256": "fdee49a2134fe8afffbb3f851c6ff93296063e05a7e4d63a257ed926fa8c10cb",
+    "example_prewoven_class": "/users/ZhenyuLi/zk01-unit/woven-client/org/apache/zookeeper/server/SessionTrackerImpl.class",
+    "example_prewoven_class_sha256": "b91535753b574fdc6f3634c556576124dc0e0a53a891ce35ce87e2ad358cc781",
+    "instrumentation_independent_of_graph": false,
+    "preweave_static_dependency": "The earlier run_case.py weave passed -Dcausynth.region.skeletons=/users/ZhenyuLi/zk01-unit/static/region_skeletons.jsonl.gz to GraphCheckerMain. Thus the set of woven observation sites may reflect that static skeleton.",
+    "preweave_command_source": "/users/ZhenyuLi/zk01-unit/run_case.py:128",
+    "preweave_result": "/users/ZhenyuLi/zk01-unit/logs/weave.json"
+  },
+  "current_junit_runtime": {
+    "runner": "cases/ZOOKEEPER-01/run_junit.py",
+    "trace_mode": "discovery",
+    "region_skeletons_property_passed": false,
+    "static_scope_map_property_passed": false,
+    "external_skeleton_or_static_map_loaded_by_runner": false,
+    "healthy_trace_directory": "/users/ZhenyuLi/zk01-unit/campaign/healthy-discovery/trace",
+    "healthy_trace_files": [
+      "runtime_trace.jsonl",
+      "schedule.jsonl",
+      "streaming_trace_manifest.json"
+    ]
+  },
+  "interpretation": "Selection and feedback are graph-free in this campaign; runtime observation remains dependent on a recorder previously woven with a static skeleton. Discovery mode alone does not establish graph-independent instrumentation."
+}

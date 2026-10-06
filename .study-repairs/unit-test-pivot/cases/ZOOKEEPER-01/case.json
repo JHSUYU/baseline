@@ -1,0 +1,52 @@
+{
+  "case_id": "ZOOKEEPER-01",
+  "system": "ZooKeeper 3.8.7",
+  "selection_mode": "coverage_io",
+  "test_class": "org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest",
+  "test_method": "testCloseSessionWhileUpgradeOnLeader",
+  "cwd": "/users/ZhenyuLi/zk01-unit/source",
+  "workspaces": {
+    "system_test": "/users/ZhenyuLi/zk01-unit/source",
+    "temp": "/users/ZhenyuLi/zk01-unit/campaign"
+  },
+  "target": {
+    "method": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>",
+    "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u15",
+    "throw_event": "EXPLICIT_THROW",
+    "explicit_throw_site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u18",
+    "exception_type": "org.apache.zookeeper.KeeperException$SessionExpiredException",
+    "fatal_guards": [{
+      "siteId": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u15",
+      "outcome": false
+    }],
+    "source_file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+    "source_line": 317,
+    "code": "if (session.isClosing()) { throw new KeeperException.SessionExpiredException(); }",
+    "coverage_include_prefixes": ["<org.apache.zookeeper."]
+  },
+  "seed": {
+    "trace": "/users/ZhenyuLi/zk01-unit/campaign/healthy-discovery/trace/runtime_trace.jsonl",
+    "elapsed_seconds": 4.227
+  },
+  "trial": {
+    "command": [
+      "python3", "/users/ZhenyuLi/zk01-unit/run_junit.py",
+      "--output", "{trial_dir}/attempt-{attempt}/junit-run",
+      "--fault-plan", "{fault_trial}",
+      "--timeout", "75"
+    ],
+    "trace_path": "{trial_dir}/attempt-{attempt}/junit-run/trace/runtime_trace.jsonl"
+  },
+  "io_scope": {
+    "marker_prefixes": [
+      "FAULT:ZOOKEEPER_CLIENT_TCP:WRITE",
+      "FAULT:ZK_QUORUM:RESPONSE"
+    ]
+  },
+  "budget": {
+    "max_trials": 64,
+    "max_faults": 6,
+    "max_unmatched_retries": 1
+  },
+  "timeout_seconds": 85
+}
