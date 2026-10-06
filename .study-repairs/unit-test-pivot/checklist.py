@@ -6,7 +6,9 @@ from __future__ import annotations
 from collections import Counter
 import argparse
 import json
+import os
 from pathlib import Path
+import tempfile
 
 
 HERE = Path(__file__).resolve().parent
@@ -22,7 +24,23 @@ SYSTEM_NAMES = {
 }
 
 
-def normalize_trial_counts(record: dict, update: dict) -> None:
+def atomic_write_text(path: Path, contents: str) -> None:
+    """Publish a complete checklist even while case results arrive."""
+    descriptor, temporary = tempfile.mkstemp(
+        prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(contents)
+            stream.flush()
+            os.fsync(stream.fileno())
+        os.replace(temporary, path)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
+
+
+def normalize_trial_counts(record: dict, update: dict,
+                           selection: dict) -> None:
     """Map older case ledgers to the shared checklist column names.
 
     Keep the case's original fields in the JSON row for auditability. A missing
@@ -34,6 +52,22 @@ def normalize_trial_counts(record: dict, update: dict) -> None:
         ),
         "coverage_gain": ("target_retaining_production_coverage_gain",),
     }
+    # A case report may use compact names for the resolved bytecode site.
+    # Keep the full selection text in the checklist's source/code columns;
+    # resolved locations and case-specific explanations remain in the row.
+    if update.get("function"):
+        record["reported_function"] = update["function"]
+    if update.get("check_code"):
+        record["reported_check_code"] = update["check_code"]
+    record["function"] = selection["function"]
+    record["check_code"] = selection.get("check_code")
+    if not record.get("cluster_test") and update.get("cluster_tests"):
+        record["cluster_test"] = ", ".join(update["cluster_tests"])
+    if record.get("target_reached") is None:
+        if "healthy_target_guard_reached" in update:
+            record["target_reached"] = bool(update["healthy_target_guard_reached"])
+        elif "healthy_target_checks" in update:
+            record["target_reached"] = update["healthy_target_checks"] > 0
     for column, candidates in aliases.items():
         if column in update:
             continue
@@ -110,7 +144,7 @@ def rows() -> list[dict]:
                 if update.get("case_id") != case_id:
                     raise ValueError(f"wrong case_id in {path}")
                 record.update(update)
-                normalize_trial_counts(record, update)
+                normalize_trial_counts(record, update, entry)
             # Per-case results can use a short system key or a display name.
             # Keep the 102-row ledger consistent regardless of worker format.
             record["system"] = SYSTEM_NAMES[entry["system"].lower()]
@@ -194,10 +228,11 @@ def main() -> None:
         print(json.dumps(dict(Counter(row["status"] for row in items)),
                          sort_keys=True))
     else:
-        (HERE / "checklist102.json").write_text(
+        atomic_write_text(
+            HERE / "checklist102.json",
             json.dumps({"schema_version": 1, "rows": items},
                        ensure_ascii=False, indent=2) + "\n")
-        (HERE / "checklist102.md").write_text(markdown(items))
+        atomic_write_text(HERE / "checklist102.md", markdown(items))
         print(f"rendered {len(items)} rows")
 
 
