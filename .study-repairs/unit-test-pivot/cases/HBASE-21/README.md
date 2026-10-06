@@ -33,6 +33,11 @@ six related classes. No GraphChecker prewoven JAR, skeleton, graph, or closure
 is used. The source checkout is read only; the executed HBase JAR and test JAR
 are original release artifacts.
 
+The queue favors new stable I/O sites, new production coverage, and I/O events
+nearer the target in the healthy run. It reduces the score of repeatedly tried
+first sites and skips fault patterns that have repeatedly removed the target.
+The healthy event order is runtime feedback, not a reconstructed causal graph.
+
 The default search budget is 80 **strict, target-retaining** trials with at most
 eight ordered faults. Unmatched plans and trials that lose the target are kept
 in the ledger but do not consume that effective budget. The loop has a 180

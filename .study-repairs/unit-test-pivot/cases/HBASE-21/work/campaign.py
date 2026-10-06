@@ -146,7 +146,7 @@ def mutate(queue, seen, prefix, candidates, novelty, parent_seconds):
                           'parent_seconds': parent_seconds, 'wait': 0})
 
 
-def queue_priority(entry, trials):
+def queue_priority(entry, trials, healthy_order):
     """CrashFuzz-style novelty, with breadth across related runtime I/O sites."""
     last = entry['plan'][-1]
     fields = last.split('~')
@@ -175,6 +175,11 @@ def queue_priority(entry, trials):
     exhausted_prefix = len(prefix_trials) >= 2 and all(
         not x['target_after_final_fault'] for x in prefix_trials)
     root_site = '~'.join(entry['plan'][0].split('~')[:3])
+    root_selector = entry['plan'][0].rsplit('~', 1)[0]
+    # Favor the I/O events observed nearer the healthy target check. Earlier
+    # namespace setup sites still remain eligible through the bounded score.
+    healthy_rank = healthy_order.get(root_selector, len(healthy_order) - 1)
+    temporal_proximity = 20 * (healthy_rank + 1) // max(len(healthy_order), 1)
     # Cap the priority of descendants from a frequently tried first I/O site
     # so other observed sites receive trials as the queue grows.
     root_attempts = sum('~'.join(x['plan'][0].split('~')[:3]) == root_site for x in trials)
@@ -198,7 +203,8 @@ def queue_priority(entry, trials):
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
         - (180 if exhausted_prefix else 0) - (120 if exhausted_root else 0) \
-        - learned_target_loss_penalty - min(5 * root_attempts, 30) + depth_bonus
+        - learned_target_loss_penalty - min(5 * root_attempts, 30) \
+        + temporal_proximity + depth_bonus
 
 
 def publish(state):
@@ -308,6 +314,7 @@ def main():
                  'depth_expanded_to': MAX_FAULTS}
         save_state(state)
     save_state(state)
+    healthy_order = {x['selector']: idx for idx, x in enumerate(state['healthy']['io'])}
     while (effective_count(state) < MAX_TRIALS and len(state['trials']) < MAX_ATTEMPTS
            and time.time() - state['started_unix'] < MAX_WALL_SECONDS
            and state['queue'] and viable_queue_count(state) > 0):
@@ -325,7 +332,7 @@ def main():
             if inflight:
                 INFLIGHT.unlink()
             state['queue'].sort(key=lambda q: (known_target_loss_plan(q, state['trials']),
-                                               -queue_priority(q, state['trials']),
+                                               -queue_priority(q, state['trials'], healthy_order),
                                                q['parent_seconds'], ';'.join(q['plan'])))
             entry = state['queue'].pop(0)
             atomic_json(INFLIGHT, {'id': suffix, 'plan': entry['plan']})
