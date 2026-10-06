@@ -1,14 +1,85 @@
 {
-  "case_id": "HDFS-31",
-  "status": "mapped_pending_smoke",
-  "source_review": "The original two-DataNode TestDiskError workload directly calls dn0.transferBlock; DataNode.transferBlock invokes the selected getBPOSForBlock lookup before replica checks. Exact runtime pool/DataNode identity and fault-relevant I/O are pending calibration.",
-  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "audit_evidence": "independent/evidence/final-audit.json",
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "campaign_budget": 80,
+  "case_id": "HDFS-31",
+  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+  "coverage_gain": 451,
+  "elapsed_seconds": 2501.317,
+  "evidence": "independent/evidence/campaign-state.json",
+  "fault_trials": 80,
+  "fully_applied_trials": 61,
+  "healthy_elapsed_seconds": 27.416,
+  "healthy_evidence": "independent/evidence/healthy-baseline.json",
+  "healthy_expected_target_throw_count": 0,
+  "independent_evidence": "independent/evidence/campaign-state.json",
+  "junit_nonzero_trials": 20,
+  "last_trial": {
+    "all_target_throw_count": 0,
+    "all_target_throw_events": [],
+    "applied": [],
+    "bug_mark": "none",
+    "candidate_pretarget_io": [],
+    "elapsed_seconds": 22.678,
+    "fault_count": 1,
+    "healthy_expected_target_throw_count": 0,
+    "junit_differs_from_healthy": false,
+    "junit_exit": 0,
+    "matched": [],
+    "needs_source_review": false,
+    "new_pretarget_io_count": 0,
+    "new_production_lines_vs_healthy": [
+      "org/apache/hadoop/hdfs/server/datanode/DataXceiver:274",
+      "org/apache/hadoop/hdfs/server/datanode/DataXceiver:276"
+    ],
+    "new_production_methods_vs_healthy": [],
+    "new_production_probes_vs_healthy": [
+      "org/apache/hadoop/hdfs/server/blockmanagement/DatanodeStats$StorageTypeStatsMap#23",
+      "org/apache/hadoop/hdfs/server/datanode/BlockReceiver#351",
+      "org/apache/hadoop/hdfs/server/datanode/DataXceiver#71"
+    ],
+    "parent": "healthy-01",
+    "plan": [
+      "Client.getRpcResponse:main@@15"
+    ],
+    "run_id": "trial-080",
+    "selected_guard_context": [
+      "1866672043",
+      "BP-516235651-128.110.217.200-1791329105419",
+      "1073741825",
+      "true",
+      "380884607"
+    ],
+    "selected_guard_sequence": 29,
+    "selected_throw_after_fault_count": 0,
+    "selected_throw_events": [],
+    "selected_transfer_guard_after_final_fault": false,
+    "strict_ordered_injection": false
+  },
+  "max_fault_depth_attempted": 8,
+  "max_faults": 8,
+  "methodology": "original_cluster_junit_case_local_asm_jacoco_graph_free",
+  "new_selected_target_exception_trials": 0,
+  "non_target_failure_breakdown": {
+    "direct_injected_rpc_ioexception_before_target": 19,
+    "single_datanode_write_pipeline_excluded_before_target": 1
+  },
+  "production_line_gain": 474,
+  "production_method_gain": 62,
+  "reason": "Original embedded-cluster JUnit and exact transferBlock getBPOSForBlock guard verified; 41 strict target-retaining trials found service present and no selected IOException, as in healthy baseline.",
+  "secondary_observation": {
+    "classification": "source_reviewed_setup_write_pipeline_failure",
+    "details": "Injected DataStreamer RPC error excludes the only DataNode during initial file creation; minReplication=1 cannot be met before transferBlock call.",
+    "evidence": "independent/evidence/trial-020-source-review-excerpt.txt",
+    "run_id": "trial-020",
+    "target_reached_after_fault": false
+  },
+  "selected_target_throw_after_fault_trials": 0,
+  "source_review": "DataNode.java:1832 BlockPoolManager.get result feeds null guard at 1833; explicit IOException at 1834-1835. Original test calls dn0.transferBlock once and healthy runtime shows the same DataNode, block pool and block ID immediately reach the guard with service present.",
+  "status": "quality_complete",
+  "stop_reason": "80_trial_budget_complete_no_late_new_production_or_stable_io",
+  "strict_injections": 61,
+  "target_after_fault": 41,
+  "target_reached": true,
+  "target_retaining_junit_nonzero_trials": 0
 }

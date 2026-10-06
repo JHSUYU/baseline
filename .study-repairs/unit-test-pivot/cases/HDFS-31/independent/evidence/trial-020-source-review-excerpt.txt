@@ -1,0 +1,45 @@
+Trial 020: selected transferBlock/getBPOSForBlock guard was not reached.
+Original test source: TestDiskError.java:241-278 (file write before transferBlock).
+
+JUnit log lines 317-325:
+317: 2026-10-06 23:06:22,689 [Command processor] INFO  datanode.DataNode (BPOfferService.java:processCommandFromActive(767)) - Got finalize command for block pool BP-719489991-128.110.217.200-1791327972549
+318: 2026-10-06 23:06:25,735 [IPC Server handler 4 on default port 41977] INFO  hdfs.StateChange (FSDirWriteFileOp.java:logAllocatedBlock(801)) - BLOCK* allocate blk_1073741825_1001, replicas=127.0.0.1:40565 for /user/ZhenyuLi/test.dat
+319: 2026-10-06 23:06:25,810 [Thread-97] WARN  hdfs.DataStreamer (DataStreamer.java:createBlockOutputStream(1959)) - Exception in createBlockOutputStream blk_1073741825_1001
+320: java.io.IOException: HDFS-31 independent RPC response fault Client.getRpcResponse:Thread-N@@3
+321: 	at Hdfs31Probe.rpcResponse(Hdfs31Probe.java:48)
+322: 	at org.apache.hadoop.ipc.Client.getRpcResponse(Client.java)
+323: 	at org.apache.hadoop.ipc.Client.call(Client.java:1529)
+324: 	at org.apache.hadoop.ipc.Client.call(Client.java:1426)
+325: 	at org.apache.hadoop.ipc.ProtobufRpcEngine2$Invoker.invoke(ProtobufRpcEngine2.java:258)
+
+JUnit log lines 348-361:
+348: 	at org.apache.hadoop.hdfs.DataStreamer.setupPipelineForCreate(DataStreamer.java:1842)
+349: 	at org.apache.hadoop.hdfs.DataStreamer.run(DataStreamer.java:752)
+350: 2026-10-06 23:06:25,812 [Thread-97] WARN  hdfs.DataStreamer (DataStreamer.java:setupPipelineForCreate(1850)) - Abandoning BP-719489991-128.110.217.200-1791327972549:blk_1073741825_1001
+351: 2026-10-06 23:06:25,839 [Thread-97] WARN  hdfs.DataStreamer (DataStreamer.java:setupPipelineForCreate(1857)) - Excluding datanode DatanodeInfoWithStorage[127.0.0.1:40565,DS-6f5054ed-669a-4a5d-b62f-687a0b4f14f8,DISK]
+352: 2026-10-06 23:06:25,850 [IPC Server handler 0 on default port 41977] INFO  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseRandom(925)) - Not enough replicas was chosen. Reason: {NO_REQUIRED_STORAGE_TYPE=1}
+353: 2026-10-06 23:06:25,850 [IPC Server handler 0 on default port 41977] INFO  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseRandom(925)) - Not enough replicas was chosen. Reason: {NO_REQUIRED_STORAGE_TYPE=1}
+354: 2026-10-06 23:06:25,851 [IPC Server handler 0 on default port 41977] WARN  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseTarget(501)) - Failed to place enough replicas, still in need of 1 to reach 1 (unavailableStorages=[], storagePolicy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]}, newBlock=true) For more information, please enable DEBUG log level on org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicy and org.apache.hadoop.net.NetworkTopology
+355: 2026-10-06 23:06:25,851 [IPC Server handler 0 on default port 41977] WARN  protocol.BlockStoragePolicy (BlockStoragePolicy.java:chooseStorageTypes(161)) - Failed to place enough replicas: expected size is 1 but only 0 storage types can be selected (replication=1, selected=[], unavailable=[DISK], removed=[DISK], policy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]})
+356: 2026-10-06 23:06:25,851 [IPC Server handler 0 on default port 41977] WARN  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseTarget(501)) - Failed to place enough replicas, still in need of 1 to reach 1 (unavailableStorages=[DISK], storagePolicy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]}, newBlock=true) All required storage types are unavailable:  unavailableStorages=[DISK], storagePolicy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]}
+357: 2026-10-06 23:06:25,851 [IPC Server handler 0 on default port 41977] INFO  ipc.Server (Server.java:logException(3260)) - IPC Server handler 0 on default port 41977, call Call#12 Retry#0 org.apache.hadoop.hdfs.protocol.ClientProtocol.addBlock from 127.0.0.1:46630
+358: java.io.IOException: File /user/ZhenyuLi/test.dat could only be written to 0 of the 1 minReplication nodes. There are 1 datanode(s) running and 1 node(s) are excluded in this operation.
+359: 	at org.apache.hadoop.hdfs.server.blockmanagement.BlockManager.chooseTarget4NewBlock(BlockManager.java:2473)
+360: 	at org.apache.hadoop.hdfs.server.namenode.FSDirWriteFileOp.chooseTargetForNewBlock(FSDirWriteFileOp.java:293)
+361: 	at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getAdditionalBlock(FSNamesystem.java:3075)
+
+JUnit log lines 551-558:
+551: 2026-10-06 23:06:25,988 [main] INFO  server.AbstractConnector (AbstractConnector.java:doStop(383)) - Stopped ServerConnector@7d836c4a{HTTP/1.1, (http/1.1)}{localhost:0}
+552: 2026-10-06 23:06:25,989 [main] INFO  server.session (HouseKeeper.java:stopScavenging(149)) - node0 Stopped scavenging
+553: 2026-10-06 23:06:25,990 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@34d26a68{static,/static,jar:file:/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar!/webapps/static,STOPPED}
+554: 2026-10-06 23:06:25,990 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@22a2e581{logs,/logs,file:///users/ZhenyuLi/hdfs31-independent-runs/trial-020/scratch/logs/,STOPPED}
+555: testDataTransferWhenBytesPerChecksumIsZero(org.apache.hadoop.hdfs.server.datanode.TestDiskError): File /user/ZhenyuLi/test.dat could only be written to 0 of the 1 minReplication nodes. There are 1 datanode(s) running and 1 node(s) are excluded in this operation.
+556: 	at org.apache.hadoop.hdfs.server.blockmanagement.BlockManager.chooseTarget4NewBlock(BlockManager.java:2473)
+557: 	at org.apache.hadoop.hdfs.server.namenode.FSDirWriteFileOp.chooseTargetForNewBlock(FSDirWriteFileOp.java:293)
+558: 	at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getAdditionalBlock(FSNamesystem.java:3075)
+
+Runtime events (non-IO):
+2	POOL_ADD	Thread-69	587968800	377416618
+13	FAULT_MATCHED	Thread-97	Client.getRpcResponse:Thread-N	3	0
+14	FAULT_APPLIED	Thread-97	Client.getRpcResponse:Thread-N	3	0
+17	POOL_REMOVE	BP-719489991-128.110.217.200-1791327972549 heartbeating to localhost/127.0.0.1:41977	587968800	377416618

@@ -1,0 +1,840 @@
+{
+  "case_id": "HDFS-31",
+  "failure_classes": {
+    "direct_injected_rpc_ioexception_before_target": 19,
+    "single_datanode_write_pipeline_excluded_before_target": 1
+  },
+  "fault_trials": 80,
+  "graphchecker_or_skeleton_on_classpath": false,
+  "healthy_expected_target_throws": 0,
+  "healthy_target_guards": 1,
+  "junit_nonzero": 20,
+  "late_extension_signal": {
+    "extend": false,
+    "late_new_production_lines_requiring_source_review": [],
+    "late_new_production_methods": [],
+    "late_new_production_probes": [],
+    "late_stable_new_io_families": []
+  },
+  "max_depth_attempted": 8,
+  "max_depth_target_retaining": 8,
+  "non_target_trial_020_source_review": {
+    "failure": "original file creation failed before transferBlock because no replication target remained",
+    "fault": "Client.getRpcResponse:Thread-N@@3 in DataStreamer",
+    "interpretation": "setup-path consequence of injected RPC failure; selected transferBlock guard was never reached",
+    "log_evidence": "DataStreamer excludes the only running DataNode; NameNode reports 0 of 1 minReplication nodes",
+    "run": "trial-020"
+  },
+  "original_cluster_junit": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+  "probe_write_errors": 0,
+  "selected_runtime_identity": "main-thread transferBlock DataNode ID, block-pool ID and block ID matched to subsequent getBPOSForBlock guard after final fault",
+  "selected_source": "DataNode.java:1832 BlockPoolManager.get; 1833 null guard; 1834-1835 explicit IOException",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "stop_reason": "80_trial_budget_complete_no_late_new_production_or_stable_io",
+  "strict_ordered_trials": 61,
+  "target_retaining_junit_nonzero": 0,
+  "target_retaining_new_target_exceptions": 0,
+  "target_retaining_trials": 41,
+  "trials": [
+    {
+      "depth": 1,
+      "elapsed_seconds": 29.647,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-001",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 32.607,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-002",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 2,
+      "elapsed_seconds": 29.949,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-003",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 2,
+      "elapsed_seconds": 32.879,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-004",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 23.363,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-005",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 3,
+      "elapsed_seconds": 14.767,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-006",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 3,
+      "elapsed_seconds": 30.366,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-007",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 20.291,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-008",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 3,
+      "elapsed_seconds": 34.141,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-009",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 4,
+      "elapsed_seconds": 22.082,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-010",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 24.112,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-011",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 4,
+      "elapsed_seconds": 34.115,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-012",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 4,
+      "elapsed_seconds": 33.188,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-013",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 27.027,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-014",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 5,
+      "elapsed_seconds": 24.512,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-015",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 5,
+      "elapsed_seconds": 39.586,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-016",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 25.568,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-017",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 6,
+      "elapsed_seconds": 27.811,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-018",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 6,
+      "elapsed_seconds": 39.391,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-019",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 22.977,
+      "failure_class": "single_datanode_write_pipeline_excluded_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-020",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 28.143,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-021",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 41.832,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-022",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 27.005,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-023",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 35.665,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-024",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 39.675,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-025",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 22.103,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-026",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 31.117,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-027",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 39.553,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-028",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 33.781,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-029",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 38.955,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-030",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 35.516,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-031",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 23.178,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-032",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 38.056,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-033",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 34.907,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-034",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 28.966,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-035",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 40.147,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-036",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 35.845,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-037",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 26.31,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-038",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 37.76,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-039",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 38.559,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-040",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 30.072,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-041",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 26.166,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-042",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 27.622,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-043",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 21.782,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-044",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 28.472,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-045",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 33.795,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-046",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 29.599,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-047",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 35.522,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-048",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 35.637,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-049",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 21.263,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-050",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 34.159,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-051",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 34.001,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-052",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 26.75,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-053",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 34.708,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-054",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 34.757,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-055",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 23.303,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-056",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 34.41,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-057",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 34.601,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-058",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 25.982,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-059",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 36.876,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-060",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 36.485,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-061",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 29.997,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-062",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 37.39,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-063",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 37.336,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-064",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 25.453,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-065",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 32.955,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-066",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 24.958,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-067",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 22.859,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-068",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 33.404,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-069",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 7,
+      "elapsed_seconds": 33.962,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-070",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 25.255,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-071",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 35.039,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-072",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 31.461,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-073",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 25.867,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-074",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 30.503,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-075",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 30.161,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-076",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 35.379,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-077",
+      "selected_throw_count": 0,
+      "strict": true,
+      "target_after_final_fault": true
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 37.722,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-078",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 8,
+      "elapsed_seconds": 30.108,
+      "failure_class": "direct_injected_rpc_ioexception_before_target",
+      "junit_exit": 1,
+      "run_id": "trial-079",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    },
+    {
+      "depth": 1,
+      "elapsed_seconds": 22.678,
+      "failure_class": null,
+      "junit_exit": 0,
+      "run_id": "trial-080",
+      "selected_throw_count": 0,
+      "strict": false,
+      "target_after_final_fault": false
+    }
+  ]
+}
