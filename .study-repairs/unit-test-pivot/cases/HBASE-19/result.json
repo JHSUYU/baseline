@@ -1,14 +1,131 @@
 {
   "case_id": "HBASE-19",
-  "status": "test_identified",
-  "cluster_test": "TestModifyTableProcedure.testModifyWillNotReopenRegions",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "status": "quality_complete",
+  "cluster_test": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+  "target_reached": true,
+  "elapsed_seconds": 4943.419999999999,
+  "fault_trials": 80,
+  "strict_injections": 80,
+  "target_after_fault": 80,
+  "coverage_gain": 2,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-19",
-  "source_audit_note": "The test deliberately adds a column family and catches the target HBaseIOException at test lines 635-648."
+  "evidence": [
+    "README.md",
+    "evidence/hbase1920-coverage-io-80.tar.gz",
+    "work/checkpoint.json",
+    "work/src/HBase1920Agent.java",
+    "work/run.sh"
+  ],
+  "source_audit_note": "The unchanged original JUnit intentionally adds NewCF and catches the column-family HBaseIOException at lines 637-648. The observed post-fault target signature matches healthy behavior; no new bug candidate in these 80 trials. The two newly covered production branches are in ModifyTableProcedure I/O-exception retry/rollback handling (lines 303 and 340).",
+  "methodology": "graph_free_original_junit_observed_descriptor_fs_io_jacoco_feedback",
+  "current_campaign": {
+    "methodology": "graph_free_original_junit_observed_descriptor_fs_io_jacoco_feedback",
+    "healthy_elapsed_seconds": 57.83,
+    "healthy_io_events": 8,
+    "healthy_coverage": {
+      "classes": {
+        "org/apache/hadoop/hbase/util/FSTableDescriptors": {
+          "methods": 20,
+          "branches": 45,
+          "lines": 158
+        },
+        "org/apache/hadoop/hbase/master/procedure/AbstractStateMachineTableProcedure": {
+          "methods": 12,
+          "branches": 10,
+          "lines": 39
+        },
+        "org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure": {
+          "methods": 21,
+          "branches": 41,
+          "lines": 123
+        }
+      },
+      "methods": 53,
+      "branches": 96,
+      "lines": 320
+    },
+    "attempted_trials": 80,
+    "strict_trials": 80,
+    "requested_fault_events": 512,
+    "applied_fault_events": 512,
+    "new_production_methods": 0,
+    "new_production_branches": 2,
+    "new_io_sites": 0,
+    "elapsed_seconds": 4943.419999999999,
+    "queue_length": 331,
+    "budget": {
+      "trials": 80,
+      "max_faults": 8
+    },
+    "checkpoint": "../HBASE-19/work/checkpoint.json",
+    "healthy_target_guard_calls": 12,
+    "healthy_exact_target_throws": 1,
+    "strict_post_fault_target_trials": 80,
+    "strict_post_fault_exact_target_throws": 46,
+    "unexpected_exact_target_signatures": 0,
+    "healthy_guard_evaluations": 6,
+    "junit_passes": 80,
+    "strict_target_lost_trials": 0,
+    "max_faults_tested": 8,
+    "exact_io_plan_identity_audited": true,
+    "post_final_fault_guards_audited": true,
+    "exact_target_signatures_audited": true,
+    "coverage_union_recomputed": true,
+    "last_16_new_production_coverage_or_stable_io_family": false,
+    "conditional_extension_taken": false,
+    "archive_sha256": "34c4b825bcbdb54f5620ac831595840ace0e9a2e5727435c76bfea857a009199",
+    "strict_post_fault_expected_target_trials": 46,
+    "strict_post_fault_unexpected_target_trials": 0,
+    "healthy_expected_signature": [
+      [
+        3,
+        1,
+        2,
+        null,
+        "org.apache.hadoop.hbase.HBaseIOException",
+        "cf_reject"
+      ]
+    ],
+    "distinct_fault_plans": 80,
+    "new_production_branch_lines": {
+      "ModifyTableProcedure:303": 1,
+      "ModifyTableProcedure:340": 1
+    },
+    "expected_exception_before_final_fault_but_later_guard_reached": 34
+  },
+  "quality_complete": true,
+  "completion_utc": "2026-10-06T22:48:29.836987+00:00",
+  "target_guard": "ModifyTableProcedure.preflightChecks:135",
+  "target_exception": "org.apache.hadoop.hbase.HBaseIOException: column-family-count rejection",
+  "healthy_guard_evaluations": 6,
+  "healthy_expected_target_throws": 1,
+  "healthy_expected_signature": [
+    [
+      3,
+      1,
+      2,
+      null,
+      "org.apache.hadoop.hbase.HBaseIOException",
+      "cf_reject"
+    ]
+  ],
+  "healthy_junit_passed": true,
+  "healthy_elapsed_seconds": 57.83,
+  "baseline_trial_budget": 80,
+  "baseline_max_faults_per_sequence": 8,
+  "conditional_extension": {
+    "trials": 128,
+    "max_faults": 10,
+    "gate": "new production method/branch or stable I/O family in final 16 strict target-retaining trials"
+  },
+  "instrumentation_provenance": {
+    "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+    "server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "tests_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+    "bytebuddy_agent_source_sha256": "817b3e55efde17a34bd20206efe51add0bc109a184c936d7346c79b79f134da9",
+    "bytebuddy_agent_jar_sha256": "8cba969e41b961fa46339ba0f7130a0263ee22ce3d16f935fdd944453c1a8bc2",
+    "coverage": "JaCoCo production method and branch",
+    "graphchecker_prewoven_or_graph_feedback": false,
+    "native_dependency": "case-local Ubuntu Jammy libsnappy1v5 1.1.8-1build3; SHA256 245a0f6b5a9dda0bee20c6a62f78a88bf885be831b1f1108f19231b2a97a797e"
+  }
 }
