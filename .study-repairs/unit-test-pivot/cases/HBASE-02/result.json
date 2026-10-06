@@ -1,14 +1,4962 @@
 {
   "case_id": "HBASE-02",
-  "status": "test_identified",
-  "cluster_test": "TestConnectionImplementation.testMetaLookupThreadPoolCreated",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "status": "quality_complete",
+  "system": "HBase 2.6.6",
+  "cluster_test": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+  "cluster_type": "HBaseTestingUtility MiniHBaseCluster with two region servers",
+  "target_guard": "ConnectionImplementation.relocateRegion(TableName,byte[],int):910-911",
+  "target_exception": "org.apache.hadoop.hbase.TableNotEnabledException",
+  "target_reached": true,
+  "healthy_target_entries": 1,
+  "healthy_table_disabled_values": [
+    false
+  ],
+  "healthy_meta_table_state_gets": 1,
+  "healthy_meta_get_rpc_hits": 1,
+  "healthy_junit_passed": true,
+  "healthy_elapsed_seconds": 40.2,
+  "elapsed_seconds": 2791.15,
+  "fault_trials": 65,
+  "strict_injections": 65,
+  "target_after_fault": 61,
+  "coverage_gain": 31,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-02",
-  "source_audit_note": "Test relocates an enabled table; disabled-table exception is not expected."
+  "evidence": {
+    "readme": "README.md",
+    "runner": "work/run.sh",
+    "agent_source": "work/src/HBase02Agent.java",
+    "native_junit_source": "work/src/NativeJUnit.java",
+    "coverage_source": "work/src/CoverageReport.java",
+    "healthy_log": "work/healthy_cov.log",
+    "healthy_exec": "work/healthy_cov.exec",
+    "trial_logs": "work/r01.log through work/r64.log, plus work/r066.log",
+    "trial_coverage": "Matching .exec files",
+    "duplicate_log": "work/r065.log",
+    "checkpoint_repair": "work/repair_checkpoint.py",
+    "finalizer": "work/finalize.py",
+    "archive": "evidence/hbase02-evidence.tar.gz",
+    "archive_sha256": "87c23ad062888c0b9e4df82ecb77fd33328be4a6be8e2ed582d20d3ac48f1eb8",
+    "manifest": "evidence/manifest.json"
+  },
+  "source_audit_note": "The original test directly calls relocateRegion on an enabled table. MetaTableAccessor.getTableState performs a hbase:meta Get before the disabled-table guard completes; the HBASE-01 scan response door is after this guard.",
+  "healthy_coverage": {
+    "classes": {
+      "ConnectionImplementation": {
+        "methods": 56,
+        "branches": 94,
+        "lines": 299
+      },
+      "RpcRetryingCallerImpl": {
+        "methods": 5,
+        "branches": 5,
+        "lines": 27
+      },
+      "MetaTableAccessor": {
+        "methods": 46,
+        "branches": 48,
+        "lines": 183
+      }
+    },
+    "target_lines": {
+      "910": {
+        "instructions": 8,
+        "branches": 2
+      },
+      "911": {
+        "instructions": 0,
+        "branches": 0
+      }
+    },
+    "total_branches": 147,
+    "total_lines": 509,
+    "total_methods": 107
+  },
+  "fault_trial_details": [
+    {
+      "id": "r01",
+      "plan": "1:IOException",
+      "requested_fault_events": 1,
+      "matched_fault_events": 1,
+      "applied_fault_events": 1,
+      "applied_hit_ordinals": [
+        1
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.26,
+      "log": "work/r01.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 29,
+      "production_branch_union": 176,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2
+      ]
+    },
+    {
+      "id": "r02",
+      "plan": "1:SocketTimeoutException",
+      "requested_fault_events": 1,
+      "matched_fault_events": 1,
+      "applied_fault_events": 1,
+      "applied_hit_ordinals": [
+        1
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.42,
+      "log": "work/r02.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 176,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2
+      ]
+    },
+    {
+      "id": "r03",
+      "plan": "1:EOFException",
+      "requested_fault_events": 1,
+      "matched_fault_events": 1,
+      "applied_fault_events": 1,
+      "applied_hit_ordinals": [
+        1
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 38.6,
+      "log": "work/r03.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 176,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2
+      ]
+    },
+    {
+      "id": "r04",
+      "plan": "1:ConnectException",
+      "requested_fault_events": 1,
+      "matched_fault_events": 1,
+      "applied_fault_events": 1,
+      "applied_hit_ordinals": [
+        1
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.39,
+      "log": "work/r04.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 1,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2
+      ]
+    },
+    {
+      "id": "r05",
+      "plan": "1:IOException,2:IOException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.5,
+      "log": "work/r05.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r06",
+      "plan": "1:IOException,2:SocketTimeoutException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.87,
+      "log": "work/r06.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r07",
+      "plan": "1:IOException,2:EOFException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.29,
+      "log": "work/r07.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r08",
+      "plan": "1:IOException,2:ConnectException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.81,
+      "log": "work/r08.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r09",
+      "plan": "1:SocketTimeoutException,2:IOException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.31,
+      "log": "work/r09.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r10",
+      "plan": "1:SocketTimeoutException,2:SocketTimeoutException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 38.63,
+      "log": "work/r10.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r11",
+      "plan": "1:SocketTimeoutException,2:EOFException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.48,
+      "log": "work/r11.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r12",
+      "plan": "1:SocketTimeoutException,2:ConnectException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.99,
+      "log": "work/r12.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r13",
+      "plan": "1:EOFException,2:IOException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 45.75,
+      "log": "work/r13.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r14",
+      "plan": "1:EOFException,2:SocketTimeoutException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 44.98,
+      "log": "work/r14.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r15",
+      "plan": "1:EOFException,2:EOFException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.74,
+      "log": "work/r15.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r16",
+      "plan": "1:EOFException,2:ConnectException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 39.04,
+      "log": "work/r16.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r17",
+      "plan": "1:ConnectException,2:IOException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 39.99,
+      "log": "work/r17.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r18",
+      "plan": "1:ConnectException,2:SocketTimeoutException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 39.82,
+      "log": "work/r18.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r19",
+      "plan": "1:ConnectException,2:EOFException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.58,
+      "log": "work/r19.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r20",
+      "plan": "1:ConnectException,2:ConnectException",
+      "requested_fault_events": 2,
+      "matched_fault_events": 2,
+      "applied_fault_events": 2,
+      "applied_hit_ordinals": [
+        1,
+        2
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.74,
+      "log": "work/r20.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3
+      ]
+    },
+    {
+      "id": "r21",
+      "plan": "1:IOException,2:IOException,3:IOException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 40.54,
+      "log": "work/r21.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r22",
+      "plan": "1:IOException,2:SocketTimeoutException,3:SocketTimeoutException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 39.82,
+      "log": "work/r22.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r23",
+      "plan": "1:IOException,2:EOFException,3:EOFException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 36.96,
+      "log": "work/r23.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r24",
+      "plan": "1:IOException,2:ConnectException,3:ConnectException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 38.13,
+      "log": "work/r24.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r25",
+      "plan": "1:SocketTimeoutException,2:IOException,3:SocketTimeoutException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 40.3,
+      "log": "work/r25.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r26",
+      "plan": "1:SocketTimeoutException,2:SocketTimeoutException,3:EOFException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 40.47,
+      "log": "work/r26.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r27",
+      "plan": "1:SocketTimeoutException,2:EOFException,3:ConnectException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 38.94,
+      "log": "work/r27.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r28",
+      "plan": "1:SocketTimeoutException,2:ConnectException,3:IOException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 38.72,
+      "log": "work/r28.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r29",
+      "plan": "1:EOFException,2:IOException,3:EOFException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 42.02,
+      "log": "work/r29.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r30",
+      "plan": "1:EOFException,2:SocketTimeoutException,3:ConnectException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 46.76,
+      "log": "work/r30.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r31",
+      "plan": "1:EOFException,2:EOFException,3:IOException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 37.98,
+      "log": "work/r31.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r32",
+      "plan": "1:EOFException,2:ConnectException,3:SocketTimeoutException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.27,
+      "log": "work/r32.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r33",
+      "plan": "1:ConnectException,2:IOException,3:ConnectException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.11,
+      "log": "work/r33.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r34",
+      "plan": "1:ConnectException,2:SocketTimeoutException,3:IOException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 42.17,
+      "log": "work/r34.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r35",
+      "plan": "1:ConnectException,2:EOFException,3:SocketTimeoutException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 45.55,
+      "log": "work/r35.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r36",
+      "plan": "1:ConnectException,2:ConnectException,3:EOFException",
+      "requested_fault_events": 3,
+      "matched_fault_events": 3,
+      "applied_fault_events": 3,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 40.89,
+      "log": "work/r36.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "r37",
+      "plan": "1:IOException,2:IOException,3:IOException,4:IOException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.0,
+      "log": "work/r37.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r38",
+      "plan": "1:IOException,2:SocketTimeoutException,3:SocketTimeoutException,4:EOFException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 44.55,
+      "log": "work/r38.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r39",
+      "plan": "1:IOException,2:EOFException,3:EOFException,4:IOException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 46.35,
+      "log": "work/r39.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r40",
+      "plan": "1:IOException,2:ConnectException,3:ConnectException,4:EOFException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.28,
+      "log": "work/r40.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r41",
+      "plan": "1:SocketTimeoutException,2:IOException,3:SocketTimeoutException,4:SocketTimeoutException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 44.77,
+      "log": "work/r41.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r42",
+      "plan": "1:SocketTimeoutException,2:SocketTimeoutException,3:EOFException,4:ConnectException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.2,
+      "log": "work/r42.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r43",
+      "plan": "1:SocketTimeoutException,2:EOFException,3:ConnectException,4:SocketTimeoutException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.26,
+      "log": "work/r43.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r44",
+      "plan": "1:SocketTimeoutException,2:ConnectException,3:IOException,4:ConnectException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 42.21,
+      "log": "work/r44.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r45",
+      "plan": "1:EOFException,2:IOException,3:EOFException,4:EOFException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 44.11,
+      "log": "work/r45.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r46",
+      "plan": "1:EOFException,2:SocketTimeoutException,3:ConnectException,4:IOException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.95,
+      "log": "work/r46.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r47",
+      "plan": "1:EOFException,2:EOFException,3:IOException,4:EOFException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 44.87,
+      "log": "work/r47.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r48",
+      "plan": "1:EOFException,2:ConnectException,3:SocketTimeoutException,4:IOException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 45.79,
+      "log": "work/r48.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "id": "r49",
+      "plan": "1:ConnectException,2:IOException,3:ConnectException,4:ConnectException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.94,
+      "log": "work/r49.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r50",
+      "plan": "1:ConnectException,2:SocketTimeoutException,3:IOException,4:SocketTimeoutException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 42.13,
+      "log": "work/r50.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r51",
+      "plan": "1:ConnectException,2:EOFException,3:SocketTimeoutException,4:ConnectException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.71,
+      "log": "work/r51.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r52",
+      "plan": "1:ConnectException,2:ConnectException,3:EOFException,4:SocketTimeoutException",
+      "requested_fault_events": 4,
+      "matched_fault_events": 4,
+      "applied_fault_events": 4,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 46.62,
+      "log": "work/r52.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r53",
+      "plan": "1:IOException,2:IOException,3:IOException,4:IOException,5:IOException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 46.95,
+      "log": "work/r53.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r54",
+      "plan": "1:IOException,2:SocketTimeoutException,3:IOException,4:SocketTimeoutException,5:IOException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.46,
+      "log": "work/r54.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r55",
+      "plan": "1:SocketTimeoutException,2:SocketTimeoutException,3:SocketTimeoutException,4:SocketTimeoutException,5:SocketTimeoutException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 46.02,
+      "log": "work/r55.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r56",
+      "plan": "1:SocketTimeoutException,2:EOFException,3:SocketTimeoutException,4:EOFException,5:SocketTimeoutException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 46.59,
+      "log": "work/r56.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r57",
+      "plan": "1:EOFException,2:EOFException,3:EOFException,4:EOFException,5:EOFException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.14,
+      "log": "work/r57.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r58",
+      "plan": "1:EOFException,2:ConnectException,3:EOFException,4:ConnectException,5:EOFException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 43.39,
+      "log": "work/r58.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r59",
+      "plan": "1:ConnectException,2:ConnectException,3:ConnectException,4:ConnectException,5:ConnectException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 45.79,
+      "log": "work/r59.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r60",
+      "plan": "1:ConnectException,2:IOException,3:ConnectException,4:IOException,5:ConnectException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 42.03,
+      "log": "work/r60.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 177,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    },
+    {
+      "id": "r61",
+      "plan": "1:IOException,2:IOException,3:IOException,4:IOException,5:IOException,6:IOException",
+      "requested_fault_events": 6,
+      "matched_fault_events": 6,
+      "applied_fault_events": 6,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": false,
+      "guard_outcomes": [
+        [
+          "false",
+          "org.apache.hadoop.hbase.client.RetriesExhaustedException"
+        ]
+      ],
+      "exact_target_exception": "org.apache.hadoop.hbase.client.RetriesExhaustedException:Failed after attempts=6, exceptions:",
+      "target_exception_observed": false,
+      "junit_passed": false,
+      "junit_exit": 1,
+      "elapsed_seconds": 43.5,
+      "log": "work/r61.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 54,
+            "branches": 100,
+            "lines": 305
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 23,
+            "lines": 62
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 47,
+            "lines": 180
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 0,
+            "branches": 0
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 170,
+        "total_lines": 547,
+        "total_methods": 108
+      },
+      "new_production_branches_vs_prior_trials": 1,
+      "production_branch_union": 178,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": true
+    },
+    {
+      "id": "r62",
+      "plan": "1:SocketTimeoutException,2:SocketTimeoutException,3:SocketTimeoutException,4:SocketTimeoutException,5:SocketTimeoutException,6:SocketTimeoutException",
+      "requested_fault_events": 6,
+      "matched_fault_events": 6,
+      "applied_fault_events": 6,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": false,
+      "guard_outcomes": [
+        [
+          "false",
+          "org.apache.hadoop.hbase.client.RetriesExhaustedException"
+        ]
+      ],
+      "exact_target_exception": "org.apache.hadoop.hbase.client.RetriesExhaustedException:Failed after attempts=6, exceptions:",
+      "target_exception_observed": false,
+      "junit_passed": false,
+      "junit_exit": 1,
+      "elapsed_seconds": 41.19,
+      "log": "work/r62.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 54,
+            "branches": 100,
+            "lines": 305
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 23,
+            "lines": 62
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 47,
+            "lines": 180
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 0,
+            "branches": 0
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 170,
+        "total_lines": 547,
+        "total_methods": 108
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 178,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": true
+    },
+    {
+      "id": "r63",
+      "plan": "1:EOFException,2:EOFException,3:EOFException,4:EOFException,5:EOFException,6:EOFException",
+      "requested_fault_events": 6,
+      "matched_fault_events": 6,
+      "applied_fault_events": 6,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": false,
+      "guard_outcomes": [
+        [
+          "false",
+          "org.apache.hadoop.hbase.client.RetriesExhaustedException"
+        ]
+      ],
+      "exact_target_exception": "org.apache.hadoop.hbase.client.RetriesExhaustedException:Failed after attempts=6, exceptions:",
+      "target_exception_observed": false,
+      "junit_passed": false,
+      "junit_exit": 1,
+      "elapsed_seconds": 40.03,
+      "log": "work/r63.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 54,
+            "branches": 100,
+            "lines": 305
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 23,
+            "lines": 62
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 47,
+            "lines": 180
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 0,
+            "branches": 0
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 170,
+        "total_lines": 547,
+        "total_methods": 108
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 178,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": true
+    },
+    {
+      "id": "r64",
+      "plan": "1:ConnectException,2:ConnectException,3:ConnectException,4:ConnectException,5:ConnectException,6:ConnectException",
+      "requested_fault_events": 6,
+      "matched_fault_events": 6,
+      "applied_fault_events": 6,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": false,
+      "guard_outcomes": [
+        [
+          "false",
+          "org.apache.hadoop.hbase.client.RetriesExhaustedException"
+        ]
+      ],
+      "exact_target_exception": "org.apache.hadoop.hbase.client.RetriesExhaustedException:Failed after attempts=6, exceptions:",
+      "target_exception_observed": false,
+      "junit_passed": false,
+      "junit_exit": 1,
+      "elapsed_seconds": 38.61,
+      "log": "work/r64.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 54,
+            "branches": 100,
+            "lines": 305
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 23,
+            "lines": 62
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 47,
+            "lines": 180
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 0,
+            "branches": 0
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 170,
+        "total_lines": 547,
+        "total_methods": 108
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 178,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": true
+    },
+    {
+      "id": "r066",
+      "plan": "1:IOException,2:IOException,3:SocketTimeoutException,4:IOException,5:IOException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 41.69,
+      "log": "work/r066.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 58,
+            "branches": 107,
+            "lines": 320
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 177,
+        "total_lines": 564,
+        "total_methods": 112
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 178,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false
+    }
+  ],
+  "coverage_type": "JaCoCo production method/branch/line counts for ConnectionImplementation, MetaTableAccessor and RpcRetryingCallerImpl",
+  "fault_budget": {
+    "trials": 128,
+    "max_faults_per_trial": 8,
+    "observed_rpc_attempt_limit": 6
+  },
+  "pilot_trial": {
+    "id": "io01",
+    "plan": "1:IOException",
+    "elapsed_seconds": 39.92,
+    "matched": 1,
+    "applied": 1,
+    "target_after_fault": true,
+    "note": "Jacoco agent was registered after the target probe, so transformed class coverage did not match the production jar; repeated as r01."
+  },
+  "requested_fault_events": 217,
+  "matched_fault_events": 217,
+  "applied_fault_events": 217,
+  "fault_union_production_branches": 178,
+  "new_io_marker_types": 0,
+  "new_meta_rpc_hit_ordinals": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "campaign_finished": true,
+  "lost_target_trials": 4,
+  "extension_decision": {
+    "fresh_coverage_or_io_in_trials_57_to_64": true,
+    "recent_new_production_branches": 1,
+    "reason": "Authorized conditional 128-trial extension"
+  },
+  "duplicate_attempts": [
+    {
+      "id": "r065",
+      "plan": "1:IOException,2:IOException,3:IOException,4:IOException,5:IOException",
+      "requested_fault_events": 5,
+      "matched_fault_events": 5,
+      "applied_fault_events": 5,
+      "applied_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "observed_rpc_hit_ordinals": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "strict": true,
+      "target_entries": 1,
+      "target_after_final_fault": true,
+      "guard_outcomes": [
+        [
+          "false",
+          "none"
+        ]
+      ],
+      "exact_target_exception": "none",
+      "target_exception_observed": false,
+      "junit_passed": true,
+      "junit_exit": 0,
+      "elapsed_seconds": 42.74,
+      "log": "work/r065.log",
+      "production_coverage": {
+        "classes": {
+          "ConnectionImplementation": {
+            "methods": 57,
+            "branches": 106,
+            "lines": 316
+          },
+          "RpcRetryingCallerImpl": {
+            "methods": 8,
+            "branches": 22,
+            "lines": 61
+          },
+          "MetaTableAccessor": {
+            "methods": 46,
+            "branches": 48,
+            "lines": 183
+          }
+        },
+        "target_lines": {
+          "910": {
+            "instructions": 8,
+            "branches": 2
+          },
+          "911": {
+            "instructions": 0,
+            "branches": 0
+          }
+        },
+        "total_branches": 176,
+        "total_lines": 560,
+        "total_methods": 111
+      },
+      "new_production_branches_vs_prior_trials": 0,
+      "production_branch_union": 178,
+      "new_meta_rpc_hit_ordinals_vs_healthy": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "lost_target": false,
+      "classification": "duplicate_attempt",
+      "duplicate_of": "r53",
+      "counted_as_effective_trial": false
+    }
+  ],
+  "excluded_attempt_elapsed_seconds": 42.74,
+  "selected_throw_line_911_covered": false,
+  "selected_target_exception_trials": 0,
+  "unused_conditional_budget_trials": 63,
+  "stop_reason": "Near trial 64, six strict faults exhausted the original test's six RPC attempts and added one production retry branch, so the authorized 128 ceiling was opened. The additional distinct five-fault order r066 added no production coverage or new I/O family. The observed meta table-state Get door has been exercised with 1–6 faults and all four legal exception families; seven or eight requests cannot match under the original retry limit. Further queued orders reuse the same door and retry paths, so the effective candidate queue was exhausted before the 128 ceiling.",
+  "instrumentation_provenance": {
+    "counted_runtime": "Native JUnit Platform launcher, case-local ByteBuddy agent, JaCoCo",
+    "graphchecker_jar_used": false,
+    "prewoven_classes_used": false,
+    "region_skeletons_or_static_scope_map_read": false,
+    "static_aggregate_or_closure_run": false,
+    "exploratory_runner_note": "One early uncounted healthy2 setup run used GraphChecker JUnitMethodRunner; no counted trial used it."
+  }
 }
