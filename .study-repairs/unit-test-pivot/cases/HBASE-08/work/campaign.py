@@ -117,8 +117,15 @@ def queue_priority(entry, trials):
     novelty = 25 if tried[site_and_kind] == 0 else 0
     breadth = 18 if families[family] == 0 else max(0, 8 - 2 * families[family])
     target_namespace = 5 if 'TestNamespaceAuditor_np2' in last else 0
+    prefix = entry['plan'][:-1]
+    site = '~'.join(fields[:3])
+    equivalent_target_loss = any(
+        x['strict'] and not x['target_after_final_fault']
+        and x['plan'][:-1] == prefix
+        and '~'.join(x['plan'][-1].split('~')[:3]) == site
+        for x in trials)
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
-        + min(entry['wait'] // 8, 5)
+        + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0)
 
 
 def publish(state):
@@ -260,6 +267,10 @@ def main():
                 'observed_io_events': len(trace['io']), 'elapsed_seconds': trace['elapsed_seconds'],
                 'junit': trace['junit'], 'junit_exit': returncode,
                 'log': str(out.relative_to(CASE))}
+        item['disposition'] = ('unmatched' if not strict else
+                               'target_lost_abandoned' if not target_after else
+                               'target_exception_candidate' if target_exception else
+                               'admitted_for_feedback')
         if strict and target_after:
             exe = HERE / 'logs' / (suffix + '.exec')
             prior = state['coverage_union']

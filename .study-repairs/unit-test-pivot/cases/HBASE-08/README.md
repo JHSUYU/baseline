@@ -27,6 +27,11 @@ method after the final fault contribute feedback. A selected exception is
 merely a candidate until reproduced and checked against source behavior.
 The campaign atomically updates `work/checkpoint.json` and `result.json`
 after every trial. The tmux session is `hbase08_fuzz`.
+`work/watchdog.py` runs in `hbase08_watchdog`: because this original test starts
+exactly two masters, it ends an already fully applied trial once logs show both
+distinct masters have aborted. Such a trial is recorded as target lost and
+contributes no coverage feedback; the watchdog only terminates this case's
+own JUnit JVM.
 
 Five earlier fault trials remain in `result.json` and
 `evidence/legacy-trials/`. Four were strictly applied and retained the target.

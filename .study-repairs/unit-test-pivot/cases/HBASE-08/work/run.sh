@@ -22,7 +22,7 @@ elif [[ "$1" == run ]]; then
   export HBASE_HOME="$hbase_dist"
   exec timeout 180s /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' \
     "$java_bin" -Xmx4g \
-    -javaagent:"$jacoco_agent=destfile=$case_dir/logs/$suffix.exec,includes=org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl:org.apache.hadoop.hbase.master.TableNamespaceManager:org.apache.hadoop.hbase.ZKNamespaceManager:org.apache.hadoop.hbase.master.procedure.CreateNamespaceProcedure" \
+    -javaagent:"$jacoco_agent=destfile=$case_dir/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl:org.apache.hadoop.hbase.master.TableNamespaceManager:org.apache.hadoop.hbase.ZKNamespaceManager:org.apache.hadoop.hbase.master.procedure.CreateNamespaceProcedure" \
     -javaagent:"$case_dir/agent.jar" \
     -Dhbase08.fault.plan="$plan" \
     -Djava.io.tmpdir="$data_dir/tmp" \
