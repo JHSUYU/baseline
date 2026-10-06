@@ -1,10 +1,12 @@
 # HBASE-22: namespace region quota check
 
-The selected check is the second quota condition in
-`NamespaceStateManager.checkAndUpdateNamespaceTableCount(TableName,int)` at
-`hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java:172`.
-It compares current namespace region count plus the new table's region count
-against `TableNamespaceManager.getMaxRegions` and throws
+The selected site is recorded as
+`NamespaceStateManager.checkAndUpdateNamespaceTableCount(TableName,int):172`
+in the checklist. In the original HBase 2.6.6 source, the second quota
+predicate is at lines 165–167; line 172 reads the current count while
+constructing that predicate's exception message. The check compares current
+namespace region count plus the new table's region count against
+`TableNamespaceManager.getMaxRegions` and throws
 `QuotaExceededException` if the sum is too large. The earlier table-count
 condition is a different check and is recorded separately.
 
