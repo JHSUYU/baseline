@@ -11,3 +11,24 @@ The independent agent records exact SolrZkClient retry-callable operations and t
 An independent calibration injected `IOException` at the exact same-core `core.properties` read. It applied once, and the original JUnit passed; the same thread reached the target guard afterward with a nonnull ACTIVE/NRT replica, and the target assertion did not throw. This calibration is counted once, separately from the resumable fault campaign. The campaign starts from two healthy seeds, mutates observed I/O fault sequences, and uses exact injection, post-fault target guard, target throw, production coverage, and semantic I/O family feedback. Its default budget is 80 trials and eight ordered faults. Progress and each trial's elapsed time are recorded under `independent/campaign/`, then mirrored into the shared 102-check table.
 
 The target assertion is a candidate symptom, not automatic proof of a new bug. If it fires, the original collection state, core descriptor, node identity, JUnit postconditions, and repeated fault replay must be checked in source and traces. A negative result for this test covers its reload-before-session-expiry path and the observed I/O families only.
+
+## Completed campaign and source review
+
+The bounded campaign completed 80 fault trials in addition to the separate
+calibration. All 81 injections matched their exact runtime selectors, all 81
+reached the same reload target after the fault, and none executed the exact
+`AssertionError` throw. Every faulted original JUnit passed. The 80 campaign
+trials included 34 single-fault sequences and multi-fault sequences up to
+five ordered faults, spread across 32 first-fault families. From the two
+healthy seeds, the union of strict target-preserving trials added seven
+original production methods and 35 branch outcomes; three runtime-woven
+classes are excluded. The 46 semantic I/O families seen in the healthy runs
+did not increase. The complete per-trial timing, coverage, and I/O audit are
+in `independent/campaign/`.
+
+The original production source first looks up the replica by the reloaded
+core descriptor's `coreNodeName`, then asserts it is nonnull under
+`docCollection != null`. The original JUnit invokes collection reload before
+its explicit ZooKeeper session expiry; all observed target checks therefore
+belong to that reload. This is a high quality, bounded negative result for
+that path. It does not test a target check after the later session expiry.
