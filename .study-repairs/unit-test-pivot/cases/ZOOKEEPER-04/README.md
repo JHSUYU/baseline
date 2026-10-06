@@ -1,5 +1,7 @@
 # ZOOKEEPER-04: client zxid ahead
 
+**Current campaign status: pending independent recorder replay.** The 29 trials below are preserved as historical evidence. The first 25 used a GraphChecker JAR for the JUnit lifecycle, and the final four were independent continuation runs. Because the current baseline requires every counted run to use an independent recorder and original JUnit, none of these 29 are counted toward its new budget. The current result is in `result.json`; the full historical result is in `legacy-graph-result.json`.
+
 The selected check is the `LCMP@283; IFLE@284` guard at ZooKeeperServer.java:1431. Its selected throw is `ATHROW@376` at line 1441, constructing `CloseRequestException(CLIENT_ZXID_AHEAD)`. This rejection is protective and expected when a client has seen a zxid newer than the server DataTree.
 
 The unchanged original `ConnectionMetricsTest.testRevalidateCount` starts three peers and reconnects the same client from one follower to another. The healthy JUnit passed in 13.408 seconds; the exact guard was evaluated twice, both on its normal arm; the selected throw was absent. The healthy trace recorded 772 line-coverage items and 3 direct I/O sites.
