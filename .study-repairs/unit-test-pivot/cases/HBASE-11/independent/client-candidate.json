@@ -1,0 +1,54 @@
+{
+  "id": "completed_region_transition_reported_failed_after_rpc_response_loss",
+  "classification": "client_level_candidate_unconfirmed",
+  "target_guard_classification": "expected_duplicate_request_rejection",
+  "system_version": "HBase 2.6.6",
+  "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionMove.testDisableAndMove",
+  "injection": {
+    "identity": "RPC_RESPONSE|unassign#1|hbase.pb.MasterService.UnassignRegion|ordinal=1",
+    "fault": "java.net.SocketTimeoutException",
+    "original_rpc_exception": "none",
+    "injected_after_successful_rpc_return": true,
+    "matches_and_applications_per_replay": 1
+  },
+  "observed_sequence": [
+    "First UnassignRegion request reaches AssignmentManager.preTransitCheck with region OPEN and no active procedure; it returns normally.",
+    "CloseRegionProcedure and TransitRegionStateProcedure UNASSIGN both finish SUCCESS, and RegionStateStore writes CLOSED to hbase:meta.",
+    "The client-side response hook substitutes SocketTimeoutException after the RPC returned normally; no request-side or server-side exception is injected.",
+    "HBaseAdmin retries UnassignRegion for the same region; AssignmentManager.preTransitCheck now sees CLOSED with no active procedure and throws DoNotRetryRegionException.",
+    "The exception propagates through MasterRpcServices, MasterCallable, RpcRetryingCallerImpl, and HBaseAdmin.unassign to the original JUnit at TestRegionMove.java:105, which fails before its expected move checks."
+  ],
+  "clean_same_selector_replays": [
+    {
+      "log_on_node1": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-11/independent/replay_unassign.log",
+      "elapsed_seconds": 49.18,
+      "junit_found": 1,
+      "junit_failed": 1,
+      "first_state": "OPEN",
+      "retry_state": "CLOSED",
+      "final_exception": "org.apache.hadoop.hbase.client.DoNotRetryRegionException"
+    },
+    {
+      "log_on_node1": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-11/independent/replay_unassign_002.log",
+      "elapsed_seconds": 46.41,
+      "junit_found": 1,
+      "junit_failed": 1,
+      "first_state": "OPEN",
+      "retry_state": "CLOSED",
+      "final_exception": "org.apache.hadoop.hbase.client.DoNotRetryRegionException"
+    }
+  ],
+  "secondary_equivalent_assign_replay": {
+    "identity": "RPC_RESPONSE|assign#1|hbase.pb.MasterService.AssignRegion|ordinal=1",
+    "log_on_node1": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-11/independent/replay_assign.log",
+    "elapsed_seconds": 50.19,
+    "junit_failed": 1,
+    "first_state": "CLOSED",
+    "retry_state": "OPEN",
+    "final_exception": "org.apache.hadoop.hbase.client.DoNotRetryRegionException"
+  },
+  "source_review": "HBaseAdmin.assign/unassign rebuild the same region-only request inside an executeCallable retry. MasterRpcServices delegates to synchronous AssignmentManager assign/unassign. The Master.proto request has no operation nonce. RpcRetryingCallerImpl retries the synthetic response timeout, then fails fast on the server's DoNotRetryIOException subclass. The server guard correctly rejects a duplicate transition; the potentially misleading client result is the candidate.",
+  "contract_caveat": "Admin.assign/unassign Javadocs permit IOException for a remote or network exception. A lost response makes completion ambiguous to the client. The reproduced DoNotRetryRegionException after completed mutation is therefore a candidate for API outcome/diagnostic review, not a confirmed correctness violation or confirmed new bug.",
+  "novelty": "unconfirmed",
+  "diagnostic_replays_count_in_fuzz_budget": false
+}

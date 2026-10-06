@@ -14,6 +14,7 @@ if CASE_ID not in {"HBASE-11", "HBASE-12"}:
 CASE = Path(__file__).resolve().parent.parent / CASE_ID
 RESULT = CASE / "result.json"
 TRIALS = CASE / "trials-summary.json"
+CLIENT_CANDIDATE = CASE / "independent" / "client-candidate.json"
 REMOTE = ("/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/"
           + CASE_ID + "/independent")
 
@@ -54,6 +55,11 @@ def sync() -> bool:
     state = snap["state"]
     rows = snap["rows"]
     result = json.loads(RESULT.read_text())
+    client_candidate = (json.loads(CLIENT_CANDIDATE.read_text())
+                        if CLIENT_CANDIDATE.exists() else None)
+    bug_candidates = list(state["bug_candidates"])
+    if client_candidate and client_candidate.get("id"):
+        bug_candidates.append(client_candidate["id"])
     healthy = state["healthy"]
     effective = [r for r in rows if r["strict_identity_match"]
                  and r["target_after_fault"]
@@ -115,8 +121,9 @@ def sync() -> bool:
                          "current_trials": state["budget_total"],
                          "current_max_faults": state["max_faults"]},
         "extension_checkpoint": state.get("extension_checkpoint"),
-        "bug_mark": "candidate_unconfirmed" if state["bug_candidates"] else "none",
-        "bug_candidates": state["bug_candidates"],
+        "bug_mark": "candidate_unconfirmed" if bug_candidates else "none",
+        "bug_candidates": bug_candidates,
+        "client_level_candidate": client_candidate,
         "stopping_reason": state["stop_reason"] or "Shared HBASE-10 original JUnit campaign running",
         "source_campaign_created_utc": state["source_campaign_created_utc"],
         "updated_at_utc": current.isoformat(),
