@@ -70,6 +70,8 @@ def main() -> None:
     parser.add_argument("--method", default=TEST_METHOD)
     parser.add_argument("--timeout", default=360, type=int)
     parser.add_argument("--instrument", action="store_true")
+    parser.add_argument("--overlay", type=Path,
+                        help="case-local merged instrumentation classes")
     parser.add_argument("--plan", type=Path)
     args = parser.parse_args()
     output = args.output.resolve()
@@ -96,6 +98,10 @@ def main() -> None:
     hadoop_cp = subprocess.check_output([str(HADOOP / "bin/hadoop"), "classpath", "--glob"],
                                         env=env, text=True).strip()
     overlay = build_instrumentation() if args.instrument else None
+    if args.instrument and args.overlay is not None:
+        overlay = args.overlay.resolve()
+        if not overlay.is_dir():
+            raise FileNotFoundError(overlay)
     classpath = os.pathsep.join((*(str(p) for p in ([overlay] if overlay else [])),
                                  str(BUILD), str(TESTS), str(COMMON_TESTS),
                                  str(SOURCE_RESOURCES), hadoop_cp,

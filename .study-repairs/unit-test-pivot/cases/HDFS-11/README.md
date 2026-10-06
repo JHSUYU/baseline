@@ -30,3 +30,30 @@ counted as that exception.
 The earlier 19 trials used a static-analysis/region-woven recorder. They are
 preserved in [legacy-graph-result.json](legacy-graph-result.json) and excluded
 from the current graph-independent result.
+
+## Expired-key control-plane supplement
+
+The normal read workload does not exercise key expiry. An independent second
+campaign uses the original Hadoop JUnit
+`TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey[0]`. Its
+healthy embedded cluster deliberately expires the client's key, reaches the
+selected `allKeys.get(keyId)` check with the old key absent, throws one
+`InvalidEncryptionKeyException`, refreshes the key, and passes. Therefore one
+such target exception is expected in every successful run and is **not** a bug
+candidate by itself. The supplementary oracle flags additional target throws
+after a matched fault for replay and source review.
+
+The case-local ASM overlay also observes the DataNode heartbeat RPC and the
+received active-NameNode key-update command, besides the SASL socket reads.
+The healthy run saw two key-update commands before the stale-key check. A
+checked exception at the received command killed the command processor and
+removed the target, so that fault is excluded from further mutation. A
+heartbeat `IOException` smoke matched exactly, left the target reachable,
+observed the expected one stale-key exception, and passed the original JUnit.
+This is a valid feedback seed, not a new bug.
+
+The supplementary 80-trial, eight-exception campaign runs in tmux session
+`hdfs11-expiry-campaign`. Its independent checkpoint, ledger, and result are
+`independent/expiry/campaign-state.json`, `expiry-trial-ledger.csv`, and
+`expiry-result.json`. The main result remains separate while both workloads
+are running. No GraphChecker runtime or graph closure is involved.
