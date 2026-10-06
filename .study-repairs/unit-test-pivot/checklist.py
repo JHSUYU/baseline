@@ -15,7 +15,7 @@ HERE = Path(__file__).resolve().parent
 SELECTION = HERE / "selection102.json"
 RESULTS = HERE / "cases"
 TERMINAL = {"no_cluster_test", "source_excluded", "quality_complete",
-            "confirmed_bug", "no_valid_target_trial"}
+            "confirmed_bug"}
 SYSTEM_NAMES = {
     "hdfs": "HDFS 3.4.3",
     "hbase": "HBase 2.6.6",
@@ -68,6 +68,9 @@ def normalize_trial_counts(record: dict, update: dict,
             record["target_reached"] = bool(update["healthy_target_guard_reached"])
         elif "healthy_target_checks" in update:
             record["target_reached"] = update["healthy_target_checks"] > 0
+        elif isinstance(update.get("healthy_target"), dict):
+            record["target_reached"] = bool(
+                update["healthy_target"].get("exact_call_count", 0))
     for column, candidates in aliases.items():
         if column in update:
             continue
@@ -78,13 +81,19 @@ def normalize_trial_counts(record: dict, update: dict,
         else:
             if column == "coverage_gain" and update.get("fault_trials", 0):
                 record[column] = None
+    if (record.get("coverage_gain") is None and
+            isinstance(update.get("coverage"), dict)):
+        gain = update["coverage"].get("gain")
+        if isinstance(gain, dict) and isinstance(gain.get("total_ids"), int):
+            record["coverage_gain"] = gain["total_ids"]
 
     # The generic fuzzer has used target_after_fault for the fatal outcome,
     # whereas case reports use it for reachability. Prefer explicit reach
     # counters; the exact exception count remains in the original result.
     for candidate in ("post_fault_target_reach_trials",
                       "strict_target_after_fault_trials",
-                      "target_check_after_fault_trials"):
+                      "target_check_after_fault_trials",
+                      "target_after_fault_trials"):
         if candidate in update:
             record["target_after_fault"] = update[candidate]
             break
