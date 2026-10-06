@@ -1,23 +1,30 @@
 {
+  "bug_mark": "none",
   "case_id": "HDFS-32",
-  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
-  "status": "pending_independent_recorder_replay",
-  "target_reached": null,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "fully_applied_trials": 0,
-  "target_after_fault": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
   "coverage_gain": 0,
   "elapsed_seconds": 0,
-  "bug_mark": "none",
-  "methodology": "coverage_io_graph_independent_runtime_required",
-  "reason": "Earlier trials used static-analysis/region-woven instrumentation; preserve them as historical evidence and rerun the original cluster JUnit with independent I/O and coverage probes.",
+  "fault_trials": 0,
+  "fully_applied_trials": 0,
   "legacy_evidence": {
+    "elapsed_seconds": 445.875,
+    "previous_status": "no_valid_target_trial",
+    "readme": null,
     "result_path": "legacy-graph-result.json",
     "result_sha256": "c0cd341ec324a86ee0b1f7ca03df079dcda4e3aeaca5cbaec2146d2102802b1c",
-    "trial_count": 3,
-    "previous_status": "no_valid_target_trial",
-    "elapsed_seconds": 445.875,
-    "readme": null
+    "trial_count": 3
+  },
+  "methodology": "coverage_io_graph_independent_runtime_required",
+  "reason": "Source review: the prior testDfsAdminDeleteBlockPool refreshes the NameNode set before delete and primarily checks CLI return codes. The original testDeleteBlockPool explicitly exercises the selected running-block-pool guard twice, then refreshes Namenodes and tests permitted deletion; the guard exception is expected on its first and later running-pool calls.",
+  "status": "mapped_pending_smoke",
+  "strict_injections": 0,
+  "target_after_fault": 0,
+  "target_reached": null,
+  "test_mapping_review": {
+    "previous_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
+    "selected_guard_expected_in_healthy_test": true,
+    "selected_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
+    "source_review_file": "hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
+    "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java"
   }
 }
