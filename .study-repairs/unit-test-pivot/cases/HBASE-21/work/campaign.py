@@ -102,16 +102,15 @@ def known_target_loss_plan(entry, trials):
     siblings = [x for x in trials if x['strict'] and x['plan'][:-1] == prefix]
     if len(siblings) >= 2 and all(not x['target_after_final_fault'] for x in siblings):
         return True
-    # Two distinct ordered prefixes have already shown that a later fault to
-    # a system namespace write prevents either master reaching the target.
-    last_path = entry['plan'][-1].split('~')[1]
-    if len(entry['plan']) < 2 or last_path not in ('/hbase/namespace/default',
-                                                   '/hbase/namespace/hbase'):
+    # Generalize repeated target loss across ordered prefixes at a stable
+    # final I/O site. Hit ordinal and exception kind remain exact selectors,
+    # but do not create a new family for the queue stopping decision.
+    if len(entry['plan']) < 2:
         return False
-    equivalent_losses = [x for x in trials if x['strict'] and not x['target_after_final_fault']
-                         and len(x['plan']) >= 2 and x['plan'][-1].split('~')[1]
-                         in ('/hbase/namespace/default', '/hbase/namespace/hbase')]
-    return len(equivalent_losses) >= 2
+    final_site = io_site(entry['plan'][-1])
+    analogous = [x for x in trials if x['strict'] and len(x['plan']) >= 2
+                 and io_site(x['plan'][-1]) == final_site]
+    return len(analogous) >= 2 and all(not x['target_after_final_fault'] for x in analogous)
 
 
 def viable_queue_count(state):
@@ -426,7 +425,7 @@ def main():
         result['status'] = 'wall_cap_pending_source_review'
     elif state['queue'] and viable_queue_count(state) == 0:
         result['status'] = 'only_evidenced_target_loss_plans_pending_source_review'
-        result['queue_stop_reason'] = 'repeated_prefix_or_system_namespace_write_lost_target'
+        result['queue_stop_reason'] = 'repeated_prefix_or_final_io_site_lost_target'
     else:
         result['status'] = 'queue_exhausted_pending_source_review'
     atomic_json(RESULT, result)
