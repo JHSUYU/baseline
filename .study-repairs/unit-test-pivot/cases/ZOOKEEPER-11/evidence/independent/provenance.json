@@ -1,0 +1,39 @@
+{
+  "case_id": "ZOOKEEPER-11",
+  "case_local_artifacts": {
+    "agent": {
+      "jar_entries_checked": 9,
+      "path": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-11/evidence/independent/agent/independent-agent.jar",
+      "sha256": "28f3e19844cd374626e8c45dee9c5f3f56afb89eac9a5ae0d6200488fc9b9a24"
+    },
+    "runner": {
+      "jar_entries_checked": 4,
+      "path": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-11/evidence/independent/runner/independent-runner.jar",
+      "sha256": "0e00f21aa959626170450a9058567e8dd9afe3a931269067ec4be624e2a1b835"
+    }
+  },
+  "fault_identity": "direct SocketChannel read/write, QuorumPeer epoch FileReader, AtomicFileWritingIdiom and AtomicFileOutputStream I/O site plus global ordinal",
+  "forbidden_legacy_component_in_classpath_or_artifact_or_selected_class": false,
+  "historical_trials_excluded": 5,
+  "independent_classpath_entries": 84,
+  "independent_classpath_sha256": "e13a8a3f76496ba5402888ac66f398a117599c8cee2a34fda074b625bcb3e8c2",
+  "legacy_graph_or_skeleton_artifacts_read_for_selection_or_execution": false,
+  "original_source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+  "original_test": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+  "original_test_classes_byte_identical_to_unwoven_build": true,
+  "runtime_feedback_inputs": [
+    "case-local Probe events.tsv",
+    "case-local Probe coverage.tsv"
+  ],
+  "selected_production_class_sha256": {
+    "org/apache/zookeeper/ClientCnxn$SendThread": "7212e73d51c35f9e9ebc5c560333710cc951be542f5babcd06c065677a1c4d26",
+    "org/apache/zookeeper/ClientCnxnSocketNIO": "3ad3b8464a2105348379a5d9b6427b71c435db828d98439ae5b468313fa93a70",
+    "org/apache/zookeeper/common/AtomicFileOutputStream": "a7ae9761cb90a40e104135b312c2af53e9ced48b19221bbcaf9333f6bce13819",
+    "org/apache/zookeeper/common/AtomicFileWritingIdiom": "863fa47596c9dd377257c044b28bacd7e09f0aee45c412cc015cbb3ae7165d50",
+    "org/apache/zookeeper/server/NIOServerCnxn": "91fbd4dcb2a9309de5d265c25e882f40ed660d9bf30a6dcf51dbfccfcc0964e3",
+    "org/apache/zookeeper/server/quorum/QuorumPeer": "cdcb7a67d5905fef27a8e36824b5d504c8df2c907dfac1a3cb8af6e3abbb6052"
+  },
+  "selected_production_classes_byte_identical_to_unwoven_build": true,
+  "target_identity": "QuorumPeer.loadDataBase currentEpoch.tmp exists guard line 1169; IOException ATHROW bytecode mapped to line 1175",
+  "trial_jvms_verified": 80
+}
