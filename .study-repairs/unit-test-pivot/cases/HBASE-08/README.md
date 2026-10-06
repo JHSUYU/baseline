@@ -32,6 +32,11 @@ exactly two masters, it ends an already fully applied trial once logs show both
 distinct masters have aborted. Such a trial is recorded as target lost and
 contributes no coverage feedback; the watchdog only terminates this case's
 own JUnit JVM.
+`work/supervisor.py` runs in `hbase08_supervisor`. It resumes the same
+checkpoint if the campaign process exits unexpectedly. At 64 new trials it
+automatically extends to 128/eight faults only if at least one of the final
+16 strict, target-retaining trials adds a production method, branch, or
+observed I/O selector. Neither path repeats a completed trial.
 
 Five earlier fault trials remain in `result.json` and
 `evidence/legacy-trials/`. Four were strictly applied and retained the target.

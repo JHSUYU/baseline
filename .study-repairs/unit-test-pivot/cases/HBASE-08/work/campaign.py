@@ -16,8 +16,8 @@ CHECKPOINT = HERE / 'checkpoint.json'
 INFLIGHT = HERE / 'inflight.json'
 KINDS = ('CONNECTIONLOSS', 'OPERATIONTIMEOUT', 'SYSTEMERROR')
 RNG = random.Random(8)
-MAX_TRIALS = 64  # New, homogeneous trials; five earlier trials remain separately recorded.
-MAX_FAULTS = 6
+MAX_TRIALS = int(os.environ.get('HBASE08_MAX_TRIALS', '64'))
+MAX_FAULTS = int(os.environ.get('HBASE08_MAX_FAULTS', '6'))
 
 
 def atomic_json(path, obj):
