@@ -68,6 +68,8 @@ def main() -> None:
                 if file.is_file():
                     out.add(file, arcname=f"{directory}/{filename}")
         out.add(HERE / "build" / "build.json", arcname="instrumentation/build.json")
+        out.add(HERE / "resources" / "hdfs-site.xml",
+                arcname="resources/hdfs-site.xml")
     result = {
         "classification": "known_bug_path_control_not_new_bug",
         "upstream_issue": "HDFS-17967",

@@ -117,3 +117,11 @@ records are in `expiry-trial-ledger.csv`; the full audit is in
 `independent/expiry/audit-result.json`, with compact original traces and
 manifests in `expiry-evidence.tar.gz`. Both original workloads are marked
 `quality_complete`; no new bug is confirmed for HDFS-11.
+
+The separate [HDFS-17967 outbound-path calibration](known-bug-calibration/README.md)
+shows a workload limit of those two campaigns: they do not exercise the
+DataNode-to-DataNode mirror and proxy SASL paths fixed by that known PR.
+Original multi-DN cluster JUnits reach both paths. A synthetic outbound
+exception produces a local operation error but does not itself execute the
+missing-key target branch, so it is not counted as an extra HDFS-11 target
+exception or a new bug.

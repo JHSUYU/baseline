@@ -22,6 +22,9 @@ one synthetic `InvalidEncryptionKeyException`. It does not replace the JUnit
 workload, use Docker, or run GraphChecker. `run_control.py` executes the
 original parameterized JUnit and records the full log, I/O trace, exact HDFS-11
 `allKeys.get(keyId)` check trace, JaCoCo raw coverage, and elapsed time.
+`resources/hdfs-site.xml` is a copy of the released Hadoop 3.4.3 test
+resource, needed because the Balancer JUnit writes blocks smaller than the
+production NameNode minimum.
 
 | Path | Healthy run | Fault run | Fault match | Local result | JUnit |
 | --- | ---: | ---: | --- | --- | --- |

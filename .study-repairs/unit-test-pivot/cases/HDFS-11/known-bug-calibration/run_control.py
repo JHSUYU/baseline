@@ -21,8 +21,7 @@ runner = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(runner)
 BUILD = HERE / "build"
 OVERLAY = BUILD / "overlay"
-TEST_RESOURCES = (HERE.parents[2] / "hdfs32/worktrees/hadoop"
-                  / "hadoop-hdfs-project/hadoop-hdfs/src/test/resources")
+TEST_RESOURCES = HERE / "resources"
 
 
 def main() -> None:
