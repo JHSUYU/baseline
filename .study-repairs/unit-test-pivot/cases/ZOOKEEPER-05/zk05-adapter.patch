@@ -1,0 +1,49 @@
+diff --git a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+index 997e96b44..890fe7461 100644
+--- a/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
++++ b/src/main/java/edu/uva/liftlab/graphchecker/runtime/CausynthTraceRecorder.java
+@@ -314,6 +314,9 @@ public final class CausynthTraceRecorder {
+         if (method == null) {
+             return 0L;
+         }
++        if (Boolean.getBoolean("causynth.zk05.node.registration")) {
++            Zk05NodeRegistration.enter(method, receiver);
++        }
+         initialize();
+         long id = EVENT_COUNTER.incrementAndGet();
+         Thread thread = Thread.currentThread();
+@@ -578,6 +581,9 @@ public final class CausynthTraceRecorder {
+         event.primitiveValue = MapFields.safe(primitiveValue);
+         emitExecutionEvent(event);
+         closeCall(call, resolvedCallId);
++        if (Boolean.getBoolean("causynth.zk05.node.registration") && call != null) {
++            Zk05NodeRegistration.exit(call.method);
++        }
+     }
+ 
+     /** Ends one activation: its region and root context close with it. */
+@@ -613,6 +619,9 @@ public final class CausynthTraceRecorder {
+             }
+         }
+         closeCall(call, resolvedCallId);
++        if (Boolean.getBoolean("causynth.zk05.node.registration") && call != null) {
++            Zk05NodeRegistration.exit(call.method);
++        }
+     }
+ 
+     public static void recordField(String kind, String method, int unitIndex,
+diff --git a/src/main/resources/edu/uva/liftlab/graphchecker/library-catalog.jsonl b/src/main/resources/edu/uva/liftlab/graphchecker/library-catalog.jsonl
+index 690b4653f..686ddef5b 100644
+--- a/src/main/resources/edu/uva/liftlab/graphchecker/library-catalog.jsonl
++++ b/src/main/resources/edu/uva/liftlab/graphchecker/library-catalog.jsonl
+@@ -12,6 +12,10 @@
+ {"schemaVersion": 1, "kind": "DOOR", "transport": "ZOOKEEPER", "direction": "WRITE", "method": "<org.apache.zookeeper.ZooKeeper: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],int)>", "after": "<org.apache.zookeeper.ClientCnxn: org.apache.zookeeper.proto.ReplyHeader submitRequest(org.apache.zookeeper.proto.RequestHeader,org.apache.jute.Record,org.apache.jute.Record,org.apache.zookeeper.ZooKeeper$WatchRegistration)>", "faults": ["org.apache.zookeeper.KeeperException$ConnectionLossException", "org.apache.zookeeper.KeeperException$SessionExpiredException", "org.apache.zookeeper.KeeperException$OperationTimeoutException"]}
+ {"schemaVersion": 1, "kind": "DOOR", "transport": "ZOOKEEPER", "direction": "WRITE", "method": "<org.apache.zookeeper.ZooKeeper: void delete(java.lang.String,int)>", "after": "<org.apache.zookeeper.ClientCnxn: org.apache.zookeeper.proto.ReplyHeader submitRequest(org.apache.zookeeper.proto.RequestHeader,org.apache.jute.Record,org.apache.jute.Record,org.apache.zookeeper.ZooKeeper$WatchRegistration)>", "faults": ["org.apache.zookeeper.KeeperException$ConnectionLossException", "org.apache.zookeeper.KeeperException$SessionExpiredException", "org.apache.zookeeper.KeeperException$OperationTimeoutException"]}
+ {"schemaVersion": 1, "kind": "DOOR", "transport": "ZOOKEEPER", "direction": "WRITE", "method": "<org.apache.zookeeper.ZooKeeper: java.util.List multiInternal(org.apache.zookeeper.MultiOperationRecord)>", "after": "<org.apache.zookeeper.ClientCnxn: org.apache.zookeeper.proto.ReplyHeader submitRequest(org.apache.zookeeper.proto.RequestHeader,org.apache.jute.Record,org.apache.jute.Record,org.apache.zookeeper.ZooKeeper$WatchRegistration)>", "faults": ["org.apache.zookeeper.KeeperException$ConnectionLossException", "org.apache.zookeeper.KeeperException$SessionExpiredException", "org.apache.zookeeper.KeeperException$OperationTimeoutException"]}
++{"schemaVersion": 1, "kind": "DOOR", "transport": "ZOOKEEPER_QUORUM", "direction": "READ", "method": "<org.apache.zookeeper.server.quorum.Learner: void readPacket(org.apache.zookeeper.server.quorum.QuorumPacket)>", "before": "<org.apache.jute.InputArchive: void readRecord(org.apache.jute.Record,java.lang.String)>", "faults": ["java.io.IOException"]}
++{"schemaVersion": 1, "kind": "DOOR", "transport": "ZOOKEEPER_QUORUM", "direction": "WRITE", "method": "<org.apache.zookeeper.server.quorum.Learner: void writePacketNow(org.apache.zookeeper.server.quorum.QuorumPacket,boolean)>", "before": "<org.apache.jute.OutputArchive: void writeRecord(org.apache.jute.Record,java.lang.String)>", "faults": ["java.io.IOException"]}
++{"schemaVersion": 1, "kind": "DOOR", "transport": "ZOOKEEPER_FILE", "direction": "READ", "method": "<org.apache.zookeeper.server.quorum.QuorumPeer: long readLongFromFile(java.lang.String)>", "before": "<java.io.BufferedReader: java.lang.String readLine()>", "faults": ["java.io.IOException"]}
++{"schemaVersion": 1, "kind": "DOOR", "transport": "ZOOKEEPER_FILE", "direction": "WRITE", "method": "<org.apache.zookeeper.server.quorum.QuorumPeer: void writeLongToFile(java.lang.String,long)>", "before": "<org.apache.zookeeper.common.AtomicFileWritingIdiom: void <init>(java.io.File,org.apache.zookeeper.common.AtomicFileWritingIdiom$WriterStatement)>", "faults": ["java.io.IOException"]}
+ {"schemaVersion": 1, "kind": "CONFIG_SOURCE", "method": "<org.apache.hadoop.conf.Configuration: java.lang.String get(java.lang.String)>", "keyArg": 0}
+ {"schemaVersion": 1, "kind": "CONFIG_SOURCE", "method": "<org.apache.hadoop.conf.Configuration: java.lang.String get(java.lang.String,java.lang.String)>", "keyArg": 0, "defaultArg": 1}
+ {"schemaVersion": 1, "kind": "CONFIG_SOURCE", "method": "<org.apache.hadoop.conf.Configuration: java.lang.String getTrimmed(java.lang.String)>", "keyArg": 0}

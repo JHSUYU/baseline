@@ -1,0 +1,59 @@
+{
+  "case_id": "ZOOKEEPER-06",
+  "system": "zookeeper",
+  "test_class": "org.apache.zookeeper.test.QuorumRestartTest",
+  "test_method": "testRollingRestart",
+  "cwd": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/graphchecker",
+  "workspaces": {
+    "graphchecker": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/graphchecker",
+    "system_test": "/tmp/zk387-zk06-20261006",
+    "temp": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/tmp"
+  },
+  "shared_readonly_roots": [
+    "/users/ZhenyuLi/GraphChecker-unit-zookeeper",
+    "/tmp/zk387-unit-smoke-20261006"
+  ],
+  "target": {
+    "method": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>",
+    "site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u14",
+    "throw_site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u29",
+    "scope_map": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/run-r2/static_scope_map.jsonl",
+    "exception_type": "java.io.IOException",
+    "occurrence": "zk-peer-2#epoch1/region/REGION.b3eb0be6-3e8d-3adf-81c3-07d7060c0e07/ctx:Anchor:aac49317b6789582@ZOOKEEPER_QUORUM_TCP_ACKEPOCH/EPOCH_PROPOSE_TO_3/idx:<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>@0",
+    "request_api": "EPOCH_PROPOSE_TO_3",
+    "source_file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java",
+    "source_line": 1475,
+    "code": "if (ss.isMoreRecentThan(leaderStateSummary)) throw new IOException(\"Follower is ahead of the leader\")"
+  },
+  "seed": {
+    "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/run-r2/runtime/runtime_trace.jsonl",
+    "closure_plan": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/run-r2/runtime/concolic_region_plan.jsonl",
+    "elapsed_seconds": 51.7
+  },
+  "trial": {
+    "command": [
+      "bash",
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/graphchecker/experiments/lib/execute.sh",
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/adapter/zookeeper/zk06",
+      "zk06"
+    ],
+    "aggregate_command": [
+      "python3",
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/aggregate.py",
+      "{trace_dir}",
+      "{aggregate_dir}"
+    ],
+    "closure_plan": "{aggregate_dir}/plan.jsonl",
+    "env": {
+      "GRAPHCHECKER_JAR": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/graphchecker-zk06.jar",
+      "CAUSYNTH_INSTRUMENTED_CLASSES_DIR": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-06/run-r2/instrumented-classes"
+    }
+  },
+  "budget": {
+    "max_trials": 6,
+    "max_faults": 2,
+    "max_seconds": 450
+  },
+  "timeout_seconds": 120,
+  "build_seconds": 17.357
+}
