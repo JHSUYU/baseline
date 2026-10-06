@@ -28,14 +28,15 @@ prioritizes key-delivery I/O, then mutates sequences using production JaCoCo
 coverage and newly observed I/O. A trial contributes feedback only if every
 planned exception matches/applies in order and the same target check runs
 after the last fault. The two calibration trials are counted as completed
-sequences, so the campaign does not replay them. Budget: 80 trials, at most
-eight ordered exceptions, conditionally 128/ten for late valid novelty.
+sequences, so the campaign does not replay them. The budget was extended
+from 80 trials/eight faults to 128 trials/ten faults after valid novelty.
 
-The node2 tmux session is `hdfs12-control-campaign`. Its atomic checkpoint,
-per-trial ledger and source evidence live under this directory. The node0
-`hdfs12-control-sync` tmux session mirrors completed trial artifacts every
-30 seconds and updates the 102-case table; an incomplete active sequence
-remains in the node2 checkpoint for retry. A selected target throw is only
-a replay/source-review candidate. Neither the older ordinary-read campaign
-nor the SASL-only long-lived campaign is counted in this control-plane
-campaign's trial total.
+The node2 tmux session `hdfs12-control-campaign` completed all 128 trials;
+node0 `hdfs12-control-sync` mirrored the raw evidence. Independent raw-event
+audit found 114 exact ordered injections, 86 target checks after the final
+fault, and 86 of those using a rotated key ID. No selected null-key
+`InvalidToken` throw occurred. Its atomic checkpoint, per-trial ledger, and
+source evidence are under this directory; the case-level audit and SHA-256
+archive are documented in `../../audit-all.json` and the case README. Neither
+the ordinary-read campaign nor the SASL-only long-lived campaign is counted
+in this control-plane campaign's 128 trials.

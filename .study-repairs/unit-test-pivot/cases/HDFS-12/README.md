@@ -6,10 +6,10 @@ embedded-cluster JUnit
 The default `MiniDFSCluster` has one NameNode and one DataNode. Two independent
 healthy instrumented runs both passed and each reached the selected
 `BlockTokenSecretManager.retrievePassword` null-key check twice. Both checks
-found the requested key. The shorter JUnit seeded the first bounded campaign;
-the related original `testLongLivedClient[0]` is now also being run in an
-independent supplement because it rotates block-token keys during a
-15-second sleep and then reaches this lookup with a new key ID.
+found the requested key. The shorter JUnit seeded the first bounded campaign.
+The related original `testLongLivedClient[0]` was also run in an independent
+supplement because it rotates block-token keys during a 15-second sleep and
+then reaches this lookup with a new key ID.
 
 Case-local ASM hooks record the precise `retrievePassword` null-key check and
 its `InvalidToken` throw. Other hooks observe the three actual socket-read
@@ -20,15 +20,11 @@ only when all requested exceptions match and apply in order and this target
 check executes again after the final exception. The fixture has only one
 logical DataNode; this case makes no claim about larger HDFS topologies.
 
-An initial EOF fault at the first SASL read matched and applied exactly; the
-original JUnit passed and reached the target twice afterward. Its trace and
-coverage seed the resumable campaign in tmux session
-`hdfs12-independent-campaign`. The checkpoint is
-`independent/campaign-state.json`; the per-trial time and result ledger is
-`independent-trial-ledger.csv`. The initial budget is 80 trials with up to
-eight ordered I/O exceptions; recent valid production coverage or stable I/O
-novelty can extend it to 128 trials with up to ten exceptions. A target throw
-is a candidate for replay and source review, not automatically a new bug.
+The ordinary-read campaign completed 128 trials with up to ten ordered I/O
+exceptions. All 128 injections matched in order; 50 trials reached the exact
+target afterward. No trial observed the selected null-key `InvalidToken`
+throw. Its checkpoint is `independent/campaign-state.json` and its per-trial
+time and result ledger is `independent-trial-ledger.csv`.
 
 The earlier 22 region-woven trials remain in
 [legacy-graph-result.json](legacy-graph-result.json) and do not contribute to
@@ -42,8 +38,14 @@ trace also observed seven DataNode heartbeat RPCs and three received
 active-NameNode key-update commands between the early and late checks. Two
 exact one-fault calibrations, one at a heartbeat and one at a key-update
 command, both preserved the late target checks and passed JUnit. The
-independent 80-trial coverage/I/O campaign is live in node2 tmux
-`hdfs12-control-campaign` and mirrored into the 102-case table by node0 tmux
-`hdfs12-control-sync`. The [supplement details](independent/long-lived/control-plane/README.md)
-give the runtime identities, budgets, checkpoint and result files. Its
-trials remain separate from the 128 completed ordinary-read trials.
+control-plane campaign completed 128 additional trials with up to ten ordered
+I/O exceptions. Raw-event audit found 114 exact ordered injections, 86
+subsequent target checks, and 86 checks using a rotated key ID. None took the
+selected null-key throw. Across both original JUnits, the total is 256
+trials, 242 strict injections, and 136 target-retaining trials. Raw event
+audits are in `independent/audit-all.json`, and the independent evidence is
+archived with its SHA-256 recorded in `independent-archive-manifest.json`.
+The [supplement details](independent/long-lived/control-plane/README.md)
+give the runtime identities, checkpoint, and result files. This result is a
+completed search within these two JUnit workloads and budgets, not a proof
+that no defect exists elsewhere.
