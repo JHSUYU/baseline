@@ -16,7 +16,7 @@ SELECTION = HERE / "selection102.json"
 RESULTS = HERE / "cases"
 # Losing the target in every attempted sequence is a search gap. A later
 # fault family or a larger budget may still yield a target-retaining trial.
-TERMINAL = {"no_cluster_test", "source_excluded", "quality_complete",
+TERMINAL = {"no_cluster_test", "no_usable_cluster_test", "source_excluded", "quality_complete",
             "confirmed_bug"}
 SYSTEM_NAMES = {
     "hdfs": "HDFS 3.4.3",
