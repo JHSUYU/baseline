@@ -1,0 +1,82 @@
+{
+  "case_id": "HBASE-19",
+  "system": "hbase",
+  "selection": {
+    "site_id": "<org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure: void preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)>#u50",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+    "source_line": 135,
+    "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+    "target_guard": "org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V#B7",
+    "target_throw": "org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V#L135",
+    "target_exception": "org.apache.hadoop.hbase.HBaseIOException"
+  },
+  "mapping_source": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/HBASE-TEST-MAP.json",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "runtime_target_reach_verified": false,
+  "status": "original_cluster_junit_source_verified",
+  "cluster_test": {
+    "class": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure",
+    "method": "testModifyWillNotReopenRegions",
+    "mapped_invocation": "testModifyWillNotReopenRegions",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6/hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java",
+    "declaration_line": 593,
+    "declaration_kind": "annotation",
+    "cluster_evidence": {
+      "kind": "MiniHBaseCluster",
+      "setup_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestTableDDLProcedureBase.java",
+      "setup_line": 43
+    },
+    "command": [
+      "mvn",
+      "-pl",
+      "hbase-server",
+      "-am",
+      "test",
+      "-Dtest=TestModifyTableProcedure#testModifyWillNotReopenRegions",
+      "-Dsurefire.failIfNoSpecifiedTests=false"
+    ]
+  },
+  "starter": {
+    "workspaces": {
+      "system_test": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/system-test",
+      "temp": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/temp",
+      "healthy": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/healthy",
+      "campaign": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/campaign"
+    },
+    "system_test_cwd": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/system-test",
+    "system_test_command": [
+      "mvn",
+      "-pl",
+      "hbase-server",
+      "-am",
+      "test",
+      "-Dtest=TestModifyTableProcedure#testModifyWillNotReopenRegions",
+      "-Dsurefire.failIfNoSpecifiedTests=false"
+    ],
+    "io_scope_hint": "Inspect original-test HBase RPC, ZooKeeper and filesystem fault markers in the healthy trace; select exact observed identities.",
+    "io_scope": {
+      "marker_prefixes": [],
+      "site_ids": []
+    },
+    "budget": {
+      "max_trials": 48,
+      "max_faults": 4
+    },
+    "extension_budget": {
+      "max_trials": 96,
+      "max_faults": 6
+    },
+    "checkpoints": {
+      "state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/campaign/state.json",
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/campaign/result.json",
+      "healthy_trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HBASE-19/healthy/runtime_trace.jsonl"
+    },
+    "required_before_campaign": [
+      "Populate isolated system_test workspace from source_root",
+      "Run original cluster JUnit without faults",
+      "Attach instrumentation and record healthy runtime_trace.jsonl",
+      "Verify selected target site and I/O markers in healthy trace",
+      "Supply a per-case adapter that reruns the same JUnit with fault options"
+    ]
+  }
+}

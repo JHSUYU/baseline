@@ -1,0 +1,85 @@
+{
+  "case_id": "HDFS-43",
+  "system": "hdfs",
+  "selection": {
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirTruncateOp: org.apache.hadoop.hdfs.server.namenode.FSDirTruncateOp$TruncateResult truncate(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,long,java.lang.String,java.lang.String,long,org.apache.hadoop.hdfs.server.namenode.INode$BlocksMapUpdateInfo,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker)>#u80",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java",
+    "source_line": 117,
+    "function": "org.apache.hadoop.hdfs.server.namenode.FSDirTruncateOp.truncate(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,long,java.lang.String,java.lang.String,long,org.apache.hadoop.hdfs.server.namenode.INode$BlocksMapUpdateInfo,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker)",
+    "target_guard": "org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp#truncate(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;JLorg/apache/hadoop/hdfs/server/namenode/INode$BlocksMapUpdateInfo;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;)Lorg/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp$TruncateResult;#B9",
+    "target_throw": "org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp#truncate(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;JLjava/lang/String;Ljava/lang/String;JLorg/apache/hadoop/hdfs/server/namenode/INode$BlocksMapUpdateInfo;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;)Lorg/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp$TruncateResult;#L117",
+    "target_exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException"
+  },
+  "mapping_source": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/HDFS-TEST-MAP.json",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+  "runtime_target_reach_verified": false,
+  "status": "original_cluster_junit_source_verified",
+  "cluster_test": {
+    "class": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate",
+    "method": "testTruncateTwiceTogether",
+    "mapped_invocation": "testTruncateTwiceTogether",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java",
+    "declaration_line": 236,
+    "declaration_kind": "annotation",
+    "cluster_evidence": {
+      "kind": "MiniDFSCluster",
+      "source_paths": [
+        "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java:109"
+      ],
+      "test_relation": "Second overlapping truncate expects already-being-truncated error; runtime region identity unmeasured.",
+      "runtime_target_hit_verified": false
+    },
+    "command": [
+      "mvn",
+      "-pl",
+      "hadoop-hdfs-project/hadoop-hdfs",
+      "-am",
+      "test",
+      "-Dtest=TestFileTruncate#testTruncateTwiceTogether",
+      "-DfailIfNoTests=false"
+    ]
+  },
+  "starter": {
+    "workspaces": {
+      "system_test": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/system-test",
+      "temp": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/temp",
+      "healthy": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/healthy",
+      "campaign": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/campaign"
+    },
+    "system_test_cwd": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/system-test",
+    "system_test_command": [
+      "mvn",
+      "-pl",
+      "hadoop-hdfs-project/hadoop-hdfs",
+      "-am",
+      "test",
+      "-Dtest=TestFileTruncate#testTruncateTwiceTogether",
+      "-DfailIfNoTests=false"
+    ],
+    "io_scope_hint": "Inspect original-test HDFS RPC, data-transfer and filesystem fault markers in the healthy trace; select exact observed identities.",
+    "io_scope": {
+      "marker_prefixes": [],
+      "site_ids": []
+    },
+    "budget": {
+      "max_trials": 48,
+      "max_faults": 4
+    },
+    "extension_budget": {
+      "max_trials": 96,
+      "max_faults": 6
+    },
+    "checkpoints": {
+      "state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/campaign/state.json",
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/campaign/result.json",
+      "healthy_trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/HDFS-43/healthy/runtime_trace.jsonl"
+    },
+    "required_before_campaign": [
+      "Populate isolated system_test workspace from source_root",
+      "Run original cluster JUnit without faults",
+      "Attach instrumentation and record healthy runtime_trace.jsonl",
+      "Verify selected target site and I/O markers in healthy trace",
+      "Supply a per-case adapter that reruns the same JUnit with fault options"
+    ]
+  }
+}

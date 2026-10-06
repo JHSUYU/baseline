@@ -1,0 +1,76 @@
+{
+  "case_id": "SOLR-31",
+  "system": "solr",
+  "selection": {
+    "site_id": "<org.apache.solr.handler.admin.CollectionsHandler: void forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)>#u49",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/handler/admin/CollectionsHandler.java",
+    "source_line": 1477,
+    "function": "org.apache.solr.handler.admin.CollectionsHandler.forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)",
+    "target_guard": "org/apache/solr/handler/admin/CollectionsHandler#forceLeaderElection(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/handler/admin/CollectionsHandler;)V#B2",
+    "target_throw": "org/apache/solr/handler/admin/CollectionsHandler#forceLeaderElection(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/handler/admin/CollectionsHandler;)V#L1477",
+    "target_exception": "org.apache.solr.common.SolrException"
+  },
+  "mapping_source": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/SOLR-TEST-MAP.json",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "runtime_target_reach_verified": false,
+  "status": "original_cluster_junit_source_verified",
+  "cluster_test": {
+    "class": "org.apache.solr.cloud.ForceLeaderTest",
+    "method": "testReplicasInLowerTerms",
+    "mapped_invocation": "testReplicasInLowerTerms",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/test/org/apache/solr/cloud/ForceLeaderTest.java",
+    "declaration_line": 71,
+    "declaration_kind": "annotation",
+    "cluster_evidence": "AbstractFullDistribZkTestBase through HttpPartitionTest; four Jetty shard nodes plus one control Jetty and embedded ZooKeeper; base constructor lines 292-295",
+    "command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=ForceLeaderTest",
+      "-Dtests.method=testReplicasInLowerTerms"
+    ]
+  },
+  "starter": {
+    "workspaces": {
+      "system_test": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/system-test",
+      "temp": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/temp",
+      "healthy": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/healthy",
+      "campaign": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/campaign"
+    },
+    "system_test_cwd": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/system-test",
+    "system_test_command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=ForceLeaderTest",
+      "-Dtests.method=testReplicasInLowerTerms"
+    ],
+    "io_scope_hint": "Inspect original-test Solr HTTP, ZooKeeper and index/filesystem fault markers in the healthy trace; select exact observed identities.",
+    "io_scope": {
+      "marker_prefixes": [],
+      "site_ids": []
+    },
+    "budget": {
+      "max_trials": 48,
+      "max_faults": 4
+    },
+    "extension_budget": {
+      "max_trials": 96,
+      "max_faults": 6
+    },
+    "checkpoints": {
+      "state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/campaign/state.json",
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/campaign/result.json",
+      "healthy_trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-31/healthy/runtime_trace.jsonl"
+    },
+    "required_before_campaign": [
+      "Populate isolated system_test workspace from source_root",
+      "Run original cluster JUnit without faults",
+      "Attach instrumentation and record healthy runtime_trace.jsonl",
+      "Verify selected target site and I/O markers in healthy trace",
+      "Supply a per-case adapter that reruns the same JUnit with fault options"
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "case_id": "SOLR-34",
+  "system": "solr",
+  "selection": {
+    "site_id": "<org.apache.solr.servlet.CoordinatorHttpSolrCall: org.apache.solr.core.SolrCore getCore(org.apache.solr.servlet.CoordinatorHttpSolrCall$Factory,org.apache.solr.servlet.HttpSolrCall,java.lang.String,boolean)>#u69",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/servlet/CoordinatorHttpSolrCall.java",
+    "source_line": 143,
+    "function": "org.apache.solr.servlet.CoordinatorHttpSolrCall.getCore(org.apache.solr.servlet.CoordinatorHttpSolrCall$Factory,org.apache.solr.servlet.HttpSolrCall,java.lang.String,boolean)",
+    "target_guard": "org/apache/solr/servlet/CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;#B6",
+    "target_throw": "org/apache/solr/servlet/CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;#L143",
+    "target_exception": "org.apache.solr.common.SolrException"
+  },
+  "mapping_source": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/SOLR-TEST-MAP.json",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "runtime_target_reach_verified": false,
+  "status": "original_cluster_junit_source_verified",
+  "cluster_test": {
+    "class": "org.apache.solr.search.TestCoordinatorRole",
+    "method": "testSimple",
+    "mapped_invocation": "testSimple",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/test/org/apache/solr/search/TestCoordinatorRole.java",
+    "declaration_line": 76,
+    "declaration_kind": "junit3_name",
+    "cluster_evidence": "SolrCloudTestCase with explicit MiniSolrCloudCluster; four regular Jetty nodes, then one coordinator Jetty, with embedded ZooKeeper; lines 76-80 and 97-103",
+    "command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=TestCoordinatorRole",
+      "-Dtests.method=testSimple"
+    ]
+  },
+  "starter": {
+    "workspaces": {
+      "system_test": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/system-test",
+      "temp": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/temp",
+      "healthy": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/healthy",
+      "campaign": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/campaign"
+    },
+    "system_test_cwd": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/system-test",
+    "system_test_command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=TestCoordinatorRole",
+      "-Dtests.method=testSimple"
+    ],
+    "io_scope_hint": "Inspect original-test Solr HTTP, ZooKeeper and index/filesystem fault markers in the healthy trace; select exact observed identities.",
+    "io_scope": {
+      "marker_prefixes": [],
+      "site_ids": []
+    },
+    "budget": {
+      "max_trials": 48,
+      "max_faults": 4
+    },
+    "extension_budget": {
+      "max_trials": 96,
+      "max_faults": 6
+    },
+    "checkpoints": {
+      "state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/campaign/state.json",
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/campaign/result.json",
+      "healthy_trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-34/healthy/runtime_trace.jsonl"
+    },
+    "required_before_campaign": [
+      "Populate isolated system_test workspace from source_root",
+      "Run original cluster JUnit without faults",
+      "Attach instrumentation and record healthy runtime_trace.jsonl",
+      "Verify selected target site and I/O markers in healthy trace",
+      "Supply a per-case adapter that reruns the same JUnit with fault options"
+    ]
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "case_id": "SOLR-09",
+  "system": "solr",
+  "selection": {
+    "site_id": "<org.apache.solr.cloud.api.collections.DeleteReplicaCmd: void deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)>#u118",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/cloud/api/collections/DeleteReplicaCmd.java",
+    "source_line": 278,
+    "function": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd.deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)",
+    "target_guard": "org/apache/solr/cloud/api/collections/DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V#B7",
+    "target_throw": "org/apache/solr/cloud/api/collections/DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V#L278",
+    "target_exception": "org.apache.solr.common.SolrException"
+  },
+  "mapping_source": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/SOLR-TEST-MAP.json",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "runtime_target_reach_verified": false,
+  "status": "original_cluster_junit_source_verified",
+  "cluster_test": {
+    "class": "org.apache.solr.cloud.DeleteReplicaTest",
+    "method": "deleteReplicaAndVerifyDirectoryCleanup",
+    "mapped_invocation": "deleteReplicaAndVerifyDirectoryCleanup",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/test/org/apache/solr/cloud/DeleteReplicaTest.java",
+    "declaration_line": 149,
+    "declaration_kind": "annotation",
+    "cluster_evidence": "SolrCloudTestCase; four isolated Jetty Solr nodes per test, lines 70-87",
+    "command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=DeleteReplicaTest",
+      "-Dtests.method=deleteReplicaAndVerifyDirectoryCleanup"
+    ]
+  },
+  "starter": {
+    "workspaces": {
+      "system_test": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/system-test",
+      "temp": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/temp",
+      "healthy": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/healthy",
+      "campaign": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/campaign"
+    },
+    "system_test_cwd": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/system-test",
+    "system_test_command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=DeleteReplicaTest",
+      "-Dtests.method=deleteReplicaAndVerifyDirectoryCleanup"
+    ],
+    "io_scope_hint": "Inspect original-test Solr HTTP, ZooKeeper and index/filesystem fault markers in the healthy trace; select exact observed identities.",
+    "io_scope": {
+      "marker_prefixes": [],
+      "site_ids": []
+    },
+    "budget": {
+      "max_trials": 48,
+      "max_faults": 4
+    },
+    "extension_budget": {
+      "max_trials": 96,
+      "max_faults": 6
+    },
+    "checkpoints": {
+      "state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/campaign/state.json",
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/campaign/result.json",
+      "healthy_trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-09/healthy/runtime_trace.jsonl"
+    },
+    "required_before_campaign": [
+      "Populate isolated system_test workspace from source_root",
+      "Run original cluster JUnit without faults",
+      "Attach instrumentation and record healthy runtime_trace.jsonl",
+      "Verify selected target site and I/O markers in healthy trace",
+      "Supply a per-case adapter that reruns the same JUnit with fault options"
+    ]
+  }
+}

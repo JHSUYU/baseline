@@ -1,0 +1,76 @@
+{
+  "case_id": "SOLR-39",
+  "system": "solr",
+  "selection": {
+    "site_id": "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: java.util.List lookupShardLeadersOfCollections()>#u11",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+    "source_line": 247,
+    "function": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections()",
+    "target_guard": "org/apache/solr/update/processor/RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;#B1",
+    "target_throw": "org/apache/solr/update/processor/RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;#L247",
+    "target_exception": "org.apache.solr.common.SolrException"
+  },
+  "mapping_source": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/SOLR-TEST-MAP.json",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "runtime_target_reach_verified": false,
+  "status": "original_cluster_junit_source_verified",
+  "cluster_test": {
+    "class": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest",
+    "method": "test",
+    "mapped_invocation": "test",
+    "source_path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java",
+    "declaration_line": 110,
+    "declaration_kind": "annotation",
+    "cluster_evidence": "SolrCloudTestCase through RoutedAliasUpdateProcessorTest; four Jetty nodes and embedded ZooKeeper, setup lines 87-90",
+    "command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=TimeRoutedAliasUpdateProcessorTest",
+      "-Dtests.method=test"
+    ]
+  },
+  "starter": {
+    "workspaces": {
+      "system_test": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/system-test",
+      "temp": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/temp",
+      "healthy": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/healthy",
+      "campaign": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/campaign"
+    },
+    "system_test_cwd": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/system-test",
+    "system_test_command": [
+      "ant",
+      "-f",
+      "solr/core/build.xml",
+      "test",
+      "-Dtestcase=TimeRoutedAliasUpdateProcessorTest",
+      "-Dtests.method=test"
+    ],
+    "io_scope_hint": "Inspect original-test Solr HTTP, ZooKeeper and index/filesystem fault markers in the healthy trace; select exact observed identities.",
+    "io_scope": {
+      "marker_prefixes": [],
+      "site_ids": []
+    },
+    "budget": {
+      "max_trials": 48,
+      "max_faults": 4
+    },
+    "extension_budget": {
+      "max_trials": 96,
+      "max_faults": 6
+    },
+    "checkpoints": {
+      "state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/campaign/state.json",
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/campaign/result.json",
+      "healthy_trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/bootstrap/cases/SOLR-39/healthy/runtime_trace.jsonl"
+    },
+    "required_before_campaign": [
+      "Populate isolated system_test workspace from source_root",
+      "Run original cluster JUnit without faults",
+      "Attach instrumentation and record healthy runtime_trace.jsonl",
+      "Verify selected target site and I/O markers in healthy trace",
+      "Supply a per-case adapter that reruns the same JUnit with fault options"
+    ]
+  }
+}
