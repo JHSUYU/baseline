@@ -1,0 +1,33 @@
+{
+  "agent_sha256": "22e2a06b0f89009d53c54f151c922b09a6d32d5be1d52d0b91b34f7edb7a6da0",
+  "fault_model": "one KeeperException.ConnectionLoss inside original SolrZkClient retry lambda",
+  "stable_healthy_seeds": [
+    {
+      "detail": "path=/live_nodes/127.0.0.1:37105_;mdcCore=null;mdcReplica=null",
+      "elapsed_seconds": 61.497,
+      "physicalNode": "127.0.0.1:37105_",
+      "run": "native-chaos-02",
+      "seed": "F0993D5343E20BA5",
+      "seq": 1412,
+      "threadId": 267
+    },
+    {
+      "detail": "path=/live_nodes/127.0.0.1:42889_;mdcCore=null;mdcReplica=null",
+      "elapsed_seconds": 76.613,
+      "physicalNode": "127.0.0.1:42889_",
+      "run": "native-chaos-03",
+      "seed": "F0993D5343E20BA6",
+      "seq": 1573,
+      "threadId": 264
+    }
+  ],
+  "strict_selector": {
+    "hitOrdinal": 1,
+    "marker": "FAULT:ZK_NATIVE:exists",
+    "resource": "/live_nodes/NODE",
+    "siteId": "org.apache.solr.cloud.api.collections.SplitShardCmd.split#L523->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;",
+    "sourceKey": "SOLR/SPLIT/collection1/shard1/PARENT_LEADER"
+  },
+  "target_oracle": "exact SplitShardCmd.java:536/539 guard and 538/543 SolrException throw after applied fault",
+  "test": "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitWithChaosMonkey"
+}

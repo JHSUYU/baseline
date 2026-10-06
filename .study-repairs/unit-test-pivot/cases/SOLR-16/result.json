@@ -1,13 +1,677 @@
 {
-  "case_id": "SOLR-16",
-  "status": "mapped_pending_smoke",
-  "cluster_test": "SplitShardTest.doTest",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/SOLR-TEST-MAP.md"
+  "calibration": {
+    "agent_revision": "direct_exists_only",
+    "evidence": "SOLR-14/independent/calibration",
+    "fault": "one exact KeeperException.ConnectionLoss at shard1 live-node exists",
+    "first_read": {
+      "elapsed_seconds": 11.347,
+      "post_fault_target": false,
+      "strict": true
+    },
+    "second_read": {
+      "elapsed_seconds": 20.03,
+      "post_fault_target": false,
+      "strict": true
+    },
+    "test": "original SplitShardTest#doTest"
+  },
+  "case_id": "SOLR-16",
+  "case_outcome": "target_branch_not_observed",
+  "cluster_nodes": 1,
+  "cluster_test": "org.apache.solr.cloud.SplitShardTest#doTest",
+  "coverage_audit_prefix49": {
+    "fault_trial_prefix": 49,
+    "healthy": {
+      "covered_production_branch_outcomes": 6939,
+      "covered_production_methods": 5360,
+      "original_release_jar_count": 3
+    },
+    "healthy_plus_valid": {
+      "covered_production_branch_outcomes": 6959,
+      "covered_production_methods": 5362,
+      "original_release_jar_count": 3
+    },
+    "methodology": "original_release_jar_jacoco_union",
+    "new_production_branch_outcomes": 20,
+    "new_production_methods": 2,
+    "strict_target_preserving_trial_numbers": [
+      6,
+      12,
+      15,
+      31,
+      33,
+      36
+    ],
+    "valid_trial_count": 6
+  },
+  "coverage_audit_prefix6": {
+    "healthy_production_branch_outcomes": 6939,
+    "healthy_production_methods": 5360,
+    "new_branch_outcomes": 12,
+    "new_methods": 2,
+    "source": "original Solr/Lucene release JAR JaCoCo union, strict target-preserving trial 6",
+    "valid_union_production_branch_outcomes": 6951,
+    "valid_union_production_methods": 5362
+  },
+  "coverage_gain": 36,
+  "coverage_gain_scope": "original-release production branch outcomes, v1+native core campaigns; multi-node chaos separately audited",
+  "elapsed_seconds": 4428.992,
+  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-14/independent/SOLR-14-16.md",
+  "exact_guard_line": 539,
+  "fault_model_limit": "ASM throws at SolrZkClient method entry, before retryOnConnLoss calls ZkCmdExecutor.retryOperation around keeper.*; models application-level API exception, not one lower-level transient ZooKeeper failure.",
+  "fault_trials": 163,
+  "healthy_exact_target_check_counts": {
+    "shard1": 0,
+    "shard2": 0
+  },
+  "healthy_exact_target_throw_count": 0,
+  "healthy_outer_guard_counts": {
+    "shard1": 2
+  },
+  "healthy_seed_seconds": 44.111,
+  "independent_agent_sha256": "6cf287d38192b7391075905e8d3f79139f00807589629b83a67edc845299e147",
+  "independent_campaign": {
+    "budget": {
+      "max_faults": 8,
+      "max_trials": 80
+    },
+    "case_ids": [
+      "SOLR-14",
+      "SOLR-15",
+      "SOLR-16"
+    ],
+    "elapsed_seconds": 2195.61,
+    "fault_trials": 80,
+    "first_fault_families": {
+      "FAULT:ZK:create|org.apache.solr.client.solrj.impl.ZkDistribStateManager.createData#L127->SolrZkClient.create(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;Z)Ljava/lang/String;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK:create|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L267->SolrZkClient.create(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;Z)Ljava/lang/String;|SOLR/COLLECTION/splitshardtest-collection": 6,
+      "FAULT:ZK:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.exists(Ljava/lang/String;Z)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.exists(Ljava/lang/String;Z)Ljava/lang/Boolean;|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 1,
+      "FAULT:ZK:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.exists(Ljava/lang/String;Z)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Z)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 5,
+      "FAULT:ZK:exists|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L258->SolrZkClient.exists(Ljava/lang/String;Z)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 7,
+      "FAULT:ZK:exists|org.apache.solr.common.cloud.ZkCmdExecutor.ensureExists#L120->SolrZkClient.exists(Ljava/lang/String;Z)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK:exists|org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef.get#L811->SolrZkClient.exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Z)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 6,
+      "FAULT:ZK:getChildren|org.apache.solr.client.solrj.impl.ZkDistribStateManager.listData#L70->SolrZkClient.getChildren(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Z)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK:getChildren|org.apache.solr.cloud.LeaderElector.checkIfIamLeader#L107->SolrZkClient.getChildren(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Z)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK:getChildren|org.apache.solr.cloud.ShardLeaderElectionContext.waitForReplicasToComeUp#L396->SolrZkClient.getChildren(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Z)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 5,
+      "FAULT:ZK:getChildren|org.apache.solr.common.cloud.ZkStateReader$StateWatcher.refreshAndWatchChildren#L1405->SolrZkClient.getChildren(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 7,
+      "FAULT:ZK:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getAutoScalingConfig#L190->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 3,
+      "FAULT:ZK:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 2,
+      "FAULT:ZK:getData|org.apache.solr.cloud.ZkController.getLeaderProps#L1495->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/COLLECTION/splitshardtest-collection": 5,
+      "FAULT:ZK:getData|org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/COLLECTION/splitshardtest-collection": 5,
+      "FAULT:ZK:getData|org.apache.solr.common.cloud.ZkStateReader.fetchCollectionState#L1641->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK:getData|org.apache.solr.common.cloud.ZkStateReader.fetchCollectionState#L1641->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 1,
+      "FAULT:ZK:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 2,
+      "FAULT:ZK:setData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.setData(Ljava/lang/String;[BIZ)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK:setData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.setData(Ljava/lang/String;[BIZ)Lorg/apache/zookeeper/data/Stat;|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 2,
+      "FAULT:ZK:setData|org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.setData(Ljava/lang/String;[BIZ)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK:setData|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L262->SolrZkClient.setData(Ljava/lang/String;[BIZ)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 7
+    },
+    "io_family_gain": 0,
+    "latest": {
+      "applied_faults": 2,
+      "attempts": 1,
+      "elapsed_seconds": 22.633,
+      "exact_target_exception_after_last_fault": {
+        "SOLR-14": 0,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "fault_sequence": [
+        {
+          "hitOrdinal": 3,
+          "marker": "FAULT:ZK:exists",
+          "resource": "/collections/splitshardtest-collection/terms/shard1_4",
+          "siteId": "org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Z)Lorg/apache/zookeeper/data/Stat;",
+          "sourceKey": "SOLR/COLLECTION/splitshardtest-collection"
+        },
+        {
+          "hitOrdinal": 6,
+          "marker": "FAULT:ZK:getData",
+          "resource": "/autoscaling.json",
+          "siteId": "org.apache.solr.client.solrj.impl.ZkDistribStateManager.getAutoScalingConfig#L190->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B",
+          "sourceKey": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER"
+        }
+      ],
+      "first_family": "FAULT:ZK:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Z)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-14/independent/campaign/trials/0080-2bdaab0f0b18e03ba772/attempt-01/jacoco.exec",
+      "junit_exit": 1,
+      "last_family": "FAULT:ZK:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getAutoScalingConfig#L190->SolrZkClient.getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
+      "new_io_families": 2,
+      "new_production_probes": 219,
+      "outer_guard_after_last_fault": 0,
+      "outer_guard_count": 0,
+      "planned_faults": 2,
+      "production_branch_covered": 6652,
+      "production_branch_total": 112568,
+      "production_classes_analyzed": 6405,
+      "production_probes_covered": 21722,
+      "source_roots": [
+        "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER"
+      ],
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_check_after_last_fault": {
+        "SOLR-14": 0,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "target_check_counts": {
+        "SOLR-14": 1,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "target_preserved": false,
+      "target_throw_counts": {
+        "SOLR-14": 0,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-14/independent/campaign/trials/0080-2bdaab0f0b18e03ba772/attempt-01/events.jsonl",
+      "trial_number": 80,
+      "zk_io_count": 1037
+    },
+    "methodology": "coverage_io_independent_asm_jacoco",
+    "post_fault_outer_guard_trials": 10,
+    "post_fault_target_reach_trials": {
+      "SOLR-14": 5,
+      "SOLR-15": 0,
+      "SOLR-16": 0
+    },
+    "production_probe_gain": 54,
+    "status": "budget_complete",
+    "strict_injections": 79,
+    "target_exception_after_fault_trials": {
+      "SOLR-14": 0,
+      "SOLR-15": 0,
+      "SOLR-16": 0
+    },
+    "target_preserved_trials": 10,
+    "total_attempts": 82
+  },
+  "independent_native_campaign": {
+    "budget": {
+      "max_faults": 10,
+      "max_trials": 80
+    },
+    "case_ids": [
+      "SOLR-14",
+      "SOLR-15",
+      "SOLR-16"
+    ],
+    "elapsed_seconds": 2050.418,
+    "fault_trials": 80,
+    "first_fault_families": {
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 8,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ShardLeaderElectionContextBase.<init>#L82->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.api.collections.SplitShardCmd.split#L164->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 9,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.api.collections.SplitShardCmd.split#L523->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 5,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L258->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:exists|org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef.get#L811->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.client.solrj.impl.ZkDistribStateManager.listData#L70->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.cloud.LeaderElector.checkIfIamLeader#L107->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.cloud.ShardLeaderElectionContext.waitForReplicasToComeUp#L396->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.common.cloud.ZkStateReader$StateWatcher.refreshAndWatchChildren#L1405->SolrZkClient.lambda$getChildren$5(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)Ljava/util/List;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getAutoScalingConfig#L190->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 8,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 8,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkController.getLeaderProps#L1495->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.fetchCollectionState#L1641->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 8,
+      "FAULT:ZK_NATIVE:setData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 1,
+      "FAULT:ZK_NATIVE:setData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER": 8,
+      "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 2,
+      "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L262->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/splitshardtest-collection": 2
+    },
+    "io_family_gain": 0,
+    "latest": {
+      "applied_faults": 4,
+      "attempts": 1,
+      "elapsed_seconds": 27.253,
+      "exact_target_exception_after_last_fault": {
+        "SOLR-14": 0,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "fault_sequence": [
+        {
+          "hitOrdinal": 3,
+          "marker": "FAULT:ZK_NATIVE:getData",
+          "resource": "/collections/splitshardtest-collection/counter",
+          "siteId": "org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+          "sourceKey": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER"
+        },
+        {
+          "hitOrdinal": 6,
+          "marker": "FAULT:ZK_NATIVE:getData",
+          "resource": "/collections/splitshardtest-collection/counter",
+          "siteId": "org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+          "sourceKey": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER"
+        },
+        {
+          "hitOrdinal": 7,
+          "marker": "FAULT:ZK_NATIVE:getData",
+          "resource": "/collections/splitshardtest-collection/counter",
+          "siteId": "org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+          "sourceKey": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER"
+        },
+        {
+          "hitOrdinal": 5,
+          "marker": "FAULT:ZK_NATIVE:getData",
+          "resource": "/collections/splitshardtest-collection",
+          "siteId": "org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+          "sourceKey": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER"
+        }
+      ],
+      "first_family": "FAULT:ZK_NATIVE:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-14/independent/native/campaign/trials/0080-f5ce57aae9c207543ce0/attempt-01/jacoco.exec",
+      "junit_exit": 0,
+      "last_family": "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
+      "new_io_families": 0,
+      "new_production_probes": 0,
+      "outer_guard_after_last_fault": 1,
+      "outer_guard_count": 1,
+      "planned_faults": 4,
+      "production_branch_covered": 6947,
+      "production_branch_total": 112568,
+      "production_classes_analyzed": 6405,
+      "production_probes_covered": 22469,
+      "source_roots": [
+        "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER"
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_check_after_last_fault": {
+        "SOLR-14": 0,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "target_check_counts": {
+        "SOLR-14": 1,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "target_preserved": true,
+      "target_throw_counts": {
+        "SOLR-14": 0,
+        "SOLR-15": 0,
+        "SOLR-16": 0
+      },
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-14/independent/native/campaign/trials/0080-f5ce57aae9c207543ce0/attempt-01/events.jsonl",
+      "trial_number": 80,
+      "zk_io_count": 880
+    },
+    "methodology": "coverage_io_independent_asm_jacoco",
+    "post_fault_outer_guard_trials": 78,
+    "post_fault_target_reach_trials": {
+      "SOLR-14": 14,
+      "SOLR-15": 0,
+      "SOLR-16": 0
+    },
+    "production_probe_gain": 34,
+    "status": "budget_complete",
+    "strict_injections": 80,
+    "target_exception_after_fault_trials": {
+      "SOLR-14": 0,
+      "SOLR-15": 0,
+      "SOLR-16": 0
+    },
+    "target_preserved_trials": 78,
+    "total_attempts": 80
+  },
+  "methodology": "coverage_io_independent_asm_jacoco",
+  "native_production_probe_gain": 34,
+  "native_retry_calibration": {
+    "agent_sha256": "22e2a06b0f89009d53c54f151c922b09a6d32d5be1d52d0b91b34f7edb7a6da0",
+    "elapsed_seconds": 25.646,
+    "original_junit_passed": true,
+    "outer_check_after_fault": true,
+    "same_operation_retried": true,
+    "solr14_check_after_fault": true,
+    "strict_applied": 1
+  },
+  "physical_node_recorded_separately": "direct live-node exists: actual node name; generic async ZK: empty/unavailable, selector uses exact logical path/site/ordinal",
+  "post_fault_outer_guard_trials": 89,
+  "production_coverage_core": {
+    "combined_gain_over_healthy": {
+      "new_production_branch_outcomes": 36,
+      "new_production_methods": 7
+    },
+    "healthy": {
+      "covered_production_branch_outcomes": 7105,
+      "covered_production_methods": 5439,
+      "original_release_jar_count": 3
+    },
+    "healthy_plus_v1": {
+      "covered_production_branch_outcomes": 7126,
+      "covered_production_methods": 5441,
+      "original_release_jar_count": 3
+    },
+    "healthy_plus_v1_and_native": {
+      "covered_production_branch_outcomes": 7141,
+      "covered_production_methods": 5446,
+      "original_release_jar_count": 3
+    },
+    "main_valid_trial_numbers": [
+      6,
+      12,
+      15,
+      31,
+      33,
+      36,
+      51,
+      54,
+      60,
+      69
+    ],
+    "methodology": "original_release_jar_jacoco_union",
+    "native_gain_over_v1": {
+      "new_production_branch_outcomes": 15,
+      "new_production_methods": 5
+    },
+    "native_retry_calibration_count": 1,
+    "native_valid_trial_numbers": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      57,
+      58,
+      59,
+      60,
+      61,
+      62,
+      63,
+      64,
+      65,
+      66,
+      67,
+      68,
+      69,
+      70,
+      71,
+      72,
+      73,
+      74,
+      75,
+      76,
+      77,
+      78,
+      79,
+      80
+    ],
+    "original_junit_healthy_seed_count": 4,
+    "v1_gain_over_healthy": {
+      "new_production_branch_outcomes": 21,
+      "new_production_methods": 2
+    }
+  },
+  "production_coverage_multinode_chaos": {
+    "combined_fault_gain": {
+      "new_production_branch_outcomes": 78,
+      "new_production_methods": 21
+    },
+    "exact_target_exception": "SOLR-15 line538 only in second fault trial; source-reviewed expected protective abort",
+    "first_fault_trial_gain": {
+      "new_production_branch_outcomes": 21,
+      "new_production_methods": 12
+    },
+    "healthy": {
+      "covered_production_branch_outcomes": 14910,
+      "covered_production_methods": 9712,
+      "original_release_jar_count": 3
+    },
+    "healthy_plus_one_fault_trial": {
+      "covered_production_branch_outcomes": 14931,
+      "covered_production_methods": 9724,
+      "original_release_jar_count": 3
+    },
+    "healthy_plus_two_fault_trials": {
+      "covered_production_branch_outcomes": 14988,
+      "covered_production_methods": 9733,
+      "original_release_jar_count": 3
+    },
+    "healthy_runs": [
+      "native-chaos-02",
+      "native-chaos-03"
+    ],
+    "methodology": "original_release_jar_jacoco_union_same_original_cluster_test",
+    "second_fault_trial_increment": {
+      "new_production_branch_outcomes": 57,
+      "new_production_methods": 9
+    },
+    "strict_fault_runs": [
+      "native-chaos-fault-01",
+      "native-chaos-fault-02"
+    ]
+  },
+  "quality_complete": false,
+  "reason": "The original JUnit workloads and fault runs never reached the final ephemeral-owner-change guard. This branch remains untested.",
+  "shared_campaign_id": "SOLR-14-15-16-original-split-tests",
+  "shared_invocation": "SOLR-14/15/16:SplitShardTest#doTest:healthy-04+healthy-05",
+  "source_identity": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
+  "status": "final_changed_owner_guard_not_observed",
+  "strict_injections": 162,
+  "supplemental_elapsed_seconds": 1142.55,
+  "supplemental_fault_trials": 7,
+  "supplemental_native_chaos_fault_trials": {
+    "classification": "no_selected_throw",
+    "distinct_fault_trials": 2,
+    "elapsed_fault_seconds": 186.851,
+    "elapsed_replay_seconds": 80.667,
+    "evidence": "SOLR-14/independent/supplemental/shardsplit/solr15-native-candidate-source-review.json",
+    "post_fault_exact_throw": 0,
+    "post_fault_target_check": 0,
+    "replay_attempts": 1,
+    "strict_injections": 2
+  },
+  "supplemental_native_chaos_healthy": {
+    "failed_calibration_seconds": 109.297,
+    "failed_no_fault_calibration": [
+      "native-chaos-01"
+    ],
+    "original_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitWithChaosMonkey",
+    "pass_seconds": [
+      61.497,
+      76.613
+    ],
+    "passed": [
+      "native-chaos-02",
+      "native-chaos-03"
+    ],
+    "stable_selector": "SOLR-14/independent/supplemental/shardsplit/native-chaos-plan-01-selection.json"
+  },
+  "supplemental_native_chaos_target": {
+    "evidence": "SOLR-14/independent/supplemental/shardsplit/native-chaos-fault-02/audit.json",
+    "fault_trials": 2,
+    "post_fault_exact_throw": 0,
+    "post_fault_final_check": 0,
+    "strict_injections": 2
+  },
+  "supplemental_original_chaos_fault_trials": {
+    "elapsed_seconds": 408.98,
+    "evidence": "SOLR-14/independent/supplemental/shardsplit/chaos-fault-01",
+    "exact_target_exceptions": {
+      "SOLR-14": 0,
+      "SOLR-15": 0,
+      "SOLR-16": 0
+    },
+    "fault_trials": 5,
+    "outer_guard_after_fault_trials": 4,
+    "scope": "original ShardSplitTest#testSplitWithChaosMonkey, distinct from 80-trial SplitShardTest#doTest campaign",
+    "stop_reason": "Same retry-loop fault family repeatedly delays sub-shard election and node stop together; no final guard through four ordered faults.",
+    "strict_injections": 5,
+    "target_after_fault": {
+      "SOLR-14": 0,
+      "SOLR-15": 0,
+      "SOLR-16": 0
+    },
+    "trial_details": [
+      {
+        "applied_faults": 1,
+        "elapsed_seconds": 104.274,
+        "exact_target_throw": false,
+        "outer_guard_after_fault": false,
+        "run": "chaos-fault-01",
+        "strict": true,
+        "target_after_fault": false
+      },
+      {
+        "applied_faults": 1,
+        "elapsed_seconds": 64.811,
+        "exact_target_throw": false,
+        "outer_guard_after_fault": true,
+        "run": "chaos-fault-02",
+        "strict": true,
+        "target_after_fault": false
+      },
+      {
+        "applied_faults": 2,
+        "elapsed_seconds": 108.32,
+        "exact_target_throw": false,
+        "junit_exit": 1,
+        "outer_guard_after_fault": true,
+        "run": "chaos-fault-03",
+        "strict": true,
+        "target_after_fault": false
+      },
+      {
+        "applied_faults": 3,
+        "elapsed_seconds": 65.251,
+        "exact_target_throw": false,
+        "junit_exit": 0,
+        "outer_guard_after_fault": true,
+        "run": "chaos-fault-04",
+        "strict": true,
+        "target_after_fault": false
+      },
+      {
+        "applied_faults": 4,
+        "elapsed_seconds": 66.324,
+        "exact_target_throw": false,
+        "junit_exit": 0,
+        "outer_guard_after_fault": true,
+        "run": "chaos-fault-05",
+        "strict": true,
+        "target_after_fault": false
+      }
+    ]
+  },
+  "supplemental_original_chaos_healthy": {
+    "baseline_fault_classification": "original_test_leader_stop_not_injected",
+    "directed_plan_evidence": "SOLR-14/independent/supplemental/shardsplit/chaos-plan-01-selection.json",
+    "elapsed_seconds": 64.444,
+    "evidence": "SOLR-14/independent/supplemental/shardsplit/chaos-01",
+    "junit_seed": "F0993D5343E20BA4",
+    "leader_stopped_during_split": true,
+    "original_junit": "ran=1 ignored=0 failures=0",
+    "repeat_runs": [
+      {
+        "elapsed_seconds": 64.444,
+        "final_guard_hits": 0,
+        "junit_seed": "F0993D5343E20BA4",
+        "run": "chaos-01"
+      },
+      {
+        "elapsed_seconds": 48.465,
+        "final_guard_hits": 0,
+        "junit_seed": "F0993D5343E20BA5",
+        "run": "chaos-02"
+      },
+      {
+        "elapsed_seconds": 64.441,
+        "final_guard_hits": 0,
+        "junit_seed": "F0993D5343E20BA6",
+        "run": "chaos-03"
+      }
+    ],
+    "shard1_final_guards": 0,
+    "shard1_first_check": 1,
+    "shard1_outer_check": 1,
+    "stable_between_reads_selectors": 58,
+    "test": "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitWithChaosMonkey"
+  },
+  "supplemental_original_multinode_healthy": {
+    "elapsed_seconds": 41.295,
+    "evidence": "SOLR-14/independent/supplemental/shardsplit/healthy-04",
+    "original_junit": "ran=1 ignored=0 failures=0",
+    "shard1_final_guards": 0,
+    "shard1_first_check": 1,
+    "shard1_outer_check": 1,
+    "test": "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitStaticIndexReplication",
+    "zk_io_events": 2692
+  },
+  "target_after_fault": 0,
+  "target_exception_after_fault_trials": 0,
+  "target_exception_source_review": null,
+  "target_exception_type": "org.apache.solr.common.SolrException",
+  "target_method": "org.apache.solr.cloud.api.collections.SplitShardCmd.split",
+  "target_reached": false,
+  "target_source_file": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+  "target_source_line": 543,
+  "total_distinct_fault_trials_all_workloads": 170,
+  "total_measured_execution_seconds": 5571.542,
+  "total_strict_fault_trials_all_workloads": 169,
+  "trial_accounting": "The same SplitShardTest and ShardSplitTest trials test all three checks; counts and elapsed time are shared across these rows.",
+  "updated_at": 1791325899.0839157
 }

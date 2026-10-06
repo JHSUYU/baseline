@@ -1,0 +1,47 @@
+{
+  "agent_sha256": "22e2a06b0f89009d53c54f151c922b09a6d32d5be1d52d0b91b34f7edb7a6da0",
+  "elapsed_seconds": 25.646,
+  "fault_semantics": "KeeperException.ConnectionLoss at original SolrZkClient retry lambda entry",
+  "junit": {
+    "failures": 0,
+    "ignored": 0,
+    "ran": 1
+  },
+  "post_fault_target_markers": [
+    "TARGET:SOLR14:CHECK",
+    "TARGET:SOLR15_16:OUTER"
+  ],
+  "same_thread_retry": {
+    "applied": false,
+    "detail": "path=/live_nodes/127.0.0.1:34001_solr;mdcCore=null;mdcReplica=null",
+    "event": "IO_OBSERVED",
+    "hitOrdinal": 2,
+    "marker": "FAULT:ZK_NATIVE:exists",
+    "matched": false,
+    "physicalNode": "127.0.0.1:34001_solr",
+    "resource": "/live_nodes/NODE",
+    "seq": 307,
+    "siteId": "org.apache.solr.cloud.api.collections.SplitShardCmd.split#L164->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;",
+    "sourceKey": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
+    "threadId": 132,
+    "timeNs": 546205089779442
+  },
+  "selected": {
+    "applied": true,
+    "detail": "path=/live_nodes/127.0.0.1:34001_solr;mdcCore=null;mdcReplica=null",
+    "event": "IO_OBSERVED",
+    "hitOrdinal": 1,
+    "marker": "FAULT:ZK_NATIVE:exists",
+    "matched": true,
+    "physicalNode": "127.0.0.1:34001_solr",
+    "resource": "/live_nodes/NODE",
+    "seq": 306,
+    "siteId": "org.apache.solr.cloud.api.collections.SplitShardCmd.split#L164->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;",
+    "sourceKey": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
+    "threadId": 132,
+    "timeNs": 546203589176504
+  },
+  "selected_target_throw_count": 0,
+  "strict_applied_count": 1,
+  "test": "org.apache.solr.cloud.SplitShardTest#doTest"
+}
