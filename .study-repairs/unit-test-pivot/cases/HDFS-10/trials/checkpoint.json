@@ -1,0 +1,3355 @@
+{
+  "attempts": [
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:32:05.450771+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.589,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "d968579f6e48cbf3d191"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11054,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-01/trace/runtime_trace.jsonl",
+      "trial": "trial-01",
+      "trial_wall_seconds": 10.425
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:32:14.690352+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.135,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 148,
+      "new_coverage_id_list": [
+        "BRANCH:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: java.lang.Void lambda$sendEdits$5(long,long,int,byte[],long)>#u79:True",
+        "BRANCH:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: java.lang.Void lambda$startLogSegment$7(long,int)>#u8:False",
+        "BRANCH:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: void heartbeatIfNecessary()>#u6:False",
+        "BRANCH:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: void heartbeatIfNecessary()>#u9:False",
+        "BRANCH:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: void throwIfOutOfSync()>#u2:False",
+        "BRANCH:<org.apache.hadoop.hdfs.qjournal.server.Journal: void startLogSegment(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo,long,int)>#u14:False",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: void heartbeatIfNecessary()>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolServerSideTranslatorPB: org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$HeartbeatResponseProto heartbeat(org.apache.hadoop.thirdparty.protobuf.RpcController,org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$HeartbeatRequestProto)>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolTranslatorPB$lambda_heartbeat_5__645409664: java.lang.Object call()>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolTranslatorPB$lambda_heartbeat_5__645409664: org.apache.hadoop.ipc.internal.ShadedProtobufHelper$IpcCall bootstrap$(org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolTranslatorPB,org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolTranslatorPB$lambda_heartbeat_5__645409664: void <init>(org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolTranslatorPB,org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolTranslatorPB: org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$HeartbeatResponseProto lambda$heartbeat$5(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.protocolPB.QJournalProtocolTranslatorPB: void heartbeat(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.server.Journal: void heartbeat(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>",
+        "METHOD:<org.apache.hadoop.hdfs.qjournal.server.JournalNodeRpcServer: void heartbeat(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>"
+      ],
+      "new_coverage_ids": 15,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "b40a7ae334bb74bcc63a"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11090,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-02/trace/runtime_trace.jsonl",
+      "trial": "trial-02",
+      "trial_wall_seconds": 9.238
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:32:24.199297+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.237,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "01f041fe9d6250b27955"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11066,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-03/trace/runtime_trace.jsonl",
+      "trial": "trial-03",
+      "trial_wall_seconds": 9.507
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:32:33.198244+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 6.434,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "5332722fe55ba8d6d984"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11054,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-04/trace/runtime_trace.jsonl",
+      "trial": "trial-04",
+      "trial_wall_seconds": 8.996
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:32:42.551380+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 6.836,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@3"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "b87e7e4b0bc59233f3b0"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11066,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-05/trace/runtime_trace.jsonl",
+      "trial": "trial-05",
+      "trial_wall_seconds": 9.35
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:32:51.459379+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 6.784,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@4"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "bb122f3564eb141919f8"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11066,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-06/trace/runtime_trace.jsonl",
+      "trial": "trial-06",
+      "trial_wall_seconds": 8.905
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:33:02.387793+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.391,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "4a1077b68c252a4b202d"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11056,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-07/trace/runtime_trace.jsonl",
+      "trial": "trial-07",
+      "trial_wall_seconds": 10.922
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:33:11.920665+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.335,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "5f603bae8f86128e8f36"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11059,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-08/trace/runtime_trace.jsonl",
+      "trial": "trial-08",
+      "trial_wall_seconds": 9.529
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:33:22.249810+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.037,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "410ddfabe0813e2fc96e"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11064,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-09/trace/runtime_trace.jsonl",
+      "trial": "trial-09",
+      "trial_wall_seconds": 10.326
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:33:31.706053+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.236,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "3aa2642a2ae21ff5d174"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11054,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-10/trace/runtime_trace.jsonl",
+      "trial": "trial-10",
+      "trial_wall_seconds": 9.452
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:33:41.061542+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.186,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "50917ae081b5b38d03af"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11059,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-11/trace/runtime_trace.jsonl",
+      "trial": "trial-11",
+      "trial_wall_seconds": 9.351
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:33:50.899214+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.585,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "4e66adf3b425c1a2b7ea"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11064,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-12/trace/runtime_trace.jsonl",
+      "trial": "trial-12",
+      "trial_wall_seconds": 9.834
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:34:01.035934+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.837,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 148,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "60ed33c2bf54d33c04e3"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11085,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-13/trace/runtime_trace.jsonl",
+      "trial": "trial-13",
+      "trial_wall_seconds": 10.132
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:34:12.632665+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.758,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 148,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "bf17ddbbe141c613509c"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11095,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-14/trace/runtime_trace.jsonl",
+      "trial": "trial-14",
+      "trial_wall_seconds": 11.592
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:34:25.061395+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 9.693,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "950071708766e81f45a4"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11056,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-15/trace/runtime_trace.jsonl",
+      "trial": "trial-15",
+      "trial_wall_seconds": 12.423
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:34:35.082240+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.584,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "08afe9d448936bb8f7c0"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11061,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-16/trace/runtime_trace.jsonl",
+      "trial": "trial-16",
+      "trial_wall_seconds": 10.011
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:34:44.996424+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.386,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "77ccc3f876a98d417941"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11056,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-17/trace/runtime_trace.jsonl",
+      "trial": "trial-17",
+      "trial_wall_seconds": 9.909
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:34:56.005834+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.246,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "d866cc382c8beb5816d3"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11061,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-18/trace/runtime_trace.jsonl",
+      "trial": "trial-18",
+      "trial_wall_seconds": 11.003
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:35:03.946061+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.234,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@0"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "595e878ebb8f0e522d52"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11066,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-19/trace/runtime_trace.jsonl",
+      "trial": "trial-19",
+      "trial_wall_seconds": 7.934
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:35:12.119566+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.535,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "1150e4f3008d6c651d0e"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11059,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-20/trace/runtime_trace.jsonl",
+      "trial": "trial-20",
+      "trial_wall_seconds": 8.167
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:35:20.453201+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.739,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "083dd757e55754bfc14f"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11064,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-21/trace/runtime_trace.jsonl",
+      "trial": "trial-21",
+      "trial_wall_seconds": 8.326
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:35:29.066765+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.887,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "5cb1fd3c403c3ad3809e"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11054,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-22/trace/runtime_trace.jsonl",
+      "trial": "trial-22",
+      "trial_wall_seconds": 8.604
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:35:37.626695+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.686,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "1422e5eb7b7567fc5431"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11051,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-23/trace/runtime_trace.jsonl",
+      "trial": "trial-23",
+      "trial_wall_seconds": 8.548
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:35:47.207069+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.899,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "8707092f3b81723995dc"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11064,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-24/trace/runtime_trace.jsonl",
+      "trial": "trial-24",
+      "trial_wall_seconds": 9.573
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:35:55.701070+00:00",
+      "fault_count": 2,
+      "junit_exit": 0,
+      "junit_seconds": 7.834,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1",
+        "sendEdits@3"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "e163e3da2d4916896811",
+        "52814b400f071a5bbda4"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11062,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-25/trace/runtime_trace.jsonl",
+      "trial": "trial-25",
+      "trial_wall_seconds": 8.485
+    },
+    {
+      "applied_count": 3,
+      "completed_at_utc": "2026-10-06T18:36:04.993617+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 8.641,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 3,
+      "method_branch_coverage_ids": 134,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1",
+        "sendEdits@3",
+        "sendEdits@4"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "ab28c2cd5353e5b9ea21",
+        "350ffa6d0c2376554364",
+        "acc2832c190f7f7135bd"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11080,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-26/trace/runtime_trace.jsonl",
+      "trial": "trial-26",
+      "trial_wall_seconds": 9.283
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:38:03.929256+00:00",
+      "fault_count": 4,
+      "junit_exit": 1,
+      "junit_seconds": 7.852,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "format",
+        "recoverUnfinalizedSegments",
+        "sendEdits@1",
+        "sendEdits@2"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "f26c7ac1b5c73af58082",
+        "78f6685f3a3b1fa76e28",
+        "445cc4032765f39c3e4a",
+        "00af0f9c4b97af98446b"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "qjm#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-27/trace/runtime_trace.jsonl",
+      "trial": "trial-27",
+      "trial_wall_seconds": 8.423
+    },
+    {
+      "applied_count": 4,
+      "completed_at_utc": "2026-10-06T18:38:12.970860+00:00",
+      "fault_count": 4,
+      "junit_exit": 0,
+      "junit_seconds": 8.343,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 4,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [
+        "f1ee9086080282dfb4f0",
+        "8daf205dfba9b3190d40",
+        "f23a28cd50e063ec8196",
+        "7d59309935bbbe091c81",
+        "e10ede0243f7befa43b3",
+        "2856edbae61dfc22681a",
+        "e1be09c3af12c1598200",
+        "63d970df2eccfadcbf89",
+        "9a4a37096dc31556f1f1"
+      ],
+      "phases": [
+        "hasSomeData",
+        "finalizeLogSegment@1",
+        "startLogSegment@1",
+        "sendEdits@4"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "0b683b0388037a1f59ad",
+        "e3cf9e45084dcc580073",
+        "939c1be0f85eb6f0b858",
+        "5a9fddea3f1f3839e900"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11895,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-28/trace/runtime_trace.jsonl",
+      "trial": "trial-28",
+      "trial_wall_seconds": 9.028
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:38:21.926259+00:00",
+      "fault_count": 2,
+      "junit_exit": 0,
+      "junit_seconds": 8.188,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@1",
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "bf7e16f59003868565e5",
+        "db70669567b1d8ebc2dd"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11057,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-29/trace/runtime_trace.jsonl",
+      "trial": "trial-29",
+      "trial_wall_seconds": 8.944
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:38:30.074894+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 7.545,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 115,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@1",
+        "sendEdits@2",
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "748d147435adf7d2fa67",
+        "3e5acc2be1a14880fd68",
+        "5a34459aaa317fbd1c1f"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-30/trace/runtime_trace.jsonl",
+      "trial": "trial-30",
+      "trial_wall_seconds": 8.134
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:40:16.457194+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 8.347,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 115,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@1",
+        "sendEdits@2",
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "39b548c1920c78bb9218",
+        "13147611e1445c0fa33a",
+        "7dd7cb1b88f3f7f49099"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-31/trace/runtime_trace.jsonl",
+      "trial": "trial-31",
+      "trial_wall_seconds": 8.914
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:40:23.926986+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 6.981,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "ddd068b85da5fc2d2f15",
+        "7edf22205491b0bb079d",
+        "643a5f8c5cb45daf8ef1"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-32/trace/runtime_trace.jsonl",
+      "trial": "trial-32",
+      "trial_wall_seconds": 7.458
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:40:31.125603+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 6.631,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "a981ef107b6cd1408abc",
+        "67c5c1f444c9e8fc08ad",
+        "403a66add6fcb65a1d3a"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-33/trace/runtime_trace.jsonl",
+      "trial": "trial-33",
+      "trial_wall_seconds": 7.178
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:40:38.673494+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 7.034,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "374ce67964e9d780cd2b",
+        "cb50614d73b42edf245b",
+        "b2840e7828c5d107ca32"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 2,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-34/trace/runtime_trace.jsonl",
+      "trial": "trial-34",
+      "trial_wall_seconds": 7.522
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:40:46.314141+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 7.083,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "c404d24b3234f7f89fb3",
+        "5be3bbba6c0cc14ac740",
+        "831f09886ebc782ad864"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 2,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-35/trace/runtime_trace.jsonl",
+      "trial": "trial-35",
+      "trial_wall_seconds": 7.628
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:40:54.067152+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 7.133,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "4e69aabbc2cedcb00315",
+        "44a97d0278fd6ef09778",
+        "0d79aa0c6cf1614ef855"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 2,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-36/trace/runtime_trace.jsonl",
+      "trial": "trial-36",
+      "trial_wall_seconds": 7.73
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:41:01.520089+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 6.935,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE",
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "50bf3867f0ca32948c1f",
+        "e4b3ce38dc63b1f4015c",
+        "eeccb8b207a5de6cf10a"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 3,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-37/trace/runtime_trace.jsonl",
+      "trial": "trial-37",
+      "trial_wall_seconds": 7.436
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:41:08.697842+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 6.681,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "45a6e0be36acb8fc5efe",
+        "55ede18aec9f19d0fa29",
+        "5b46da28196ec4726a11"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 3,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-38/trace/runtime_trace.jsonl",
+      "trial": "trial-38",
+      "trial_wall_seconds": 7.164
+    },
+    {
+      "applied_count": 2,
+      "completed_at_utc": "2026-10-06T18:41:16.158527+00:00",
+      "fault_count": 3,
+      "junit_exit": 1,
+      "junit_seconds": 6.935,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 2,
+      "method_branch_coverage_ids": 35,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "hasSomeData",
+        "format",
+        "recoverUnfinalizedSegments"
+      ],
+      "selected_from": [
+        "healthy",
+        "healthy",
+        "healthy"
+      ],
+      "selector_ids": [
+        "3fa582cc86eae8af4ad3",
+        "eec9338b21bb9d9e74d6",
+        "1d3c6e739ab0f03530d2"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.f3b27b3b-4c03-37e8-be9e-f7a52622e900/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: boolean hasSomeData()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture isFormatted()>#u3@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_isFormatted_2__1997478369: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.0926ab3e-7f29-3092-abab-ffea98439cd9/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture format(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,boolean)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_format_6__517668412: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        },
+        {
+          "hitOrdinal": 3,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "qjm#epoch0/region/REGION.aeaa08f3-f6f5-32c1-ba33-753a7897b4fc/ctx:Root:CLIENT/QuorumJournalManager.recoverUnfinalizedSegments(phase=1)#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void recoverUnfinalizedSegments()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "qjm#epoch0"
+        }
+      ],
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_after": [],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": false,
+      "trace": "trial-39/trace/runtime_trace.jsonl",
+      "trial": "trial-39",
+      "trial_wall_seconds": 7.446
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:42:39.776175+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.192,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "e163e3da2d4916896811"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11054,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-40/trace/runtime_trace.jsonl",
+      "trial": "trial-40",
+      "trial_wall_seconds": 8.763
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:42:50.560473+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.801,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "ab28c2cd5353e5b9ea21"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11059,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-41/trace/runtime_trace.jsonl",
+      "trial": "trial-41",
+      "trial_wall_seconds": 9.504
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:43:01.640990+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.997,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "939c1be0f85eb6f0b858"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11064,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-42/trace/runtime_trace.jsonl",
+      "trial": "trial-42",
+      "trial_wall_seconds": 9.647
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:43:13.052058+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 9.019,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "db70669567b1d8ebc2dd"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11054,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-43/trace/runtime_trace.jsonl",
+      "trial": "trial-43",
+      "trial_wall_seconds": 9.873
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:43:23.191718+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 7.984,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "5a34459aaa317fbd1c1f"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11059,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-44/trace/runtime_trace.jsonl",
+      "trial": "trial-44",
+      "trial_wall_seconds": 8.721
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:43:33.589956+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.191,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "startLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "7dd7cb1b88f3f7f49099"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.d0c7aa96-82b8-3966-af9f-6bd53b9b67e3/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: org.apache.hadoop.hdfs.server.namenode.EditLogOutputStream startLogSegment(long,int)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>@2/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture startLogSegment(long,int)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_startLogSegment_7__671821094: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11064,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-45/trace/runtime_trace.jsonl",
+      "trial": "trial-45",
+      "trial_wall_seconds": 8.945
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:43:44.534938+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.8,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@3"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "52814b400f071a5bbda4"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11071,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-46/trace/runtime_trace.jsonl",
+      "trial": "trial-46",
+      "trial_wall_seconds": 9.546
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:43:55.444836+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.79,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@3"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "350ffa6d0c2376554364"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@3/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11076,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-47/trace/runtime_trace.jsonl",
+      "trial": "trial-47",
+      "trial_wall_seconds": 9.494
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:44:06.237029+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.754,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@4"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "acc2832c190f7f7135bd"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11071,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-48/trace/runtime_trace.jsonl",
+      "trial": "trial-48",
+      "trial_wall_seconds": 9.455
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:44:16.406412+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.136,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 146,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@4"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "5a9fddea3f1f3839e900"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@4/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11076,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-49/trace/runtime_trace.jsonl",
+      "trial": "trial-49",
+      "trial_wall_seconds": 8.817
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:44:27.730984+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 9.292,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "e3cf9e45084dcc580073"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11061,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-50/trace/runtime_trace.jsonl",
+      "trial": "trial-50",
+      "trial_wall_seconds": 10.041
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:44:39.144890+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.543,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 133,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "finalizeLogSegment@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "bf7e16f59003868565e5"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:SocketTimeoutException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.2c7fa77d-e275-3557-bd49-9ded64f1ca1e/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.QuorumJournalManager: void finalizeLogSegment(long,long)>@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture finalizeLogSegment(long,long)>#u5@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_finalizeLogSegment_8__1895562921: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u53",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11066,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-51/trace/runtime_trace.jsonl",
+      "trial": "trial-51",
+      "trial_wall_seconds": 9.417
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:44:50.852814+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 9.24,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 148,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "445cc4032765f39c3e4a"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u43",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11085,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-52/trace/runtime_trace.jsonl",
+      "trial": "trial-52",
+      "trial_wall_seconds": 9.99
+    },
+    {
+      "applied_count": 1,
+      "completed_at_utc": "2026-10-06T18:45:01.536669+00:00",
+      "fault_count": 1,
+      "junit_exit": 0,
+      "junit_seconds": 8.852,
+      "markers": [
+        "FAULT:HADOOP_IPC:RESPONSE:EOFException"
+      ],
+      "matched_count": 1,
+      "method_branch_coverage_ids": 148,
+      "new_coverage_id_list": [],
+      "new_coverage_ids": 0,
+      "new_io_selectors": [],
+      "phases": [
+        "sendEdits@1"
+      ],
+      "selected_from": [
+        "healthy"
+      ],
+      "selector_ids": [
+        "748d147435adf7d2fa67"
+      ],
+      "selectors": [
+        {
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:RESPONSE:EOFException",
+          "occurrence": "OriginalHdfs10Test#originalSingleWriter#epoch0/region/REGION.68a63293-1a37-3022-9dbd-292e27a03848/ctx:Root:CLIENT/originalSingleWriter#1/idx:<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>@1/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel: org.apache.hadoop.thirdparty.com.google.common.util.concurrent.ListenableFuture sendEdits(long,long,int,byte[])>#u14@0/<org.apache.hadoop.hdfs.qjournal.client.IPCLoggerChannel$lambda_sendEdits_5__72715442: java.lang.Object call()>@0",
+          "siteId": "<org.apache.hadoop.ipc.Client: org.apache.hadoop.io.Writable getRpcResponse(org.apache.hadoop.ipc.Client$Call,org.apache.hadoop.ipc.Client$Connection,long,java.util.concurrent.TimeUnit)>#u48",
+          "sourceKey": "OriginalHdfs10Test#originalSingleWriter#epoch0"
+        }
+      ],
+      "status": "checked",
+      "strict_injection": true,
+      "target_after": [
+        {
+          "branch_equal": true,
+          "epochs": [
+            "1",
+            "1"
+          ],
+          "exception": "",
+          "exit": "METHOD_EXIT_NORMAL",
+          "parentArgs": {
+            "0": "",
+            "1": "4",
+            "2": "4",
+            "3": "1",
+            "4": ""
+          },
+          "seq": 11090,
+          "sourceKey": "jn2#epoch0"
+        }
+      ],
+      "target_fatal_exception_count": 0,
+      "target_reached_after_fault": true,
+      "trace": "trial-53/trace/runtime_trace.jsonl",
+      "trial": "trial-53",
+      "trial_wall_seconds": 9.411
+    }
+  ],
+  "case_id": "HDFS-10",
+  "finished_at_utc": "2026-10-06T18:45:02.858367+00:00",
+  "healthy_io_selectors": 96,
+  "healthy_target": {
+    "branch_equal": true,
+    "epochs": [
+      "1",
+      "1"
+    ],
+    "exception": "",
+    "exit": "METHOD_EXIT_NORMAL",
+    "parentArgs": {
+      "0": "",
+      "1": "4",
+      "2": "4",
+      "3": "1",
+      "4": ""
+    },
+    "seq": 11063,
+    "sourceKey": "jn2#epoch0"
+  },
+  "prior_elapsed_seconds": 522.5507116137305,
+  "started_at_utc": "2026-10-06T18:31:55.025024+00:00",
+  "stop_reason": "bounded_48_effective_trial_budget_reached"
+}
