@@ -102,10 +102,10 @@ requirement.
 
 ## Budget and decisions
 
-When omitted from `budget`, `max_trials` defaults to **48** and `max_faults`
-to **4**. `max_seconds` limits active run time if supplied. If new production
-method/branch coverage or new I/O families still appear near trial 48, raise
-the existing checkpoint's budget to **96 trials / 6 faults** and resume it.
+When omitted from `budget`, `max_trials` defaults to **64** and `max_faults`
+to **6**. `max_seconds` limits active run time if supplied. If new production
+method/branch coverage or new I/O families still appear near trial 64, raise
+the existing checkpoint's budget to **128 trials / 8 faults** and resume it.
 Changing only `budget` or `timeout_seconds` keeps the same completed trials.
 `max_unmatched_retries` defaults to 1: an unmatched sequence gets one fresh
 attempt before it is recorded as unmatched. Every mutation adds exactly one

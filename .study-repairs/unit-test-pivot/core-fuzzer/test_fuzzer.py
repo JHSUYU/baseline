@@ -374,13 +374,13 @@ class CoverageIoTest(unittest.TestCase):
             self.assertEqual(resumed['completed'][0]['result'],
                              first['completed'][0]['result'])
 
-    def test_default_budget_is_48_trials_and_four_faults(self):
+    def test_default_budget_is_64_trials_and_six_faults(self):
         with tempfile.TemporaryDirectory() as temp:
             config = fixture(Path(temp))
             config['budget'] = {}
             validate(config)
-            self.assertEqual(config['budget']['max_trials'], 48)
-            self.assertEqual(config['budget']['max_faults'], 4)
+            self.assertEqual(config['budget']['max_trials'], 64)
+            self.assertEqual(config['budget']['max_faults'], 6)
 
     def test_exact_selector_and_target_check_after_final_fault(self):
         point = dict(A)

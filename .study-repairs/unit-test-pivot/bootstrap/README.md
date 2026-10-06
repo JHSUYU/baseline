@@ -60,7 +60,7 @@ per-case bootstrap directory.
 
 Each starter names the selected target identity, exact original JUnit method,
 system test command, a coarse I/O scope hint, an initially unfiltered I/O
-scope, a 48 trial / 4 fault budget, a 96 / 6 continuation budget, and paths
+scope, a 64 trial / 6 fault budget, a 128 / 8 continuation budget, and paths
 for the healthy trace and resumable state/result checkpoints. I/O markers and
 selectors must come from that case's healthy runtime trace. No graph,
 aggregate, or closure output is part of this bootstrap.

@@ -44,9 +44,9 @@ exception require source review before they can support a bug claim.
    test's expected behavior before calling it a new bug. A timeout, unrelated
    exception, or JUnit failure by itself is insufficient.
 
-The default budget is 48 fault trials with at most four I/O exceptions in a
+The default budget is 64 fault trials with at most six I/O exceptions in a
 sequence. If new production coverage or a new I/O family still appears near
-that limit, extend the same checkpoint to 96 trials and at most six faults.
+that limit, extend the same checkpoint to 128 trials and at most eight faults.
 Stop earlier only after recording why the observed relevant I/O families are
 equivalent or exhausted. Report effective trials and measured elapsed time.
 Healthy test execution, source mapping, and instrumentation setup are
