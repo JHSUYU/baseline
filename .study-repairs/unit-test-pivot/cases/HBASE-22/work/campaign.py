@@ -146,11 +146,23 @@ def queue_priority(entry, trials):
                              and '~'.join(x['plan'][0].split('~')[:3]) == root_site]
     exhausted_root = len(entry['plan']) >= 2 and len(same_root_multifaults) >= 8 \
         and all(not x['target_after_final_fault'] for x in same_root_multifaults)
+    # A second fault against the default/hbase namespace during failover has
+    # repeatedly aborted both masters. Learn that failure class across exact
+    # ordinals and exception kinds so the remaining budget tests other sites.
+    last_path = fields[1]
+    system_namespace = last_path in ('/hbase/namespace/default', '/hbase/namespace/hbase')
+    lost_system_after_root = sum(
+        x['strict'] and not x['target_after_final_fault'] and len(x['plan']) >= 2
+        and '~'.join(x['plan'][0].split('~')[:3]) == root_site
+        and x['plan'][-1].split('~')[1] in ('/hbase/namespace/default', '/hbase/namespace/hbase')
+        for x in trials)
+    learned_target_loss_penalty = min(25 * lost_system_after_root, 125) if system_namespace else 0
     depth = len(entry['plan'])
     depth_bonus = (18 if len(trials) >= 40 else 10 if len(trials) >= 24 else 0) * (depth - 1)
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
-        - (60 if exhausted_prefix else 0) - (80 if exhausted_root else 0) + depth_bonus
+        - (60 if exhausted_prefix else 0) - (80 if exhausted_root else 0) \
+        - learned_target_loss_penalty + depth_bonus
 
 
 def publish(state):

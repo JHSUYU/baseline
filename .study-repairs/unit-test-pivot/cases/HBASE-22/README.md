@@ -36,6 +36,9 @@ their final fault contribute coverage and I/O feedback. A region-quota throw
 with the same table and requested region count as the healthy run is labeled
 expected. A new signature is only a candidate pending source review and
 replay. The campaign checkpoint and per-trial results are written atomically.
+When repeated system-namespace faults after the same first-fault site abort
+both masters and lose the guard, the queue lowers the priority of that
+failure class so other observed I/O sites receive budget.
 
 All mutable files are inside this case directory. `hbase22_fuzz`,
 `hbase22_watchdog`, and `hbase22_supervisor` are the persistent tmux sessions.
