@@ -1,18 +1,29 @@
 {
   "case_id": "SOLR-07",
-  "status": "healthy_native_pending_graph",
   "system": "Solr 8.11.4",
-  "source_commit": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "source_file": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+  "source_function": "ZkController.register(String, CoreDescriptor, boolean, boolean, boolean)",
+  "source_line": 1325,
+  "target_check": "if (core == null) throw new SolrException(SERVICE_UNAVAILABLE, \"SolrCore is no longer available to register\")",
   "cluster_test": "AddReplicaTest.testAddMultipleReplicas",
   "cluster_nodes": 3,
-  "healthy_exit_code": 0,
-  "elapsed_seconds": 20.90,
+  "status": "pending_independent_recorder_replay",
   "target_reached": null,
   "fault_trials": 0,
   "strict_injections": 0,
+  "fully_applied_trials": 0,
   "target_after_fault": 0,
-  "coverage_gain": null,
+  "coverage_gain": 0,
+  "elapsed_seconds": 0,
   "bug_mark": "none",
-  "evidence": "cases/SOLR-07/native.log; cases/SOLR-07/native-elapsed.txt",
-  "source_audit_note": "The original three-node AddReplicaTest passed under GraphChecker JUnitMethodRunner. Exact GraphChecker target coverage and transport closure are pending the Solr source adapter; legacy ASM probe observations are excluded."
+  "methodology": "coverage_io_graph_independent_runtime_required",
+  "reason": "Old trials used GraphChecker-region-derived selectors or frozen woven recorder classes; independent I/O and coverage probes are required before counted trials.",
+  "legacy_evidence": {
+    "result_path": "legacy-graph-result.json",
+    "result_sha256": "ce0959737a0f613be544f64e32390af67d16c27cc49d27ddca0c97216a43b64b",
+    "trial_count": 30,
+    "previous_status": "pending_additional_fault_families",
+    "elapsed_seconds": 1304,
+    "readme": null
+  }
 }

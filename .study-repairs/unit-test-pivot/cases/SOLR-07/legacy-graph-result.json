@@ -1,0 +1,259 @@
+{
+  "case_id": "SOLR-07",
+  "status": "pending_additional_fault_families",
+  "system": "Solr 8.11.4",
+  "source_commit": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "source_file": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+  "source_function": "ZkController.register(String, CoreDescriptor, boolean, boolean, boolean)",
+  "source_line": 1325,
+  "target_check": "if (core == null) throw new SolrException(SERVICE_UNAVAILABLE, \"SolrCore is no longer available to register\")",
+  "target_guard_site": "<org.apache.solr.cloud.ZkController: java.lang.String register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)>#u109",
+  "target_region_id": "REGION.83fdb7f6-dbae-3d2d-9686-5a186fe67084",
+  "cluster_test": "AddReplicaTest.testAddMultipleReplicas",
+  "cluster_nodes": 3,
+  "randomized_test_seed": "F0993D5343E20BA4",
+  "healthy_exit_code": 0,
+  "healthy_repeat_exit_code": 0,
+  "healthy_target_guard_hits": [
+    9,
+    9
+  ],
+  "fault_trials": 30,
+  "strict_injections": 3,
+  "strict_identity_miss_trials": 27,
+  "negative_control_trials": 1,
+  "negative_control_wrong_leader_term": {
+    "planned": "collection-overseer#epoch1",
+    "actual": "collection-overseer#epoch0",
+    "matched": 0,
+    "applied": 0,
+    "target_guard_hits": 9,
+    "workload_exit": 0
+  },
+  "target_after_fault": 2,
+  "target_exception_hits": 0,
+  "target_guard_faulted_hits": 9,
+  "target_guard_after_injection_hits": 8,
+  "bug_mark": "none",
+  "representative_fault": {
+    "kind": "KeeperException.ConnectionLossException",
+    "site": "<org.apache.solr.common.cloud.SolrZkClient: java.lang.String create(java.lang.String,byte[],org.apache.zookeeper.CreateMode,boolean)>#u22",
+    "queue_znode": "/overseer/collection-queue-work/qn-0000000000",
+    "source_key": "node3#epoch0",
+    "hit_ordinal": 3,
+    "matched": 1,
+    "applied": 1,
+    "match_trace_seq": 197010,
+    "apply_trace_seq": 197012,
+    "target_after_fault": true,
+    "workload_exit": 0,
+    "trial_seconds": 43,
+    "trial_id": "v7-one-family-001"
+  },
+  "coverage": {
+    "healthy_line_counts": [
+      10233,
+      10224
+    ],
+    "healthy_union_lines": 10236,
+    "faulted_lines": 10468,
+    "new_lines_vs_healthy_union": 248,
+    "new_methods_vs_healthy_union": 4,
+    "new_branch_outcomes_vs_healthy_union": 24,
+    "new_io_method_points_vs_healthy_union": 0,
+    "target_source_lines_1325_1326_covered": true
+  },
+  "coverage_gain": 248,
+  "elapsed_seconds": 1304,
+  "elapsed_seconds_is_lower_bound": true,
+  "elapsed_basis": "At least 807 s previously measured v4 strict retry + 327 s v7 provenance/one-family stages + 170 s five simplified no-graph trials; excludes earlier v2/v3 and manual audit",
+  "v7_measured_execution_seconds": 327,
+  "v4_measured_strict_retry_seconds": 807,
+  "source_audit_note": "Earlier create ConnectionLoss propagated SolrZkClient.create -> ZkDistributedQueue.offer -> ZkController.publish/register, then ZkContainer.registerInZk caught/logged it; eight later target guard hits were healthy. New setData ConnectionLoss propagated SolrZkClient.setData -> ZkShardTerms.saveTerms, which wrapped it in SolrException; ZkContainer logged it. The original JUnit later failed waiting for the collection to be ACTIVE, but the selected core-null target guard ran twice after injection and never threw. The original test also intentionally asserts FAILED for an unrelated impossible placement request. No selected target exception, no bug claim.",
+  "campaign_checkpoint": "cases/SOLR-07/v7-one-family.status.jsonl",
+  "campaign_tmux_session": "adhoc-solr07-v7 (completed and exited)",
+  "evidence": "cases/SOLR-07/v7-one-family-001/complete.json; cases/SOLR-07/v7-one-family-001/fault-summary.json; cases/SOLR-07/v7-one-family-001/runtime_trace.jsonl; cases/SOLR-07/v7-one-family-001/coverage-summary.json; cases/SOLR-07/v7-one-family-001/feedback-summary.json; cases/SOLR-07/v7-wrong-term-control.json; cases/SOLR-07/v7-wrong-term-control/runtime_trace.jsonl; cases/SOLR-07/graphchecker-record-v7/runtime/record-summary.json; cases/SOLR-07/identity-seed-b7/runtime_trace.jsonl; unit-test-pivot/SOLR-07.md; cases/SOLR-07/v7-extra.status.jsonl; cases/SOLR-07/v7-extra-setdata-connectionloss-002/fault-summary.json; cases/SOLR-07/v7-extra-setdata-connectionloss-002/coverage-summary.json; cases/SOLR-07/v7-extra-setdata-connectionloss-002/feedback-summary.json; cases/SOLR-07/v7-extra-setdata-connectionloss-002/target-summary.json",
+  "old_trace_archive_node2": "/users/ZhenyuLi/solr07-archived-evidence/completed-v2-v3.tar.zst",
+  "old_trace_archive_sha256": "00b3e9723ad1c90598b0bb1dc57ee845b262698730c29c1f79bd72ef30d21c6b",
+  "old_trace_archive_manifest": "cases/SOLR-07/completed-v2-v3.sha256",
+  "old_trace_local_compression_manifest": "cases/SOLR-07/completed-traces-compression.tsv",
+  "limitation": "Current additional budget exercised five no-graph trials in two further related I/O families, but only one of those families had an applied exception. The create-timeout family had three strict misses. Two-fault sequences and other ZK I/O equivalence classes remain; do not mark this check quality_complete.",
+  "target_reached": true,
+  "target_fatal_hits": 0,
+  "remaining_fault_families": [
+    "SolrZkClient.create OperationTimeout at alternate stable source/ordinal (three current strict identity misses)",
+    "SolrZkClient.create SessionExpired or ConnectionLoss at distinct queue item",
+    "SolrZkClient.setData OperationTimeout at later replica state I/O",
+    "two-fault sequences combining queue and replica state I/O"
+  ],
+  "additional_budget_plan": "Try two distinct exact observed one-fault families under unchanged official JUnit and frozen instrumentation, each with bounded strict-match attempts; retain pending until relevant I/O equivalence classes or configured budget are exercised.",
+  "additional_campaign_tmux_session": "adhoc-solr07-extra (completed and exited)",
+  "additional_campaign_checkpoint": "cases/SOLR-07/v7-extra.status.jsonl",
+  "additional_campaign_max_attempts_per_family": 3,
+  "additional_campaign_families": [
+    "setdata-connectionloss: applied on attempt 2, target retained, JUnit failed waiting for ACTIVE collection, no target exception",
+    "create-timeout: three exact identity misses, no injection"
+  ],
+  "methodology": "coverage_io_no_graph",
+  "prior_graph_era_trials": 25,
+  "prior_graph_era_strict_injections": 2,
+  "new_no_graph_trials": 5,
+  "new_no_graph_strict_injections": 1,
+  "new_no_graph_target_after_fault": 1,
+  "new_no_graph_trial_results": [
+    {
+      "applied": 0,
+      "duration_seconds": 30,
+      "family": "create-timeout",
+      "fault_id": "SOLR07-v7-extra-create-timeout",
+      "finished_utc": "2026-10-06T18:26:13Z",
+      "matched": 0,
+      "started_utc": "2026-10-06T18:25:43Z",
+      "target_after_fault": false,
+      "trial": "create-timeout-001",
+      "workload_exit": 0,
+      "production_coverage": {
+        "covered_lines": 10219,
+        "new_lines_vs_two_healthy_union": 6,
+        "healthy_union_lines": 10236,
+        "target_source_line_1325_covered": true
+      },
+      "target_check": {
+        "target_guard_hits": 9,
+        "target_guard_outcomes": {
+          "true": 9,
+          "false": 0
+        },
+        "fault_applied_trace_seq": null,
+        "target_guard_hits_after_injection": 0,
+        "selected_target_exception_hits": 0
+      }
+    },
+    {
+      "applied": 0,
+      "duration_seconds": 28,
+      "family": "create-timeout",
+      "fault_id": "SOLR07-v7-extra-create-timeout",
+      "finished_utc": "2026-10-06T18:26:43Z",
+      "matched": 0,
+      "started_utc": "2026-10-06T18:26:15Z",
+      "target_after_fault": false,
+      "trial": "create-timeout-002",
+      "workload_exit": 0,
+      "production_coverage": {
+        "covered_lines": 10234,
+        "new_lines_vs_two_healthy_union": 0,
+        "healthy_union_lines": 10236,
+        "target_source_line_1325_covered": true
+      },
+      "target_check": {
+        "target_guard_hits": 9,
+        "target_guard_outcomes": {
+          "true": 9,
+          "false": 0
+        },
+        "fault_applied_trace_seq": null,
+        "target_guard_hits_after_injection": 0,
+        "selected_target_exception_hits": 0
+      }
+    },
+    {
+      "applied": 0,
+      "duration_seconds": 32,
+      "family": "create-timeout",
+      "fault_id": "SOLR07-v7-extra-create-timeout",
+      "finished_utc": "2026-10-06T18:27:17Z",
+      "matched": 0,
+      "started_utc": "2026-10-06T18:26:45Z",
+      "target_after_fault": false,
+      "trial": "create-timeout-003",
+      "workload_exit": 0,
+      "production_coverage": {
+        "covered_lines": 10233,
+        "new_lines_vs_two_healthy_union": 6,
+        "healthy_union_lines": 10236,
+        "target_source_line_1325_covered": true
+      },
+      "target_check": {
+        "target_guard_hits": 9,
+        "target_guard_outcomes": {
+          "true": 9,
+          "false": 0
+        },
+        "fault_applied_trace_seq": null,
+        "target_guard_hits_after_injection": 0,
+        "selected_target_exception_hits": 0
+      }
+    },
+    {
+      "applied": 0,
+      "duration_seconds": 29,
+      "family": "setdata-connectionloss",
+      "fault_id": "SOLR07-v7-extra-setdata-connectionloss",
+      "finished_utc": "2026-10-06T18:24:51Z",
+      "matched": 0,
+      "started_utc": "2026-10-06T18:24:22Z",
+      "target_after_fault": false,
+      "trial": "setdata-connectionloss-001",
+      "workload_exit": 0,
+      "production_coverage": {
+        "covered_lines": 10213,
+        "new_lines_vs_two_healthy_union": 0,
+        "healthy_union_lines": 10236,
+        "target_source_line_1325_covered": true
+      },
+      "target_check": {
+        "target_guard_hits": 9,
+        "target_guard_outcomes": {
+          "true": 9,
+          "false": 0
+        },
+        "fault_applied_trace_seq": null,
+        "target_guard_hits_after_injection": 0,
+        "selected_target_exception_hits": 0
+      }
+    },
+    {
+      "applied": 1,
+      "duration_seconds": 51,
+      "family": "setdata-connectionloss",
+      "fault_id": "SOLR07-v7-extra-setdata-connectionloss",
+      "finished_utc": "2026-10-06T18:25:43Z",
+      "matched": 1,
+      "started_utc": "2026-10-06T18:24:52Z",
+      "target_after_fault": true,
+      "trial": "setdata-connectionloss-002",
+      "workload_exit": 1,
+      "production_coverage": {
+        "covered_lines": 10126,
+        "new_lines_vs_two_healthy_union": 16,
+        "healthy_union_lines": 10236,
+        "target_source_line_1325_covered": true
+      },
+      "target_check": {
+        "target_guard_hits": 3,
+        "target_guard_outcomes": {
+          "true": 3,
+          "false": 0
+        },
+        "fault_applied_trace_seq": 296452,
+        "target_guard_hits_after_injection": 2,
+        "selected_target_exception_hits": 0
+      },
+      "runtime_feedback": {
+        "healthy_union_methods": 473,
+        "faulted_methods": 473,
+        "new_methods": 1,
+        "healthy_union_branch_outcomes": 1115,
+        "faulted_branch_outcomes": 1107,
+        "new_branch_outcomes": 3,
+        "healthy_union_io_method_points": 8,
+        "faulted_io_method_points": 8,
+        "new_io_method_points": 0
+      }
+    }
+  ],
+  "new_no_graph_measured_trial_seconds": 170,
+  "additional_campaign_status": "bounded_budget_exhausted_for_two_selected_families",
+  "methodology_note": "New trials reused frozen instrumented classes solely for exact runtime fault matching and event collection, plus JaCoCo for production coverage. No per-trial graph construction, closure recomputation, or graph-completeness gate was used."
+}
