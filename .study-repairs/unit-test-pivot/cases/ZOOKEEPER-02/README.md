@@ -1,12 +1,20 @@
 # ZOOKEEPER-02: session owner mismatch
 
-**Status: `pending_independent_recorder_replay`.** An original embedded-cluster
-JUnit and 128 legacy fault trials completed, but their event recorder used
-GraphChecker-prewoven classes and a precomputed static region skeleton.
-Accordingly, the graph-independent method has **zero counted trials** for
-this check. The completed trial results remain available as historical
-evidence in [`legacy-graph-result.json`](legacy-graph-result.json) and
-[`trial-ledger.jsonl`](trial-ledger.jsonl).
+**Status: `quality_complete`.** The independent recorder replay below completed
+80 new fault trials. The 128 trials using GraphChecker-prewoven classes and a
+precomputed static region skeleton remain historical evidence in
+[`legacy-graph-result.json`](legacy-graph-result.json) and
+[`trial-ledger.jsonl`](trial-ledger.jsonl), excluded from current counts.
+
+## Independent recorder replay
+
+The unchanged ZooKeeper 3.8.7 `QuorumTest.testSessionMoved` passed under a pure JUnit Platform launcher and a rebuilt case-local ASM agent. Its healthy run took 5.045 seconds, reached the exact `SessionTrackerImpl.checkSession` owner-mismatch guard at line 322 twenty-one times, and did not reach the line 323 `KeeperException.SessionMovedException` throw. The unchanged `QuorumTest.testSessionMovedWithMultiOp` positive control passed and recorded one selected throw, expected by that test. The original class files at commit `9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae` were copied into a fresh case-specific worktree. `evidence/independent/provenance.json` checks all 80 JVM classpath/agent/launcher hashes, byte-for-byte identity of the selected original class files, and the absence of GraphChecker, skeleton, and causynth components. `evidence/independent/audit.json` recomputes every trial verdict from raw events.
+
+The campaign completed 80 original-cluster JUnit fault trials under an eight-fault cap. All 80 ordered plans matched and applied in full, totaling 376 fault applications; 28 trials reached the exact owner guard after the final fault, with sequences up to depth eight. None reached the selected throw. Fifty-two JUnit runs failed after losing the target path: 22 connection losses while creating `/sessionMoveTest`, 16 during later `/` operations, ten failed sync assertions, and four injected epoch-file startup failures. All 28 target-retaining JUnit runs passed. Admitted runs added nine production lines, including `NIOServerCnxn.close:603` on an already-removed connection, server I/O exception handling, and `SessionTrackerImpl.run` scheduling lines. Source review found no new owner-mismatch exception or bug.
+
+Target-retaining runs among trials 73–80 added no new production line, method, or stable target-pre I/O family, so the conditional 128-trial extension was not triggered. The recorder observed 230 target-pre I/O site and ordinal positions, with no new site family beyond the healthy run. At the 80-trial ceiling, 425 feedback-generated plans remained queued; this is a budget result, not selector-frontier exhaustion. `evidence/independent/trial-summary.csv` lists each plan, elapsed time, exact match, target retention, and outcome. The raw 82-JVM archive is `evidence/independent/raw-runs.tar.gz` (SHA-256 `aa61c11eb87fe4cdeabac31b8bc736e68a406e37eafe0ff0b6bd26be32e91418`). Fault JVMs took 494.171 seconds in aggregate and 250.899 seconds of wall time across two workers; including healthy and positive-control JVMs, the recorded total is 507.015 seconds.
+
+## Historical graph-derived evidence
 
 ## Source check and original JUnit
 
