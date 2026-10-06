@@ -7,6 +7,7 @@ Only target exceptions beyond that expected one become selected-check candidates
 
 from __future__ import annotations
 
+from collections import Counter
 import csv
 import importlib.util
 import json
@@ -96,6 +97,30 @@ def extend(state: dict, trial: dict) -> None:
                 base.enqueue(state, sequence + [selected], priority)
 
 
+def choose(state: dict) -> int:
+    """Prefer observed target-retaining I/O while reserving every fifth pick."""
+    completed = state["completed"]
+    last_counts = Counter(base.family(t["sequence"][-1]) for t in completed)
+    root_counts = Counter(base.family(t["sequence"][0]) for t in completed)
+    retained_roots = Counter(base.family(t["sequence"][0]) for t in completed
+                             if t["valid_for_feedback"])
+    retained_last = Counter(base.family(t["sequence"][-1]) for t in completed
+                            if t["valid_for_feedback"])
+    singles = sum(len(t["sequence"]) == 1 for t in completed)
+    prefer_single = singles <= len(completed) - singles
+    eligible = [(i, item) for i, item in enumerate(state["queue"])
+                if (len(item["sequence"]) == 1) == prefer_single]
+    if not eligible:
+        eligible = list(enumerate(state["queue"]))
+    explore = len(completed) % 5 == 0
+    return min(eligible, key=lambda indexed: (
+        0 if explore or retained_roots[base.family(indexed[1]["sequence"][0])] else 1,
+        0 if explore or retained_last[base.family(indexed[1]["sequence"][-1])] else 1,
+        last_counts[base.family(indexed[1]["sequence"][-1])],
+        root_counts[base.family(indexed[1]["sequence"][0])],
+        -indexed[1]["priority"], indexed[1]["created"]))[0]
+
+
 def write_result(state: dict) -> None:
     completed = state["completed"]
     valid = [trial for trial in completed if trial["valid_for_feedback"]]
@@ -151,6 +176,8 @@ def write_result(state: dict) -> None:
 base.evaluate = evaluate
 base.initial_queue = initial_queue
 base.extend = extend
+base.choose = choose
+base.MIN_VALID_TRIALS_FOR_EXTENSION = 24
 base.write_result = write_result
 
 if __name__ == "__main__":

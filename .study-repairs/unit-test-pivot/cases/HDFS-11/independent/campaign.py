@@ -27,6 +27,7 @@ KINDS = ("IOException", "EOFException", "SocketTimeoutException")
 TARGET = "BlockTokenSecretManager.retrieveDataEncryptionKey#L552"
 THROW = "BlockTokenSecretManager.retrieveDataEncryptionKey#L553"
 COVERAGE = ("probes", "methods", "branch_counts")
+MIN_VALID_TRIALS_FOR_EXTENSION = 0
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -291,15 +292,17 @@ def main() -> None:
                 state["active"] = state["queue"].pop(choose(state))
                 atomic_json(STATE, state)
             run_one(state, state["active"])
-        # Extend only when the recent valid runs still add genuinely new
-        # production method/branch coverage or a stable I/O family.
+        # A target-focused supplement also needs enough strict trials that
+        # still reach its selected check. A case may supply a positive minimum
+        # for this separate extension criterion.
         if len(state["completed"]) == 80:
             recent = [trial for trial in state["completed"][-8:]
                       if trial["valid_for_feedback"]]
             novelty = any(trial["coverage_gain"]["methods"]
                           or trial["coverage_gain"]["branch_counts"]
                           or trial["new_io_families"] for trial in recent)
-            if novelty:
+            valid_count = sum(trial["valid_for_feedback"] for trial in state["completed"])
+            if novelty or valid_count < MIN_VALID_TRIALS_FOR_EXTENSION:
                 state["budget"] = {"max_trials": 128, "max_faults": 10}
                 for trial in state["completed"]:
                     extend(state, trial)
