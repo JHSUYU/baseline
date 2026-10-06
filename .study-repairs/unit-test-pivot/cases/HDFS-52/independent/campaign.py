@@ -154,6 +154,26 @@ def enqueue(state: dict, plan: list[str], priority: int) -> None:
     state["queue"].append({"plan": plan, "priority": priority})
 
 
+def pick_job(state: dict) -> int:
+    outcomes = {}
+    for trial in state["completed"]:
+        depth = trial["fault_count"]
+        tested, retained = outcomes.get(depth, (0, 0))
+        outcomes[depth] = (tested + 1, retained + bool(
+            trial["exact_order_applied"] and trial["target_after_fault"]))
+
+    def rank(index: int) -> tuple[int, int]:
+        job = state["queue"][index]
+        depth = len(job["plan"])
+        tested, retained = outcomes.get(depth, (0, 0))
+        priority = job["priority"]
+        if depth > 1 and tested >= 6 and retained == 0:
+            priority = min(priority, 1)
+        return priority, -index
+
+    return max(range(len(state["queue"])), key=rank)
+
+
 def run_trial(job: dict, number: int) -> dict:
     out = EVIDENCE / "runs" / ("trial-%03d" % number)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -218,7 +238,7 @@ def main() -> None:
     while (effective() < args.max_trials and len(state["completed"]) < args.max_attempts
            and time.time() - state["started_at"] < args.max_seconds and state["queue"]):
         if state["active"] is None:
-            chosen = max(range(len(state["queue"])), key=lambda i: (state["queue"][i]["priority"], -i))
+            chosen = pick_job(state)
             state["active"] = {"job": state["queue"].pop(chosen), "trial": state["next_trial"]}
             state["next_trial"] += 1
             save(state)
