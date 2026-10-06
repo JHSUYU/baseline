@@ -103,6 +103,7 @@ def mutate(state, prefix, selectors, novelty, parent_seconds):
 
 def priority(q, trials):
     final = q['plan'][-1]
+    ordinal = int(final.split('~')[3])
     site_kind = '~'.join(final.split('~')[:3] + final.split('~')[4:])
     tried = Counter('~'.join(x['plan'][-1].split('~')[:3]
                              + x['plan'][-1].split('~')[4:]) for x in trials)
@@ -111,7 +112,7 @@ def priority(q, trials):
     return (q['score'] + (22 if not tried[site_kind] else 0)
             + (12 if len(q['plan']) >= 2 and len(trials) >= 20 else 0) * (len(q['plan']) - 1)
             + min(q['wait'] // 8, 8) - (80 if dead_prefix else 0)
-            - min(q['parent_seconds'] / 25, 8))
+            - min(q['parent_seconds'] / 25, 8) - min(ordinal, 120))
 
 
 def effective_count(state):
