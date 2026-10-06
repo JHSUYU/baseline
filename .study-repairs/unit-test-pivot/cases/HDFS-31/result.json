@@ -1,6 +1,7 @@
 {
   "case_id": "HDFS-31",
-  "status": "test_identified",
+  "status": "mapped_pending_smoke",
+  "source_review": "The original two-DataNode TestDiskError workload directly calls dn0.transferBlock; DataNode.transferBlock invokes the selected getBPOSForBlock lookup before replica checks. Exact runtime pool/DataNode identity and fault-relevant I/O are pending calibration.",
   "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
   "target_reached": null,
   "elapsed_seconds": 0,
