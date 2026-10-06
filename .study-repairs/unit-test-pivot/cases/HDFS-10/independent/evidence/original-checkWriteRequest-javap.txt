@@ -1,0 +1,48 @@
+  private synchronized void checkWriteRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo) throws java.io.IOException;
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokespecial #149                // Method checkRequest:(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V
+       5: aload_1
+       6: invokevirtual #150                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+       9: aload_0
+      10: getfield      #46                 // Field lastWriterEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+      13: invokevirtual #88                 // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      16: lcmp
+      17: ifeq          77
+      20: new           #94                 // class java/io/IOException
+      23: dup
+      24: new           #53                 // class java/lang/StringBuilder
+      27: dup
+      28: invokespecial #54                 // Method java/lang/StringBuilder."<init>":()V
+      31: ldc           #151                // String IPC's epoch
+      33: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      36: aload_1
+      37: invokevirtual #150                // Method org/apache/hadoop/hdfs/qjournal/protocol/RequestInfo.getEpoch:()J
+      40: invokevirtual #96                 // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;
+      43: ldc           #161                // String  is not the current writer epoch
+      45: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      48: aload_0
+      49: getfield      #46                 // Field lastWriterEpoch:Lorg/apache/hadoop/hdfs/util/PersistentLongFile;
+      52: invokevirtual #88                 // Method org/apache/hadoop/hdfs/util/PersistentLongFile.get:()J
+      55: invokevirtual #96                 // Method java/lang/StringBuilder.append:(J)Ljava/lang/StringBuilder;
+      58: ldc           #70                 // String  ; journal id:
+      60: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      63: aload_0
+      64: getfield      #18                 // Field journalId:Ljava/lang/String;
+      67: invokevirtual #56                 // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      70: invokevirtual #58                 // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      73: invokespecial #98                 // Method java/io/IOException."<init>":(Ljava/lang/String;)V
+      76: athrow
+      77: return
+    LineNumberTable:
+      line 515: 0
+      line 517: 5
+      line 518: 20
+      line 520: 52
+      line 522: 77
+    LocalVariableTable:
+      Start  Length  Slot  Name   Signature
+          0      78     0  this   Lorg/apache/hadoop/hdfs/qjournal/server/Journal;
+          0      78     1 reqInfo   Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;
+

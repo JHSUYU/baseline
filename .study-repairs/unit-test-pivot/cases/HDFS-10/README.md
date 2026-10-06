@@ -1,10 +1,53 @@
 # HDFS-10: writer epoch check in `Journal.checkWriteRequest`
 
-**Current 102-check status: pending independent recorder replay.** The 48
+**Current 102-check status: quality_complete (independent recorder).** The 48
 trials below remain historical evidence in `legacy-graph-result.json`. Their
 exact I/O selectors contain GraphChecker `REGION.*` identities from prewoven
 classes, including trials later run in discovery mode. They do not count as
 the graph-independent runtime campaign.
+
+## Independent replay (current)
+
+The new `independent/` recorder runs the unchanged upstream
+`TestQuorumJournalManager#testSingleWriter` through JUnitCore with its native
+three-JournalNode MiniJournalCluster fixture. A case-local ASM 9.6 classpath
+overlay reads original Hadoop 3.4.3 binaries and records the exact `IFEQ`
+writer-epoch check in `Journal.checkWriteRequest`, its actual `IOException`
+throw or normal return, `PersistentLongFile.set` writer-epoch file writes,
+and `Client.getRpcResponse`. [Original and patched bytecode](independent/evidence/independent-overlay-checkWriteRequest-javap.txt)
+pin the hook immediately before the original branch and throw. JaCoCo 0.8.15
+supplies production method, line, branch-count, and exact probe feedback;
+runtime-generated Mockito mock classes are excluded. No GraphChecker
+prewoven class, runtime JAR, region skeleton, static I/O map, graph, or
+closure is in this execution path.
+
+The independent healthy original JUnit passed in **11.930 seconds**. It
+reached the exact check six times with request epoch 1 equal to writer epoch
+1, and observed 36 IPC responses plus three writer-epoch file writes. Two
+fresh replays of `IOException` at `journalnode-0`'s writer-epoch write both
+matched and applied, then recorded the exact guard seeing request epoch 1
+versus local writer epoch 0 and throwing its declared `IOException`; the
+original JUnit passed using the other JournalNodes. The exact fault, check,
+and throw events from both runs are in [the smoke replay summary](independent/evidence/smoke-replays-summary.json). Reading
+`Journal.checkWriteRequest` and `PersistentLongFile.set` confirms this is an
+intended rejection after the local epoch write failed, so those throws are
+recorded as **expected guard responses**, while any different target throw
+remains a candidate for review.
+
+The graph-independent campaign completed **80/80 trials** with an eight-fault
+sequence ceiling. All 80 sequences applied in exact order; 66 reached the
+target after the final fault. The maximum actual depth was **three faults**.
+Thirteen post-fault target `IOException` events occurred in thirteen trials;
+all matched the source-reviewed, expected writer-epoch rejection. Production
+JaCoCo feedback gained **79 methods, 119 branch-count IDs, 329 probes, and
+373 lines** over the healthy baseline. The 80 trial JUnit runs plus the
+healthy JUnit took **1,330.213 seconds** in total. No new bug is marked.
+The final eight trials added no production coverage or stable I/O family, so
+the conditional 128-trial extension was not used. The per-trial times and
+selectors are in [the independent ledger](independent/trial-ledger.csv),
+with the atomic checkpoint in `independent/evidence/campaign-state.json` and
+the checklist result in [result.json](result.json). The following sections
+document excluded historical work and are not counted in this result.
 
 ## Source and original cluster test
 
