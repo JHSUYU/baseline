@@ -86,6 +86,8 @@ def normalize_trial_counts(record: dict, update: dict,
         gain = update["coverage"].get("gain")
         if isinstance(gain, dict) and isinstance(gain.get("total_ids"), int):
             record["coverage_gain"] = gain["total_ids"]
+    if "admitted_coverage_gain" in update:
+        record["coverage_gain"] = update["admitted_coverage_gain"]
 
     # The generic fuzzer has used target_after_fault for the fatal outcome,
     # whereas case reports use it for reachability. Prefer explicit reach
@@ -101,7 +103,8 @@ def normalize_trial_counts(record: dict, update: dict,
 
     # Some ledgers count fault *events* in strict_injections and others count
     # fully applied *sequences*. Derive a separate comparable trial count.
-    for candidate in ("fully_applied_trials", "strict_injection_trials",
+    for candidate in ("fully_applied_trials", "strict_trials",
+                      "strict_injection_trials",
                       "fully_matched_fault_sequences", "matched_applied_trials"):
         if candidate in update:
             record["fully_applied_trials"] = update[candidate]
