@@ -60,9 +60,13 @@ def main() -> None:
     healthy_coverage = coverage_totals(healthy_exec)
     healthy_io = set().union(*(io_families(directory) for directory in SEEDS))
     for case_id in ('SOLR-36', 'SOLR-37'):
+        identity = json.loads((ROOT / f'identity-audit-{case_id}.json').read_text())
+        if identity['fault_trials'] != len(state['completed']):
+            raise RuntimeError(f'{case_id} identity audit is stale')
+        valid_numbers = {item['trial_number'] for item in identity['trials']
+                         if item['postfault_same_last_fault_child_or_collection_scope']}
         valid = [row for row in state['completed']
-                 if row['strict_injection']
-                 and row['target_guard_after_last_fault'][case_id] > 0]
+                 if row['trial_number'] in valid_numbers]
         injected_exec = [Path(row['jacoco']) for row in valid
                          if Path(row['jacoco']).is_file()
                          and Path(row['jacoco']).stat().st_size]
@@ -79,6 +83,7 @@ def main() -> None:
             'total_attempts': sum(row['attempts'] for row in state['completed']),
             'strict_injections': sum(row['strict_injection'] for row in state['completed']),
             'strict_post_target_trials': len(valid),
+            'strict_post_target_any_child_trials': identity['strict_postfault_any_child'],
             'strict_post_target_trial_numbers': [row['trial_number'] for row in valid],
             'strict_exact_target_throw_trials': sum(
                 row['strict_injection']

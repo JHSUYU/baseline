@@ -39,7 +39,7 @@ def main() -> None:
         time.sleep(30)
     subprocess.run(('ssh', *SSH_OPTIONS, 'ZhenyuLi@node2',
                     'cd ' + REMOTE_DIR
-                    + ' && python3 audit_campaign.py && python3 audit_identity.py'),
+                    + ' && python3 audit_identity.py && python3 audit_campaign.py'),
                    check=True)
     reports = {}
     for case_id in ('SOLR-36', 'SOLR-37'):
