@@ -164,6 +164,9 @@ def queue_priority(entry, trials):
     exhausted_prefix = len(prefix_trials) >= 2 and all(
         not x['target_after_final_fault'] for x in prefix_trials)
     root_site = '~'.join(entry['plan'][0].split('~')[:3])
+    # Cap the priority of descendants from a frequently tried first I/O site
+    # so other observed sites receive trials as the queue grows.
+    root_attempts = sum('~'.join(x['plan'][0].split('~')[:3]) == root_site for x in trials)
     same_root_multifaults = [x for x in trials if x['strict'] and len(x['plan']) >= 2
                              and '~'.join(x['plan'][0].split('~')[:3]) == root_site]
     exhausted_root = len(entry['plan']) >= 2 and len(same_root_multifaults) >= 4 \
@@ -184,7 +187,7 @@ def queue_priority(entry, trials):
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
         - (180 if exhausted_prefix else 0) - (120 if exhausted_root else 0) \
-        - learned_target_loss_penalty + depth_bonus
+        - learned_target_loss_penalty - min(5 * root_attempts, 30) + depth_bonus
 
 
 def publish(state):
