@@ -64,3 +64,8 @@ effective fault trial.
 An exception with the healthy target signature is marked expected. A changed
 signature or test failure is only a candidate until the HBase source and a
 clean replay establish an invariant or interface violation.
+
+`NamespaceStateManager.getNamespaceDescriptor` catches an `IOException` from
+the cluster schema and returns `null`. A fault on that read can skip the quota
+guard entirely; such a run is recorded as target lost and cannot count toward
+this selected check's effective budget, even if the original JUnit later fails.
