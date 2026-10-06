@@ -1,5 +1,11 @@
 # HDFS-10: writer epoch check in `Journal.checkWriteRequest`
 
+**Current 102-check status: pending independent recorder replay.** The 48
+trials below remain historical evidence in `legacy-graph-result.json`. Their
+exact I/O selectors contain GraphChecker `REGION.*` identities from prewoven
+classes, including trials later run in discovery mode. They do not count as
+the graph-independent runtime campaign.
+
 ## Source and original cluster test
 
 The source is the clean Hadoop `rel/release-3.4.3` worktree, commit

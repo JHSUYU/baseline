@@ -215,8 +215,8 @@ def markdown(items: list[dict]) -> str:
     counts = Counter(row["status"] for row in items)
     lines = [
         "# Unit-test cluster fuzz checklist (102 checks)", "",
-        "This is the new campaign. Legacy Docker trials and trials requiring "
-        "a precomputed GraphChecker skeleton are not counted.", "",
+        "This is the new campaign. Legacy Docker trials and trials whose "
+        "runtime I/O identities derive from GraphChecker regions are not counted.", "",
         "Time uses total elapsed time when reported; otherwise it uses the "
         "case's measured duration (see the result for its scope). "
         "Fully applied trials matched and injected every selected fault. "

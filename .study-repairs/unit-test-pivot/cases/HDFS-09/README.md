@@ -1,5 +1,12 @@
 # HDFS-09: committed transaction ID monotonicity
 
+**Current 102-check status: pending independent recorder replay.** The 48
+trials below remain historical evidence in `legacy-graph-result.json`. Their
+exact I/O selectors contain GraphChecker `REGION.*` occurrence identities from
+prewoven classes. Running in discovery mode without a skeleton file did not
+remove that woven identity dependency, so the trials do not count as an
+independent runtime campaign.
+
 ## Source and original cluster test
 
 Hadoop 3.4.3 `Journal.checkRequest(RequestInfo)` calls `Preconditions.checkArgument` at `Journal.java:504` after `reqInfo.hasCommittedTxId()`. Its predicate is `reqInfo.getCommittedTxId() >= committedTxnId.get()`. The original class file places the `checkArgument(boolean,Object)` call at bytecode index 239; the runtime recorder identifies that exact invocation as `<org.apache.hadoop.hdfs.qjournal.server.Journal: void checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>#u78`. [Original bytecode](evidence/original-checkRequest-javap.txt) records both the call and source line.
