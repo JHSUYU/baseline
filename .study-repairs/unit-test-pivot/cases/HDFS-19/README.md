@@ -12,6 +12,8 @@
 
 The observed I/O scope is the block-report RPC and the two finalize storage renames. An I/O identity contains marker, concrete call site, normalized block-pool or file source, and ordinal within that identity. Full physical resource paths remain in the trace for audit. Two independent healthy runs reached the check nine times each, observed the same five I/O families, and passed the original JUnit. A one-fault smoke run matched and applied its requested first block-report `IOException`, reached the target again after that fault, and passed JUnit.
 
+The released JAR hashes, both healthy trace summaries, and the smoke replay are recorded in `independent/bootstrap-evidence.json`.
+
 ## Campaign and result criteria
 
 `independent/campaign.py` mutates observed fault sequences, records each run in `independent-trial-ledger.csv`, and atomically checkpoints the queue and completed trials in `independent/campaign-state.json`. Initial budget: 80 trials, up to eight faults per sequence. If the final valid trials still discover production method/branch-count coverage or I/O families, it extends to 128 trials and ten faults. `independent/run_original.py` executes each trial in a fresh scratch directory.
