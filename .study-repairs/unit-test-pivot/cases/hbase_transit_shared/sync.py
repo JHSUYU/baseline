@@ -135,6 +135,15 @@ def sync() -> bool:
         "bug_mark": "candidate_unconfirmed" if bug_candidates else "none",
         "bug_candidates": bug_candidates,
         "client_level_candidate": client_candidate,
+        "client_candidate_review": ({
+            "status": "candidate_unconfirmed",
+            "clean_unassign_replay_seconds": [
+                replay["elapsed_seconds"]
+                for replay in client_candidate["clean_same_selector_replays"]],
+            "secondary_assign_replay_seconds": client_candidate[
+                "secondary_equivalent_assign_replay"]["elapsed_seconds"],
+            "reason": "Two clean replays prove completed server transition followed by duplicate-request rejection and original-JUnit failure. Admin.assign/unassign Javadocs allow remote or network IOException; no stricter outcome contract or violated internal invariant has been established. No exact same-version known issue was found in the reviewed ASF JIRA searches, but novelty is not established.",
+        } if client_candidate else None),
         "stopping_reason": state["stop_reason"] or "Shared HBASE-10 original JUnit campaign running",
         "source_campaign_created_utc": state["source_campaign_created_utc"],
         "updated_at_utc": current.isoformat(),
