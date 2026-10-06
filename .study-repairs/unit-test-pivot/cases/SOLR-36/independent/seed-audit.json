@@ -1,0 +1,140 @@
+{
+  "runs": [
+    {
+      "agent_sha256": "ae54057031ed49c5216d23ad2b8451fa66edbc0aa86071c31be0a5c3703f2b53",
+      "classpath_contains_graphchecker": false,
+      "elapsed_seconds": 105.004,
+      "exit_code": 0,
+      "junit_gate": [
+        1,
+        0,
+        0
+      ],
+      "run": "healthy-02",
+      "source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+      "targets": {
+        "SOLR-36": {
+          "guard_count": 92,
+          "guard_details": {
+            "state=construction;phase=FROMLEADER": 26,
+            "state=recovery;phase=FROMLEADER": 66
+          },
+          "logical_sources": {
+            "SOLR/SUBSHARD/collection1/shard1_0/core_node11": 56,
+            "SOLR/SUBSHARD/collection1/shard1_1/core_node12": 36
+          },
+          "physical_nodes": [
+            "127.0.0.1:42125_"
+          ],
+          "throw_count": 0
+        },
+        "SOLR-37": {
+          "guard_count": 92,
+          "guard_details": {
+            "child=80000000-bfffffff;parent=80000000-ffffffff;subset=true;phase=FROMLEADER": 56,
+            "child=c0000000-ffffffff;parent=80000000-ffffffff;subset=true;phase=FROMLEADER": 36
+          },
+          "logical_sources": {
+            "SOLR/SUBSHARD/collection1/shard1_0/core_node11": 56,
+            "SOLR/SUBSHARD/collection1/shard1_1/core_node12": 36
+          },
+          "physical_nodes": [
+            "127.0.0.1:42125_"
+          ],
+          "throw_count": 0
+        }
+      }
+    },
+    {
+      "agent_sha256": "ae54057031ed49c5216d23ad2b8451fa66edbc0aa86071c31be0a5c3703f2b53",
+      "classpath_contains_graphchecker": false,
+      "elapsed_seconds": 104.037,
+      "exit_code": 0,
+      "junit_gate": [
+        1,
+        0,
+        0
+      ],
+      "run": "healthy-03",
+      "source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+      "targets": {
+        "SOLR-36": {
+          "guard_count": 100,
+          "guard_details": {
+            "state=construction;phase=FROMLEADER": 34,
+            "state=recovery;phase=FROMLEADER": 66
+          },
+          "logical_sources": {
+            "SOLR/SUBSHARD/collection1/shard1_0/core_node11": 60,
+            "SOLR/SUBSHARD/collection1/shard1_1/core_node12": 40
+          },
+          "physical_nodes": [
+            "127.0.0.1:41319_"
+          ],
+          "throw_count": 0
+        },
+        "SOLR-37": {
+          "guard_count": 100,
+          "guard_details": {
+            "child=80000000-bfffffff;parent=80000000-ffffffff;subset=true;phase=FROMLEADER": 60,
+            "child=c0000000-ffffffff;parent=80000000-ffffffff;subset=true;phase=FROMLEADER": 40
+          },
+          "logical_sources": {
+            "SOLR/SUBSHARD/collection1/shard1_0/core_node11": 60,
+            "SOLR/SUBSHARD/collection1/shard1_1/core_node12": 40
+          },
+          "physical_nodes": [
+            "127.0.0.1:41319_"
+          ],
+          "throw_count": 0
+        }
+      }
+    }
+  ],
+  "source": "unchanged Solr 8.11.4 original JUnit",
+  "stable_precursor_io": {
+    "examples": [
+      {
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:setData",
+        "resource": "/collections/collection1",
+        "siteId": "org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;",
+        "sourceKey": "SOLR/COLLECTION/collection1"
+      },
+      {
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:setData",
+        "resource": "/collections/collection1/counter",
+        "siteId": "org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;",
+        "sourceKey": "SOLR/COLLECTION/collection1"
+      },
+      {
+        "hitOrdinal": 2,
+        "marker": "FAULT:ZK_NATIVE:setData",
+        "resource": "/collections/collection1/counter",
+        "siteId": "org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;",
+        "sourceKey": "SOLR/COLLECTION/collection1"
+      }
+    ],
+    "family_count": 120,
+    "full_exact_intersection_count": 650,
+    "logical_sources": {
+      "SOLR/COLLECTION/collection1": 118,
+      "SOLR/REPLICA/collection1/shard1_0/core_node11": 23,
+      "SOLR/REPLICA/collection1/shard1_0/core_node13": 19,
+      "SOLR/REPLICA/collection1/shard1_1/core_node12": 23,
+      "SOLR/REPLICA/collection1/shard1_1/core_node14": 17
+    },
+    "marker_counts": {
+      "FAULT:ZK_NATIVE:create": 13,
+      "FAULT:ZK_NATIVE:delete": 3,
+      "FAULT:ZK_NATIVE:exists": 54,
+      "FAULT:ZK_NATIVE:getChildren": 19,
+      "FAULT:ZK_NATIVE:getData": 45,
+      "FAULT:ZK_NATIVE:makePath": 48,
+      "FAULT:ZK_NATIVE:setData": 18
+    },
+    "selector_count": 200
+  },
+  "test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test"
+}
