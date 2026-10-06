@@ -37,6 +37,10 @@ trace = Path(os.environ['CAUSYNTH_TRACE_OUTPUT_DIR']) / 'runtime_trace.jsonl'
 trace.parent.mkdir(parents=True, exist_ok=True)
 mode = os.environ.get('MODE', 'normal')
 attempt = int(os.environ.get('ATTEMPT', '1'))
+if os.environ.get('STATE_SNAPSHOT'):
+    state = json.loads(Path(os.environ['CASE_STATE']).read_text())
+    Path(os.environ['STATE_SNAPSHOT']).write_text(json.dumps({
+        'finished': state.get('finished'), 'status': state.get('status')}))
 rows = []
 seq = 0
 if mode == 'pre_target':
@@ -363,9 +367,15 @@ class CoverageIoTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             config = fixture(root, max_trials=1, max_faults=1)
+            snapshot = root / 'runner-state.json'
+            config['trial']['env'].update({
+                'CASE_STATE': '{case_dir}/state.json',
+                'STATE_SNAPSHOT': str(snapshot),
+            })
             first = campaign(config, root / 'out')
             self.assertEqual(len(first['completed']), 1)
             self.assertEqual(first['queue'], [])
+            self.assertTrue(first['finished'])
             config['budget']['max_trials'] = 2
             config['budget']['max_faults'] = 2
             resumed = campaign(config, root / 'out')
@@ -373,6 +383,7 @@ class CoverageIoTest(unittest.TestCase):
             self.assertEqual(resumed['completed'][1]['sequence'], [A, B])
             self.assertEqual(resumed['completed'][0]['result'],
                              first['completed'][0]['result'])
+            self.assertEqual(json.loads(snapshot.read_text())['finished'], False)
 
     def test_default_budget_is_64_trials_and_six_faults(self):
         with tempfile.TemporaryDirectory() as temp:

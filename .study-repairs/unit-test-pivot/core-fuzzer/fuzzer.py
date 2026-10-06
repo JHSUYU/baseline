@@ -1064,6 +1064,19 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                 enqueue_extensions(state, sequence, result,
                                    config["budget"]["max_faults"])
         max_runtime = config["budget"].get("max_seconds", 1e18)
+        can_resume = (len(state["completed"]) < config["budget"]["max_trials"] and
+                      (state["active"] or state["active_runtime_seconds"] < max_runtime) and
+                      (state["queue"] or state["active"]))
+        if can_resume and state.get("finished"):
+            # A larger budget may reopen an exhausted checkpoint. Publish the
+            # active state before its next trial so mirrors do not mistake it
+            # for a terminal result from the previous budget.
+            state["finished"] = False
+            if state.get("status") in {"budget_or_queue_complete",
+                                       "no_valid_target_trial"}:
+                state["status"] = "fuzzing"
+            atomic_json(path, state)
+            write_case_result(case_dir, state)
         while (len(state["completed"]) < config["budget"]["max_trials"] and
                (state["active"] or state["active_runtime_seconds"] < max_runtime) and
                (state["queue"] or state["active"])):
