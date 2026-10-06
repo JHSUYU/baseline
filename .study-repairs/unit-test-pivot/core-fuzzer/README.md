@@ -56,9 +56,14 @@ case, set:
   a parent row's `foldedRegionIds` gives no one-to-one runtime mapping to
   the target method activation and guard, so it yields `graph_gap`.
   A future explicit containment/unique activation proof could satisfy
-  this gate without a separate row. Supply `target.fatal_guards` as exact `siteId`/boolean
-  outcomes or `target.scope_map` plus `target.throw_site_id` to read
-  GraphChecker `TARGET_SITE` guard policy. If the throw occurs in a nested
+  this gate without a separate row. Supply `target.fatal_guards` as one
+  ordered route of exact `siteId`/boolean outcomes or `target.scope_map`
+  plus `target.throw_site_id` to read GraphChecker's `TARGET_SITE` policy.
+  When distinct bytecode routes reach the same throw, supply
+  `target.fatal_guard_paths` as a list of ordered guard lists; the routes
+  are alternatives. Each route needs source/bytecode and runtime calibration
+  evidence. The final guard of each route is the check that must execute
+  after the fault; an earlier entry guard alone does not count. If the throw occurs in a nested
   method, set `target.throw_method` to that method; it is inferred from
   `throw_site_id` when supplied. The oracle follows `parentCallId` from
   that throw back to the selected target call. `target.site_id` is optional
@@ -118,12 +123,19 @@ closure feedback from a blocked trial enters the corpus.
 A target exception candidate requires all of the following in the selected
 target call or a descendant and after the last applied fault: the exact
 expected `METHOD_EXIT_THROW.runtimeType` from `throw_method`, target
-occurrence, and every declared fatal guard's `BRANCH` outcome in the throw
-call. An exception in the same method without
+occurrence, and one complete ordered fatal guard route in the throw call.
+An exception in the same method without
 those guards is recorded as `target_exception_unlinked`; it is not marked
 as a candidate. A matched injection that prevents target execution is
 `lost_target` and is abandoned. Candidate status is evidence for source
 review and replay, not a confirmed new bug.
+
+A fault can remove a versioned state edge from the faulted graph. If the
+healthy seed had a valid target closure, the exact fault applied, and the
+post-fault target throw and guard route are observed, the trial remains a
+candidate even when the new graph has a `BLOCKING` gap. The gap is recorded;
+that trial contributes no graph or coverage feedback to mutation. A graph
+gap without the exact target oracle remains `graph_gap`.
 
 The healthy JUnit run may itself expect the target exception. The driver
 records its target fatal exception count and still runs the fault campaign.

@@ -154,14 +154,15 @@ def load_target_policy(target: dict[str, Any]) -> None:
                 target["throw_method"] != declared_throw_method:
             raise ValueError("throw_method differs from throw_site_id's method")
         target["throw_method"] = declared_throw_method
-    if target.get("fatal_guards") and target.get("region_id"):
+    explicit_paths = "fatal_guard_paths" in target or "fatal_guards" in target
+    if explicit_paths and target.get("region_id"):
         return
     scope = target.get("scope_map")
     throw_site = target.get("throw_site_id")
     if not scope or not throw_site:
-        if target.get("fatal_guards"):
+        if explicit_paths:
             return
-        raise ValueError("target needs fatal_guards or scope_map + throw_site_id")
+        raise ValueError("target needs fatal guards or scope_map + throw_site_id")
     matches = [row for row in rows(Path(scope))
                if row.get("role") == "TARGET_SITE" and
                row.get("siteId") == throw_site]
@@ -172,7 +173,7 @@ def load_target_policy(target: dict[str, Any]) -> None:
         raise ValueError("target region_id differs from TARGET_SITE regionId")
     if not target.get("region_id"):
         target["region_id"] = row.get("regionId")
-    if target.get("fatal_guards"):
+    if explicit_paths:
         return
     guards = row.get("guards", [])
     outcomes = row.get("guardOutcomes", [])
@@ -184,6 +185,29 @@ def load_target_policy(target: dict[str, Any]) -> None:
         if isinstance(outcome, bool)]
     if len(target["fatal_guards"]) != len(guards):
         raise ValueError(f"TARGET_SITE has an undecidable fatal arm: {throw_site}")
+
+
+def fatal_guard_paths(target: dict[str, Any]) -> list[list[dict[str, Any]]]:
+    """Alternative bytecode routes to one selected throw site.
+
+    Each route is an ordered conjunction of branch outcomes; the routes are
+    disjunctive. A TARGET_SITE scope-map row supplies one route unless a case
+    provides independently checked alternatives.
+    """
+    paths = (target.get("fatal_guard_paths") if "fatal_guard_paths" in target
+             else [target.get("fatal_guards")])
+    if not isinstance(paths, list) or not paths:
+        raise ValueError("target needs nonempty fatal guard paths")
+    for path in paths:
+        if not isinstance(path, list) or not path:
+            raise ValueError("each fatal guard path must be nonempty")
+        for guard in path:
+            if (not isinstance(guard, dict) or
+                    not isinstance(guard.get("siteId"), str) or
+                    "#u" not in guard["siteId"] or
+                    not isinstance(guard.get("outcome"), bool)):
+                raise ValueError("each fatal guard needs siteId and boolean outcome")
+    return paths
 
 
 def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
@@ -272,21 +296,41 @@ def trace_feedback(path: Path, closure: dict[str, Any],
         return False
 
     applied_seq = max((e.get("seq", -1) for e in applied), default=-1)
-    fatal_guards = target["fatal_guards"]
+    guard_paths = fatal_guard_paths(target)
+    # Earlier guards can merely enter the function or an outer branch. The
+    # final decision on a throw route is the selected check to retain after
+    # the fault; Solr's alternative routes end at different branch sites.
+    check_sites = {path[-1]["siteId"] for path in guard_paths}
+    branch_rows = sorted((e for e in events if e.get("event") == "BRANCH"),
+                         key=lambda e: e.get("seq", -1))
+
+    def path_last_seq(path: list[dict[str, Any]], call_id: Any,
+                      upper_seq: int) -> int | None:
+        """Latest final decision of a complete ordered route before throw."""
+        cursors = {-1}
+        for guard in path:
+            cursors = {e["seq"] for e in branch_rows
+                       if e.get("callId") == call_id and
+                       e.get("siteId") == guard["siteId"] and
+                       e.get("outcome") is guard["outcome"] and
+                       isinstance(e.get("seq"), int) and
+                       e["seq"] < upper_seq and
+                       any(previous < e["seq"] for previous in cursors)}
+            if not cursors:
+                return None
+        return max(cursors)
+
     target_site_seen = any(
         e.get("event") == "BRANCH" and
         e.get("siteId") == target.get("site_id") and
         in_target_call(e.get("callId")) for e in events)
     target_guard_seen = any(
         e.get("event") == "BRANCH" and
-        e.get("siteId") in {g["siteId"] for g in fatal_guards} and
+        e.get("siteId") in check_sites and
         in_target_call(e.get("callId")) for e in events)
     # A target invocation that happened only before the injected fault cannot
     # validate this trial. The check itself must execute again after the last
     # applied fault, including when its method was entered before that fault.
-    check_sites = {g["siteId"] for g in fatal_guards}
-    if target.get("site_id"):
-        check_sites.add(target["site_id"])
     target_reached_after_fault = any(
         e.get("event") == "BRANCH" and
         e.get("siteId") in check_sites and
@@ -304,24 +348,16 @@ def trace_feedback(path: Path, closure: dict[str, Any],
                 in_target_call(thrown.get("callId")):
             target_exception = True
             target_exception_count += 1
-            fatal_in_call = all(any(
-                e.get("event") == "BRANCH" and
-                e.get("siteId") == guard["siteId"] and
-                e.get("outcome") is guard["outcome"] and
-                e.get("callId") == thrown.get("callId") and
-                e.get("seq", -1) < thrown.get("seq", -1)
-                for e in events) for guard in fatal_guards)
+            completed_paths = [path_last_seq(path, thrown.get("callId"),
+                                             thrown.get("seq", -1))
+                               for path in guard_paths]
+            fatal_in_call = any(last is not None for last in completed_paths)
             if fatal_in_call:
                 target_fatal_exception_count += 1
             if thrown.get("seq", -1) > applied_seq >= 0:
                 target_after_fault = True
-                if all(any(
-                        e.get("event") == "BRANCH" and
-                        e.get("siteId") == guard["siteId"] and
-                        e.get("outcome") is guard["outcome"] and
-                        e.get("callId") == thrown.get("callId") and
-                        applied_seq < e.get("seq", -1) < thrown.get("seq", -1)
-                        for e in events) for guard in fatal_guards):
+                if any(last is not None and last > applied_seq
+                       for last in completed_paths):
                     target_guard_after_fault = True
     # If an exact target site is declared, a method-level throw alone is
     # insufficient: it could simply propagate an unrelated nested failure.
@@ -612,24 +648,27 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     graph_blocked = bool(state["seed"]["closure"]["blocking_gaps"] or
                          result.get("blocking_graph_gaps"))
     selector_matched = strict_injection(result, active["sequence"])
-    strict = selector_matched and not graph_blocked and bool(result.get("dynamic_graph"))
+    # Selector identity is proved by the runtime controller. A fault can
+    # legitimately erase a versioned state edge in the faulted graph; keep
+    # that graph gap separate from whether the selected fault was applied.
+    strict = selector_matched and not state["seed"]["closure"]["blocking_gaps"]
+    graph_feedback_valid = not graph_blocked and bool(result.get("dynamic_graph"))
     result["selector_matched"] = selector_matched
     result["strict_injection"] = strict
+    result["graph_feedback_valid"] = graph_feedback_valid
     baseline_fatal_count = state["seed"]["feedback"].get(
         "target_fatal_exception_count", 0)
     result["baseline_target_fatal_exception_count"] = baseline_fatal_count
     result["differential_target_exception"] = bool(
         result.get("target_fatal_exception_count", 0) > baseline_fatal_count)
-    if graph_blocked:
-        status = "graph_gap"
-    elif not selector_matched:
+    if not selector_matched:
         status = "unmatched"
     elif not result.get("target_reached_after_fault"):
         status = "lost_target"
-    elif not result.get("dynamic_graph"):
-        status = "graph_gap"
     elif result["oracle"] and result["differential_target_exception"]:
         status = "target_exception_candidate"
+    elif not graph_feedback_valid:
+        status = "graph_gap"
     elif result["oracle"]:
         status = "baseline_exception_recurrence"
     elif result.get("target_after_fault"):
@@ -644,8 +683,8 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     observed_members = {key: tier for key, tier in
                         result.get("closure_members", {}).items()
                         if key not in old_members}
-    admitted = status in {"checked", "target_exception_candidate",
-                          "baseline_exception_recurrence"}
+    admitted = graph_feedback_valid and status in {
+        "checked", "target_exception_candidate", "baseline_exception_recurrence"}
     new_coverage = observed_coverage if admitted else set()
     new_members = observed_members if admitted else {}
     if admitted:
@@ -701,10 +740,7 @@ def validate(config: dict[str, Any]) -> None:
     load_target_policy(config["target"])
     if not config["target"].get("region_id"):
         raise ValueError("target requires static region_id or scope_map + throw_site_id")
-    for guard in config["target"]["fatal_guards"]:
-        if (not isinstance(guard.get("siteId"), str) or
-                not isinstance(guard.get("outcome"), bool)):
-            raise ValueError("each fatal guard needs siteId and boolean outcome")
+    fatal_guard_paths(config["target"])
     if not isinstance(config["trial"].get("command"), list):
         raise ValueError("trial.command must be an argv list, never a shell string")
     if (not config["seed"].get("command") and

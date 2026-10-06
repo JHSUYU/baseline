@@ -361,6 +361,78 @@ class FuzzerTest(unittest.TestCase):
             self.assertTrue(verdict["target_after_fault"])
             self.assertFalse(verdict["oracle"])
 
+    def test_alternative_fatal_guard_paths_do_not_require_both_routes(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            _, plan = seed_files(root)
+            closure = read_closure(plan, TARGET)
+            a = TARGET + "#u11"
+            b = TARGET + "#u20"
+            outer = TARGET + "#u2"
+            target = {"method": TARGET,
+                      "exception_type": "example.TargetException",
+                      "fatal_guard_paths": [
+                          [{"siteId": outer, "outcome": True},
+                           {"siteId": a, "outcome": True}],
+                          [{"siteId": outer, "outcome": True},
+                           {"siteId": b, "outcome": False}]]}
+            for last_site, last_outcome in ((a, True), (b, False)):
+                trace = root / ("route-a.jsonl" if last_site == a
+                                else "route-b.jsonl")
+                jsonl(trace, [
+                    {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
+                     "faultId": "f", **POINT},
+                    {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
+                     "method": TARGET, "callId": 10,
+                     "occurrenceAddress": OCC_TARGET},
+                    {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
+                     "siteId": outer, "callId": 10, "outcome": True},
+                    {"schemaVersion": 3, "event": "BRANCH", "seq": 4,
+                     "siteId": last_site, "callId": 10,
+                     "outcome": last_outcome},
+                    {"schemaVersion": 3, "event": "METHOD_EXIT_THROW",
+                     "seq": 5, "method": TARGET, "callId": 10,
+                     "runtimeType": "example.TargetException"},
+                ])
+                feedback = trace_feedback(trace, closure, target)
+                self.assertTrue(feedback["oracle"])
+                self.assertEqual(feedback["target_fatal_exception_count"], 1)
+            # A branch seen only before the fault cannot validate a replay.
+            lines = [json.loads(line) for line in trace.read_text().splitlines()]
+            lines[0]["seq"] = 4
+            jsonl(trace, lines)
+            self.assertFalse(trace_feedback(trace, closure, target)["oracle"])
+            # Reaching only the common outer condition is not reaching either
+            # selected check after the fault.
+            jsonl(trace, [
+                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 1,
+                 "faultId": "f", **POINT},
+                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 2,
+                 "method": TARGET, "callId": 10,
+                 "occurrenceAddress": OCC_TARGET},
+                {"schemaVersion": 3, "event": "BRANCH", "seq": 3,
+                 "siteId": outer, "callId": 10, "outcome": True},
+            ])
+            self.assertFalse(trace_feedback(trace, closure, target)
+                             ["target_reached_after_fault"])
+            # A fault between an outer guard and the decisive guard still
+            # exposes a post-fault fatal check.
+            jsonl(trace, [
+                {"schemaVersion": 3, "event": "METHOD_ENTER", "seq": 1,
+                 "method": TARGET, "callId": 10,
+                 "occurrenceAddress": OCC_TARGET},
+                {"schemaVersion": 3, "event": "BRANCH", "seq": 2,
+                 "siteId": outer, "callId": 10, "outcome": True},
+                {"schemaVersion": 3, "event": "FAULT_APPLIED", "seq": 3,
+                 "faultId": "f", **POINT},
+                {"schemaVersion": 3, "event": "BRANCH", "seq": 4,
+                 "siteId": a, "callId": 10, "outcome": True},
+                {"schemaVersion": 3, "event": "METHOD_EXIT_THROW", "seq": 5,
+                 "method": TARGET, "callId": 10,
+                 "runtimeType": "example.TargetException"},
+            ])
+            self.assertTrue(trace_feedback(trace, closure, target)["oracle"])
+
     def test_one_trial_persists_and_does_not_repeat(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -385,6 +457,32 @@ class FuzzerTest(unittest.TestCase):
             self.assertGreaterEqual(item["elapsed_seconds"], 2.5)
             self.assertEqual(item["seed_seconds"], 2.5)
             self.assertGreater(item["aggregate_seconds"], 0)
+
+    def test_exact_target_exception_survives_faulted_state_graph_gap(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            trace, plan = seed_files(root)
+            faulted_plan = root / "faulted-plan.jsonl"
+            plan_rows = [json.loads(line) for line in plan.read_text().splitlines()]
+            plan_rows[0]["gaps"] = [{"kind": "STATE_WRITER_MISSING",
+                                     "cls": "BLOCKING",
+                                     "subject": "missing namespace entry"}]
+            jsonl(faulted_plan, plan_rows)
+            runner = root / "fake_runner.py"
+            runner.write_text("TARGET=" + repr(TARGET) + "\nSITE=" + repr(SITE) +
+                              "\nOCC_TARGET=" + repr(OCC_TARGET) + "\n" +
+                              FAKE_RUNNER)
+            config = trial_config(root, trace, plan, runner)
+            config["trial"]["aggregate_command"][1] = str(faulted_plan)
+            state = campaign(config, root / "results")
+            trial = json.loads(Path(state["completed"][0]["result"]).read_text())
+            self.assertEqual(trial["status"], "target_exception_candidate")
+            self.assertTrue(trial["strict_injection"])
+            self.assertFalse(trial["graph_feedback_valid"])
+            self.assertTrue(trial["differential_target_exception"])
+            self.assertEqual(trial["new_coverage_count"], 0)
+            summary = json.loads((root / "results/CHECK-01/result.json").read_text())
+            self.assertEqual(summary["status"], "candidate_review")
 
     def test_trial_environment_and_trace_path_are_case_scoped(self):
         with tempfile.TemporaryDirectory() as temp:
