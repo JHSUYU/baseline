@@ -57,6 +57,13 @@ def sync() -> bool:
     result = json.loads(RESULT.read_text())
     client_candidate = (json.loads(CLIENT_CANDIDATE.read_text())
                         if CLIENT_CANDIDATE.exists() else None)
+    diagnostic_seconds = 0.0
+    if client_candidate:
+        diagnostic_seconds += sum(
+            replay["elapsed_seconds"]
+            for replay in client_candidate.get("clean_same_selector_replays", []))
+        diagnostic_seconds += client_candidate.get(
+            "secondary_equivalent_assign_replay", {}).get("elapsed_seconds", 0)
     bug_candidates = list(state["bug_candidates"])
     if client_candidate and client_candidate.get("id"):
         bug_candidates.append(client_candidate["id"])
@@ -114,7 +121,11 @@ def sync() -> bool:
         "trial_runtime_total_seconds": round(sum(r["elapsed_seconds"] or 0 for r in rows), 3),
         "elapsed_seconds": round(healthy["elapsed_seconds"] +
                                  sum(r["elapsed_seconds"] or 0 for r in rows), 3),
-        "runtime_accounting_note": "JVM executions are shared with HBASE-10; per-check attributed times are not additive across these cases.",
+        "diagnostic_replay_total_seconds": round(diagnostic_seconds, 3),
+        "elapsed_seconds_with_diagnostics": round(
+            healthy["elapsed_seconds"] +
+            sum(r["elapsed_seconds"] or 0 for r in rows) + diagnostic_seconds, 3),
+        "runtime_accounting_note": "Campaign JVM executions are shared with HBASE-10; per-check campaign times are not additive across these cases. Diagnostic candidate replays are separately timed and excluded from the fuzz budget.",
         "fault_budget": {"default_trials": 80, "max_faults_per_sequence": 8,
                          "extension_trials": 128, "extension_max_faults": 10,
                          "extension_requires_stable_io_family_or_production_coverage": True,

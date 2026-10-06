@@ -1,13 +1,17 @@
 {
   "case_id": "HDFS-17",
-  "status": "test_identified",
+  "status": "source_excluded",
   "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestAddStripedBlocks#testAddUCReplica",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "target_reached": true,
+  "elapsed_seconds": 205.93,
+  "fault_trials": 1,
+  "strict_injections": 1,
+  "target_after_fault": 1,
+  "target_exception_after_fault_trials": 0,
+  "coverage_gain": {"probes": 13, "methods": 0, "branch_counts": 5},
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "candidate_screening": "screened_out_redundant_guard",
+  "cluster_topology": "one NameNode, nine DataNodes in original MiniDFSCluster test",
+  "methodology": "case_local_asm_jacoco_original_junit_source_implication_screening",
+  "evidence": ".study-repairs/unit-test-pivot/cases/HDFS-17/SCREENING.md: released source implication, original JUnit, case-local target trace, and one identity-matched diagnostic fault trial."
 }
