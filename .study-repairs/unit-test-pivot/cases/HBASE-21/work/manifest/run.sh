@@ -24,7 +24,7 @@ case "${1:?build or run}" in
     data_dir="$manifest_dir/data-$suffix"
     mkdir -p "$data_dir/tmp" "$manifest_dir/logs"
     export HBASE_HOME="$hbase_dist"
-    exec timeout 240s /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' \
+    exec /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout 240s \
       "$java_bin" -Xmx4g \
       -javaagent:"$jacoco_agent=destfile=$manifest_dir/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.namespace.NamespaceStateManager:org.apache.hadoop.hbase.namespace.NamespaceTableAndRegionInfo:org.apache.hadoop.hbase.master.TableNamespaceManager:org.apache.hadoop.hbase.ZKNamespaceManager:org.apache.hadoop.hbase.master.procedure.RestoreSnapshotProcedure:org.apache.hadoop.hbase.master.snapshot.SnapshotManager" \
       -javaagent:"$case_dir/agent.jar" \
