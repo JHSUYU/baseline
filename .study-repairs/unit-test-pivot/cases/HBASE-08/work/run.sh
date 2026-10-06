@@ -20,7 +20,7 @@ elif [[ "$1" == run ]]; then
   data_dir="$case_dir/data-$suffix"
   mkdir -p "$data_dir/tmp"
   export HBASE_HOME="$hbase_dist"
-  exec timeout 300s /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' \
+  exec timeout 180s /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' \
     "$java_bin" -Xmx4g \
     -javaagent:"$jacoco_agent=destfile=$case_dir/logs/$suffix.exec,includes=org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl:org.apache.hadoop.hbase.master.TableNamespaceManager:org.apache.hadoop.hbase.ZKNamespaceManager:org.apache.hadoop.hbase.master.procedure.CreateNamespaceProcedure" \
     -javaagent:"$case_dir/agent.jar" \
