@@ -27,6 +27,15 @@ method or branch coverage, or a stable I/O family. A selected target exception
 is a candidate for replay and source review; an ordinary JUnit failure is not
 counted as that exception.
 
+The normal-read campaign finished all 80 trials: 79 exact ordered injections,
+37 trials that reached the check after the last fault, and zero selected
+exceptions. Every target-retaining trial passed the original JUnit. The 43
+remaining trials lost the selected check and are excluded from feedback. The
+last eight trials added no production method or branch outcome and no new I/O
+family, so the conditional 128-trial extension was not activated. This result
+only covers the ordinary-read workload; it does not resolve the expired-key
+control-plane scenario below.
+
 The earlier 19 trials used a static-analysis/region-woven recorder. They are
 preserved in [legacy-graph-result.json](legacy-graph-result.json) and excluded
 from the current graph-independent result.
