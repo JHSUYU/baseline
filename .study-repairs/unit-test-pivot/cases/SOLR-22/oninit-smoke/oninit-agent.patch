@@ -1,0 +1,95 @@
+--- Agent.java
++++ Agent.java
+@@ -46,6 +46,9 @@
+             boolean onCommit = POLICY.equals(className)
+                 && "onCommit".equals(name)
+                 && "(Ljava/util/List;)V".equals(desc);
++            boolean onInit = POLICY.equals(className)
++                && "onInit".equals(name)
++                && "(Ljava/util/List;)V".equals(desc);
+             boolean directoryFactoryGet = "org/apache/solr/core/CachingDirectoryFactory".equals(className)
+                 && "get".equals(name)
+                 && desc.startsWith("(Ljava/lang/String;Lorg/apache/solr/core/DirectoryFactory$DirContext;")
+@@ -66,9 +69,10 @@
+                   super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE, "targetEnter",
+                       "(Ljava/lang/Object;Ljava/lang/Long;)V", false);
+                   changed[0] = true;
+-                } else if (onCommit) {
++                } else if (onCommit || onInit) {
+                   super.visitVarInsn(Opcodes.ALOAD, 0);
+-                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE, "onCommitEnter",
++                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE,
++                      onInit ? "onInitEnter" : "onCommitEnter",
+                       "(Ljava/lang/Object;)V", false);
+                   changed[0] = true;
+                 }
+@@ -110,9 +114,10 @@
+                       "(Ljava/lang/Throwable;Ljava/lang/Object;)V", false);
+                   changed[0] = true;
+                 }
+-                if (onCommit && opcode == Opcodes.RETURN) {
++                if ((onCommit || onInit) && opcode == Opcodes.RETURN) {
+                   super.visitVarInsn(Opcodes.ALOAD, 0);
+-                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE, "onCommitReturn",
++                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE,
++                      onInit ? "onInitReturn" : "onCommitReturn",
+                       "(Ljava/lang/Object;)V", false);
+                   changed[0] = true;
+                 }
+@@ -123,10 +128,11 @@
+               public void visitMethodInsn(int opcode, String owner, String called,
+                                           String descriptor, boolean isInterface) {
+                 invocation++;
+-                if (onCommit && POLICY.equals(owner)
++                if ((onCommit || onInit) && POLICY.equals(owner)
+                     && "updateKnownCommitPoints".equals(called)) {
+                   super.visitVarInsn(Opcodes.ALOAD, 0);
+-                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE, "windowEnd",
++                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE,
++                      onInit ? "onInitWindowEnd" : "windowEnd",
+                       "(Ljava/lang/Object;)V", false);
+                   changed[0] = true;
+                 }
+@@ -141,10 +147,11 @@
+                 } else {
+                   super.visitMethodInsn(opcode, owner, called, descriptor, isInterface);
+                 }
+-                if (onCommit && POLICY.equals(owner)
++                if ((onCommit || onInit) && POLICY.equals(owner)
+                     && "updateLatestCommit".equals(called)) {
+                   super.visitVarInsn(Opcodes.ALOAD, 0);
+-                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE, "windowStart",
++                  super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE,
++                      onInit ? "onInitWindowStart" : "windowStart",
+                       "(Ljava/lang/Object;)V", false);
+                   changed[0] = true;
+                 }
+--- Probe.java
++++ Probe.java
+@@ -271,6 +271,26 @@
+         policySource(policy), policyPath(policy), "", 0, false, false, "", policy);
+   }
+ 
++  public static void onInitEnter(Object policy) {
++    emit("ONINIT_ENTER", "WINDOW:SOLR22", "IndexDeletionPolicyWrapper.onInit",
++        policySource(policy), policyPath(policy), "", 0, false, false, "", policy);
++  }
++
++  public static void onInitWindowStart(Object policy) {
++    emit("ONINIT_WINDOW_START", "WINDOW:SOLR22", "after updateLatestCommit",
++        policySource(policy), policyPath(policy), "", 0, false, false, "", policy);
++  }
++
++  public static void onInitWindowEnd(Object policy) {
++    emit("ONINIT_WINDOW_END", "WINDOW:SOLR22", "before updateKnownCommitPoints",
++        policySource(policy), policyPath(policy), "", 0, false, false, "", policy);
++  }
++
++  public static void onInitReturn(Object policy) {
++    emit("ONINIT_RETURN", "WINDOW:SOLR22", "IndexDeletionPolicyWrapper.onInit",
++        policySource(policy), policyPath(policy), "", 0, false, false, "", policy);
++  }
++
+   private static String policySource(Object policy) {
+     String source = POLICY_SOURCE.get(policy);
+     return source == null ? "UNRESOLVED:policy" : source;

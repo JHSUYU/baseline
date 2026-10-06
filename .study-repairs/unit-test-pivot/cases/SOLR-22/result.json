@@ -1,14 +1,407 @@
 {
-  "case_id": "SOLR-22",
-  "status": "test_identified_expected_exception",
-  "cluster_test": "TestPullReplica.testAddDocs",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/SOLR-TEST-MAP.md",
-  "source_review": "The selected IllegalStateException is caught by ReplicationHandler; run the original SolrCloudTestCase before deciding whether this check is a useful fault oracle."
+  "case_id": "SOLR-22",
+  "cluster_nodes": 2,
+  "cluster_test": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
+  "coverage_gain": 667,
+  "elapsed_seconds": 3066.941,
+  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/SOLR-22.md",
+  "fault_trials": 80,
+  "healthy_native_seconds": 14.38,
+  "healthy_target_exception_count": 0,
+  "healthy_target_method_entries": 150,
+  "historical_http_graph_campaign": {
+    "v3": {
+      "coverage_feedback_gain_raw": 38,
+      "elapsed_seconds": 3444.449,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/evidence/legacy/solr22-http-v3-final-160-summary.json",
+      "fault_trials": 160,
+      "first_fault_families_phase1": 2,
+      "first_fault_families_phase2": 8,
+      "strict_injections": 93,
+      "strict_with_post_fault_target": 66,
+      "target_exception_count": 0
+    },
+    "v4_control": {
+      "elapsed_seconds": 184.593,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/evidence/legacy/solr22-graph-v4-pause-audit.json",
+      "fault_trials": 2,
+      "status": "paused_graph_gap",
+      "strict_injections": 2,
+      "strict_with_post_fault_target": 1,
+      "target_exception_count": 0
+    }
+  },
+  "independent_campaign": {
+    "applied_faults_in_onCommit_window": 0,
+    "budget": {
+      "max_faults": 8,
+      "max_trials": 80
+    },
+    "extension_to_128": "not_warranted_after_exact_plan_replay",
+    "final_checkpoint": "independent/final-state.json",
+    "first_fault_families": {
+      "FAULT:LUCENE_DIRECTORY:CREATE|org.apache.lucene.index.SegmentInfos.write(Lorg/apache/lucene/store/Directory;)V#call4|pull_replica_test_add_docs_shard1_replica_n1/data/index": 3,
+      "FAULT:LUCENE_DIRECTORY:CREATE|org.apache.lucene.index.SegmentInfos.write(Lorg/apache/lucene/store/Directory;)V#call4|pull_replica_test_add_docs_shard1_replica_p2/data/index": 6,
+      "FAULT:LUCENE_DIRECTORY:CREATE|org.apache.lucene.index.SegmentInfos.write(Lorg/apache/lucene/store/Directory;)V#call4|pull_replica_test_add_docs_shard1_replica_p3/data/index": 1,
+      "FAULT:LUCENE_DIRECTORY:CREATE|org.apache.solr.handler.IndexFetcher$DirectoryFile.<init>(Lorg/apache/lucene/store/Directory;Ljava/lang/String;)V#call3|pull_replica_test_add_docs_shard1_replica_p2/data/index.backup": 3,
+      "FAULT:LUCENE_DIRECTORY:CREATE|org.apache.solr.handler.IndexFetcher$DirectoryFile.<init>(Lorg/apache/lucene/store/Directory;Ljava/lang/String;)V#call3|pull_replica_test_add_docs_shard1_replica_p3/data/index.backup": 3,
+      "FAULT:LUCENE_DIRECTORY:DELETE|org.apache.lucene.index.IndexFileDeleter.deleteFile(Ljava/lang/String;)V#call2|pull_replica_test_add_docs_shard1_replica_p2/data/index": 5,
+      "FAULT:LUCENE_DIRECTORY:DELETE|org.apache.lucene.index.IndexFileDeleter.deleteFile(Ljava/lang/String;)V#call2|pull_replica_test_add_docs_shard1_replica_p3/data/index": 3,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.core.SolrCore.getIndexPropertyFromPropFile(Lorg/apache/lucene/store/Directory;)Ljava/lang/String;#call2|pull_replica_test_add_docs_shard1_replica_n1/data": 1,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.core.SolrCore.getIndexPropertyFromPropFile(Lorg/apache/lucene/store/Directory;)Ljava/lang/String;#call2|pull_replica_test_add_docs_shard1_replica_p2/data": 9,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.core.SolrCore.getIndexPropertyFromPropFile(Lorg/apache/lucene/store/Directory;)Ljava/lang/String;#call2|pull_replica_test_add_docs_shard1_replica_p3/data": 5,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.IndexFetcher.compareFile(Lorg/apache/lucene/store/Directory;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/Long;)Lorg/apache/solr/handler/IndexFetcher$CompareResult;#call3|pull_replica_test_add_docs_shard1_replica_p2/data/index": 4,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.IndexFetcher.compareFile(Lorg/apache/lucene/store/Directory;Ljava/lang/String;Ljava/lang/Long;Ljava/lang/Long;)Lorg/apache/solr/handler/IndexFetcher$CompareResult;#call3|pull_replica_test_add_docs_shard1_replica_p3/data/index": 3,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.IndexFetcher.slowFileExists(Lorg/apache/lucene/store/Directory;Ljava/lang/String;)Z#call2|pull_replica_test_add_docs_shard1_replica_p2/data/index": 4,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.IndexFetcher.slowFileExists(Lorg/apache/lucene/store/Directory;Ljava/lang/String;)Z#call2|pull_replica_test_add_docs_shard1_replica_p3/data/index": 4,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.ReplicationHandler$DirectoryFileStream.write(Ljava/io/OutputStream;)V#call5|pull_replica_test_add_docs_shard1_replica_n1/data/index": 5,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.ReplicationHandler.getFileList(Lorg/apache/solr/common/params/SolrParams;Lorg/apache/solr/response/SolrQueryResponse;)V#call42|pull_replica_test_add_docs_shard1_replica_n1/data/index": 10,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.ReplicationHandler.getFileList(Lorg/apache/solr/common/params/SolrParams;Lorg/apache/solr/response/SolrQueryResponse;)V#call63|pull_replica_test_add_docs_shard1_replica_n1/data/index": 3,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.ReplicationHandler.loadReplicationProperties()Ljava/util/Properties;#call6|pull_replica_test_add_docs_shard1_replica_p2/data": 5,
+      "FAULT:LUCENE_DIRECTORY:READ|org.apache.solr.handler.ReplicationHandler.loadReplicationProperties()Ljava/util/Properties;#call6|pull_replica_test_add_docs_shard1_replica_p3/data": 3
+    },
+    "host": "node2",
+    "io_family_gain": 36,
+    "last20_valid_new_branch_outcomes": 1,
+    "last20_valid_new_methods": 0,
+    "last_completed": 80,
+    "last_elapsed_seconds": 37.752,
+    "max_selected_fault_depth": 4,
+    "original_junit": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
+    "outcomes": {
+      "checked": 53,
+      "lost_target": 17,
+      "unmatched": 10
+    },
+    "production_probe_gain": 667,
+    "replay_evidence": "independent/replay-audit.json",
+    "same_faulted_core_post_target_trials": 34,
+    "selected_sequences": 80,
+    "status": "budget_complete",
+    "strict_injections": 70,
+    "target_checks_in_onCommit_window": 0,
+    "target_exception_after_fault_trials": 0,
+    "total_attempts": 99,
+    "trial_ledger": "independent/trial-ledger.csv",
+    "valid_production_branch_outcomes_covered": 10361,
+    "valid_production_branch_outcomes_gain_vs_healthy": 249,
+    "valid_production_methods_covered": 7554,
+    "valid_production_methods_gain_vs_healthy": 57
+  },
+  "independent_instrumentation": {
+    "agent_sha256": "41676974f587a141eb137cb37b5eb25f1c8ccf39478b64f5a42e43d3f6377a04",
+    "classpath_contains_graphchecker": false,
+    "evidence": "independent/seed-audit.json",
+    "healthy_target_checks": [
+      167,
+      144
+    ],
+    "healthy_target_throws": [
+      0,
+      0
+    ],
+    "original_source_modified": false,
+    "physical_node_recorded_separately": true,
+    "selector_identity_fields": [
+      "marker",
+      "ASM call site",
+      "logical Solr core path",
+      "file resource",
+      "per-identity hit ordinal"
+    ],
+    "stable_io_selectors": 53,
+    "stable_target_core_selectors": 12,
+    "static_skeleton_loaded_or_woven": false
+  },
+  "independent_seed_seconds": 35.633,
+  "known_limitations": [
+    "No observed Directory I/O or same-policy target read inside latestCommit-to-knownCommits onCommit window; observed Directory faults therefore do not exercise the proposed mismatch mechanism.",
+    "The analogous onInit state interval was independently instrumented in two original cluster JUnits: 34 complete windows, zero same-writer Directory I/O, zero same-policy target checks. This remains an observed-workload limit; other timing or custom policies are not excluded."
+  ],
+  "legacy_graph_dependent_v5": {
+    "at1_directory_calibration": {
+      "attempt_seconds": 50.644,
+      "attempts_completed": 2,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/at1-jacoco/summary.json",
+      "final_guard_counts": {
+        "CREATE": {
+          "u34": 80,
+          "u43": 0
+        },
+        "READ": {
+          "u34": 91,
+          "u43": 0
+        }
+      },
+      "status": "complete",
+      "strict_injections": 2,
+      "strict_with_post_fault_final_guard": 2,
+      "target_exception_count": 0
+    },
+    "build_seconds": 5.77,
+    "compaction_manifest_path": "evidence/legacy/v5-provenance/fuzz-io-run/compaction-0048.json",
+    "compaction_manifest_sha256": "0dbfba6ba8260b99abd8f4acc12ca3a7cb03c56343b52e4dd891d349c48ac6ff",
+    "coverage_details": {
+      "branch_outcome_union_excluding_known_synthetic": 11,
+      "branch_outcome_union_unmodified_production_classes": 3,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/at1-jacoco/coverage-audit.json",
+      "graph_free_live": {
+        "new_branch_outcomes": 42,
+        "new_feedback_items": 188,
+        "new_method_entries": 2,
+        "production_coverage_pending_checkpoint_audit": true
+      },
+      "graph_free_stage1": {
+        "jacoco_raw_new_probes": 528,
+        "jacoco_unmodified_production_new_probes": 217,
+        "new_branch_outcomes": 37,
+        "new_branch_unmodified_production": 9,
+        "new_feedback_items": 173
+      },
+      "jacoco_raw_new_probe_union": 61,
+      "jacoco_unmodified_production_probe_union_excluding_test_framework": 10,
+      "limitation": "Raw JaCoCo probes in Solr classes patched for instrumentation can include adapter code; the production count conservatively excludes modified source classes and ZkTestServer test-framework classes."
+    },
+    "coverage_gain": 42,
+    "directory_calibration": {
+      "attempt_seconds": 209.918,
+      "attempts_completed": 8,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/bounded/summary.json",
+      "family_results": {
+        "CREATE": {
+          "attempts": 3,
+          "strict": 0
+        },
+        "DELETE": {
+          "attempts": 2,
+          "strict": 1
+        },
+        "READ": {
+          "attempts": 3,
+          "strict": 0
+        }
+      },
+      "status": "complete",
+      "strict_injections": 1,
+      "strict_with_post_fault_target": 1,
+      "target_exception_count": 0
+    },
+    "directory_seed": {
+      "create_observations": 141,
+      "delete_observations": 5,
+      "families_selected": [
+        "READ",
+        "CREATE",
+        "DELETE"
+      ],
+      "observed_fault_points": 560,
+      "read_observations": 414,
+      "target_plan_matched_observations": 138
+    },
+    "elapsed_seconds": 2327.621,
+    "fault_trials": 58,
+    "final_summary_path": "evidence/legacy/v5-provenance/fuzz-io-run/stage-0048-summary.json",
+    "final_summary_sha256": "fdcac9990f3c1ee2c2aa5e1b0e473b53ed99886e8e9113ea0420f43bb95d2def",
+    "fuzz_io_checkpoint": {
+      "budget_seconds": 2400,
+      "budget_trials": 48,
+      "compaction_evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/fuzz-io-run/compaction-0012.json",
+      "completed": 48,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/fuzz-io-run/live-progress.json",
+      "fault_seconds": 1906.5639999999999,
+      "first_fault_markers": {
+        "FAULT:LUCENE_DIRECTORY:CREATE": 17,
+        "FAULT:LUCENE_DIRECTORY:DELETE": 11,
+        "FAULT:LUCENE_DIRECTORY:READ": 20
+      },
+      "host": "node2",
+      "jacoco_raw_new_probes": 528,
+      "jacoco_unmodified_production_new_probes": 217,
+      "max_faults": 4,
+      "multi_fault_trials": 24,
+      "new_branch_outcomes": 42,
+      "new_branch_unmodified_production": 9,
+      "new_feedback_items": 188,
+      "new_io_family_count": 7,
+      "new_method_entries": 2,
+      "next_stage": {
+        "budget_seconds": 2400,
+        "budget_trials": 48,
+        "checkpoint_resume_from_trial": 13,
+        "extension_evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/fuzz-io-run/stage-0012-budget-extension.json",
+        "host": "node2",
+        "max_faults": 4,
+        "status": "checkpoint_stopped",
+        "tmux": "solr22_fuzz_io_s2"
+      },
+      "stage": "stage2",
+      "stage1_evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/fuzz-io-run/stage-0012-summary.json",
+      "status": "checkpoint_stopped",
+      "strict_injections": 38,
+      "strict_with_post_fault_final_guard": 36,
+      "target_exception_count": 0,
+      "tmux": "solr22_fuzz_io_s1",
+      "total_accounted_seconds_including_precomputed_seed": 444.44
+    },
+    "fuzzer_production_coverage": {
+      "jacoco_raw_new_probes": 571,
+      "jacoco_unmodified_production_new_probes": 227,
+      "new_branch_unmodified_production": 9
+    },
+    "graph_free_seed": {
+      "directory_observations": 558,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/fuzz-io-preflight.json",
+      "exact_io_selectors_after_prior_strict_filter": 556,
+      "healthy_seconds": 25.01,
+      "original_junit_exit": 0,
+      "scope_or_skeleton_loaded": false,
+      "target_final_guard_events": 148
+    },
+    "instrumentation_note": "Prewoven GraphChecker classes and GraphChecker runtime recorder emit exact I/O/method/branch/throw events; v5 loads no static scope map or region skeleton and performs no runtime graph aggregation.",
+    "methodology": "coverage_io_no_graph",
+    "onCommit_temporal_summary": {
+      "scope": "global trace-time overlap with any active onCommit; positive overlaps require object/generation source review",
+      "strict_post_target_trials_with_final_guard_overlap": [],
+      "strict_trials_with_applied_fault_overlap": [],
+      "strict_trials_with_observed_directory_io_overlap": [
+        7,
+        32,
+        34,
+        35
+      ],
+      "strict_trials_without_trace": []
+    },
+    "planned_budget_after_stage2": {
+      "conditional_next": {
+        "max_faults": 8,
+        "max_trials": 128,
+        "when": "independent production coverage or I/O novelty persists near trial 64"
+      },
+      "max_faults": 6,
+      "max_trials": 64
+    },
+    "post_fault_target_reach_trials": 39,
+    "precomputed_skeleton_identity": true,
+    "prewoven_graphchecker_recorder": true,
+    "provenance_evidence": [
+      "v5/transport_graph.py",
+      "v5/transport-run-line209/weave.log",
+      "v5/trial.py",
+      "v5/fuzz-io-config.json"
+    ],
+    "seed_seconds": 154.725,
+    "strict_injections": 41,
+    "target_exception_after_fault_trials": 0,
+    "target_relevant_io_overlap": {
+      "evidence": [
+        ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/healthy-oncommit-window-audit.json",
+        ".study-repairs/unit-test-pivot/cases/SOLR-22/v5/representative-oncommit-window-audit.json"
+      ],
+      "healthy_final_target_guards_while_any_onCommit_active": 0,
+      "healthy_observed_io_while_any_onCommit_active": 0,
+      "healthy_onCommit_intervals": 10,
+      "representative_strict_trials_audited": [
+        1,
+        3,
+        15
+      ],
+      "representative_strict_trials_with_observed_io_or_final_guard_overlap": 0,
+      "scope": "global trace-time overlap with IndexDeletionPolicyWrapper.onCommit; source and generation causality remain unverified",
+      "status": "pending_full_faulted_audit"
+    },
+    "trace_archive_bytes_node2": 885360554,
+    "trace_archives_node2": 54,
+    "trace_status": "finalized_and_compacted_exit_0"
+  },
+  "methodology": "coverage_io_independent_asm_jacoco",
+  "oninit_healthy_audit": {
+    "conclusion": "target_relevant_io_not_observed; no onInit fault trial generated",
+    "methodology": "case_local_asm_original_cluster_junit_no_fault",
+    "smokes": [
+      {
+        "agent_sha256": "f8463f145798a68b27d14858383a5997cfb3886950dc711ba46c43ae58c7025b",
+        "complete_onInit_windows": 9,
+        "directory_io_overall": 1906,
+        "elapsed_seconds": 14.82,
+        "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/oninit-smoke/testKillPullReplica/run.json",
+        "exact_target_throws": 0,
+        "same_policy_target_checks_in_onInit_window": 0,
+        "same_writer_directory_io_in_onInit_window": 0,
+        "target_checks": 72,
+        "test": "org.apache.solr.cloud.TestPullReplica#testKillPullReplica",
+        "unresolved_early_policy_windows": 3
+      },
+      {
+        "agent_sha256": "00b77de30199bd09dafd20138f97a7fbf5f2d11972c9bf93cbf7e2459197f31d",
+        "complete_onInit_windows": 25,
+        "directory_io_overall": 5931,
+        "elapsed_seconds": 16.921,
+        "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/oninit-smoke/testAddDocs/run.json",
+        "exact_target_throws": 0,
+        "same_policy_target_checks_in_onInit_window": 0,
+        "same_writer_directory_io_in_onInit_window": 0,
+        "target_checks": 170,
+        "test": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
+        "unresolved_early_policy_windows": 6
+      }
+    ],
+    "total_complete_onInit_windows": 34,
+    "total_same_policy_target_checks_in_window": 0,
+    "total_same_writer_directory_io_in_window": 0
+  },
+  "oracle_note": "A target-method IllegalStateException needs the audited fatal guard path after an applied fault; ReplicationHandler.getFileList catches some such exceptions, so any candidate requires replay and downstream source review.",
+  "post_fault_target_reach_trials": 53,
+  "quality_complete": false,
+  "reason": "Independent 80-trial original-JUnit campaign found no exact target throw. Corrected same-writer onCommit audit found no target-relevant Directory I/O or same-policy target read inside its critical interval. Two additional original TestPullReplica cluster JUnit healthy smokes observed 34 complete onInit intervals, 7,837 overall Directory I/O calls and 242 exact target checks, but zero Directory I/O and zero same-policy target checks inside those onInit intervals. No extra fault trials were justified for that unobserved window; quality remains pending.",
+  "residual_instrumentation_dependency": false,
+  "run_state": "completed; node2 tmux and mirror exited; frozen resumable final-state.json",
+  "schema_version": 1,
+  "seed_seconds": 35.633,
+  "status": "target_relevant_io_not_observed",
+  "strict_injections": 70,
+  "supplemental_original_cluster_healthy_smokes": [
+    {
+      "concurrent_target_checks_in_onCommit_window": 0,
+      "directory_io": 2590,
+      "directory_io_in_onCommit_window": 0,
+      "elapsed_seconds": 26.603,
+      "evidence": "independent/supplemental/testPullReplicaDisconnectsFromZooKeeper/run.json",
+      "onCommit_windows": 6,
+      "target_checks": 58,
+      "target_throws": 0,
+      "test": "org.apache.solr.cloud.TestPullReplicaErrorHandling#testPullReplicaDisconnectsFromZooKeeper"
+    },
+    {
+      "concurrent_target_checks_in_onCommit_window": 0,
+      "directory_io": 11510,
+      "directory_io_in_onCommit_window": 0,
+      "elapsed_seconds": 25.014,
+      "evidence": "independent/supplemental/testCantConnectToPullReplica/run.json",
+      "onCommit_windows": 26,
+      "target_checks": 223,
+      "target_throws": 0,
+      "test": "org.apache.solr.cloud.TestPullReplicaErrorHandling#testCantConnectToPullReplica"
+    }
+  ],
+  "system": "solr",
+  "target_after_fault": 53,
+  "target_code": "if ((commit != null && commit.isDeleted()) || (commit == null && latestCommit != null && generation < latestCommit.getGeneration())) throw new IllegalStateException(...)",
+  "target_exception_after_fault_trials": 0,
+  "target_exception_type": "java.lang.IllegalStateException",
+  "target_method": "<org.apache.solr.core.IndexDeletionPolicyWrapper: org.apache.lucene.index.IndexCommit getAndSaveCommitPoint(java.lang.Long)>",
+  "target_reached": true,
+  "target_relevant_io_overlap": {
+    "applied_faults_during_latest_to_known_window": 0,
+    "audit_evidence": "independent/window-recount.json",
+    "complete_onCommit_windows": 783,
+    "corrected_same_writer_io_window_count": 0,
+    "raw_cross_thread_io_window_count": 52,
+    "scope": "independent direct Directory hooks and precise onCommit delegate window",
+    "status": "target_relevant_io_not_observed",
+    "target_checks_during_window": 0
+  },
+  "target_source_file": "solr/core/src/java/org/apache/solr/core/IndexDeletionPolicyWrapper.java",
+  "target_source_line": 177,
+  "updated_at": 1791330719.641594
 }
