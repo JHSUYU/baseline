@@ -1,7 +1,7 @@
 {
   "case_id": "HBASE-28",
-  "status": "test_identified",
-  "cluster_test": "TestInfoServers.testInfoServersRedirect",
+  "status": "source_excluded",
+  "cluster_test": "org.apache.hadoop.hbase.TestInfoServers#testInfoServersRedirect",
   "target_reached": null,
   "elapsed_seconds": 0,
   "fault_trials": 0,
@@ -9,6 +9,10 @@
   "target_after_fault": 0,
   "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-28",
-  "source_audit_note": "Default info bind address is local/any, so invalid bind-address IOException is not expected. This is a configuration check, not a strong coordination seed."
+  "evidence": [
+    "SCREENING.md"
+  ],
+  "source_audit_note": "HRegionServer.putUpWebUI validates a local configured HTTP bind address. The original TestInfoServers JUnit uses default local/any bind addresses and only checks redirects; a DNS UnknownHostException exits before the selected local-address predicate. No relevant exception-injection sequence can change the configured address into a nonlocal address, so this source-only case is excluded from ad hoc coordination fuzzing.",
+  "source_review_complete": true,
+  "classification": "static_false_positive_configuration_guard"
 }
