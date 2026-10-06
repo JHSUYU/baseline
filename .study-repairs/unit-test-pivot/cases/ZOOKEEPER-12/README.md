@@ -73,13 +73,12 @@ server-up assertion; the selected guard never runs after that fault. No run
 contains the selected “accepted epoch ... less than the current epoch”
 exception. No new bug is confirmed.
 
-This check remains pending because the graph does not yet connect accepted
-epoch state across restarts. A generic path-and-version file-state hook for
-successful atomic writes, direct test file writes, and subsequent reads,
-followed by exact read-to-writer finalization, is needed before declaring
-this target closure complete. The experiments can resume from the recorded
-selector plans and traces. `result.json` and each `trials/*/summary.json`
-record timing, match counts, target reach, and branch feedback.
+This section records the original five-trial checkpoint: its graph did not
+connect accepted-epoch state across restarts. The later persisted-file
+repair and sixth trial are recorded below. The experiments can resume from
+the recorded selector plans and traces. `result.json` and each
+`trials/*/summary.json` record timing, match counts, target reach, and
+branch feedback.
 
 The completed raw runtime and schedule streams are archived as `.jsonl.gz`
 to keep this isolated case small. `artifact-manifest.json` records each
@@ -87,3 +86,31 @@ stream's original size and SHA-256, plus its compressed size and SHA-256.
 To run `run_trial.py` again or reaggregate from a recorded trace, restore
 the required raw stream with `gzip -dk <path>.jsonl.gz`; retain the archive
 so the manifest remains verifiable.
+
+## Persisted-file repair and sixth trial
+
+The isolated [repair report](../../file-state-edge/README.md) describes
+GraphChecker commit `f458270f88fb613976c9f7c36aa518daaa25ffec` and
+its three passing version-edge fixtures. The unchanged original JUnit passed
+again (21 seconds). The repaired healthy graph now joins peer-0 epoch-1
+`acceptedEpoch` write seq 61258 to its final epoch-2 read seq 101592 as a
+version-3 `EXACT/PERSISTED_FILE_VERSION_V1` edge. The JUnit's two direct
+`FileUtils.write` calls are also represented. The old five trials were not
+rerun.
+
+One new four-fault sequence targeted that proven writer-side occurrence.
+All 4/4 IOException faults matched and applied. Each failed call lacks a
+successful write-version event; a later retry did write the file, and the
+final restart read consumed its observed version. The stock JUnit passed in
+20.203 seconds and the pinned guard was reached after the fourth fault,
+still nonfatal. Across six trials, 12/12 faults matched and applied, five
+trials retained the target, and no target exception appeared. This case
+remains pending for further closure-guided fault families; these observations
+do not establish that the check cannot fail.
+
+The later [merged-build check](../../file-state-edge/merged-validation/README.md)
+reran the same original JUnit without faults using the ZooKeeper common
+branch JAR that combines ACKEPOCH and persisted-file hooks. It passed in 20
+seconds. Six ACKEPOCH sends and six receives were traced; the peer-0
+accepted-epoch cross-restart file edge and exact target closure remained
+present. This compatibility check adds no fault trial to the six above.

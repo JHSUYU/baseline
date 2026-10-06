@@ -139,18 +139,25 @@ def markdown(items: list[dict]) -> str:
                 break
         return ", ".join(links)
 
+    def coverage_cell(value: object) -> str:
+        if isinstance(value, dict):
+            return "<br>".join(f"{cell(key)}: {cell(amount)}"
+                                  for key, amount in value.items())
+        return cell(value)
+
     counts = Counter(row["status"] for row in items)
     lines = [
         "# Unit-test cluster fuzz checklist (102 checks)", "",
         "This is the new campaign. Legacy Docker trials are not counted.", "",
-        "Case time uses total elapsed time when reported, including setup and review. "
+        "Time uses total elapsed time when reported; otherwise it uses the "
+        "case's measured duration (see the result for its scope). "
         "Fully applied trials matched and injected every selected fault. "
         "Target after fault counts check reach, not target exceptions. "
         "Coverage gain is the case's reported feedback; its provenance is in the result.",
         "",
         "Status: " + ", ".join(f"{key}={value}" for key, value in sorted(counts.items())),
         "", "| Check | System | Source | Function | Check code | Cluster test | "
-        "Case time (s) | Fault trials | Fully applied trials | Target after fault | "
+        "Reported time (s) | Fault trials | Fully applied trials | Target after fault | "
         "Coverage gain | Result | Bug | Evidence |",
         "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ]
@@ -165,9 +172,11 @@ def markdown(items: list[dict]) -> str:
                   row.get("cluster_test") or row.get("proposed_cluster_test"),
                   row.get("total_elapsed_seconds") or row.get("elapsed_seconds"),
                   row.get("fault_trials"), row.get("fully_applied_trials"),
-                  row.get("target_after_fault"),
-                  row.get("coverage_gain"), row["status"], row.get("bug_mark")]
+                  row.get("target_after_fault")]
+        tail = [row["status"], row.get("bug_mark")]
         lines.append("| " + " | ".join(map(cell, values)) + " | "
+                     + coverage_cell(row.get("coverage_gain")) + " | "
+                     + " | ".join(map(cell, tail)) + " | "
                      + evidence_cell(row) + " |")
     return "\n".join(lines) + "\n"
 
