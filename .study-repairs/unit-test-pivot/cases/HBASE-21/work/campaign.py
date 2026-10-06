@@ -147,13 +147,15 @@ def queue_priority(entry, trials):
         and x['plan'][:-1] == prefix
         and '~'.join(x['plan'][-1].split('~')[:3]) == site
         for x in trials)
+    # Once a fault prefix repeatedly loses the selected check, spend the next
+    # budget on other observed I/O sites instead of many equivalent retries.
     prefix_trials = [x for x in trials if x['strict'] and x['plan'][:-1] == prefix]
-    exhausted_prefix = len(prefix_trials) >= 4 and all(
+    exhausted_prefix = len(prefix_trials) >= 2 and all(
         not x['target_after_final_fault'] for x in prefix_trials)
     root_site = '~'.join(entry['plan'][0].split('~')[:3])
     same_root_multifaults = [x for x in trials if x['strict'] and len(x['plan']) >= 2
                              and '~'.join(x['plan'][0].split('~')[:3]) == root_site]
-    exhausted_root = len(entry['plan']) >= 2 and len(same_root_multifaults) >= 8 \
+    exhausted_root = len(entry['plan']) >= 2 and len(same_root_multifaults) >= 4 \
         and all(not x['target_after_final_fault'] for x in same_root_multifaults)
     # A second fault against the default/hbase namespace during failover has
     # repeatedly aborted both masters. Learn that failure class across exact
@@ -170,7 +172,7 @@ def queue_priority(entry, trials):
     depth_bonus = (18 if len(trials) >= 40 else 10 if len(trials) >= 24 else 0) * (depth - 1)
     return entry['score'] + novelty + breadth + min(ordinal, 4) * 2 + target_namespace \
         + min(entry['wait'] // 8, 5) - (100 if equivalent_target_loss else 0) \
-        - (60 if exhausted_prefix else 0) - (80 if exhausted_root else 0) \
+        - (180 if exhausted_prefix else 0) - (120 if exhausted_root else 0) \
         - learned_target_loss_penalty + depth_bonus
 
 
