@@ -1,7 +1,9 @@
 {
   "case_id": "HDFS-43",
-  "status": "test_identified",
+  "status": "mapped_pending_smoke",
   "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether",
+  "alternate_cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testMultipleTruncate",
+  "source_review": "The proposed original test deliberately requests a second, different truncate length and expects the selected AlreadyBeingCreatedException. That healthy exception cannot be a new-bug oracle. The alternate original test retries the same length; exact guard coverage still requires runtime calibration.",
   "target_reached": null,
   "elapsed_seconds": 0,
   "fault_trials": 0,
