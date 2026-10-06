@@ -72,6 +72,16 @@ The supplementary 80-trial, eight-exception campaign runs in tmux session
 `independent/expiry/campaign-state.json`, `expiry-trial-ledger.csv`, and
 `expiry-result.json`. The main result remains separate while both workloads
 are running. No GraphChecker runtime or graph closure is involved.
+After 32 completed trials, the campaign moved from node0 to node2 to avoid
+node0's overloaded test queue. The original embedded-cluster JUnit passed on
+node2 with the same five target checks, one expected stale-key exception, and
+the same 15 SASL reads, six heartbeat RPCs, and two received key-update
+commands. The first 32 sequence IDs and trial-32 trace match across hosts;
+node2 resumed the previously active trial 33. The node0 tmux session
+`hdfs11-expiry-sync` mirrors completed evidence and regenerates this case's
+result and trial ledger every 30 seconds. The fixed migration boundary is in
+`independent/expiry/migration-boundary.json`. On reconnect, inspect node2's
+`hdfs11-expiry-campaign` and the local sync session before starting a writer.
 The case-local `independent/expiry/audit.py` additionally checks every strict,
 target-retaining trial for extra selected exceptions, absence of a successful
 new-key lookup after a rejection, and original-JUnit failure after a selected
