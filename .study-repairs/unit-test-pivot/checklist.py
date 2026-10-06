@@ -112,12 +112,26 @@ def normalize_trial_counts(record: dict, update: dict,
     else:
         trials = update.get("trial_results")
         if isinstance(trials, list) and trials:
-            record["fully_applied_trials"] = sum(
-                trial.get("requested_faults", 0) > 0
-                and trial.get("requested_faults") == trial.get("matched_faults")
-                == trial.get("applied_faults")
-                for trial in trials
-            )
+            def exact(trial: dict) -> bool | None:
+                if "strict_injection" in trial:
+                    return bool(trial["strict_injection"])
+                if "exact_order_applied" in trial:
+                    return bool(trial["exact_order_applied"])
+                requested = trial.get("requested_faults")
+                if requested is not None:
+                    return (requested > 0 and requested ==
+                            trial.get("matched_faults") ==
+                            trial.get("applied_faults"))
+                return None
+
+            indicators = [exact(trial) for trial in trials]
+            if all(indicator is not None for indicator in indicators):
+                record["fully_applied_trials"] = sum(indicators)
+            elif isinstance(update.get("strict_injections"), int) and (
+                    update["strict_injections"] <= update.get("fault_trials", 0)):
+                record["fully_applied_trials"] = update["strict_injections"]
+            else:
+                record["fully_applied_trials"] = None
         elif isinstance(update.get("strict_injections"), int) and (
                 update["strict_injections"] <= update.get("fault_trials", 0)):
             record["fully_applied_trials"] = update["strict_injections"]
