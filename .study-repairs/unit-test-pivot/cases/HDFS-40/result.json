@@ -1,7 +1,9 @@
 {
   "case_id": "HDFS-40",
-  "status": "test_identified",
+  "status": "mapped_pending_smoke",
   "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testAppendTwice",
+  "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppendRestart#testAppendWithPipelineRecovery",
+  "source_review": "The originally proposed one-DataNode test's second append is rejected by lease recovery before this replication guard. The alternate original test runs four DataNodes, stops one during append, and verifies data after NameNode restart; exact guard coverage still requires runtime confirmation.",
   "target_reached": null,
   "elapsed_seconds": 0,
   "fault_trials": 0,

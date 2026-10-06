@@ -1,7 +1,9 @@
 {
   "case_id": "HDFS-39",
-  "status": "test_identified",
+  "status": "mapped_pending_smoke",
   "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testAppendTwice",
+  "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
+  "source_review": "The originally proposed second append is intentionally rejected by active lease recovery before the selected COMMITTED-block decision. The alternate original test uses four DataNodes, allows closing with one COMMITTED block, and repeatedly appends; target coverage requires runtime confirmation.",
   "target_reached": null,
   "elapsed_seconds": 0,
   "fault_trials": 0,
