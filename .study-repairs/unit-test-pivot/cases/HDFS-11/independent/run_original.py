@@ -67,6 +67,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--parameter", default="0", choices=("0", "1"))
+    parser.add_argument("--method", default=TEST_METHOD)
     parser.add_argument("--timeout", default=360, type=int)
     parser.add_argument("--instrument", action="store_true")
     parser.add_argument("--plan", type=Path)
@@ -112,7 +113,7 @@ def main() -> None:
                   + ",includes=org.apache.hadoop.hdfs.*:org.apache.hadoop.ipc.*,dumponexit=true,append=false"]
                  if args.instrument else []),
                *(["-Dhdfs11.plan=" + str(args.plan.resolve())] if args.plan else []),
-               "-cp", classpath, "RunOriginalJUnit", TEST_CLASS, TEST_METHOD,
+               "-cp", classpath, "RunOriginalJUnit", TEST_CLASS, args.method,
                args.parameter]
     started = time.monotonic()
     with (output / "junit.log").open("w") as log:
@@ -121,7 +122,7 @@ def main() -> None:
                                        stderr=subprocess.STDOUT, timeout=args.timeout).returncode
         except subprocess.TimeoutExpired:
             exit_code = 124
-    manifest = {"case_id": "HDFS-11", "test": TEST_CLASS + "#" + TEST_METHOD
+    manifest = {"case_id": "HDFS-11", "test": TEST_CLASS + "#" + args.method
                 + "[" + args.parameter + "]", "returncode": exit_code,
                 "elapsed_seconds": round(time.monotonic() - started, 3),
                 "log": str(output / "junit.log"), "original_distribution": str(HADOOP),
