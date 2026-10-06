@@ -876,13 +876,15 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "strict_injections": sum(bool(result.get("strict_injection"))
                                  for result in results),
         "post_fault_target_reach_trials": sum(
-            bool(result.get("target_reached_after_fault")) for result in results),
+            bool(result.get("strict_injection") and
+                 result.get("target_reached_after_fault")) for result in results),
         "lost_target_trials": sum(result.get("status") == "lost_target"
                                   for result in results),
         "target_after_fault": sum(bool(result.get("target_after_fault"))
                                   for result in results),
         "target_exception_after_fault_trials": sum(
-            bool(result.get("target_after_fault")) for result in results),
+            bool(result.get("strict_injection") and result.get("oracle"))
+            for result in results),
         "target_outcome_changed_trials": sum(
             bool(result.get("target_outcome_changed")) for result in results),
         "oracle_candidates": len(candidates),

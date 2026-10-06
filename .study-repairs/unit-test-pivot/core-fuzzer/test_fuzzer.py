@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from fuzzer import (campaign, fingerprint, point_from_event, strict_injection,
-                    trace_feedback, validate)
+                    trace_feedback, validate, write_case_result)
 
 TARGET = '<example.Target: void check()>'
 SITE = TARGET + '#u8'
@@ -114,6 +114,37 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_summary_counts_only_fully_applied_target_trials(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            partial = root / 'partial.json'
+            complete = root / 'complete.json'
+            partial.write_text(json.dumps({
+                'status': 'unmatched', 'strict_injection': False,
+                'target_reached_after_fault': True,
+                'target_after_fault': True, 'oracle': True}))
+            complete.write_text(json.dumps({
+                'status': 'baseline_exception_recurrence',
+                'strict_injection': True,
+                'target_reached_after_fault': True,
+                'target_after_fault': True, 'oracle': True}))
+            state = {
+                'case_id': 'CHECK-01', 'system': 'example',
+                'test_class': 'example.OriginalClusterTest',
+                'test_method': 'testOriginal',
+                'seed': {'feedback': {'coverage': [], 'points': []}},
+                'coverage': [], 'io_families': [],
+                'completed': [
+                    {'result': str(partial), 'sequence': [A, B]},
+                    {'result': str(complete), 'sequence': [A]},
+                ],
+            }
+            write_case_result(root, state)
+            summary = json.loads((root / 'result.json').read_text())
+            self.assertEqual(summary['strict_injections'], 1)
+            self.assertEqual(summary['post_fault_target_reach_trials'], 1)
+            self.assertEqual(summary['target_exception_after_fault_trials'], 1)
+
     def test_coverage_prefix_filters_runner_events(self):
         with tempfile.TemporaryDirectory() as temp:
             path = Path(temp) / 'trace.jsonl'
