@@ -32,7 +32,32 @@ persists a checkpoint plus one ledger row per trial. Faults are
 response read. A trial contributes feedback only when every fault matches in
 order and the same selected assertion executes after the last fault. The
 selected assertion throw is a replay and source-review candidate, not an
-automatic bug verdict. The campaign is running; no final negative result is
-claimed yet.
-The stopping target is 80 strict target-retaining trials, bounded by 180 total
-attempts or 9,000 seconds. Every attempted trial is recorded separately.
+automatic bug verdict.
+
+The campaign stopped on the **80 strict target-retaining trial** budget after
+102 attempts (100 strict matches). All 80 target-retaining original JUnit
+runs passed; none threw the selected assertion. The case gained 262 HDFS/IPC
+production JaCoCo probes. Ten valid sequences used one fault and 70 used two.
+All 18 strictly applied three-fault sequences removed the selected target, so
+they were recorded as attempts without contributing target feedback. The last
+eight valid trials added no production probe or stable I/O family; the
+conditional larger budget was not taken. Healthy plus fault-run elapsed time
+was 2,394.916 seconds. This is a bounded negative finding for this original
+JUnit and its observed IPC response fault sites.
+
+`independent/audit_campaign.py` reclassified every completed plan directly
+from its saved original JUnit trace, manifest and exact target identity; the
+102 checks matched the checkpoint. The raw trace, JUnit log, JaCoCo exec,
+plan, healthy seed and audit are in `HDFS-33-independent-evidence.tar.gz`
+(SHA-256 `962ca90b4a4418d56ff62d26cf39a2bd21facf9ae6a35832f02195b2f3566b75`).
+`independent-archive-manifest.json` gives its size and file count.
+
+The source relation behind the guard is narrow. `prepareVolume` obtains each
+block-pool storage through `getBlockPoolSliceStorage`, which creates the map
+entry if needed, before adding the same pool ID to the builder. `build` reads
+that map under the storage lock. The only map removal is on block-pool shutdown
+after the final BP actor exits. The one-NameNode, one-DataNode original test
+does not request such a shutdown, although an IPC fault could affect actor
+lifetime indirectly. The fault scope here was observed `Client.getRpcResponse`
+events; checked file-I/O failures during volume preparation normally abort
+before this builder guard. No new bug is claimed.
