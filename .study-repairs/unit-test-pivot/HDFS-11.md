@@ -2,7 +2,11 @@
 
 ## Result and exact site
 
-**Quality complete for the bounded original-test campaign; no new bug found.**
+**The server-read subcampaign is complete; the full HDFS-11 check remains pending.**
+Ten exact SASL read fault trials found no target exception. The key-import
+control-plane path is still only a `CANDIDATE` closure member with
+`edgeEvidence=UNAVAILABLE`, and producer-side RPC/I/O doors have not been
+tested. The checklist therefore does not mark this check `quality_complete`.
 The check is `BlockTokenSecretManager.retrieveDataEncryptionKey(int, byte[])` in
 Hadoop 3.4.3. `allKeys.get(keyId)` is at source line 551, `key == null` is
 line 552, and `InvalidEncryptionKeyException` starts at line 553. The old
@@ -119,7 +123,7 @@ failure to a missing key. The two three-fault runs add **zero** methods,
 branch outcomes, target-closure regions, or fault-site classes beyond the
 one- and two-fault union. Both remain on the normal HDFS-11 arm.
 
-The target-specific feedback queue is exhausted under this original
+The server-read feedback subqueue is exhausted under this original
 workload and the recorded server-read door class: further retry iterations
 only repeat the same region and I/O site without new target-region or code
 feedback. We stopped at three ordered faults after testing both EOF and

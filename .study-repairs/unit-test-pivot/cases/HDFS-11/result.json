@@ -1,6 +1,6 @@
 {
   "case_id": "HDFS-11",
-  "status": "quality_complete",
+  "status": "target_reached_pending_key_state_coverage",
   "system": "HDFS 3.4.3",
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "function": "retrieveDataEncryptionKey(int, byte[])",
@@ -39,7 +39,7 @@
   },
   "timing_note": "Sum of measured process durations in final campaign; some fault trials ran concurrently, so not wall clock; earlier feasibility work and manual source review excluded",
   "evidence": ".study-repairs/unit-test-pivot/HDFS-11.md; .study-repairs/unit-test-pivot/hdfs11-server-door/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/manifest.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/summary.json; .study-repairs/unit-test-pivot/hdfs11-server-door/healthy/trace/concolic_region_plan.jsonl; .study-repairs/unit-test-pivot/hdfs11-server-door/trials",
-  "status_scope": "Bounded original JUnit [0] MiniDFSCluster campaign with real server SASL read EOF/timeout, up to three ordered faults; other workloads/key-rotation schedules untested",
+  "status_scope": "Server SASL read EOF/timeout subcampaign complete for original JUnit [0], up to three ordered faults; the overall check remains pending producer-side key-import identity and fault coverage",
   "healthy_fault_points_observed": 146,
   "healthy_target_occurrence_count": 2,
   "healthy_target_occurrences_stable_across_replay": true,
@@ -49,7 +49,8 @@
   "target_fatal_branch_count": 0,
   "lost_target_trials": 2,
   "coverage_gain_definition": "Five new instrumented branch (site,outcome) pairs across trial union versus healthy; zero new methods; no new branch outcome at three faults",
-  "stop_reason": "Target-specific feedback queue exhausted after exact one-, two-, and representative three-fault SASL read sequences: later retries repeat the same closure region and fault-site class; three-fault runs add no branch or method coverage and no target failure",
+  "stop_reason": "Server-read subqueue exhausted after exact one-, two-, and representative three-fault SASL sequences; full target closure remains pending because key-import read-from is only CANDIDATE with edgeEvidence=UNAVAILABLE and producer-side RPC/I/O fault classes have not been tested",
+  "remaining_work": "Trace NameNode block-key export through DataNode registration/key-update RPC into addKeys/allKeys with stable source and request identities, then test eligible pre-target fault doors in that producer path while retaining the exact HDFS-11 target guard",
   "trial_results": [
     {
       "sequence": "first-eof",

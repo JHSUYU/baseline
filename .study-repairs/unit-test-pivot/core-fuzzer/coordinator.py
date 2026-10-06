@@ -33,6 +33,8 @@ WORKER_ID = re.compile(r"^[A-Za-z0-9._-]{1,80}$")
 TERMINAL = {"quality_complete", "no_cluster_test", "source_excluded",
             "confirmed_bug"}
 REVIEW = {"candidate_review"}
+READY_FOR_FIRST_RUN = {"pending", "pending_test_search", "test_identified",
+                       "mapped_pending_smoke"}
 MIN_TTL = 1
 MAX_TTL = 86400
 
@@ -165,8 +167,14 @@ class Ledger:
                 if record_file.exists():
                     continue
                 status = row.get("status")
-                if status not in TERMINAL and status not in REVIEW:
+                # A fresh ledger must not repeat work already recorded in the
+                # checklist.  Any nonterminal result or active/manual case
+                # stays on hold until an explicit, reasoned resume.
+                if status is None or status in READY_FOR_FIRST_RUN:
                     status = "pending"
+                elif not isinstance(status, str) or not re.fullmatch(
+                        r"[a-z][a-z0-9_]{0,79}", status):
+                    raise ValueError(f"invalid checklist status: {status!r}")
                 atomic_json(record_file, {
                     "schema_version": SCHEMA, "case_id": row["case_id"],
                     "system": row.get("system", ""), "status": status,

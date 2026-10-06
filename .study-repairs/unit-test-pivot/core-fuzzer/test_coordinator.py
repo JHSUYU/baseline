@@ -137,6 +137,27 @@ class CoordinatorTest(unittest.TestCase):
             "--status", "budget_or_queue_complete", "--result-file", budget_result)
         self.assertFalse(self.claim("node1", "HDFS-01")["claimed"])
 
+    def test_new_ledger_keeps_prior_outcomes_on_hold(self) -> None:
+        manifest = self.base / "prior-checks.json"
+        manifest.write_text(json.dumps({"rows": [
+            {"case_id": "HDFS-32", "system": "HDFS 3.4.3",
+             "status": "no_valid_target_trial"},
+            {"case_id": "HDFS-11", "system": "HDFS 3.4.3",
+             "status": "target_reached_pending_key_state_coverage"},
+            {"case_id": "HDFS-07", "system": "HDFS 3.4.3",
+             "status": "test_identified"},
+        ]}), encoding="utf-8")
+        root = self.base / "new-ledger"
+        cli("init", "--root", root, "--manifest", manifest)
+        report = cli("status", "--root", root)
+        self.assertEqual(report["counts"], {
+            "no_valid_target_trial": 1,
+            "target_reached_pending_key_state_coverage": 1,
+            "pending": 1,
+        })
+        claim = cli("claim", "--root", root, "--worker", "node1")
+        self.assertEqual(claim["case_id"], "HDFS-07")
+
     def test_complete_requires_synced_matching_result(self) -> None:
         claim = self.claim("node1", "HDFS-01")
         outside = self.base / "outside.json"

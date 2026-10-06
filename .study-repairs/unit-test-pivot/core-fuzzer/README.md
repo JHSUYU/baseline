@@ -210,7 +210,11 @@ python3 "$CORE/coordinator.py" dispatch --root "$LEDGER" \
   --max-cases 102
 ```
 
-`dispatch` claims one unfinished case at a time. Each runs in a uniquely
+`init` queues only untouched mapping/search statuses. Existing case outcomes,
+including `no_valid_target_trial` and graph/identity gaps, remain on hold so a
+new ledger cannot repeat them automatically; use `resume --reason` after a
+specific adapter, workload, or budget change. `dispatch` claims one queued
+case at a time. Each runs in a uniquely
 named tmux session on its assigned worker. The node0 ledger records the
 worker host, session name, attempt number, and lease expiry. It renews the
 lease while the remote session runs and copies a bounded evidence stage into

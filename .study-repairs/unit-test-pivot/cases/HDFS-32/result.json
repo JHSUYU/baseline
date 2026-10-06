@@ -1,15 +1,15 @@
 {
   "case_id": "HDFS-32",
-  "status": "target_reached_pending_graph",
+  "status": "no_valid_target_trial",
   "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
   "target_reached": true,
-  "elapsed_seconds": 114.905,
-  "fault_trials": 0,
-  "strict_injections": 0,
+  "elapsed_seconds": 445.875,
+  "fault_trials": 3,
+  "strict_injections": 3,
   "target_after_fault": 0,
   "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/hdfs32/graph-nonfatal/manifest.json and trace/summary.json: original testDfsAdminDeleteBlockPool JUnit passed; target guard reached twice, both true, zero target fatal occurrences. Earlier testDeleteBlockPool healthy trace at graph-seed/manifest.json reached region 5 times and deliberately caught 2 target IOExceptions. No fault injected. Neither trace has EXCHANGE/FAULT door events, so strict closure I/O membership is pending.",
+  "evidence": ".study-repairs/unit-test-pivot/hdfs32/NO_VALID_TARGET_TRIAL.md: original MiniDFSCluster test, healthy graph closure, three exact injected trials all lost the same force=false target occurrence, bounded alternate-test search and source proof; 0 quality-valid, no new bug.",
   "elapsed_breakdown_seconds": {
     "native_junit": 21.39,
     "static_graph": 27.435,
@@ -23,7 +23,10 @@
   },
   "target_region_id": "REGION.10878e59-8e3c-3d04-a34c-7cd16fd5e446",
   "target_guard_site": "<org.apache.hadoop.hdfs.server.datanode.DataNode: void deleteBlockPool(java.lang.String,boolean)>#u9",
-  "healthy_target_branch_outcomes": [true, true],
+  "healthy_target_branch_outcomes": [
+    true,
+    true
+  ],
   "healthy_target_fatal": false,
   "expected_fatal_healthy_test": {
     "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
@@ -34,8 +37,57 @@
     "evidence": ".study-repairs/unit-test-pivot/hdfs32/graph-seed/manifest.json and trace/summary.json"
   },
   "nonfatal_graph_event_counts": {
-    "exchange": 0,
-    "fault": 0,
-    "gap": 0
-  }
+    "exchange": 60,
+    "fault": 147,
+    "gap": 2
+  },
+  "strict_trial": {
+    "selector": ".study-repairs/unit-test-pivot/hdfs32/fault-trial-semantic-01.json",
+    "source_key": "dfsadmin#epoch0",
+    "request_api": "DFSAdmin.deleteBlockPool(force=false)",
+    "marker": "FAULT:HADOOP_IPC:REQUEST",
+    "site_id": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#u20",
+    "occurrence_id": "cef0461631dba7c8",
+    "hit_ordinal": 1,
+    "fault_applied_seq": 6152,
+    "post_fault_target_guard_seq": 6262,
+    "post_fault_target_guard_outcome": true,
+    "junit_exit_status": 0,
+    "faulted_aggregate_status": 0,
+    "target_fatal": false,
+    "target_closure_evidence_tier": "CANDIDATE",
+    "target_closure_admission_basis": "CONTROL_PRODUCER_V1",
+    "target_closure_depth": 1,
+    "raw_branch_outcome_gain": 1,
+    "application_branch_outcome_gain": 0,
+    "target_after_fault_same_semantic_root": false,
+    "quality_valid": false,
+    "post_fault_target_request_api": "DFSAdmin.deleteBlockPool(force=true)",
+    "discard_reason": "healthy target was force=false; post-fault guard belongs to force=true command"
+  },
+  "discarded_trials": [
+    {
+      "trial": "graph-ipc-core-trial-01",
+      "reason": "target not reached after fault; exact @14 IPC index shifted to force=true admin command before semantic root fix",
+      "matched_injection": true,
+      "target_after_fault": false,
+      "junit_exit_status": 1
+    },
+    {
+      "trial": "graph-ipc-semantic-trial-01",
+      "reason": "force=false healthy target occurrence lost; force=true target reached after fault is a different semantic request",
+      "matched_injection": true,
+      "target_after_fault": false,
+      "junit_exit_status": 0
+    },
+    {
+      "trial": "graph-ipc-semantic-trial-02",
+      "reason": "force=false ConnectTimeoutException at request send short-circuited same-semantic target; only force=true guard remained",
+      "matched_injection": true,
+      "target_after_fault": false,
+      "junit_exit_status": 0
+    }
+  ],
+  "elapsed_accounting": "Sum of recorded static, weave, adapter compile, test, and aggregation phases across HDFS-32 unit-test runs, including 96.960 seconds of bounded actor scope/seed diagnostics; excludes unmeasured code-edit/build time.",
+  "quality_valid_trials": 0
 }
