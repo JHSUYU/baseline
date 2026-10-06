@@ -1,13 +1,15 @@
 {
   "case_id": "SOLR-13",
-  "status": "mapped_pending_smoke",
+  "status": "no_usable_cluster_test",
   "cluster_test": "TimeRoutedAliasUpdateProcessorTest.testPreemptiveCreation",
-  "target_reached": null,
-  "elapsed_seconds": 0,
+  "target_reached": false,
+  "elapsed_seconds": 12.327,
   "fault_trials": 0,
   "strict_injections": 0,
   "target_after_fault": 0,
   "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/SOLR-TEST-MAP.md"
+  "evidence": "cases/SOLR-13/README.md; independent/evidence/healthy-01,02,03",
+  "healthy_attempts": 3,
+  "source_review": "The mapped original TimeRoutedAliasUpdateProcessorTest inherits a class-level @AwaitsFix(SOLR-13696) and is skipped by default. Enabling tests.awaitsfix runs the original four-node JUnit, but its createConfigSet setup fails with a trusted-base-configset authorization error before RoutedAlias.doSynchronous. No injected trial or target hit is claimed."
 }
