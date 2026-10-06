@@ -84,7 +84,11 @@ alternative ordered `fatal_guard_paths`; the final branch of a route must
 execute after the last fault. `throw_method`, `throw_event: EXPLICIT_THROW`,
 and `explicit_throw_site_id` support a throw inside a descendant call or a
 locally caught explicit throw. Exclude synthetic injection branches from
-coverage with exact `coverage_exclude_sites` when needed.
+coverage with exact `coverage_exclude_sites` when needed. Set
+`coverage_include_prefixes` (for example, `["<org.apache.hadoop.hdfs."]`)
+to keep JUnit and probe classes out of feedback. The case result reports
+distinct gains for methods, branch outcomes, and call-site events;
+`coverage_gain` is their combined ID count.
 
 `io_scope` is an optional coarse hint. Its `marker_prefixes` and `site_ids`
 arrays filter instrumented I/O points for scheduling. Leave it out to use all

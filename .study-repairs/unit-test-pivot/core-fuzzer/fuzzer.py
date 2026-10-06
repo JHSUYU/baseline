@@ -137,6 +137,15 @@ def trace_feedback(path: Path, target: dict[str, Any],
     summary: dict[str, Any] = {}
     throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
     coverage_exclude_sites = set(target.get("coverage_exclude_sites", []))
+    coverage_include_prefixes = target.get("coverage_include_prefixes", [])
+
+    def coverage_in_scope(event: dict[str, Any]) -> bool:
+        if not coverage_include_prefixes:
+            return True
+        method = event.get("method") or event.get("siteId", "").split("#u", 1)[0]
+        return isinstance(method, str) and any(
+            method.startswith(prefix) for prefix in coverage_include_prefixes)
+
     events = list(rows(path))
     for event in events:
         kind = event.get("event")
@@ -157,7 +166,7 @@ def trace_feedback(path: Path, target: dict[str, Any],
             if isinstance(call_id, int):
                 call_parents[call_id] = event.get("parentCallId", 0)
             method = event.get("method")
-            if method:
+            if method and coverage_in_scope(event):
                 coverage.add("METHOD:" + method)
             if (method == target["method"] and
                     isinstance(call_id, int)):
@@ -170,11 +179,11 @@ def trace_feedback(path: Path, target: dict[str, Any],
                 target_calls.add(call_id)
         elif kind == "BRANCH":
             site = event.get("siteId")
-            if site and site not in coverage_exclude_sites:
+            if site and site not in coverage_exclude_sites and coverage_in_scope(event):
                 coverage.add("BRANCH:" + site + ":" + str(event.get("outcome")))
         elif kind in {"CALL_SITE_ENTER", "CALL_SITE_RETURN", "CALL_SITE_THROW"}:
             site = event.get("siteId")
-            if site and site not in coverage_exclude_sites:
+            if site and site not in coverage_exclude_sites and coverage_in_scope(event):
                 coverage.add("CALL_SITE:" + site + ":" + kind)
         if kind == throw_event:
             if (event.get("method") == target.get("throw_method", target["method"])
@@ -772,6 +781,11 @@ def validate(config: dict[str, Any]) -> None:
             any(not isinstance(site, str) or "#u" not in site
                 for site in coverage_exclude_sites)):
         raise ValueError("target.coverage_exclude_sites needs exact site IDs")
+    coverage_include_prefixes = target.get("coverage_include_prefixes", [])
+    if (not isinstance(coverage_include_prefixes, list) or
+            any(not isinstance(prefix, str) or not prefix
+                for prefix in coverage_include_prefixes)):
+        raise ValueError("target.coverage_include_prefixes needs nonempty strings")
     if has_guards and any(guard["siteId"] in coverage_exclude_sites
                           for path in fatal_guard_paths(target)
                           for guard in path):
@@ -826,7 +840,13 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
     elif completed and not state.get("finished"):
         status = "fuzzing"
     seed = state.get("seed") or {}
-    initial_coverage = len(seed.get("feedback", {}).get("coverage", []))
+    seed_coverage = set(seed.get("feedback", {}).get("coverage", []))
+    coverage_delta = set(state.get("coverage", [])) - seed_coverage
+    coverage_gain_by_kind = {
+        "methods": sum(identifier.startswith("METHOD:") for identifier in coverage_delta),
+        "branch_outcomes": sum(identifier.startswith("BRANCH:") for identifier in coverage_delta),
+        "call_site_events": sum(identifier.startswith("CALL_SITE:") for identifier in coverage_delta),
+    }
     setup_seconds = float(state.get("setup_seconds", 0))
     build_seconds = float(state.get("build_seconds", 0))
     seed_seconds = float(state.get("seed_runtime_seconds", 0))
@@ -866,7 +886,9 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "target_outcome_changed_trials": sum(
             bool(result.get("target_outcome_changed")) for result in results),
         "oracle_candidates": len(candidates),
-        "coverage_gain": max(0, len(state.get("coverage", [])) - initial_coverage),
+        "coverage_gain": len(coverage_delta),
+        "coverage_gain_by_kind": coverage_gain_by_kind,
+        "coverage_include_prefixes": state.get("coverage_include_prefixes", []),
         "io_family_gain": max(0, len(state.get("io_families", [])) - len({
             fault_family(point) for point in
             seed.get("feedback", {}).get("points", [])})),
@@ -981,6 +1003,8 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("target_code", config["target"].get("code"))
             state.setdefault("coverage_exclude_sites",
                              config["target"].get("coverage_exclude_sites", []))
+            state.setdefault("coverage_include_prefixes",
+                             config["target"].get("coverage_include_prefixes", []))
             if state.get("status") in TERMINAL:
                 return state
         else:
@@ -996,6 +1020,8 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "target_code": config["target"].get("code"),
                      "coverage_exclude_sites": config["target"].get(
                          "coverage_exclude_sites", []),
+                     "coverage_include_prefixes": config["target"].get(
+                         "coverage_include_prefixes", []),
                      "config_digest": config_digest, "seed": None,
                      "coverage": [], "queue": [], "seen_sequences": [],
                      "io_families": [], "active_runtime_seconds": 0.0,

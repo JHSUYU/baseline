@@ -114,6 +114,28 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_coverage_prefix_filters_runner_events(self):
+        with tempfile.TemporaryDirectory() as temp:
+            path = Path(temp) / 'trace.jsonl'
+            jsonl(path, [
+                {'event': 'METHOD_ENTER', 'seq': 1,
+                 'method': '<runner.Harness: void run()>', 'callId': 1},
+                {'event': 'BRANCH', 'seq': 2,
+                 'method': '<runner.Harness: void run()>',
+                 'siteId': '<runner.Harness: void run()>#u1',
+                 'callId': 1, 'outcome': True},
+                {'event': 'METHOD_ENTER', 'seq': 3,
+                 'method': TARGET, 'callId': 2},
+                {'event': 'BRANCH', 'seq': 4, 'method': TARGET,
+                 'siteId': SITE, 'callId': 2, 'outcome': False},
+            ])
+            target = {'method': TARGET, 'site_id': SITE,
+                      'exception_type': 'example.TargetException',
+                      'coverage_include_prefixes': ['<example.']}
+            feedback = trace_feedback(path, target)
+            self.assertEqual(feedback['coverage'], [
+                'BRANCH:' + SITE + ':False', 'METHOD:' + TARGET])
+
     def test_alternative_final_guards_require_exact_post_fault_check(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -271,6 +293,10 @@ class CoverageIoTest(unittest.TestCase):
             self.assertEqual(summary['status'], 'candidate_review')
             self.assertEqual(summary['bug_mark'], 'candidate')
             self.assertEqual(summary['io_family_gain'], 1)
+            self.assertEqual(summary['coverage_gain'], sum(
+                summary['coverage_gain_by_kind'].values()))
+            self.assertGreater(summary['coverage_gain_by_kind']['methods'], 0)
+            self.assertGreater(summary['coverage_gain_by_kind']['branch_outcomes'], 0)
             self.assertEqual(summary['target_outcome_changed_trials'], 2)
             self.assertEqual(summary['aggregate_seconds'] if
                              'aggregate_seconds' in summary else 0, 0)
