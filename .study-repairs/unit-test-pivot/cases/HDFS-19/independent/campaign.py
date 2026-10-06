@@ -195,7 +195,8 @@ def write_result(state: dict) -> None:
     candidates = [trial for trial in valid if trial["target_exception_after_fault"]]
     old = json.loads(RESULT.read_text())
     elapsed = state["healthy_seconds"] + sum(t["elapsed_seconds"] for t in completed)
-    status = ("running" if len(completed) < state["budget"]["max_trials"] and state["queue"]
+    status = ("source_excluded" if state.get("source_excluded")
+              else "running" if len(completed) < state["budget"]["max_trials"] and state["queue"]
               else "pending_source_review" if valid else "no_valid_target_trial")
     old.update(status=status, target_reached=True, fault_trials=len(completed),
                strict_injections=len(strict), fully_applied_trials=len(strict),
@@ -289,6 +290,9 @@ def main() -> None:
     with LOCK.open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         state = json.loads(STATE.read_text()) if STATE.exists() else initialize()
+        if state.get("source_excluded"):
+            write_result(state)
+            return
         for trial in state["completed"]:
             extend(state, trial)
         atomic_json(STATE, state)

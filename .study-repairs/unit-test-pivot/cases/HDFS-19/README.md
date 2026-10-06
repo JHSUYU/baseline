@@ -23,3 +23,26 @@ When selecting a sequence, the controller favors I/O families whose earlier stri
 A sequence is strict only when all requested faults match and apply in order at their exact runtime identities. It contributes feedback only when the selected target check runs after the last fault. A target-site `AssertionError` after the last fault is a candidate for replay and source review; it is not automatically a confirmed new bug. If the fault prevents the target from running, that trial is recorded but does not count toward target feedback. The live outcome and elapsed time are in `result.json` and the trial ledger.
 
 Resume the tmux campaign after an interruption with `python3 independent/campaign.py` from this case directory. Its lock and `active` checkpoint preserve the uncompleted sequence for replay.
+
+## Final source-screening decision
+
+The initial 80-trial budget completed. One additional trial completed after
+late coverage novelty triggered the conditional 128-trial extension. Released
+source review then established that this site is a direct echoed-ID sanity
+check under our exception-only fault model, so the extended search was stopped.
+The next active trial was interrupted and excluded from all counts. The
+completed 81 trials all injected exactly as planned; 60 reached the selected
+assertion after the final fault and passed the original JUnit. In those 60
+trials the command and local block-pool IDs always matched, and the selected
+`AssertionError` was never thrown. Total healthy plus completed-trial runtime
+was 4,468.793 seconds; deepest completed sequence contained two exceptions.
+The independent trace audit found zero discrepancies.
+
+The [source screening](SCREENING.md) traces the same block-pool ID from
+`BPServiceActor.blockReport` through `NameNodeRpcServer.blockReport` into
+`FinalizeCommand`, then back to this guard. The case is therefore
+`source_excluded` for the ad hoc coordination checklist. The 81 completed
+plans/traces/manifests, checkpoint, per-trial ledger, and audit are preserved
+in `independent/compact-evidence.tar.gz` with SHA-256 in
+`independent/compact-evidence-index.json`. The excluded in-flight trial is
+separately named in `independent/screening-stop.json` and is not counted.
