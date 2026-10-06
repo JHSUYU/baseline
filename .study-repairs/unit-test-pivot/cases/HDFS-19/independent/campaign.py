@@ -169,13 +169,20 @@ def choose(state: dict) -> int:
     completed = state["completed"]
     last_counts = Counter(family(trial["sequence"][-1]) for trial in completed)
     root_counts = Counter(family(trial["sequence"][0]) for trial in completed)
+    target_retaining = Counter(family(trial["sequence"][-1]) for trial in completed
+                               if trial["valid_for_feedback"])
     single_count = sum(len(trial["sequence"]) == 1 for trial in completed)
     prefer_single = single_count <= len(completed) - single_count
     eligible = [(index, item) for index, item in enumerate(state["queue"])
                 if (len(item["sequence"]) == 1) == prefer_single]
     if not eligible:
         eligible = list(enumerate(state["queue"]))
+    # Every fifth selection explores less-tested families. The other turns
+    # prefer families already shown to retain this exact target after a fault.
+    # A strict fault that loses the target cannot guide mutation toward it.
+    explore = len(completed) % 5 == 0
     return min(eligible, key=lambda indexed: (
+        0 if explore or target_retaining[family(indexed[1]["sequence"][-1])] else 1,
         last_counts[family(indexed[1]["sequence"][-1])],
         root_counts[family(indexed[1]["sequence"][0])],
         -indexed[1]["priority"], indexed[1]["created"]))[0]

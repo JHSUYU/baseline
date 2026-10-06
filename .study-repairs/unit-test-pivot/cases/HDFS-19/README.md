@@ -16,6 +16,8 @@ The observed I/O scope is the block-report RPC and the two finalize storage rena
 
 `independent/campaign.py` mutates observed fault sequences, records each run in `independent-trial-ledger.csv`, and atomically checkpoints the queue and completed trials in `independent/campaign-state.json`. Initial budget: 80 trials, up to eight faults per sequence. If the final valid trials still discover production method/branch-count coverage or I/O families, it extends to 128 trials and ten faults. `independent/run_original.py` executes each trial in a fresh scratch directory.
 
+When selecting a sequence, the controller favors I/O families whose earlier strict trials retained this same target check after the final fault. Every fifth selection explores other families, including the finalize file renames. This uses only runtime target, I/O, and coverage feedback.
+
 A sequence is strict only when all requested faults match and apply in order at their exact runtime identities. It contributes feedback only when the selected target check runs after the last fault. A target-site `AssertionError` after the last fault is a candidate for replay and source review; it is not automatically a confirmed new bug. If the fault prevents the target from running, that trial is recorded but does not count toward target feedback. The live outcome and elapsed time are in `result.json` and the trial ledger.
 
 Resume the tmux campaign after an interruption with `python3 independent/campaign.py` from this case directory. Its lock and `active` checkpoint preserve the uncompleted sequence for replay.
