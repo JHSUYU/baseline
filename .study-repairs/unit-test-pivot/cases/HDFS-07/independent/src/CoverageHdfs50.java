@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import org.jacoco.core.analysis.Analyzer;
@@ -23,11 +25,23 @@ public final class CoverageHdfs50 {
     if (args.length != 1 && args.length != 5) throw new IllegalArgumentException("jacoco.exec [overlay hdfs.jar hdfs-client.jar common.jar]");
     ExecFileLoader loader = new ExecFileLoader();
     loader.load(new File(args[0]));
+    Set<String> productionClasses = new HashSet<>();
+    if (args.length == 5) {
+      for (int j = 2; j <= 4; j++) {
+        try (ZipFile jar = new ZipFile(args[j])) {
+          for (ZipEntry entry : Collections.list(jar.entries())) {
+            if (entry.getName().endsWith(".class"))
+              productionClasses.add(entry.getName().substring(0, entry.getName().length() - 6));
+          }
+        }
+      }
+    }
     List<String> covered = new ArrayList<>();
     for (ExecutionData data : loader.getExecutionDataStore().getContents()) {
       if (!(data.getName().startsWith("org/apache/hadoop/hdfs/")
           || data.getName().startsWith("org/apache/hadoop/ipc/"))
-          || data.getName().contains("$MockitoMock$")) continue;
+          || data.getName().contains("$MockitoMock$")
+          || (args.length == 5 && !productionClasses.contains(data.getName()))) continue;
       boolean[] probes = data.getProbes();
       for (int i = 0; i < probes.length; i++) {
         if (probes[i]) covered.add(data.getName() + "#" + i);

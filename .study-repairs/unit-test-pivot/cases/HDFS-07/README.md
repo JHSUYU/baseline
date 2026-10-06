@@ -40,3 +40,16 @@ the eight-fault budget while the other rounds continue to sample both I/O
 families. The interrupted in-flight sequence was requeued, and all 33
 completed sequence IDs were preserved; see
 `independent/evidence/scheduler-handoff.json`.
+
+Coverage feedback was audited at completed trial 37. The original probe-ID
+export also included original JUnit support classes; method and branch
+coverage already used only released Hadoop classes. The exporter now admits
+only class names present in the released HDFS, HDFS client, or common JAR.
+The 37 saved per-run probe sets were filtered using those JAR indices and
+the checkpoint was rebuilt in actual trial completion order from
+`campaign.log`; no fault trial was rerun. This removed test-class probes from
+the healthy baseline (7,437 to 7,245). The 37 valid-trial probe gains summed
+to 49 before and after filtering, and every method/branch gain was unchanged.
+The raw JaCoCo exec files remain available, while the compressed
+`campaign-state.pre-production-coverage.json.gz` and
+`coverage-migration-v3.json` record the exact handoff.
