@@ -1,0 +1,75 @@
+Trial 047: selected second-DataNode guard was not reached.
+Original source references: TestDeleteBlockPool.java:60-84; FsDatasetImpl.java:3336-3360; DFSTestUtil.java:426-484.
+
+JUnit log lines 721-725:
+721: 2026-10-06 22:42:01,418 [IPC Server handler 5 on default port 45249] INFO  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseRandom(925)) - Not enough replicas was chosen. Reason: {NO_REQUIRED_STORAGE_TYPE=1}
+722: 2026-10-06 22:42:01,426 [IPC Server handler 5 on default port 45249] INFO  hdfs.StateChange (FSDirWriteFileOp.java:logAllocatedBlock(801)) - BLOCK* allocate blk_1073741825_1001, replicas=127.0.0.1:33229, 127.0.0.1:37271 for /alpha
+723: 2026-10-06 22:42:01,486 [Thread-200] WARN  hdfs.DataStreamer (DataStreamer.java:createBlockOutputStream(1959)) - Exception in createBlockOutputStream blk_1073741825_1001
+724: java.io.IOException: HDFS-32 independent RPC response fault Client.getRpcResponse:Thread-N@@6
+725: 	at Hdfs32Probe.rpcResponse(Hdfs32Probe.java:45)
+
+JUnit log lines 750-764:
+750: 	at org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient.socketSend(SaslDataTransferClient.java:193)
+751: 	at org.apache.hadoop.hdfs.DataStreamer.createBlockOutputStream(DataStreamer.java:1900)
+752: 	at org.apache.hadoop.hdfs.DataStreamer.setupPipelineForCreate(DataStreamer.java:1842)
+753: 	at org.apache.hadoop.hdfs.DataStreamer.run(DataStreamer.java:752)
+754: 2026-10-06 22:42:01,489 [Thread-200] WARN  hdfs.DataStreamer (DataStreamer.java:handleBadDatanode(1731)) - Error Recovery for BP-524060641-128.110.217.200-1791326511804:blk_1073741825_1001 in pipeline [DatanodeInfoWithStorage[127.0.0.1:33229,DS-c45fe299-aa71-4b72-afa1-725445e86b5a,DISK], DatanodeInfoWithStorage[127.0.0.1:37271,DS-166f993d-f012-4a11-a2c2-f259977d4c85,DISK]]: datanode 0(DatanodeInfoWithStorage[127.0.0.1:33229,DS-c45fe299-aa71-4b72-afa1-725445e86b5a,DISK]) is bad.
+755: 2026-10-06 22:42:01,489 [Thread-200] WARN  hdfs.DataStreamer (DataStreamer.java:setupPipelineForCreate(1850)) - Abandoning BP-524060641-128.110.217.200-1791326511804:blk_1073741825_1001
+756: 2026-10-06 22:42:01,507 [Thread-200] WARN  hdfs.DataStreamer (DataStreamer.java:setupPipelineForCreate(1857)) - Excluding datanode DatanodeInfoWithStorage[127.0.0.1:33229,DS-c45fe299-aa71-4b72-afa1-725445e86b5a,DISK]
+757: 2026-10-06 22:42:01,514 [IPC Server handler 0 on default port 45249] INFO  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseRandom(925)) - Not enough replicas was chosen. Reason: {NO_REQUIRED_STORAGE_TYPE=1}
+758: 2026-10-06 22:42:01,514 [IPC Server handler 0 on default port 45249] INFO  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseRandom(925)) - Not enough replicas was chosen. Reason: {NO_REQUIRED_STORAGE_TYPE=1}
+759: 2026-10-06 22:42:01,515 [IPC Server handler 0 on default port 45249] WARN  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseTarget(501)) - Failed to place enough replicas, still in need of 1 to reach 2 (unavailableStorages=[], storagePolicy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]}, newBlock=true) For more information, please enable DEBUG log level on org.apache.hadoop.hdfs.server.blockmanagement.BlockPlacementPolicy and org.apache.hadoop.net.NetworkTopology
+760: 2026-10-06 22:42:01,515 [IPC Server handler 0 on default port 45249] WARN  protocol.BlockStoragePolicy (BlockStoragePolicy.java:chooseStorageTypes(161)) - Failed to place enough replicas: expected size is 1 but only 0 storage types can be selected (replication=2, selected=[], unavailable=[DISK], removed=[DISK], policy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]})
+761: 2026-10-06 22:42:01,515 [IPC Server handler 0 on default port 45249] WARN  blockmanagement.BlockPlacementPolicy (BlockPlacementPolicyDefault.java:chooseTarget(501)) - Failed to place enough replicas, still in need of 1 to reach 2 (unavailableStorages=[DISK], storagePolicy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]}, newBlock=true) All required storage types are unavailable:  unavailableStorages=[DISK], storagePolicy=BlockStoragePolicy{HOT:7, storageTypes=[DISK], creationFallbacks=[], replicationFallbacks=[ARCHIVE]}
+762: 2026-10-06 22:42:01,516 [IPC Server handler 0 on default port 45249] INFO  hdfs.StateChange (FSDirWriteFileOp.java:logAllocatedBlock(801)) - BLOCK* allocate blk_1073741826_1002, replicas=127.0.0.1:37271 for /alpha
+763: 2026-10-06 22:42:01,687 [DataXceiver for client DFSClient_NONMAPREDUCE_711416896_1 at /127.0.0.1:39848 [Receiving block BP-524060641-128.110.217.200-1791326511804:blk_1073741826_1002]] INFO  datanode.DataNode (DataXceiver.java:writeBlock(759)) - Receiving BP-524060641-128.110.217.200-1791326511804:blk_1073741826_1002 src: /127.0.0.1:39848 dest: /127.0.0.1:37271
+764: 2026-10-06 22:42:01,812 [PacketResponder: BP-524060641-128.110.217.200-1791326511804:blk_1073741826_1002, type=LAST_IN_PIPELINE] INFO  DataNode.clienttrace (BlockReceiver.java:finalizeBlock(1576)) - src: /127.0.0.1:39848, dest: /127.0.0.1:37271, volume: /users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/data/dfs/data/data3, bytes: 1024, op: HDFS_WRITE, cliID: DFSClient_NONMAPREDUCE_711416896_1, offset: 0, srvID: ee6206a2-18ed-4c49-aa94-dc11e8a40c59, blockid: BP-524060641-128.110.217.200-1791326511804:blk_1073741826_1002, duration(ns): 29516190
+
+JUnit log lines 778-799:
+778: 2026-10-06 22:42:02,324 [Block report processor] INFO  BlockStateChange (BlockManager.java:addStoredBlock(3777)) - BLOCK* addStoredBlock: 127.0.0.1:33229 is added to blk_1073741825_1001 (size=1024)
+779: 2026-10-06 22:42:02,327 [IPC Server handler 0 on default port 35323] INFO  hdfs.StateChange (FSNamesystem.java:completeFile(3239)) - DIR* completeFile: /beta is closed by DFSClient_NONMAPREDUCE_350617305_1
+780: 2026-10-06 22:42:02,329 [main] INFO  datanode.DataNode (DataNode.java:deleteBlockPool(3817)) - deleteBlockPool command received for block pool BP-524060641-128.110.217.200-1791326511804, force=true
+781: 2026-10-06 22:42:02,330 [main] WARN  datanode.DataNode (DataNode.java:deleteBlockPool(3820)) - The block pool BP-524060641-128.110.217.200-1791326511804 is still running, cannot be deleted.
+782: 2026-10-06 22:42:02,330 [main] INFO  datanode.DataNode (BlockPoolManager.java:refreshNamenodes(150)) - Refresh request received for nameservices: namesServerId2
+783: 2026-10-06 22:42:02,332 [main] INFO  datanode.DataNode (BlockPoolManager.java:doRefreshNamenodes(243)) - Stopping BPOfferServices for nameservices: namesServerId1
+784: 2026-10-06 22:42:02,332 [BP-524060641-128.110.217.200-1791326511804 heartbeating to localhost/127.0.0.1:45249] WARN  datanode.IncrementalBlockReportManager (IncrementalBlockReportManager.java:waitTillNextIBR(160)) - IncrementalBlockReportManager interrupted
+785: 2026-10-06 22:42:02,332 [Command processor] ERROR datanode.DataNode (BPServiceActor.java:processQueue(1416)) - Command processor encountered interrupt and exit.
+786: 2026-10-06 22:42:02,333 [BP-524060641-128.110.217.200-1791326511804 heartbeating to localhost/127.0.0.1:45249] WARN  datanode.DataNode (BPServiceActor.java:run(925)) - Ending block pool service for: Block pool BP-524060641-128.110.217.200-1791326511804 (Datanode Uuid 944a8159-ad7b-4591-b1a1-29e6451ba445) service to localhost/127.0.0.1:45249
+787: 2026-10-06 22:42:02,333 [Command processor] WARN  datanode.DataNode (BPServiceActor.java:run(1400)) - Ending command processor service for: Thread[Command processor,5,main]
+788: 2026-10-06 22:42:02,333 [BP-524060641-128.110.217.200-1791326511804 heartbeating to localhost/127.0.0.1:45249] INFO  datanode.DataNode (BlockPoolManager.java:remove(103)) - Removed Block pool BP-524060641-128.110.217.200-1791326511804 (Datanode Uuid 944a8159-ad7b-4591-b1a1-29e6451ba445)
+789: 2026-10-06 22:42:02,334 [BP-524060641-128.110.217.200-1791326511804 heartbeating to localhost/127.0.0.1:45249] INFO  impl.FsDatasetImpl (FsDatasetImpl.java:shutdownBlockPool(3265)) - Removing block pool BP-524060641-128.110.217.200-1791326511804
+790: 2026-10-06 22:42:02,334 [VolumeScannerThread(/users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/data/dfs/data/data2)] INFO  datanode.VolumeScanner (VolumeScanner.java:findNextUsableBlockIter(402)) - VolumeScanner(/users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/data/dfs/data/data2, DS-42d13684-73e4-49e0-8938-a4e1bd0a3181): no suitable block pools found to scan.  Waiting 1814397152 ms.
+791: 2026-10-06 22:42:02,334 [VolumeScannerThread(/users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/data/dfs/data/data1)] INFO  datanode.VolumeScanner (VolumeScanner.java:findNextUsableBlockIter(402)) - VolumeScanner(/users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/data/dfs/data/data1, DS-c45fe299-aa71-4b72-afa1-725445e86b5a): no suitable block pools found to scan.  Waiting 1814397152 ms.
+792: 2026-10-06 22:42:02,336 [refreshUsed-/users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/data/dfs/data/data1/current/BP-524060641-128.110.217.200-1791326511804] WARN  fs.CachingGetSpaceUsed (CachingGetSpaceUsed.java:run(231)) - Thread Interrupted waiting to refresh disk information: sleep interrupted
+793: 2026-10-06 22:42:02,336 [main] INFO  datanode.DataNode (BlockPoolManager.java:doRefreshNamenodes(256)) - Refreshing list of NNs for nameservices: namesServerId2
+794: 2026-10-06 22:42:02,336 [refreshUsed-/users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/data/dfs/data/data2/current/BP-524060641-128.110.217.200-1791326511804] WARN  fs.CachingGetSpaceUsed (CachingGetSpaceUsed.java:run(231)) - Thread Interrupted waiting to refresh disk information: sleep interrupted
+795: 2026-10-06 22:42:02,342 [main] INFO  datanode.DataNode (DataNode.java:deleteBlockPool(3817)) - deleteBlockPool command received for block pool BP-524060641-128.110.217.200-1791326511804, force=false
+796: 2026-10-06 22:42:02,346 [main] INFO  hdfs.MiniDFSCluster (MiniDFSCluster.java:shutdown(2181)) - Shutting down the Mini HDFS Cluster
+797: 2026-10-06 22:42:02,346 [main] INFO  hdfs.MiniDFSCluster (MiniDFSCluster.java:shutdownDataNode(2230)) - Shutting down DataNode 1
+798: 2026-10-06 22:42:02,347 [main] INFO  datanode.DirectoryScanner (DirectoryScanner.java:shutdown(431)) - Shutdown has been called
+799: 2026-10-06 22:42:02,347 [org.apache.hadoop.hdfs.server.datanode.DataXceiverServer@2939bfa0] INFO  datanode.DataNode (DataXceiverServer.java:closeAllPeers(409)) - Closing all peers.
+
+JUnit log lines 903-909:
+903: 2026-10-06 22:42:02,583 [main] INFO  server.AbstractConnector (AbstractConnector.java:doStop(383)) - Stopped ServerConnector@6c18cf67{HTTP/1.1, (http/1.1)}{localhost:0}
+904: 2026-10-06 22:42:02,584 [main] INFO  server.session (HouseKeeper.java:stopScavenging(149)) - node0 Stopped scavenging
+905: 2026-10-06 22:42:02,585 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@407339e5{static,/static,jar:file:/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar!/webapps/static,STOPPED}
+906: 2026-10-06 22:42:02,585 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@4b6c5fa2{logs,/logs,file:///users/ZhenyuLi/hdfs32-independent-runs/trial-047/scratch/logs/,STOPPED}
+907: testDeleteBlockPool(org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool): Must not delete if any block files exist unless force is true
+908: JUnit original method: runs=1 failures=1 ignored=0
+
+Runtime events (non-IO):
+5	POOL_ADD	Thread-142	2136745187	2070134736
+6	POOL_ADD	Thread-112	1421784514	1559164503
+7	POOL_ADD	Thread-143	2136745187	1540572509
+8	POOL_ADD	Thread-113	1421784514	1613424272
+29	FAULT_MATCHED	Thread-200	Client.getRpcResponse:Thread-N	6	0
+30	FAULT_APPLIED	Thread-200	Client.getRpcResponse:Thread-N	6	0
+44	TARGET_GUARD	main	619958792	BP-524060641-128.110.217.200-1791326511804	true	true	1559164503
+45	TARGET_THROW	main	619958792	BP-524060641-128.110.217.200-1791326511804	true	java.io.IOException	The block pool is still running. First do a refreshNamenodes to shutdown the block pool service
+46	REFRESH_NAMENODES	main	619958792
+47	POOL_REMOVE	BP-524060641-128.110.217.200-1791326511804 heartbeating to localhost/127.0.0.1:45249	1421784514	1559164503
+48	TARGET_GUARD	main	619958792	BP-524060641-128.110.217.200-1791326511804	false	false	0
+49	DATASET_DELETE	main	619958792	BP-524060641-128.110.217.200-1791326511804	false
+50	POOL_REMOVE	BP-524060641-128.110.217.200-1791326511804 heartbeating to localhost/127.0.0.1:45249	2136745187	2070134736
+51	POOL_REMOVE	BP-267529609-128.110.217.200-1791326515656 heartbeating to localhost/127.0.0.1:35323	2136745187	1540572509
+52	POOL_REMOVE	BP-267529609-128.110.217.200-1791326515656 heartbeating to localhost/127.0.0.1:35323	1421784514	1613424272

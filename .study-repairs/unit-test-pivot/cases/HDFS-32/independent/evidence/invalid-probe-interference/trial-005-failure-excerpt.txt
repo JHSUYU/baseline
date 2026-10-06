@@ -1,0 +1,43 @@
+826: 2026-10-06 22:19:12,968 [main] INFO  server.session (HouseKeeper.java:stopScavenging(149)) - node0 Stopped scavenging
+827: 2026-10-06 22:19:12,968 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@2e6f1f48{static,/static,jar:file:/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar!/webapps/static,STOPPED}
+828: 2026-10-06 22:19:12,969 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@55a07f97{logs,/logs,file:///users/ZhenyuLi/hdfs32-independent-runs/trial-005/scratch/logs/,STOPPED}
+829: 2026-10-06 22:19:12,984 [main] INFO  datanode.DataNode (DataNode.java:deleteBlockPool(3817)) - deleteBlockPool command received for block pool BP-537129589-128.110.217.200-1791325131933, force=true
+830: 2026-10-06 22:19:12,985 [main] WARN  datanode.DataNode (DataNode.java:deleteBlockPool(3820)) - The block pool BP-537129589-128.110.217.200-1791325131933 is still running, cannot be deleted.
+831: 2026-10-06 22:19:12,985 [main] INFO  datanode.DataNode (BlockPoolManager.java:refreshNamenodes(150)) - Refresh request received for nameservices: namesServerId2
+832: 2026-10-06 22:19:12,986 [main] INFO  datanode.DataNode (BlockPoolManager.java:doRefreshNamenodes(243)) - Stopping BPOfferServices for nameservices: namesServerId1
+833: 2026-10-06 22:19:12,986 [Command processor] ERROR datanode.DataNode (BPServiceActor.java:processQueue(1416)) - Command processor encountered interrupt and exit.
+834: 2026-10-06 22:19:12,986 [BP-537129589-128.110.217.200-1791325131933 heartbeating to localhost/127.0.0.1:34713] INFO  datanode.DataNode (BPServiceActor.java:sleepAfterException(801)) - BPServiceActor Block pool BP-537129589-128.110.217.200-1791325131933 (Datanode Uuid 86735269-8d2e-43e4-96f5-8aba71abd1c5) service to localhost/127.0.0.1:34713 is interrupted
+835: 2026-10-06 22:19:12,986 [Command processor] WARN  datanode.DataNode (BPServiceActor.java:run(1400)) - Ending command processor service for: Thread[Command processor,5,main]
+836: 2026-10-06 22:19:12,986 [BP-537129589-128.110.217.200-1791325131933 heartbeating to localhost/127.0.0.1:34713] WARN  datanode.DataNode (BPServiceActor.java:run(925)) - Ending block pool service for: Block pool BP-537129589-128.110.217.200-1791325131933 (Datanode Uuid 86735269-8d2e-43e4-96f5-8aba71abd1c5) service to localhost/127.0.0.1:34713
+837: Exception in thread "BP-537129589-128.110.217.200-1791325131933 heartbeating to localhost/127.0.0.1:34713" java.lang.IllegalStateException: Cannot record HDFS-32 event
+838: 	at Hdfs32Probe.event(Hdfs32Probe.java:29)
+839: 	at Hdfs32Probe.poolRemove(Hdfs32Probe.java:62)
+840: 	at org.apache.hadoop.hdfs.server.datanode.BlockPoolManager.remove(BlockPoolManager.java)
+841: 	at org.apache.hadoop.hdfs.server.datanode.DataNode.shutdownBlockPool(DataNode.java:2148)
+842: 	at org.apache.hadoop.hdfs.server.datanode.BPOfferService.shutdownActor(BPOfferService.java:477)
+843: 	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.cleanUp(BPServiceActor.java:645)
+844: 	at org.apache.hadoop.hdfs.server.datanode.BPServiceActor.run(BPServiceActor.java:926)
+845: 	at java.lang.Thread.run(Thread.java:750)
+846: Caused by: java.nio.channels.ClosedByInterruptException
+847: 	at java.nio.channels.spi.AbstractInterruptibleChannel.end(AbstractInterruptibleChannel.java:202)
+848: 	at sun.nio.ch.FileChannelImpl.write(FileChannelImpl.java:216)
+849: 	at java.nio.channels.Channels.writeFullyImpl(Channels.java:78)
+850: 	at java.nio.channels.Channels.writeFully(Channels.java:101)
+851: 	at java.nio.channels.Channels.access$000(Channels.java:61)
+852: 	at java.nio.channels.Channels$1.write(Channels.java:174)
+853: 	at java.nio.file.Files.write(Files.java:3297)
+854: 	at Hdfs32Probe.event(Hdfs32Probe.java:26)
+855: 	... 7 more
+856: 2026-10-06 22:19:12,988 [main] INFO  datanode.DataNode (BlockPoolManager.java:doRefreshNamenodes(256)) - Refreshing list of NNs for nameservices: namesServerId2
+857: 2026-10-06 22:19:12,989 [main] INFO  hdfs.MiniDFSCluster (MiniDFSCluster.java:shutdown(2181)) - Shutting down the Mini HDFS Cluster
+858: 2026-10-06 22:19:12,990 [main] INFO  hdfs.MiniDFSCluster (MiniDFSCluster.java:shutdownDataNode(2230)) - Shutting down DataNode 1
+859: 2026-10-06 22:19:12,990 [main] INFO  datanode.DirectoryScanner (DirectoryScanner.java:shutdown(431)) - Shutdown has been called
+860: 2026-10-06 22:19:12,990 [org.apache.hadoop.hdfs.server.datanode.DataXceiverServer@743fc1ee] INFO  datanode.DataNode (DataXceiverServer.java:closeAllPeers(409)) - Closing all peers.
+
+... JUnit assertion ...
+935: 2026-10-06 22:19:13,160 [main] INFO  server.AbstractConnector (AbstractConnector.java:doStop(383)) - Stopped ServerConnector@6c18cf67{HTTP/1.1, (http/1.1)}{localhost:0}
+936: 2026-10-06 22:19:13,160 [main] INFO  server.session (HouseKeeper.java:stopScavenging(149)) - node0 Stopped scavenging
+937: 2026-10-06 22:19:13,161 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@407339e5{static,/static,jar:file:/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar!/webapps/static,STOPPED}
+938: 2026-10-06 22:19:13,161 [main] INFO  handler.ContextHandler (ContextHandler.java:doStop(1159)) - Stopped o.e.j.s.ServletContextHandler@4b6c5fa2{logs,/logs,file:///users/ZhenyuLi/hdfs32-independent-runs/trial-005/scratch/logs/,STOPPED}
+939: testDeleteBlockPool(org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool): expected:<1> but was:<2>
+940: JUnit original method: runs=1 failures=1 ignored=0
