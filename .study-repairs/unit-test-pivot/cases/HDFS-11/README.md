@@ -36,6 +36,12 @@ family, so the conditional 128-trial extension was not activated. This result
 only covers the ordinary-read workload; it does not resolve the expired-key
 control-plane scenario below.
 
+The original workload accesses one short test file on the fixture's sole
+DataNode. In each of the 37 target-retaining trials, all post-fault target
+checks in the recorded trace used one key ID. This supports matching the
+post-fault checks to that workload's block/key context; the recorder does not
+claim a general cross-request identity mechanism for larger clusters.
+
 The earlier 19 trials used a static-analysis/region-woven recorder. They are
 preserved in [legacy-graph-result.json](legacy-graph-result.json) and excluded
 from the current graph-independent result.
