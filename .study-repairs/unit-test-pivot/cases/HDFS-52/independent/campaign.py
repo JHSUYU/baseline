@@ -130,6 +130,7 @@ def update_result(state: dict) -> None:
                 "strict_injections": sum(item["exact_order_applied"] for item in trials),
                 "fully_applied_trials": sum(item["exact_order_applied"] for item in trials),
                 "target_after_fault": len(valid),
+                "effective_trials": len(valid),
                 "selected_target_throws": sum(item["selected_target_throw"] for item in valid),
                 "coverage_gain": len(set(state["coverage"]) - covered(HEALTHY / "covered_probes.txt")),
                 "elapsed_seconds": round(state["healthy_seconds"] + sum(item["elapsed_seconds"] for item in trials), 3),
@@ -157,6 +158,9 @@ def run_trial(job: dict, number: int) -> dict:
     out = EVIDENCE / "runs" / ("trial-%03d" % number)
     out.parent.mkdir(parents=True, exist_ok=True)
     if not (out / "manifest.json").is_file():
+        # A stopped runner may leave an incomplete trace. Rebuild that trial
+        # cleanly instead of appending events to a partial execution.
+        shutil.rmtree(out, ignore_errors=True)
         command = [sys.executable, str(RUNNER), "--output", str(out),
                    "--plan", "|||".join(job["plan"]), "--timeout", "180"]
         with (out.parent / (out.name + "-driver.log")).open("w") as log:
@@ -190,12 +194,24 @@ def run_trial(job: dict, number: int) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--max-trials", type=int, default=80)
+    parser.add_argument("--max-attempts", type=int, default=180)
+    parser.add_argument("--max-seconds", type=int, default=9000)
     parser.add_argument("--max-faults", type=int, default=8)
     args = parser.parse_args()
     state = json.loads(STATE.read_text()) if STATE.is_file() else initial()
     state["budget"] = {"max_trials": args.max_trials, "max_faults": args.max_faults}
+    state.setdefault("started_at", time.time())
+    # Faulting the in-progress SnapshotSection write aborts that image save
+    # before its count guard. Keep those observations, but spend the remaining
+    # budget on independent RPC reads that can allow a later save to reach it.
+    for job in state["queue"]:
+        if job["plan"][-1].startswith("FSImageSnapshot."):
+            job["priority"] = min(job["priority"], 1)
     state["stop_reason"] = None
-    while len(state["completed"]) < args.max_trials and state["queue"]:
+    effective = lambda: sum(x["exact_order_applied"] and x["target_after_fault"]
+                            for x in state["completed"])
+    while (effective() < args.max_trials and len(state["completed"]) < args.max_attempts
+           and time.time() - state["started_at"] < args.max_seconds and state["queue"]):
         if state["active"] is None:
             chosen = max(range(len(state["queue"])), key=lambda i: (state["queue"][i]["priority"], -i))
             state["active"] = {"job": state["queue"].pop(chosen), "trial": state["next_trial"]}
@@ -229,12 +245,19 @@ def main() -> None:
         save(state)
         # Hadoop scratch is reset on every JUnit run; preserve trace, coverage, logs, and plan.
         shutil.rmtree((CASE / trial["run_dir"] / "scratch"), ignore_errors=True)
+        # Raw JaCoCo is the reproducible coverage artifact. The large derived
+        # text lists have already been merged into the checkpoint.
+        for derived in (CASE / trial["run_dir"]).glob("covered_*.txt"):
+            derived.unlink()
         if trial["selected_target_throw"] and valid:
             state["stop_reason"] = "target_exception_candidate_requires_replay_and_source_review"
             save(state)
             break
     if not state["stop_reason"]:
-        state["stop_reason"] = "budget_exhausted" if len(state["completed"]) >= args.max_trials else "queue_exhausted"
+        state["stop_reason"] = ("effective_budget_exhausted" if effective() >= args.max_trials
+                                else "attempt_cap" if len(state["completed"]) >= args.max_attempts
+                                else "wall_clock_cap" if time.time() - state["started_at"] >= args.max_seconds
+                                else "queue_exhausted")
     save(state)
     print(json.dumps({"trials": len(state["completed"]), "stop_reason": state["stop_reason"]}))
 
