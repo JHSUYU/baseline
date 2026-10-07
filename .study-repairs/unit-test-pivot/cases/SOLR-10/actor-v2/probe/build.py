@@ -44,7 +44,8 @@ def main() -> None:
     helpers = ":".join(map(str, [CASE / "classes", OLD / "lib/jacoco-core.jar", *asm]))
     subprocess.run([JAVAC, "-cp", helpers, "-d", str(CASE / "classes"),
                     str(CASE / "probe/CoverageProbes.java"),
-                    str(CASE / "probe/CoverageSummary.java")], check=True)
+                    str(CASE / "probe/CoverageSummary.java"),
+                    str(CASE / "probe/CoverageFeedback.java")], check=True)
     subprocess.run([sys.executable, str(CASE / "probe/weave.py")], check=True)
     target = Path("org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.class")
     original_hash = digest(CASE / "classes-original" / target)

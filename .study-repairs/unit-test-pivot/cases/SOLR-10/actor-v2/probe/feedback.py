@@ -53,6 +53,31 @@ def io_behavior_key(event: dict) -> str | None:
     return "|".join((caller, actor, operation, path))
 
 
+def io_family(event: dict) -> str | None:
+    """Stable actor/operation/resource family, excluding ephemeral names and ordinals."""
+    identity = io_identity(event)
+    if identity is None:
+        return None
+    operation, path, _, actor = identity
+    if not actor.startswith("actor=jetty:node"):
+        return None
+    if path == "/aliases.json":
+        resource = "aliases"
+    elif path.startswith("/collections/myalias") and path.endswith("/state.json"):
+        resource = "alias-collection-state"
+    elif path.startswith("/collections/myalias") and path.endswith("/collectionprops.json"):
+        resource = "alias-collection-props"
+    elif path.startswith("/collections/myalias"):
+        resource = "alias-collection-control"
+    elif path.startswith("/overseer"):
+        resource = "overseer-control"
+    elif path == "/live_nodes":
+        resource = "live-nodes"
+    else:
+        return None
+    return "|".join((actor, operation, resource))
+
+
 def actor_registrations(trace: list[dict]) -> dict[str, dict[str, str]]:
     roles = {}
     clients = {}
