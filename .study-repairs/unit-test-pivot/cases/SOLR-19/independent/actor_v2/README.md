@@ -139,6 +139,12 @@ timing-sensitive clean replay owned node1. It resumed from r003 and stopped
 at r008 after five effective trials. Node1 was then released for HBASE-32's
 five-effective completion window; the saved queue resumes from r009 when
 that slot is free.
+At the r008 complete boundary, `repair_queue_v3.py` rebuilt only the
+untried mutation children from archived traces to count I/O ordinals from
+the CREATE sender. It preserved all eight attempts and 58 nonmutation queue
+plans. `evidence/v3-queue-ordinal-repair-receipt.json` records the exact
+before/after queue and state hashes; the repaired node1 checkpoint resumes
+from r009.
 `calibrate_v3.py` runs the two unchanged JUnit seeds sequentially under one
 tmux supervisor, saves a checkpoint after each seed, reuses an already
 passing seed after a disconnect, and stops for review on a partial or failed

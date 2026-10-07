@@ -92,6 +92,9 @@ target-exception candidates. The healthy plus r001–r008 JaCoCo union covers
 4,490 Solr production methods and 5,614 branches: +8 methods and +26
 branches above the healthy union. The selected `CoreContainer.create`
 remains at 7/24 branches; its missing-core-node branch has not been taken.
+If only the five effective trials are unioned with the healthy seeds, the
+counts are 4,490 methods and 5,613 branches (+8/+25). Thus one additional
+branch came from a non-effective attempt and did not guide mutation.
 Probe-level feedback gained 67 IDs: 38 in r001, 25 in r005, and 4 in r007.
 r005's new probes were mainly in `ZkDistributedQueue` and
 `Overseer.ClusterStateUpdater`; this is observed execution novelty, not
@@ -111,3 +114,25 @@ and 42.202 seconds with exit 0 and same-actor targets, within their nearby
 timing distribution. The node1 Solr tmux/JVM exited at the r008 boundary.
 The full 80-effective campaign will resume from r009 after HBASE-32 releases
 its five-effective completion window; no pilot trial will be replayed.
+
+### Complete-boundary queue correction
+
+At the r008 boundary, an offline queue audit found that old child mutation
+counted a repeated I/O occurrence starting after the preceding fault,
+whereas the runtime matcher counts from the same core's CREATE sender. The
+already tested r001–r008 selectors and exact raw outcomes remain unchanged.
+`repair_queue_v3.py` rebuilt **only untried mutated children** from their
+archived parent traces using the corrected sender-relative ordinal; it also
+avoids newly adding generated `/qn-<number>` queue-item paths. The 58
+untried stable/exploratory single-fault plans retained their order. The old
+queue had 66 plans (8 mutated children); the repaired queue has 67 plans
+(9 mutated children). The historical r008 state SHA-256 is
+`94bd51545a334a5b3e8c65afb5acd8c22398b0cafe0d39d7182ec4e32ea226e5`;
+the repaired state SHA-256 is
+`6293065e8a4f1d1eb7174380278411a5a265a0e062698cdd5406bab1838f49cd`.
+The repair atomically replaced the paused node1 state after verifying the
+old hash and equality of the entire attempts ledger, seen plans, coverage,
+I/O feedback, budget, and no in-flight trial. Its machine-readable plan diff
+and compressed repaired checkpoint are in
+`v3-queue-ordinal-repair-receipt.json` and
+`v3-repaired-checkpoint-r008.json.gz`.
