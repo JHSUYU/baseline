@@ -8,7 +8,7 @@ from pathlib import Path
 
 from build_adapter import sha
 from calibrate_v2 import CASE, CHECKS, ROOT, SEEDS, rows
-from campaign_v2 import (STATE, atomic, audit_actors, selected_target,
+from campaign_v2 import (STATE, atomic, audit_actors, candidates, selected_target,
                          strict_plan, verify_state)
 
 
@@ -24,6 +24,8 @@ def audit(terminal=False):
     healthy_coverage = set()
     healthy_seconds = 0.0
     seed_receipts = []
+    seed_traces = []
+    seed_build = None
     source_commit = None
     for name in SEEDS:
         folder = ROOT / name
@@ -33,14 +35,28 @@ def audit(terminal=False):
             raise RuntimeError(name + ' healthy receipt changed')
         if source_commit is None:
             source_commit = receipt['original_source_commit']
+            seed_build = {key: receipt[key] for key in
+                          ('original_test_class_sha256', 'runner_sha256',
+                           'classpath_sha256')}
         elif receipt['original_source_commit'] != source_commit:
             raise RuntimeError('healthy source revision changed')
+        elif any(receipt[key] != value for key, value in seed_build.items()):
+            raise RuntimeError('healthy JUnit classpath or class bytes changed')
         healthy_coverage.update((folder / 'coverage.tsv').read_text().splitlines())
+        seed_traces.append(rows(folder / 'events.tsv'))
         healthy_seconds += receipt['elapsed_seconds']
         seed_receipts.append({'run_id': name, 'trace_sha256': sha(folder / 'events.tsv'),
                               'coverage_sha256': sha(folder / 'coverage.tsv'),
                               'elapsed_seconds': receipt['elapsed_seconds']})
     cumulative_coverage = set(healthy_coverage)
+    initial_families = set()
+    for case in CHECKS:
+        seed_b_selectors = {item['selector'] for item in
+                            candidates(seed_traces[1], case, peer)}
+        initial_families.update(item['family'] for item in
+                                candidates(seed_traces[0], case, peer)
+                                if item['selector'] in seed_b_selectors)
+    cumulative_families = set(initial_families)
     audited = []
     for result in state['results']:
         run_id = result['run_id']
@@ -50,7 +66,8 @@ def audit(terminal=False):
                 receipt['agent_sha256'] != state['agent_sha256'] or \
                 receipt['elapsed_seconds'] != result['elapsed_seconds'] or \
                 receipt['exit_code'] != result['junit_exit'] or \
-                receipt['original_source_commit'] != source_commit:
+                receipt['original_source_commit'] != source_commit or \
+                any(receipt[key] != value for key, value in seed_build.items()):
             raise RuntimeError(run_id + ' original JUnit receipt disagrees with checkpoint')
         trace = rows(folder / 'events.tsv')
         actor = audit_actors(trace)
@@ -80,6 +97,13 @@ def audit(terminal=False):
             if gain != result['new_coverage_lines']:
                 raise RuntimeError(run_id + ' coverage feedback changed')
             cumulative_coverage.update(current)
+            selected_case = result['target_case']
+            new_points = candidates(trace, selected_case, peer, last) \
+                if result['case_results'][selected_case]['effective'] else []
+            families = {point['family'] for point in new_points}
+            if len(families - cumulative_families) != result['new_io_families']:
+                raise RuntimeError(run_id + ' actor-bound I/O family feedback changed')
+            cumulative_families.update(families)
         elif result['new_coverage_lines'] or result['new_io_families']:
             raise RuntimeError(run_id + ' target-lost trial contaminated feedback')
         audited.append({'run_id': run_id, 'case': result['target_case'],
@@ -95,6 +119,8 @@ def audit(terminal=False):
                         'receipt_sha256': sha(folder / 'run.json')})
     if cumulative_coverage != set(state['seen_coverage']):
         raise RuntimeError('cumulative effective coverage differs from checkpoint')
+    if cumulative_families != set(state['seen_families']):
+        raise RuntimeError('cumulative actor-bound I/O families differ from checkpoint')
     interrupted = state['selected_count'] - len(audited) - int(state['inflight'] is not None)
     if interrupted < 0:
         raise RuntimeError('completed and inflight runs exceed selected count')
@@ -110,8 +136,12 @@ def audit(terminal=False):
             raise RuntimeError(case + ' effective budget disagrees with raw receipts')
         recent = effective[-8:]
         novelty = any(row['new_coverage_lines'] or row['new_io_families'] for row in recent)
+        eight_at_eighty = effective[72:80]
+        extension_novelty = len(eight_at_eighty) == 8 and any(
+            row['new_coverage_lines'] or row['new_io_families']
+            for row in eight_at_eighty)
         if budget['extension_decided'] and budget['effective_target'] == 128 and \
-                not (len(recent) == 8 and novelty):
+                not extension_novelty:
             raise RuntimeError(case + ' extension lacks final-eight novelty')
         cases[case] = {
             'effective': len(effective),
@@ -119,6 +149,7 @@ def audit(terminal=False):
             'max_faults': budget['max_faults'],
             'extension_decided': budget['extension_decided'],
             'final_eight_effective_novelty': novelty if len(recent) == 8 else None,
+            'extension_novelty_at_eighty': extension_novelty if len(effective) >= 80 else None,
             'selected_target_throw_trials': sum(bool(row['cases'][case]['target_throws'])
                                                for row in audited),
             'selected_target_throw_events': sum(row['cases'][case]['target_throws']
@@ -147,6 +178,8 @@ def audit(terminal=False):
         'effective_coverage_lines': len(cumulative_coverage),
         'healthy_coverage_lines': len(healthy_coverage),
         'effective_coverage_gain': len(cumulative_coverage - healthy_coverage),
+        'healthy_io_families': len(initial_families),
+        'effective_io_family_gain': len(cumulative_families - initial_families),
         'cases': cases,
         'trials': audited,
     }
