@@ -58,3 +58,44 @@ faults per sequence. A target assertion triggers a candidate review and is
 not automatically called a new bug.
 
 No old coarse trace, calibration, or selected plan is imported into V2.
+
+## Node2 pilot and continuing campaign
+
+The new node2 healthy runs each passed the unchanged original JUnit
+(`ran=1, ignored=0, failures=0`) in 15.918 and 15.919 seconds. Their exact
+`CoreContainer.reload` guard used `JETTY/node1` and the same logical
+`c8n_1x1/shard1/core_node2` replica; their raw physical ports differed. There
+are 63 stable, actor-bound, pretarget I/O selectors, including one actual
+`core.properties` read under the receiving container's core root. See
+`calibration-receipt.json` and the two `healthy-*` traces.
+
+The first ten new fault plans were 10/10 strict and reached that guard after
+the final fault on the same actor. Each original JUnit passed. They took
+163.704 seconds, added 32 original production JaCoCo probes, and produced no
+exact target assertion. These ten selected only ZooKeeper I/O. Their
+per-trial trace and JaCoCo hashes are in `pilot10-summary.json`.
+
+At the completed ten-run checkpoint, an audited scheduler migration rotated
+the source preference across reload-context ZK, the core file read, and
+collection ZK I/O. The migration retained all ten completed plans, 137 queued
+plans, and the prior coverage set. The old state and scheduler SHA-256 values
+were `bace774587e63abe36c4c37af6dca1f4886d1131dd7d3fe66f5dd26cdb07a0d0`
+and `d6b7d9f39d0b512234e3521d6d7f03b184d6f8d0fc4cd51e4fea2043c276e263`;
+the migrated state and scheduler hashes were
+`4054f1181542cd99b9e017699348624d9bc935ff40e4db4b8c274ae7e7f07669`
+and `f720d03f16ba1929214cf80c3dccf286218bdc914614591e658a54d600f3e456`.
+The byte-for-byte backups and `migration.json` are under
+`campaign/migrations/0001-file-family/`.
+
+Trial 11 then strictly injected an `IOException` at the original
+`CorePropertiesLocator.buildCoreDescriptor#L187` file read, with
+`exactCoreRoot=true`, `JETTY/node1`, and the actual ZK client object recorded.
+The same `core_node2` target guard ran later on that physical node and client;
+the original JUnit passed in 15.114 seconds and no target assertion occurred.
+Its plan, audit, trace, and coverage are mirrored under `file-pilot11/`.
+
+The original checkpoint is now continuing toward 80 effective trials with at
+most eight ordered faults in node2 tmux `solr21_actor_v2_80`. The node0 tmux
+`solr21_actor_v2_mirror` updates this case's `result.json` from its atomic
+progress receipt. Old coarse-selector trials stay in `legacy_coarse_actor` and
+do not enter the V2 denominator.

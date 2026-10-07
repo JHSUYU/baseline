@@ -249,7 +249,10 @@ def select(state: dict) -> dict:
         choices = [entry for entry in queue if len(entry['sequence']) == 1]
     if not choices:
         choices = queue
-    preferred_source = RELOAD if round_number % 3 else COLLECTION
+    # Rotate through the actual target-context ZooKeeper and core-file I/O
+    # families. The first ten frozen pilot plans used the earlier schedule;
+    # subsequent choices remain deterministic from the saved checkpoint.
+    preferred_source = (RELOAD, FILE, COLLECTION)[(round_number - 1) % 3]
     source_choices = [entry for entry in choices
                       if entry['sequence'][0]['sourceKey'] == preferred_source]
     if source_choices:

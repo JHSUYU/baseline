@@ -1,0 +1,157 @@
+{
+  "agent_sha256": "7ceb9a814ee7379744907d7f6e93592205fbafd0818671c0bdf362f9a04e7ed8",
+  "all_selected_keys_include_actor": true,
+  "healthy_runs": [
+    {
+      "actor_audit": {
+        "bindings": 1,
+        "bound_io": 627,
+        "unbound_io_excluded": 32
+      },
+      "actor_bound_target_file_reads": 1,
+      "directory": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-21/actor-v2/healthy-01",
+      "elapsed_seconds": 15.918,
+      "file_reads": 1,
+      "junit_gate": [
+        1,
+        0,
+        0
+      ],
+      "target": {
+        "actorKey": "JETTY/node1",
+        "marker": "SOLR21:REPLICA_NONNULL_GUARD",
+        "physicalNode": "127.0.0.1:34793_solr",
+        "resource": "c8n_1x1_shard1_replica_n1",
+        "sourceKey": "SOLR/RELOAD/c8n_1x1/shard1/core_node2"
+      },
+      "trace_sha256": "0f18956baec2c4ea049302b85e9156de9ef23c777076d4ae6bd6ee1087e956f2",
+      "unbound_file_reads_excluded": 0
+    },
+    {
+      "actor_audit": {
+        "bindings": 1,
+        "bound_io": 626,
+        "unbound_io_excluded": 32
+      },
+      "actor_bound_target_file_reads": 1,
+      "directory": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-21/actor-v2/healthy-02",
+      "elapsed_seconds": 15.919,
+      "file_reads": 1,
+      "junit_gate": [
+        1,
+        0,
+        0
+      ],
+      "target": {
+        "actorKey": "JETTY/node1",
+        "marker": "SOLR21:REPLICA_NONNULL_GUARD",
+        "physicalNode": "127.0.0.1:36387_solr",
+        "resource": "c8n_1x1_shard1_replica_n1",
+        "sourceKey": "SOLR/RELOAD/c8n_1x1/shard1/core_node2"
+      },
+      "trace_sha256": "ebdbee280bbc6521fafc5980e5d8784b04e3b737fb4ce4051c79b8c0ba16bf62",
+      "unbound_file_reads_excluded": 0
+    }
+  ],
+  "method": "unchanged CollectionReloadTest#testReloadedLeaderStateAfterZkSessionLoss in two fresh JVMs",
+  "selector_examples": [
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:FILE:core.properties:read",
+      "resource": "c8n_1x1_shard1_replica_n1/core.properties",
+      "siteId": "CorePropertiesLocator.buildCoreDescriptor#L187->Files.newInputStream",
+      "sourceKey": "SOLR/CORE_PROPERTIES/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/collections/c8n_1x1",
+      "siteId": "org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf",
+      "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf/configoverlay.json",
+      "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf/configsetprops.json",
+      "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf/schema.xml",
+      "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf/solrconfig.xml",
+      "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf/params.json",
+      "siteId": "org.apache.solr.core.RequestParams.getFreshRequestParams#L160->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf",
+      "siteId": "org.apache.solr.rest.ManagedResourceStorage$ZooKeeperStorageIO.configure#L228->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:exists",
+      "resource": "/configs/conf/_rest_managed.json",
+      "siteId": "org.apache.solr.rest.ManagedResourceStorage$ZooKeeperStorageIO.openInputStream#L260->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:getData",
+      "resource": "/configs/conf",
+      "siteId": "org.apache.solr.cloud.ZkSolrResourceLoader.openResource#L84->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    },
+    {
+      "actorKey": "JETTY/node1",
+      "hitOrdinal": 1,
+      "marker": "FAULT:ZK_NATIVE:getData",
+      "resource": "/configs/conf/schema.xml",
+      "siteId": "org.apache.solr.cloud.ZkSolrResourceLoader.openResource#L84->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+      "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+    }
+  ],
+  "stable_bound_selectors": 63,
+  "stable_file_selectors": 1
+}
