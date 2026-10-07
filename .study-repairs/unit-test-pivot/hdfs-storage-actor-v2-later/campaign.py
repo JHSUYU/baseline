@@ -16,7 +16,7 @@ import subprocess
 import sys
 import time
 
-from calibrate import GROUPS, rows, storage_volume, target_throw_signature
+from calibrate import GROUPS, rows, storage_volume, throw_signatures
 
 HERE = Path(__file__).resolve().parent
 FILE_FAULTS = ("IOException", "FileNotFoundException")
@@ -249,6 +249,7 @@ def summarize_attempt(anchor: Path, item: dict, run: Path, cases: tuple[str, ...
     if manifest.get("instrumentation_digest_sha256") != state["instrumentation_digest_sha256"]:
         raise RuntimeError("trial instrumentation differs from calibrated healthy seeds: " + str(run))
     trace = rows(run / "runtime_trace.jsonl")
+    signatures = throw_signatures(trace)
     exact, applied = exact_applied(item["sequence"], trace)
     covered = {k: coverage(run, k) for k in COVERAGE}
     summary = {"manifest": str(run / "manifest.json"),
@@ -261,6 +262,15 @@ def summarize_attempt(anchor: Path, item: dict, run: Path, cases: tuple[str, ...
                "requested_faults": len(item["sequence"]), "by_case": {}}
     for case in cases:
         post, throws = postfault(trace, case, item["sequence"], applied, exact)
+        throw_signatures_for_case = [signatures[row["seq"]] for row in throws]
+        if any(json.loads(signature)["checkSite"] is None
+               for signature in throw_signatures_for_case):
+            raise RuntimeError("target throw lacks preceding same-actor guard: " + str(run))
+        healthy_signatures = {
+            json.dumps(signature, sort_keys=True, separators=(",", ":"))
+            for signature in state["healthy_target_throw_signatures_by_case"].get(case, [])}
+        matching_healthy = sum(signature in healthy_signatures
+                               for signature in throw_signatures_for_case)
         valid = exact and bool(post)
         gains = {k: len(covered[k] - set(state["coverage"][case][k])) if valid else 0
                  for k in COVERAGE}
@@ -269,11 +279,10 @@ def summarize_attempt(anchor: Path, item: dict, run: Path, cases: tuple[str, ...
         summary["by_case"][case] = {
             "valid_for_feedback": valid, "same_actor_post_target": len(post),
             "target_exception_after_fault": len(throws), "target_exceptions": throws,
-            "target_exceptions_matching_healthy_signature": sum(
-                target_throw_signature(row) in {
-                    tuple(signature) for signature in
-                    state["healthy_target_throw_signatures_by_case"].get(case, [])}
-                for row in throws),
+            "target_exception_signatures": [json.loads(signature)
+                                            for signature in throw_signatures_for_case],
+            "target_exceptions_matching_healthy_signature": matching_healthy,
+            "target_exceptions_with_novel_signature": len(throws) - matching_healthy,
             "bug_mark": "candidate_needs_replay_source_review" if throws else "none",
             "coverage_gain": gains, "new_io_families": new_io,
         }

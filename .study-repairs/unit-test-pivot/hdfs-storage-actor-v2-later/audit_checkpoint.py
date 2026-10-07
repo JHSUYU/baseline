@@ -12,6 +12,9 @@ import re
 
 FIELDS = ("marker", "siteId", "sourceKey", "occurrence", "hitOrdinal",
           "actorKey", "storageKey", "peerRole", "faultType")
+STABLE_GUARD_FIELDS = ("equal", "reject", "upgrade", "datanodeNamespaceId",
+                       "storedLayoutVersion", "softwareLayoutVersion",
+                       "previousLayoutVersion")
 
 
 def rows(path: Path) -> list[dict]:
@@ -23,7 +26,37 @@ def volume(value: str | None) -> str:
     return match.group(0).rstrip("/") if match else "unbound"
 
 
-def check_trial(item: dict, result: dict, receipt: dict) -> tuple[dict[str, bool], list[str]]:
+def throw_signatures(trace: list[dict]) -> dict[int, str]:
+    """Associate each throw with its preceding same-actor target check.
+
+    Runtime NameNode namespace IDs, block-pool IDs, ports, scratch paths, and
+    timestamps intentionally stay out of this cross-run comparison. A match
+    is evidence of a healthy control path, not a final bug verdict.
+    """
+    last_check: dict[tuple[str, str, str], dict] = {}
+    signatures: dict[int, str] = {}
+    for row in trace:
+        if row["event"] not in ("TARGET_CHECK", "TARGET_THROW"):
+            continue
+        key = (row.get("caseId", ""), row.get("actorKey", "unbound"),
+               volume(row.get("storageKey")))
+        if row["event"] == "TARGET_CHECK":
+            last_check[key] = row
+            continue
+        check = last_check.get(key)
+        signature = {"caseId": key[0], "actorKey": key[1], "volume": key[2],
+                     "exception": row.get("exception", ""),
+                     "checkSite": check.get("siteId") if check else None}
+        if check:
+            signature.update({field: check[field] for field in STABLE_GUARD_FIELDS
+                              if field in check})
+        signatures[row["seq"]] = json.dumps(signature, sort_keys=True,
+                                             separators=(",", ":"))
+    return signatures
+
+
+def check_trial(item: dict, result: dict, receipt: dict
+                ) -> tuple[dict[str, bool], dict[str, list[str]], list[str]]:
     issues: list[str] = []
     trace_path = Path(result["trace"])
     manifest_path = Path(result["manifest"])
@@ -63,6 +96,8 @@ def check_trial(item: dict, result: dict, receipt: dict) -> tuple[dict[str, bool
     if exact != result["exact_order_applied"]:
         issues.append("strict applied count differs from checkpoint")
     effective: dict[str, bool] = {}
+    postfault_signatures: dict[str, list[str]] = {}
+    signatures = throw_signatures(trace)
     last = applied[-1] if exact and applied else None
     for case, saved in result["by_case"].items():
         matching = []
@@ -86,7 +121,25 @@ def check_trial(item: dict, result: dict, receipt: dict) -> tuple[dict[str, bool
             issues.append(f"{case} postfault target receipt differs from checkpoint")
         if len(throws) != saved["target_exception_after_fault"]:
             issues.append(f"{case} target-throw count differs from checkpoint")
-    return effective, issues
+        postfault_signatures[case] = [signatures[row["seq"]] for row in throws]
+        if any(json.loads(signature)["checkSite"] is None
+               for signature in postfault_signatures[case]):
+            issues.append(f"{case} target throw lacks prior same-actor guard")
+        saved_signatures = saved.get("target_exception_signatures")
+        if saved_signatures is None or saved_signatures != [
+                json.loads(signature) for signature in postfault_signatures[case]]:
+            issues.append(f"{case} target-throw signatures differ from checkpoint")
+        healthy = {json.dumps(signature, sort_keys=True, separators=(",", ":"))
+                   for signature in receipt.get(
+                       "healthy_target_throw_signatures_by_case", {}).get(case, [])}
+        matching = sum(signature in healthy
+                       for signature in postfault_signatures[case])
+        if matching != saved.get("target_exceptions_matching_healthy_signature"):
+            issues.append(f"{case} healthy target-throw count differs from checkpoint")
+        if (len(throws) - matching !=
+                saved.get("target_exceptions_with_novel_signature")):
+            issues.append(f"{case} novel target-throw count differs from checkpoint")
+    return effective, postfault_signatures, issues
 
 
 def audit(anchor: Path) -> dict:
@@ -105,6 +158,22 @@ def audit(anchor: Path) -> dict:
     strict = 0
     junit_exit = Counter()
     target_throws = Counter()
+    healthy_signatures_by_seed = []
+    for seed in ("healthy-a", "healthy-b"):
+        trace_path = anchor / seed / "runtime_trace.jsonl"
+        if not trace_path.is_file():
+            issues.append(f"missing {seed} trace for healthy throw comparison")
+            healthy_signatures_by_seed.append(set())
+        else:
+            healthy_signatures_by_seed.append({signature for signature in
+                throw_signatures(rows(trace_path)).values()
+                if json.loads(signature)["caseId"] in state["case_ids"]})
+    if healthy_signatures_by_seed[0] != healthy_signatures_by_seed[1]:
+        issues.append("healthy target-throw signatures differ between calibration seeds")
+    healthy_signatures = healthy_signatures_by_seed[0] & healthy_signatures_by_seed[1]
+    matching_healthy_throws = Counter()
+    novel_signature_throws = Counter()
+    throw_review = []
     elapsed = 0.0
     all_attempt_elapsed = 0.0
     effective_elapsed = Counter({case: 0.0 for case in state["case_ids"]})
@@ -112,7 +181,8 @@ def audit(anchor: Path) -> dict:
     for sequence_id in ids:
         entry = state["completed"][sequence_id]
         result = entry["result"]
-        trial_effective, trial_issues = check_trial(entry["item"], result, receipt)
+        trial_effective, postfault_signatures, trial_issues = check_trial(
+            entry["item"], result, receipt)
         issues.extend(f"{sequence_id}: {issue}" for issue in trial_issues)
         strict += bool(result["exact_order_applied"])
         junit_exit[str(result["junit_exit"])] += 1
@@ -124,6 +194,15 @@ def audit(anchor: Path) -> dict:
             if valid:
                 effective_elapsed[case] += result["elapsed_seconds"]
             target_throws[case] += result["by_case"][case]["target_exception_after_fault"]
+            for signature in postfault_signatures[case]:
+                matches_healthy = signature in healthy_signatures
+                if matches_healthy:
+                    matching_healthy_throws[case] += 1
+                else:
+                    novel_signature_throws[case] += 1
+                throw_review.append({"sequence_id": sequence_id, "case_id": case,
+                                     "matches_both_healthy_seeds": matches_healthy,
+                                     "signature": json.loads(signature)})
     if dict(effective) != state["effective_by_case"]:
         issues.append("effective counts differ from independently reconstructed trace counts")
     return {
@@ -133,6 +212,13 @@ def audit(anchor: Path) -> dict:
         "effective_by_case": dict(effective),
         "reported_effective_by_case": state["effective_by_case"],
         "target_exceptions_after_fault_by_case": dict(target_throws),
+        "target_exceptions_matching_both_healthy_seeds_by_case":
+            {case: matching_healthy_throws[case] for case in state["case_ids"]},
+        "target_exceptions_with_novel_signature_by_case":
+            {case: novel_signature_throws[case] for case in state["case_ids"]},
+        "healthy_target_throw_signatures": [json.loads(signature)
+                                            for signature in sorted(healthy_signatures)],
+        "target_throw_review": throw_review,
         "junit_exit_counts": dict(junit_exit),
         "sum_selected_attempt_seconds": round(elapsed, 3),
         "sum_all_attempt_seconds": round(all_attempt_elapsed, 3),

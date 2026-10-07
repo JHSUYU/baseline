@@ -37,9 +37,38 @@ def storage_volume(path: str | None) -> str:
     return match.group(0).rstrip("/") if match else "unbound"
 
 
-def target_throw_signature(row: dict) -> tuple[str, str, str, str]:
-    return (row.get("caseId", ""), row.get("actorKey", "unbound"),
-            storage_volume(row.get("storageKey")), row.get("exception", ""))
+STABLE_GUARD_FIELDS = ("equal", "reject", "upgrade", "datanodeNamespaceId",
+                       "storedLayoutVersion", "softwareLayoutVersion",
+                       "previousLayoutVersion")
+
+
+def throw_signatures(trace: list[dict]) -> dict[int, str]:
+    """Bind each throw to the preceding check on the same actor and volume.
+
+    Runtime NameNode IDs, ports, block-pool IDs, and scratch paths vary across
+    seeds. The stable operand and branch fields distinguish the test's intended
+    rejection paths without treating a matching control as proof of safety.
+    """
+    last_check: dict[tuple[str, str, str], dict] = {}
+    signatures: dict[int, str] = {}
+    for row in trace:
+        if row["event"] not in ("TARGET_CHECK", "TARGET_THROW"):
+            continue
+        key = (row.get("caseId", ""), row.get("actorKey", "unbound"),
+               storage_volume(row.get("storageKey")))
+        if row["event"] == "TARGET_CHECK":
+            last_check[key] = row
+            continue
+        check = last_check.get(key)
+        signature = {"caseId": key[0], "actorKey": key[1], "volume": key[2],
+                     "exception": row.get("exception", ""),
+                     "checkSite": check.get("siteId") if check else None}
+        if check:
+            signature.update({field: check[field] for field in STABLE_GUARD_FIELDS
+                              if field in check})
+        signatures[row["seq"]] = json.dumps(signature, sort_keys=True,
+                                             separators=(",", ":"))
+    return signatures
 
 
 def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
@@ -47,6 +76,7 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
     trace = rows(seed / "runtime_trace.jsonl")
     targets = [r for r in trace if r["event"] == "TARGET_CHECK" and r.get("caseId") in cases]
     throws = [r for r in trace if r["event"] == "TARGET_THROW" and r.get("caseId") in cases]
+    signatures = throw_signatures(trace)
     actors = [r for r in trace if r["event"] == "ACTOR_REGISTERED"]
     entries = [r for r in trace if r["event"] == "ACTOR_ENTER"]
     io = [r for r in trace if r["event"] == "FAULT_POINT_OBSERVED"]
@@ -103,6 +133,8 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
             issues.append(f"{case} target lacks actor/storage identity")
         if not eligible[case]:
             issues.append(f"{case} no earlier I/O on the same actor/storage")
+    if any(json.loads(signatures[r["seq"]])["checkSite"] is None for r in throws):
+        issues.append("target throw lacks preceding same-actor storage check")
     if any(r.get("actorKey") == "unbound" for r in bound):
         issues.append("bound I/O has unbound actor")
     return {
@@ -121,8 +153,8 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
         "targets": {case: len(events) for case, events in by_case.items()},
         "target_throws": {case: len([r for r in throws if r["caseId"] == case])
                           for case in cases},
-        "target_throw_signatures": {case: [list(s) for s in sorted(
-            {target_throw_signature(r) for r in throws if r["caseId"] == case})]
+        "target_throw_signatures": {case: [json.loads(s) for s in sorted(
+            {signatures[r["seq"]] for r in throws if r["caseId"] == case})]
             for case in cases},
         "eligible_io": {case: len(events) for case, events in eligible.items()},
         "selectors_by_case": {case: [list(selector(r)) for r in events]
@@ -180,9 +212,11 @@ def calibrate(group: str, output: Path, timeout: int, max_seeds: int = 2) -> dic
             issues.append(f"{case_id} has no stable same-actor upstream selector")
         if seeds[0]["target_actors"][case_id] != seeds[1]["target_actors"][case_id]:
             issues.append(f"{case_id} target actor sequence differs across healthy seeds")
-        a = set(map(tuple, seeds[0]["target_throw_signatures"][case_id]))
-        b = set(map(tuple, seeds[1]["target_throw_signatures"][case_id]))
-        healthy_throw_signatures[case_id] = [list(item) for item in sorted(a & b)]
+        a = {json.dumps(item, sort_keys=True, separators=(",", ":"))
+             for item in seeds[0]["target_throw_signatures"][case_id]}
+        b = {json.dumps(item, sort_keys=True, separators=(",", ":"))
+             for item in seeds[1]["target_throw_signatures"][case_id]}
+        healthy_throw_signatures[case_id] = [json.loads(item) for item in sorted(a & b)]
         if a != b:
             issues.append(f"{case_id} healthy target-throw identity differs across seeds")
     receipt = {

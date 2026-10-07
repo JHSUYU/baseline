@@ -9,6 +9,7 @@ import tempfile
 
 import campaign
 import calibrate
+import audit_checkpoint
 import run_original
 
 HERE = Path(__file__).resolve().parent
@@ -68,9 +69,21 @@ def check_identity() -> None:
             "actorNamenodeRaw": "localhost/127.0.0.1:40000",
             "sourceKey": actor1 + "/peer=NN0", "occurrence": "rpc", "hitOrdinal": 1}
     assert campaign.related(file1, target)
-    assert calibrate.target_throw_signature({"caseId": "HDFS-37", "actorKey": actor1,
-        "storageKey": "dfs/data1/current/BP-ID", "exception": "IOException"}) == (
-            "HDFS-37", actor1, "dfs/data1", "IOException")
+    expected_check = {"event": "TARGET_CHECK", "seq": 32, "caseId": "HDFS-37",
+                      "actorKey": actor1, "storageKey": "dfs/data1/current/BP-ID",
+                      "siteId": "DataStorage.doRollback#L940-IF_ICMPLT",
+                      "previousLayoutVersion": -56, "softwareLayoutVersion": -57,
+                      "reject": False}
+    expected_throw = {"event": "TARGET_THROW", "seq": 33, "caseId": "HDFS-37",
+                      "actorKey": actor1, "storageKey": "dfs/data1/current/BP-ID",
+                      "exception": "java.io.IOException"}
+    signed = calibrate.throw_signatures([expected_check, expected_throw])
+    assert signed == audit_checkpoint.throw_signatures([expected_check, expected_throw])
+    assert '"checkSite":"DataStorage.doRollback#L940-IF_ICMPLT"' in signed[33]
+    assert '"previousLayoutVersion":-56' in signed[33]
+    assert calibrate.throw_signatures([{**expected_check, "reject": True},
+                                       expected_throw])[33] != signed[33]
+    assert audit_checkpoint.volume("dfs/data/current/BP-ID/current") == "dfs/data"
     assert campaign.related(rpc1, target)
     assert not campaign.related({**file1, "actorKey": actor2}, target)
     assert not campaign.related({**file1, "storageKey": "dfs/data2"}, target)

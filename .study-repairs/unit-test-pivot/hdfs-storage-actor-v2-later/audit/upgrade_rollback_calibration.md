@@ -19,8 +19,11 @@ startup campaign on its calibrated overlay; build the updated overlay in a
 separate host/work directory for these later groups.
 The legacy original healthy traces already contain three target throws at
 HDFS-24 and three at HDFS-37; HDFS-26 and HDFS-27 contain none. V2 records
-the healthy actor, storage-volume, and exception-class signatures from two
-new seeds and annotates later matching throws. A matching signature still
+the healthy actor, storage-volume, exact check site, stable guard operand and
+branch outcome, and exception-class signatures from two new seeds. A throw
+without a preceding same-actor storage check fails calibration or audit;
+the independent raw audit recomputes each trial's signature and verifies its
+matching/novel count against the checkpoint. A matching signature still
 requires exact-plan replay and source review; it is never silently discarded.
 
 | Group | Original JUnit method | Exact target checks |

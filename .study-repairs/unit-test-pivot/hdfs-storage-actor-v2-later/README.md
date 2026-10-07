@@ -40,7 +40,10 @@ in [the launch plan](audit/upgrade_rollback_calibration.md). All raw evidence
 and atomic checkpoints belong under this directory's `evidence/`; no old
 case status or legacy coarse trial is imported.
 Run `python3 audit_checkpoint.py evidence/<group>-constructor` to recompute
-strict injection, postfault target, and actor/peer identity counts from raw
-receipts before promoting any case result.
+strict injection, postfault target, actor/peer identity, and expected versus
+novel target-throw signatures from raw receipts before promoting any case
+result. Healthy throw comparison includes the same check site and stable
+branch operands; it does not classify an exception as a bug without source
+review and replay.
 The per-case effective seconds reuse shared JUnit time when one run covers
 multiple checks, so they are not additive across cases.
