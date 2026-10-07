@@ -39,3 +39,6 @@ commands, port and scratch isolation, expected healthy target throws, and
 in [the launch plan](audit/upgrade_rollback_calibration.md). All raw evidence
 and atomic checkpoints belong under this directory's `evidence/`; no old
 case status or legacy coarse trial is imported.
+Run `python3 audit_checkpoint.py evidence/<group>-constructor` to recompute
+strict injection, postfault target, and actor/peer identity counts from raw
+receipts before promoting any case result.

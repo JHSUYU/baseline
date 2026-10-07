@@ -39,6 +39,12 @@ fault matches in order and the same actor reaches that case's check after the
 last fault. When the last fault is file I/O, its volume must also match the
 later target. Target exceptions are recorded as candidates pending replay and
 source review, never automatically called new bugs.
+`audit_checkpoint.py <evidence-anchor>` independently reconstructs strict
+ordered injection and same-actor postfault target counts from raw traces,
+checks the calibrated overlay digest, and rejects ambiguous RPC endpoints.
+It is read-only and can audit an in-progress checkpoint. The active node1
+runner was launched before that extra endpoint guard was added, so this raw
+audit is required before any startup case is finalized.
 
 ## Offline gate
 
