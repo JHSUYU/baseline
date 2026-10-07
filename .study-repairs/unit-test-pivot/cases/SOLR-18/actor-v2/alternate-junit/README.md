@@ -36,3 +36,12 @@ through Java exit. It requires at least 10.25 GiB free at launch and at most
 four other live business JVMs. At trial boundaries it also requires at least
 10 GiB before continuing. Raw evidence remains on node2. Do not start this
 calibration while another owner reserves the node2 JUnit slot.
+
+The first candidate passed one clean JUnit and two no-fault instrumented
+JUnits. `calibration-state.json` and `healthy-audit.json` freeze their source,
+raw SHA-256, same-live-client target window, and 183 stable novel selectors.
+Five distinct singleton plans are recorded in the healthy audit.
+`pilot.py --one` runs one plan under the same shared lock and keeps a separate
+`pilot-state.json` checkpoint. Every trial preserves the unchanged original
+JUnit result, ordered injection events, selected guard identity, JaCoCo data,
+and production coverage feedback. No pilot result enters the first campaign.
