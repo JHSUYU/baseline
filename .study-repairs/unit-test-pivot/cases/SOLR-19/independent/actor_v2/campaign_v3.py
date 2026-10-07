@@ -174,17 +174,14 @@ def new_children(rows: list[dict], steps: list[dict], last_seq: int,
                  known: set[str], novel: bool, max_faults: int) -> list[dict]:
     if len(steps) >= max_faults:
         return []
-    # Occurrence identity is measured from this core's CREATE sender, even for
-    # a child injected after an earlier fault. Count earlier hits before
-    # selecting post-fault sites or a repeated I/O would get the wrong ordinal.
-    candidates = relevant_sites(rows)
+    # Each Fault.seen counter starts when its step becomes nextFault; a child
+    # ordinal is therefore counted strictly after the preceding applied fault.
+    candidates = relevant_sites(rows, after_seq=last_seq)
     count = Counter()
     picked = []
     for site in sorted(candidates, key=lambda x: x["seq"]):
         key = (site["core"], site["side"], site["op"], site["path"], site["caller"])
         count[key] += 1
-        if site["seq"] <= last_seq:
-            continue
         # Overseer queue item IDs are allocated afresh in every original JUnit
         # run. Keep their normalized behavior for feedback, but do not enqueue
         # an exact-path fault plan that cannot identify the same queue item.

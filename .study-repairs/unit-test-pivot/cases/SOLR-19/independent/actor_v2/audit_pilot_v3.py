@@ -81,9 +81,11 @@ def audit_trial(trial, manifest, events):
         if (attrs.get("actorSpec") != actor_spec or attrs.get("caller") != caller or
                 attrs.get("ordinal") != ordinal or attrs.get("index") != str(index)):
             issues.append(f"step{index}_wrong_fault_attributes")
+        previous_fault_seq = applied[index - 1]["seq"] if index else 0
+        lower = max(sender["seq"], previous_fault_seq) if sender else previous_fault_seq
         occurrence = sum(e["phase"] == expected_io and e["core"] == path and
                          e["actor"] == expected_actor and e["detail"] == caller and
-                         sender["seq"] < e["seq"] < event["seq"] for e in events) if sender else 0
+                         lower < e["seq"] < event["seq"] for e in events) if sender else 0
         if occurrence != int(ordinal):
             issues.append(f"step{index}_wrong_occurrence")
         fault_receipts.append({"index": index, "sender_seq": sender["seq"] if sender else None,

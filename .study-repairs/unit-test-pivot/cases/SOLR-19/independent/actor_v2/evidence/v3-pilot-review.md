@@ -115,24 +115,21 @@ timing distribution. The node1 Solr tmux/JVM exited at the r008 boundary.
 The full 80-effective campaign will resume from r009 after HBASE-32 releases
 its five-effective completion window; no pilot trial will be replayed.
 
-### Complete-boundary queue correction
+### Ordinal audit and restored checkpoint
 
-At the r008 boundary, an offline queue audit found that old child mutation
-counted a repeated I/O occurrence starting after the preceding fault,
-whereas the runtime matcher counts from the same core's CREATE sender. The
-already tested r001–r008 selectors and exact raw outcomes remain unchanged.
-`repair_queue_v3.py` rebuilt **only untried mutated children** from their
-archived parent traces using the corrected sender-relative ordinal; it also
-avoids newly adding generated `/qn-<number>` queue-item paths. The 58
-untried stable/exploratory single-fault plans retained their order. The old
-queue had 66 plans (8 mutated children); the repaired queue has 67 plans
-(9 mutated children). The historical r008 state SHA-256 is
-`94bd51545a334a5b3e8c65afb5acd8c22398b0cafe0d39d7182ec4e32ea226e5`;
-the repaired state SHA-256 is
-`6293065e8a4f1d1eb7174380278411a5a265a0e062698cdd5406bab1838f49cd`.
-The repair atomically replaced the paused node1 state after verifying the
-old hash and equality of the entire attempts ledger, seen plans, coverage,
-I/O feedback, budget, and no in-flight trial. Its machine-readable plan diff
-and compressed repaired checkpoint are in
-`v3-queue-ordinal-repair-receipt.json` and
-`v3-repaired-checkpoint-r008.json.gz`.
+An offline reviewer initially proposed counting every later fault's ordinal
+from the CREATE sender and briefly generated a different untried queue. A
+direct review of `ActorProbe.io` showed that `Fault.seen` increments only for
+the active `nextFault`; after one fault applies, the next fault begins its
+own count. Thus the original child mutation correctly counted occurrences
+after the preceding fault. **No JUnit was started under the intermediate
+queue.** The archived original r008 state was atomically restored on node1:
+SHA-256 `94bd51545a334a5b3e8c65afb5acd8c22398b0cafe0d39d7182ec4e32ea226e5`,
+8 attempts, 5 effective, no in-flight trial, and the original 66 untried
+plans in their original order. The attempts, seen plans, coverage, I/O
+feedback, and budget were compared field by field before restoration. The
+rollback receipt is `v3-queue-rollback-receipt.json`; r009 is still next.
+The only retained future change skips generated `/qn-<number>` paths when
+creating *new* mutation children, because their exact queue item ID changes
+across runs. It does not remove any of the 66 existing plans, including
+three concrete queue paths observed in both healthy seeds.
