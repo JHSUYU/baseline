@@ -1,5 +1,5 @@
 {
-  "bug_mark": "candidate_review",
+  "bug_mark": "none",
   "case_id": "HBASE-32",
   "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
   "coverage_gain": 6,
@@ -7,9 +7,9 @@
     "applied_fault_events": 133,
     "attempted_trials": 123,
     "budget": {
-      "effective_trials": 80,
-      "max_attempts": 240,
-      "max_faults": 8
+      "effective_trials": 128,
+      "max_attempts": 384,
+      "max_faults": 10
     },
     "checkpoint": "work-lots/checkpoint.json",
     "child_selector_cap": 24,
@@ -80,7 +80,7 @@
     "last_8_effective_global_io_novelty": 91,
     "new_production_branches": 6,
     "new_production_methods": 1,
-    "pending_review_candidates": 1,
+    "pending_review_candidates": 0,
     "queue_length": 14205,
     "requested_fault_events": 135,
     "review_candidates": 6,
@@ -109,6 +109,11 @@
         "classification": "unreproduced_timeout_candidate",
         "evidence": "evidence/r075-replay-verdict.json",
         "reason": "exact same-plan 600-second replay passed original JUnit in 56.45 seconds with 600 of 600 child assignments"
+      },
+      "r123": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r123-replay-verdict.json",
+        "reason": "exact 600-second isolated replay passed original JUnit in 79.72 seconds with 600 of 600 child assignments"
       }
     },
     "rng_seed": 32,
@@ -133,7 +138,7 @@
   "fully_applied_trials": 121,
   "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
   "source_audit_note": "Fresh original testLotsOfRegionReplicas campaign; previous testSecondaryRegionKill evidence is retained in result-pilot.json.",
-  "status": "running_coverage_io_campaign",
+  "status": "paused_before_r124_for_node1_solr09",
   "strict_injections": 121,
   "target_after_fault": 88,
   "target_reached": true
