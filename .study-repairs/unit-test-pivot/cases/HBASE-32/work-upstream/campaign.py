@@ -15,6 +15,7 @@ import os
 from pathlib import Path
 import random
 import re
+import shutil
 import subprocess
 import time
 
@@ -31,6 +32,19 @@ INITIAL_EFFECTIVE = 80
 EXTENDED_EFFECTIVE = 128
 INITIAL_ATTEMPT_CAP = 240
 EXTENDED_ATTEMPT_CAP = 384
+MIN_FREE_BYTES = 2 * 1024**3
+KIND_SHARE = {"DO_NOT_RETRY_IOEXCEPTION": 0.70,
+              "IOEXCEPTION": 0.10, "SOCKET_TIMEOUT": 0.10,
+              "EOF_EXCEPTION": 0.10}
+
+
+def choose_kind(state):
+    """Sample exception semantics with observed B7 retention in the loop."""
+    selected = Counter(trial["plan"][-1].rsplit("~", 1)[1]
+                       for trial in state["trials"]
+                       if trial.get("selection_policy") == "upstream_v7_retention")
+    slot = sum(selected.values()) + 1
+    return max(KINDS, key=lambda kind: slot * KIND_SHARE[kind] - selected[kind])
 
 
 def atomic_json(path, value):
@@ -360,6 +374,8 @@ def priority(entry, tried, family_counts, tried_fault=None, prefix_failures=None
             - min(family_counts[family] // 4, 20)
             + (20 if same_actor else 0)
             + (28 if len(entry["plan"]) > 1 and last.startswith("RPC_FLUSH_REGION~") else 0)
+            + (30 if len(entry["plan"]) > 1 and last.startswith("RPC_FLUSH_REGION~")
+               and last.endswith("~DO_NOT_RETRY_IOEXCEPTION") else 0)
             - 12 * min(prefix_failures[tuple(entry["plan"][:-1])], 2)
             - 12 * min(terminal_misses[selector], 2)
             - 30 * entry.get("unmatched_retries", 0)
@@ -404,6 +420,8 @@ def publish(state, status="running"):
               "budget": {"effective": state["effective_budget"],
                          "attempt_cap": state["attempt_cap"], "max_faults": state["max_faults"]},
               "pending_review": [t["id"] for t in trials if t["review_candidate"]],
+              "disk_free_bytes_at_publish": shutil.disk_usage(HERE).free,
+              "minimum_free_bytes_before_next_trial": MIN_FREE_BYTES,
               "checkpoint": str(CHECKPOINT.relative_to(HERE.parent))}
     atomic_json(RESULT, result)
 
@@ -552,6 +570,21 @@ def main():
                     json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
             state["version"] = 6
             publish(state)
+        if state.get("version", 1) < 7:
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 7,
+                "reason": "retention_weighted_exception_selection_and_mixed_RPC_priority",
+                "kind_share": KIND_SHARE,
+                "mixed_rounds_per_five": 4,
+                "depth_cadence": 10,
+                "queue_length_unchanged": len(state["queue"]),
+                "trial_count_unchanged": len(state["trials"]),
+                "coverage_union_unchanged": state["coverage_union"],
+                "io_union_unchanged_sha256": hashlib.sha256(
+                    json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
+            state["version"] = 7
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -566,7 +599,7 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 6, "rng_seed": RNG_SEED,
+        state = {"version": 7, "rng_seed": RNG_SEED,
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -587,6 +620,11 @@ def main():
         if PAUSE_AFTER_CHECKPOINT.exists():
             print("HBASE32U paused at complete checkpoint", len(state["trials"]),
                   flush=True)
+            return
+        if not INFLIGHT.exists() and shutil.disk_usage(HERE).free < MIN_FREE_BYTES:
+            publish(state, "paused_low_disk")
+            print("HBASE32U paused before next trial: free bytes below",
+                  MIN_FREE_BYTES, flush=True)
             return
         effective_count = sum(t["effective"] for t in state["trials"])
         if effective_count >= state["effective_budget"]:
@@ -630,12 +668,25 @@ def main():
                                                             terminal_misses),
                                                    ";".join(item["plan"])))
             depth_round = (len(state["trials"]) + 1) % 10 == 0
-            if depth_round:
-                maximum_depth = max(map(lambda item: len(item["plan"]), state["queue"]))
+            desired_kind = choose_kind(state)
+            maximum_depth = max(map(lambda item: len(item["plan"]), state["queue"]))
+            mixed_round = (len(state["trials"]) + 1) % 5 != 0
+            def eligible(item, kind=True, depth=True, mixed=True):
+                plan = item["plan"]
+                return ((not kind or plan[-1].endswith("~" + desired_kind))
+                        and (not depth or not depth_round or len(plan) == maximum_depth)
+                        and (not mixed or
+                             ((len(plan) > 1 and plan[-1].startswith("RPC_FLUSH_REGION~"))
+                              if mixed_round else
+                              not plan[-1].startswith("RPC_FLUSH_REGION~"))))
+            index = next((i for i, item in enumerate(state["queue"])
+                          if eligible(item)), None)
+            if index is None:
                 index = next((i for i, item in enumerate(state["queue"])
-                              if len(item["plan"]) == maximum_depth), 0)
-            else:
-                index = 0
+                              if eligible(item, mixed=False)), None)
+            if index is None:
+                index = next((i for i, item in enumerate(state["queue"])
+                              if eligible(item, kind=False, mixed=False)), 0)
             entry = state["queue"][index]
             atomic_json(INFLIGHT, {"id": trial_id, "entry": entry})
         log = HERE / "logs" / (trial_id + ".log")
@@ -689,6 +740,7 @@ def main():
         unexpected = matched and retained and not invalid and (exit_code == 124 or
             trace["junit"] is not None and trace["junit"]["failed"] > 0)
         trial = {"id": trial_id, "plan": entry["plan"], "strict": matched,
+                 "selection_policy": "upstream_v7_retention",
                  "mixed_rpc_terminal": entry["plan"][-1].startswith("RPC_FLUSH_REGION~"),
                  "unmatched_retries_before": entry.get("unmatched_retries", 0),
                  "applied_fault_events": len(fault_events(trace)),

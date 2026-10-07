@@ -14,6 +14,10 @@ Checkpoint version 5 changes only queue scoring. It treats a fault identity as t
 
 Checkpoint version 6 also lowers the priority of a terminal RPC ordinal after repeated trials applied the whole upstream prefix but never reached that RPC. It preserves the late ordinal for occasional exploration. For future controlled pauses, create `pause-after-checkpoint`; the controller finishes the current trial, atomically checkpoints it, and then exits its tmux pane. Remove the sentinel before restarting. Inflight receipts still support recovery from an unexpected interruption.
 
+Checkpoint version 7 retains every version 6 plan and receipt. Among new selections, it assigns about 70% to `DoNotRetryIOException` because this was the only exception kind reaching B7 in the first 39 trials; the other three kinds each retain about 10% for semantic exploration. Four of five selections favor a mixed same-actor upstream prefix and terminal client RPC. One of five favors pure upstream exploration, and every tenth round still seeks the deepest legal plan. Existing production coverage, global I/O novelty, waiting age, and unmatched-fault penalties remain in the score. The migration's unchanged queue, trial, coverage, and I/O hashes are recorded in `evidence-v7-migration-pre.json` and `evidence-v7-migration-post.json`.
+
+Before starting a new JUnit, the controller checks local free space. Below 2 GiB it atomically publishes `paused_low_disk` and exits at the checkpoint. Existing raw traces, JaCoCo files, and receipts remain intact; moving them to a larger node requires a separate verified archival step.
+
 ```sh
 cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream
 tmux attach -t hbase32-upstream-fuzz
