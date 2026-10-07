@@ -42,3 +42,5 @@ case status or legacy coarse trial is imported.
 Run `python3 audit_checkpoint.py evidence/<group>-constructor` to recompute
 strict injection, postfault target, and actor/peer identity counts from raw
 receipts before promoting any case result.
+The per-case effective seconds reuse shared JUnit time when one run covers
+multiple checks, so they are not additive across cases.

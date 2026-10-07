@@ -106,6 +106,9 @@ def audit(anchor: Path) -> dict:
     junit_exit = Counter()
     target_throws = Counter()
     elapsed = 0.0
+    all_attempt_elapsed = 0.0
+    effective_elapsed = Counter({case: 0.0 for case in state["case_ids"]})
+    last_completed_at = None
     for sequence_id in ids:
         entry = state["completed"][sequence_id]
         result = entry["result"]
@@ -114,8 +117,12 @@ def audit(anchor: Path) -> dict:
         strict += bool(result["exact_order_applied"])
         junit_exit[str(result["junit_exit"])] += 1
         elapsed += result["elapsed_seconds"]
+        all_attempt_elapsed += sum(attempt["elapsed_seconds"] for attempt in entry["attempts"])
+        last_completed_at = json.loads(Path(result["manifest"]).read_text()).get("finished_at_utc")
         for case, valid in trial_effective.items():
             effective[case] += valid
+            if valid:
+                effective_elapsed[case] += result["elapsed_seconds"]
             target_throws[case] += result["by_case"][case]["target_exception_after_fault"]
     if dict(effective) != state["effective_by_case"]:
         issues.append("effective counts differ from independently reconstructed trace counts")
@@ -126,7 +133,13 @@ def audit(anchor: Path) -> dict:
         "effective_by_case": dict(effective),
         "reported_effective_by_case": state["effective_by_case"],
         "target_exceptions_after_fault_by_case": dict(target_throws),
-        "junit_exit_counts": dict(junit_exit), "sum_trial_seconds": round(elapsed, 3),
+        "junit_exit_counts": dict(junit_exit),
+        "sum_selected_attempt_seconds": round(elapsed, 3),
+        "sum_all_attempt_seconds": round(all_attempt_elapsed, 3),
+        "effective_attempt_seconds_by_case": {case: round(value, 3)
+                                              for case, value in effective_elapsed.items()},
+        "campaign_started_at_utc": state.get("started_at_utc"),
+        "last_completed_at_utc": last_completed_at,
         "queue": len(state["queue"]),
         "in_flight": state["in_flight"]["id"] if state.get("in_flight") else None,
         "healthy_receipt_sha256": state["healthy_receipt_sha256"],

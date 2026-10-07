@@ -45,6 +45,8 @@ checks the calibrated overlay digest, and rejects ambiguous RPC endpoints.
 It is read-only and can audit an in-progress checkpoint. The active node1
 runner was launched before that extra endpoint guard was added, so this raw
 audit is required before any startup case is finalized.
+Its per-case effective seconds attribute a shared JUnit run to every check
+that reached its target; those values should not be summed across cases.
 
 ## Offline gate
 
