@@ -1,14 +1,27 @@
 {
   "actor_v2_recheck": {
-    "authoritative_host": "not_assigned_for_JUnit_yet",
-    "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-12/campaign-state.json",
-    "healthy_two_seed_receipt": null,
-    "node1_campaign_state": null,
-    "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
-    "phase": "prepared_awaiting_cluster_slot",
+    "authoritative_host": "node1",
+    "budget": {
+      "conditional_extension_effective": 128,
+      "conditional_extension_faults": 10,
+      "max_effective": 80,
+      "max_faults": 8
+    },
+    "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
+    "healthy_two_seed_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/healthy_receipt.json",
+    "new_counts_exclude_legacy": true,
+    "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
+    "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2",
+    "phase": "formal_budget_running",
+    "pilot_checkpoint_sha256": "32ee993dc0bd05f8e25c9adbed60a805da57eb7968db30273972dbb22f2cee69",
+    "pilot_completed_trials": 5,
+    "pilot_effective_trials": 5,
+    "pilot_summary": "actor-v2-pilot-summary.json",
+    "pilot_summary_sha256": "9cc10080081ff0f80f4b7a964c3f71ad556dd031ec92ea2c85769a67676f34d6",
     "recheck_started_utc": "2026-10-07",
     "schema": "hdfs-key-actor-v2-recheck-1",
     "strict_relation": "same concrete DataNode startup episode and same bound block pool",
+    "tmux_session": "hdfs12_actor_v2_budget",
     "v2_fault_results_not_in_legacy_counts": true
   },
   "bug_mark": "none",
@@ -20,14 +33,28 @@
     "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient[0]"
   ],
   "coverage_gain": {
-    "branch_counts": 126,
-    "methods": 27,
-    "probes": 243
+    "branch_counts": 5,
+    "methods": 2,
+    "probes": 16
   },
-  "elapsed_seconds": 8575.531,
-  "fault_trials": 256,
-  "fully_applied_trials": 242,
+  "elapsed_seconds": 159.825,
+  "fault_trials": 5,
+  "fully_applied_trials": 5,
   "function": "retrievePassword(BlockTokenIdentifier)",
+  "historical_campaign_summary": {
+    "counts_excluded_from_actor_v2_budget": true,
+    "coverage_gain": {
+      "branch_counts": 126,
+      "methods": 27,
+      "probes": 243
+    },
+    "elapsed_seconds": 8575.531,
+    "fault_trials": 256,
+    "fully_applied_trials": 242,
+    "methodology": "coverage_io_case_local_asm_jacoco_two_original_junits",
+    "strict_injections": 242,
+    "target_after_fault": 136
+  },
   "independent_campaign": {
     "budget": {
       "max_faults": 10,
@@ -202,7 +229,7 @@
     "target_exception_after_fault_trials": 0,
     "trial_ledger": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/independent/long-lived/control-plane/trial-ledger.csv"
   },
-  "methodology": "coverage_io_case_local_asm_jacoco_two_original_junits",
+  "methodology": "actor_precise_original_junit_graph_free_coverage_io_v2",
   "raw_event_audit": "independent/audit-all.json",
   "raw_evidence_archive": {
     "archive": "HDFS-12-independent-evidence.tar.gz",
@@ -211,14 +238,14 @@
     "file_count": 1551,
     "sha256": "d5e9d5a9cc94de65cd9994e3ff11e5bda086308fc8c4eb1fd319147fd50c4ee6"
   },
-  "reason": "Archived 256-trial graph-free campaigns are historical because their hard-coded DataNode source and global site ordinal cannot prove same runtime actor across MiniDFSCluster incarnations. V2 actor-aware overlay is prepared; its original long-lived JUnit calibration awaits a separate cluster slot. Old counts remain unchanged.",
+  "reason": "Two fresh original testLongLivedClient[0] calibrations and five actor-precise fault pilots passed. Each pilot matched one DN1/BP0 key-update response fault and reached the selected allKeys.get guard afterward without InvalidToken. The formal V2 budget continues from this checkpoint. Historical 256-trial coarse-actor counts are excluded from the V2 totals.",
   "selection_line": 514,
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_review": "BlockTokenSecretManager.retrievePassword first rejects expired tokens, then looks up keyId in allKeys and throws InvalidToken if absent. The long-lived original test rotates keys and verifies later reads and checksums. No selected null-key throw followed a strict, target-retaining fault sequence in either workload. Fault-induced JUnit failures are recorded separately from this selected throw.",
-  "status": "actor_identity_recheck_pending",
-  "strict_injections": 242,
+  "status": "actor_v2_running",
+  "strict_injections": 5,
   "system": "HDFS 3.4.3",
-  "target_after_fault": 136,
+  "target_after_fault": 5,
   "target_exception_after_fault_trials": 0,
   "target_reached": true
 }
