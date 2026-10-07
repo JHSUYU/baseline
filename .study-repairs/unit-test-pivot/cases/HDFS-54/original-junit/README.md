@@ -162,6 +162,23 @@ reached the same false branch and `PathIOException`. This is a separate
 target-false observation, not evidence of the stale-key mechanism or a new
 bug. See [`trial28-source-review.md`](trial28-source-review.md).
 
+### Queue refinement after trial 52
+
+The first 52 original-JUnit trials were retained exactly as executed. By
+trial 52, the queue had repeatedly selected nine-fault plans that disabled
+all nine located DataNodes; their line-629 false outcomes are the expected
+result of exhausting checksum sources, as confirmed by trial 28's clean
+replay. At the completed trial-52 JUnit boundary, the campaign was paused
+with its manifest and JaCoCo data intact. The revised score groups these
+terminal plans by file, block group, and ordered DataNode-role × I/O-site
+path, ignoring synthetic exception subtype. After two effective false
+outcomes from one such path, further plans from it lose 1200 score points.
+This retains deep-sequence sampling while giving other RPC sites, roles and
+coverage-bearing seeds a chance within the same 80-trial budget. The
+completed-trial count and checkpoint were preserved, and trial 52 was
+summarized once from its existing manifest on resume. See
+[`scheduling-boundary-receipt.json`](scheduling-boundary-receipt.json).
+
 ## Interpretation limit
 
 The original JUnit enables block access tokens but does not set up an expired

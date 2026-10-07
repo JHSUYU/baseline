@@ -121,6 +121,21 @@ def score(candidate, state):
     family = (*role_site, last["type"])
     distinct_roles = len({fault["dnRole"] for fault in candidate["faults"]})
     wait_rounds = len(state["attempts"]) - candidate["added_round"]
+    # A nine-DN sequence can exhaust every checksum source and take the
+    # expected false branch. Treat plans with the same ordered actor/site
+    # path as one recovery family, regardless of synthetic exception subtype.
+    # Explore two representatives, then let other I/O paths and coverage
+    # seeds compete before revisiting equivalent terminal failures.
+    actor_site_path = tuple((fault["dnRole"], fault["site"])
+                            for fault in candidate["faults"])
+    exhausted_equivalents = sum(
+        prior.get("result") == "effective"
+        and prior.get("target_false_after_final_fault", 0) > 0
+        and tuple((fault["dnRole"], fault["site"])
+                  for fault in prior["faults"]) == actor_site_path
+        and prior["faults"][0]["file"] == candidate["faults"][0]["file"]
+        and prior["faults"][0]["blockGroup"] == candidate["faults"][0]["blockGroup"]
+        for prior in state["attempts"])
     # The original RS-6+3 checksum may need all nine located DNs to fail.
     # Favor new actor/site families and deep sequences, while capping one
     # parent's coverage windfall so its many sibling exception variants do
@@ -133,6 +148,7 @@ def score(candidate, state):
             + 2 * min(novelty.get("branch_counts", 0), 40)
             + 140 * min(n, 9) - 180 * max(0, n - 9)
             + 160 * distinct_roles + 1500 * (n >= 9)
+            - 1200 * (n >= 9 and exhausted_equivalents >= 2)
             + min(400, 10 * wait_rounds)
             - (parent.get("seconds", 0) / 10 if parent else 0))
 
