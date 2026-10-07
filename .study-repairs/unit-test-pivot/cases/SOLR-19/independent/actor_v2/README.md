@@ -124,6 +124,17 @@ only. `campaign_v3.py` keeps a monotonic checkpoint and counts only ordered,
 exact same-actor injections with a later target on the same core as effective.
 It retains complete attempts with lost targets as attempts only and provides
 an owner-set `STOP_AFTER_TRIAL` gate at a completed original JUnit boundary.
+After the first two stable-selector pilot trials, the queue was expanded at
+that complete boundary without replaying them. `expand_queue_v3.py` adds 49
+one-seed actor-qualified selectors, each labeled exploratory, after excluding
+six generated Overseer `qn-<sequence>` resource paths. Nine collection-state
+selectors are placed before the remaining stable control-plane queue to
+sample a distinct I/O family. An exploratory selector is attempted once; its
+one-seed origin never counts as new I/O feedback or as a strict fault unless
+the original JUnit reaches the exact runtime actor, operation, path, caller,
+and occurrence. `evidence/v3-exploratory-queue-receipt.json` records the
+migration. The campaign remains paused while HBASE-32's timing-sensitive
+clean replay owns node1.
 `calibrate_v3.py` runs the two unchanged JUnit seeds sequentially under one
 tmux supervisor, saves a checkpoint after each seed, reuses an already
 passing seed after a disconnect, and stops for review on a partial or failed
