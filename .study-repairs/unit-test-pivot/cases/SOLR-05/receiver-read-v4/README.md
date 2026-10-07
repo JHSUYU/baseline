@@ -8,6 +8,12 @@ records equal SHA-256 values for the clean and instrumented original JUnit
 class. The prior writer-stage 18 attempts and 9 effective trials are excluded
 from this checkpoint.
 
+The original test creates a one-shard collection with one NRT replica, adds
+one NRT, one TLOG and one PULL replica, checks that an over-capacity add fails,
+then explicitly selects two nodes and adds five more replicas. Its final
+cluster state contains nine replicas. The campaign runs this entire JUnit
+method unchanged on every trial; the selected exception remains the oracle.
+
 ## Physical I/O and runtime identity
 
 `ZkStateWriter.writePendingUpdates` first records a newly added replica's
