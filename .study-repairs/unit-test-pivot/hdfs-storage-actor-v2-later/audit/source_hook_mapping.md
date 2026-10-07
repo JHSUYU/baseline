@@ -13,6 +13,18 @@ the running startup campaign retains its earlier calibrated digest.
 | HDFS-26 | `TestDFSRollback#testRollback` (line 139) | `BlockPoolSliceStorage.doRollback`, lines 618–620: previous block-pool layout version and cTime versus software and NameNode namespace time | The JUnit deliberately creates valid and invalid previous states. The old healthy trace has no throw at this exact block-pool guard. |
 | HDFS-37 | The **same** `TestDFSRollback#testRollback` JUnit | `DataStorage.doRollback`, lines 939–941: previous DataNode volume layout version and cTime versus software and NameNode namespace time | The old healthy trace contains three target throws here, arising from intended invalid rollback subtests. It is a distinct target, storage level, and identity from HDFS-26 even though the workload is shared. |
 
+In `TestDFSRollback#testRollback`, the invalid DataNode previous-state
+subtests explicitly write `Integer.MIN_VALUE` as a future layout version
+(`TestDFSRollback.java:242–260`) and `Long.MAX_VALUE` as a newer cTime
+(`:267–292`), then call `startBlockPoolShouldFail`. These are expected
+rejections, so a matching HDFS-37 `TARGET_THROW` is retained as an observation
+and compared with the healthy guard signature, rather than marked new by its
+exception class alone. `TestDFSUpgrade#testUpgrade` likewise writes a future
+DataNode layout version and a newer fsscTime (`TestDFSUpgrade.java:285–320`)
+before expecting block-pool startup to fail. A faulted HDFS-24 throw still
+requires its exact actor, volume, guard outcome, original JUnit result, and
+source review.
+
 `MiniDFSCluster.startDataNodes` defines a startup episode. Its synchronous
 `DataNode` construction registers an actor using the configured directories
 and slot; `BPServiceActor.run` adopts that registered object and its raw
