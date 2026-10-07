@@ -14,6 +14,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 
 
@@ -123,6 +124,16 @@ def run(output: Path, args: argparse.Namespace) -> dict:
         while True:
             before = read_json(state_file)
             reason = stop_reason(before, output, args)
+            if reason == "java_process_limit":
+                atomic_json(output / "budget-gate-waiting.json", {
+                    "at_utc": utc(), "reason": reason,
+                    "attempted_trials": before["attempted_trials"],
+                    "effective_trials": before["effective_trials"],
+                    "in_flight": before.get("in_flight"),
+                    "java_process_count": java_process_count(),
+                })
+                time.sleep(args.java_slot_poll_seconds)
+                continue
             if reason:
                 status = {"at_utc": utc(), "reason": reason,
                           "attempted_trials": before["attempted_trials"],
@@ -132,6 +143,7 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                 atomic_json(status_file, status)
                 print(json.dumps(status, sort_keys=True), flush=True)
                 return status
+            (output / "budget-gate-waiting.json").unlink(missing_ok=True)
             next_cap = before["attempted_trials"] + 1
             started = utc()
             completed_before = set(before["completed"])
@@ -213,11 +225,14 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-attempts", type=int, default=600)
     parser.add_argument("--max-total-java", type=int, default=5)
+    parser.add_argument("--java-slot-poll-seconds", type=float, default=15.0)
     parser.add_argument("--min-disk-gib", type=float, default=8.0)
     parser.add_argument("--min-mem-gib", type=float, default=8.0)
     parser.add_argument("--max-junit-seconds", type=float, default=80.0)
     parser.add_argument("--max-junit-rss-kib", type=int, default=2200000)
     args = parser.parse_args()
+    if args.java_slot_poll_seconds <= 0:
+        parser.error("--java-slot-poll-seconds must be positive")
     print(json.dumps(run(args.output, args), sort_keys=True))
 
 

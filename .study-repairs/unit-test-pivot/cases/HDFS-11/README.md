@@ -1,27 +1,27 @@
 # HDFS-11: encrypted transfer key lookup
 
-**Actor V2 recheck waiting for a node1 JVM slot.** Two fresh original Hadoop
+**Actor V2 recheck running on node1.** Two fresh original Hadoop
 3.4.3 JUnit seeds of
 `TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]` passed.
 The isolated [V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual
 SASL receiver and key manager to the same DataNode startup episode and block
-pool. Its [54-attempt raw audit](actor-v2-segment-54-attempts.json) verifies 54
-fully ordered fault sequences, 29 strict same-actor target-retaining sequences,
-and zero selected `InvalidEncryptionKeyException` throws. The 25 other
-sequences cause an injected-I/O checksum failure before a later target check;
-they are recorded but not effective. The audit hashes each original JUnit
+pool. Its [70-attempt raw audit](actor-v2-segment-70-attempts.json) verifies 70
+fully ordered fault sequences, 37 strict same-actor target-retaining sequences,
+and zero selected `InvalidEncryptionKeyException` throws. The other 33
+sequences lose the target after an injected-I/O checksum failure; they are
+recorded but not effective. The audit hashes each original JUnit
 manifest, raw trace, fault plan, result, and JaCoCo file. It reports 238 added
 probes, 28 methods, and 123 branch-count buckets relative to healthy seed A,
 and no new I/O family beyond the two healthy seeds' union. The already
 finished in-flight JUnit manifest from the
 [coexistence pause](../../hdfs-key-actor-v2/evidence/HDFS-11/coexistence-pause.json)
 was consumed without starting another JVM, moving the durable node1 checkpoint
-from 53/28 to 54/29. The new
-[supervisor](../../hdfs-key-actor-v2/run_hdfs11_budget_gate.py) will resume that checkpoint in
+from 53/28 to 54/29. The
+[supervisor](../../hdfs-key-actor-v2/run_hdfs11_budget_gate.py) now continues in
 tmux `hdfs11_key_v2_fuzz` only when its startup gate sees fewer than five Java
 processes. A selected target exception sets a durable review latch before any
-later plan can start. The budget remains 80 effective sequences with up to eight faults,
-conditionally extending to 128/ten for recent new coverage or I/O.
+later plan can start. The budget remains 80 effective sequences with up to
+eight faults, conditionally extending to 128/ten for recent new coverage or I/O.
 
 ## Historical campaigns
 

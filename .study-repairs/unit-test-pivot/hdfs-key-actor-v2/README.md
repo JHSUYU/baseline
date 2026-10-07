@@ -114,9 +114,11 @@ paused at another completed JUnit boundary for a node1 coexistence audit:
 53 completed/28 effective, with the next JUnit manifest already finished.
 The [pause receipt](evidence/HDFS-11/coexistence-pause.json) fixes that
 boundary. The finished manifest has since been consumed without launching a
-new JVM; the node1 HDFS-11 checkpoint is now 54 completed/29 effective. The
-[54-attempt audit](../cases/HDFS-11/actor-v2-segment-54-attempts.json) checks
-the raw fault order, actor target, JaCoCo data, and artifact hashes. Resume
-under tmux with `run_hdfs11_budget_gate.py` only when its startup check sees
-fewer than five Java processes. HDFS-12 uses a separate producer-side overlay
+new JVM; that restart boundary was 54 completed/29 effective. The node1 tmux
+campaign has since resumed under the Java-process gate. Its
+[70-attempt audit](../cases/HDFS-11/actor-v2-segment-70-attempts.json) checks
+the raw fault order, actor target, JaCoCo data, and artifact hashes: 70 full
+fault sequences, 37 effective. `run_hdfs11_budget_gate.py` waits inside tmux
+for fewer than five Java processes before each new JUnit. HDFS-12 uses a
+separate producer-side overlay
 and has completed its [bounded V2 budget](../cases/HDFS-12/README.md).
