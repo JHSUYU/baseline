@@ -1,5 +1,12 @@
 # HDFS-43 independent original-JUnit fault campaign
 
+**Current status: `actor_identity_recheck_pending`.** The 80 main trials and
+128 supplementary equal-branch trials below are historical, graph-free
+coverage/I/O measurements. Their `Client.getRpcResponse` selectors used
+normalized thread names and did not record the RPC request, physical DataNode,
+or target block identity. None count as an actor-qualified completed trial.
+The isolated replacement and its evidence are in [actor V2](actor-v2/README.md).
+
 - Target: `hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java:117` in `FSDirTruncateOp.truncate(FSNamesystem,String,long,String,String,long,BlocksMapUpdateInfo,FSPermissionChecker)`; guard `newLength == truncateLength for a block UNDER_RECOVERY`. Exact bytecode sites: `FSDirTruncateOp.truncate#L113-IFNE`.
 - Workload: unchanged Hadoop 3.4.3 `org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether` (MiniDFSCluster).
 - Healthy run: 1 exact branch events, 1 target exceptions.
@@ -8,7 +15,7 @@
 - Post-fault target exceptions: 49; 49 trials matched the expected truncate guard. Bug mark: `none`.
 - New production coverage with target retained: 59 methods, 175 covered-branch counts, 376 probes, 384 lines.
 - Post-fault target branch outcomes by exact bytecode site: `{"FSDirTruncateOp.truncate#L113-IFNE": {"false": 49, "true": 0}}`.
-- Status: `quality_complete`; budget 80 trials / 8 ordered faults.
+- Historical budget: 80 trials / 8 ordered faults; actor identity recheck pending.
 
 - I/O family feedback was reconciled at trial 53: 67 raw thread-name families became 6 stable families after canonicalizing random thread object IDs. Exact runtime selectors and completed trials did not change; see [audit](independent/evidence/stable-io-reconciliation.json).
 
