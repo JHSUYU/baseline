@@ -172,9 +172,13 @@ def exact_receipt(case, plan, trace, coverage_text=""):
     matched = [x for x in selected if strict and x.get("bound_match") == "true"
                and same_actor(applied[-1], x) and eligible_target(case, x, coverage_text, trace)
                and any(marker["event_seq"] > last for marker in guard_markers(case, x, trace))]
-    outcome = matched[0].get("outcome") if matched else None
+    outcomes = [x.get("outcome") for x in matched]
+    # A single original JUnit can call the selected check many times. A later
+    # selected throw must not be hidden by an earlier normal invocation.
+    outcome = next((x for x in outcomes if x not in (None, "normal")),
+                   outcomes[0] if outcomes else None)
     return {"strict": bool(strict), "target_after_final_fault": bool(matched),
-            "target_outcome": outcome,
+            "target_outcome": outcome, "target_outcomes": outcomes,
             "selected_target_count": len(chosen_targets(case, trace)),
             "unadmitted_selected_target_count": len(selected) - len(matched),
             "applied_count": len(applied), "fault_rejected_count": len(trace["FAULT_REJECTED"]),

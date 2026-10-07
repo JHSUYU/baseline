@@ -68,6 +68,17 @@ class ReceiptTests(unittest.TestCase):
         self.assertTrue(controller.exact_receipt("HBASE-08", [STEP], trace)
                         ["target_after_final_fault"])
 
+    def test_later_selected_exception_is_not_hidden_by_normal_target(self):
+        trace = controller.parse("\n".join((IO, FAULT,
+                                           guard(seq=2, event_seq=3), target(seq=2),
+                                           guard(seq=4, event_seq=5),
+                                           target(seq=4, outcome="selected_namespace_not_found"))))
+        receipt = controller.exact_receipt("HBASE-08", [STEP], trace)
+        self.assertTrue(receipt["target_after_final_fault"])
+        self.assertEqual(receipt["target_outcomes"],
+                         ["normal", "selected_namespace_not_found"])
+        self.assertEqual(receipt["target_outcome"], "selected_namespace_not_found")
+
     def test_missing_second_fault_is_not_strict(self):
         trace = controller.parse("\n".join((IO, FAULT, guard(), target())))
         self.assertFalse(controller.exact_receipt("HBASE-08", [STEP, STEP], trace)["strict"])
