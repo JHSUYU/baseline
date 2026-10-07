@@ -1,0 +1,55 @@
+{
+  "fault_sequence": [
+    {
+      "hitOrdinal": 4,
+      "marker": "FAULT:ZK_NATIVE:getData",
+      "resource": "/collections/collection1/terms/shard1_1",
+      "siteId": "org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+      "sourceKey": "SOLR/COLLECTION/collection1"
+    }
+  ],
+  "junit_gate": [
+    1,
+    0,
+    0
+  ],
+  "last_fault_source": "SOLR/COLLECTION/collection1",
+  "new_original_release_jar_probes": [
+    {
+      "class_id": "5fa0caf7aa1290c0",
+      "class_name": "org/apache/solr/metrics/reporters/jmx/JmxMetricsReporter$JmxListener",
+      "probe_index": 100,
+      "release_jar_id_match": true
+    },
+    {
+      "class_id": "5fa0caf7aa1290c0",
+      "class_name": "org/apache/solr/metrics/reporters/jmx/JmxMetricsReporter$JmxListener",
+      "probe_index": 101,
+      "release_jar_id_match": true
+    },
+    {
+      "class_id": "5fa0caf7aa1290c0",
+      "class_name": "org/apache/solr/metrics/reporters/jmx/JmxMetricsReporter$JmxListener",
+      "probe_index": 115,
+      "release_jar_id_match": true
+    },
+    {
+      "class_id": "5fa0caf7aa1290c0",
+      "class_name": "org/apache/solr/metrics/reporters/jmx/JmxMetricsReporter$JmxListener",
+      "probe_index": 116,
+      "release_jar_id_match": true
+    }
+  ],
+  "postfault_guard_sources": {
+    "SOLR-36": [
+      "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+      "SOLR/SUBSHARD/collection1/shard1_1/core_node12"
+    ],
+    "SOLR-37": [
+      "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+      "SOLR/SUBSHARD/collection1/shard1_1/core_node12"
+    ]
+  },
+  "strict_injection": true,
+  "trial_number": 87
+}
