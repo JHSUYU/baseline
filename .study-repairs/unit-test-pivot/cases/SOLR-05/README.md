@@ -1,6 +1,24 @@
-> **Actor identity recheck pending.** Earlier fault trials, coverage, and elapsed time are preserved under `legacy_coarse_actor` in `result.json` and in the original raw evidence. Their selectors did not establish the same runtime actor across runs. An actor-aware V2 campaign is required before this check counts as quality complete. [Independent audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
+> **Current actor-aware result.** The register-local V3 stage exhausted six unique plans with 6/6 exact post-fault target checks and no selected throw. A separate upstream Overseer state-write stage exhausted 18 plans: 18/18 strict, 9 exact post-fault target checks, no selected throw. A POST-write fault caused one extra replica in eight runs and reproduced once in an independent original-JUnit replay; it is a separate unresolved known-overlap candidate, not a SOLR-05 selected-guard exception. See [upstream review](actor-upstream/POST_WRITE_REVIEW.md). The original 128-trial coarse actor campaign and 12-trial physical-role V2 campaign are retained as historical evidence only; neither contributes to these current counts. [Independent actor audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
 
 # SOLR-05: `ZkController.register` replica-null check
+
+## Current stage accounting
+
+| Stage | Attempts | Strict | Same selected guard after final fault | Selected throw | Stop |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Register-local actor V3 | 6 | 6 | 6 | 0 | Six observed roots exhausted |
+| Upstream Overseer writer | 18 | 18 | 9 | 0 | Queue exhausted before 80-effective goal |
+
+The two stages have independent healthy seeds, selectors, raw JaCoCo,
+and checkpoints. Each uses the unchanged original cluster JUnit.
+Register-local V3 took 118.433 seconds and the upstream stage took
+349.965 seconds. The upstream stage's nine PRE-write faults lost the
+exact target; its nine POST-write faults retained it. The original
+JUnit's separate 9→10/4→5 replica assertions are retained as another
+observation, with strict replay and source comparison in
+`actor-upstream/POST_WRITE_REVIEW.md`. No target-guard bug is marked.
+
+## Historical coarse-actor campaign
 
 - System: Solr 8.11.4.
 - Selected site: `solr/core/src/java/org/apache/solr/cloud/ZkController.java:1274`, in `register(String, CoreDescriptor, boolean, boolean, boolean)`.
@@ -15,7 +33,7 @@ The original test passed without instrumentation in 14.90 seconds. An instrument
 
 The base budget was 64 trials and up to six I/O exceptions per sequence. Strict, target-retaining trial 61 added 29 production JaCoCo probes and trial 62 added one stable callsite-operation-resource I/O family, so the same checkpoint expanded to 128 trials and ten ordered I/O exceptions. Target-exception markers are candidates until replay and source review establish whether they indicate a bug. Trial logs, exact selectors, traces, coverage files, times, and checkpoint state are under `evidence/campaign/`. The campaign runs in tmux session `solr05-campaign`. `probe/coverage_summary.py` merges only the eligible JaCoCo runs and reports covered production methods and branches alongside the per-trial probe feedback.
 
-## Completed result
+## Historical coarse-actor result (excluded from current counts)
 
 The 128 fault trials took 9,960.685 seconds in total (including per-trial collection and queue work). The original selected check executed in all 128 trials, but only 99 trials matched and applied every planned fault in strict order. Of those, 77 still executed the target after the final fault. `probe/audit.py` independently reread all 128 raw traces and agreed with every saved strict, post-fault target, and target-exception flag. The maximum observed ordered sequence was ten applied faults; trials 84, 108, and 126 applied all ten and still retained the target.
 

@@ -1,0 +1,69 @@
+{
+  "applied": 1,
+  "diagnostic_only_not_fuzz_trial": true,
+  "elapsed_seconds": 17.869446992874146,
+  "fault": {
+    "actor": "jetty:node3",
+    "caller": "org.apache.solr.cloud.overseer.ZkStateWriter#writePendingUpdates:265",
+    "client_id": "439542156",
+    "collection": "testAddMultipleReplicas",
+    "core": "testAddMultipleReplicas_shard1_replica_p13",
+    "fault_id": "F0",
+    "global_hit_ordinal": "1",
+    "node": "127.0.0.1:43271_solr",
+    "ordinal": "1",
+    "plan_index": "0",
+    "previous_fault_id": "<none>",
+    "reader_id": "217171222",
+    "relative_count": "0",
+    "replica": "core_node18",
+    "seed_global": "0",
+    "seq": 1002,
+    "shard": "shard1",
+    "target_actor": "jetty:node1",
+    "target_node": "127.0.0.1:45083_solr",
+    "thread": "OverseerStateUpdate-72095191860903947-127.0.0.1:43271_solr-n_0000000000",
+    "writer_id": "880739410"
+  },
+  "identity_version": "actor-upstream-writer-replica-v1",
+  "junit_exit": 1,
+  "junit_failure": "SOLR05_V2_JUNIT_FAILURE testAddMultipleReplicas(org.apache.solr.cloud.AddReplicaTest): expected:<9> but was:<10>",
+  "later_same_core_distinct_replica_pending": [
+    {
+      "collection": "testAddMultipleReplicas",
+      "core": "testAddMultipleReplicas_shard1_replica_p13",
+      "replica": "core_node19",
+      "seq": 1017,
+      "shard": "shard1",
+      "target_node": "127.0.0.1:45083_solr",
+      "writer_id": "1952514273"
+    }
+  ],
+  "plan": [
+    "STATE_SET_DATA_POST|/collections/testAddMultipleReplicas/state.json|1|caller=org.apache.solr.cloud.overseer.ZkStateWriter#writePendingUpdates:265|actor=overseer_writer_for_replica|collection=testAddMultipleReplicas|shard=shard1|replica=core_node18|core=testAddMultipleReplicas_shard1_replica_p13"
+  ],
+  "same_replica_guard": [
+    {
+      "actor": "jetty:node1",
+      "client_id": "922083157",
+      "collection": "testAddMultipleReplicas",
+      "core": "testAddMultipleReplicas_shard1_replica_p13",
+      "last_fault": "F0",
+      "node": "127.0.0.1:45083_solr",
+      "reader_id": "1545837797",
+      "replica": "core_node18",
+      "seq": 1071,
+      "shard": "shard1",
+      "thread": "parallelCoreAdminExecutor-68-thread-4-processing-n:127.0.0.1:45083_solr x:testAddMultipleReplicas_shard1_replica_p13 testAddMultipleReplicas_xyz1573709180800620 CREATE"
+    }
+  ],
+  "selected_guard_after_fault": true,
+  "selected_guard_throw": false,
+  "sha256": {
+    "events.tsv": "b2b80fbfd198007268efa0abab9778e7272e33a1dd2dfb4381179c7ba68dbc77",
+    "junit.log": "a32d6e658d8ad312414f0a336d816015952ea99ed8dd55b830caf43089fbded4",
+    "manifest.json": "cd7a0d6c2cb6d46384fa66db7f55468ebb6fb1b8eb2287f15830d5570eb09ea2"
+  },
+  "strict": true,
+  "test": "AddReplicaTest.testAddMultipleReplicas"
+}
