@@ -5,13 +5,14 @@ from __future__ import annotations
 
 from collections import Counter
 import hashlib
+from itertools import combinations
 import json
 from pathlib import Path
 import sys
 
 
 HERE = Path(__file__).resolve().parent
-sys.path.insert(0, str(HERE.parent))
+sys.path.append(str(HERE.parent))
 from fuzz import junit_gate, load_events, point_id  # noqa: E402
 
 
@@ -19,7 +20,7 @@ MARKERS = frozenset(('FAULT:HTTP:parentForwardAdd',
                      'FAULT:HTTP:parentForwardDeleteById'))
 TARGET_PREFIX = 'SOLR/SUBSHARD/collection1/shard1_'
 SENDER_PREFIX = 'SOLR/PARENT/collection1/shard1/'
-SEEDS = (HERE / 'healthy-sender-01', HERE / 'healthy-sender-02')
+MAX_ATTEMPTS = 8
 
 
 def point(event: dict) -> dict:
@@ -28,10 +29,25 @@ def point(event: dict) -> dict:
              'hitOrdinal')}
 
 
-def main() -> None:
-    runs = []
+def stable_pair(exact: list[set[str]]) -> tuple[int, int, set[str]] | None:
+    for first, second in combinations(range(len(exact)), 2):
+        common = exact[first] & exact[second]
+        commands = {json.loads(item)['marker'] for item in common}
+        families = {(json.loads(item)['marker'],
+                     json.loads(item)['senderKey'],
+                     json.loads(item)['sourceKey']) for item in common}
+        if commands == MARKERS and len(families) >= 4:
+            return first, second, common
+    return None
+
+
+def main() -> bool:
+    attempts = []
     exact = []
-    for directory in SEEDS:
+    directories = [HERE / f'healthy-sender-{number:02d}'
+                   for number in range(1, MAX_ATTEMPTS + 1)
+                   if (HERE / f'healthy-sender-{number:02d}' / 'run.json').is_file()]
+    for directory in directories:
         events = load_events(directory)
         metadata = json.loads((directory / 'run.json').read_text())
         gate = junit_gate((directory / 'console.log').read_text())
@@ -57,7 +73,7 @@ def main() -> None:
                 or any(not guards for guards in guards_by_case.values())):
             raise RuntimeError(f'{directory}: original JUnit/HTTP/target gate failed')
         exact.append({point_id(point(event)) for event in sends})
-        runs.append({
+        attempts.append({
             'run': directory.name,
             'elapsed_seconds': metadata['elapsed_seconds'],
             'junit_gate': gate,
@@ -90,30 +106,49 @@ def main() -> None:
                             if event['sourceKey'] == source)
                 for source in {event['sourceKey'] for event in sends}},
         })
+    if len({run['source_revision'] for run in attempts}) != 1 or len({
+            run['agent_sha256'] for run in attempts}) != 1:
+        raise RuntimeError('healthy attempts used different source or agent builds')
+    selected = stable_pair(exact)
+    if selected is None:
+        return False
+    first, second, common = selected
+    runs = [attempts[first], attempts[second]]
     report = {
         'test': 'org.apache.solr.cloud.api.collections.ShardSplitTest#test',
         'methodology': 'independent_asm_original_junit_parent_forward_http',
         'runs': runs,
-        'stable_exact_http_selector_count': len(exact[0] & exact[1]),
-        'stable_exact_http_selector_ids': sorted(exact[0] & exact[1]),
+        'all_healthy_attempts': attempts,
+        'selected_runs': [run['run'] for run in runs],
+        'selection_reason': ('earliest pair with both parent-forward commands, '
+                             'four exact parent-replica/child command families, '
+                             'and full selector overlap'),
+        'stable_exact_http_selector_count': len(common),
+        'stable_exact_http_selector_ids': sorted(common),
     }
     report['stable_exact_http_selectors_by_command'] = {
         marker: sum(json.loads(item)['marker'] == marker
-                    for item in exact[0] & exact[1])
+                    for item in common)
         for marker in MARKERS}
     report['stable_exact_parent_child_command_families'] = dict(Counter(
         json.loads(item)['marker'] + ' | ' + json.loads(item)['senderKey']
         + ' -> ' + json.loads(item)['sourceKey']
-        for item in exact[0] & exact[1]))
-    if any(count == 0 for count in
-           report['stable_exact_http_selectors_by_command'].values()):
-        raise RuntimeError('add/delete parent-forward HTTP selectors do not both replay')
-    if len(report['stable_exact_parent_child_command_families']) < 4:
-        raise RuntimeError('both commands must have stable sender-to-each-child selectors')
+        for item in common))
+    selection = {
+        'selected_runs': report['selected_runs'],
+        'trace_sha256': [run['trace_sha256'] for run in runs],
+        'agent_sha256': runs[0]['agent_sha256'],
+        'source_revision': runs[0]['source_revision'],
+        'excluded_runs': [run['run'] for index, run in enumerate(attempts)
+                          if index not in (first, second)],
+    }
     (HERE / 'seed-audit.json').write_text(json.dumps(report, indent=2,
                                                      sort_keys=True) + '\n')
+    (HERE / 'seed-selection.json').write_text(json.dumps(selection, indent=2,
+                                                        sort_keys=True) + '\n')
     print(json.dumps({key: value for key, value in report.items()
                       if key != 'stable_exact_http_selector_ids'}, sort_keys=True))
+    return True
 
 
 if __name__ == '__main__':

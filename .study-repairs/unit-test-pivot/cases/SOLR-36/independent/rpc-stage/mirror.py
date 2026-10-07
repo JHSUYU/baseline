@@ -44,6 +44,9 @@ def read_remote() -> tuple[dict, dict] | None:
 
 
 def publish(rpc: dict, stage: dict) -> None:
+    seed_audit = json.loads((HERE / 'seed-audit.json').read_text())
+    seed_seconds = sum(item['elapsed_seconds']
+                       for item in seed_audit['all_healthy_attempts'])
     for case_id in ('SOLR-36', 'SOLR-37'):
         stage1 = json.loads(
             (CASE / f'campaign/final-audit-{case_id}.json').read_text())
@@ -78,6 +81,7 @@ def publish(rpc: dict, stage: dict) -> None:
             total_attempts=rpc['total_attempts'],
             elapsed_seconds=round(result['baseline_seconds']
                                   + stage1['elapsed_seconds']
+                                  + seed_seconds
                                   + rpc['elapsed_seconds'], 3),
             coverage_gain=rpc['production_probe_gain'],
             coverage_gain_scope=('Current-quality HTTP release-JAR production probes; '

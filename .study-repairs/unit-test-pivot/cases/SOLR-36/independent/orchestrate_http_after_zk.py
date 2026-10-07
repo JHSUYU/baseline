@@ -101,6 +101,23 @@ def freeze_zk() -> None:
     print(f"Frozen {destination}", flush=True)
 
 
+def verify_frozen_zk() -> None:
+    destination = CAMPAIGN / "milestone-0128"
+    manifest = json.loads((destination / "sha256.json").read_text())
+    if any(hashlib.sha256((destination / name).read_bytes()).hexdigest() != digest
+           for name, digest in manifest.items()):
+        raise RuntimeError("frozen 128-trial ZK milestone checksum mismatch")
+    state = json.loads((destination / "state.json").read_text())
+    if (state["status"] != "budget_complete" or len(state["completed"]) != 128
+            or state["active"] is not None):
+        raise RuntimeError("frozen ZK milestone is not terminal at 128")
+    for case_id in ("SOLR-36", "SOLR-37"):
+        result = json.loads((HERE.parent.parent / case_id / "result.json").read_text())
+        if (result.get("unreviewed_exact_target_throw_trial_numbers")
+                or result.get("campaign_final_audit", {}).get("fault_trials") != 128):
+            raise RuntimeError(f"{case_id} frozen audit is not reviewable")
+
+
 def verify_http_static_inputs() -> None:
     for relative in ("fuzz_rpc.py", "run_stages.py", "record_seeds.py",
                      "seed_audit.py", "solrsubshard-rpc-agent.jar",
@@ -130,26 +147,32 @@ def calibrate_http() -> None:
         raise RuntimeError("HTTP sender calibration exceeded thirty minutes")
     report = json.loads(remote("cat " + shlex.quote(str(RPC / "seed-audit.json"))).stdout)
     build = json.loads((RPC / "agent-build.json").read_text())
-    if ([run["run"] for run in report["runs"]]
-            != ["healthy-sender-01", "healthy-sender-02"]
+    selection = json.loads(remote("cat " + shlex.quote(
+        str(RPC / "seed-selection.json"))).stdout)
+    if (len(report["runs"]) != 2
+            or [run["run"] for run in report["runs"]] != selection["selected_runs"]
             or any(run["agent_sha256"] != build["agent_sha256"]
                    for run in report["runs"])
+            or [run["trace_sha256"] for run in report["runs"]]
+               != selection["trace_sha256"]
             or len(report["stable_exact_parent_child_command_families"]) < 4):
         raise RuntimeError("two original sender-aware JUnits did not calibrate")
-    subprocess.run(("rsync", "-a", "-e",
-                    "ssh -i /users/ZhenyuLi/.ssh/id_ed25519_nodes "
-                    "-o IdentitiesOnly=yes -o BatchMode=yes",
-                    "ZhenyuLi@node2:" + str(RPC / "seed-audit.json"),
-                    str(RPC / "seed-audit.json")), check=True)
+    for name in ("seed-audit.json", "seed-selection.json"):
+        subprocess.run(("rsync", "-a", "-e",
+                        "ssh -i /users/ZhenyuLi/.ssh/id_ed25519_nodes "
+                        "-o IdentitiesOnly=yes -o BatchMode=yes",
+                        "ZhenyuLi@node2:" + str(RPC / name),
+                        str(RPC / name)), check=True)
     print("Two sender-aware original JUnit seeds passed", flush=True)
 
 
 def verify_http_inputs() -> None:
     verify_http_static_inputs()
-    local_seed = hashlib.sha256((RPC / "seed-audit.json").read_bytes()).hexdigest()
-    remote_seed = remote("sha256sum " + shlex.quote(str(RPC / "seed-audit.json")))
-    if remote_seed.stdout.split()[0] != local_seed:
-        raise RuntimeError("HTTP calibrated seed audit differs on node2")
+    for name in ("seed-audit.json", "seed-selection.json"):
+        local_seed = hashlib.sha256((RPC / name).read_bytes()).hexdigest()
+        remote_seed = remote("sha256sum " + shlex.quote(str(RPC / name)))
+        if remote_seed.stdout.split()[0] != local_seed:
+            raise RuntimeError(f"HTTP calibrated {name} differs on node2")
     if remote_session(HTTP_SESSION) or local_session(MIRROR_SESSION):
         raise RuntimeError("HTTP stage tmux already exists; inspect before restart")
     if (RPC / "campaign" / "state.json").exists():
@@ -185,9 +208,11 @@ def launch_http() -> None:
 
 
 def main() -> None:
-    wait_for_zk()
-    finalize_zk()
-    freeze_zk()
+    if not (CAMPAIGN / "milestone-0128").exists():
+        wait_for_zk()
+        finalize_zk()
+        freeze_zk()
+    verify_frozen_zk()
     verify_http_static_inputs()
     calibrate_http()
     verify_http_inputs()

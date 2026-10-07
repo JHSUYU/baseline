@@ -23,7 +23,22 @@ from run import run as run_junit  # noqa: E402
 
 AGENT = HERE / 'solrsubshard-rpc-agent.jar'
 ROOT = HERE / 'campaign'
-SEEDS = (HERE / 'healthy-sender-01', HERE / 'healthy-sender-02')
+SELECTION = HERE / 'seed-selection.json'
+
+
+def selected_seeds() -> tuple[Path, Path]:
+    if not SELECTION.is_file():
+        return HERE / 'healthy-sender-01', HERE / 'healthy-sender-02'
+    names = json.loads(SELECTION.read_text())['selected_runs']
+    if (len(names) != 2 or len(set(names)) != 2
+            or any(not name.startswith('healthy-sender-')
+                   or not name.removeprefix('healthy-sender-').isdigit()
+                   for name in names)):
+        raise RuntimeError('invalid sender-aware healthy seed selection')
+    return HERE / names[0], HERE / names[1]
+
+
+SEEDS = selected_seeds()
 MARKERS = frozenset(('FAULT:HTTP:parentForwardAdd',
                      'FAULT:HTTP:parentForwardDeleteById'))
 SOURCE_PREFIX = 'SOLR/SUBSHARD/collection1/shard1_'
@@ -47,9 +62,11 @@ def sha(path: Path) -> str:
 
 
 def locks() -> dict[str, str]:
+    if not SELECTION.is_file():
+        raise RuntimeError('sender-aware healthy seed selection is missing')
     return {str(path.relative_to(PARENT)): sha(path)
             for path in (AGENT, HERE / 'fuzz_rpc.py', PARENT / 'run.py',
-                         PARENT / 'coverage.py')}
+                         PARENT / 'coverage.py', SELECTION)}
 
 
 def production_probes(directory: Path) -> set[str]:

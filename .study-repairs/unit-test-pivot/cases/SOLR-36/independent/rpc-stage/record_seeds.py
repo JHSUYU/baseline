@@ -9,18 +9,21 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from run import run  # noqa: E402
 sys.path.insert(0, str(HERE))
-from seed_audit import main as audit  # noqa: E402
+from seed_audit import MAX_ATTEMPTS, main as audit  # noqa: E402
 
 
 def main() -> None:
     agent = HERE / 'solrsubshard-rpc-agent.jar'
-    for number in (1, 2):
+    for number in range(1, MAX_ATTEMPTS + 1):
         out = HERE / f'healthy-sender-{number:02d}'
         if not (out / 'run.json').is_file():
             code = run(out, agent_path=agent)
             if code:
                 raise RuntimeError(f'healthy JUnit {number} exited {code}')
-    audit()
+        if number >= 2 and audit():
+            return
+    raise RuntimeError(f'no stable exact parent sender across {MAX_ATTEMPTS} '
+                       'unchanged original JUnit healthy attempts')
 
 
 if __name__ == '__main__':
