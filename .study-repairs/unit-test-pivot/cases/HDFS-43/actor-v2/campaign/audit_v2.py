@@ -127,31 +127,64 @@ def run(limit: int = 0) -> dict:
     receipt = CASE / "system-test/build-probe.json"
     require(state.get("source_build_sha256") == sha(receipt.read_bytes()),
             "instrumentation receipt differs", problems)
-    healthy = CASE / "healthy/actor-seed"
-    healthy_manifest = read(healthy / "manifest.json")
-    healthy_trace = trace(healthy / "trace/runtime_trace.jsonl")
-    healthy_target = [r for r in healthy_trace if guard(r)]
-    require(healthy_manifest.get("test") == TEST and healthy_manifest.get("exit") == 0
-            and len(healthy_target) == 1, "original healthy target differs", problems)
-    if healthy_target:
-        require(all(healthy_target[0].get(key) == value for key, value in
-                    state["healthy_target"].items()),
-                "healthy target actor differs from checkpoint", problems)
-    mapping = role_map(healthy_trace)
-    healthy_port = nn_port(healthy_trace)
-    require(set(mapping) == {"dn0", "dn1", "dn2"} and
-            len(set(mapping.values())) == 3, "healthy DN role map differs", problems)
-    require(healthy_port > 0, "healthy NN physical endpoint missing", problems)
-    if healthy_target:
-        require(any(r.get("event") == "IO_OBSERVED" and r.get("api") == "truncate"
-                    and r.get("endpoint") == "nn0"
-                    and r.get("remotePort") == healthy_port
-                    and r.get("requestedLength") == healthy_target[0]["requestedLength"]
-                    and r.get("rpcKey") == healthy_target[0]["rpcKey"]
-                    for r in healthy_trace), "healthy client/server RPC key differs", problems)
-    union, _ = coverage(healthy)
-    io_union = {point_id(r) for r in healthy_trace if r.get("event") == "IO_OBSERVED"}
-    family_union = {family_id(r) for r in healthy_trace if r.get("event") == "IO_OBSERVED"}
+    healthy_roots = (CASE / "healthy/actor-seed", CASE / "healthy/actor-repeat")
+    union: set[str] = set()
+    io_union: set[str] = set()
+    family_union: set[str] = set()
+    healthy_targets: list[dict] = []
+    for index, healthy in enumerate(healthy_roots):
+        label = "healthy seed" if index == 0 else "healthy repeat"
+        healthy_manifest = read(healthy / "manifest.json")
+        healthy_trace = trace(healthy / "trace/runtime_trace.jsonl")
+        targets = [r for r in healthy_trace if guard(r)]
+        require(healthy_manifest.get("test") == TEST and
+                healthy_manifest.get("exit") == 0 and len(targets) == 1,
+                f"{label}: original JUnit target differs", problems)
+        mapping = role_map(healthy_trace)
+        port = nn_port(healthy_trace)
+        require(set(mapping) == {"dn0", "dn1", "dn2"} and
+                len(set(mapping.values())) == 3,
+                f"{label}: DN role map differs", problems)
+        require(port > 0, f"{label}: physical NN endpoint missing", problems)
+        require((healthy / "jacoco.exec").is_file() and
+                (healthy / "jacoco.exec").stat().st_size > 0,
+                f"{label}: raw JaCoCo exec missing", problems)
+        if targets:
+            target = targets[0]
+            healthy_targets.append(target)
+            expected_identity = (state["healthy_target"] if index == 0 else
+                                 state["healthy_repeat_target"])
+            require(all(target.get(key) == value for key, value in
+                        expected_identity.items()),
+                    f"{label}: target actor differs from checkpoint", problems)
+            require(target.get("equal") is False,
+                    f"{label}: healthy target branch differs", problems)
+            require(any(r.get("event") == "IO_OBSERVED" and
+                        r.get("api") == "truncate" and
+                        r.get("endpoint") == "nn0" and
+                        r.get("remotePort") == port and
+                        r.get("requestedLength") == target["requestedLength"] and
+                        r.get("rpcKey") == target["rpcKey"]
+                        for r in healthy_trace),
+                    f"{label}: client/server RPC key differs", problems)
+            throws = [r for r in healthy_trace
+                      if r.get("event") == "TARGET_EXCEPTION" and
+                      r.get("rpcKey") == target["rpcKey"] and
+                      r.get("blockId") == target["blockId"]]
+            require(len(throws) == 1 and throws[0].get("type") ==
+                    "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+                    f"{label}: expected original target exception differs", problems)
+        IDs, _ = coverage(healthy)
+        union.update(IDs)
+        io_union.update(point_id(r) for r in healthy_trace
+                        if r.get("event") == "IO_OBSERVED")
+        family_union.update(family_id(r) for r in healthy_trace
+                            if r.get("event") == "IO_OBSERVED")
+    if len(healthy_targets) == 2:
+        keys = ("path", "requestedLength", "inProgressLength", "state", "equal")
+        require(all(healthy_targets[0].get(key) == healthy_targets[1].get(key)
+                    for key in keys),
+                "two fresh healthy JUnits reached different target semantics", problems)
     completed = state.get("completed", [])
     end = min(limit, len(completed)) if limit else len(completed)
     summaries = []

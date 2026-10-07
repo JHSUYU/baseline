@@ -18,9 +18,10 @@ is the healthy behavior, not a new bug.
 
 ## V2 identity and scope
 
-The original MiniDFSCluster JUnit still performs all its original operations
-and assertions. Case-local source overrides add only tracing and an ordered
-exception gate:
+Two fresh invocations of the original MiniDFSCluster JUnit calibrate the
+target and observed I/O before fault trials. Both original methods still
+perform all their operations and assertions. Case-local source overrides add
+only tracing and an ordered exception gate:
 
 - `Client.getRpcResponse` after request send records client ID, call ID,
   destination, and a semantic context supplied by the truncate or DataNode
@@ -48,7 +49,8 @@ and JUnit classes are excluded. `METHOD` and `PROBE` are exact identities;
 `BRANCH_UNIT` records covered branch counts per source line and does not label
 which edge was taken. The target branch outcome is logged explicitly.
 
-The new campaign has its own checkpoint and atomic per-trial result. It starts
+The healthy coverage and I/O baseline is the union of both fresh runs. The
+new campaign has its own checkpoint and atomic per-trial result. It starts
 at 80 effective trials with at most 8 ordered faults; production coverage or
 a stable I/O-family gain in effective trials 73-80 extends it to 128 effective
 trials and 10 faults. Attempt safety caps are 320 and 512 respectively, and
@@ -68,6 +70,6 @@ node2 owners.
 The six released source files were copied into this case and match the clean
 Hadoop 3.4.3 checkout. The V2 source overrides compiled with Java 8. The
 synthetic, cluster-free `offline_smoke.py` passed its ordered selector and JSON
-trace checks. Coverage exporter compiled. The original cluster JUnit healthy
-calibration and fault campaign wait for the node2 resource gate; no V2 cluster
-trial is claimed yet.
+trace checks. Coverage exporter compiled. The two original cluster JUnit
+healthy calibrations and fault campaign wait for the coordinated node2 slot;
+no V2 cluster trial is claimed yet.

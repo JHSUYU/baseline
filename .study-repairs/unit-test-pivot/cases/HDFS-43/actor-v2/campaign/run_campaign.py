@@ -21,6 +21,7 @@ CASE = Path(__file__).resolve().parents[1]
 TOP = CASE.parent
 CAMP = CASE / "campaign"
 SEED = CASE / "healthy/actor-seed"
+REPEAT = CASE / "healthy/actor-repeat"
 STATE = CAMP / "checkpoint.json"
 LEDGER = CAMP / "trial-ledger.csv"
 REMOTE_ROOT = Path("/users/ZhenyuLi/hdfs43-actor-v2")
@@ -196,17 +197,9 @@ def enqueue(state: dict, sequence: list[dict], reason: str, score: int) -> None:
                            "queued_at": len(state["completed"])})
 
 
-def initial_state() -> dict:
-    if STATE.is_file():
-        state = read(STATE)
-        if state.get("case_id") != "HDFS-43" or state.get("test") != TEST:
-            raise RuntimeError("wrong case checkpoint")
-        if state.get("source_build_sha256") != digest(
-                (CASE / "system-test/build-probe.json").read_bytes()):
-            raise RuntimeError("instrumentation receipt changed after seed checkpoint")
-        return state
-    manifest = read(SEED / "manifest.json")
-    rows = events(SEED / "trace/runtime_trace.jsonl")
+def calibration(root: Path) -> dict:
+    manifest = read(root / "manifest.json")
+    rows = events(root / "trace/runtime_trace.jsonl")
     targets = [row for row in rows if guard(row)]
     mapping = roles(rows)
     port = nn_port(rows)
@@ -236,13 +229,37 @@ def initial_state() -> dict:
               and relationship(row, target, mapping, rows)]
     if not points:
         raise RuntimeError("healthy target has no actor-resolved I/O")
+    return {"manifest": manifest, "rows": rows, "target": target,
+            "points": points}
+
+
+def initial_state() -> dict:
+    if STATE.is_file():
+        state = read(STATE)
+        if state.get("case_id") != "HDFS-43" or state.get("test") != TEST:
+            raise RuntimeError("wrong case checkpoint")
+        if state.get("source_build_sha256") != digest(
+                (CASE / "system-test/build-probe.json").read_bytes()):
+            raise RuntimeError("instrumentation receipt changed after seed checkpoint")
+        return state
+    first = calibration(SEED)
+    repeat = calibration(REPEAT)
+    target = first["target"]
+    repeat_target = repeat["target"]
+    logical_keys = ("path", "requestedLength", "inProgressLength", "state", "equal")
+    if any(target[key] != repeat_target[key] for key in logical_keys):
+        raise RuntimeError("two fresh original JUnits reached different target semantics")
+    points = first["points"] + repeat["points"]
     source_digest = digest((CASE / "system-test/build-probe.json").read_bytes())
     state = {"schema_version": 2, "case_id": "HDFS-43", "test": TEST,
              "started_at_utc": now(), "source_build_sha256": source_digest,
              "healthy_target": {key: target[key] for key in
                                 ("path", "blockId", "truncateBlockId",
                                  "requestedLength", "inProgressLength")},
-             "healthy_target_checks": len(targets), "healthy_relevant_io": len(points),
+             "healthy_target_checks": 2, "healthy_relevant_io": len(points),
+             "healthy_repeat_target": {key: repeat_target[key] for key in
+                                       ("path", "blockId", "truncateBlockId",
+                                        "requestedLength", "inProgressLength")},
              "budget": {"max_effective": 80, "max_attempts": 320,
                         "max_faults": 8},
              "extension": {"max_effective": 128, "max_attempts": 512,
@@ -250,7 +267,7 @@ def initial_state() -> dict:
              "extended": False, "active": None, "queue": [], "seen": [],
              "completed": [], "stop_reason": None}
     for row in sorted(points, key=lambda p: (p["api"] != "blockReceivedAndDeleted",
-                                            target["seq"] - p["seq"])):
+                                            p["ordinal"])):
         for exception in EXCEPTIONS:
             enqueue(state, [selector(row, exception)],
                     f"healthy I/O seq {row['seq']}",
@@ -351,12 +368,19 @@ def run_artifacts(name: str, plan: Path | None = None) -> tuple[Path, dict, floa
 def ensure_seed() -> None:
     required = ("manifest.json", "trace/runtime_trace.jsonl", "jacoco.exec",
                 "coverage.tsv")
-    if all((SEED / name).is_file() for name in required):
+    if all((root / name).is_file() for root in (SEED, REPEAT)
+           for name in required):
         return
     prepare_remote()
-    out, manifest, _ = run_artifacts("healthy/actor-seed")
-    if manifest["exit"] != 0:
-        raise RuntimeError(f"original healthy JUnit failed; see {out}")
+    for root, name in ((SEED, "healthy/actor-seed"),
+                       (REPEAT, "healthy/actor-repeat")):
+        if all((root / item).is_file() for item in required):
+            continue
+        if not resource_gate()["ready"]:
+            raise RuntimeError("node2 resource gate closed during two-run calibration")
+        out, manifest, _ = run_artifacts(name)
+        if manifest["exit"] != 0:
+            raise RuntimeError(f"original healthy JUnit failed; see {out}")
 
 
 def analyze(number: int, item: dict, out: Path, manifest: dict,
@@ -505,6 +529,8 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
               "target_function": "FSDirTruncateOp.truncate",
               "target_code": "newLength == truncateLength for a block UNDER_RECOVERY",
               "target_site": SITE, "healthy_target": state["healthy_target"],
+              "healthy_repeat_target": state["healthy_repeat_target"],
+              "healthy_runs": 2,
               "fault_trials": len(completed),
               "effective_trials": len(valid),
               "fully_applied_trials": sum(r["strict_injection"] for r in completed),
@@ -518,8 +544,9 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
               "bug_mark": (
                   "candidate" if any(r["bug_mark"] == "candidate"
                                      for r in completed) else "none"),
-              "elapsed_seconds": round(read(SEED / "manifest.json")[
-                  "elapsed_seconds"] + sum(r["elapsed_seconds"]
+              "elapsed_seconds": round(sum(read(root / "manifest.json")[
+                  "elapsed_seconds"] for root in (SEED, REPEAT)) +
+                  sum(r["elapsed_seconds"]
                                             for r in completed), 3),
               "budget": state["budget"], "extended": state["extended"],
               "stop_reason": state["stop_reason"],
@@ -545,14 +572,16 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
 def main() -> None:
     seed_required = ("manifest.json", "trace/runtime_trace.jsonl",
                      "jacoco.exec", "coverage.tsv")
-    if not all((SEED / name).is_file() for name in seed_required) and not resource_gate()["ready"]:
+    if not all((root / name).is_file() for root in (SEED, REPEAT)
+               for name in seed_required) and not resource_gate()["ready"]:
         print("node2 resource gate is closed; no healthy JUnit started", flush=True)
         return
     ensure_seed()
     state = initial_state()
-    seed_cov = covered(SEED / "coverage.tsv")
+    seed_cov = covered(SEED / "coverage.tsv") | covered(REPEAT / "coverage.tsv")
     coverage_union = set(seed_cov)
-    seed_events = events(SEED / "trace/runtime_trace.jsonl")
+    seed_events = (events(SEED / "trace/runtime_trace.jsonl") +
+                   events(REPEAT / "trace/runtime_trace.jsonl"))
     io_union = {point_id(p) for p in seed_events if p.get("event") == "IO_OBSERVED"}
     family_union = {family_id(p) for p in seed_events if p.get("event") == "IO_OBSERVED"}
     for row in state["completed"]:
