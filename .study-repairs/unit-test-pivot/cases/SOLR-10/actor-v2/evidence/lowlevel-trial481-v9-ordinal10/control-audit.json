@@ -1,0 +1,71 @@
+{
+  "interpretation": "1 and 3 exhausted four underlying failures; no target on same reader after exhaustion. Trial2 had target exception 210 ms after first failure, before 1500 ms retry delay and thus within retry interval; cannot count as post-exhaustion target. This variant supports a transient-failure concurrency window, but does not prove the final-visible failure mechanism under true ZK disconnection.",
+  "retry_source": "ZkCmdExecutor.retryOperation:68-96; retryDelay default 1500 ms at line33",
+  "rows": [
+    {
+      "attempts_before_first_guard": null,
+      "f0_count": 1,
+      "first_guard_ms_after_first_attempt": null,
+      "junit_exit": 0,
+      "number": 1,
+      "persisted_alias_in_zk_txlog": null,
+      "same_actor_f0_and_underlying": true,
+      "sha256": {
+        "events.tsv": "bcad9e392d2691e365f741919c546ffdd1f591969f4bb1ded3995697ff640ba9",
+        "jacoco.exec": "68a88d2d682d3e3489441c0dfbb62476a68b1297d6be697c1a2889af70914f12",
+        "junit.log": "4139dd68b8a143c4a35b610aaec52e90997f0b1ab50d441a136c6c06aea84137",
+        "manifest.json": "b7894e9eb12314bbdc25db4d2cf2fd773c2502fd1457376fe88ef5fadf096ac5",
+        "receipt.json": "ba5203421b8a1ff45525dd93f8e3853e950d3e92fe6150775f3e8d937b4001ff"
+      },
+      "target_exception_on_same_actor": false,
+      "target_guards_on_same_actor": [],
+      "underlying_attempts": 4
+    },
+    {
+      "attempts_before_first_guard": 1,
+      "f0_count": 1,
+      "first_guard_ms_after_first_attempt": 210.252,
+      "junit_exit": 1,
+      "number": 2,
+      "persisted_alias_in_zk_txlog": true,
+      "same_actor_f0_and_underlying": true,
+      "sha256": {
+        "events.tsv": "960ad05e2ab6a08c3223c7a2feddd555047c2f2b61c78e23185053dd5fe42ec6",
+        "jacoco.exec": "2d9e72deaf3e5efb47d001a9fe1695cbb1ee0a4de41dcbaca1ba871ac9c9a0da",
+        "junit.log": "bfd3444e2fe0a27e01b1dff004cde36b8fbfd0da7a3cffdf97a4dba2354ba1d9",
+        "manifest.json": "118d560bcfc63b17dded807b351fb0ba77d0c53ef2c5e04b66d9820d6664abca",
+        "receipt.json": "964235850c18a7149e783e088fc58381bbf6724726377f96dede004f193bbc93"
+      },
+      "target_exception_on_same_actor": true,
+      "target_guards_on_same_actor": [
+        "missing"
+      ],
+      "underlying_attempts": 1
+    },
+    {
+      "attempts_before_first_guard": null,
+      "f0_count": 1,
+      "first_guard_ms_after_first_attempt": null,
+      "junit_exit": 0,
+      "number": 3,
+      "persisted_alias_in_zk_txlog": null,
+      "same_actor_f0_and_underlying": true,
+      "sha256": {
+        "events.tsv": "d23936a9a23eceaf603c95007348245cdfde934f28ba466ecabe46c2512698fa",
+        "jacoco.exec": "df10035d4aa1438d8315f7db3dbcc96e09230eb2eef515c7734b108d6b37af4e",
+        "junit.log": "892ceb59be10ca6348557ac499e64831629df3e4d10613163f568b535d0fdd22",
+        "manifest.json": "b82874652571fe8d3ef63aad00b47ab4a0cc3a3f596feee9d6af3bb1a2bc741c",
+        "receipt.json": "a4f8890a850f70dfc8fa833b7de044cb80152eff41cefb218df6f074bd90a21a"
+      },
+      "target_exception_on_same_actor": false,
+      "target_guards_on_same_actor": [],
+      "underlying_attempts": 4
+    }
+  ],
+  "source_plan": [
+    "EXISTS_WATCH|/collections/myalias__TRA__2017-10-23/state.json|15|caller=org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef#get:811|actor=jetty:node1",
+    "GET_DATA|/aliases.json|@1|caller=org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process:2312|actor=jetty:node1|after=F0|seed_global=1"
+  ],
+  "source_trial": 481,
+  "variant": "same collection-state I/O and physical reader as trial481; F0 occurrence 10 instead of 15 to withstand healthy workload drift"
+}

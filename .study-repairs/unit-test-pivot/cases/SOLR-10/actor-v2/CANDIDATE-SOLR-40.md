@@ -199,3 +199,56 @@ injection model. All retry markers, target orderings, natural refreshes,
 JUnit outcomes, source hashes and raw trace/JaCoCo SHA values are recorded in
 `evidence/lowlevel-control-v4/summary.json`; a representative raw run is
 retained alongside it. The worker retains all three raw runs.
+
+## Trial 481 and an independent exact-plan replay
+
+Campaign trial 481 applied two ordered faults on one live `jetty:node1`
+`SolrZkClient` and `AliasesManager`: occurrence 15 of the collection-state
+`LazyCollectionRef#get` watch check, then the first subsequent
+`AliasesManager.process#getData("/aliases.json")`. The same reader later
+reached the SOLR-40 missing-properties guard and exception. Its unchanged
+JUnit returned a routed-alias 500 after `CREATEALIAS status=0`; the retained
+ZooKeeper transaction log contains the created alias and `router.name=time`.
+This is the same selected cache-miss mechanism as trials 18, 36, 163 and 271,
+not a second bug. The original trial trace, JUnit log and JaCoCo SHA-256 values
+are in `evidence/candidate-solr40-v9/trial-481-review.json`; its original ZK
+transaction log remains on node1 under `evidence/campaign-v4/trial-481/scratch`.
+
+Three independent runs of the **exact trial-481 selectors** used the unchanged
+test and original V4 hook. All three strictly injected both faults into the
+same live client and manager. Two reached the missing-properties branch on
+that reader and failed the original JUnit; the third saw present properties
+and passed. Both failing runs retained `/aliases.json` transaction records
+with `collection.myalias` and `collection_metadata.myalias.router.name=time`.
+The full per-run identities, guard outcomes and raw file hashes are in
+`evidence/candidate-solr40-v9/{summary.json,trial-481-review.json}`. Their
+original ZooKeeper logs remain on node1 in each replay's `scratch` directory.
+
+## Trial-481 lower-layer retry comparison
+
+An isolated build retained the original JUnit and routed-alias production
+class byte for byte. It moved the second synthetic failure from the
+`SolrZkClient.getData` entry to its underlying `keeper.getData` call, so the
+real `ZkCmdExecutor.retryOperation` runs. The isolated classes and source are
+under `~/solr40-lowlevel-trial481-v9` on node1; class hashes are in
+`evidence/lowlevel-trial481-v9/build-receipt.json`. In two exact-plan runs,
+the physical reader executed fewer than 15 matching collection-state I/O
+operations. Neither first fault applied, so these runs give no result about
+the lower-layer path.
+
+We then used occurrence 10 of the **same** collection-state I/O callsite,
+path, and physical actor, explicitly labelling the selector variation. All
+three runs applied that first fault and reached the lower-layer alias watch
+read on the same live reader. Runs 1 and 3 each logged four underlying
+`ConnectionLossException` attempts, consistent with retry exhaustion, and
+had no same-reader target check after them. Run 2 reached the missing alias
+properties guard and JUnit 500 about 210 ms after the first lower-layer
+failure. Since `ZkCmdExecutor` delays its next retry by 1500 ms, that target
+occurred **during** the retry interval, before exhaustion; only one attempt
+was recorded before the test failed. Its ZK log also contains the persisted
+alias metadata. `evidence/lowlevel-trial481-v9-ordinal10/control-audit.json`
+separates these outcomes and hashes every raw trace, log, JaCoCo file and
+receipt. This control shows an overlapping target check can observe stale
+metadata during retry, but it does not demonstrate the same target after an
+actual network disconnection has exhausted Solr's retries. Novelty remains
+pending and this candidate is not marked as a confirmed new bug.
