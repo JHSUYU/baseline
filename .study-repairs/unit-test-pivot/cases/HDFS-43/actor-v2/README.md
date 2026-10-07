@@ -78,11 +78,30 @@ original score and waiting-age ranking. The before/after checkpoints and
 receipt record the change; strict injection, actor matching, oracle, and
 coverage admission rules remain the same.
 
+At the complete trial-40 boundary, 25 of 40 plans had strictly applied and
+22 retained the same file/block target after the last fault. The independent
+auditor reported zero errors. Several high-scoring depth-2/3 DataNode plans
+were partial because a subsequent block-report RPC did not recur, while the
+client truncate quota trials had strictly applied and retained the target.
+`campaign/migrate_client_quota_v2.py` therefore reserved every second
+selection slot for a queued client truncate RPC starting with trial 41. The
+other half still uses the original coverage/I/O and waiting-age score. Its
+before/after checkpoint snapshots, receipt, and SHA-256 manifest of all 40
+trial results, raw traces, manifests, selector plans, and the ledger verify
+that no completed trial, queued selector, or raw evidence changed. The
+strict-injection, actor, target, oracle, and coverage rules are identical.
+
 ## Setup status
 
 The six released source files were copied into this case and match the clean
 Hadoop 3.4.3 checkout. The V2 source overrides compiled with Java 8. The
 synthetic, cluster-free `offline_smoke.py` passed its ordered selector and JSON
-trace checks. Coverage exporter compiled. The two original cluster JUnit
-healthy calibrations and fault campaign wait for the coordinated node2 slot;
-no V2 cluster trial is claimed yet.
+trace checks. Coverage exporter compiled. Two fresh original MiniDFSCluster
+JUnit healthy calibrations passed and recorded the exact target guard,
+expected `AlreadyBeingCreatedException`, and relevant I/O. The actor-aware
+campaign runs from a checkpointed controller in node0 tmux
+`hdfs43_actor_v2_full`; each original JUnit runs over SSH in the coordinated
+node2 slot. At trial 40, the independent auditor reported 40 attempted, 25
+strict, 22 same-actor post-last-fault effective, and zero audit errors. No
+target outcome beyond the original expected exception was observed. The
+campaign remains in progress toward its effective-trial budget.
