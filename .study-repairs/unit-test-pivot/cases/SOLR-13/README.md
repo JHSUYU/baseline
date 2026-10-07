@@ -6,7 +6,7 @@ After `ensureCollection` and a ZooKeeper alias refresh, it throws if the
 created collection is absent from the observed alias list. The mapped original
 cluster test is `TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation`.
 
-**Status: no usable healthy original cluster test yet.** The original test
+**Status: running graph-free fault campaign.** The original test
 class inherits `@AwaitsFix(SOLR-13696)` from
 `RoutedAliasUpdateProcessorTest.java:64`. With the default test-group setting,
 JUnit reported one test and zero failures but the listener recorded an
@@ -26,5 +26,28 @@ unmodified source hashes and released Solr JAR hash. The case-local healthy
 runner uses the original JUnit class, the original four-node cluster setup,
 and no GraphChecker runtime JAR.
 
-No fault sequence was run or credited. The case can be reopened if an
-unchanged original cluster JUnit that reaches this exact check is identified.
+The failure was test environment setup: `ConfigSetsHandler.java:80,483-486`
+supports the compatibility JVM property
+`-Dsolr.disableConfigSetsCreateAuthChecks=true`. With that property and
+`-Dtests.awaitsfix=true`, the unchanged original four-node JUnit passes
+(`ran=1, ignored=0, failures=0`). Its uninstrumented calibration took
+39.447 seconds; the case-local ASM + JaCoCo healthy run took 45.22 seconds.
+The instrumentation observed **five exact evaluations** of the selected
+`List.contains` guard in `RoutedAlias.doSynchronous`, all on its nonthrowing
+branch, and no selected exception. A second healthy run reproduced all five
+alias/collection identities and 30 exact target-context ZooKeeper I/O
+identities. The case-local ASM agent instruments original bytecode at runtime;
+it does not change the original JUnit or production source. No GraphChecker
+runtime JAR appears on the classpath.
+
+The campaign runs in node0 tmux `solr13_fuzz`. Its atomic checkpoint and
+progress are `independent/fuzz/evidence/campaign/state.json` and
+`progress.json`. Its budget is 80 strict, same-alias, postfault target-retaining
+trials with at most eight injected I/O exceptions per sequence. Recent
+coverage or I/O novelty at trial 80 extends this to 128 trials and ten
+exceptions. JaCoCo production probes and exact operation, call site, logical
+alias/collection, ZooKeeper path and hit ordinal guide mutation. Every JVM
+attempt, including unmatched and target-lost attempts, is recorded. A target
+exception is a candidate that requires replay and source review before any
+new-bug claim. Completed raw traces are checksum-verified and compressed to
+bound node0 disk usage.
