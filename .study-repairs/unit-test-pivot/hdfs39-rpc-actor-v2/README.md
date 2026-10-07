@@ -3,8 +3,9 @@
 Scope: Hadoop 3.4.3 original `TestFileAppend#testMultipleAppends`, one NameNode
 and four DataNodes, target `FSDirAppendOp.appendFile:131` on
 `/testMultipleAppend/foo`. This directory is independent of the historical
-HDFS-39 campaign. The case result and 104-check table retain their pending
-status until the actor-aware budget completes.
+HDFS-39 campaign. The fresh V2 campaign reached its 80-effective-trial budget
+in 173 attempts, passed independent raw audit, and restored the case result
+to `quality_complete` with no validated new bug.
 
 ## Why the historical count cannot be promoted
 
@@ -65,7 +66,7 @@ An isolated synthetic-trace smoke also exercised V2 checkpoint initialization,
 ordered fault receipt, fresh JaCoCo coverage gain and one effective-trial
 update without starting a cluster.
 
-## Safe runtime continuation after a cluster slot is released
+## Runtime procedure used for the completed campaign
 
 1. Copy this independent directory and its case-local dependencies to the
    reserved host if needed. Run `build_offline.py` there and record source,
@@ -74,8 +75,7 @@ update without starting a cluster.
 2. Run **two new** fault-free originals sequentially using
    `python3 run_original_v2.py --name healthy-a` and `--name healthy-b`.
    Convert each JaCoCo exec with
-   `python3 coverage_v2.py --name healthy-a` (and `healthy-b`). These commands
-   are prepared but have **not** been invoked in this offline task.
+   `python3 coverage_v2.py --name healthy-a` (and `healthy-b`).
    Then run `python3 calibrate_v2.py`: it writes an immutable calibration
    receipt only if both originals pass and agree on the exact block and at
    least one stable same-block DN I/O family.
@@ -107,27 +107,30 @@ update without starting a cluster.
    target-exception candidate needs a clean same-plan replay and source
    classification. Preserve the 205 old attempts as a separate legacy stratum.
 
-## Current node1 run
+## Completed node1 run
 
 On 2026-10-07 the two unchanged original cluster JUnits passed in 18.937 s
 and 20.228 s. `calibrate_v2.py` confirmed four runtime DN UUID roles,
 the actual NameNode port and block pool, and 66 same-block DN I/O points in
 each run. The fresh V2 checkpoint started with 328 actor-bound plans and
 zero imported historical trials. The first original fault JUnit passed in
-18.318 s; its requested `dn0` block-report fault was absent in that run,
-so it is recorded as attempt 1 and zero effective trials. The raw manifest,
-trace and strict receipt are on node1 in `evidence/`.
+18.318 s; its requested `dn0` block-report fault was absent, so it stayed
+in the attempt denominator without consuming an effective trial.
 
-`guarded_campaign.py` runs the next original JUnit in tmux
-`hdfs39_v2_budget` only when no more than three other Java processes are
-present and at least 8 GiB disk is free. It rechecks each completed raw
-trace against its plan and atomic checkpoint and stops at the case budget,
-candidate, or wall cap. `--check-only` independently verified the first
-trial before the tmux run started. If interrupted, rerun the same supervisor
-in that tmux session; it resumes the V2 checkpoint without consuming an
-old coarse-selector trial.
+At complete trial 97, the original supervisor was replaced after a
+read-only raw audit. The [locked handoff](../audits/hdfs39-locked-handoff-2026-10-07.md)
+preserved the exact checkpoint, queue, seen plans and trial numbering.
+`guarded_locked_campaign.py` then held the shared `jvm-start.lock` from its
+Java and disk resource gate through each complete original JUnit, requiring
+at most three pre-existing Java processes and at least 10 GiB free. Two
+pilot originals were audited before the remaining budget continued.
 
-The two healthy calibrations and the first original fault JUnit now validate
-the cluster-side identity and resume path. The case remains pending while
-the checkpoint advances toward its effective budget; a completed trial
-alone does not restore `quality_complete`.
+The final checkpoint is `budget_complete_80`, with 173 attempts, 96 fully
+applied plans and 80 effective postfault target trials. Effective trials
+73–80 added no method/branch or actor-aware I/O-family novelty, so the
+conditional extension did not apply. The only postfault target exception
+was the [source/replay-reviewed](../audits/hdfs39-trial56-target-review.md)
+passing transient in trial 56. The [terminal review](../audits/hdfs39-v2-terminal-review-2026-10-07.md)
+and [raw audit](evidence/terminal-raw-audit.json) explain the final counts.
+All 1,227 raw evidence files are preserved in the [verified archive](evidence/hdfs39-v2-terminal-raw.tar.zst),
+SHA-256 `d0f67f187af3421c9d89cbf99ed89656682606b455628e369e688f20da4f9321`.

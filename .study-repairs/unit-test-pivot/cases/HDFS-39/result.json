@@ -1,188 +1,166 @@
 {
-  "actor_identity_audit": {
-    "base_effective_budget": 80,
-    "budget_met": false,
-    "current_actor_qualified_effective_trials": 52,
-    "excluded_historical_target_retaining_trials": 76,
-    "expected_selected_retry_trial": 140,
-    "file": "actor-audit/bp-rpc-subset.json",
-    "new_bug_mark": "none",
-    "next_action": "case-local actor-aware RPC/storage hook and original embedded-cluster JUnit continuation",
-    "readme": "actor-audit/README.md",
-    "sha256": "296a4609cc9165af41594e3bf13f71ed1a08de7ff00b22a10cbae4af8c5cbbd3"
-  },
-  "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
-  "applied_fault_events": 453,
-  "baseline_max_faults_per_sequence": 10,
-  "baseline_trial_budget": 128,
-  "budget_interpretation": "effective = strict fully applied sequence and same file/block exact target guard after final fault; attempted cap = 2x effective budget",
-  "bug_mark": "none",
   "case_id": "HDFS-39",
-  "check_code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) throw new RetriableException(new NotReplicatedYetException(...));",
-  "check_location": "FSDirAppendOp.java:131-135",
-  "cluster_nodes": "1 NameNode, 4 DataNodes",
-  "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
-  "cluster_type": "MiniDFSCluster",
-  "completed_at_utc": "2026-10-07T01:07:11.879024+00:00",
-  "coverage_gain": {
-    "BRANCH_UNIT": 599,
-    "METHOD": 373,
-    "PROBE": 1565
-  },
-  "effective_trial_budget": 128,
-  "effective_trials_remaining": 0,
-  "elapsed_seconds": 5748.106,
-  "evidence": {
-    "candidate_reviews": "independent-coverage-io/campaign/candidate-reviews.json",
-    "checkpoint": "independent-coverage-io/campaign/checkpoint.json",
-    "coverage_archive": "independent-coverage-io/coverage-evidence.tar.gz",
-    "coverage_archive_sha256": "f3f4914e8f1d44b01682332cb5a25fe024d3172aee6e1313600bd8d1ca3278a7",
-    "coverage_provenance": "independent-coverage-io/coverage-provenance.json",
-    "healthy_coverage": "independent-coverage-io/healthy/probed/coverage.tsv",
-    "healthy_coverage_v2": "independent-coverage-io/healthy/probed-v2/coverage.tsv",
-    "healthy_probe": "independent-coverage-io/healthy/probed/manifest.json",
-    "healthy_probe_v2": "independent-coverage-io/healthy/probed-v2/manifest.json",
-    "healthy_trace": "independent-coverage-io/healthy/probed/trace/runtime_trace.jsonl",
-    "healthy_trace_v2": "independent-coverage-io/healthy/probed-v2/trace/runtime_trace.jsonl",
-    "independent_audit": "independent-coverage-io/audit.json",
-    "original_junit": "independent-coverage-io/healthy/original/manifest.json",
-    "phase_report": "independent-coverage-io/campaign/precommitted-phase-report.json",
-    "source_provenance": "independent-coverage-io/source-provenance.json",
-    "source_reviews": "independent-coverage-io/campaign/trial-*-source-review.md",
-    "trial_dir": "independent-coverage-io/campaign/trial-XX/",
-    "trial_ledger": "independent-coverage-io/campaign/trial-ledger.csv"
-  },
-  "fault_sequence_depth": {
-    "effective_trials_by_fault_count": {
-      "1": 50,
-      "2": 32,
-      "3": 28,
-      "4": 14,
-      "5": 4
-    },
-    "max_requested": 6,
-    "max_strictly_applied": 5
-  },
-  "fault_trials": 205,
-  "fully_applied_trials": 171,
-  "function": "FSDirAppendOp.appendFile",
-  "healthy_coverage": {
-    "BRANCH_UNIT": 8574,
-    "METHOD": 7997,
-    "PROBE": 28057
-  },
-  "healthy_observed_io_points": 191,
-  "healthy_probe_elapsed_seconds": 18.97,
-  "healthy_probe_exit": 0,
-  "healthy_probe_v2_elapsed_seconds": 15.765,
-  "healthy_probe_v2_exit": 0,
-  "healthy_relevant_pre_target_io_points": 151,
-  "healthy_relevant_pre_target_io_points_v2": 177,
-  "healthy_target_exception_count": 1,
-  "healthy_target_guard_count": 10,
-  "healthy_test_elapsed_seconds": 14.307,
-  "healthy_test_exit": 0,
-  "instrumentation_phase_change": {
-    "after_completed_trial": 23,
-    "completed_trials_preserved": true,
-    "first_new_instrumentation_trial": 24,
-    "reason": "Client.sendRpcRequest pre-send exception gate added; HDFS production classes and JaCoCo ID space unchanged"
-  },
-  "matched_fault_events": 453,
-  "max_attempts": 256,
-  "methodology": "coverage_io_source_probes_no_graph",
-  "oracle_candidates": 4,
-  "original_junit_nonzero_trials": 87,
-  "post_fault_target_reach_trials": 128,
-  "quality_review": {
-    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
-    "bug_mark_unchanged": "none",
-    "historical_counters": {
-      "coverage_gain": {
-        "BRANCH_UNIT": 599,
-        "METHOD": 373,
-        "PROBE": 1565
-      },
-      "elapsed_seconds": 5748.106,
-      "fault_trials": 205,
-      "fully_applied_trials": 171,
-      "strict_injections": 171,
-      "target_after_fault": 128
-    },
-    "historical_counters_not_current_quality_effective": true,
-    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
-    "prior_status": "quality_complete",
-    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
-    "reviewed_at_utc": "2026-10-07T06:52:08+00:00"
-  },
-  "requested_fault_events": 508,
-  "reviewed_rejected_candidates": 4,
-  "selection_changes": [
-    {
-      "after_completed_trial": 43,
-      "completed_trials_preserved": true,
-      "reason": "interleave already observed multi-fault block-report sends with one-fault seeds; runtime probes and fault model unchanged"
-    },
-    {
-      "after_completed_trial": 56,
-      "completed_trials_preserved": true,
-      "reason": "penalize sibling fault sequences sharing a tested prefix and final I/O family after two strict target losses"
-    },
-    {
-      "after_completed_trial": 114,
-      "completed_trials_preserved": true,
-      "reason": "bounded sampling of existing pre-COMMITTED I/O selectors because previous retained target guards were all COMPLETE; no graph or fault-set change",
-      "reserved_trial_preexisting": true
-    },
-    {
-      "after_completed_trial": 180,
-      "completed_trials_preserved": true,
-      "preceding_20_attempts": 20,
-      "preceding_20_effective": 5,
-      "preceding_20_strict": 7,
-      "reason": "soft bounded penalty for queued candidates sharing an observed prefix whose next exact I/O selector repeatedly disappeared; no graph, fault-set, target rule, or budget change"
-    }
-  ],
-  "selection_policy_change": {
-    "after_completed_trial": 11,
-    "completed_trials_preserved": true,
-    "reason": "include source-relevant DataNode blockReceivedAndDeleted RPC responses and family fairness; unchanged recorder and original JUnit"
-  },
-  "selection_policy_version": "observed_io_unmatched_prefix_feedback_v7",
+  "system": "HDFS",
+  "version": "3.4.3",
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
   "source_line": 131,
-  "source_review": "Original TestFileAppend#testMultipleAppends closes a file repeatedly with one COMMITTED block permitted. The exact selected guard was observed 10 times in a successful healthy JUnit. Its single RetriableException is an expected retry before the block becomes COMPLETE; a target exception alone is not a novel bug.",
-  "source_snapshot_audited_against_release_jar_members": 6,
-  "status": "actor_identity_recheck_pending",
-  "stop_reason": "Extended 128-effective-trial budget reached.",
-  "strict_injection_trials": 171,
-  "strict_injections": 171,
-  "system": "HDFS",
-  "target_after_fault": 128,
-  "target_committed_after_fault_trials": 12,
-  "target_exception_after_fault_trials": 12,
-  "target_exception_any_context_after_fault_trials": 15,
+  "check_location": "FSDirAppendOp.java:131-135",
+  "function": "FSDirAppendOp.appendFile",
+  "check_code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) throw new RetriableException(new NotReplicatedYetException(...));",
+  "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
+  "cluster_type": "MiniDFSCluster",
+  "cluster_nodes": "1 NameNode, 4 DataNodes",
+  "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
   "target_identity": {
-    "block_id": 1073741825,
-    "guard_ordinals": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10
-    ],
+    "site": "FSDirAppendOp.appendFile:131",
     "path": "/testMultipleAppend/foo",
-    "site": "FSDirAppendOp.appendFile:131"
+    "block_id": 1073741825
   },
-  "target_reached": true,
-  "unreviewed_candidates": 0,
-  "updated_at_utc": "2026-10-07T01:11:30.624458+00:00",
+  "status": "quality_complete",
+  "quality_complete": true,
+  "bug_mark": "none",
+  "new_bug": false,
   "validated_new_bug_candidates": 0,
-  "version": "3.4.3",
-  "workload_timeout_trials": 0
+  "unreviewed_candidates": 0,
+  "methodology": "actor_aware_graph_free_original_junit_coverage_guided_fault_injection",
+  "budget_interpretation": "An effective trial applies every ordered fault and revisits the exact same file/block target guard after the final fault.",
+  "budget": {
+    "initial_effective_goal": 80,
+    "initial_max_faults": 8,
+    "initial_attempt_cap": 320,
+    "conditional_extension_triggered": false,
+    "effective_goal": 80,
+    "max_faults": 8,
+    "attempt_cap": 320,
+    "actual_attempts": 173,
+    "actual_max_faults_requested": 4,
+    "actual_max_faults_applied": 4,
+    "extension_window_effective_ordinals": [
+      73,
+      80
+    ],
+    "extension_window_new_method_branch_ids": 0,
+    "extension_window_new_io_families": 0
+  },
+  "effective_trial_budget": 80,
+  "effective_trials_remaining": 0,
+  "fault_trials": 173,
+  "fully_applied_trials": 96,
+  "strict_injections": 96,
+  "post_fault_target_reach_trials": 80,
+  "target_after_fault": 80,
+  "target_reached": true,
+  "requested_fault_events": 323,
+  "applied_fault_events": 205,
+  "fault_sequence_depth": {
+    "effective_trials_by_fault_count": {
+      "1": 45,
+      "2": 28,
+      "3": 7
+    },
+    "max_requested": 4,
+    "max_strictly_applied": 4
+  },
+  "healthy": {
+    "original_junit_seeds": 2,
+    "junit_exits": [
+      0,
+      0
+    ],
+    "elapsed_seconds": [
+      18.937,
+      20.228
+    ],
+    "overlay_test_class_sha256": "762da6dde4504b6a1689ccffa47c34538885fe11ae0bb4520e0faa73d9f29650",
+    "target_path": "/testMultipleAppend/foo",
+    "target_block_id": 1073741825,
+    "data_node_roles": 4
+  },
+  "healthy_coverage": {
+    "BRANCH_UNIT": 8628,
+    "METHOD": 8012,
+    "PROBE": 28179
+  },
+  "coverage": {
+    "BRANCH_UNIT": 9242,
+    "METHOD": 8297,
+    "PROBE": 29660
+  },
+  "coverage_gain": {
+    "BRANCH_UNIT": 614,
+    "METHOD": 285,
+    "PROBE": 1481
+  },
+  "coverage_metric_note": "Production Hadoop JaCoCo branch-unit, method, and probe IDs relative to the union of two new actor-V2 healthy original JUnits.",
+  "io_families": 11,
+  "target_exception_after_fault_trials": 1,
+  "target_exception_after_fault_events": 1,
+  "reviewed_expected_transient_trials": [
+    "trial-0056-attempt-01"
+  ],
+  "candidate_semantic_classification": {
+    "label": "expected_committed_block_retry",
+    "assessment": "One passing effective original JUnit emitted the exact postfault COMMITTED-block RetriableException. Released source retries it, the healthy original JUnit also emits the transient, and three clean exact-plan replays passed without a postfault throw. No new coordination bug is established."
+  },
+  "junit_outcomes": {
+    "nonzero_fault_trials": 24,
+    "direct_injected_exception_failures": 21,
+    "timeout_trials": 3,
+    "timeout_run_ids": [
+      "trial-0012-attempt-01",
+      "trial-0020-attempt-01",
+      "trial-0166-attempt-01"
+    ],
+    "nonzero_with_postfault_target_exception": 0
+  },
+  "elapsed_seconds": 3832.736,
+  "elapsed_seconds_semantics": "Sum of two new healthy and 173 fault-trial original JUnit durations; replay and controller overhead excluded.",
+  "fault_trial_elapsed_seconds": 3793.571,
+  "wall_elapsed_seconds": 15508.056,
+  "started_at_utc": "2026-10-07T09:04:39.596894+00:00",
+  "completed_at_utc": "2026-10-07T13:23:07.653044+00:00",
+  "updated_at_utc": "2026-10-07T13:27:08.097440+00:00",
+  "stop_reason": "The 80-effective-trial budget was reached; effective trials 73–80 added no production method/branch coverage or stable actor-aware I/O family, so the conditional extension did not apply.",
+  "source_review": "The source guard emits a RetriableException while the last block is COMMITTED and not COMPLETE; DFSClient.callAppend retries that response. The original healthy JUnit observes this transient and succeeds. The sole V2 postfault target exception in trial 56 passed its full byte assertions and was classified by source and three clean exact-plan replays. Twenty-one other nonzero JUnits failed directly at their requested injected I/O exception, and three timed out without an exact postfault target exception. No new bug was validated.",
+  "instrumentation_provenance": {
+    "junit": "unchanged_Hadoop_3_4_3_TestFileAppend_testMultipleAppends_embedded_1NN_4DN",
+    "rpc_actor_identity": "physical_DataNode_UUID_block_pool_and_actual_NameNode_peer_port",
+    "file_block_identity": "exact_append_path_and_block_1073741825",
+    "coverage": "JaCoCo_0_8_15_Hadoop_production_classes_including_overlay_class_IDs",
+    "io_selection": "observed_actor_bound_IO_plus_production_coverage_feedback",
+    "causal_graph_or_closure": false,
+    "legacy_trials_imported": 0
+  },
+  "evidence": {
+    "terminal_archive": "hdfs39-rpc-actor-v2/evidence/hdfs39-v2-terminal-raw.tar.zst",
+    "terminal_archive_sha256": "d0f67f187af3421c9d89cbf99ed89656682606b455628e369e688f20da4f9321",
+    "terminal_archive_bytes": 67672602,
+    "terminal_archive_raw_files": 1227,
+    "terminal_checkpoint_sha256": "bc93ac1b343e98fb9d8a5bd4b49e7f287531be1875dffb104f0548ab3975397c",
+    "terminal_audit": "hdfs39-rpc-actor-v2/evidence/terminal-raw-audit.json",
+    "terminal_review": "audits/hdfs39-v2-terminal-review-2026-10-07.md",
+    "terminal_summary": "hdfs39-rpc-actor-v2/evidence/terminal-summary.json",
+    "terminal_receipt": "hdfs39-rpc-actor-v2/evidence/terminal-evidence-receipt.json",
+    "audit_program": "audits/hdfs39-live-raw-audit.py",
+    "trial56_source_replay_review": "audits/hdfs39-trial56-target-review.md",
+    "trial56_replay_archive": "audits/hdfs39-trial56-replay-evidence.tar.gz",
+    "locked_supervisor_handoff": "audits/hdfs39-locked-handoff-2026-10-07.md",
+    "legacy_result": "cases/HDFS-39/result.pre-actor-v2.json",
+    "legacy_raw_archive_doc": "cases/HDFS-39/independent-coverage-io/legacy-trials-archive.md"
+  },
+  "legacy_historical": {
+    "attempts": 205,
+    "target_retaining_trials": 128,
+    "archive_sha256": "60a115fd40798ae5cccc42970bbd961aa8323a37fa0a8c18c50828a59326ca4e",
+    "effective_imported_into_v2": 0,
+    "result": "result.pre-actor-v2.json"
+  },
+  "quality_review": {
+    "prior_status": "actor_identity_recheck_pending",
+    "issue": "Historical DataNode RPC selectors did not prove the physical sender on a multi-DataNode fixture.",
+    "resolution": "Fresh actor-bound V2 with two passing original healthy JUnits, 173 new distinct original fault JUnits, 80 strict postfault same-file/block trials, and a full independent raw terminal audit.",
+    "terminal_audit_pass": true,
+    "new_bug_mark": "none",
+    "resolved_at_utc": "2026-10-07T13:23:07.653044+00:00"
+  }
 }

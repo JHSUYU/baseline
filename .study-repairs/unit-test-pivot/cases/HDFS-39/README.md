@@ -1,5 +1,44 @@
 # HDFS-39: committed block during append
 
+## Current actor-aware V2 result
+
+The fresh HDFS-39 V2 campaign used the unchanged Hadoop 3.4.3
+`TestFileAppend#testMultipleAppends` original JUnit in a one-NameNode,
+four-DataNode cluster. Two new healthy JUnits passed. Its fault probes bound
+each DataNode RPC to the physical sender UUID, block pool, actual NameNode
+peer, and the target block; client append faults were bound to the exact file
+path `/testMultipleAppend/foo`. Every effective trial applied its ordered
+fault plan and revisited `FSDirAppendOp.appendFile:131` for that same file
+and block `1073741825` after the final fault.
+
+The V2 campaign completed **173 attempts, 96 fully applied plans, and 80
+effective trials**. Effective trials 73–80 added no production method or
+branch coverage or new actor-aware I/O family, so the conditional 128-trial
+extension did not apply. The 80 effective trials added 285 production method
+IDs, 614 branch-unit IDs, and 1,481 JaCoCo probe IDs over the union of the
+two V2 healthy runs. Measured original JUnit time was 3,832.736 seconds,
+including the healthy runs; replay and controller time are excluded.
+
+One passing effective trial, `trial-0056-attempt-01`, emitted the exact
+postfault `COMMITTED`-block `RetriableException`. The [source and clean
+same-plan replay review](../../audits/hdfs39-trial56-target-review.md)
+classifies it as an expected client retry. Of 24 nonzero fault JUnits, 21
+failed directly at the requested injected I/O exception and three timed out
+without an exact postfault target exception. These outcomes remain in the raw
+ledger; **no new bug was validated**. The [independent terminal raw
+audit](../../hdfs39-rpc-actor-v2/evidence/terminal-raw-audit.json) passed
+after checking every immutable plan, original JUnit result, physical actor
+binding, exact file/block postfault target, JaCoCo file, and feedback set.
+The 67,672,602-byte [raw evidence archive](../../hdfs39-rpc-actor-v2/evidence/hdfs39-v2-terminal-raw.tar.zst)
+contains all 1,227 V2 files and was extracted and re-audited locally. Its
+SHA-256 and the checkpoint fingerprint are in the [terminal
+receipt](../../hdfs39-rpc-actor-v2/evidence/terminal-evidence-receipt.json).
+The [case result](result.json) reports the current V2 counts. The old 205
+attempts and their [verified archive](independent-coverage-io/legacy-trials-archive.md)
+remain a separate historical stratum with zero trials imported into V2.
+
+## Historical pre-actor-aware campaign
+
 The Hadoop 3.4.3 check in `FSDirAppendOp.appendFile` throws
 `RetriableException(NotReplicatedYetException)` when the last block is
 `COMMITTED` but not yet `COMPLETE`. This comes after lease recovery in the
@@ -34,7 +73,7 @@ at 51. Both guard events name `/testMultipleAppend/foo` and block
 perturb; test failure caused directly by an injected I/O exception is not
 interpreted as a defect in this guard.
 
-The current campaign uses case-local source-level probes for the selected
+The historical campaign used case-local source-level probes for the selected
 guard, Hadoop IPC responses, and durable edit-log flushes. Relevant RPCs
 include client operations and DataNode `blockReceivedAndDeleted`, which the
 healthy trace shows between `COMMITTED` and `COMPLETE`. Fault points come
@@ -43,9 +82,8 @@ marker, API, endpoint, and ordinal. JaCoCo method, branch and probe coverage
 from released production classes guides subsequent selection and mutation.
 The campaign reads no GraphChecker graph, static slice, skeleton, or closure.
 Its resumable checkpoint, selectors, per-trial traces, coverage and elapsed
-times are under `independent-coverage-io/campaign/`; the driver is hosted in
-the `hdfs39-coverage-io` tmux session on node0 and runs isolated original
-JUnit trials on node1. The nominal budget is 80 trials with up to eight
+times were under `independent-coverage-io/campaign/`; its driver ran isolated
+original JUnit trials on node1. The nominal budget was 80 trials with up to eight
 ordered faults; real production method/branch or stable I/O-family novelty in
 the last eight trials extends it to 128 trials with up to ten faults. The
 related [HDFS-40](../HDFS-40/README.md) checks replication after a complete
@@ -143,7 +181,7 @@ match their final I/O. This change uses only the saved runtime I/O and
 fault-applied feedback; it retains every completed trial and every queued
 selector. Production coverage and new I/O still guide mutation and priority.
 
-## Final result
+## Historical result (excluded from the V2 denominator)
 
 The campaign reached its conditional 128-effective-trial budget in 205
 attempts. Of these, 171 applied every requested fault in order and 128 also
@@ -159,8 +197,9 @@ original `append` call, while the target exception was a recoverable
 Against the union of the two healthy recorder phases, accepted fault trials
 added 373 production method IDs, 599 production branch-unit IDs and 1,565
 production JaCoCo probe IDs. Total measured time, including the original
-healthy JUnit and both probe calibrations, was 5,748.106 seconds. The final
-`result.json` links the atomic 205-row checkpoint/ledger, every exact plan,
+healthy JUnit and both probe calibrations, was 5,748.106 seconds. The
+[historical result](result.pre-actor-v2.json) links the atomic 205-row
+checkpoint/ledger, every exact plan,
 manifest and raw target/fault trace, the lossless coverage archive, SHA-256
 provenance for remote JaCoCo exec files and release JARs, the phase report,
 candidate replays and the independent 205-trial audit. No Docker or
