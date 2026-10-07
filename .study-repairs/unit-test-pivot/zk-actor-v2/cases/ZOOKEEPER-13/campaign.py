@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import random
+import re
 import shutil
 import sys
 import time
@@ -45,6 +46,18 @@ def atomic_json(path, value):
 
 def selector(fields):
     return '@@'.join(fields[:4])
+
+
+def feedback_family(fields):
+    """Group the same I/O operation across ephemeral channel generations.
+
+    The exact selector still includes the generation and ordinal, so an
+    injection cannot drift to a different connection within one JUnit run.
+    """
+    resource = fields[2]
+    resource = re.sub(r'(?<=:channel:)\d+(?=:)', '*', resource)
+    resource = re.sub(r'^connection:\d+(?=:)', 'connection:*', resource)
+    return '@@'.join((fields[0], fields[1], resource))
 
 
 def io_relation(fields):
@@ -95,7 +108,7 @@ def candidates(rows, after=0):
         key = selector(fields)
         if key not in seen:
             result.append({'selector': key, 'relation': relation,
-                           'family': '@@'.join(fields[:3]), 'sequence': seq})
+                           'family': feedback_family(fields), 'sequence': seq})
             seen.add(key)
     return result
 
@@ -129,7 +142,7 @@ def seed_queue():
     baseline_cov = set().union(*(
         set((ROOT / name / 'coverage.tsv').read_text().splitlines())
         for name in ('healthy-a', 'healthy-b')))
-    state = {'schema': 3, 'feedback_baseline': 'healthy_union_v2',
+    state = {'schema': 4, 'feedback_baseline': 'healthy_union_normalized_io_v3',
              'status': 'running', 'budget_effective': INITIAL_BUDGET,
              'max_faults': INITIAL_MAX_FAULTS, 'max_attempts': MAX_ATTEMPTS,
              'next_trial': 1, 'pending': jobs, 'queued': [x['plan'] for x in jobs],
@@ -350,8 +363,8 @@ def main():
         state = json.loads(CHECKPOINT.read_text()) if CHECKPOINT.exists() else seed_queue()
         if (ROOT / 'feedback-migration-in-progress').exists():
             raise RuntimeError('feedback baseline migration is incomplete')
-        if state.get('feedback_baseline') != 'healthy_union_v2':
-            raise RuntimeError('existing checkpoint requires healthy-union feedback migration')
+        if state.get('feedback_baseline') != 'healthy_union_normalized_io_v3':
+            raise RuntimeError('existing checkpoint requires normalized I/O feedback migration')
         if state['status'] not in ('running', 'paused_at_trial_boundary'):
             print(json.dumps({'status': state['status'],
                               'effective_count': state['effective_count']}))

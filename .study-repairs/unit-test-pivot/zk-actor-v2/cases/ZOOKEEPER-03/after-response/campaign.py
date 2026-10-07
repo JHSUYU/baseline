@@ -13,6 +13,7 @@ import json
 import os
 from pathlib import Path
 import random
+import re
 import shutil
 import sys
 import time
@@ -45,6 +46,13 @@ def atomic_json(path, value):
 
 def selector(fields):
     return '@@'.join(fields[:4])
+
+
+def feedback_family(fields):
+    resource = fields[2]
+    resource = re.sub(r'(?<=:channel:)\d+(?=:)', '*', resource)
+    resource = re.sub(r'^connection:\d+(?=:)', 'connection:*', resource)
+    return '@@'.join((fields[0], fields[1], resource))
 
 
 def complete_io_site(site):
@@ -91,7 +99,7 @@ def candidates(rows, after=0):
         key = selector(fields)
         if key not in seen:
             result.append({'selector': key, 'relation': relation,
-                           'family': '@@'.join(fields[:3]), 'sequence': seq})
+                           'family': feedback_family(fields), 'sequence': seq})
             seen.add(key)
     return result
 

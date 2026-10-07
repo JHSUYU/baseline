@@ -19,8 +19,8 @@ def audit(terminal=False):
         raise RuntimeError('campaign has not reached terminal status')
     if state['inflight']:
         raise RuntimeError('inflight original JUnit trial remains')
-    if state.get('feedback_baseline') != 'healthy_union_v2':
-        raise RuntimeError('fault feedback did not use both healthy seeds')
+    if state.get('feedback_baseline') != 'healthy_union_normalized_io_v3':
+        raise RuntimeError('fault feedback did not use normalized I/O families and both healthy seeds')
     if len(state['results']) != state['next_trial'] - 1:
         raise RuntimeError('run IDs or checkpoint selected count differ')
     if state['effective_count'] != sum(item['effective'] for item in state['results']):
