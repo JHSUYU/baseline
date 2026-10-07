@@ -128,6 +128,8 @@ def publish(state: dict) -> None:
             result["candidate_replay_summary"] = str(CASE / "evidence/candidate-solr40-v4/summary.json")
             result["candidate_control_summary"] = str(CASE / "evidence/causal-control-v4/summary.json")
             result["candidate_lowlevel_control_summary"] = str(CASE / "evidence/lowlevel-control-v4/summary.json")
+        elif result["target_exception_candidates"]:
+            result["bug_mark"] = "target_exception_candidate_unreviewed"
         atomic_json(path, result)
     subprocess.run(["python3", str(UNIT / "checklist.py"), "render"], check=True)
     print(json.dumps({"attempts": len(state["trials"]),
