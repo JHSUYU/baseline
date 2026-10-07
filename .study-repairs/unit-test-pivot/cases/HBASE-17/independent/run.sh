@@ -13,7 +13,7 @@ case "${1:?build or run}" in
   build)
     mkdir -p "$case_dir/classes"
     "$javac_bin" -cp "$classpath" -d "$case_dir/classes" \
-      "$case_dir/src/HBase17TargetAgent.java"
+      "$case_dir/src/HBase17TargetAgent.java" "$case_dir/src/NativeJUnit17.java"
     printf 'Premain-Class: HBase17TargetAgent\nCan-Redefine-Classes: true\nCan-Retransform-Classes: true\n' > "$case_dir/manifest.mf"
     jar cfm "$case_dir/agent.jar" "$case_dir/manifest.mf" -C "$case_dir/classes" .
     ;;
@@ -29,7 +29,7 @@ case "${1:?build or run}" in
         -javaagent:"$case_dir/agent.jar" \
         -Djava.io.tmpdir="$data_dir/tmp" \
         -Dtest.build.data.basedirectory="$data_dir" \
-        -cp "$classpath" NativeJUnit "$test_class" "$test_method"
+        -cp "$classpath" NativeJUnit17 "$test_class" "$test_method"
     ;;
   *) exit 2 ;;
 esac

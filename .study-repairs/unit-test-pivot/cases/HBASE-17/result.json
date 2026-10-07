@@ -2,32 +2,34 @@
   "case_id": "HBASE-17",
   "system": "hbase",
   "version": "2.6.6",
-  "status": "no_cluster_test",
-  "status_detail": "target_not_reached_no_suitable_original_test_among_five_audited",
-  "methodology": "graph_free_original_junit_reachability_audit",
+  "status": "running",
+  "status_detail": "original_TestProcDispatcher_exact_B5_reached; independent_coverage_io_fault_campaign_setup",
+  "methodology": "coverage_io_no_graph",
   "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
   "source_line": 379,
   "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed",
   "check_code": "assert regionNode.isInState(State.ABNORMALLY_CLOSED);",
   "target_guard": "confirmClosed#B5",
   "target_exception": "java.lang.AssertionError",
-  "cluster_test": null,
-  "target_reached": false,
+  "cluster_test": "org.apache.hadoop.hbase.util.TestProcDispatcher.testRetryLimitOnConnClosedErrors",
+  "target_reached": true,
   "fault_trials": 0,
   "strict_injections": 0,
   "target_after_fault": 0,
   "coverage_gain": 0,
-  "coverage_note": "No fault campaign or JaCoCo collection: no audited original cluster test reached the selected guard.",
+  "coverage_note": "The exact B5 seed used an entry/guard probe; fresh JaCoCo seed and fault campaign are pending.",
   "bug_mark": "not_evaluated",
-  "elapsed_seconds": 319.25,
-  "elapsed_seconds_scope": "Five original no-fault cluster JUnit runs (240.61 s) plus two probe-validation replays (39.60 and 39.04 s); source review and one-time probe compilation excluded.",
+  "elapsed_seconds": 376.12,
+  "elapsed_seconds_scope": "Earlier five original JUnit audits and two probe replays 319.25 s, failed JUnit selector launch 1.84 s, new exact B5 original JUnit seed 55.03 s; source review and probe compilation excluded.",
   "healthy_tests": [
     {
       "test": "org.apache.hadoop.hbase.master.assignment.TestRaceBetweenSCPAndTRSP.test",
       "elapsed_seconds": 38.24,
       "junit": "passed",
       "confirm_closed_entries": 1,
-      "entry_states": {"CLOSED": 1},
+      "entry_states": {
+        "CLOSED": 1
+      },
       "target_reached_by_source_control_flow": false,
       "log": "node1:cases/HBASE-17/independent/race_healthy.log"
     },
@@ -36,7 +38,9 @@
       "elapsed_seconds": 44.39,
       "junit": "passed",
       "confirm_closed_entries": 1,
-      "entry_states": {"CLOSED": 1},
+      "entry_states": {
+        "CLOSED": 1
+      },
       "target_reached_by_source_control_flow": false,
       "log": "node1:cases/HBASE-17/independent/scp_race_healthy.log"
     },
@@ -45,7 +49,9 @@
       "elapsed_seconds": 64.32,
       "junit": "passed",
       "confirm_closed_entries": 5,
-      "entry_states": {"CLOSING": 5},
+      "entry_states": {
+        "CLOSING": 5
+      },
       "target_reached_by_source_control_flow": false,
       "log": "node1:cases/HBASE-17/independent/close_rs_healthy.log"
     },
@@ -54,7 +60,9 @@
       "elapsed_seconds": 39.01,
       "junit": "passed",
       "confirm_closed_entries": 3,
-      "entry_states": {"CLOSED": 3},
+      "entry_states": {
+        "CLOSED": 3
+      },
       "target_reached_by_source_control_flow": false,
       "log": "node1:cases/HBASE-17/independent/double_exec_healthy.log"
     },
@@ -63,9 +71,25 @@
       "elapsed_seconds": 54.65,
       "junit": "passed",
       "confirm_closed_entries": 2,
-      "entry_states": {"CLOSED": 2},
+      "entry_states": {
+        "CLOSED": 2
+      },
       "target_reached_by_source_control_flow": false,
       "log": "node1:cases/HBASE-17/independent/abandon_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.util.TestProcDispatcher.testRetryLimitOnConnClosedErrors",
+      "elapsed_seconds": 55.03,
+      "junit": "passed",
+      "confirm_closed_entries": 4,
+      "entry_states": {
+        "CLOSED": 3,
+        "ABNORMALLY_CLOSED": 1
+      },
+      "exact_b5_calls": 1,
+      "exact_b5_outcome": true,
+      "log": "node1:cases/HBASE-17/independent/proc_dispatcher_healthy2.log",
+      "note": "Original JUnit has its own RPC errors; no additional campaign injection."
     }
   ],
   "probe_validation": {
@@ -74,7 +98,7 @@
     "replays": [
       {
         "test": "TestRaceBetweenSCPAndTRSP.test",
-        "elapsed_seconds": 39.60,
+        "elapsed_seconds": 39.6,
         "junit": "passed",
         "is_in_state_calls": 30,
         "abnormally_closed_argument_calls": 0,
@@ -87,7 +111,9 @@
         "elapsed_seconds": 39.04,
         "junit": "passed",
         "confirm_closed_entries": 1,
-        "entry_states": {"CLOSED": 1},
+        "entry_states": {
+          "CLOSED": 1
+        },
         "is_in_state_calls": 31,
         "abnormally_closed_argument_calls": 0,
         "exact_b5_calls": 0,
@@ -95,6 +121,32 @@
       }
     ]
   },
-  "source_audit_note": "The original source checks CLOSED first and returns, then CLOSING and throws HBaseIOException. Only another state reaches line 379. Across five relevant original mini-cluster JUnits, all 12 observed confirmClosed entries were CLOSED or CLOSING. No suitable original test reached B5 in this bounded audit; no fault campaign was run and no bug conclusion is drawn.",
-  "evidence": "cases/HBASE-17/README.md"
+  "source_audit_note": "The newly mapped original TestProcDispatcher JUnit installs RSProcDispatcher with built-in RPC response loss, runs a three-RS MiniCluster, and reaches the production ABNORMALLY_CLOSED recovery state. The production META update preceded confirmClosed entry in that state and exactly one B5 isInState(ABNORMALLY_CLOSED) evaluation, which returned true. This is a zero-additional-fault seed, not a fault-free protocol run. The earlier five tests did not reach B5 but do not make the selected site untestable.",
+  "evidence": "cases/HBASE-17/README.md",
+  "healthy_junit_passed": true,
+  "healthy_elapsed_seconds": 55.03,
+  "healthy_target_guard_evaluations": 1,
+  "healthy_target_guard_outcomes": {
+    "ABNORMALLY_CLOSED_true": 1,
+    "AssertionError": 0
+  },
+  "test_internal_faults": "Original RSProcDispatcher sends some executeProcedures RPCs to the RS and then throws connection errors; the new campaign adds independent runtime-identity I/O faults.",
+  "budget": {
+    "effective_trials": 80,
+    "max_ordered_faults": 8,
+    "conditional_extension_effective_trials": 128,
+    "conditional_extension_max_ordered_faults": 10
+  },
+  "seed_evidence": {
+    "archived_log": "independent/proc_dispatcher_healthy2.log.gz",
+    "raw_log_sha256": "db8af35507ae6cc5f085a193b694eaf155eb4cf57372a528061bdcee0a6a860c",
+    "production_meta_update_log_line": 3701,
+    "confirm_entry_log_line": 3712,
+    "exact_guard_log_lines": [
+      3714,
+      3715
+    ],
+    "junit_result_log_line": 4539,
+    "elapsed_log_line": 4542
+  }
 }
