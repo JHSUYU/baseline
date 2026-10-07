@@ -24,7 +24,8 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def run(run_id='healthy-instrumented', plan=(), timeout=300):
+def run(run_id='healthy-instrumented', plan=(), timeout=300,
+        seed='D82A1912E3C1791F'):
     out = RUN_ROOT / run_id
     out.mkdir(parents=True, exist_ok=True)
     # A checkpoint may replay an interrupted run_id. Discard partial trace and
@@ -42,7 +43,7 @@ def run(run_id='healthy-instrumented', plan=(), timeout=300):
                    for entry in cp.split(':') if Path(entry).suffix == '.jar')
     cmd = [str(JAVA / 'java'), '-ea', '-Xmx4g',
            '-Djava.awt.headless=true', '-Djava.io.tmpdir=' + str(scratch),
-           '-DtempDir=' + str(scratch), '-Dtests.seed=D82A1912E3C1791F',
+           '-DtempDir=' + str(scratch), '-Dtests.seed=' + seed,
            '-Dtests.src.home=' + str(SOURCE / 'solr/core'),
            '-Dcommon.dir=' + str(SOURCE / 'lucene'),
            '-Dtests.asserts=true', '-Dtests.slow=true', '-Dtests.nightly=true',
@@ -73,7 +74,7 @@ def run(run_id='healthy-instrumented', plan=(), timeout=300):
         'original_junit': True, 'junit_exit': code,
         'junit_class_sha256': sha(CLASSES / 'org/apache/solr/cloud/AliasIntegrationTest.class'),
         'elapsed_seconds': round(time.monotonic() - start, 3),
-        'plan': list(plan), 'seed': 'D82A1912E3C1791F',
+        'plan': list(plan), 'seed': seed,
         'observed_io_scope': 'SolrZkClient_getData_setData_exists_all_paths_with_client_actor',
         'test_started_count': text.count('SOLR18_TEST_STARTED '),
         'assumption_failure_count': text.count('SOLR18_ASSUMPTION_FAILURE '),
@@ -105,4 +106,5 @@ def run(run_id='healthy-instrumented', plan=(), timeout=300):
 
 
 if __name__ == '__main__':
-    run(sys.argv[1] if len(sys.argv) > 1 else 'healthy-instrumented')
+    run(sys.argv[1] if len(sys.argv) > 1 else 'healthy-instrumented',
+        seed=sys.argv[2] if len(sys.argv) > 2 else 'D82A1912E3C1791F')
