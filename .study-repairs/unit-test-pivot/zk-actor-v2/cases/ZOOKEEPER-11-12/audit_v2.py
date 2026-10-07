@@ -64,6 +64,10 @@ def audit(terminal=False):
     case_coverage = {case: set(healthy_coverage) for case in CHECKS}
     case_families = {case: set(families) for case, families in
                      healthy_case_families.items()}
+    case_budget_coverage = {case: set(healthy_coverage) for case in CHECKS}
+    case_budget_families = {case: set(families) for case, families in
+                            healthy_case_families.items()}
+    case_effective_seen = {case: 0 for case in CHECKS}
     audited = []
     for result in state['results']:
         run_id = result['run_id']
@@ -102,9 +106,14 @@ def audit(terminal=False):
             current = set((folder / 'coverage.tsv').read_text().splitlines())
             for case, case_result in result['case_results'].items():
                 if case_result['effective']:
+                    case_effective_seen[case] += 1
                     case_coverage[case].update(current)
-                    case_families[case].update(
-                        point['family'] for point in candidates(trace, case, peer, last))
+                    observed_families = {
+                        point['family'] for point in candidates(trace, case, peer, last)}
+                    case_families[case].update(observed_families)
+                    if case_effective_seen[case] <= state['budgets'][case]['effective_target']:
+                        case_budget_coverage[case].update(current)
+                        case_budget_families[case].update(observed_families)
             gain = len(current - cumulative_coverage)
             if gain != result['new_coverage_lines']:
                 raise RuntimeError(run_id + ' coverage feedback changed')
@@ -144,7 +153,8 @@ def audit(terminal=False):
     for case in CHECKS:
         effective = [row for row in audited if row['cases'][case]['effective']]
         budget = state['budgets'][case]
-        if len(effective) != budget['effective_count']:
+        if len(effective) != budget['effective_count'] or \
+                case_effective_seen[case] != len(effective):
             raise RuntimeError(case + ' effective budget disagrees with raw receipts')
         recent = effective[-8:]
         novelty = any(row['new_coverage_lines'] or row['new_io_families'] for row in recent)
@@ -157,6 +167,9 @@ def audit(terminal=False):
             raise RuntimeError(case + ' extension lacks final-eight novelty')
         cases[case] = {
             'effective': len(effective),
+            'budget_admitted_effective': min(len(effective), budget['effective_target']),
+            'incidental_effective_after_budget': max(0, len(effective) -
+                                                     budget['effective_target']),
             'selected_plan_attempts': sum(row['case'] == case for row in audited),
             'strict_but_target_lost': sum(row['exact'] and
                                           not row['cases'][case]['effective']
@@ -180,8 +193,13 @@ def audit(terminal=False):
             'observed_coverage_gain': len(case_coverage[case] - healthy_coverage),
             'observed_io_family_gain': len(case_families[case] -
                                            healthy_case_families[case]),
+            'budget_coverage_gain': len(case_budget_coverage[case] - healthy_coverage),
+            'budget_io_family_gain': len(case_budget_families[case] -
+                                         healthy_case_families[case]),
             'healthy_io_families': len(healthy_case_families[case]),
             'effective_trial_seconds': round(sum(row['elapsed_seconds'] for row in effective), 3),
+            'budget_effective_trial_seconds': round(sum(row['elapsed_seconds'] for row in
+                                                        effective[:budget['effective_target']]), 3),
         }
     return {
         'utc': datetime.now(timezone.utc).isoformat(),

@@ -42,7 +42,7 @@ def write_readme(case_dir, result):
 
 The unchanged ZooKeeper 3.8.7 `CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile` runs a three-peer embedded cluster. This check is `QuorumPeer.loadDataBase()` at source line {guard}; its selected `IOException` maps to line {thrown}. Two fresh healthy JUnits passed and reached the selected check once each on the original `firstServer` peer0. The raw File receiver and `QuorumPeer.myid` bind every eligible epoch-file I/O to that peer and filename.
 
-The shared campaign completed {result['fault_trials']} original fault JUnits in {result['trial_elapsed_seconds']} seconds, plus {result['healthy_elapsed_seconds']} seconds of healthy calibration. {result['fully_applied_trials']} trials applied every ordered fault. For this check, {result['target_after_fault']} trials also reached the exact peer0 guard **after the last applied fault**; these are the effective trials for the {budget}/max{result['max_faults']} budget. The longest effective sequence contained {result['max_fault_depth_effective']} faults. {result['target_exception_after_fault_trials']} effective trials executed the selected source-specific throw. The result is **{result['status']}**, with bug mark `{result['bug_mark']}`. This is the same physical campaign for ZK11 and ZK12, so their reported JVM times must not be added.
+The shared campaign completed {result['fault_trials']} original fault JUnits in {result['trial_elapsed_seconds']} seconds, plus {result['healthy_elapsed_seconds']} seconds of healthy calibration. {result['fully_applied_trials']} trials applied every ordered fault. For this check, {result['target_after_fault']} trials reached the exact peer0 guard **after the last applied fault** and entered the {budget}/max{result['max_faults']} budget. Another {result['incidental_effective_after_budget']} later shared runs reached this check after its budget had already closed; those observations are reported separately. The longest effective sequence contained {result['max_fault_depth_effective']} faults. {result['target_exception_after_fault_trials']} observed effective trials executed the selected source-specific throw. The result is **{result['status']}**, with bug mark `{result['bug_mark']}`. This is the same physical campaign for ZK11 and ZK12, so their reported JVM times must not be added.
 
 Effective runs covered {result['coverage_gain']} additional ASM production source-line IDs in the instrumented `QuorumPeer` and `AtomicFileOutputStream` methods, and {result['io_family_gain']} new bound epoch-I/O families. {result['effective_junit_nonzero_trials']} effective JUnits had a nonzero test result; those were reviewed separately from the selected target exception. For example, a file fault can leave server0 unavailable at the test's final assertion after the selected guard has already run. A target-lost or unmatched trial contributes no coverage or mutation feedback. The conditional extension decision is in [result.json](result.json).
 
@@ -165,8 +165,10 @@ def main():
             'strict_injections': audit['strict_injection_trials'],
             'fully_applied_trials': audit['strict_injection_trials'],
             'strict_but_target_lost': measured['strict_but_target_lost'],
-            'target_after_fault': measured['effective'],
-            'post_fault_target_reach_trials': measured['effective'],
+            'target_after_fault': measured['budget_admitted_effective'],
+            'post_fault_target_reach_trials': measured['budget_admitted_effective'],
+            'observed_effective_after_fault': measured['effective'],
+            'incidental_effective_after_budget': measured['incidental_effective_after_budget'],
             'selected_target_throw_events': measured['selected_target_throw_events'],
             'target_exception_after_fault_trials': measured['selected_target_throw_trials'],
             'junit_nonzero_trials': audit['junit_nonzero_trials'],
@@ -178,8 +180,10 @@ def main():
             'coverage_feedback': ('ASM source-line coverage of QuorumPeer and '
                                   'AtomicFileOutputStream production methods'),
             'healthy_coverage_lines': audit['healthy_coverage_lines'],
-            'coverage_gain': measured['observed_coverage_gain'],
-            'io_family_gain': measured['observed_io_family_gain'],
+            'coverage_gain': measured['budget_coverage_gain'],
+            'io_family_gain': measured['budget_io_family_gain'],
+            'observed_coverage_gain_all_effective': measured['observed_coverage_gain'],
+            'observed_io_family_gain_all_effective': measured['observed_io_family_gain'],
             'healthy_io_families': measured['healthy_io_families'],
             'elapsed_seconds': round(audit['healthy_elapsed_seconds'] +
                                      audit['trial_elapsed_seconds'], 3),
@@ -188,7 +192,8 @@ def main():
                                     'do not add the two case totals'),
             'healthy_elapsed_seconds': audit['healthy_elapsed_seconds'],
             'trial_elapsed_seconds': audit['trial_elapsed_seconds'],
-            'effective_trial_seconds': measured['effective_trial_seconds'],
+            'effective_trial_seconds': measured['budget_effective_trial_seconds'],
+            'observed_effective_trial_seconds': measured['effective_trial_seconds'],
             'bug_mark': 'none', 'known_bug': False, 'new_bug': False,
             'target_reached': True,
             'reason': ('Two fresh healthy original embedded-cluster JUnits reached '
