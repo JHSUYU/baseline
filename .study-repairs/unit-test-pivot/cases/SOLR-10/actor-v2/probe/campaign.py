@@ -519,6 +519,31 @@ def run(max_new_trials: int | None = None) -> None:
             print(json.dumps({"paused_at_boundary": "node_disk_below_8_gib",
                               "completed_trials": len(state["trials"])}), flush=True)
             break
+        # node1 runs several independent campaigns. Start this embedded JUnit
+        # only while fewer than five JVMs already exist on the host. Wait
+        # before selecting a plan, so a resource pause preserves a clean
+        # checkpoint boundary and never consumes a fault trial.
+        waiting = False
+        while True:
+            java_pids = []
+            for proc in Path("/proc").glob("[0-9]*/comm"):
+                try:
+                    if proc.read_text().strip() == "java":
+                        java_pids.append(int(proc.parent.name))
+                except OSError:
+                    continue
+            if len(java_pids) < 5:
+                break
+            if shutil.disk_usage(CASE).free < 8 * 1024 ** 3:
+                print(json.dumps({"paused_at_boundary": "node_disk_below_8_gib",
+                                  "completed_trials": len(state["trials"])}), flush=True)
+                return
+            if not waiting:
+                print(json.dumps({"waiting_for_node1_jvm_slot": True,
+                                  "java_pids": sorted(java_pids),
+                                  "completed_trials": len(state["trials"])}), flush=True)
+                waiting = True
+            time.sleep(5)
         if state["inflight"] is None:
             plan = pick(state)
             state["inflight"] = {"number": len(state["trials"]) + 1, "plan": plan}
