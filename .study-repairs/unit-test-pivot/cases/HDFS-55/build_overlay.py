@@ -33,12 +33,33 @@ def instrument_guard(source: str) -> str:
     return source.replace(original, replacement)
 
 
-def build(mode: str) -> Path:
+def instrument_dn_server(source: str) -> str:
+    peer = """    if (peer.hasSecureChannel() ||
+        dnConf.getTrustedChannelResolver().isTrusted(getPeerAddress(peer))) {"""
+    peer_hook = """    org.apache.hadoop.hdfs.server.balancer.Hdfs17899Probe
+        .enterDnPeer(peer.getLocalAddressString());
+""" + peer
+    key = """    return blockPoolTokenSecretManager.retrieveDataEncryptionKey(keyId,
+        blockPoolId, nonce);"""
+    key_hook = """    org.apache.hadoop.hdfs.server.balancer.Hdfs17899Probe
+        .maybeRejectDnKey(keyId, blockPoolId, nonce);
+""" + key
+    response = """        sendInvalidKeySaslErrorMessage(out, ioe.getCause().getMessage());"""
+    response_hook = """        org.apache.hadoop.hdfs.server.balancer.Hdfs17899Probe
+            .markDnInvalidKeyResponse(ioe.getCause().getMessage());
+""" + response
+    if source.count(peer) != 2 or source.count(key) != 1 or source.count(response) != 1:
+        raise RuntimeError("Hadoop 3.4.3 DN SASL source hook changed")
+    return (source.replace(peer, peer_hook, 1).replace(key, key_hook)
+            .replace(response, response_hook))
+
+
+def build(mode: str, build_dir: Path = BUILD, dn_server_hook: bool = False) -> Path:
     spec = importlib.util.spec_from_file_location("hdfs17899_control_build",
                                                  CONTROL / "build_overlay.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    overlay = BUILD / f"{mode}-overlay"
+    overlay = build_dir / f"{mode}-overlay"
     overlay.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ, JAVA_HOME=str(JDK.parent))
     hadoop_cp = subprocess.check_output([str(HADOOP / "bin/hadoop"),
@@ -46,11 +67,11 @@ def build(mode: str) -> Path:
     cp = os.pathsep.join((str(overlay), hadoop_cp))
     subprocess.run([str(JDK / "javac"), "-cp", cp, "-d", str(overlay),
                     str(HERE / "Hdfs17899Probe.java")], check=True)
-    patcher = BUILD / "patcher"
+    patcher = build_dir / "patcher"
     patcher.mkdir(parents=True, exist_ok=True)
     subprocess.run([str(JDK / "javac"), "-cp", str(ASM), "-d",
                     str(patcher), str(CONTROL / "PatchSaslClient.java")], check=True)
-    original_class = BUILD / "input" / CLIENT_CLASS
+    original_class = build_dir / "input" / CLIENT_CLASS
     original_class.parent.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(CLIENT_JAR) as archive:
         original_class.write_bytes(archive.read(CLIENT_CLASS))
@@ -61,11 +82,19 @@ def build(mode: str) -> Path:
     if mode == "fixed":
         key_source = module.patch_key_manager(key_source)
     key_source = instrument_guard(key_source)
-    generated = BUILD / f"{mode}-src" / "org/apache/hadoop/hdfs/server/balancer"
+    generated = build_dir / f"{mode}-src" / "org/apache/hadoop/hdfs/server/balancer"
     generated.mkdir(parents=True, exist_ok=True)
     key_file = generated / "KeyManager.java"
     key_file.write_text(key_source)
     source_files = [str(key_file)]
+    if dn_server_hook:
+        server = (build_dir / f"{mode}-src" / "org/apache/hadoop/hdfs/protocol"
+                  "/datatransfer/sasl/SaslDataTransferServer.java")
+        server.parent.mkdir(parents=True, exist_ok=True)
+        server.write_text(instrument_dn_server((SOURCE / "hadoop-hdfs-project/hadoop-hdfs"
+            "/src/main/java/org/apache/hadoop/hdfs/protocol/datatransfer/sasl"
+            "/SaslDataTransferServer.java").read_text()))
+        source_files.append(str(server))
     if mode == "fixed":
         dispatcher = generated / "Dispatcher.java"
         dispatcher.write_text(module.patch_dispatcher(
@@ -79,4 +108,7 @@ def build(mode: str) -> Path:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("original", "fixed"), required=True)
-    print(build(parser.parse_args().mode))
+    parser.add_argument("--build-dir", type=Path, default=BUILD)
+    parser.add_argument("--dn-server-hook", action="store_true")
+    arguments = parser.parse_args()
+    print(build(arguments.mode, arguments.build_dir, arguments.dn_server_hook))

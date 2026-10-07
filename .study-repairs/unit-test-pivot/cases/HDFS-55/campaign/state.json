@@ -1,0 +1,6936 @@
+{
+  "case_id": "HDFS-55",
+  "known_bug": "HDFS-17899",
+  "fault_policy": "exact_ordinal_cached_reuse",
+  "stateful_differential_separate": true,
+  "budget": {
+    "max_trials": 40,
+    "max_faults": 20,
+    "max_seconds": 3600
+  },
+  "status": "stopped_after_known_bug_reproduction",
+  "queue": [
+    {
+      "sequence": [
+        2,
+        3,
+        5
+      ],
+      "parent": "p2_3",
+      "priority": 1010,
+      "waiting_rounds": 23
+    },
+    {
+      "sequence": [
+        2,
+        3,
+        4,
+        6,
+        7
+      ],
+      "parent": "p2_3_4_6",
+      "priority": 5000,
+      "waiting_rounds": 0
+    },
+    {
+      "sequence": [
+        2,
+        3,
+        4,
+        6,
+        8
+      ],
+      "parent": "p2_3_4_6",
+      "priority": 5000,
+      "waiting_rounds": 0
+    }
+  ],
+  "trials": [
+    {
+      "result": "incomplete_plan",
+      "planned_fault_count": 1,
+      "matched_fault_count": 0,
+      "applied_fault_count": 0,
+      "planned_ordinals": [
+        1
+      ],
+      "matched_ordinals": [],
+      "applied_ordinals": [],
+      "matched_observed_order": [],
+      "applied_observed_order": [],
+      "all_faults_observed": false,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [
+        1
+      ],
+      "plan_nonmatches": [
+        {
+          "ordinal": 1,
+          "target_dn": "127.0.0.1:37407",
+          "key_id": "196869051"
+        }
+      ],
+      "fully_applied": false,
+      "target_after_final_fault": false,
+      "target_reuse_after_final_fault": 0,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:37407",
+          "key_id": "196869051",
+          "line": 630
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:37407",
+          "key_id": "196869051",
+          "line": 634
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:37407",
+          "key_id": "196869051",
+          "line": 636
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:37407",
+          "key_id": "196869051",
+          "line": 639
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:37407",
+          "key_id": "196869051",
+          "line": 641
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1616
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1619
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1623
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1627
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1632
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1639
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1647
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1650
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1653
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:40223",
+          "key_id": "22126308",
+          "line": 1658
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 15,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 34.448,
+      "coverage_gain_vs_cumulative": {
+        "probes": 15,
+        "methods": 1,
+        "branch_counts": 14,
+        "lines": 7
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 15,
+        "methods": 1,
+        "branch_counts": 14,
+        "lines": 7
+      },
+      "covered_counts": {
+        "probes": 32603,
+        "methods": 9041,
+        "branch_counts": 10271,
+        "lines": 38973
+      },
+      "log": "campaign/runs/p1/junit.log",
+      "coverage": "campaign/runs/p1/jacoco.exec",
+      "manifest": "campaign/runs/p1/manifest.json",
+      "id": "p1",
+      "sequence": [
+        1
+      ],
+      "parent": null,
+      "recovered_existing_run": true,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 1,
+      "matched_fault_count": 1,
+      "applied_fault_count": 1,
+      "planned_ordinals": [
+        2
+      ],
+      "matched_ordinals": [
+        2
+      ],
+      "applied_ordinals": [
+        2
+      ],
+      "matched_observed_order": [
+        2
+      ],
+      "applied_observed_order": [
+        2
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 6,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 135212925,
+          "target_dn": "127.0.0.1:45923",
+          "key_id": "1561866525",
+          "line": 698
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:45923",
+          "key_id": "1561866525",
+          "line": 694
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:45923",
+          "key_id": "1561866525",
+          "line": 696
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:45923",
+          "key_id": "1561866525",
+          "line": 701
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:45923",
+          "key_id": "1561866525",
+          "line": 703
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:45923",
+          "key_id": "1561866525",
+          "line": 715
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1698
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1700
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1705
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1708
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1711
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1728
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1745
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1748
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1750
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:34007",
+          "key_id": "1219237656",
+          "line": 1752
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 37.16,
+      "coverage_gain_vs_cumulative": {
+        "probes": 198,
+        "methods": 35,
+        "branch_counts": 79,
+        "lines": 205
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 198,
+        "methods": 35,
+        "branch_counts": 79,
+        "lines": 205
+      },
+      "covered_counts": {
+        "probes": 32765,
+        "methods": 9074,
+        "branch_counts": 10320,
+        "lines": 39141
+      },
+      "log": "campaign/runs/p2/junit.log",
+      "coverage": "campaign/runs/p2/jacoco.exec",
+      "manifest": "campaign/runs/p2/manifest.json",
+      "id": "p2",
+      "sequence": [
+        2
+      ],
+      "parent": null,
+      "recovered_existing_run": true,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "harness_incomplete",
+      "planned_fault_count": 1,
+      "matched_fault_count": 1,
+      "applied_fault_count": 1,
+      "planned_ordinals": [
+        3
+      ],
+      "matched_ordinals": [
+        3
+      ],
+      "applied_ordinals": [
+        3
+      ],
+      "matched_observed_order": [
+        3
+      ],
+      "applied_observed_order": [
+        3
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 4,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 3,
+          "manager_identity": 1168413243,
+          "target_dn": "127.0.0.1:42039",
+          "key_id": "641998273",
+          "line": 701
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:42039",
+          "key_id": "641998273",
+          "line": 691
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:42039",
+          "key_id": "641998273",
+          "line": 696
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:42039",
+          "key_id": "641998273",
+          "line": 700
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:42039",
+          "key_id": "641998273",
+          "line": 704
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:42039",
+          "key_id": "641998273",
+          "line": 717
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1697
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1699
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1703
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1709
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1713
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1716
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1724
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1728
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1732
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:34221",
+          "key_id": "660589651",
+          "line": 1736
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 124,
+      "junit_pass": true,
+      "harness_timeout_after_junit": true,
+      "harness_complete": false,
+      "coverage_complete": false,
+      "elapsed_seconds": 180.209,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "covered_counts": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "log": "campaign/runs/p3/junit.log",
+      "coverage": "campaign/runs/p3/jacoco.exec",
+      "manifest": "campaign/runs/p3/manifest.json",
+      "id": "p3",
+      "sequence": [
+        3
+      ],
+      "parent": null,
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 1,
+      "matched_fault_count": 1,
+      "applied_fault_count": 1,
+      "planned_ordinals": [
+        4
+      ],
+      "matched_ordinals": [
+        4
+      ],
+      "applied_ordinals": [
+        4
+      ],
+      "matched_observed_order": [
+        4
+      ],
+      "applied_observed_order": [
+        4
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 3,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 4,
+          "manager_identity": 789147665,
+          "target_dn": "127.0.0.1:40081",
+          "key_id": "343072300",
+          "line": 643
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:40081",
+          "key_id": "343072300",
+          "line": 634
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:40081",
+          "key_id": "343072300",
+          "line": 637
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:40081",
+          "key_id": "343072300",
+          "line": 640
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:40081",
+          "key_id": "343072300",
+          "line": 642
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:40081",
+          "key_id": "343072300",
+          "line": 667
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1632
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1637
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1642
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1648
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1650
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1658
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1676
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1689
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1696
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:39659",
+          "key_id": "1458976477",
+          "line": 1701
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 43.361,
+      "coverage_gain_vs_cumulative": {
+        "probes": 13,
+        "methods": 1,
+        "branch_counts": 11,
+        "lines": 7
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 43,
+        "methods": 6,
+        "branch_counts": 19,
+        "lines": 24
+      },
+      "covered_counts": {
+        "probes": 32629,
+        "methods": 9046,
+        "branch_counts": 10274,
+        "lines": 38990
+      },
+      "log": "campaign/runs/p4/junit.log",
+      "coverage": "campaign/runs/p4/jacoco.exec",
+      "manifest": "campaign/runs/p4/manifest.json",
+      "id": "p4",
+      "sequence": [
+        4
+      ],
+      "parent": null,
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "fully_applied_target_lost",
+      "planned_fault_count": 1,
+      "matched_fault_count": 1,
+      "applied_fault_count": 1,
+      "planned_ordinals": [
+        5
+      ],
+      "matched_ordinals": [
+        5
+      ],
+      "applied_ordinals": [
+        5
+      ],
+      "matched_observed_order": [
+        5
+      ],
+      "applied_observed_order": [
+        5
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": false,
+      "target_reuse_after_final_fault": 0,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 5,
+          "manager_identity": 1942210829,
+          "target_dn": "127.0.0.1:39067",
+          "key_id": "876432001",
+          "line": 647
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:39067",
+          "key_id": "876432001",
+          "line": 634
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:39067",
+          "key_id": "876432001",
+          "line": 637
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:39067",
+          "key_id": "876432001",
+          "line": 639
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:39067",
+          "key_id": "876432001",
+          "line": 643
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:39067",
+          "key_id": "876432001",
+          "line": 646
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1635
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1641
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1645
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1649
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1651
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1658
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1667
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1669
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1677
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:34579",
+          "key_id": "574680147",
+          "line": 1687
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 33.875,
+      "coverage_gain_vs_cumulative": {
+        "probes": 5,
+        "methods": 0,
+        "branch_counts": 6,
+        "lines": 4
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 33,
+        "methods": 5,
+        "branch_counts": 13,
+        "lines": 20
+      },
+      "covered_counts": {
+        "probes": 32624,
+        "methods": 9045,
+        "branch_counts": 10271,
+        "lines": 38987
+      },
+      "log": "campaign/runs/p5/junit.log",
+      "coverage": "campaign/runs/p5/jacoco.exec",
+      "manifest": "campaign/runs/p5/manifest.json",
+      "id": "p5",
+      "sequence": [
+        5
+      ],
+      "parent": null,
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 2,
+      "matched_fault_count": 2,
+      "applied_fault_count": 2,
+      "planned_ordinals": [
+        2,
+        3
+      ],
+      "matched_ordinals": [
+        2,
+        3
+      ],
+      "applied_ordinals": [
+        2,
+        3
+      ],
+      "matched_observed_order": [
+        2,
+        3
+      ],
+      "applied_observed_order": [
+        2,
+        3
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 2,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 1640014827,
+          "target_dn": "127.0.0.1:38663",
+          "key_id": "261914546",
+          "line": 644
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 1640014827,
+          "target_dn": "127.0.0.1:38663",
+          "key_id": "261914546",
+          "line": 648
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:38663",
+          "key_id": "261914546",
+          "line": 636
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:38663",
+          "key_id": "261914546",
+          "line": 638
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:38663",
+          "key_id": "261914546",
+          "line": 640
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:38663",
+          "key_id": "261914546",
+          "line": 642
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:38663",
+          "key_id": "261914546",
+          "line": 646
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1652
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1654
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1660
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1663
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1667
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1677
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1680
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1683
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1685
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:42667",
+          "key_id": "2085873679",
+          "line": 1693
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 40.386,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 29,
+        "methods": 5,
+        "branch_counts": 8,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32618,
+        "methods": 9044,
+        "branch_counts": 10266,
+        "lines": 38980
+      },
+      "log": "campaign/runs/p2_3/junit.log",
+      "coverage": "campaign/runs/p2_3/jacoco.exec",
+      "manifest": "campaign/runs/p2_3/manifest.json",
+      "id": "p2_3",
+      "sequence": [
+        2,
+        3
+      ],
+      "parent": "p2",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 2,
+      "matched_fault_count": 2,
+      "applied_fault_count": 2,
+      "planned_ordinals": [
+        2,
+        4
+      ],
+      "matched_ordinals": [
+        2,
+        4
+      ],
+      "applied_ordinals": [
+        2,
+        4
+      ],
+      "matched_observed_order": [
+        2,
+        4
+      ],
+      "applied_observed_order": [
+        2,
+        4
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 4,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 1345648831,
+          "target_dn": "127.0.0.1:41331",
+          "key_id": "726131913",
+          "line": 698
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 1345648831,
+          "target_dn": "127.0.0.1:41331",
+          "key_id": "726131913",
+          "line": 702
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:41331",
+          "key_id": "726131913",
+          "line": 694
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:41331",
+          "key_id": "726131913",
+          "line": 697
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:41331",
+          "key_id": "726131913",
+          "line": 701
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:41331",
+          "key_id": "726131913",
+          "line": 705
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:41331",
+          "key_id": "726131913",
+          "line": 708
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1709
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1711
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1715
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1722
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1724
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1732
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1735
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1744
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1747
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:44133",
+          "key_id": "2038527388",
+          "line": 1750
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 35.797,
+      "coverage_gain_vs_cumulative": {
+        "probes": 3,
+        "methods": 0,
+        "branch_counts": 2,
+        "lines": 3
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 198,
+        "methods": 35,
+        "branch_counts": 79,
+        "lines": 208
+      },
+      "covered_counts": {
+        "probes": 32768,
+        "methods": 9074,
+        "branch_counts": 10321,
+        "lines": 39156
+      },
+      "log": "campaign/runs/p2_4/junit.log",
+      "coverage": "campaign/runs/p2_4/jacoco.exec",
+      "manifest": "campaign/runs/p2_4/manifest.json",
+      "id": "p2_4",
+      "sequence": [
+        2,
+        4
+      ],
+      "parent": "p2",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "out_of_order_plan",
+      "planned_fault_count": 2,
+      "matched_fault_count": 2,
+      "applied_fault_count": 2,
+      "planned_ordinals": [
+        4,
+        5
+      ],
+      "matched_ordinals": [
+        4,
+        5
+      ],
+      "applied_ordinals": [
+        4,
+        5
+      ],
+      "matched_observed_order": [
+        5,
+        4
+      ],
+      "applied_observed_order": [
+        5,
+        4
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 4,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 5,
+          "manager_identity": 2076411114,
+          "target_dn": "127.0.0.1:37233",
+          "key_id": "1685625769",
+          "line": 635
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 2076411114,
+          "target_dn": "127.0.0.1:37233",
+          "key_id": "1685625769",
+          "line": 640
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:37233",
+          "key_id": "1685625769",
+          "line": 632
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:37233",
+          "key_id": "1685625769",
+          "line": 634
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:37233",
+          "key_id": "1685625769",
+          "line": 639
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:37233",
+          "key_id": "1685625769",
+          "line": 643
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:37233",
+          "key_id": "1685625769",
+          "line": 645
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1652
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1656
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1658
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1662
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1666
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1682
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1685
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1688
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1695
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:33949",
+          "key_id": "476514477",
+          "line": 1698
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 32.309,
+      "coverage_gain_vs_cumulative": {
+        "probes": 1,
+        "methods": 0,
+        "branch_counts": 1,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 28,
+        "methods": 5,
+        "branch_counts": 7,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32611,
+        "methods": 9045,
+        "branch_counts": 10259,
+        "lines": 38980
+      },
+      "log": "campaign/runs/p4_5/junit.log",
+      "coverage": "campaign/runs/p4_5/jacoco.exec",
+      "manifest": "campaign/runs/p4_5/manifest.json",
+      "id": "p4_5",
+      "sequence": [
+        4,
+        5
+      ],
+      "parent": "p4",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "incomplete_plan",
+      "planned_fault_count": 2,
+      "matched_fault_count": 1,
+      "applied_fault_count": 1,
+      "planned_ordinals": [
+        4,
+        6
+      ],
+      "matched_ordinals": [
+        4
+      ],
+      "applied_ordinals": [
+        4
+      ],
+      "matched_observed_order": [
+        4
+      ],
+      "applied_observed_order": [
+        4
+      ],
+      "all_faults_observed": false,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [
+        6
+      ],
+      "plan_nonmatches": [
+        {
+          "ordinal": 6,
+          "target_dn": "127.0.0.1:34015",
+          "key_id": "1099273625"
+        }
+      ],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 3,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 4,
+          "manager_identity": 604357469,
+          "target_dn": "127.0.0.1:34783",
+          "key_id": "1961909489",
+          "line": 702
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:34783",
+          "key_id": "1961909489",
+          "line": 694
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:34783",
+          "key_id": "1961909489",
+          "line": 697
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:34783",
+          "key_id": "1961909489",
+          "line": 700
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:34783",
+          "key_id": "1961909489",
+          "line": 705
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:34783",
+          "key_id": "1961909489",
+          "line": 707
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1692
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1698
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1703
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1708
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1715
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1723
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1725
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1729
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1733
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:34015",
+          "key_id": "1099273625",
+          "line": 1738
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 32.641,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 205,
+        "methods": 36,
+        "branch_counts": 87,
+        "lines": 211
+      },
+      "covered_counts": {
+        "probes": 32786,
+        "methods": 9076,
+        "branch_counts": 10337,
+        "lines": 39161
+      },
+      "log": "campaign/runs/p4_6/junit.log",
+      "coverage": "campaign/runs/p4_6/jacoco.exec",
+      "manifest": "campaign/runs/p4_6/manifest.json",
+      "id": "p4_6",
+      "sequence": [
+        4,
+        6
+      ],
+      "parent": "p4",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 3,
+      "matched_fault_count": 3,
+      "applied_fault_count": 3,
+      "planned_ordinals": [
+        2,
+        4,
+        5
+      ],
+      "matched_ordinals": [
+        2,
+        4,
+        5
+      ],
+      "applied_ordinals": [
+        2,
+        4,
+        5
+      ],
+      "matched_observed_order": [
+        2,
+        4,
+        5
+      ],
+      "applied_observed_order": [
+        2,
+        4,
+        5
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 6,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 636
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 656
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 660
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 627
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 634
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 638
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 655
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 659
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 758
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 761
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:33861",
+          "key_id": "230560032",
+          "line": 766
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1724
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1729
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1733
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1740
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1744
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1758
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1760
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1765
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1776
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:40157",
+          "key_id": "2083256479",
+          "line": 1781
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 15,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 39.36,
+      "coverage_gain_vs_cumulative": {
+        "probes": 2,
+        "methods": 0,
+        "branch_counts": 2,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 31,
+        "methods": 5,
+        "branch_counts": 10,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32616,
+        "methods": 9045,
+        "branch_counts": 10264,
+        "lines": 38968
+      },
+      "log": "campaign/runs/p2_4_5/junit.log",
+      "coverage": "campaign/runs/p2_4_5/jacoco.exec",
+      "manifest": "campaign/runs/p2_4_5/manifest.json",
+      "id": "p2_4_5",
+      "sequence": [
+        2,
+        4,
+        5
+      ],
+      "parent": "p2_4",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 1,
+      "matched_fault_count": 1,
+      "applied_fault_count": 1,
+      "planned_ordinals": [
+        3
+      ],
+      "matched_ordinals": [
+        3
+      ],
+      "applied_ordinals": [
+        3
+      ],
+      "matched_observed_order": [
+        3
+      ],
+      "applied_observed_order": [
+        3
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 1,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 3,
+          "manager_identity": 1485006181,
+          "target_dn": "127.0.0.1:46835",
+          "key_id": "708480878",
+          "line": 706
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:46835",
+          "key_id": "708480878",
+          "line": 694
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:46835",
+          "key_id": "708480878",
+          "line": 697
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:46835",
+          "key_id": "708480878",
+          "line": 700
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:46835",
+          "key_id": "708480878",
+          "line": 703
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:46835",
+          "key_id": "708480878",
+          "line": 705
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1696
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1699
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1704
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1708
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1711
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1727
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1729
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1732
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1739
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:38493",
+          "key_id": "2019658589",
+          "line": 1752
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 32.277,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 200,
+        "methods": 35,
+        "branch_counts": 81,
+        "lines": 205
+      },
+      "covered_counts": {
+        "probes": 32764,
+        "methods": 9074,
+        "branch_counts": 10321,
+        "lines": 39142
+      },
+      "log": "campaign/runs/p3-replay/junit.log",
+      "coverage": "campaign/runs/p3-replay/jacoco.exec",
+      "manifest": "campaign/runs/p3-replay/manifest.json",
+      "id": "p3-replay",
+      "sequence": [
+        3
+      ],
+      "parent": "p3-timeout",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "out_of_order_plan",
+      "planned_fault_count": 2,
+      "matched_fault_count": 2,
+      "applied_fault_count": 2,
+      "planned_ordinals": [
+        3,
+        4
+      ],
+      "matched_ordinals": [
+        3,
+        4
+      ],
+      "applied_ordinals": [
+        3,
+        4
+      ],
+      "matched_observed_order": [
+        4,
+        3
+      ],
+      "applied_observed_order": [
+        4,
+        3
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 2,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 4,
+          "manager_identity": 1312923137,
+          "target_dn": "127.0.0.1:46211",
+          "key_id": "2054881733",
+          "line": 639
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 1312923137,
+          "target_dn": "127.0.0.1:46211",
+          "key_id": "2054881733",
+          "line": 643
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:46211",
+          "key_id": "2054881733",
+          "line": 632
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:46211",
+          "key_id": "2054881733",
+          "line": 635
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:46211",
+          "key_id": "2054881733",
+          "line": 637
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:46211",
+          "key_id": "2054881733",
+          "line": 642
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:46211",
+          "key_id": "2054881733",
+          "line": 646
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1647
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1654
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1657
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1661
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1666
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1690
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1696
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1698
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1704
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:41611",
+          "key_id": "1104851003",
+          "line": 1707
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 32.39,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 36,
+        "methods": 6,
+        "branch_counts": 15,
+        "lines": 23
+      },
+      "covered_counts": {
+        "probes": 32625,
+        "methods": 9046,
+        "branch_counts": 10273,
+        "lines": 38990
+      },
+      "log": "campaign/runs/p3_4/junit.log",
+      "coverage": "campaign/runs/p3_4/jacoco.exec",
+      "manifest": "campaign/runs/p3_4/manifest.json",
+      "id": "p3_4",
+      "sequence": [
+        3,
+        4
+      ],
+      "parent": "p3-replay",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "out_of_order_plan",
+      "planned_fault_count": 2,
+      "matched_fault_count": 2,
+      "applied_fault_count": 2,
+      "planned_ordinals": [
+        3,
+        5
+      ],
+      "matched_ordinals": [
+        3,
+        5
+      ],
+      "applied_ordinals": [
+        3,
+        5
+      ],
+      "matched_observed_order": [
+        5,
+        3
+      ],
+      "applied_observed_order": [
+        5,
+        3
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 2,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 5,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:37121",
+          "key_id": "48880960",
+          "line": 637
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:37121",
+          "key_id": "48880960",
+          "line": 646
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:37121",
+          "key_id": "48880960",
+          "line": 634
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:37121",
+          "key_id": "48880960",
+          "line": 636
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:37121",
+          "key_id": "48880960",
+          "line": 641
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:37121",
+          "key_id": "48880960",
+          "line": 643
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:37121",
+          "key_id": "48880960",
+          "line": 645
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1653
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1656
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1659
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1664
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1667
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1674
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1703
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1706
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1709
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:44967",
+          "key_id": "1808821620",
+          "line": 1710
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 31.137,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 28,
+        "methods": 5,
+        "branch_counts": 7,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32611,
+        "methods": 9045,
+        "branch_counts": 10261,
+        "lines": 38969
+      },
+      "log": "campaign/runs/p3_5/junit.log",
+      "coverage": "campaign/runs/p3_5/jacoco.exec",
+      "manifest": "campaign/runs/p3_5/manifest.json",
+      "id": "p3_5",
+      "sequence": [
+        3,
+        5
+      ],
+      "parent": "p3-replay",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "out_of_order_plan",
+      "planned_fault_count": 4,
+      "matched_fault_count": 4,
+      "applied_fault_count": 4,
+      "planned_ordinals": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "matched_ordinals": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "applied_ordinals": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "matched_observed_order": [
+        4,
+        2,
+        5,
+        6
+      ],
+      "applied_observed_order": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 3,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 4,
+          "manager_identity": 1565603421,
+          "target_dn": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 638
+        },
+        {
+          "ordinal": 2,
+          "manager_identity": 1565603421,
+          "target_dn": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 641
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 1565603421,
+          "target_dn": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 659
+        },
+        {
+          "ordinal": 6,
+          "manager_identity": 1565603421,
+          "target_dn": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 762
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 634
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 636
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 640
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 643
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 658
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 759
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 761
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:37931",
+          "key_id": "1308366451",
+          "line": 779
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1749
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1752
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1757
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1759
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1763
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1771
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1781
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1792
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1804
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:45051",
+          "key_id": "696738841",
+          "line": 1809
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 35.687,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 30,
+        "methods": 5,
+        "branch_counts": 9,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32614,
+        "methods": 9045,
+        "branch_counts": 10262,
+        "lines": 38968
+      },
+      "log": "campaign/runs/p2_4_5_6/junit.log",
+      "coverage": "campaign/runs/p2_4_5_6/jacoco.exec",
+      "manifest": "campaign/runs/p2_4_5_6/manifest.json",
+      "id": "p2_4_5_6",
+      "sequence": [
+        2,
+        4,
+        5,
+        6
+      ],
+      "parent": "p2_4_5",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 4,
+      "matched_fault_count": 4,
+      "applied_fault_count": 4,
+      "planned_ordinals": [
+        2,
+        4,
+        5,
+        7
+      ],
+      "matched_ordinals": [
+        2,
+        4,
+        5,
+        7
+      ],
+      "applied_ordinals": [
+        2,
+        4,
+        5,
+        7
+      ],
+      "matched_observed_order": [
+        2,
+        4,
+        5,
+        7
+      ],
+      "applied_observed_order": [
+        2,
+        4,
+        5,
+        7
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 2,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 127586655,
+          "target_dn": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 701
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 127586655,
+          "target_dn": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 705
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 127586655,
+          "target_dn": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 709
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 127586655,
+          "target_dn": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 826
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 696
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 699
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 704
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 707
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 711
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 821
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 825
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:45815",
+          "key_id": "1687095609",
+          "line": 849
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1806
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1813
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1816
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1821
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1825
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1833
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1835
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1840
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1846
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:45469",
+          "key_id": "462482574",
+          "line": 1854
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 36.422,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 201,
+        "methods": 35,
+        "branch_counts": 82,
+        "lines": 205
+      },
+      "covered_counts": {
+        "probes": 32784,
+        "methods": 9075,
+        "branch_counts": 10334,
+        "lines": 39157
+      },
+      "log": "campaign/runs/p2_4_5_7/junit.log",
+      "coverage": "campaign/runs/p2_4_5_7/jacoco.exec",
+      "manifest": "campaign/runs/p2_4_5_7/manifest.json",
+      "id": "p2_4_5_7",
+      "sequence": [
+        2,
+        4,
+        5,
+        7
+      ],
+      "parent": "p2_4_5",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "fully_applied_target_lost",
+      "planned_fault_count": 5,
+      "matched_fault_count": 5,
+      "applied_fault_count": 5,
+      "planned_ordinals": [
+        2,
+        4,
+        5,
+        7,
+        8
+      ],
+      "matched_ordinals": [
+        2,
+        4,
+        5,
+        7,
+        8
+      ],
+      "applied_ordinals": [
+        2,
+        4,
+        5,
+        7,
+        8
+      ],
+      "matched_observed_order": [
+        2,
+        4,
+        5,
+        7,
+        8
+      ],
+      "applied_observed_order": [
+        2,
+        4,
+        5,
+        7,
+        8
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": false,
+      "target_reuse_after_final_fault": 0,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 777672585,
+          "target_dn": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 642
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 777672585,
+          "target_dn": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 646
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 777672585,
+          "target_dn": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 661
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 777672585,
+          "target_dn": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 765
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 777672585,
+          "target_dn": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 790
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 629
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 639
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 641
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 645
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 660
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 761
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 764
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:43253",
+          "key_id": "945168608",
+          "line": 789
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1762
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1769
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1776
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1778
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1781
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1789
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1796
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1799
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1803
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:38849",
+          "key_id": "1393879820",
+          "line": 1807
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 43.659,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 40,
+        "methods": 6,
+        "branch_counts": 19,
+        "lines": 23
+      },
+      "covered_counts": {
+        "probes": 32622,
+        "methods": 9046,
+        "branch_counts": 10270,
+        "lines": 38975
+      },
+      "log": "campaign/runs/p2_4_5_7_8/junit.log",
+      "coverage": "campaign/runs/p2_4_5_7_8/jacoco.exec",
+      "manifest": "campaign/runs/p2_4_5_7_8/manifest.json",
+      "id": "p2_4_5_7_8",
+      "sequence": [
+        2,
+        4,
+        5,
+        7,
+        8
+      ],
+      "parent": "p2_4_5_7",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "incomplete_plan",
+      "planned_fault_count": 5,
+      "matched_fault_count": 4,
+      "applied_fault_count": 4,
+      "planned_ordinals": [
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "matched_ordinals": [
+        2,
+        4,
+        5,
+        9
+      ],
+      "applied_ordinals": [
+        2,
+        4,
+        5,
+        9
+      ],
+      "matched_observed_order": [
+        2,
+        4,
+        5,
+        9
+      ],
+      "applied_observed_order": [
+        2,
+        4,
+        5,
+        9
+      ],
+      "all_faults_observed": false,
+      "in_plan_order": false,
+      "identity_coherent": false,
+      "unmatched_ordinals": [
+        7
+      ],
+      "plan_nonmatches": [
+        {
+          "ordinal": 7,
+          "target_dn": "127.0.0.1:36595",
+          "key_id": "13168162"
+        }
+      ],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 14,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 1151618650,
+          "target_dn": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 632
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 1151618650,
+          "target_dn": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 707
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 1151618650,
+          "target_dn": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 725
+        },
+        {
+          "ordinal": 9,
+          "manager_identity": 1357113754,
+          "target_dn": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1728
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 628
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 630
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 657
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 706
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 724
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:41185",
+          "key_id": "1704269762",
+          "line": 740
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1716
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1721
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1724
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1727
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1741
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1809
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1815
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1822
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1832
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1838
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:36595",
+          "key_id": "13168162",
+          "line": 1842
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 54.668,
+      "coverage_gain_vs_cumulative": {
+        "probes": 29,
+        "methods": 3,
+        "branch_counts": 15,
+        "lines": 31
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 59,
+        "methods": 8,
+        "branch_counts": 24,
+        "lines": 47
+      },
+      "covered_counts": {
+        "probes": 32643,
+        "methods": 9048,
+        "branch_counts": 10277,
+        "lines": 38999
+      },
+      "log": "campaign/runs/p2_4_5_7_9/junit.log",
+      "coverage": "campaign/runs/p2_4_5_7_9/jacoco.exec",
+      "manifest": "campaign/runs/p2_4_5_7_9/manifest.json",
+      "id": "p2_4_5_7_9",
+      "sequence": [
+        2,
+        4,
+        5,
+        7,
+        9
+      ],
+      "parent": "p2_4_5_7",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "incomplete_plan",
+      "planned_fault_count": 3,
+      "matched_fault_count": 2,
+      "applied_fault_count": 2,
+      "planned_ordinals": [
+        2,
+        4,
+        6
+      ],
+      "matched_ordinals": [
+        2,
+        4
+      ],
+      "applied_ordinals": [
+        2,
+        4
+      ],
+      "matched_observed_order": [
+        2,
+        4
+      ],
+      "applied_observed_order": [
+        2,
+        4
+      ],
+      "all_faults_observed": false,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [
+        6
+      ],
+      "plan_nonmatches": [
+        {
+          "ordinal": 6,
+          "target_dn": "127.0.0.1:40371",
+          "key_id": "58516473"
+        }
+      ],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 3,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 792045267,
+          "target_dn": "127.0.0.1:38163",
+          "key_id": "2106313851",
+          "line": 639
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 792045267,
+          "target_dn": "127.0.0.1:38163",
+          "key_id": "2106313851",
+          "line": 644
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:38163",
+          "key_id": "2106313851",
+          "line": 634
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:38163",
+          "key_id": "2106313851",
+          "line": 637
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:38163",
+          "key_id": "2106313851",
+          "line": 640
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:38163",
+          "key_id": "2106313851",
+          "line": 643
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:38163",
+          "key_id": "2106313851",
+          "line": 648
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1655
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1658
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1661
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1666
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1669
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1690
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1700
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1703
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1711
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:40371",
+          "key_id": "58516473",
+          "line": 1714
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 34.153,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 29,
+        "methods": 5,
+        "branch_counts": 8,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32614,
+        "methods": 9044,
+        "branch_counts": 10264,
+        "lines": 38979
+      },
+      "log": "campaign/runs/p2_4_6/junit.log",
+      "coverage": "campaign/runs/p2_4_6/jacoco.exec",
+      "manifest": "campaign/runs/p2_4_6/manifest.json",
+      "id": "p2_4_6",
+      "sequence": [
+        2,
+        4,
+        6
+      ],
+      "parent": "p2_4",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 3,
+      "matched_fault_count": 3,
+      "applied_fault_count": 3,
+      "planned_ordinals": [
+        2,
+        3,
+        4
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 8,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 755331961,
+          "target_dn": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 633
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 755331961,
+          "target_dn": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 651
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 755331961,
+          "target_dn": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 657
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 627
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 632
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 650
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 656
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 660
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 759
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 762
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:33577",
+          "key_id": "2113361007",
+          "line": 766
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1722
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1728
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1733
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1739
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1741
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1748
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1752
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1764
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1769
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:39233",
+          "key_id": "1147942822",
+          "line": 1773
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 15,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 51.517,
+      "coverage_gain_vs_cumulative": {
+        "probes": 17,
+        "methods": 0,
+        "branch_counts": 10,
+        "lines": 16
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 64,
+        "methods": 7,
+        "branch_counts": 33,
+        "lines": 45
+      },
+      "covered_counts": {
+        "probes": 32648,
+        "methods": 9047,
+        "branch_counts": 10286,
+        "lines": 38996
+      },
+      "log": "campaign/runs/p2_3_4/junit.log",
+      "coverage": "campaign/runs/p2_3_4/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4/manifest.json",
+      "id": "p2_3_4",
+      "sequence": [
+        2,
+        3,
+        4
+      ],
+      "parent": "p2_3",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 4,
+      "matched_fault_count": 4,
+      "applied_fault_count": 4,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 8,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 789147665,
+          "target_dn": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 640
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 789147665,
+          "target_dn": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 664
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 789147665,
+          "target_dn": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 668
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 789147665,
+          "target_dn": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 682
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 636
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 639
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 663
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 667
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 681
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 776
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 782
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 786
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:37063",
+          "key_id": "780211615",
+          "line": 790
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1753
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1757
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1763
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1767
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1771
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1781
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1788
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1793
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1796
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:36363",
+          "key_id": "1206108931",
+          "line": 1799
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 15,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 41.04,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 37,
+        "methods": 5,
+        "branch_counts": 14,
+        "lines": 20
+      },
+      "covered_counts": {
+        "probes": 32629,
+        "methods": 9045,
+        "branch_counts": 10273,
+        "lines": 38987
+      },
+      "log": "campaign/runs/p2_3_4_5/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5/manifest.json",
+      "id": "p2_3_4_5",
+      "sequence": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "parent": "p2_3_4",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "out_of_order_plan",
+      "planned_fault_count": 5,
+      "matched_fault_count": 5,
+      "applied_fault_count": 5,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "matched_observed_order": [
+        3,
+        2,
+        4,
+        5,
+        6
+      ],
+      "applied_observed_order": [
+        3,
+        2,
+        4,
+        5,
+        6
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 6,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 3,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 643
+        },
+        {
+          "ordinal": 2,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 658
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 663
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 698
+        },
+        {
+          "ordinal": 6,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 783
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 637
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 642
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 657
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 662
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 689
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 782
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 799
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 803
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:35613",
+          "key_id": "1411184723",
+          "line": 817
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1771
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1776
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1781
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1786
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1790
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1813
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1821
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1827
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1830
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:43103",
+          "key_id": "524731194",
+          "line": 1835
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 56.055,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 40,
+        "methods": 6,
+        "branch_counts": 19,
+        "lines": 23
+      },
+      "covered_counts": {
+        "probes": 32625,
+        "methods": 9046,
+        "branch_counts": 10273,
+        "lines": 38975
+      },
+      "log": "campaign/runs/p2_3_4_5_6/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_6/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_6/manifest.json",
+      "id": "p2_3_4_5_6",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "parent": "p2_3_4_5",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 5,
+      "matched_fault_count": 5,
+      "applied_fault_count": 5,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 2,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 371440059,
+          "target_dn": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 637
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 371440059,
+          "target_dn": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 653
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 371440059,
+          "target_dn": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 680
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 371440059,
+          "target_dn": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 754
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 371440059,
+          "target_dn": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 786
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 632
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 636
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 652
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 679
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 753
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 772
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 785
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:39053",
+          "key_id": "1629603360",
+          "line": 801
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1769
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1771
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1776
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1781
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1785
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1809
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1813
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1818
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1826
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:32793",
+          "key_id": "2029750445",
+          "line": 1830
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 67.101,
+      "coverage_gain_vs_cumulative": {
+        "probes": 42,
+        "methods": 5,
+        "branch_counts": 22,
+        "lines": 42
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 89,
+        "methods": 11,
+        "branch_counts": 45,
+        "lines": 69
+      },
+      "covered_counts": {
+        "probes": 32669,
+        "methods": 9051,
+        "branch_counts": 10297,
+        "lines": 39018
+      },
+      "log": "campaign/runs/p2_3_4_5_7/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7/manifest.json",
+      "id": "p2_3_4_5_7",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7
+      ],
+      "parent": "p2_3_4_5",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 6,
+      "matched_fault_count": 6,
+      "applied_fault_count": 6,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 4,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 700
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 726
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 797
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 803
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 808
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 464002318,
+          "target_dn": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 915
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 696
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 699
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 725
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 796
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 800
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 802
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 807
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 914
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 918
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:36551",
+          "key_id": "30736105",
+          "line": 932
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1902
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1905
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1908
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1911
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1915
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1938
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1948
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1950
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1956
+        },
+        {
+          "ordinal": 20,
+          "target": "127.0.0.1:45711",
+          "key_id": "361354378",
+          "line": 1962
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 59.211,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 236,
+        "methods": 40,
+        "branch_counts": 99,
+        "lines": 243
+      },
+      "covered_counts": {
+        "probes": 32811,
+        "methods": 9079,
+        "branch_counts": 10346,
+        "lines": 39195
+      },
+      "log": "campaign/runs/p2_3_4_5_7_8/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_8/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_8/manifest.json",
+      "id": "p2_3_4_5_7_8",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "parent": "p2_3_4_5_7",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 7,
+      "matched_fault_count": 7,
+      "applied_fault_count": 7,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 6,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 644
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 658
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 674
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 692
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 789
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 793
+        },
+        {
+          "ordinal": 9,
+          "manager_identity": 1132676329,
+          "target_dn": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 817
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 633
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 643
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 657
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 673
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 691
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 780
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 788
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 792
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 816
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 903
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 907
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:34501",
+          "key_id": "1157506009",
+          "line": 910
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1868
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1873
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1879
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1881
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1887
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1897
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1915
+        },
+        {
+          "ordinal": 20,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1922
+        },
+        {
+          "ordinal": 21,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1927
+        },
+        {
+          "ordinal": 22,
+          "target": "127.0.0.1:43777",
+          "key_id": "1818112254",
+          "line": 1932
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 15,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 57.013,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 44,
+        "methods": 6,
+        "branch_counts": 20,
+        "lines": 24
+      },
+      "covered_counts": {
+        "probes": 32617,
+        "methods": 9044,
+        "branch_counts": 10270,
+        "lines": 38966
+      },
+      "log": "campaign/runs/p2_3_4_5_7_8_9/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_8_9/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_8_9/manifest.json",
+      "id": "p2_3_4_5_7_8_9",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9
+      ],
+      "parent": "p2_3_4_5_7_8",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 8,
+      "matched_fault_count": 8,
+      "applied_fault_count": 8,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 4,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 641
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 655
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 659
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 687
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 785
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 800
+        },
+        {
+          "ordinal": 9,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 815
+        },
+        {
+          "ordinal": 10,
+          "manager_identity": 19753812,
+          "target_dn": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 900
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 631
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 640
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 654
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 658
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 686
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 778
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 784
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 799
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 814
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 899
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 918
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:35713",
+          "key_id": "1237166076",
+          "line": 920
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1884
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1889
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1896
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1899
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1909
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1912
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1916
+        },
+        {
+          "ordinal": 20,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1919
+        },
+        {
+          "ordinal": 21,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1925
+        },
+        {
+          "ordinal": 22,
+          "target": "127.0.0.1:34805",
+          "key_id": "256342270",
+          "line": 1928
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 59.917,
+      "coverage_gain_vs_cumulative": {
+        "probes": 3,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 3
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 74,
+        "methods": 9,
+        "branch_counts": 34,
+        "lines": 60
+      },
+      "covered_counts": {
+        "probes": 32665,
+        "methods": 9049,
+        "branch_counts": 10292,
+        "lines": 39027
+      },
+      "log": "campaign/runs/p2_3_4_5_7_8_9_10/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_8_9_10/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_8_9_10/manifest.json",
+      "id": "p2_3_4_5_7_8_9_10",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10
+      ],
+      "parent": "p2_3_4_5_7_8_9",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "out_of_order_plan",
+      "planned_fault_count": 9,
+      "matched_fault_count": 9,
+      "applied_fault_count": 9,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "matched_observed_order": [
+        4,
+        2,
+        5,
+        3,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "applied_observed_order": [
+        4,
+        2,
+        5,
+        3,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 2,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 4,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 643
+        },
+        {
+          "ordinal": 2,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 648
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 652
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 664
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 786
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 790
+        },
+        {
+          "ordinal": 9,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 817
+        },
+        {
+          "ordinal": 10,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 901
+        },
+        {
+          "ordinal": 11,
+          "manager_identity": 1460164289,
+          "target_dn": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 918
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 638
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 641
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 646
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 647
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 651
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 778
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 785
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 789
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 816
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 900
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 917
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:42541",
+          "key_id": "145938496",
+          "line": 934
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1903
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1905
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1911
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1914
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1921
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1925
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1936
+        },
+        {
+          "ordinal": 20,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1939
+        },
+        {
+          "ordinal": 21,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1945
+        },
+        {
+          "ordinal": 22,
+          "target": "127.0.0.1:43113",
+          "key_id": "929693018",
+          "line": 1959
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 51.357,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 30,
+        "methods": 5,
+        "branch_counts": 9,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32586,
+        "methods": 9040,
+        "branch_counts": 10255,
+        "lines": 38949
+      },
+      "log": "campaign/runs/p2_3_4_5_7_8_9_10_11/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_8_9_10_11/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_8_9_10_11/manifest.json",
+      "id": "p2_3_4_5_7_8_9_10_11",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "parent": "p2_3_4_5_7_8_9_10",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "out_of_order_plan",
+      "planned_fault_count": 9,
+      "matched_fault_count": 9,
+      "applied_fault_count": 9,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "matched_observed_order": [
+        2,
+        4,
+        3,
+        5,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "applied_observed_order": [
+        2,
+        4,
+        3,
+        5,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 1,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 639
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 653
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 667
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 682
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 783
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 798
+        },
+        {
+          "ordinal": 9,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 814
+        },
+        {
+          "ordinal": 10,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 901
+        },
+        {
+          "ordinal": 12,
+          "manager_identity": 1497713603,
+          "target_dn": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 917
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 631
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 638
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 652
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 666
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 681
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 776
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 782
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 797
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 813
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 900
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 904
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:46065",
+          "key_id": "14420135",
+          "line": 906
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1898
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1903
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1908
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1914
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1917
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1922
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1927
+        },
+        {
+          "ordinal": 20,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1946
+        },
+        {
+          "ordinal": 21,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1953
+        },
+        {
+          "ordinal": 22,
+          "target": "127.0.0.1:43149",
+          "key_id": "1599637394",
+          "line": 1972
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 55.369,
+      "coverage_gain_vs_cumulative": {
+        "probes": 1,
+        "methods": 0,
+        "branch_counts": 1,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 46,
+        "methods": 6,
+        "branch_counts": 22,
+        "lines": 24
+      },
+      "covered_counts": {
+        "probes": 32638,
+        "methods": 9046,
+        "branch_counts": 10281,
+        "lines": 38991
+      },
+      "log": "campaign/runs/p2_3_4_5_7_8_9_10_12/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_8_9_10_12/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_8_9_10_12/manifest.json",
+      "id": "p2_3_4_5_7_8_9_10_12",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        10,
+        12
+      ],
+      "parent": "p2_3_4_5_7_8_9_10",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "fully_applied_target_lost",
+      "planned_fault_count": 8,
+      "matched_fault_count": 8,
+      "applied_fault_count": 8,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": false,
+      "target_reuse_after_final_fault": 0,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 639
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 654
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 658
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 694
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 781
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 807
+        },
+        {
+          "ordinal": 9,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 873
+        },
+        {
+          "ordinal": 11,
+          "manager_identity": 945518887,
+          "target_dn": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 893
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 629
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 638
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 653
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 657
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 693
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 778
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 780
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 806
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 872
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 888
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:42547",
+          "key_id": "1756807192",
+          "line": 892
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1876
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1881
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1886
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1891
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1895
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1901
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1906
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1911
+        },
+        {
+          "ordinal": 20,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1916
+        },
+        {
+          "ordinal": 21,
+          "target": "127.0.0.1:41513",
+          "key_id": "448332361",
+          "line": 1930
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 54.927,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 1,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 75,
+        "methods": 9,
+        "branch_counts": 39,
+        "lines": 59
+      },
+      "covered_counts": {
+        "probes": 32663,
+        "methods": 9049,
+        "branch_counts": 10294,
+        "lines": 39023
+      },
+      "log": "campaign/runs/p2_3_4_5_7_8_9_11/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_8_9_11/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_8_9_11/manifest.json",
+      "id": "p2_3_4_5_7_8_9_11",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        9,
+        11
+      ],
+      "parent": "p2_3_4_5_7_8_9",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "incomplete_plan",
+      "planned_fault_count": 7,
+      "matched_fault_count": 6,
+      "applied_fault_count": 6,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        10
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8
+      ],
+      "all_faults_observed": false,
+      "in_plan_order": false,
+      "identity_coherent": true,
+      "unmatched_ordinals": [
+        10
+      ],
+      "plan_nonmatches": [
+        {
+          "ordinal": 10,
+          "target_dn": "127.0.0.1:43207",
+          "key_id": "1905662203"
+        }
+      ],
+      "fully_applied": false,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 2,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 637
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 651
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 667
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 682
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 782
+        },
+        {
+          "ordinal": 8,
+          "manager_identity": 548042194,
+          "target_dn": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 798
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 629
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 636
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 650
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 666
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 681
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 776
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 781
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 797
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:34735",
+          "key_id": "291167321",
+          "line": 812
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1787
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1792
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1797
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1802
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1806
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1812
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1816
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1822
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1827
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:43207",
+          "key_id": "1905662203",
+          "line": 1831
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 56.907,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 31,
+        "methods": 5,
+        "branch_counts": 10,
+        "lines": 16
+      },
+      "covered_counts": {
+        "probes": 32615,
+        "methods": 9045,
+        "branch_counts": 10263,
+        "lines": 38967
+      },
+      "log": "campaign/runs/p2_3_4_5_7_8_10/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_8_10/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_8_10/manifest.json",
+      "id": "p2_3_4_5_7_8_10",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        8,
+        10
+      ],
+      "parent": "p2_3_4_5_7_8",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "fully_applied_target_lost",
+      "planned_fault_count": 6,
+      "matched_fault_count": 6,
+      "applied_fault_count": 6,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": false,
+      "target_reuse_after_final_fault": 0,
+      "admitted_for_coverage_feedback": false,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 965068731,
+          "target_dn": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 638
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 965068731,
+          "target_dn": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 652
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 965068731,
+          "target_dn": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 656
+        },
+        {
+          "ordinal": 5,
+          "manager_identity": 965068731,
+          "target_dn": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 680
+        },
+        {
+          "ordinal": 7,
+          "manager_identity": 965068731,
+          "target_dn": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 781
+        },
+        {
+          "ordinal": 9,
+          "manager_identity": 965068731,
+          "target_dn": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 801
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 627
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 637
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 651
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 655
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 679
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 776
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 780
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 795
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:45639",
+          "key_id": "1333798533",
+          "line": 800
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1784
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1789
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1795
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1799
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1803
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1814
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1818
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1826
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1832
+        },
+        {
+          "ordinal": 19,
+          "target": "127.0.0.1:40141",
+          "key_id": "240846376",
+          "line": 1858
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 13,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 45.283,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 44,
+        "methods": 6,
+        "branch_counts": 20,
+        "lines": 24
+      },
+      "covered_counts": {
+        "probes": 32611,
+        "methods": 9045,
+        "branch_counts": 10263,
+        "lines": 38961
+      },
+      "log": "campaign/runs/p2_3_4_5_7_9/junit.log",
+      "coverage": "campaign/runs/p2_3_4_5_7_9/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_5_7_9/manifest.json",
+      "id": "p2_3_4_5_7_9",
+      "sequence": [
+        2,
+        3,
+        4,
+        5,
+        7,
+        9
+      ],
+      "parent": "p2_3_4_5_7",
+      "recovered_existing_run": false,
+      "re_audited_after_stop": true
+    },
+    {
+      "result": "target_retaining",
+      "planned_fault_count": 4,
+      "matched_fault_count": 4,
+      "applied_fault_count": 4,
+      "planned_ordinals": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "matched_ordinals": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "applied_ordinals": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "matched_observed_order": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "applied_observed_order": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "all_faults_observed": true,
+      "in_plan_order": true,
+      "identity_coherent": true,
+      "unmatched_ordinals": [],
+      "plan_nonmatches": [],
+      "fully_applied": true,
+      "target_after_final_fault": true,
+      "target_reuse_after_final_fault": 4,
+      "admitted_for_coverage_feedback": true,
+      "oracle_candidate": false,
+      "matched_runtime_identity": [
+        {
+          "ordinal": 2,
+          "manager_identity": 1480294879,
+          "target_dn": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 640
+        },
+        {
+          "ordinal": 3,
+          "manager_identity": 1480294879,
+          "target_dn": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 644
+        },
+        {
+          "ordinal": 4,
+          "manager_identity": 1480294879,
+          "target_dn": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 658
+        },
+        {
+          "ordinal": 6,
+          "manager_identity": 1480294879,
+          "target_dn": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 763
+        }
+      ],
+      "observed_attempts": [
+        {
+          "ordinal": 1,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 631
+        },
+        {
+          "ordinal": 2,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 638
+        },
+        {
+          "ordinal": 3,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 642
+        },
+        {
+          "ordinal": 4,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 657
+        },
+        {
+          "ordinal": 5,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 681
+        },
+        {
+          "ordinal": 6,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 762
+        },
+        {
+          "ordinal": 7,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 766
+        },
+        {
+          "ordinal": 8,
+          "target": "127.0.0.1:45587",
+          "key_id": "630656573",
+          "line": 789
+        },
+        {
+          "ordinal": 9,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1745
+        },
+        {
+          "ordinal": 10,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1748
+        },
+        {
+          "ordinal": 11,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1753
+        },
+        {
+          "ordinal": 12,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1758
+        },
+        {
+          "ordinal": 13,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1762
+        },
+        {
+          "ordinal": 14,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1775
+        },
+        {
+          "ordinal": 15,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1777
+        },
+        {
+          "ordinal": 16,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1799
+        },
+        {
+          "ordinal": 17,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1801
+        },
+        {
+          "ordinal": 18,
+          "target": "127.0.0.1:46575",
+          "key_id": "1197579217",
+          "line": 1807
+        }
+      ],
+      "operation_failed": false,
+      "original_junit_failures": 0,
+      "successful_block_moves": 14,
+      "returncode": 0,
+      "junit_pass": true,
+      "harness_timeout_after_junit": false,
+      "harness_complete": true,
+      "coverage_complete": true,
+      "elapsed_seconds": 44.36,
+      "coverage_gain_vs_cumulative": {
+        "probes": 0,
+        "methods": 0,
+        "branch_counts": 0,
+        "lines": 0
+      },
+      "coverage_gain_vs_healthy": {
+        "probes": 36,
+        "methods": 5,
+        "branch_counts": 12,
+        "lines": 17
+      },
+      "covered_counts": {
+        "probes": 32618,
+        "methods": 9045,
+        "branch_counts": 10265,
+        "lines": 38969
+      },
+      "log": "campaign/runs/p2_3_4_6/junit.log",
+      "coverage": "campaign/runs/p2_3_4_6/jacoco.exec",
+      "manifest": "campaign/runs/p2_3_4_6/manifest.json",
+      "id": "p2_3_4_6",
+      "sequence": [
+        2,
+        3,
+        4,
+        6
+      ],
+      "parent": "p2_3_4",
+      "recovered_existing_run": true,
+      "re_audited_after_stop": true
+    }
+  ],
+  "started_wall_time": 1791332320.0914497,
+  "campaign_elapsed_wall_seconds": 1776.2229999999995,
+  "stop_reason": "A separate DN-wire persistent cached-DEK policy produced an operation failure and passing minimal-fix replay; exact ordinal queue remains resumable."
+}

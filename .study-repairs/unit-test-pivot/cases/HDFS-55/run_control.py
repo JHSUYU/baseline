@@ -36,11 +36,30 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--overlay", type=Path)
+    parser.add_argument("--test-overlay", type=Path,
+                        help="case-local compilation of original JUnit with cluster configuration")
     parser.add_argument("--inject", action="store_true")
     parser.add_argument("--first-attempt", type=int, default=1)
     parser.add_argument("--max-faults", type=int, default=24)
+    parser.add_argument("--plan", type=Path,
+                        help="exact outbound SASL ordinal plan; separate from stateful policy")
+    parser.add_argument("--runtime-prefix-faults", type=int, default=0,
+                        help="inject first N runtime-ordered cached-key SASL attempts")
+    parser.add_argument("--dn-reject-cached-key", type=int, default=0,
+                        help="reject a runtime-identified cached Balancer key on the DN handshake")
+    parser.add_argument("--dn-reject-persistent", action="store_true",
+                        help="one persistent rejected-DEK state; cap repeated responses at 1000")
     parser.add_argument("--timeout", type=int, default=180)
     args = parser.parse_args()
+    if (args.runtime_prefix_faults < 0 or args.dn_reject_cached_key < 0 or
+            (args.dn_reject_persistent and args.dn_reject_cached_key) or
+            sum(bool(item) for item in (args.plan, args.runtime_prefix_faults,
+                                        args.dn_reject_cached_key,
+                                        args.dn_reject_persistent)) > 1 or
+            ((args.runtime_prefix_faults or args.dn_reject_cached_key or
+              args.dn_reject_persistent) and not args.inject)):
+        parser.error("one fault policy at a time; prefix and DN rejection need --inject")
+    dn_rejection_limit = 1000 if args.dn_reject_persistent else args.dn_reject_cached_key
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     scratch = output / "scratch"
@@ -55,11 +74,18 @@ def main():
                  BYTE_BUDDY, BYTE_BUDDY_AGENT, OBJENESIS]
     tool_jars += sorted((HADOOP / "share/hadoop/tools/lib").glob("*.jar"))
     cp = os.pathsep.join([*(str(p) for p in tool_jars), hadoop_cp])
+    wrapper = (HERE / "campaign/RunOneJUnitExit.java"
+               if args.plan or args.runtime_prefix_faults or dn_rejection_limit
+               else CONTROL / "RunOneJUnit.java")
     subprocess.run([str(JDK / "javac"), "-cp", cp, "-d", str(BUILD),
-        str(CONTROL / "RunOneJUnit.java")], check=True)
+        str(wrapper)], check=True)
     if args.overlay and not args.overlay.is_dir():
         raise FileNotFoundError(args.overlay)
-    run_cp = os.pathsep.join([*(str(p.resolve()) for p in ([args.overlay] if args.overlay else [])),
+    if args.test_overlay and not args.test_overlay.is_dir():
+        raise FileNotFoundError(args.test_overlay)
+    run_cp = os.pathsep.join([*(str(p.resolve()) for p in
+        ([args.test_overlay] if args.test_overlay else []) +
+        ([args.overlay] if args.overlay else [])),
         str(SOURCE_RESOURCES), str(BUILD), cp])
     command = [str(JDK / "java"), "-ea", "-Xmx3g",
         "-javaagent:" + str(JACOCO) + "=destfile=" + str(output / "jacoco.exec") + ",append=false",
@@ -70,7 +96,13 @@ def main():
         "-Dhdfs17899.inject=" + str(args.inject).lower(),
         "-Dhdfs55.firstAttempt=" + str(args.first_attempt),
         "-Dhdfs55.maxFaults=" + str(args.max_faults),
-        "-cp", run_cp, "RunOneJUnit", TEST_CLASS, TEST_METHOD]
+        "-Dhdfs55.runtimePrefixFaults=" + str(args.runtime_prefix_faults),
+        "-Dhdfs55.dnRejectCachedKey=" + str(dn_rejection_limit),
+        *(["-Dhdfs55.plan=" + str(args.plan.resolve())] if args.plan else []),
+        "-cp", run_cp, "RunOneJUnitExit" if args.plan or args.runtime_prefix_faults
+        or dn_rejection_limit
+        else "RunOneJUnit",
+        TEST_CLASS, TEST_METHOD]
     started = time.monotonic()
     with (output / "junit.log").open("w") as log:
         try:
@@ -83,9 +115,21 @@ def main():
         "test": TEST_CLASS + "#" + TEST_METHOD,
         "returncode": rc, "elapsed_seconds": round(time.monotonic()-started,3),
         "overlay": str(args.overlay.resolve()) if args.overlay else None,
+        "test_overlay": str(args.test_overlay.resolve()) if args.test_overlay else None,
         "fault_injection_enabled": args.inject,
         "first_attempt": args.first_attempt,
         "max_faults": args.max_faults,
+        "exact_plan": str(args.plan.resolve()) if args.plan else None,
+        "planned_exact_faults": (sum(1 for line in args.plan.read_text().splitlines()
+                                     if line.strip()) if args.plan else None),
+        "runtime_prefix_faults": args.runtime_prefix_faults,
+        "dn_reject_cached_key": args.dn_reject_cached_key,
+        "dn_reject_persistent": args.dn_reject_persistent,
+        "dn_rejection_safety_cap": dn_rejection_limit if args.dn_reject_persistent else None,
+        "logical_faults_planned": 1 if args.dn_reject_persistent else None,
+        "junit_wrapper": "RunOneJUnitExit" if args.plan or args.runtime_prefix_faults
+        or dn_rejection_limit
+        else "RunOneJUnit",
         "log": str(output / "junit.log"),
         "coverage": str(output / "jacoco.exec"), "graph_used": False,
         "container_used": False}
