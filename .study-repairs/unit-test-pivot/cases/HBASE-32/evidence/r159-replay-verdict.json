@@ -1,0 +1,47 @@
+{
+  "agent_class_sha256": "edb7757522361622087f3a5be2f7efded71281da4ff27bcf62d82b235de1bdbd",
+  "archive_sha256": "913f5ea3d935ef9789c4c17035baa53f310ef471b050feee3a9bf908d60f687c",
+  "checkpoint_exclusion_evidence": "r159-checkpoint-exclusion.json",
+  "classification": "unreproduced_timeout_candidate",
+  "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+  "interpretation": "Exact DNR flush RPC and same raw-region B7 rethrow occurred in both runs. Original 360s JUnit timed out with 163/600 assignment children; isolated same-plan 600s replay passed original JUnit with 600/600 children in 56.59s. The timeout is scheduling-sensitive and does not establish a new HBase defect or a closed lock cycle. Source trial overlaps other node1 JVM workloads; causality of interference is unproven.",
+  "new_bug_confirmed": false,
+  "replay_create_table_child_success_count": 600,
+  "replay_elapsed_seconds": 56.59,
+  "replay_exact_fault": true,
+  "replay_exit": 0,
+  "replay_first_scp": {
+    "line": 14512,
+    "message": "2026-10-07T06:19:45,579 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=926 for ms1105.utah.cloudlab.us,40925,1791353964400 (carryingMeta=false) ms1105.utah.cloudlab.us,40925,1791353964400/CRASHED/regionCount=102/lock=java.util.concurrent.locks.ReentrantReadWriteLock@8bd4969[Write locks = 1, Read locks = 0], oldState=ONLINE."
+  },
+  "replay_jacoco_sha256": "44e6bd6ef48fbe8bfda51c7bc0ce25ff84b4488123320517f899085bd0176b37",
+  "replay_junit": {
+    "failed": 0,
+    "found": 1,
+    "succeeded": 1
+  },
+  "replay_log_sha256": "92d54dad5f10dbfd1227d0d6daab5ab4845d705d808ca3dc96c9468c2e6c34e4",
+  "replay_pre_shutdown_region_server_abort_count": 1,
+  "replay_same_actor_b7": 1,
+  "replay_same_actor_guard": 1,
+  "replay_spec_sha256": "952f53f23c245cd1ad2dd6d1abda29632d540f5b95e2298c800ca523a66ec9d0",
+  "replay_timeout_seconds": 600,
+  "reviewed_at_utc": "2026-10-07T06:21:55.963338+00:00",
+  "source_create_table_child_success_count": 163,
+  "source_elapsed_seconds": 413.36,
+  "source_exact_fault": true,
+  "source_exit": 124,
+  "source_first_scp": {
+    "line": 30020,
+    "message": "2026-10-07T06:17:18,667 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=830 for ms1105.utah.cloudlab.us,46877,1791353469424 (carryingMeta=true) ms1105.utah.cloudlab.us,46877,1791353469424/CRASHED/regionCount=76/lock=java.util.concurrent.locks.ReentrantReadWriteLock@9843ec[Write locks = 1, Read locks = 0], oldState=ONLINE."
+  },
+  "source_jacoco_sha256": "ac6b2e4fd01552be0419c9906273a22300d7ec40da3c1d2c1564d16e92c21b08",
+  "source_junit": null,
+  "source_log_sha256": "86f7b886c0f275a6a1cb61e471e5c1c935cec866987e9ac4cfa9f65c9f76378a",
+  "source_plan": [
+    "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMix2lXg~replica-6~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+  ],
+  "source_same_actor_b7": 1,
+  "source_shutdown_hook_line": 32615,
+  "source_trial": "r159"
+}

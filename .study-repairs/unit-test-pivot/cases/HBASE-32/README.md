@@ -283,6 +283,22 @@ raw logs, JaCoCo data, thread dumps, and SHA checks. The controller resumed
 its saved r137 plan after the replay; the r136 trial remains excluded from
 the effective denominator and feedback.
 
+Main trial r159 was another exact single-fault timeout: the replica-6 flush
+RPC exception and B7 rethrow matched the same raw primary region, while the
+original JUnit completed only 163/600 assignment children before its
+360-second cap. Three live `Thread.print -l` dumps and the original log were
+preserved. The controller excluded this run from effective, coverage, I/O,
+and descendant counts before starting r160. With other node1 JUnit jobs
+paused, a clean same-plan replay used the same agent and HBase JAR and passed
+the unchanged JUnit in 56.59 seconds; its exact B7 occurred, one region
+server aborted, and all 600 children completed. This is an
+**unreproduced timeout candidate**, not a confirmed new bug. The raw bundle,
+SHA checks, review verdict, and checkpoint exclusion are in
+`evidence/r159-original-and-clean-replay-node1.tar.gz`,
+`evidence/r159-replay-verdict.json`, and
+`evidence/r159-checkpoint-exclusion.json`. The saved r160 plan resumed without
+rerunning r159.
+
 In the independent upstream phase, s078 applied a Master OPENED report
 exception and then a client flush RPC exception to the same raw region and
 replica-1 actor. The selected B7 rethrow occurred after both faults, but the
@@ -301,3 +317,9 @@ replay; `evidence/s101-candidate-receipt.json` records exact actor and raw
 checks. Checkpoint version 9 replenishes mixed-plan parents from distinct
 observed Master I/O identities when mixed terminal plans run out, while
 preserving coverage/I/O priority and periodic deeper-plan exploration.
+To protect node0 disk space, 25 completed noncandidate raw logs from
+s081-s100 and s102-s106 were copied to the HBASE-32 archive on node1 and
+verified byte-for-byte by SHA-256 before their node0 copies were removed.
+The pre-transfer manifest, node1 verification, and post-transfer receipts
+are in `work-upstream/relocate-s081-s106-logs-*.json`. The local JaCoCo and
+exit receipts, plus both s078 and s101 candidate raw logs, remain on node0.
