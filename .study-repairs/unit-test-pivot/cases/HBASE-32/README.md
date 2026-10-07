@@ -299,6 +299,20 @@ SHA checks, review verdict, and checkpoint exclusion are in
 `evidence/r159-checkpoint-exclusion.json`. The saved r160 plan resumed without
 rerunning r159.
 
+At the first apparent 128-effective endpoint (r177), an independent
+checkpoint audit found five earlier, already reviewed timeout runs—r003,
+r011, r058, r066, and r075—that the pre-v6 controller had still counted as
+effective and had admitted into JaCoCo/I/O feedback. Each original JUnit
+exited 124, and each exact isolated replay passed. At a complete checkpoint,
+`work-lots/migrate_reviewed_timeouts.py` preserved the original state and
+raw evidence, excluded those five runs, recomputed both feedback unions,
+and corrected 177 trials from 128 to 123 valid effective trials. No
+completed or queued descendant used those five plans; the queue and seen
+plan hashes remained identical. The before/after receipts and compressed
+original checkpoint are in `work-lots/evidence-reviewed-timeouts-*`. The
+main controller resumed at r178 to fill the remaining five valid trials,
+without repeating any prior plan.
+
 In the independent upstream phase, s078 applied a Master OPENED report
 exception and then a client flush RPC exception to the same raw region and
 replica-1 actor. The selected B7 rethrow occurred after both faults, but the
