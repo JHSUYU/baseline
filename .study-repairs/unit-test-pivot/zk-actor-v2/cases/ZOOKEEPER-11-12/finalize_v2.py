@@ -29,6 +29,30 @@ def write_json(path, value):
                                sort_keys=True) + '\n')
 
 
+def write_readme(case_dir, result):
+    readme = case_dir / 'README.md'
+    previous = case_dir / 'README.pre-actor-v2.md'
+    if not previous.exists():
+        shutil.copy2(readme, previous)
+    case_id = result['case_id']
+    guard = result['target_guard_line']
+    thrown = result['source_line']
+    budget = result['campaign_budget']
+    body = f'''# {case_id}: actor-aware original-JUnit fault campaign
+
+The unchanged ZooKeeper 3.8.7 `CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile` runs a three-peer embedded cluster. This check is `QuorumPeer.loadDataBase()` at source line {guard}; its selected `IOException` maps to line {thrown}. Two fresh healthy JUnits passed and reached the selected check once each on the original `firstServer` peer0. The raw File receiver and `QuorumPeer.myid` bind every eligible epoch-file I/O to that peer and filename.
+
+The shared campaign completed {result['fault_trials']} original fault JUnits in {result['trial_elapsed_seconds']} seconds, plus {result['healthy_elapsed_seconds']} seconds of healthy calibration. {result['fully_applied_trials']} trials applied every ordered fault. For this check, {result['target_after_fault']} trials also reached the exact peer0 guard **after the last applied fault**; these are the effective trials for the {budget}/max{result['max_faults']} budget. The longest effective sequence contained {result['max_fault_depth_effective']} faults. {result['target_exception_after_fault_trials']} effective trials executed the selected source-specific throw. The result is **{result['status']}**, with bug mark `{result['bug_mark']}`. This is the same physical campaign for ZK11 and ZK12, so their reported JVM times must not be added.
+
+Effective runs covered {result['coverage_gain']} additional ASM production source-line IDs in the instrumented `QuorumPeer` and `AtomicFileOutputStream` methods, and {result['io_family_gain']} new bound epoch-I/O families. {result['effective_junit_nonzero_trials']} effective JUnits had a nonzero test result; those were reviewed separately from the selected target exception. For example, a file fault can leave server0 unavailable at the test's final assertion after the selected guard has already run. A target-lost or unmatched trial contributes no coverage or mutation feedback. The conditional extension decision is in [result.json](result.json).
+
+The [raw audit](../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/campaign-audit.json) rechecks every original-JUnit receipt, actual peer/file, same-thread fault application, post-final-fault guard, coverage, I/O feedback, and cumulative checkpoint. The [per-trial table](../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/trial-summary.csv), [compressed raw runs](../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/raw-runs.tar.gz), [offline build](../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/build-receipt.json), and [two-seed calibration](../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/calibration-receipt.json) preserve the evidence. Original source revision: `{result['original_source_commit']}`. The older path-only/global-ordinal trials remain in [historical result](result.pre-actor-v2.json) and do not enter these counts.
+
+The fault model covers actual epoch-file reads, writes, temporary-file open, and rename. `AtomicFileOutputStream.close():80` `FileDescriptor.sync()` and socket or ZooKeeper API I/O have no separate hook. ASM line feedback is scoped to the instrumented production methods. This result describes the selected original JUnit and the selected exception oracle; it does not establish behavior for all workloads or fault types.
+'''
+    readme.write_text(body)
+
+
 def table(audit):
     fields = ['run_id', 'selected_plan_for', 'elapsed_seconds', 'fault_depth',
               'exact', 'applied_faults', 'junit_exit', 'new_coverage_lines',
@@ -197,6 +221,7 @@ def main():
             'trial_results_scope': 'actor_v2_original_junit_shared_two_checks',
         }
         write_json(result_path, result)
+        write_readme(case_dir, result)
         case_summaries[case_id] = {'effective': measured['effective'],
                                    'target': measured['effective_target'],
                                    'status': result['status'],
