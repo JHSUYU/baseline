@@ -1,5 +1,7 @@
 {
   "actor_identity": "actual moved-session ClientCnxn/NIOServerCnxn, peer SID, leader owner object, and raw session ID",
+  "all_stages_elapsed_seconds": 3055.906,
+  "all_stages_selected_fault_trials": 713,
   "budget_denominator": "post-response stage exact ordered faults and same moved-session/leader owner guard after last fault",
   "bug_mark": "none",
   "campaign_budget": 80,
@@ -19,6 +21,8 @@
   "evidence": {
     "historical_result": "result.pre-actor-v2.json",
     "historical_result_sha256": "4301f9420efcd354b82b79de8393bb2b5fdc3e8254ec4bf5cbe2e83a502b7ade",
+    "legacy_restore_commit": "62e1a115c4c225c90605e1c4c540983591d0f903",
+    "legacy_restore_path": ".study-repairs/unit-test-pivot/zk-actor-v2/cases/ZOOKEEPER-03/",
     "post_response_archive": "../../zk-actor-v2/cases/ZOOKEEPER-03/after-response/evidence/raw-runs.tar.gz",
     "post_response_archive_sha256": "a77d70aed657e1b35b4d3ee6536a13cc4dbbd92fed9281c9747805e344aac3bc",
     "post_response_audit": "../../zk-actor-v2/cases/ZOOKEEPER-03/after-response/evidence/terminal-audit.json",
@@ -65,10 +69,57 @@
   "limitations": [
     "The two fault families have separate agents, healthy seeds, and feedback; their effective denominators are not pooled to satisfy the 80-trial stage budget.",
     "This result covers the original selected embedded-cluster JUnit, not every workload.",
-    "ASM line feedback covers instrumented production methods, not the full codebase."
+    "ASM line feedback covers instrumented production methods, not the full codebase.",
+    "The original MultiOp JUnit extension is a separate workload seed and budget; its 22 effective trials do not retroactively complete either older 80-effective denominator."
   ],
   "max_faults": 8,
   "methodology": "original_cluster_junit_actor_v2_asm_line_feedback_two_fault_families",
+  "multiop_original_junit_extension": {
+    "bug_mark": "none",
+    "campaign_audit": "multiop-extension/evidence/campaign-independent-audit.json",
+    "coverage_gain": 3,
+    "coverage_gain_lines": [
+      "org.apache.zookeeper.server.NIOServerCnxn#doIO:390",
+      "org.apache.zookeeper.server.NIOServerCnxn#doIO:391",
+      "org.apache.zookeeper.server.NIOServerCnxn#doIO:392"
+    ],
+    "effective_budget": 80,
+    "elapsed_seconds": 234.012,
+    "exact_actor_session_faults": 38,
+    "formal_effective": 18,
+    "formal_selected": 26,
+    "graphchecker_runtime_dependency": false,
+    "healthy_bound_io_between_guards_per_run": [
+      15,
+      15
+    ],
+    "healthy_runs": 2,
+    "healthy_target_guards_per_run": [
+      2,
+      2
+    ],
+    "max_faults": 8,
+    "max_observed_faults": 4,
+    "method_note": "multiop-extension/README.md",
+    "new_stage_effective": 22,
+    "new_stage_selected": 36,
+    "original_junit": "org.apache.zookeeper.test.QuorumTest#testSessionMovedWithMultiOp",
+    "original_source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+    "pilot_audit": "multiop-extension/evidence/pilot-independent-audit.json",
+    "pilot_effective": 4,
+    "pilot_selected": 10,
+    "pre_first_effective": 0,
+    "pre_first_selected": 4,
+    "raw_campaign": "multiop-extension/evidence/raw-campaign.tar.gz",
+    "raw_campaign_sha256": "bebb74aee76a6a65db6e1e0c8752c87001d60186b9fb815474c9d81bc3eb4df3",
+    "raw_pilot": "multiop-extension/evidence/raw-pilot.tar.gz",
+    "raw_pilot_sha256": "d74f2be2a959cea03fc51dd3b626761aba92bfa76d99ab68a6a119cd65e9d63b",
+    "reason": "Interguard ordered-fault queue exhausted after 22/80 effective; all 15 stable one-fault selectors tested. Four pre-first stable reads injected exactly but each original JUnit failed at first multi with ConnectionLossException before the selected target.",
+    "selected_target_throws": 0,
+    "stable_interguard_one_fault_selectors": 15,
+    "stable_interguard_selectors_tested": 15,
+    "status": "queue_exhausted_before_80"
+  },
   "new_bug": false,
   "original_source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
   "post_fault_target_reach_trials": 64,
@@ -93,12 +144,44 @@
     "status": "attempt_cap"
   },
   "quality_complete": false,
-  "reason": "Two fresh healthy original cluster JUnits were calibrated per stage. Raw receipts prove the selected moved session, leader owner, exact ordered faults and post-final-fault guard. No selected SessionExpiredException was observed.",
+  "quorum_response_extension": {
+    "effective": 0,
+    "effective_coverage_gain": 0,
+    "elapsed_seconds": 36.752,
+    "evidence": "../../zk-actor-v2/cases/ZOOKEEPER-03/quorum-response/terminal-summary.json",
+    "exact_actor_bound_faults": 7,
+    "fault_family": "leader-to-follower REVALIDATE response after successful bufferedOutput.flush",
+    "graphchecker_runtime_dependency": false,
+    "healthy_bound_responses_per_run": [
+      8,
+      8
+    ],
+    "healthy_runs": 2,
+    "healthy_selectors_with_later_target_per_run": [
+      7,
+      7
+    ],
+    "healthy_target_guards_per_run": [
+      10,
+      10
+    ],
+    "independent_denominator": true,
+    "observed_queue_size": 7,
+    "original_junit": "org.apache.zookeeper.test.QuorumTest#testSessionMoved",
+    "raw_archive": "../../zk-actor-v2/cases/ZOOKEEPER-03/quorum-response/evidence/raw-runs.tar.gz",
+    "raw_archive_sha256": "a37fc0cf937bf58e4593900b298f045540f7c94981e3aff0b5b74a96799792da",
+    "reason": "All seven healthy post-flush selectors injected precisely, but each original JUnit failed at QuorumTest.java:210 setData with ConnectionLossException before another same-session setOwner guard.",
+    "selected_budget": 10,
+    "selected_target_throws": 0,
+    "selected_trials": 7,
+    "status": "pilot_complete_no_effective"
+  },
+  "reason": "Original ten-handoff JUnit stages remain 37/80 and 27/80 effective. The new original MultiOp JUnit stage reached 22/80 effective, then its observed interguard queue exhausted; four additional pre-first I/O faults all lost the target. No selected SessionExpiredException was observed. The effective budget is unmet, so no bug-free or quality-complete claim is made.",
   "selected_target_throw_events": 0,
   "source_line": 330,
   "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
   "status": "inconclusive_budget_unmet",
-  "stop_reason": "post_response_queue_exhausted_before_effective_budget",
+  "stop_reason": "multiop_observed_io_queue_exhausted_before_effective_budget",
   "strict_injections": 663,
   "system": "ZooKeeper 3.8.7",
   "target_after_fault": 64,
