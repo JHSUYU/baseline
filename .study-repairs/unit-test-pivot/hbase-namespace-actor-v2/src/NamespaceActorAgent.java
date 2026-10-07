@@ -2,6 +2,8 @@ import java.lang.instrument.Instrumentation;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Base64;
+import java.nio.charset.StandardCharsets;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
 import org.apache.hadoop.hbase.Abortable;
@@ -19,8 +21,12 @@ public final class NamespaceActorAgent {
   private static final Map<ZKWatcher, Abortable> OWNERS = new IdentityHashMap<>();
   private static final Map<ZKWatcher, Integer> MANAGERS = new IdentityHashMap<>();
   private static final Map<ZKWatcher, Map<String, Integer>> HITS = new IdentityHashMap<>();
+  private static final String[] PLAN = System.getProperty("ns.actor.fault.plan", "").split(";");
   private static int nextManager;
   private static long nextEvent;
+  private static int nextFault;
+  private static volatile String boundActorRaw;
+  private static volatile int boundManager;
 
   public static void premain(String args, Instrumentation inst) {
     new AgentBuilder.Default()
@@ -109,7 +115,13 @@ public final class NamespaceActorAgent {
     return null;
   }
 
-  private static synchronized long ioStart(String family, ZKWatcher watcher, String path) {
+  private static String encoded(String value) {
+    return Base64.getUrlEncoder().withoutPadding()
+        .encodeToString(value.getBytes(StandardCharsets.UTF_8));
+  }
+
+  private static synchronized long ioStart(String family, ZKWatcher watcher, String path)
+      throws KeeperException {
     String site = namespaceSite();
     if (site == null) return 0;
     Actor actor = actor(watcher);
@@ -122,12 +134,39 @@ public final class NamespaceActorAgent {
     int hit = counts.containsKey(point) ? counts.get(point) + 1 : 1;
     counts.put(point, hit);
     long event = ++nextEvent;
+    String selector = actor.role + "~" + family + "~" + encoded(path) + "~" + site + "~" + hit;
     // role is a cross-run selector candidate; raw server and manager must be
     // equal between an injected event and the later selected target in a run.
     System.err.println("NSACTOR IO_ATTEMPT seq=" + event + " role=" + actor.role
         + " actor_raw=" + actor.raw + " manager=" + actor.manager
         + " watcher=" + System.identityHashCode(watcher) + " family=" + family
-        + " path=" + path + " site=" + site + " ordinal=" + hit);
+        + " path=" + path + " site=" + site + " ordinal=" + hit
+        + " selector=" + selector);
+    if (nextFault < PLAN.length && !PLAN[nextFault].isEmpty()) {
+      String planned = PLAN[nextFault];
+      int split = planned.lastIndexOf('~');
+      if (split > 0 && selector.equals(planned.substring(0, split))
+          && actor.role.equals("ACTIVE_MASTER") && actor.manager != 0
+          && !actor.raw.equals("unassigned")
+          && (boundActorRaw == null ||
+              (boundActorRaw.equals(actor.raw) && boundManager == actor.manager))) {
+        String kind = planned.substring(split + 1);
+        KeeperException.Code code;
+        if (kind.equals("CONNECTIONLOSS")) code = KeeperException.Code.CONNECTIONLOSS;
+        else if (kind.equals("OPERATIONTIMEOUT")) code = KeeperException.Code.OPERATIONTIMEOUT;
+        else if (kind.equals("SYSTEMERROR")) code = KeeperException.Code.SYSTEMERROR;
+        else throw new IllegalArgumentException("Unsupported fault kind: " + kind);
+        if (boundActorRaw == null) {
+          boundActorRaw = actor.raw;
+          boundManager = actor.manager;
+        }
+        ++nextFault;
+        System.err.println("NSACTOR FAULT_APPLIED seq=" + event + " step=" + nextFault
+            + " actor_raw=" + actor.raw + " manager=" + actor.manager
+            + " selector=" + selector + " kind=" + kind);
+        throw KeeperException.create(code, path);
+      }
+    }
     return event;
   }
 
@@ -136,12 +175,15 @@ public final class NamespaceActorAgent {
         + (thrown == null ? "returned" : thrown.getClass().getName()));
   }
 
-  private static String target(String point, MasterServices master, String subject) {
+  private static synchronized String target(String point, MasterServices master, String subject) {
     ZKWatcher watcher = master.getZooKeeper();
     Actor actor = actor(watcher);
-    String tag = "point=" + point + " subject=" + subject + " role=" + actor.role
+    String tag = "seq=" + (++nextEvent) + " point=" + point + " subject=" + subject
+        + " role=" + actor.role
         + " actor_raw=" + actor.raw + " manager=" + actor.manager
-        + " watcher=" + System.identityHashCode(watcher);
+        + " watcher=" + System.identityHashCode(watcher)
+        + " bound_match=" + (boundActorRaw != null && boundActorRaw.equals(actor.raw)
+            && boundManager == actor.manager);
     System.err.println("NSACTOR TARGET_ENTER " + tag);
     return tag;
   }
@@ -166,7 +208,8 @@ public final class NamespaceActorAgent {
   }
   public static final class ZkCreate {
     @Advice.OnMethodEnter
-    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path) {
+    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path)
+        throws KeeperException {
       return ioStart("ZK_CREATE", watcher, path);
     }
     @Advice.OnMethodExit(onThrowable = Throwable.class)
@@ -176,7 +219,8 @@ public final class NamespaceActorAgent {
   }
   public static final class ZkWrite {
     @Advice.OnMethodEnter
-    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path) {
+    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path)
+        throws KeeperException {
       return ioStart("ZK_WRITE", watcher, path);
     }
     @Advice.OnMethodExit(onThrowable = Throwable.class)
@@ -186,7 +230,8 @@ public final class NamespaceActorAgent {
   }
   public static final class ZkChildren {
     @Advice.OnMethodEnter
-    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path) {
+    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path)
+        throws KeeperException {
       return ioStart("ZK_CHILDREN_READ", watcher, path);
     }
     @Advice.OnMethodExit(onThrowable = Throwable.class)
@@ -196,7 +241,8 @@ public final class NamespaceActorAgent {
   }
   public static final class ZkData {
     @Advice.OnMethodEnter
-    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path) {
+    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path)
+        throws KeeperException {
       return ioStart("ZK_DATA_READ", watcher, path);
     }
     @Advice.OnMethodExit(onThrowable = Throwable.class)

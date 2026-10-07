@@ -29,17 +29,29 @@ same Master watcher, raw `ServerName`, and manager ID, plus the target
 argument and exception outcome. These are high-level ZooKeeper API attempts;
 they do not assert that an underlying network packet was sent or persisted.
 
-The cross-run plan selector should use the observed role, I/O family, path,
+The optional `-Dns.actor.fault.plan` accepts semicolon-separated ordered
+steps of `role~family~URL-safe-Base64(path)~site~ordinal~kind`, copied from
+healthy `IO_ATTEMPT selector=` receipts and suffixed with
+`CONNECTIONLOSS`, `OPERATIONTIMEOUT`, or `SYSTEMERROR`. With no property, the
+agent is passive. Fault matching accepts only an `ACTIVE_MASTER` event with
+a bound namespace manager and raw `ServerName`. Once the first fault applies,
+all later faults must be on the **same raw Master and manager**. The agent
+throws the selected `KeeperException` at the `ZKUtil` method entry and logs
+each application; an unmatched step cannot be counted as applied. This
+models a high-level API failure, which can bypass retries inside that API.
+No fault plan has been exercised yet.
+
+The cross-run plan selector uses the observed role, I/O family, path,
 call site, and per-watcher ordinal. A candidate is target-retaining only if
 its postfault target receipt has the **same raw Master `ServerName` and
 manager ID** as the injected event within that run. A healthy seed must show
 that the chosen role selector uniquely selects the intended Master in the
 two-master test before enabling any fault. If the active Master changes, the
 new Master is a different actor and cannot satisfy this same-actor check.
-The current agent is deliberately passive; a fault injector and fresh V2
-checkpoint can be built on these receipts after two original healthy seeds
-validate stable role selection. The old HBASE-08/21/22 coverage results remain
-historical and must not be imported into a new V2 denominator.
+The default run is passive; a fresh V2 checkpoint can use the optional fault
+mode only after two original healthy seeds validate stable role selection.
+The old HBASE-08/21/22 coverage results remain historical and must not be
+imported into a new V2 denominator.
 
 ## Offline checks
 
@@ -56,7 +68,7 @@ historical and must not be imported into a new V2 denominator.
   installed.
 
 The agent source SHA-256 is
-`97b74632ddb8e176ea24ea162ebd88583c81d6561ed78c634cd6c4a6236663a9`.
+`705d653a5aa51e4f9c1cff01185ff3b42aee4d9f920ca10c680fb7139e03b8db`.
 `bash run.sh build` regenerates the small local agent JAR; its timestamped
 archive bytes can differ between builds, so each cluster seed should record
 the JAR's SHA-256 in that seed's manifest.
