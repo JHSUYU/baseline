@@ -5,6 +5,21 @@ calibration of the **already known HDFS-17897**. It is not a new bug claim.
 HDFS-11 is the upstream DataNode key-map guard. HDFS-54 is the distinct
 client-side aggregate check whose false outcome fails the original operation.
 
+**Current checklist status: `running_original_junit_supplement`.** The
+unchanged released `TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]`
+has completed one healthy run (17.72 s) and one strictly matched I/O-fault
+trial (17.57 s): **1/80 effective**, with 31 queued plans. The original test
+reaches the exact line-629 target after the fault; production JaCoCo coverage
+gains four probes over its healthy seed. The original-JUnit runtime
+count is **35.29 s** so far. Its full budget has not been completed. See
+[`original-junit/README.md`](original-junit/README.md) and the node2
+checkpoint for the per-trial evidence.
+
+The separate XOR-2-1 workload below already reproduced the **known**
+HDFS-17897 mechanism. Its six mutants and 213.541 s are retained as an
+adapted control, excluded from the original-JUnit 1/80 count. The bug mark
+`known_HDFS-17897_reproduced` refers to that adapted differential.
+
 ## Selected check and source review
 
 The selected condition is in
@@ -35,7 +50,7 @@ line-629 boolean, the line-669 exception type, and the HDFS-11
 that guard to the JUnit's three DNs via each manager object's identity hash,
 and verifies the key ID equals the client's cached key ID.
 
-## Workload and differential oracle
+## Adapted known-bug control and differential oracle
 
 The workload is a case-local adaptation of the released 3.4.3 original JUnit
 `TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey` (source lines
@@ -73,7 +88,7 @@ only missing trials. Fault mutations are generated from the seed's observed
 post-expiry SASL I/O sites and marked separately from the real key-expiry
 calibration. Trials where the selected check disappears are inconclusive.
 
-## Run and evidence
+## Adapted control run and evidence
 
 ```sh
 python3 campaign.py --max-mutants 6
