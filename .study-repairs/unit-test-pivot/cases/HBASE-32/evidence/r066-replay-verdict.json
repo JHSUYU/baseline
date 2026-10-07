@@ -1,0 +1,46 @@
+{
+  "agent_class_sha256": "edb7757522361622087f3a5be2f7efded71281da4ff27bcf62d82b235de1bdbd",
+  "case": "HBASE-32",
+  "classification": "unreproduced_timeout_candidate",
+  "clean_replay": {
+    "archive_sha256": "cf83df7e703bed0a932f0a37ba0db759e30b5a7e2db70164e489545d925de030",
+    "child_success_count": 600,
+    "elapsed_seconds": 55.82,
+    "exit": 0,
+    "first_scp": {
+      "line": 26028,
+      "message": "2026-10-07T04:55:47,487 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=1221 for ms1144.utah.cloudlab.us,42863,1791348923627 (carryingMeta=false) ms1144.utah.cloudlab.us,42863,1791348923627/CRASHED/regionCount=195/lock=java.util.concurrent.locks.ReentrantReadWriteLock@29bd5a02[Write locks = 1, Read locks = 0], oldState=ONLINE."
+    },
+    "fully_applied": true,
+    "jacoco_exec_sha256": "48e9aec87ddf2c98421a628f1f276fed2cc187ce8146a4fe76a8972541180d8d",
+    "junit": {
+      "failed": 0,
+      "found": 1,
+      "succeeded": 1
+    },
+    "pre_shutdown_aborted_region_servers": [
+      "ms1144.utah.cloudlab.us,42863,1791348923627"
+    ],
+    "raw_log_sha256": "49c36880273d0f9d3d773655d21909618a36050dbea3e2728a4105989e3a63ff",
+    "same_actor_b7": 1,
+    "same_actor_guard": 1,
+    "timeout_cap_seconds": 600
+  },
+  "confirmed_new_bug": false,
+  "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+  "original": {
+    "archive_sha256": "03f5398cd2a66e700b0fccf0c25a8ffa5f2fed2483404a8db6003641dc88bfda",
+    "child_success_count": 404,
+    "first_scp_after_shutdown_hook": true,
+    "fully_applied": true,
+    "pre_shutdown_aborted_region_servers": 1,
+    "raw_log_sha256": "89fbb025b8fb5dcc6c24b1f552c2474e9ec6ede3e63cc0477ab17311adb05dc7",
+    "runner_exit": 124,
+    "same_actor_b7": 1,
+    "timeout_seconds": 360
+  },
+  "plan_sha256": "f5bf883df86a796546fdc550a626bb84bc6128eaea9d887a9905d8de10ab0f98",
+  "reason": "Same plan and selected B7 rethrow reproduce, but the unchanged JUnit finishes and all 600 assignment children complete; the original 360-second stall is scheduling-sensitive and insufficient to establish a new bug.",
+  "reviewed_at_utc": "2026-10-07T04:57:53.790605+00:00",
+  "source_trial": "r066"
+}

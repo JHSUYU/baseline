@@ -224,3 +224,11 @@ clean 600-second replay on node0 in 68.07 seconds with all 600 assignment
 children complete. It remains an unreproduced timeout candidate, not a
 confirmed new bug; `evidence/r058-replay-findings.md` has the raw archive and
 checksums.
+
+Main trial r066 also timed out after one exact no-retry flush RPC exception
+and the same target B7. Its isolated node2 same-plan replay passed the
+unchanged JUnit in 55.82 seconds, completed 600/600 assignment children, and
+promptly scheduled recovery for its one aborted RegionServer. The original
+360-second stall is an unreproduced scheduling-sensitive candidate, not a
+confirmed new bug. `evidence/r066-replay-verdict.json` and the two r066 raw
+archives contain the checksums and full receipts.
