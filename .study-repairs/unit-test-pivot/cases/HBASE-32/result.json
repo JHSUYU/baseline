@@ -524,7 +524,7 @@
       "first_plan_not_imported_into_v3": true
     },
     "role_aware_variation_v3": {
-      "state": "role_f001_strict_timeout_candidate_paused_for_independent_review_and_bounded_replay",
+      "state": "two_strict_role_positive_timeout_candidates_one_bounded_replay_remaining",
       "classification": "distinct_runtime_meta_host_and_actual_secondary_replica_not_s272_exact_replay_or_v1_v2",
       "spec": "work-role-v3/role-plan.json",
       "plan_sha256": "e3e52e9a77b03c047a25fca1d26b405985a9f7c5f931923981a2fbc07f97e1d0",
@@ -535,7 +535,7 @@
       "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
       "healthy_passes_required": 2,
       "healthy_attempts": 2,
-      "fault_attempts": 1,
+      "fault_attempts": 2,
       "fault_attempt_cap": 3,
       "fuzz_budget_admitted": false,
       "s272_exact_replay": false,
@@ -581,7 +581,7 @@
           "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-002"
         }
       ],
-      "strict_role_positive_timeout_candidates": 1,
+      "strict_role_positive_timeout_candidates": 2,
       "fault_runs": [
         {
           "suffix": "role-f001",
@@ -606,6 +606,30 @@
           "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/role-f001",
           "lock_audit": "work-role-v3/logs/role-f001.lock-audit.json",
           "source_audit": "work-role-v3/role-f001-owner-audit.md"
+        },
+        {
+          "suffix": "role-f002",
+          "started_utc": "2026-10-07T13:45:47.964410+00:00",
+          "finished_utc": "2026-10-07T13:56:32.206214+00:00",
+          "elapsed_seconds": 643.45,
+          "exit_code": 124,
+          "original_junit": null,
+          "identity_valid": true,
+          "strict_fault_plan": true,
+          "faults_applied": 2,
+          "same_actor_b7": 1,
+          "replica_id": "9",
+          "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM4MDc3NzA3My45YmM1YmRmMTc2MzdjMjhjYjMxNjJiNzYxYWE3OWI0Zi4",
+          "raw_secondary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM4MDc3NzA3M18wMDA5LjRlMTc2MjUzMjg5OGZlOWNlZWFiNzRiZmI4YzA3MjU1Lg",
+          "classification": "role_aware_semantic_replay_same_lock_wait_pending_second_replay",
+          "new_bug": false,
+          "raw_log_sha256": "9188edf71f1aa153900e51bed096b01cc096e7a94df8e416b88b158df76889d9",
+          "jacoco_sha256": "7092d935d944414ea9777ab6ee1d65489945baa3d3b962c4e82580d809d9f881",
+          "archive_sha256": "87be006806e170160ffa5f98c2ec606e81e69fcfa696b119d3b86aab1952baad",
+          "manifest_sha256": "23775d22f4f0435c8db296d6b282d9bd5fe42adb371e92bdca041b866745214b",
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/role-f002",
+          "lock_audit": "work-role-v3/logs/role-f002.lock-audit.json",
+          "source_audit": "work-role-v3/role-f002-owner-audit.md"
         }
       ]
     }

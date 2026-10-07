@@ -507,3 +507,12 @@ recovery wait lasting until shutdown. Full raw/JaCoCo and the dumps were
 SHA-verified on node1. See `work-role-v3/role-f001-owner-audit.md` for source
 and line-level evidence. This is a **candidate**, `new_bug=false`; subsequent
 V3 runs are paused pending independent review and bounded same-plan replay.
+
+V3 `role-f002`, the first bounded fresh-fixture replay, also strictly reached
+the meta host and the same raw actor (replica 9 in this fixture), then timed
+out at the original JUnit cap (643.45 s including shutdown). Five dumps and
+the lock trace show two active READ holders on the expired meta server node;
+the first carrying-meta SCP was scheduled only after shutdown released them.
+Its raw evidence is SHA-verified on node1. See
+`work-role-v3/role-f002-owner-audit.md`. One bounded V3 semantic replay
+remains; both runs remain candidates and contribute to neither fuzz budget.
