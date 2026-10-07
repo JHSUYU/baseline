@@ -25,8 +25,17 @@ def prepare(relative: str, replacements: list[tuple[str, str]]) -> Path:
 
 def main() -> None:
     zk = prepare("solr/core/src/java/org/apache/solr/cloud/ZkController.java", [
-        ("        if (core == null) {\n          throw new SolrException(ErrorCode.SERVICE_UNAVAILABLE, \"SolrCore is no longer available to register\");",
-         "        baseline.solr06.FeedbackProbe.targetCheck(core == null, \"SOLR-06\", collection, desc.getName());\n        if (core == null) {\n          throw new SolrException(ErrorCode.SERVICE_UNAVAILABLE, \"SolrCore is no longer available to register\");"),
+        ('      assert !(isLeader && replica.getType() == Type.PULL) : "Pull replica became leader!";',
+         '      boolean pullLeader = isLeader && replica.getType() == Type.PULL;\n'
+         '      baseline.solr06.FeedbackProbe.targetCheck(pullLeader, collection, shardId,\n'
+         '          coreZkNodeName, replica.getType().toString(), ourUrl, leaderUrl);\n'
+         '      try {\n'
+         '        assert !pullLeader : "Pull replica became leader!";\n'
+         '      } catch (AssertionError targetFailure) {\n'
+         '        baseline.solr06.FeedbackProbe.targetThrow(targetFailure, collection, shardId,\n'
+         '            coreZkNodeName, replica.getType().toString(), ourUrl, leaderUrl);\n'
+         '        throw targetFailure;\n'
+         '      }'),
     ])
     io_source = "solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java"
     io = prepare(io_source, [

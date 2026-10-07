@@ -38,12 +38,15 @@ def relevant(identity: tuple[str, str]) -> bool:
 
 def rank(identity: tuple[str, str]) -> int:
     operation, path = identity
+    if (operation == "GET_DATA" and
+            "/leaders/" in path and path.endswith("/leader")):
+        return 0
     if path.endswith("/state.json"):
-        return 0 if operation in ("GET_DATA", "EXISTS_WATCH") else 1
+        return 2 if operation in ("GET_DATA", "EXISTS_WATCH") else 3
     if "/terms/" in path:
-        return 2
+        return 4
     if "/leaders/" in path or "/leader_elect/" in path:
-        return 3
+        return 5
     if path.startswith("/collections/pull_replica_test_create_delete"):
         return 4
     if path == "/live_nodes":
@@ -152,6 +155,29 @@ def plan_key(plan: list[str]) -> str:
 def select_next_plan(state: dict) -> list[str]:
     """Interleave feedback descendants with different observed healthy I/O sites."""
     queue = state["queue"]
+    # Direct leader reads immediately precede the selected assertion in the
+    # healthy trace. Keep them represented even when state.json descendants
+    # repeatedly prepend themselves to the feedback queue.
+    if (len(state["trials"]) + 1) % 3 == 1:
+        leader_singles = []
+        tried_shards = Counter()
+        for trial in state["trials"]:
+            first = trial["plan"][0]
+            if "ZkController#getLeaderProps" in first and "/leaders/" in first:
+                shard = re.search(r"/leaders/(shard\d+)/", first)
+                if shard:
+                    tried_shards[shard.group(1)] += 1
+        for index, plan in enumerate(queue):
+            if len(plan) != 1 or "ZkController#getLeaderProps" not in plan[0]:
+                continue
+            fields = plan[0].split("|")
+            shard = re.search(r"/leaders/(shard\d+)/", fields[1])
+            if shard is None:
+                continue
+            leader_singles.append(((tried_shards[shard.group(1)],
+                                    abs(int(fields[2]) - 5), index), index))
+        if leader_singles:
+            return queue.pop(min(leader_singles)[1])
     if (len(state["trials"]) + 1) % 4 or not any(len(p) == 1 for p in queue):
         return queue.pop(0)
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Graph-free I/O-exception and coverage-guided campaign for SOLR-10/39/40."""
+"""Exact I/O and coverage feedback for the SOLR-06 independent campaign."""
 
 from __future__ import annotations
 

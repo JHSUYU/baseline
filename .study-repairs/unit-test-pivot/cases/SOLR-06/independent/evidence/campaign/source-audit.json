@@ -1,0 +1,93 @@
+{
+  "budget": {
+    "max_faults": 8,
+    "max_trials": 80
+  },
+  "case_id": "SOLR-06",
+  "cluster_nodes": 2,
+  "conclusion": "The selected PULL-leader assertion was reached after strict ordered I/O faults, but no trial threw that assertion; unrelated JUnit failures do not establish the selected bug. This is bounded by the observed SolrZkClient I/O hooks, the original test, 80 trials, and at most eight planned faults.",
+  "coverage": {
+    "new_branches": 227,
+    "new_methods": 47,
+    "new_unmodified_branches": 219,
+    "new_unmodified_methods": 47
+  },
+  "coverage_eligible_trials": 60,
+  "eight_fault_strict_target_retaining": false,
+  "eight_fault_trial_attempted": true,
+  "elapsed_seconds": {
+    "campaign_trials": 3644.904,
+    "first_healthy_to_campaign_finish_wall": 3824.713,
+    "healthy_jvm": 39.373,
+    "measured_jvm_total": 3684.277
+  },
+  "healthy_instrumented_passed": {
+    "failures": 0,
+    "ignored": 0,
+    "run": 2
+  },
+  "healthy_original_passed": {
+    "failures": 0,
+    "ignored": 0,
+    "run": 2
+  },
+  "healthy_pull_checks": 12,
+  "healthy_target_checks": 16,
+  "junit_failure_classification": {
+    "HTTP 400 instead of 200 in test collection operation": 15,
+    "HTTP 500 instead of 200 in test collection operation": 4,
+    "MiniSolrCloudCluster startup failure": 2,
+    "ZooKeeper ConnectionLoss surfaced to JUnit": 11,
+    "test framework leaked-thread report": 2,
+    "test framework unclosed-object report": 2,
+    "test framework zombie-thread report": 2
+  },
+  "junit_failure_events": 38,
+  "junit_nonzero_trials": 31,
+  "junit_repeat_iterations": 2,
+  "max_strict_target_retaining_faults": 7,
+  "original_junit": "TestPullReplica#testCreateDelete",
+  "original_source_file": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+  "provenance": {
+    "classpath_has_graphchecker_or_causynth": false,
+    "compiled_target_class_sha256": "e7b5faa70c08c71c3ae64f5905bce9881bf6849e9951eb08abd2598446fc3597",
+    "compiled_target_rebuilt_byte_identical": true,
+    "generated_source_rebuilt_byte_identical": true,
+    "generated_source_sha256": "2f7bc90cc4bf6461b828e0f61d25b02c3f5fba9dd30b9d2f06fdc1469167ccbd",
+    "original_junit_class_matches_instrumented": true,
+    "original_source_sha256": "3492f43225fb1ca0e4f5254082fe4627c31f5c84ad7d60f5171d08f388c2a41e",
+    "weaver_sha256": "02fefbded9d0a208375881df8d492a3cf752bd3169b167ef8ab5112a1e681938"
+  },
+  "raw_trace_audit": {
+    "audit": "all saved trial claims match raw trace",
+    "audited_trials": 80,
+    "max_applied_faults": 7,
+    "strict_injections": 72,
+    "target_after_fault": {
+      "SOLR-06": 61
+    },
+    "target_exception_candidates": {
+      "SOLR-06": 0
+    }
+  },
+  "recent_trials_no_novelty": [
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80
+  ],
+  "selected_assertion_exception_events": 0,
+  "selected_assertion_guard_taken": false,
+  "source_check": "assert !(isLeader && replica.getType() == Type.PULL) : \"Pull replica became leader!\";",
+  "source_line": 1315,
+  "source_path_context": "register reads elected leader URL via getLeader, compares it with this core URL, then asserts that a PULL replica is not that leader before opening the core",
+  "source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "stop_reason": "budget_80_with_no_recent_coverage_or_io_novelty",
+  "target_retaining_trials_without_coverage": [
+    30
+  ]
+}
