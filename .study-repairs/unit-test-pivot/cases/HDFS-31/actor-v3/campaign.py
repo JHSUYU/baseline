@@ -104,16 +104,94 @@ def exact_applied(sequence: list[dict], trace: list[dict]) -> tuple[bool, list[d
            or a.get("serviceObjectId") != applied[0].get("serviceObjectId")
            or a.get("serviceObjectId", -1) <= 0 for a in applied):
         return False, applied
+    if (applied[0].get("dnUuidRaw") not in (None, "", "null") and
+            any(a.get("dnUuidRaw") != applied[0].get("dnUuidRaw")
+                for a in applied)):
+        return False, applied
+    if any(a.get("dnUuidRaw") == "null" and not
+           pre_registration_actor_proof(trace, a) for a in applied):
+        return False, applied
     return True, applied
 
 
-def same_target(row: dict, applied: list[dict], last_seq: int) -> bool:
+def actor_lineage_proof(trace: list[dict], fault: dict,
+                        target: dict | None = None) -> bool:
+    """Join a response to the actual DataNode object and BP service.
+
+    The probe registers the DataNode before its BP thread starts.  Its run-local
+    object and service IDs remain stable while Hadoop assigns the raw UUID.
+    Reject a reused actor key, a different service, or any cross-episode join.
+    """
+    if (fault.get("actorKey") in (None, "unbound")
+            or fault.get("dnObjectId", -1) <= 0
+            or fault.get("serviceObjectId", -1) <= 0
+            or not fault.get("endpointRaw")
+            or fault.get("actorNamenodeRaw") != fault.get("endpointRaw")):
+        return False
+    actor = fault["actorKey"]
+    registrations = [r for r in trace if r.get("event") == "ACTOR_REGISTERED"
+                     and r.get("actorKey") == actor]
+    if (len(registrations) != 1 or registrations[0]["seq"] >= fault["seq"]
+            or registrations[0].get("dnObjectId") != fault["dnObjectId"]
+            or registrations[0].get("startupEpisode", -1) <= 0
+            or registrations[0].get("dnSlot", -1) <= 0):
+        return False
+    registration = registrations[0]
+    entered = [r for r in trace if r.get("event") == "ACTOR_ENTER"
+               and r.get("actorKey") == actor and r["seq"] < fault["seq"]]
+    if len(entered) != 1 or not all(
+            entered[0].get(key) == value for key, value in (
+                ("dnObjectId", fault["dnObjectId"]),
+                ("serviceObjectId", fault["serviceObjectId"]),
+                ("startupEpisode", registration["startupEpisode"]),
+                ("dnSlot", registration["dnSlot"]),
+                ("namenodeEndpointRaw", fault["endpointRaw"]))):
+        return False
+    if target is None:
+        return True
+    if (target["seq"] <= fault["seq"] or target.get("actorKey") != actor
+            or target.get("dnObjectId") != fault["dnObjectId"]
+            or target.get("startupEpisode") != registration["startupEpisode"]
+            or target.get("dnSlot") != registration["dnSlot"]
+            or target.get("dnUuidRaw") in (None, "", "null")):
+        return False
+    if (target.get("event") == "DIRECT_TARGET_CHECK"
+            and target.get("serviceObjectId") not in (None, fault["serviceObjectId"])):
+        return False
+    if any(r.get("event") == "ACTOR_ENTER" and r.get("actorKey") == actor
+           and fault["seq"] < r["seq"] <= target["seq"] for r in trace):
+        return False
+    if not any(r.get("event") == "POOL_ADD" and r["seq"] < target["seq"]
+               and r.get("actorKey") == actor
+               and r.get("dnObjectId") == fault["dnObjectId"]
+               and r.get("serviceObjectId") == fault["serviceObjectId"]
+               and r.get("blockPoolIdRaw") == target.get("blockPoolIdRaw")
+               for r in trace):
+        return False
+    return True
+
+
+def pre_registration_actor_proof(trace: list[dict], fault: dict,
+                                 target: dict | None = None) -> bool:
+    return fault.get("dnUuidRaw") == "null" and actor_lineage_proof(
+        trace, fault, target)
+
+
+def same_target(row: dict, applied: list[dict], last_seq: int,
+                trace: list[dict], policy: str) -> bool:
     first = applied[0]
     if (row["seq"] <= last_seq or row.get("actorKey") != first.get("actorKey")
             or row.get("dnObjectId") != first.get("dnObjectId")
             or not row.get("dnUuidRaw")
-            or row.get("dnUuidRaw") != first.get("dnUuidRaw")
             or not row.get("blockPoolIdRaw")):
+        return False
+    if policy == "actor-continuity-v4":
+        if not actor_lineage_proof(trace, first, row):
+            return False
+        if (row.get("dnUuidRaw") != first.get("dnUuidRaw")
+                and first.get("dnUuidRaw") != "null"):
+            return False
+    elif row.get("dnUuidRaw") != first.get("dnUuidRaw"):
         return False
     if row["event"] == "DIRECT_TARGET_CHECK" and row.get("servicePresent"):
         return (row.get("serviceObjectId") == first.get("serviceObjectId")
@@ -122,7 +200,8 @@ def same_target(row: dict, applied: list[dict], last_seq: int) -> bool:
     return row.get("priorPoolOwnerSameDnBp") is True
 
 
-def postfault(trace: list[dict], applied: list[dict], exact: bool) -> tuple[list[dict], list[dict]]:
+def postfault(trace: list[dict], applied: list[dict], exact: bool,
+              policy: str = "legacy-v3") -> tuple[list[dict], list[dict]]:
     if not exact or not applied:
         return [], []
     last_seq = applied[-1]["seq"]
@@ -130,10 +209,12 @@ def postfault(trace: list[dict], applied: list[dict], exact: bool) -> tuple[list
                  and r.get("actorKey") == applied[0].get("actorKey")
                  and r.get("dnObjectId") == applied[0].get("dnObjectId")
                  and r.get("serviceObjectId") == applied[0].get("serviceObjectId")}
-    checks = [r for r in target_checks(trace) if same_target(r, applied, last_seq)
+    checks = [r for r in target_checks(trace) if same_target(
+              r, applied, last_seq, trace, policy)
               and r.get("blockPoolIdRaw") in linked_bp]
     throws = [r for r in trace if r["event"] == "DIRECT_TARGET_THROW"
-              and r.get("caseId") == CASE and same_target(r, applied, last_seq)
+              and r.get("caseId") == CASE and same_target(
+                  r, applied, last_seq, trace, policy)
               and any(c["seq"] < r["seq"] and c.get("actorKey") == r.get("actorKey")
                       and c.get("dnObjectId") == r.get("dnObjectId")
                       and c.get("dnUuidRaw") == r.get("dnUuidRaw")
@@ -226,7 +307,8 @@ def summarize(anchor: Path, state: dict, item: dict, run: Path) -> tuple[dict, l
         raise RuntimeError("original JUnit method changed")
     trace = rows(run / "runtime_trace.jsonl")
     exact, applied = exact_applied(item["sequence"], trace)
-    checks, throws = postfault(trace, applied, exact)
+    policy = state.get("identity_rule_migration", {}).get("new_policy", "legacy-v3")
+    checks, throws = postfault(trace, applied, exact, policy)
     valid = exact and bool(checks)
     covered_now = {k: covered(run, k) for k in COVERAGE}
     gains = {k: len(covered_now[k] - set(state["coverage"][k])) if valid else 0
@@ -249,6 +331,7 @@ def summarize(anchor: Path, state: dict, item: dict, run: Path) -> tuple[dict, l
                "same_dn_bp_post_target": len(checks), "target_exceptions_after_fault": len(throws),
                "target_exceptions": throws, "target_exception_signatures": throw_signatures,
                "target_exceptions_with_novel_signature": len(novel),
+               "identity_rule": policy,
                "bug_mark": "candidate_needs_replay_source_review" if novel else "none",
                "valid_for_feedback": valid, "coverage_gain": gains,
                "new_io_families": new_io}
@@ -257,7 +340,8 @@ def summarize(anchor: Path, state: dict, item: dict, run: Path) -> tuple[dict, l
 
 def mutate(state: dict, item: dict, trace: list[dict]) -> None:
     exact, applied = exact_applied(item["sequence"], trace)
-    if not postfault(trace, applied, exact)[0] or len(item["sequence"]) >= state["budget"]["max_faults"]:
+    policy = state.get("identity_rule_migration", {}).get("new_policy", "legacy-v3")
+    if not postfault(trace, applied, exact, policy)[0] or len(item["sequence"]) >= state["budget"]["max_faults"]:
         return
     seen = set(state["completed"]) | {x["id"] for x in state["queue"]}
     seen.add(item["id"])

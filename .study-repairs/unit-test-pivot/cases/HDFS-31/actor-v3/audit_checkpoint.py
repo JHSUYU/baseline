@@ -32,8 +32,63 @@ def same(row: dict, other: dict, keys: tuple[str, ...]) -> bool:
     return all(row.get(k) == other.get(k) for k in keys)
 
 
+def actor_lineage_continuity(trace: list[dict], fault: dict,
+                             target: dict | None = None) -> bool:
+    """Independently prove one DataNode/BP-service/NN-endpoint lineage."""
+    if (fault.get("actorKey") in (None, "unbound")
+            or fault.get("dnObjectId", -1) <= 0
+            or fault.get("serviceObjectId", -1) <= 0
+            or fault.get("actorNamenodeRaw") != fault.get("endpointRaw")
+            or not fault.get("endpointRaw")):
+        return False
+    actor = fault["actorKey"]
+    registrations = [r for r in trace if r.get("event") == "ACTOR_REGISTERED"
+                     and r.get("actorKey") == actor]
+    if len(registrations) != 1:
+        return False
+    registration = registrations[0]
+    if (registration["seq"] >= fault["seq"]
+            or registration.get("dnObjectId") != fault["dnObjectId"]
+            or registration.get("startupEpisode", -1) <= 0
+            or registration.get("dnSlot", -1) <= 0):
+        return False
+    enters = [r for r in trace if r.get("event") == "ACTOR_ENTER"
+              and r.get("actorKey") == actor and r["seq"] < fault["seq"]]
+    if len(enters) != 1 or not all(enters[0].get(key) == expected for key, expected in (
+            ("dnObjectId", fault["dnObjectId"]),
+            ("serviceObjectId", fault["serviceObjectId"]),
+            ("startupEpisode", registration["startupEpisode"]),
+            ("dnSlot", registration["dnSlot"]),
+            ("namenodeEndpointRaw", fault["endpointRaw"]))):
+        return False
+    if target is None:
+        return True
+    if (target["seq"] <= fault["seq"]
+            or not same(target, fault, ("actorKey", "dnObjectId"))
+            or target.get("startupEpisode") != registration["startupEpisode"]
+            or target.get("dnSlot") != registration["dnSlot"]
+            or target.get("dnUuidRaw") in (None, "", "null")):
+        return False
+    if (target.get("event") == "DIRECT_TARGET_CHECK" and
+            target.get("serviceObjectId") not in (None, fault["serviceObjectId"])):
+        return False
+    if any(r.get("event") == "ACTOR_ENTER" and r.get("actorKey") == actor
+           and fault["seq"] < r["seq"] <= target["seq"] for r in trace):
+        return False
+    return any(r.get("event") == "POOL_ADD" and r["seq"] < target["seq"]
+               and same(r, fault, ("actorKey", "dnObjectId", "serviceObjectId"))
+               and r.get("blockPoolIdRaw") == target.get("blockPoolIdRaw")
+               for r in trace)
+
+
+def pre_registration_continuity(trace: list[dict], fault: dict,
+                                target: dict | None = None) -> bool:
+    return fault.get("dnUuidRaw") == "null" and actor_lineage_continuity(
+        trace, fault, target)
+
+
 def inspect(anchor: Path, state: dict, item: dict, saved: dict,
-            healthy_signatures: set[str]) -> dict:
+            healthy_signatures: set[str], policy: str) -> dict:
     issues: list[str] = []
     run = anchor / "runs" / item["id"] / "attempt-1"
     manifest_path = run / "manifest.json"
@@ -65,14 +120,19 @@ def inspect(anchor: Path, state: dict, item: dict, saved: dict,
                     and r.get("peerRole") == "NN0"}
         exact = (len(endpoint) == 1 and None not in endpoint and "" not in endpoint
                  and first.get("actorKey") not in (None, "unbound")
-                 and first.get("dnUuidRaw") not in (None, "", "null")
+                 and (first.get("dnUuidRaw") not in (None, "", "null")
+                      or pre_registration_continuity(trace, first))
                  and first.get("serviceObjectId", -1) > 0)
         for row in applied:
             if (row.get("marker") != MARKER or row.get("peerRole") != "NN0"
                     or row.get("endpointRaw") not in endpoint
                     or row.get("actorNamenodeRaw") != row.get("endpointRaw")
-                    or not same(row, first, ("actorKey", "dnObjectId", "dnUuidRaw",
-                                             "serviceObjectId"))):
+                    or not same(row, first, ("actorKey", "dnObjectId",
+                                             "serviceObjectId"))
+                    or (first.get("dnUuidRaw") not in (None, "", "null")
+                        and row.get("dnUuidRaw") != first.get("dnUuidRaw"))
+                    or (row.get("dnUuidRaw") == "null" and
+                        not pre_registration_continuity(trace, row))):
                 exact = False
                 break
             if not any(o.get("event") == "FAULT_POINT_OBSERVED" and o["seq"] < row["seq"]
@@ -92,8 +152,15 @@ def inspect(anchor: Path, state: dict, item: dict, saved: dict,
         for row in trace:
             if (row.get("event") != "DIRECT_TARGET_CHECK"
                     or row.get("caseId") != CASE or row["seq"] <= last["seq"]
-                    or not same(row, first, ("actorKey", "dnObjectId", "dnUuidRaw"))
+                    or not same(row, first, ("actorKey", "dnObjectId"))
                     or not row.get("blockPoolIdRaw")):
+                continue
+            if policy == "actor-continuity-v4":
+                if (not actor_lineage_continuity(trace, first, row)
+                        or (row.get("dnUuidRaw") != first.get("dnUuidRaw")
+                            and first.get("dnUuidRaw") != "null")):
+                    continue
+            elif row.get("dnUuidRaw") != first.get("dnUuidRaw"):
                 continue
             if not any(t.get("event") == "DIRECT_TRANSFER" and t.get("caseId") == CASE
                        and t["seq"] < row["seq"] and same(t, row, BLOCK_FIELDS)
@@ -129,7 +196,10 @@ def inspect(anchor: Path, state: dict, item: dict, saved: dict,
     novel = signatures - healthy_signatures
     if len(novel) != saved.get("target_exceptions_with_novel_signature"):
         issues.append("novel target exception signatures differ from checkpoint")
-    return {"plan_id": item["id"], "exact": exact, "effective": bool(checks),
+    if saved.get("identity_rule", "legacy-v3") != policy:
+        issues.append("identity rule version differs from migration boundary")
+    return {"plan_id": item["id"], "identity_rule": policy,
+            "exact": exact, "effective": bool(checks),
             "postfault_target_checks": len(checks), "selected_throws": len(throws),
             "novel_signatures": sorted(novel), "junit_exit": manifest.get("returncode"),
             "elapsed_seconds": manifest.get("elapsed_seconds"), "issues": issues}
@@ -153,9 +223,16 @@ def audit(anchor: Path) -> dict:
     if healthy_signatures != set(receipt["seeds"][1]["throw_signatures"]):
         issues.append("healthy target throw signatures disagree")
     trials = []
-    for plan_id in ids:
+    migration = state.get("identity_rule_migration")
+    if migration and (migration.get("new_policy") != "actor-continuity-v4"
+                      or not 0 <= migration.get("boundary_completed", -1) <= len(ids)):
+        issues.append("invalid versioned identity-rule migration")
+    for index, plan_id in enumerate(ids):
         entry = state["completed"][plan_id]
-        trial = inspect(anchor, state, entry["item"], entry["result"], healthy_signatures)
+        policy = ("actor-continuity-v4" if migration and
+                  index >= migration["boundary_completed"] else "legacy-v3")
+        trial = inspect(anchor, state, entry["item"], entry["result"],
+                        healthy_signatures, policy)
         trials.append(trial)
         issues.extend(f"{plan_id}: {issue}" for issue in trial["issues"])
     counts = Counter(t["effective"] for t in trials)

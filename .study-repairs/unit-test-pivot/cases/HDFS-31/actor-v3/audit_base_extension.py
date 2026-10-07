@@ -73,7 +73,8 @@ def main() -> None:
         item = state["completed"][identity]["item"]
         result = state["completed"][identity]["result"]
         exact, applied = campaign.exact_applied(item["sequence"], trace)
-        checks, _ = campaign.postfault(trace, applied, exact)
+        checks, _ = campaign.postfault(
+            trace, applied, exact, result.get("identity_rule", "legacy-v3"))
         if not exact or not checks or not result["valid_for_feedback"]:
             raise RuntimeError(f"last-eight actor gate changed: {identity}")
         same_actor_io = []
