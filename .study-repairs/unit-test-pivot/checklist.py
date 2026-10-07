@@ -298,7 +298,7 @@ def main() -> None:
             json.dumps({"schema_version": 2, "original_selection_count": 102,
                         "added_known_issue_count": 2, "count": len(items),
                         "rows": items},
-                       ensure_ascii=False, indent=2) + "\n")
+                       ensure_ascii=False, indent=2, sort_keys=True) + "\n")
         atomic_write_text(HERE / "checklist102.md", markdown(items))
         print(f"rendered {len(items)} rows")
 
