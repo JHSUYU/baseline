@@ -119,8 +119,9 @@ candidate. All three remain outside the new 80/128 effective-trial budget.
 `successor.py` and `early_quiesce.py` are prepared offline for the running
 node1 campaign. Do not replace its running `campaign.py` or change its JVM.
 At the old controller's natural complete boundary (12-hour wall cap or attempt cap),
-first confirm that its tmux command has exited, the last trial has a full
-manifest and trace, and `checkpoint.json` has `active: null`. The successor
+first confirm that its tmux command has exited and the last completed trial
+has a full manifest and trace. The checkpoint may have `active: null`, or
+one reserved plan with no driver, JUnit, trace, manifest, or Java child. The successor
 also takes `campaign.lock` nonblocking; it refuses to touch the checkpoint
 while the old controller holds that lock. It verifies the old `campaign.py`
 SHA-256, the last completed trial's plan, manifest, and raw trace SHA-256.

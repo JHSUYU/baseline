@@ -171,6 +171,23 @@ def verify_boundary(state: dict, original: bytes, old_source_sha: str) -> str:
         raise RuntimeError("old controller ended with a non-resumable outcome")
     if last_line != expected:
         raise RuntimeError("old controller has no matching natural-boundary log")
+    if state["active"] is not None:
+        directory = HERE / "runs" / ("trial-%04d" % (len(state["completed"]) + 1))
+        absent = ("driver.log", "junit.log", "runtime_trace.jsonl", "manifest.json")
+        if (any((directory / name).exists() for name in absent)
+                or campaign.child_java_started(directory)
+                or campaign.previous_runner_alive(directory)):
+            raise RuntimeError("natural stop left a started trial; no safe handoff")
+        active = state["active"]
+        expected_plan = "".join("\t".join(str(item[key]) for key in
+                                           ("marker", "siteId", "sourceKey",
+                                            "occurrenceAddress", "hitOrdinal", "faultType"))
+                                + "\t" + item["filePhase"] + "\n"
+                                for item in active["sequence"])
+        plan = directory / "fault-plan.tsv"
+        if not plan.is_file() or plan.read_text() != expected_plan:
+            raise RuntimeError("natural stop left an incomplete reserved plan")
+        return "natural_unstarted_reserved_plan"
     return "natural"
 
 
@@ -179,8 +196,8 @@ def migrated(state: dict, boundary: str) -> dict:
         raise RuntimeError("unexpected campaign checkpoint schema/cases")
     if boundary == "natural" and state["active"] is not None:
         raise RuntimeError("natural handoff requires an inactive checkpoint")
-    if boundary == "early_unstarted_reserved_plan" and state["active"] is None:
-        raise RuntimeError("early handoff requires a reserved active plan")
+    if boundary.endswith("unstarted_reserved_plan") and state["active"] is None:
+        raise RuntimeError("reserved-plan handoff requires an active plan")
     if not state["queue"] and state["active"] is None:
         raise RuntimeError("no queued sequences left for successor")
     if state.get("successor_scheduler"):
