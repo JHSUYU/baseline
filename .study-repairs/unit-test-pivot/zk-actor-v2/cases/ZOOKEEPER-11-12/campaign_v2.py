@@ -135,7 +135,7 @@ def choose(state):
         # poor for target-directed mutation. Keep one exploration turn in ten
         # so a different second fault can still expose a recovery path.
         repeated_loss = len(job['plan']) > 1 and losing_prefixes.get(job['plan'][0], 0) >= 3
-        penalty = (2 if state['selected_count'] % 10 == 9 else 12) if repeated_loss else 0
+        penalty = (0 if state['selected_count'] % 10 == 9 else 1000) if repeated_loss else 0
         ranked.append(4 * job['gain'] + min(job['wait'], 40) / 10
                       + min(len(job['plan']), 6) * 2 + deficit / 20
                       + rng.random() / 8 - penalty)
