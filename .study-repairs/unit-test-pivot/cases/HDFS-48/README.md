@@ -23,11 +23,20 @@ observed HDFS IPC response-read exceptions before that
 guard, records production JaCoCo coverage and target identity, and resumes
 from an atomic checkpoint in `independent/evidence`. A fault trial is counted
 as target-relevant only when the exact ordered injection was applied and the
-selected rename-preparation guard ran afterward. The campaign is still running; a
+selected rename-preparation guard ran afterward. The campaign is complete; a
 passing healthy check or a test failure elsewhere does not establish a bug.
 The first checkpoint reached 80 exact target-retaining trials in 132 attempts,
 with zero selected target throws. Trial 125 added nine HDFS production coverage
 probes within the last eight effective trials, so the same checkpoint resumed
 under the predefined extension to 128 effective trials, ten faults, 240 total
-attempts, and 14,400 seconds. No completed trial was rerun; each attempt
-remains in the ledger.
+attempts, and 14,400 seconds. It stopped after 128 target-retaining trials in
+183 attempts over 4,357.59 seconds, with 179 fully applied fault sequences,
+2,069 production coverage gains, and zero throws at the selected check. No
+completed trial was rerun; each attempt remains in the ledger.
+
+Source review confirms the selected `/dir1/foo` check occurs while the rename
+is prepared, before the test's forced destination failure and rollback. Of 57
+JUnit failures, 51 lost the selected check after injection; the other six
+reached it without its `IllegalStateException`. Trial 001 reports the injected
+IPC response exception directly. These are recorded as operation failures,
+not as a detected bug at this target.
