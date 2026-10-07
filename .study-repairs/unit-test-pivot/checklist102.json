@@ -379828,15 +379828,15 @@
       "check_code": "if (session == null || session.isClosing()) {\nthrow new KeeperException.SessionExpiredException();",
       "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void setOwner(long,java.lang.Object)>#u12",
       "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
-      "cluster_test": "org.apache.zookeeper.test.QuorumTest#testSessionMoved",
-      "status": "inconclusive_budget_unmet",
+      "cluster_test": "org.apache.zookeeper.test.QuorumTest#testSessionMoved; org.apache.zookeeper.test.QuorumTest#testSessionMovedWithMultiOp; org.apache.zookeeper.test.SessionUpgradeTest#testUpgradeWithEphemeralOnFollower",
+      "status": "quality_complete",
       "target_reached": true,
-      "fault_trials": 666,
-      "strict_injections": 663,
-      "fully_applied_trials": 663,
-      "target_after_fault": 64,
+      "fault_trials": 930,
+      "strict_injections": 922,
+      "fully_applied_trials": 922,
+      "target_after_fault": 174,
       "coverage_gain": 3,
-      "elapsed_seconds": 2785.142,
+      "elapsed_seconds": 7250.932,
       "bug_mark": "none",
       "evidence": {
         "historical_result": "result.pre-actor-v2.json",
@@ -379857,9 +379857,9 @@
         "pre_io_trial_table": "../../zk-actor-v2/cases/ZOOKEEPER-03/evidence/pre-io-trials.csv"
       },
       "actor_identity": "actual moved-session ClientCnxn/NIOServerCnxn, peer SID, leader owner object, and raw session ID",
-      "all_stages_elapsed_seconds": 3055.906,
-      "all_stages_selected_fault_trials": 713,
-      "budget_denominator": "post-response stage exact ordered faults and same moved-session/leader owner guard after last fault",
+      "all_stages_elapsed_seconds": 7250.932,
+      "all_stages_selected_fault_trials": 930,
+      "budget_denominator": "Each original JUnit/fault family has its own 80 effective trials; a trial is effective only if every ordered fault applies and the same raw-session/leader/owner target follows the final fault. The SessionUpgrade seed combines only its own pilot, child, and deep stages.",
       "campaign_budget": 80,
       "campaign_finished": true,
       "cluster_nodes": 5,
@@ -379868,17 +379868,20 @@
         "extended": false
       },
       "coverage_feedback": "ASM production source-line IDs in instrumented methods",
-      "elapsed_measurement": "sum of original-JUnit JVM times across two separate actor-aware fault-family stages",
-      "fault_model": "ordered IOException before bound socket I/O and, in a separate stage, after complete client write/server response",
+      "coverage_gain_scope": "Top-level legacy value belongs to the historical post-response stage; SessionUpgrade production-line gains are reported per phase.",
+      "elapsed_measurement": "sum of original-JUnit elapsed times in phase audits; excludes shared-lock waits and setup/archival outside measured JUnit processes",
+      "fault_model": "Ordered IOException at observed, actor-bound socket I/O; the QuorumTest post-response fault family is separately counted.",
       "frontier_audit": {
         "audit": "evidence/frontier-audit.json",
+        "historical_audit_scope": "snapshot before the 63-plan supplement",
+        "multiop_pending": 0,
         "new_observed_actor_bound_selectors": 0,
         "post_response_pending": 0,
-        "pre_io_pending_ordered_plans": 63,
-        "pre_io_pending_unique_last_selectors": 32,
+        "pre_io_pending_before_supplement": 63,
         "pre_io_pending_last_selectors_previously_tested": 32,
-        "pre_io_status": "attempt_cap",
-        "multiop_pending": 0,
+        "pre_io_pending_ordered_plans": 0,
+        "pre_io_pending_unique_last_selectors": 32,
+        "pre_io_status": "queue_exhausted_after_supplement",
         "scope_limit": "The 63 untried pre-I/O plans are new ordered fault histories at previously tested exact I/O selectors; this is not full sequence-space exhaustion. Unbound startup file I/O and pre-session socket I/O lack the required runtime actor identity."
       },
       "graphchecker_or_skeleton_runtime_dependency": false,
@@ -379888,7 +379891,10 @@
       ],
       "io_family_gain": {
         "post_response": 0,
-        "pre_io": 0
+        "pre_io": 0,
+        "session_upgrade_child": 3,
+        "session_upgrade_deep": 12,
+        "session_upgrade_pilot": 3
       },
       "known_bug": false,
       "legacy_coarse_actor": {
@@ -379908,13 +379914,14 @@
         "trial_elapsed_seconds": 535.583
       },
       "limitations": [
-        "The two fault families have separate agents, healthy seeds, and feedback; their effective denominators are not pooled to satisfy the 80-trial stage budget.",
+        "The historical two QuorumTest fault families have separate agents, healthy seeds, and feedback; their effective denominators are not pooled to satisfy the 80-trial stage budget.",
         "This result covers the original selected embedded-cluster JUnit, not every workload.",
         "ASM line feedback covers instrumented production methods, not the full codebase.",
-        "The original MultiOp JUnit extension is a separate workload seed and budget; its 22 effective trials do not retroactively complete either older 80-effective denominator."
+        "The original MultiOp JUnit extension is a separate workload seed and budget; its 22 effective trials do not retroactively complete either older 80-effective denominator.",
+        "The SessionUpgrade seed uses only observed actor-bound socket I/O and ASM source-line feedback in selected production methods; it does not enumerate all possible distributed schedules or unbound startup I/O."
       ],
       "max_faults": 8,
-      "methodology": "original_cluster_junit_actor_v2_asm_line_feedback_two_fault_families",
+      "methodology": "original_embedded_cluster_junit_actor_bound_io_exception_and_asm_source_line_feedback",
       "multiop_original_junit_extension": {
         "bug_mark": "none",
         "campaign_audit": "multiop-extension/evidence/campaign-independent-audit.json",
@@ -379963,7 +379970,7 @@
       },
       "new_bug": false,
       "original_source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
-      "post_fault_target_reach_trials": 64,
+      "post_fault_target_reach_trials": 174,
       "post_response_stage": {
         "coverage_gain": 3,
         "effective": 27,
@@ -379984,7 +379991,21 @@
         "selected_attempts": 480,
         "status": "attempt_cap"
       },
-      "quality_complete": false,
+      "pre_io_supplement": {
+        "audit": "preio-supplement/evidence/audit-summary.json",
+        "denominator_note": "separate from historical 480-selected/37-effective pre-I/O stage",
+        "effective": 8,
+        "elapsed_seconds": 2571.393,
+        "fully_applied": 62,
+        "original_junit": "org.apache.zookeeper.test.QuorumTest#testSessionMoved",
+        "raw_archive": "preio-supplement/evidence/zk03-preio-supplement-raw.tar.gz",
+        "raw_archive_sha256": "1f199b98262066ff7c15063dea71121a36a3f99f9792c568af61f46dabed7d3d",
+        "selected_attempts": 63,
+        "selected_target_throws": 0,
+        "sequence_stats": "preio-supplement/evidence/sequence-stats.json",
+        "status": "queue_exhausted"
+      },
+      "quality_complete": true,
       "quorum_response_extension": {
         "effective": 0,
         "effective_coverage_gain": 0,
@@ -380017,10 +380038,63 @@
         "selected_trials": 7,
         "status": "pilot_complete_no_effective"
       },
-      "reason": "Original ten-handoff JUnit stages remain 37/80 and 27/80 effective. The new original MultiOp JUnit stage reached 22/80 effective, then its observed interguard queue exhausted; four additional pre-first I/O faults all lost the target. No selected SessionExpiredException was observed. The effective budget is unmet, so no bug-free or quality-complete claim is made.",
+      "reason": "All 63 pending pre-I/O plans were tested (8 target-retaining); the independent SessionUpgrade seed reached 80/80 effective actor-bound postfault target trials in 154 selected runs. No selected target SessionExpiredException occurred. The defined seed budget was met.",
       "selected_target_throw_events": 0,
-      "stop_reason": "multiop_observed_io_queue_exhausted_before_effective_budget",
-      "trial_results_scope": "actor_v2_original_junit_two_separate_fault_families",
+      "session_upgrade_original_junit_extension": {
+        "child_elapsed_seconds": 78.366,
+        "child_selected": 13,
+        "child_strict_injections": 13,
+        "child_target_retaining": 7,
+        "cluster_nodes": 5,
+        "deep_elapsed_seconds": 1500.529,
+        "deep_selected": 131,
+        "deep_selected_cap": 256,
+        "deep_strict_injections": 129,
+        "deep_target_retaining": 70,
+        "denominator_note": "new original JUnit seed; not pooled with older QuorumTest stages",
+        "expected_local_tracker_guards_ignored_per_run": [
+          2,
+          2
+        ],
+        "graphchecker_runtime_dependency": false,
+        "healthy_elapsed_seconds": 15.982,
+        "healthy_global_target_guards_per_run": [
+          1,
+          1
+        ],
+        "healthy_runs": 2,
+        "independent_audit": "session-upgrade-seed/evidence/deep-independent-audit.json",
+        "max_faults": 8,
+        "method_note": "session-upgrade-seed/README.md",
+        "original_junit": "org.apache.zookeeper.test.SessionUpgradeTest#testUpgradeWithEphemeralOnFollower",
+        "original_source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+        "pilot_elapsed_seconds": 44.738,
+        "pilot_selected": 10,
+        "pilot_strict_injections": 10,
+        "pilot_target_retaining": 3,
+        "production_line_gain_by_phase": {
+          "child": 1,
+          "deep": 0,
+          "pilot": 0
+        },
+        "raw_child": "session-upgrade-seed/evidence/zk03-upgrade-recovery-children-raw.tar.gz",
+        "raw_deep": "session-upgrade-seed/evidence/zk03-upgrade-deep-raw.tar.gz",
+        "raw_deep_sha256": "ee783ec141d1c2b6ebf7a40e12999500682004a4a5cc1cc5c85cd5062d7cd139",
+        "raw_health": "session-upgrade-seed/evidence/zk03-upgrade-health-evidence.tar.gz",
+        "raw_pilot": "session-upgrade-seed/evidence/zk03-upgrade-pilot-raw.tar.gz",
+        "seed_effective": 80,
+        "seed_effective_budget": 80,
+        "selected_target_throws": 0,
+        "status": "effective_budget_80_reached",
+        "target_window_io_family_gain_by_phase": {
+          "child": 3,
+          "deep": 12,
+          "pilot": 3
+        }
+      },
+      "stop_reason": "session_upgrade_effective_budget_80_reached",
+      "total_elapsed_seconds": 7250.932,
+      "trial_results_scope": "separate_original_junit_and_fault_family_denominators; per_stage_effective_budget_80",
       "reported_function": "org.apache.zookeeper.server.SessionTrackerImpl.setOwner(long,java.lang.Object)",
       "reported_check_code": "if (session == null || session.isClosing()) {\nthrow new KeeperException.SessionExpiredException();"
     },
