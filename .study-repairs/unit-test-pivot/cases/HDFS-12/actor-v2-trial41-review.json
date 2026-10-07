@@ -1,0 +1,136 @@
+{
+  "applied_faults": 3,
+  "authoritative_host": "node1",
+  "case_id": "HDFS-12",
+  "classification": "fault_induced_target_lost_invalid_for_feedback",
+  "continuation": "Skip this trial from effective feedback and continue from attempted41/effective40 checkpoint; no replay of completed sequence.",
+  "elapsed_seconds": 32.067,
+  "fault_events": [
+    {
+      "event": "FAULT_MATCHED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "marker": "FAULT:HDFS_KEY_UPDATE:RPC_RESPONSE",
+      "raw_datanode_uuid": "d2615596-4745-4b3c-b043-abe5a274fd73",
+      "raw_key_id": 656717699,
+      "resource": "BP0",
+      "seq": 30,
+      "site_id": "BPServiceActor.offerService#keyUpdateResponse/NN0"
+    },
+    {
+      "event": "FAULT_APPLIED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "marker": "FAULT:HDFS_KEY_UPDATE:RPC_RESPONSE",
+      "raw_datanode_uuid": "d2615596-4745-4b3c-b043-abe5a274fd73",
+      "raw_key_id": 656717699,
+      "resource": "BP0",
+      "seq": 31,
+      "site_id": "BPServiceActor.offerService#keyUpdateResponse/NN0"
+    },
+    {
+      "event": "FAULT_MATCHED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "marker": "FAULT:HDFS_SASL:READ",
+      "raw_datanode_uuid": null,
+      "raw_key_id": null,
+      "resource": "BP0",
+      "seq": 33,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readMagic"
+    },
+    {
+      "event": "FAULT_APPLIED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "marker": "FAULT:HDFS_SASL:READ",
+      "raw_datanode_uuid": null,
+      "raw_key_id": null,
+      "resource": "BP0",
+      "seq": 34,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readMagic"
+    },
+    {
+      "event": "FAULT_MATCHED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "marker": "FAULT:HDFS_SASL:READ",
+      "raw_datanode_uuid": null,
+      "raw_key_id": null,
+      "resource": "BP0",
+      "seq": 41,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readMagic"
+    },
+    {
+      "event": "FAULT_APPLIED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "marker": "FAULT:HDFS_SASL:READ",
+      "raw_datanode_uuid": null,
+      "raw_key_id": null,
+      "resource": "BP0",
+      "seq": 42,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readMagic"
+    }
+  ],
+  "finished_at_utc": "2026-10-07T08:11:44.024489+00:00",
+  "junit_exit": 1,
+  "junit_log_sha256": "b1d43d97ac53037b5e9f32b5d80856024cd0243ec311744d0d91d6d1ce21d34a",
+  "last_fault_seq": 42,
+  "last_target_seq": 39,
+  "manifest_sha256": "1843e00e92f1b32b1c2e3c80c9bd344c7a10aae03468ad368f810472e2254205",
+  "matched_faults": 3,
+  "plan_sha256": "91c079e60efe5dc4bd6abb62c5d32e8ff6ca92f6e8ba68d0757997901410b72e",
+  "postfault_target_count": 0,
+  "requested_faults": 3,
+  "resource_interference_evidence": {
+    "address_in_use_count": 0,
+    "bind_exception_count": 0,
+    "oom_count": 0,
+    "peak_junit_rss_kib": 1039692
+  },
+  "result_sha256": "07aedcc14f2bf1fa4cc6b712ea77a749cb9a8b955719ad5e948d78b6db8f9fd0",
+  "schema": "hdfs12-actor-v2-trial-review-1",
+  "selected_target_exception_count": 0,
+  "sequence_id": "8952e8c02a0918f5ca75",
+  "source_evidence": {
+    "checksum": "Hadoop 3.4.3 FileChecksumHelper.checksumBlocks, lines 494-497: unsuccessful block checksum raises PathIOException",
+    "log": "Two injected SASL readMagic IOExceptions produce Broken pipe/Connection reset; original JUnit fails to get block MD5 for /non-encrypted-file.",
+    "sasl": "Hadoop 3.4.3 SaslDataTransferServer.doSaslHandshake, line 372: readInt magic; injected IOException aborts handshake",
+    "test": "Hadoop 3.4.3 TestEncryptedTransfer.testLongLivedClient, lines 300-322: after 15s sleep reads file then requests checksum"
+  },
+  "started_at_utc": "2026-10-07T08:11:11.956952+00:00",
+  "target_events": [
+    {
+      "event": "TARGET_CHECK",
+      "resource": "BP0",
+      "seq": 11,
+      "site_id": "BlockTokenSecretManager.retrieveDataEncryptionKey#L552"
+    },
+    {
+      "event": "TARGET_CHECK",
+      "resource": "BP0",
+      "seq": 12,
+      "site_id": "BlockTokenSecretManager.retrievePassword#L511"
+    },
+    {
+      "event": "TARGET_CHECK",
+      "resource": "BP0",
+      "seq": 16,
+      "site_id": "BlockTokenSecretManager.retrieveDataEncryptionKey#L552"
+    },
+    {
+      "event": "TARGET_CHECK",
+      "resource": "BP0",
+      "seq": 17,
+      "site_id": "BlockTokenSecretManager.retrievePassword#L511"
+    },
+    {
+      "event": "TARGET_CHECK",
+      "resource": "BP0",
+      "seq": 38,
+      "site_id": "BlockTokenSecretManager.retrieveDataEncryptionKey#L552"
+    },
+    {
+      "event": "TARGET_CHECK",
+      "resource": "BP0",
+      "seq": 39,
+      "site_id": "BlockTokenSecretManager.retrievePassword#L511"
+    }
+  ],
+  "trace_sha256": "d3fd79063df9e08691df9f29794048510340a569dbe4a159b2804785a7fb1668"
+}

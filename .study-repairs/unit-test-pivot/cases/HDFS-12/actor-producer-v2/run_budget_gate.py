@@ -60,6 +60,18 @@ def java_process_count() -> int:
                if line.split() and not line.endswith("sun.tools.jps.Jps"))
 
 
+def fault_induced_target_loss(manifest: dict, result: dict, junit_log: str) -> bool:
+    return (manifest["returncode"] != 0 and
+            result["classification"] == "unmatched_or_target_lost" and
+            result["exact_order_applied"] and
+            result["requested_faults"] == result["matched_faults"] ==
+            result["applied_faults"] and
+            result["postfault_target_count"] == 0 and
+            "V2 injected I/O" in junit_log and
+            not any(error in junit_log for error in
+                    ("BindException", "Address already in use", "OutOfMemoryError")))
+
+
 def stop_reason(state: dict, output: Path, args: argparse.Namespace) -> str | None:
     if (output / "pause-request.txt").exists():
         return "external_pause_requested"
@@ -126,6 +138,7 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                 run_dir = output / "runs" / new_ids[0]
                 manifest = read_json(run_dir / "manifest.json")
                 result = read_json(run_dir / "v2_result.json")
+                junit_log = (run_dir / "junit.log").read_text(errors="replace")
                 entry.update({"junit_exit": manifest["returncode"],
                               "junit_elapsed_seconds": manifest["elapsed_seconds"],
                               "peak_junit_rss_kib": manifest["peak_junit_rss_kib"],
@@ -135,6 +148,8 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                               "postfault_target_count": result["postfault_target_count"],
                               "postfault_target_exception_count": result["postfault_target_exception_count"],
                               "classification": result["classification"],
+                              "fault_induced_target_loss": fault_induced_target_loss(
+                                  manifest, result, junit_log),
                               "new_coverage": result["new_coverage"],
                               "new_io_families": result["new_io_families"]})
             append_jsonl(ledger, entry)
@@ -147,7 +162,9 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                 reason = "junit_more_than_twice_healthy_time"
             elif entry["peak_junit_rss_kib"] > args.max_junit_rss_kib:
                 reason = "junit_rss_more_than_twice_healthy"
-            elif entry["junit_exit"] != 0 and not result["target_exception_candidate"]:
+            elif (entry["junit_exit"] != 0 and
+                  not result["target_exception_candidate"] and
+                  not entry["fault_induced_target_loss"]):
                 reason = "unexpected_junit_failure"
             else:
                 reason = None
