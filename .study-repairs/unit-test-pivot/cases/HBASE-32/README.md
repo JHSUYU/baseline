@@ -317,6 +317,19 @@ replay; `evidence/s101-candidate-receipt.json` records exact actor and raw
 checks. Checkpoint version 9 replenishes mixed-plan parents from distinct
 observed Master I/O identities when mixed terminal plans run out, while
 preserving coverage/I/O priority and periodic deeper-plan exploration.
+Supplemental trial s113 applied a distinct same-actor Master OPENED and
+client flush RPC no-retry sequence to replica 9. Both faults and the later B7
+rethrow occurred, but the original JUnit timed out with 111/600 assignment
+children complete. It overlapped a Solr JUnit late in the run. An isolated
+same-plan 600-second replay applied both faults, reached B7, and passed the
+unchanged JUnit in 78.62 seconds with 600/600 children and one region server
+abort. s113 is an **unreproduced timeout candidate**, not a confirmed new
+bug. The original and replay raw receipts, SHA checks, and exclusion proof
+are in `evidence/s113-original-and-clean-replay-node0.tar.gz`,
+`evidence/s113-replay-verdict.json`, and
+`evidence/s113-checkpoint-exclusion.json`. It remains excluded from effective,
+coverage, and descendant counts. The supplemental reporting review map marks
+s113 reviewed while s078 and s101 still await replay.
 To protect node0 disk space, 25 completed noncandidate raw logs from
 s081-s100 and s102-s106 were copied to the HBASE-32 archive on node1 and
 verified byte-for-byte by SHA-256 before their node0 copies were removed.

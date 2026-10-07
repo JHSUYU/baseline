@@ -23,6 +23,7 @@ HERE = Path(__file__).resolve().parent
 CHECKPOINT = HERE / "supplemental-checkpoint.json"
 INFLIGHT = HERE / "supplemental-inflight.json"
 RESULT = HERE / "supplemental-result.json"
+REVIEW_VERDICTS = HERE / "review-verdicts.json"
 PAUSE_AFTER_CHECKPOINT = HERE / "pause-after-checkpoint"
 KINDS = ("DO_NOT_RETRY_IOEXCEPTION", "IOEXCEPTION", "SOCKET_TIMEOUT", "EOF_EXCEPTION")
 RNG_SEED = 32032
@@ -397,6 +398,7 @@ def publish(state, status="running"):
     atomic_json(CHECKPOINT, state)
     trials = state["trials"]
     effective = [trial for trial in trials if trial["effective"]]
+    reviewed = json.loads(REVIEW_VERDICTS.read_text()) if REVIEW_VERDICTS.exists() else {}
     result = {"case": "HBASE-32", "phase": "independent_upstream_and_terminal_rpc",
               "status": status, "policy_version": state["version"],
               "workload": "TestRegionReplicaFailover#testLotsOfRegionReplicas",
@@ -421,7 +423,9 @@ def publish(state, status="running"):
               "admitted_feedback_trials": sum(t["coverage_admitted"] for t in trials),
               "budget": {"effective": state["effective_budget"],
                          "attempt_cap": state["attempt_cap"], "max_faults": state["max_faults"]},
-              "pending_review": [t["id"] for t in trials if t["review_candidate"]],
+              "pending_review": [t["id"] for t in trials
+                                 if t["review_candidate"] and t["id"] not in reviewed],
+              "reviewed_candidate_dispositions": reviewed,
               "disk_free_bytes_at_publish": shutil.disk_usage(HERE).free,
               "minimum_free_bytes_before_next_trial": MIN_FREE_BYTES,
               "checkpoint": str(CHECKPOINT.relative_to(HERE.parent))}

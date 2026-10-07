@@ -1,0 +1,74 @@
+{
+  "archive_sha256": "906bde169e120624dbde0c277d5571d82b16ffb5e8bcf6acde830b3a0906fd4d",
+  "base_agent_class_sha256": "edb7757522361622087f3a5be2f7efded71281da4ff27bcf62d82b235de1bdbd",
+  "checkpoint_exclusion_evidence": "s113-checkpoint-exclusion.json",
+  "classification": "unreproduced_timeout_candidate",
+  "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+  "interpretation": "Both the source and isolated replay applied the same ordered Master OPENED and client flush RPC DoNotRetryIOException faults to the same raw region/replica actor, then reached B7. Source timed out at 360s with 111/600 assignment children; isolated replay passed unchanged JUnit in 78.62s with 600/600. This does not establish a stable hang or a new HBase bug. SOLR18 overlapped the source stall but interference causality is unproven.",
+  "new_bug_confirmed": false,
+  "replay_applied_faults": [
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 6495,
+      "proc_id": "688",
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1NDYyMTkxMS42NmIzZjJhZGIzM2UwNTNlZjkxOTkyNjQ2YTFkYzkyNy4",
+      "raw_secondary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1NDYyMTkxMV8wMDA5LjNiYmYxMTA0YjIyNmIwNDYzOWZhZjg3NTU3MDNkMzNlLg",
+      "selector": "MASTER_OPENED_RPC~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-9~attempt-1",
+      "seq": "127",
+      "server": "ms1140.utah.cloudlab.us,35545,1791354607698",
+      "source": "upstream",
+      "step": "1"
+    },
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 6878,
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1NDYyMTkxMS42NmIzZjJhZGIzM2UwNTNlZjkxOTkyNjQ2YTFkYzkyNy4",
+      "selector": "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-9~target-1~rpc-1~FlushRegionCallable.call:81",
+      "seq": "26",
+      "source": "rpc",
+      "step": "1"
+    }
+  ],
+  "replay_create_table_child_success_count": 600,
+  "replay_elapsed_seconds": 78.62,
+  "replay_exit": 0,
+  "replay_first_scp": {
+    "line": 7488,
+    "message": "2026-10-07T06:30:27,863 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=694 for ms1140.utah.cloudlab.us,35545,1791354607698 (carryingMeta=true) ms1140.utah.cloudlab.us,35545,1791354607698/CRASHED/regionCount=8/lock=java.util.concurrent.locks.ReentrantReadWriteLock@33674b60[Write locks = 1, Read locks = 0], oldState=ONLINE."
+  },
+  "replay_fully_applied": true,
+  "replay_jacoco_sha256": "85124ac3662839cecf64375b9ac33a3f550d3e162022f988bd77057eb005972b",
+  "replay_junit": {
+    "failed": 0,
+    "found": 1,
+    "succeeded": 1
+  },
+  "replay_log_sha256": "b39e24efca6b7ed2d011e0df8aaddda3c5b9ec2e9df08f3563bfa6bec67d69f7",
+  "replay_pre_shutdown_region_server_abort_count": 1,
+  "replay_same_actor_b7": 1,
+  "replay_same_actor_guard": 1,
+  "replay_spec_sha256": "5a87d95eadc7a60955776f814d19a1e3b498c80eb68d5d23c55428a76bbf0b69",
+  "replay_timeout_seconds": 600,
+  "reviewed_at_utc": "2026-10-07T06:32:48.337896+00:00",
+  "source_compressed_log_sha256": "bdf1c8d574bd143ca69d4de85164b85e52ca6e19789dacabaffed1425e545bc2",
+  "source_create_table_child_success_count": 111,
+  "source_elapsed_seconds": 413.04,
+  "source_exact_faults": 2,
+  "source_exit": 124,
+  "source_first_scp": {
+    "line": 28512,
+    "message": "2026-10-07T06:28:02,209 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=770 for ms1140.utah.cloudlab.us,44993,1791354113299 (carryingMeta=true) ms1140.utah.cloudlab.us,44993,1791354113299/CRASHED/regionCount=46/lock=java.util.concurrent.locks.ReentrantReadWriteLock@86ae3c0[Write locks = 1, Read locks = 0], oldState=ONLINE."
+  },
+  "source_jacoco_sha256": "d0658ea3fc7295e46517bb4364c2827b3303384d3dc914d566afd4ae36b0f334",
+  "source_junit": null,
+  "source_plan": [
+    "MASTER_OPENED_RPC~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-9~attempt-1~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-9~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+  ],
+  "source_plan_sha256": "8cdea4726af5616bfda8b0387a3d20bf6723b19c1b7414cc9c78a755b53a744a",
+  "source_raw_log_sha256": "ba99af1347851d219c4e34a3cd9f59a9da9872d2932d7aa3a32abd7cc7ebaa4b",
+  "source_same_actor_b7": 1,
+  "source_shutdown_hook_line": 31373,
+  "source_trial": "s113",
+  "upstream_agent_class_sha256": "346a48855fdf0877c3ae096a0c8fb15982bf2d4a9ff26fd957bb7fb3963e4277"
+}
