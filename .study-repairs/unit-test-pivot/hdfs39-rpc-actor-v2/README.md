@@ -40,7 +40,7 @@ port, empty/invalid block batch and wrong append path are fail-closed: they
 cannot be selected or injected. The existing file flush remains `nnlocal`.
 
 `strict_receipt.py` requires every planned fault in order, an exact registered
-NameNode peer, same-thread DN UUID/block-pool/role for each DN RPC fault, and
+NameNode peer, same JVM thread-ID DN UUID/block-pool/role for each DN RPC fault, and
 the healthy target block among each faulted block-report batch. It then
 requires `FSDirAppendOp.appendFile:131` on the same path and block **after
 the final fault**. It reports `COMMITTED` branch and exact target exception
@@ -59,8 +59,11 @@ runs no-cluster role/peer/context/target and strict-receipt smokes. The
 generated classes, source and `offline-receipt.json` live in ignored `build/`.
 The V2 converter analyzes the three changed HDFS production classes from
 the overlay so their JaCoCo IDs are not lost to a release-JAR mismatch.
-`python3 -m py_compile` passes for the five Python tools. This validates
+`python3 -m py_compile` passes for the six Python tools. This validates
 linkage, not runtime role registration in the embedded cluster.
+An isolated synthetic-trace smoke also exercised V2 checkpoint initialization,
+ordered fault receipt, fresh JaCoCo coverage gain and one effective-trial
+update without starting a cluster.
 
 ## Safe runtime continuation after a cluster slot is released
 
@@ -83,22 +86,26 @@ linkage, not runtime role registration in the embedded cluster.
    JaCoCo production method/branch/probe and new I/O family feedback, and
    store queue/current/completed atomically in a **new** V2 checkpoint.
    Selectors from the old `nn0` campaign must not be imported verbatim.
-4. Execute one plan per immutable run ID (`trial-0001`, etc.) with
-   `run_original_v2.py --name trial-0001 --plan <absolute-plan.tsv>`, then
-   `coverage_v2.py --name trial-0001`, followed by
-   `strict_receipt.py --trace <trace> --plan <plan> --target-context <context.json>`.
-   The context JSON is derived from the healthy target guard and has keys
-   `path` and `block_id`. Record JUnit time, all fault matches, exact role and
-   peer, post-final target, and production coverage. Do not retry an existing
-   immutable run ID; resume from the next uncompleted plan after auditing its
-   manifest. Unmatched and target-lost attempts stay in the ledger but do not
-   consume the effective budget.
+   `python3 campaign_v2.py --init` builds that new checkpoint and reports
+   zero V2 effective trials. `--init` alone does not launch a JVM.
+4. At an allocated node slot, use `python3 campaign_v2.py --once 1` for the
+   first selected fault plan. The controller writes the plan and current
+   checkpoint before launching one original JUnit, converts JaCoCo feedback,
+   runs the strict actor/file/block receipt, and writes a per-trial result
+   with exact elapsed time. Resume with `--once N` from the checkpoint;
+   completed plans are not repeated. An interrupted run without a manifest
+   is preserved and retried under a fresh attempt ID. Unmatched and
+   target-lost attempts stay in the ledger but do not consume the effective
+   budget. `--once 0` reads the checkpoint without launching a JVM.
+   `run_original_v2.py`, `coverage_v2.py`, and `strict_receipt.py` remain
+   usable individually for clean same-plan replays and independent review.
 5. Use the case budget of 80 effective trials, up to eight ordered faults;
    if the last eight effective trials add production branch/method coverage
    or a stable I/O family, extend to 128 effective and ten faults. Any
    target-exception candidate needs a clean same-plan replay and source
    classification. Preserve the 205 old attempts as a separate legacy stratum.
 
-The V2 runtime queue/controller still needs to be wired to the new immutable
-runner after the two healthy calibrations. This directory does not claim a
+The V2 controller is staged and Python-compiled offline; its cluster-side
+identity and resume path still require the two healthy calibrations and a
+bounded first trial before a long campaign. This directory does not claim a
 completed V2 trial or restore `quality_complete` without that work.

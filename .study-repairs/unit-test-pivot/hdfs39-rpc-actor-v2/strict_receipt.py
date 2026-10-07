@@ -17,7 +17,7 @@ def audit(events: list[dict], plan: list[list[str]], context: dict) -> dict:
     applied: list[dict] = []
     errors: list[str] = []
     for event in events:
-        kind, thread = event.get("event"), event.get("thread", "")
+        kind, thread = event.get("event"), event.get("threadId")
         if kind == "NN_ENDPOINT_REGISTER":
             port, bp = event.get("peerPort"), event.get("blockPoolId")
             if nn_port is not None and (nn_port != port or pool != bp):
@@ -29,6 +29,8 @@ def audit(events: list[dict], plan: list[list[str]], context: dict) -> dict:
                 errors.append("ambiguous DataNode UUID/role map")
             roles[uuid] = role
         elif kind == "DN_RPC_BIND":
+            if thread is None:
+                errors.append("DN binding lacks JVM thread ID")
             binding[thread] = (event.get("sourceUuid"), event.get("blockPoolId"),
                                event.get("sourceRole"))
         elif kind == "DN_RPC_UNBIND":
@@ -37,6 +39,8 @@ def audit(events: list[dict], plan: list[list[str]], context: dict) -> dict:
             matched.append(event)
         elif kind == "FAULT_APPLIED":
             index = len(applied)
+            if thread is None:
+                errors.append(f"fault {index} lacks JVM thread ID")
             if index >= len(plan):
                 errors.append("extra applied fault")
                 continue
@@ -89,7 +93,7 @@ def audit(events: list[dict], plan: list[list[str]], context: dict) -> dict:
                and event.get("blockId") == context["block_id"]]
     if not targets:
         errors.append("same file/block guard absent after final applied fault")
-    committed = {(event.get("thread"), event.get("ordinal")) for event in targets
+    committed = {(event.get("threadId"), event.get("ordinal")) for event in targets
                  if event.get("committed")}
     exceptions = [event for event in events if event.get("event") == "TARGET_EXCEPTION"
                   and event.get("seq", -1) > final_seq
@@ -97,7 +101,7 @@ def audit(events: list[dict], plan: list[list[str]], context: dict) -> dict:
                   and event.get("type") == "org.apache.hadoop.ipc.RetriableException"
                   and event.get("path") == context["path"]
                   and event.get("blockId") == context["block_id"]
-                  and (event.get("thread"), event.get("ordinal")) in committed]
+                  and (event.get("threadId"), event.get("ordinal")) in committed]
     return {"pass": not errors, "requested": len(plan), "applied": len(applied),
             "last_fault_seq": final_seq, "postfault_target_checks": len(targets),
             "postfault_committed_checks": sum(bool(t.get("committed")) for t in targets),
@@ -113,16 +117,16 @@ def self_test() -> None:
     events += [{"seq": i + 2, "event": "DN_ROLE_MAP", "sourceUuid": "uuid-" + str(i),
                 "role": "dn" + str(i)} for i in range(4)]
     events += [
-        {"seq": 6, "event": "DN_RPC_BIND", "thread": "BP", "sourceUuid": "uuid-1",
+        {"seq": 6, "event": "DN_RPC_BIND", "threadId": 11, "sourceUuid": "uuid-1",
          "blockPoolId": "bp1", "sourceRole": "dn1"},
-        {"seq": 7, "event": "FAULT_MATCHED", "thread": "BP", "marker": "RPC_SEND",
+        {"seq": 7, "event": "FAULT_MATCHED", "threadId": 11, "marker": "RPC_SEND",
          "api": plan[0][1], "endpoint": "nn0<-dn1", "ordinal": 1},
-        {"seq": 8, "event": "FAULT_APPLIED", "thread": "BP", "marker": "RPC_SEND",
+        {"seq": 8, "event": "FAULT_APPLIED", "threadId": 11, "marker": "RPC_SEND",
          "api": plan[0][1], "endpoint": "nn0<-dn1", "ordinal": 1,
          "exception": "EOFException", "peerPort": 19001,
          "sourceUuid": "uuid-1", "blockPoolId": "bp1"},
-        {"seq": 9, "event": "DN_RPC_UNBIND", "thread": "BP"},
-        {"seq": 10, "event": "TARGET_GUARD", "thread": "NN",
+        {"seq": 9, "event": "DN_RPC_UNBIND", "threadId": 11},
+        {"seq": 10, "event": "TARGET_GUARD", "threadId": 22,
          "site": "FSDirAppendOp.appendFile:131", "path": context["path"],
          "blockId": 7, "committed": True},
     ]

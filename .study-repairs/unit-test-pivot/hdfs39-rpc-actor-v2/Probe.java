@@ -109,7 +109,8 @@ public final class Probe {
     try {
       writer.write("{\"seq\":" + (++sequence) + ",\"event\":\"" + event +
           "\",\"thread\":\"" + escape(Thread.currentThread().getName()) +
-          "\"" + fields + "}\n");
+          "\",\"threadId\":" + Thread.currentThread().getId() +
+          fields + "}\n");
       writer.flush();
     } catch (IOException error) {
       throw new IllegalStateException("HDFS-39 trace write failed", error);
