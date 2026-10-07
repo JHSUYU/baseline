@@ -27,6 +27,7 @@ public final class Probe {
   private static final AtomicLong SEQUENCE = new AtomicLong();
   private static final ConcurrentHashMap<String, AtomicInteger> ORDINALS = new ConcurrentHashMap<>();
   private static final ConcurrentLinkedQueue<Event> EVENTS = new ConcurrentLinkedQueue<>();
+  private static final ConcurrentHashMap<String, Boolean> COVERAGE = new ConcurrentHashMap<>();
 
   static {
     String output = System.getProperty("zk.actor.events.output", "");
@@ -35,6 +36,16 @@ public final class Probe {
         try { write(Paths.get(output)); }
         catch (IOException error) { error.printStackTrace(); }
       }, "zk-actor-v2-flush"));
+    }
+    String coverageOutput = System.getProperty("zk.actor.coverage.output", "");
+    if (!coverageOutput.isEmpty()) {
+      Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        try {
+          List<String> lines = new ArrayList<>(COVERAGE.keySet());
+          lines.sort(String::compareTo);
+          Files.write(Paths.get(coverageOutput), lines, StandardCharsets.UTF_8);
+        } catch (IOException error) { error.printStackTrace(); }
+      }, "zk-actor-v2-coverage-flush"));
     }
   }
 
@@ -50,6 +61,14 @@ public final class Probe {
     for (String field : fields) line.append('\t').append(clean(field));
     line.append('\t').append(clean(Thread.currentThread().getName()));
     EVENTS.add(new Event(sequence, line.toString()));
+  }
+
+  public static void diagnostic(String kind, String... fields) {
+    event(kind, fields);
+  }
+
+  public static void coverage(String owner, String method, int line) {
+    COVERAGE.put(owner + "#" + method + ":" + line, Boolean.TRUE);
   }
 
   private static String selector(String site, ActorRegistry.IoIdentity identity, int ordinal) {

@@ -87,6 +87,7 @@ public final class ActorRegistry {
   private final Map<Long, String> sessions = new HashMap<>();
   private final Map<Integer, Long> clientPorts = new HashMap<>();
   private final Map<Path, Long> snapOwners = new HashMap<>();
+  private final Map<Long, String> peerRoles = new HashMap<>();
   private final Map<String, Integer> generations = new HashMap<>();
 
   private static boolean token(String value) {
@@ -142,6 +143,24 @@ public final class ActorRegistry {
     }
   }
 
+  /** A role alias is stable across runs even if election chooses a different physical SID. */
+  public synchronized void assignPeerRole(long sid, String role) {
+    if (!token(role) || !peers.containsValue(sid)) {
+      throw new IllegalArgumentException("peer role needs a registered SID and stable name");
+    }
+    for (Map.Entry<Long, String> entry : peerRoles.entrySet()) {
+      if (entry.getValue().equals(role) && entry.getKey().longValue() != sid) {
+        throw new IllegalStateException("role is already assigned to another peer");
+      }
+    }
+    peerRoles.put(sid, role);
+  }
+
+  private String peerKey(long sid) {
+    String role = peerRoles.get(sid);
+    return role == null ? "peer:" + sid : "peer-role:" + role;
+  }
+
   /** Bind the actual ZooKeeperServer receiver to its quorum peer, once known. */
   public synchronized void registerServer(Object server, long sid) {
     if (server == null || sid < 0) {
@@ -174,7 +193,7 @@ public final class ActorRegistry {
     }
     Channel ch = clientChannels.get(channel);
     if (ch == null) {
-      String generationKey = "client:" + c.role + ":" + c.sessionTag + ":peer:" + sid;
+      String generationKey = "client:" + c.role + ":" + c.sessionTag + ":" + peerKey(sid);
       ch = new Channel(client, sid, nextGeneration(generationKey));
       clientChannels.put(channel, ch);
     }
@@ -182,7 +201,7 @@ public final class ActorRegistry {
       return unbound("channel-owner-or-destination-changed");
     }
     return new IoIdentity("client:" + c.role + ":session:" + c.sessionTag,
-        "peer:" + sid + ":channel:" + ch.generation + ":op:" + operation,
+        peerKey(sid) + ":channel:" + ch.generation + ":op:" + operation,
         "", Long.toString(sid), c.sessionTag, null);
   }
 
@@ -197,14 +216,14 @@ public final class ActorRegistry {
     }
     ServerConnection c = serverConnections.get(connection);
     if (c == null) {
-      String generationKey = "server:peer:" + localSid + ":session:" + tag;
+      String generationKey = "server:" + peerKey(localSid) + ":session:" + tag;
       c = new ServerConnection(localSid, tag, nextGeneration(generationKey));
       serverConnections.put(connection, c);
     }
     if (c.peer != localSid.longValue() || !c.sessionTag.equals(tag)) {
       return unbound("server-connection-owner-changed");
     }
-    return new IoIdentity("peer:" + localSid + ":session:" + tag,
+    return new IoIdentity(peerKey(localSid) + ":session:" + tag,
         "connection:" + c.generation + ":op:" + operation,
         Long.toString(localSid), "", tag, null);
   }
@@ -230,7 +249,7 @@ public final class ActorRegistry {
     }
     Long sid = snapOwners.get(normalized.getParent());
     if (sid == null) return unbound("epoch-file-owner-unbound");
-    return new IoIdentity("peer:" + sid, "file:" + filename + ":op:" + operation,
+    return new IoIdentity(peerKey(sid), "file:" + filename + ":op:" + operation,
         Long.toString(sid), "", "", null);
   }
 
@@ -242,6 +261,6 @@ public final class ActorRegistry {
     if (rawSessionId != 0 && sessionTag == null) {
       return unboundTarget("target-session-unbound");
     }
-    return new TargetIdentity("peer:" + sid, role, Long.toString(sid), sessionTag, null);
+    return new TargetIdentity(peerKey(sid), role, Long.toString(sid), sessionTag, null);
   }
 }
