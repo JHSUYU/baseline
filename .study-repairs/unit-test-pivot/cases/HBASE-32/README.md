@@ -497,3 +497,13 @@ Both complete raw logs, JaCoCo data, and receipts are SHA-verified on node1
 under `role-aware-v3-pilot/healthy-001` and `healthy-002`. These are
 calibrations only; neither enters the 128 main or 68 supplemental effective
 trial count. The V3 bounded fault stage uses its own checkpoint and plan.
+
+V3 `role-f001` used the unchanged original JUnit and strictly applied both
+faults to the actual meta-hosting RS and the same raw region/replica-8 actor.
+The target B7 rethrow occurred once; the original JUnit did not complete
+within the 600 s test cap (runner elapsed 641.95 s including shutdown).
+Five thread dumps and the trace-only lock hook show a same-server-node
+recovery wait lasting until shutdown. Full raw/JaCoCo and the dumps were
+SHA-verified on node1. See `work-role-v3/role-f001-owner-audit.md` for source
+and line-level evidence. This is a **candidate**, `new_bug=false`; subsequent
+V3 runs are paused pending independent review and bounded same-plan replay.

@@ -524,7 +524,7 @@
       "first_plan_not_imported_into_v3": true
     },
     "role_aware_variation_v3": {
-      "state": "two_original_healthy_passes_fault_diagnostic_running",
+      "state": "role_f001_strict_timeout_candidate_paused_for_independent_review_and_bounded_replay",
       "classification": "distinct_runtime_meta_host_and_actual_secondary_replica_not_s272_exact_replay_or_v1_v2",
       "spec": "work-role-v3/role-plan.json",
       "plan_sha256": "e3e52e9a77b03c047a25fca1d26b405985a9f7c5f931923981a2fbc07f97e1d0",
@@ -535,7 +535,7 @@
       "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
       "healthy_passes_required": 2,
       "healthy_attempts": 2,
-      "fault_attempts": 0,
+      "fault_attempts": 1,
       "fault_attempt_cap": 3,
       "fuzz_budget_admitted": false,
       "s272_exact_replay": false,
@@ -579,6 +579,33 @@
           "archive_sha256": "aef01d699c03c0e6e1dbeec8c618ad57fee10f1e7057a8e78abb469f47acee23",
           "manifest_sha256": "76348253b3aaae31da2fb8c03ed42c3d409581f787da774164918c5306535ae2",
           "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-002"
+        }
+      ],
+      "strict_role_positive_timeout_candidates": 1,
+      "fault_runs": [
+        {
+          "suffix": "role-f001",
+          "started_utc": "2026-10-07T13:29:29.035613+00:00",
+          "finished_utc": "2026-10-07T13:40:11.593615+00:00",
+          "elapsed_seconds": 641.95,
+          "exit_code": 124,
+          "original_junit": null,
+          "identity_valid": true,
+          "strict_fault_plan": true,
+          "faults_applied": 2,
+          "same_actor_b7": 1,
+          "replica_id": "8",
+          "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMix5LiIsMTc5MTM3OTc5OTMzOS5iOTk1MjhkODQ2OTY0YmFmZTdiZWViNTQ0YmViODYzZi4",
+          "raw_secondary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMix5LiIsMTc5MTM3OTc5OTMzOV8wMDA4LjViYzc3YjhkNDBiOGJmZTYzNjFkZGFkOTkwYzY3MTczLg",
+          "classification": "role_aware_source_backed_recovery_wait_candidate_pending_bounded_replay",
+          "new_bug": false,
+          "raw_log_sha256": "5712819ef82281c1ab39b6d42f47661c8b1a9aa2eb96ca90cc201c1b85b6db4e",
+          "jacoco_sha256": "6cf4e65ffecf57a7eed47ebbfe679940823c62cf8029926965a9ada9962f0385",
+          "archive_sha256": "ba9099d78fc3f34e178ce7197b05ececea5f36a06817410fbc9bc60a8c0f3ac6",
+          "manifest_sha256": "c8734b11b0091a51e647583a159c593c265486a585aa71174bf425a0cac8514f",
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/role-f001",
+          "lock_audit": "work-role-v3/logs/role-f001.lock-audit.json",
+          "source_audit": "work-role-v3/role-f001-owner-audit.md"
         }
       ]
     }
