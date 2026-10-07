@@ -63,7 +63,7 @@ comparison at offset 17 (`ifeq 77`), the throw at offset 76, and source line
 and [original bytecode](original-Journal-javap.txt) pin the location.
 
 The unchanged upstream `TestQuorumJournalManager#testSingleWriter` runs via
-[OriginalHdfs10Test.java](OriginalHdfs10Test.java) and JUnitCore. Its `@Before`
+[the independent JUnit runner](independent/run_original.py) and JUnitCore. Its `@Before`
 creates three JournalNodes; its `@After` and `@Rule` execute. It writes and
 finalizes edit segments 1–3 and 4–4. The healthy original JUnit passed, with
 six executions of branch `#u7` on the three JournalNodes. All compared request
@@ -101,12 +101,12 @@ decision.
 
 ## Bounded trial campaign
 
-The [IPC campaign](campaign.py) chooses observed response selectors, runs
+The historical IPC campaign chose observed response selectors, ran
 one to four exact exceptions per trial, records method/branch and new I/O
 feedback, and checkpoints after every attempt. A multi-fault plan is valid
 only when all selected faults match and apply. Missed plans and trials that
 lose the target are retained in the ledger and excluded from the effective
-count. The [file campaign](epoch_campaign.py) uses the observed first writer
+count. The historical file campaign used the observed first writer
 epoch write on each node with legal exception types. The consolidated
 [ledger](trial-ledger.csv), [result](result.json), and both checkpoint files
 retain per-trial selector, duration, applied evidence, target-after outcome,
@@ -152,10 +152,8 @@ coordination bug.
 
 ## Reproduction
 
-Use [run_original.py](run_original.py) for the original test and IPC plans,
-and [run_epoch.py](run_epoch.py) for the epoch-file probe. The checkpointed
-campaigns are [campaign.py](campaign.py) and
-[epoch_campaign.py](epoch_campaign.py); [finalize.py](finalize.py) reconciles
-the two. The Java 8 runtime, checksum-pinned low-level recording JAR,
-case-local class overlays, source worktree, traces, selectors, and logs are
-retained here. No Docker was used.
+Use [independent/run_original.py](independent/run_original.py) for the unchanged
+JUnit and [independent/campaign.py](independent/campaign.py) to resume only
+uncompleted graph-free trials. The obsolete graph-runtime runner and controller
+source has been removed; historical traces, selectors, checkpoints, and logs
+remain for provenance and are excluded from current totals. No Docker was used.
