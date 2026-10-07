@@ -138,3 +138,30 @@ raw `control-003/{events.tsv,junit.log,jacoco.exec,receipt.json}` is retained
 here; all five raw runs remain on node2 under the same evidence directory.
 `probe/causal_control.py` rebuilds the variant only in its isolated source
 and class directory.
+
+## Lower-layer retry control
+
+A second independent build moved the synthetic `ConnectionLossException`
+inside the underlying `keeper.getData` call for one `jetty:node3`
+`/aliases.json` watch read. The original `SolrZkClient.getData` entry hook
+observed the call without injecting; its real `ZkCmdExecutor.retryOperation`
+made four failing attempts before returning the final exception. This tests
+the retry behavior omitted by the V4 entry hook. The unchanged test and
+`RoutedAliasUpdateProcessor` classes retained their V4 hashes; only the
+isolated `SolrZkClient` and probe classes changed. Exact hashes are in
+`evidence/lowlevel-control-v4/build-receipt.json`.
+
+Three fresh runs exhausted all four underlying attempts on the same live
+reader. None reached SOLR-40 **after the fourth failure**. The test did reach
+SOLR-40 on that reader during the retry interval, but all those checks saw
+present properties: another `AliasesManager.update#getData` refreshed the
+same local cache before the first target check in each run. Two JUnit runs
+passed; the third failed a different `expected:<4> but was:<2>` assertion,
+without a SOLR-40 exception. This control therefore neither reproduces nor
+refutes the post-failure stale-cache outcome when the real retry machinery
+runs: the unchanged workload does not present a same-reader target after
+retry exhaustion in these three trials. It narrows the claim to the original
+injection model. All retry markers, target orderings, natural refreshes,
+JUnit outcomes, source hashes and raw trace/JaCoCo SHA values are recorded in
+`evidence/lowlevel-control-v4/summary.json`; a representative raw run is
+retained alongside it. The worker retains all three raw runs.
