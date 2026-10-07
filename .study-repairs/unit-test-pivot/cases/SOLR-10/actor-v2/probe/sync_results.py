@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mirror authoritative node1 V5 checkpoints into three case results and 104 table."""
+"""Mirror authoritative node1 actor-aware checkpoints into case results and table."""
 
 import argparse
 from datetime import datetime, timezone
@@ -69,7 +69,8 @@ def metrics(state: dict, site: str) -> dict:
     else:
         status = "fuzz_running"
     end_time = completion_time(trials, site, goal) if done else None
-    reason = (f"V4 actor-aware unchanged JUnit campaign: {len(trials)} shared attempts, "
+    reason = (f"Actor-aware unchanged JUnit campaign ({state.get('scheduler_version')}): "
+              f"{len(trials)} shared attempts, "
               f"{strict} strict, {len(eligible)}/{goal} effective for this guard; "
               f"stop={progress['stop_reason']}.")
     if site == "SOLR-40" and exceptions:
@@ -109,7 +110,11 @@ def metrics(state: dict, site: str) -> dict:
         "healthy_target_checks": state["healthy_target_checks"][site],
         "evidence": str(REMOTE_STATE) + f" ({REMOTE_HOST})",
         "v4_checkpoint": str(REMOTE_STATE) + " (node2, frozen at trial 189)",
-        "v5_checkpoint": str(REMOTE_STATE) + f" ({REMOTE_HOST}, continuation)",
+        "v5_checkpoint": str(REMOTE_STATE) + " (node1, completed trial 222 before V7)",
+        "v7_checkpoint": str(REMOTE_STATE) + f" ({REMOTE_HOST}, active continuation)",
+        "v7_root_expansion_receipt": str(CASE / "evidence/campaign-v4/lazy-root-expansion-v7.json")
+                                    + f" ({REMOTE_HOST})",
+        "active_scheduler_version": state.get("scheduler_version"),
         "build_receipt_sha256": state["build_receipt_sha256"],
         "snapshot_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
