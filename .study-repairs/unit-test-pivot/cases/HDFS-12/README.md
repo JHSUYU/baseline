@@ -1,18 +1,34 @@
 # HDFS-12: block token key lookup
 
-**Actor V2 original-JUnit campaign running.** Two independent healthy runs of
-Hadoop 3.4.3 `TestEncryptedTransfer#testLongLivedClient[0]` passed. The active
+**Actor V2 bounded campaign complete.** Two independent healthy runs of
+Hadoop 3.4.3 `TestEncryptedTransfer#testLongLivedClient[0]` passed. The
 case-local [V2 overlay](actor-producer-v2/) binds each fault and later selected
 `BlockTokenSecretManager.retrievePassword` guard to the same concrete DataNode
 startup episode and block pool. The durable node1 checkpoint is
 `actor-producer-v2/evidence/HDFS-12/campaign-state.json`; tmux session
-`hdfs12_actor_v2_budget` runs one JUnit child at a time. The first 100 attempts
-were independently audited: 82 ordered full fault sequences, 65 strict
-same-actor target-retaining sequences, and zero selected null-key `InvalidToken`
-throws. The [100-attempt receipt](actor-v2-segment-100-attempts.json) records
-individual artifact hashes and raw JaCoCo/I/O feedback. The current budget is
-80 effective sequences with up to eight faults, conditionally extending to
-128/ten if recent coverage or I/O feedback remains novel.
+`hdfs12_actor_v2_budget` ran one JUnit child at a time. The
+[full 117-attempt audit](actor-v2-final-117-attempts.json) verifies 99 ordered
+full fault sequences and 80 strict same-actor target-retaining sequences. It
+records each raw trace, JUnit manifest, fault plan, result, and JaCoCo hash.
+The other 37 attempts lost the selected target after injection or failed to
+match all requested faults; those do not count toward the effective budget.
+No run took the selected null-key `InvalidToken` throw. All three observed
+fault families were tested with a retained target: key-update RPC response
+(71 sequences), local key apply (21), and SASL read (50); a sequence can contain
+more than one family. Faulted runs added 253 probes, 29 methods, and 121
+branch-count buckets relative to healthy seed A. No new I/O family appeared
+relative to the two healthy seeds' union.
+
+The original test sets 2-second key rotation and token lifetime, sleeps 15
+seconds, then reads and checksums the file again. In Hadoop 3.4.3 source,
+`retrievePassword` reads `allKeys.get(identifier.getKeyId())` at line 509 and
+throws the selected `InvalidToken` only when the key is null at lines 511–514.
+The earlier expiry exception at lines 503–505 is a separate branch. The
+campaign reached 80 effective sequences with at most eight faults; its final
+eight effective runs had no new coverage or I/O family, so the planned
+128-sequence extension did not activate. The 2,040 queued mutations remain
+untested under this budget; the result is no observed selected exception in
+this bounded search, not a claim about all schedules.
 
 ## Historical campaigns
 
