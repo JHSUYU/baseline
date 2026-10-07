@@ -4,6 +4,13 @@ Selected site: Solr 8.11.4 `CoreContainer.create(String, Path, Map, boolean)` at
 `solr/core/src/java/org/apache/solr/core/CoreContainer.java:1329-1330`. In
 non-legacy mode it throws when the new `CoreDescriptor` has no `coreNodeName`.
 The unchanged cluster workload is `AddReplicaTest.testAddMultipleReplicas`.
+Its existing instrumented healthy trace
+(`independent/evidence/healthy-instrumented/events.tsv`) records nine
+nonthrowing guards. Their core names are `core_node2`, `core_node7`,
+`core_node6`, `core_node8`, `core_node14`, `core_node15`, `core_node16`,
+`core_node17`, and `core_node18`; these arise during the test's collection
+creation and replica additions. This trace lacks a full sender-to-receiver
+actor join, so it is screening evidence rather than an actor-aware seed.
 
 ## Value path in that workload
 
