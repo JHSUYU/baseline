@@ -110,7 +110,7 @@ def run(count: int) -> None:
     summary_path = OUT / "summary.json"
     rows = json.loads(summary_path.read_text()).get("runs", []) if summary_path.exists() else []
     for number in range(len(rows) + 1, len(rows) + count + 1):
-        if sha(STATE) != frozen_sha or shutil.disk_usage(CASE).free < 8 * 1024 ** 3:
+        if sha(STATE) != frozen_sha or shutil.disk_usage(CASE).free < 10.5 * 1024 ** 3:
             raise RuntimeError("Original checkpoint changed or disk guard tripped")
         java_count = sum(line == "java" for line in subprocess.check_output(
             ["ps", "-eo", "comm="], text=True).splitlines())

@@ -256,3 +256,46 @@ receipt. This control shows an overlapping target check can observe stale
 metadata during retry, but it does not demonstrate the same target after an
 actual network disconnection has exhausted Solr's retries. Novelty remains
 pending and this candidate is not marked as a confirmed new bug.
+
+## One underlying failure with the original retry, after V10b completion
+
+After the 757-trial V10b campaign reached all three budgets, a separate
+five-run control used the **unchanged original JUnit and routed-alias class**.
+It retained the trial-481 collection-state callsite/path/physical `node1`
+selector with occurrence 10, then injected **one**
+`ConnectionLossException` from the underlying `keeper.getData` for that same
+client/manager's `/aliases.json` watch read. The ordinary
+`SolrZkClient.getData(..., retryOnConnLoss=true)` path invokes the original
+`ZkCmdExecutor.retryOperation`; subsequent attempts call the real ZooKeeper
+read. The old receipt field `unmodified_second_selector` identifies the
+trial-481 reference selector but is *not* an additional plan fault in these
+five runs. The isolated build and raw files are in
+`evidence/lowlevel-single-retry-v10/`; the original source revision is
+`e27f44e3d78dfcec230c97e0a1240e3751daeff9`. The JUnit class SHA-256
+remained `288ade17cb538b6226d1a61b863569a2b7bace75a228e58d60f18d5d2fed5749`.
+
+| Runs | Underlying alias read failures | Same-reader target after failure | Retry returned successfully | Original JUnit |
+| --- | ---: | --- | --- | --- |
+| 1–2 | 1 each | present properties at 453/488 ms | yes, about 1502 ms | pass |
+| 3 | 1 | no subsequent same-reader target | yes, about 1502 ms | pass |
+| 4–5 | 1 each | **missing properties at 184/189 ms**, target exception | no success before test teardown | fail, routed-alias 500 |
+
+Every run applied the first fault and the one underlying alias read failure
+on the exact same live physical node, client and alias manager. Both failing
+runs retained ZooKeeper transaction records containing `myalias` and
+`router.name=time`. Independent raw-file recount found zero discrepancies;
+`evidence/lowlevel-single-retry-v10/control-audit.json` (SHA-256
+`8a25ed89f97881d76f4a14afabd9ab5869315d4fdc2f675f920985d240982b13`)
+records event order, elapsed milliseconds, JUnit outcomes, and all trace,
+manifest, JUnit-log and JaCoCo SHA values. Node0 and node1 copies passed
+the same audit.
+
+The two failures occur **before** the 1500 ms retry delay expires. The test
+then aborts and closes the embedded cluster, so these runs do not establish
+whether the retry would later have succeeded or whether a watch would remain
+lost. They do show that a single lower-layer read failure can delay alias
+cache refresh long enough for the unchanged `/update` to reach the same
+missing-properties guard and return 500. The passing runs show that timing
+and prior cache state matter. This models a synthetic one-call ZooKeeper
+read failure, not a measured production network disconnection. The
+fault-induced observation is reproducible; novelty remains unconfirmed.
