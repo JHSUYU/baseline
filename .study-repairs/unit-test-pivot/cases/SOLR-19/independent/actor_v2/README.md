@@ -156,3 +156,24 @@ For node1, use `/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4` as the
 release source root (commit `e27f44e`). Keep every run's scratch, logs,
 events, coverage and manifest under a unique `actor_v2/evidence/<seed>/`
 directory. `run_v2.py` accepts `--source-root` and `--coverage`.
+
+## Terminal V3 checkpoint
+
+The actor-qualified original-JUnit campaign naturally stopped at 134
+attempts, 92 complete ordered identity matches, and 80 matches with a later
+same-core/same-sender target. The selected target exception occurred zero
+times. The final eight effective trials added no production probe or
+normalized I/O family, so the base 80-effective/max8 budget did not extend.
+The original JUnit took 7,276.230 seconds in total. Its faulted-run exit
+status is recorded independently of the exact target outcome for every
+trial. Node1 `solr19-v3-full` exited at this complete trial boundary.
+
+The node1 final checkpoint is copied unchanged to
+`evidence/v3-final-checkpoint-state.json` (SHA-256
+`7cad968a37e0a47d12a4126333ec16e09345e3d12e23dd9de8a8fe942220f3e2`).
+All 134 raw trials are in SHA-256 checked archives, with independent actor
+and target-lineage audit receipts. `evidence/v3-final-audit.json` gives the
+aggregate counts, `evidence/v3-campaign-r001-r134-union-coverage.json`
+gives the independently recomputed JaCoCo union, and
+`evidence/v3-final-review.md` records the release-source interpretation and
+the limited no-new-bug conclusion.
