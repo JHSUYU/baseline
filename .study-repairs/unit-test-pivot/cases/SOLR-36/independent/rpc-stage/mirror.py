@@ -83,6 +83,26 @@ def publish(rpc: dict, stage: dict, gain_by_case: dict) -> None:
                   if stage_status in ('interrupted', 'incomplete_budget_limit')
                   else 'campaign_checkpoint'
                   if rpc['status'] == 'budget_complete' else 'fuzz_running')
+        current_elapsed = round(seed_seconds + rpc['elapsed_seconds'], 3)
+        historical_elapsed = round(
+            result['baseline_seconds']
+            + stage1['elapsed_seconds']
+            + result['legacy_http_raw_sender_seed']['all_attempt_elapsed_seconds']
+            + result['legacy_http_raw_sender_pilot']['elapsed_seconds']
+            + result['legacy_http_role_lazylookup_seed']['elapsed_seconds'], 3)
+        if pending_candidate:
+            reason = ('An unreviewed exact target exception needs separate '
+                      'source review and replay.')
+        elif case_id == 'SOLR-36' and reviewed:
+            reason = (f'{reviewed} exact ACTIVE-child 503 outcomes were '
+                      'source-reviewed as protective rejections with original '
+                      'JUnit success; HTTP and actor-aware ZooKeeper coverage '
+                      'remain under test.')
+        else:
+            reason = (f'{reached} strict HTTP trials reached the exact '
+                      f'{case_id} guard on the injected child after fault '
+                      f'effect; {thrown} exact throws observed. HTTP and '
+                      'actor-aware ZooKeeper coverage remain under test.')
         result.update(
             status=status,
             methodology='coverage_io_independent_asm_jacoco_http_actor_exact',
@@ -92,16 +112,11 @@ def publish(rpc: dict, stage: dict, gain_by_case: dict) -> None:
             target_after_fault=reached,
             target_exception_after_fault_trials=thrown,
             total_attempts=rpc['total_attempts'],
-            elapsed_seconds=round(result['baseline_seconds']
-                                  + stage1['elapsed_seconds']
-                                  + result['legacy_http_raw_sender_seed'][
-                                      'all_attempt_elapsed_seconds']
-                                  + result['legacy_http_raw_sender_pilot'][
-                                      'elapsed_seconds']
-                                  + result['legacy_http_role_lazylookup_seed'][
-                                      'elapsed_seconds']
-                                  + seed_seconds
-                                  + rpc['elapsed_seconds'], 3),
+            elapsed_seconds=current_elapsed,
+            current_method_elapsed_seconds=current_elapsed,
+            historical_coarse_elapsed_seconds=historical_elapsed,
+            total_including_legacy_elapsed_seconds=round(
+                current_elapsed + historical_elapsed, 3),
             coverage_gain=gain_by_case[case_id],
             coverage_gain_scope=('Current-quality HTTP release-JAR production probes '
                                  'from strict trials reaching this case’s exact '
@@ -130,15 +145,7 @@ def publish(rpc: dict, stage: dict, gain_by_case: dict) -> None:
             rpc_stage_unreviewed_target_exception_trials=thrown - reviewed,
             bug_mark='none',
             new_bug=False,
-            reason=('An unreviewed exact target exception needs separate '
-                    'source review and replay.' if pending_candidate else
-                    'SOLR-36 exact active-child 503 after a delayed parent '
-                    'Add is source-reviewed as a protective rejection; '
-                    'the original JUnit passed and subsequent checks remain '
-                    'under test.' if case_id == 'SOLR-36' else
-                    'The first strict role-V2 HTTP fault did not reach the '
-                    'SOLR-37 guard after fault effect; its effective budget '
-                    'remains open.'),
+            reason=reason,
             evidence=('.study-repairs/unit-test-pivot/cases/SOLR-36/'
                       'independent/rpc-stage/campaign/progress.json'),
             updated_at=time.time())
