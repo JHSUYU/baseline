@@ -83,3 +83,31 @@ families, with zero selected throws. `pilot-raw-audit.json` and
 `pilot-summary.csv` preserve the independent raw receipt audit and each
 trial's time. The full campaign resumed from the same checkpoint; these
 five count in its 80-effective budget.
+
+## Final actor-aware campaign
+
+The node2 campaign reached `budget_complete` at **80/80 effective trials**.
+All 80 unchanged original JUnits passed. The 80 actor-bound ordered plans
+applied 456 client `SocketChannel` read/write exceptions at depths 1–8, and
+each retained the selected follower2 guard for the same raw client session
+after its final fault. No selected `CLIENT_ZXID_AHEAD` throw occurred. The
+fault JVMs took 1,834.479 seconds in aggregate; with the two healthy seeds,
+the measured case total is 1,861.999 seconds.
+
+The two healthy seeds covered 162 instrumented production source lines. The
+effective trial union covered 171, a gain of nine. The actor-bound I/O family
+set gained 24 families and ended at 26. The final eight effective trials
+added no source line, I/O family, or selected throw, so the predefined
+128-effective/10-fault extension did not run. There were 105 feedback-generated
+plans still queued at the 80-trial budget boundary. Server and epoch-file I/O
+without a proven runtime owner did not enter the V2 selector queue.
+
+`evidence/campaign-audit.json` independently re-read all 80 raw trials and
+passed every actor, owner, sequence, target, JUnit, elapsed-time, and throw
+check. `evidence/trial-summary.csv` gives every trial's elapsed time.
+`evidence/zk04-v2-raw-80.tar.gz` contains both healthy traces, all 80 trial
+traces, coverage, JUnit logs, and final checkpoint. Its SHA-256 is
+`859ae74f925c02f11b37fa0452b84468a351c3851fafde1fd2879a5d046a5ed2`.
+The top-level `../../../cases/ZOOKEEPER-04/result.json` reports this V2 result;
+the former coarse result and README are preserved alongside it as
+`result.pre-actor-v2.json` and `README.pre-actor-v2.md`.
