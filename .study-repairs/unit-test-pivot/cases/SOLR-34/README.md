@@ -1,5 +1,3 @@
-> **Actor identity recheck pending.** Earlier fault trials, coverage, and elapsed time are preserved under `legacy_coarse_actor` in `result.json` and in the original raw evidence. Their selectors did not establish the same runtime actor across runs. An actor-aware V2 campaign is required before this check counts as quality complete. [Independent audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
+# SOLR-34: actor-V2 review
 
-# SOLR-34: actor identity recheck
-
-Original raw evidence remains at the paths recorded in `result.json`.
+The graph-free original embedded-cluster JUnit and exact same-client fault campaign are complete. See [the actor-V2 case](actor-v2/README.md). The 80 earlier collection-only trials remain under `legacy_coarse_actor` in `result.json` and do not count toward this result.

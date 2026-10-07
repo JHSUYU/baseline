@@ -1,0 +1,127 @@
+{
+  "budget": {
+    "max_faults": 10,
+    "max_trials": 128
+  },
+  "case_id": "SOLR-34",
+  "elapsed_seconds": 5081.499,
+  "fault_trials": 128,
+  "first_fault_families": {
+    "FAULT:ZK_NATIVE:create|org.apache.solr.cloud.OverseerTaskQueue.createData#L201->SolrZkClient.lambda$create$9(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/String;|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/overseer/collection-queue-work/qn-{queue-sequence}": 1,
+    "FAULT:ZK_NATIVE:create|org.apache.solr.cloud.OverseerTaskQueue.createData#L201->SolrZkClient.lambda$create$9(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/String;|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/overseer/collection-queue-work/qnr-": 10,
+    "FAULT:ZK_NATIVE:delete|org.apache.solr.cloud.OverseerTaskQueue.offer#L241->SolrZkClient.lambda$delete$1(Ljava/lang/String;I)Ljava/lang/Object;|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/overseer/collection-queue-work/qnr-{queue-sequence}": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.OverseerTaskQueue.offer#L228->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/overseer/collection-queue-work/qnr-{queue-sequence}": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.OverseerTaskQueue.offer#L237->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/overseer/collection-queue-work/qnr-{queue-sequence}": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ClusterProperties.getClusterProperties#L99->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/clusterprops.json": 45,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/collections/test_coll": 69
+  },
+  "io_family_gain": 0,
+  "latest": {
+    "actor_binding": {
+      "clientIdentity": "1644134321",
+      "physicalNode": "127.0.0.1:33577_solr"
+    },
+    "applied_faults": 8,
+    "attempts": 1,
+    "effective": true,
+    "elapsed_seconds": 44.083,
+    "exact_target_throw_after_last_fault": 0,
+    "exact_target_throw_count": 0,
+    "fault_sequence": [
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:getData",
+        "resource": "/collections/test_coll",
+        "siteId": "org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      },
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 2,
+        "marker": "FAULT:ZK_NATIVE:getData",
+        "resource": "/collections/test_coll",
+        "siteId": "org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      },
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 3,
+        "marker": "FAULT:ZK_NATIVE:getData",
+        "resource": "/collections/test_coll",
+        "siteId": "org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      },
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 4,
+        "marker": "FAULT:ZK_NATIVE:getData",
+        "resource": "/collections/test_coll",
+        "siteId": "org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      },
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:getData",
+        "resource": "/clusterprops.json",
+        "siteId": "org.apache.solr.common.cloud.ClusterProperties.getClusterProperties#L99->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      },
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 2,
+        "marker": "FAULT:ZK_NATIVE:getData",
+        "resource": "/clusterprops.json",
+        "siteId": "org.apache.solr.common.cloud.ClusterProperties.getClusterProperties#L99->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      },
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 3,
+        "marker": "FAULT:ZK_NATIVE:getData",
+        "resource": "/clusterprops.json",
+        "siteId": "org.apache.solr.common.cloud.ClusterProperties.getClusterProperties#L99->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      },
+      {
+        "actorKey": "SOLR34/COORDINATOR/test_coll",
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:create",
+        "resource": "/overseer/collection-queue-work/qnr-",
+        "siteId": "org.apache.solr.cloud.OverseerTaskQueue.createData#L201->SolrZkClient.lambda$create$9(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/String;",
+        "sourceKey": "SOLR/COORD_REQUEST/test_coll"
+      }
+    ],
+    "first_family": "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/collections/test_coll",
+    "io_observed_count": 1823,
+    "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-34/actor-v2/campaign/trials/0128-7cc998467a00f03737e0/attempt-01/jacoco.exec",
+    "junit_exit": 0,
+    "junit_gate": [
+      1,
+      0,
+      0
+    ],
+    "last_family": "FAULT:ZK_NATIVE:create|org.apache.solr.cloud.OverseerTaskQueue.createData#L201->SolrZkClient.lambda$create$9(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/String;|SOLR/COORD_REQUEST/test_coll|SOLR34/COORDINATOR/test_coll|/overseer/collection-queue-work/qnr-",
+    "new_io_families": 0,
+    "new_production_probes": 0,
+    "planned_faults": 8,
+    "production_probes_covered": 28874,
+    "status": "checked",
+    "strict_injection": true,
+    "target_guard_after_last_fault": 1,
+    "target_guard_count": 1,
+    "target_preserved": true,
+    "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-34/actor-v2/campaign/trials/0128-7cc998467a00f03737e0/attempt-01/events.jsonl",
+    "trial_number": 128
+  },
+  "methodology": "actor_v2_same_solrzkclient_asm_jacoco",
+  "post_fault_target_reach_trials": 128,
+  "production_probe_gain": 156,
+  "selected_trials": 128,
+  "status": "budget_complete",
+  "strict_injections": 128,
+  "target_exception_after_fault_trials": 0,
+  "target_preserved_trials": 128,
+  "total_attempts": 128
+}
