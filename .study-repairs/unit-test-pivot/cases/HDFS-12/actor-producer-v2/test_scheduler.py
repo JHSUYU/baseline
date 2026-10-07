@@ -5,7 +5,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from campaign import select_next, suffix_family, suffix_feedback
+from campaign import initial_state, select_next, suffix_family, suffix_feedback
+from identity_gate import KEYS
 
 
 SITE = "SaslDataTransferServer.doSaslHandshake#readSecret"
@@ -25,6 +26,30 @@ def item(identity, ordinal, priority, enqueued=1.0):
 
 
 class SchedulerTests(unittest.TestCase):
+    def test_initial_io_feedback_uses_both_healthy_calibrations(self):
+        with TemporaryDirectory() as name:
+            output = Path(name)
+            a, b = output / "healthy-a", output / "healthy-b"
+            a.mkdir()
+            b.mkdir()
+            first = {"event": "FAULT_POINT_OBSERVED",
+                     "marker": "FAULT:HDFS_KEY_UPDATE:RPC_RESPONSE",
+                     "siteId": "BPServiceActor.offerService#keyUpdateResponse/NN0",
+                     "sourceKey": "dn1/BP0", "occurrence": "dn1/BP0/NN0",
+                     "hitOrdinal": 1, "actorLocalOrdinal": 1,
+                     "faultActor": "dn1", "resource": "BP0",
+                     "keyRole": "ROTATED_CURRENT"}
+            second = dict(first, siteId="BPOfferService.processCommand#applyKeys/NN0",
+                          marker="FAULT:HDFS_KEY_UPDATE:LOCAL_APPLY")
+            (a / "runtime_trace.jsonl").write_text(json.dumps(first) + "\n")
+            (b / "runtime_trace.jsonl").write_text(json.dumps(second) + "\n")
+            state = initial_state("HDFS-12", output, {
+                "stable_selectors": [[first[key] for key in KEYS]],
+            })
+            self.assertEqual(len(state["io_families"]), 2)
+            self.assertTrue(any("LOCAL_APPLY" in family
+                                for family in state["io_families"]))
+
     def result(self, output: Path, identity: str, ordinal: int,
                *, exact=True, valid=False):
         run = output / "runs" / identity

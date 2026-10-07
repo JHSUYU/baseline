@@ -8,8 +8,14 @@
       "max_faults": 8
     },
     "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
+    "healthy_io_family_union_size": 5,
     "healthy_two_seed_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/healthy_receipt.json",
+    "last_audited_attempted": 20,
+    "last_audited_effective": 20,
+    "last_audited_segment": "actor-v2-segment-20.json",
+    "last_audited_segment_sha256": "6ac69bf6ea5d0f39a290a52fe8ba6e7d3cc070e8632133e6c1221d3f99b41955",
     "new_counts_exclude_legacy": true,
+    "new_io_family_count": 0,
     "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
     "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2",
     "phase": "formal_budget_running",
@@ -33,13 +39,13 @@
     "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient[0]"
   ],
   "coverage_gain": {
-    "branch_counts": 5,
-    "methods": 2,
-    "probes": 16
+    "branch_counts": 13,
+    "methods": 3,
+    "probes": 45
   },
-  "elapsed_seconds": 159.825,
-  "fault_trials": 5,
-  "fully_applied_trials": 5,
+  "elapsed_seconds": 640.346,
+  "fault_trials": 20,
+  "fully_applied_trials": 20,
   "function": "retrievePassword(BlockTokenIdentifier)",
   "historical_campaign_summary": {
     "counts_excluded_from_actor_v2_budget": true,
@@ -230,6 +236,7 @@
     "trial_ledger": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/independent/long-lived/control-plane/trial-ledger.csv"
   },
   "methodology": "actor_precise_original_junit_graph_free_coverage_io_v2",
+  "new_io_families_against_healthy_union": 0,
   "raw_event_audit": "independent/audit-all.json",
   "raw_evidence_archive": {
     "archive": "HDFS-12-independent-evidence.tar.gz",
@@ -238,14 +245,14 @@
     "file_count": 1551,
     "sha256": "d5e9d5a9cc94de65cd9994e3ff11e5bda086308fc8c4eb1fd319147fd50c4ee6"
   },
-  "reason": "Two fresh original testLongLivedClient[0] calibrations and five actor-precise fault pilots passed. Each pilot matched one DN1/BP0 key-update response fault and reached the selected allKeys.get guard afterward without InvalidToken. The formal V2 budget continues from this checkpoint. Historical 256-trial coarse-actor counts are excluded from the V2 totals.",
+  "reason": "Actor-precise V2 formal budget has 20 independently audited original JUnit trials, all with strictly matched faults and the same manager target after injection; no selected InvalidToken occurred. The campaign continues in tmux from its node1 checkpoint. Historical coarse-actor trials are excluded from these counts.",
   "selection_line": 514,
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_review": "BlockTokenSecretManager.retrievePassword first rejects expired tokens, then looks up keyId in allKeys and throws InvalidToken if absent. The long-lived original test rotates keys and verifies later reads and checksums. No selected null-key throw followed a strict, target-retaining fault sequence in either workload. Fault-induced JUnit failures are recorded separately from this selected throw.",
   "status": "actor_v2_running",
-  "strict_injections": 5,
+  "strict_injections": 20,
   "system": "HDFS 3.4.3",
-  "target_after_fault": 5,
+  "target_after_fault": 20,
   "target_exception_after_fault_trials": 0,
   "target_reached": true
 }

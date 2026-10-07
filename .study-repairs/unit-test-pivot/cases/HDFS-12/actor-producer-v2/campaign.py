@@ -140,13 +140,14 @@ def initial_state(case: str, output: Path, healthy: dict) -> dict:
         raise ValueError("this isolated producer campaign is HDFS-12 only")
     seed = output / "healthy-a"
     trace = rows(seed)
+    healthy_io_rows = trace + rows(output / "healthy-b")
     selected = set(map(tuple, healthy["stable_selectors"]))
     state = {
         "schema": "hdfs-key-actor-v2-campaign-1", "case_id": case,
         "status": "running", "queue": [], "seen": [], "completed": {}, "in_flight": None,
         "effective_trials": 0, "attempted_trials": 0, "total_elapsed_seconds": 0.0,
         "coverage": {kind: sorted(covered(seed, kind)) for kind in COVERAGE},
-        "io_families": sorted({family(row) for row in trace
+        "io_families": sorted({family(row) for row in healthy_io_rows
                                if row.get("event") == "FAULT_POINT_OBSERVED"}),
         "max_effective": 80, "max_faults": 8, "recent_gain": [],
         "healthy_receipt": str(output / "healthy_receipt.json"),
