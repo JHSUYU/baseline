@@ -1,10 +1,10 @@
-# HDFS-39 sender-aware RPC overlay (offline preparation)
+# HDFS-39 sender-aware RPC overlay
 
 Scope: Hadoop 3.4.3 original `TestFileAppend#testMultipleAppends`, one NameNode
 and four DataNodes, target `FSDirAppendOp.appendFile:131` on
 `/testMultipleAppend/foo`. This directory is independent of the historical
-HDFS-39 campaign. No cluster JUnit has been run with this V2 overlay yet; the
-case result and 104-check table retain their pending status.
+HDFS-39 campaign. The case result and 104-check table retain their pending
+status until the actor-aware budget completes.
 
 ## Why the historical count cannot be promoted
 
@@ -101,11 +101,33 @@ update without starting a cluster.
    usable individually for clean same-plan replays and independent review.
 5. Use the case budget of 80 effective trials, up to eight ordered faults;
    if the last eight effective trials add production branch/method coverage
-   or a stable I/O family, extend to 128 effective and ten faults. Any
+   or a stable I/O family, extend to 128 effective and ten faults. The
+   distinct-attempt safety caps are 320 and 512 respectively; reaching a cap
+   before the effective goal is recorded as incomplete. Any
    target-exception candidate needs a clean same-plan replay and source
    classification. Preserve the 205 old attempts as a separate legacy stratum.
 
-The V2 controller is staged and Python-compiled offline; its cluster-side
-identity and resume path still require the two healthy calibrations and a
-bounded first trial before a long campaign. This directory does not claim a
-completed V2 trial or restore `quality_complete` without that work.
+## Current node1 run
+
+On 2026-10-07 the two unchanged original cluster JUnits passed in 18.937 s
+and 20.228 s. `calibrate_v2.py` confirmed four runtime DN UUID roles,
+the actual NameNode port and block pool, and 66 same-block DN I/O points in
+each run. The fresh V2 checkpoint started with 328 actor-bound plans and
+zero imported historical trials. The first original fault JUnit passed in
+18.318 s; its requested `dn0` block-report fault was absent in that run,
+so it is recorded as attempt 1 and zero effective trials. The raw manifest,
+trace and strict receipt are on node1 in `evidence/`.
+
+`guarded_campaign.py` runs the next original JUnit in tmux
+`hdfs39_v2_budget` only when no more than three other Java processes are
+present and at least 8 GiB disk is free. It rechecks each completed raw
+trace against its plan and atomic checkpoint and stops at the case budget,
+candidate, or wall cap. `--check-only` independently verified the first
+trial before the tmux run started. If interrupted, rerun the same supervisor
+in that tmux session; it resumes the V2 checkpoint without consuming an
+old coarse-selector trial.
+
+The two healthy calibrations and the first original fault JUnit now validate
+the cluster-side identity and resume path. The case remains pending while
+the checkpoint advances toward its effective budget; a completed trial
+alone does not restore `quality_complete`.
