@@ -68,3 +68,12 @@ effective full trials. It retains at most 24 normalized families, adds at most
 plans. The policy SHA-256 and migration receipt live in `full-state.json`;
 subsequent ledger rows include the policy and controller hashes. This feedback
 never changes prior trial outcomes or either earlier denominator.
+
+After trial 018 closed at 18 attempts/8 effective, the queue held 201
+singletons, 43 pairs, 51 triples and 62 four-fault plans. The observed strict
+retention was 4/5 for pairs and 4/13 for triples, so the controller reserved
+two slots per five attempts for singletons, two for pairs and one for depth
+three or greater. `full-state.json.scheduler_migration` records the complete
+checkpoint, preserved queue depths and before/after controller SHA-256;
+`scheduler_policy_sha256` is included in later ledger rows. This only changes
+the order of untried plans.

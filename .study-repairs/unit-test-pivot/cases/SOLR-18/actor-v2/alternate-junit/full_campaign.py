@@ -28,6 +28,11 @@ FEEDBACK_POLICY = ('Same target ZKCLIENT and pretarget IO, exact selector seen i
                    'at least two distinct effective full trials; deduplicate '
                    'normalized operation/path/thread family; promote at most 24 '
                    'new roots; add at most 16 ordered children per effective trial.')
+SCHEDULER_POLICY = ('At each complete checkpoint, reserve two of five attempt '
+                    'slots for singleton plans, two for ordered pairs, and one '
+                    'for depth three or greater; empty depth fallbacks are '
+                    '1->2->3, 2->1->3, or 3->2->1 respectively. '
+                    'Within a depth, retain score and age priority.')
 _OLD_PLANS = None
 
 
@@ -214,9 +219,38 @@ def select(state: dict) -> dict:
         age = state['attempts'] - item['queued_after_attempt']
         return (item['score'] + min(age // 12, 12), -len(item['plan']),
                 '|||'.join(item['plan']))
-    chosen = max(state['pending'], key=key)
+    slot = state['attempts'] % 5
+    preferred = (1, 1, 2, 2, 3)[slot]
+    levels = (1, 2, 3) if preferred == 1 else ((2, 1, 3) if preferred == 2 else (3, 2, 1))
+    candidates = []
+    for level in levels:
+        candidates = [item for item in state['pending']
+                      if (len(item['plan']) >= 3 if level == 3 else len(item['plan']) == level)]
+        if candidates:
+            break
+    assert candidates
+    chosen = max(candidates, key=key)
     state['pending'].remove(chosen)
     return chosen
+
+
+def upgrade_scheduler(state: dict) -> None:
+    if state.get('scheduler_policy_sha256'):
+        return
+    import hashlib
+    assert state['inflight'] is None, 'scheduler upgrade only at complete checkpoint'
+    assert state['feedback_policy_sha256']
+    state['scheduler_policy_sha256'] = hashlib.sha256(SCHEDULER_POLICY.encode()).hexdigest()
+    state['scheduler_migration'] = {
+        'at_utc': stamp(), 'prior_controller_sha256':
+        '33f8aba546c4932eb56af4dcdca0260ed42fcf3c35eb04c40aa86692921f7a7c',
+        'new_controller_sha256': sha(Path(__file__)),
+        'closed_attempts': state['attempts'], 'closed_effective': state['effective'],
+        'pending_by_depth': {str(depth): sum(len(item['plan']) == depth
+                                             for item in state['pending'])
+                             for depth in range(1, state['max_faults'] + 1)},
+        'trial_ids': [row['run_id'] for row in state['trials']]}
+    save(state)
 
 
 def maybe_finish(state: dict) -> None:
@@ -282,6 +316,7 @@ def finish_trial(state: dict, manifest: dict) -> None:
            'new_stable_io_families': sorted(stable_families),
            'new_repeat_observed_io_roots': fresh_roots,
            'feedback_policy_sha256': state.get('feedback_policy_sha256'),
+           'scheduler_policy_sha256': state.get('scheduler_policy_sha256'),
            'controller_sha256': sha(Path(__file__)),
            'run_json_sha256': sha(ROOT / job['run_id'] / 'run.json'),
            'finished_at_utc': stamp()}
@@ -349,6 +384,7 @@ def main() -> None:
             save(state)
         if state['inflight'] is None:
             upgrade_feedback(state)
+            upgrade_scheduler(state)
         if args.init_only:
             print(json.dumps({'status': 'initialized', 'pending': len(state['pending']),
                               'attempts': state['attempts'], 'effective': state['effective']}), flush=True)
