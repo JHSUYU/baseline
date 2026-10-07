@@ -744,6 +744,17 @@ def main():
                   MIN_FREE_BYTES, flush=True)
             return
         effective_count = sum(t["effective"] for t in state["trials"])
+        if (os.environ.get("HBASE32U_AUDIT_AT_80") == "1"
+                and not state["extended"]
+                and effective_count >= INITIAL_EFFECTIVE):
+            # Freeze the first budget boundary for an independent audit of
+            # the last eight effective trials. Resume without this flag only
+            # after verifying the existing conditional extension decision.
+            publish(state, "initial_budget_audit_pending")
+            PAUSE_AFTER_CHECKPOINT.write_text(
+                "80 effective trials reached; audit late novelty before extension\n")
+            print("HBASE32U paused for initial-budget audit", flush=True)
+            return
         if effective_count >= state["effective_budget"]:
             if not state["extended"] and effective_count >= INITIAL_EFFECTIVE:
                 last_eight = [t for t in state["trials"] if t["effective"]][-8:]
