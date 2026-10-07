@@ -44,6 +44,8 @@ strict injection, postfault target, actor/peer identity, and expected versus
 novel target-throw signatures from raw receipts before promoting any case
 result. Healthy throw comparison includes the same check site and stable
 branch operands; it does not classify an exception as a bug without source
-review and replay.
+review and replay. Each trial is checked against the two healthy seeds' exact
+original JUnit method and overlay digest; an empty JaCoCo receipt fails the
+independent audit.
 The per-case effective seconds reuse shared JUnit time when one run covers
 multiple checks, so they are not additive across cases.

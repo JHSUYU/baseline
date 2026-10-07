@@ -248,6 +248,9 @@ def summarize_attempt(anchor: Path, item: dict, run: Path, cases: tuple[str, ...
     manifest = json.loads((run / "manifest.json").read_text())
     if manifest.get("instrumentation_digest_sha256") != state["instrumentation_digest_sha256"]:
         raise RuntimeError("trial instrumentation differs from calibrated healthy seeds: " + str(run))
+    healthy = json.loads(Path(state["healthy_receipt"]).read_text())
+    if manifest.get("test") != healthy.get("test"):
+        raise RuntimeError("trial original JUnit method differs from healthy seeds: " + str(run))
     trace = rows(run / "runtime_trace.jsonl")
     signatures = throw_signatures(trace)
     exact, applied = exact_applied(item["sequence"], trace)

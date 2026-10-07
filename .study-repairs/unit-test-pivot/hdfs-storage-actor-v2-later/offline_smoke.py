@@ -184,12 +184,15 @@ def check_throw_receipt() -> None:
              "healthy_target_throw_signatures_by_case": {"HDFS-37": healthy}}
     with tempfile.TemporaryDirectory() as temporary:
         run = Path(temporary)
+        (run / "healthy_receipt.json").write_text(json.dumps({
+            "test": "original.JUnit#method"}))
+        state["healthy_receipt"] = str(run / "healthy_receipt.json")
         (run / "manifest.json").write_text(json.dumps({
             "instrumentation_digest_sha256": "offline-smoke", "returncode": 0,
-            "elapsed_seconds": 1.0}))
+            "test": "original.JUnit#method", "elapsed_seconds": 1.0}))
         for kind in campaign.COVERAGE:
             (run / f"covered_{kind}.txt").write_text("")
-        (run / "jacoco.exec").write_bytes(b"")
+        (run / "jacoco.exec").write_bytes(b"offline-jacoco")
         def summarize(events: list[dict]) -> dict:
             (run / "runtime_trace.jsonl").write_text(
                 "".join(json.dumps(row) + "\n" for row in events))
@@ -198,7 +201,8 @@ def check_throw_receipt() -> None:
         assert result["by_case"]["HDFS-37"]["target_exceptions_matching_healthy_signature"] == 1
         assert result["by_case"]["HDFS-37"]["target_exceptions_with_novel_signature"] == 0
         effective, _, issues = audit_checkpoint.check_trial(
-            item, result, {"seeds": [{"instrumentation_digest_sha256": "offline-smoke"}],
+            item, result, {"test": "original.JUnit#method",
+                           "seeds": [{"instrumentation_digest_sha256": "offline-smoke"}],
                            "healthy_target_throw_signatures_by_case": {"HDFS-37": healthy}})
         assert effective["HDFS-37"] and not issues, issues
         before = {**check, "seq": 9}

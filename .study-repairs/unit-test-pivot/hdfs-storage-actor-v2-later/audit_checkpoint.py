@@ -66,9 +66,12 @@ def check_trial(item: dict, result: dict, receipt: dict
         issues.append("trace digest mismatch")
     if manifest.get("instrumentation_digest_sha256") != receipt["seeds"][0]["instrumentation_digest_sha256"]:
         issues.append("trial overlay digest differs from healthy seeds")
+    if manifest.get("test") != receipt.get("test"):
+        issues.append("original JUnit method differs from healthy seeds")
     if manifest.get("returncode") != result["junit_exit"]:
         issues.append("JUnit exit differs from manifest")
-    if not (manifest_path.parent / "jacoco.exec").is_file():
+    if (not (manifest_path.parent / "jacoco.exec").is_file() or
+            (manifest_path.parent / "jacoco.exec").stat().st_size == 0):
         issues.append("missing JaCoCo data")
     for category in ("probes", "methods", "branch_counts", "lines"):
         if not (manifest_path.parent / f"covered_{category}.txt").is_file():
@@ -154,6 +157,10 @@ def audit(anchor: Path) -> dict:
     issues: list[str] = []
     if not receipt.get("pass") or len(receipt.get("seeds", [])) != 2:
         issues.append("two-seed healthy receipt not passed")
+    if (len(receipt.get("seeds", [])) == 2 and any(
+            json.loads(Path(seed["manifest"]).read_text()).get("test") != receipt.get("test")
+            for seed in receipt["seeds"])):
+        issues.append("healthy original JUnit methods differ")
     if hashlib.sha256(receipt_path.read_bytes()).hexdigest() != state["healthy_receipt_sha256"]:
         issues.append("healthy receipt digest differs from checkpoint")
     ids = state["completion_order"]
