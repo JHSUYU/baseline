@@ -4,6 +4,8 @@ The workload is the unchanged HBase 2.6.6 `TestRegionReplicaFailover#testLotsOfR
 
 `healthy4.log` and `healthy4.exec` are the immutable fault-free seed. The fresh seed has 540 target-linked Master OPENED, 341 exact-actor WAL append, and 341 exact-actor WAL sync selectors. `campaign.py` stores atomic `supplemental-checkpoint.json`, `supplemental-inflight.json`, and `supplemental-result.json`; each trial has an exit receipt, compressed full trace, and separate JaCoCo `.exec`. On restart it resumes the inflight plan and does not replay a trial with a completed receipt. The controller is run in node0 tmux `hbase32-upstream-fuzz`:
 
+A plan whose exact I/O identity never appears can be retried at most twice, with a lower selection priority. Such attempts retain their raw evidence, never enter the effective denominator or coverage feedback, and do not generate children. Checkpoint version 2 restores unmatched plans from the initial running campaign into the queue without replaying completed trial IDs or changing the accumulated coverage.
+
 ```sh
 cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream
 tmux attach -t hbase32-upstream-fuzz

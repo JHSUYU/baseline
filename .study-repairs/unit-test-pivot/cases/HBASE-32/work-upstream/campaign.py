@@ -25,6 +25,7 @@ RESULT = HERE / "supplemental-result.json"
 KINDS = ("DO_NOT_RETRY_IOEXCEPTION", "IOEXCEPTION", "SOCKET_TIMEOUT", "EOF_EXCEPTION")
 RNG_SEED = 32032
 CHILD_CAP = 24
+UNMATCHED_RETRY_LIMIT = 2
 INITIAL_EFFECTIVE = 80
 EXTENDED_EFFECTIVE = 128
 INITIAL_ATTEMPT_CAP = 240
@@ -302,6 +303,7 @@ def priority(entry, tried, family_counts):
             + (12 if family.startswith("WAL_") else 8)
             - min(family_counts[family] // 4, 20)
             + (20 if same_actor else 0)
+            - 30 * entry.get("unmatched_retries", 0)
             - min(entry["parent_seconds"] / 20, 12))
 
 
@@ -351,6 +353,28 @@ def main():
                 if completed["plan"] != pending["entry"]["plan"]:
                     raise RuntimeError("Completed trial conflicts with stale inflight marker")
                 INFLIGHT.unlink()
+        if state.get("version", 1) < 2:
+            counts = Counter(tuple(trial["plan"]) for trial in state["trials"])
+            queued = {tuple(entry["plan"]) for entry in state["queue"]}
+            restored = []
+            for trial in state["trials"]:
+                key = tuple(trial["plan"])
+                if (not trial["strict"] and counts[key] <= UNMATCHED_RETRY_LIMIT
+                        and key not in queued):
+                    state["queue"].append({"plan": trial["plan"],
+                                           "parent_novelty": 0,
+                                           "parent_seconds": trial["elapsed_seconds"] or 60,
+                                           "wait": 0,
+                                           "unmatched_retries": counts[key]})
+                    queued.add(key)
+                    restored.append(trial["id"])
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 2, "restored_unmatched_plans": restored,
+                "queue_length": len(state["queue"]),
+                "coverage_union_unchanged": state["coverage_union"]})
+            state["version"] = 2
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -365,7 +389,7 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 1, "rng_seed": RNG_SEED,
+        state = {"version": 2, "rng_seed": RNG_SEED,
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -472,6 +496,7 @@ def main():
         unexpected = matched and retained and not invalid and (exit_code == 124 or
             trace["junit"] is not None and trace["junit"]["failed"] > 0)
         trial = {"id": trial_id, "plan": entry["plan"], "strict": matched,
+                 "unmatched_retries_before": entry.get("unmatched_retries", 0),
                  "applied_fault_events": len(trace["FAULT_APPLIED"]),
                  "target_method_after_fault": bool(reached["method"]),
                  "same_actor_retry_after_fault": bool(reached["progress"]),
@@ -504,6 +529,11 @@ def main():
         state["trials"].append(trial)
         state["queue"] = [item for item in state["queue"]
                           if item["plan"] != entry["plan"]]
+        if not matched and entry.get("unmatched_retries", 0) < UNMATCHED_RETRY_LIMIT:
+            retry = dict(entry)
+            retry["unmatched_retries"] = entry.get("unmatched_retries", 0) + 1
+            retry["wait"] = 0
+            state["queue"].append(retry)
         if admitted and exit_code != 124:
             enqueue(state, entry["plan"], selectors, trace["FAULT_APPLIED"][-1]["line"],
                     novelty, trace["elapsed_seconds"])
