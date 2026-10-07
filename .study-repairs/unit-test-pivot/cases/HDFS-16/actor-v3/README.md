@@ -33,6 +33,10 @@ before that method waits for the reply. A matched exception can therefore
 occur while the NameNode is still processing the same request. A target event
 after the fault proves temporal, same-actor, same-block reachability under the
 stated gate; it does not by itself prove the fault caused that target event.
+The target site is also called from `BlockInfo.commitBlock` while the test
+closes its stream or cluster. The trial ledger retains the target caller so
+these cleanup reaches are distinguishable from
+`BlockManager.updateLastBlock` pipeline-update reaches in the final review.
 
 Two fresh healthy original JUnit runs on node1 passed under the shared
 `jvm-start.lock`: 2026-10-07 10:56:47–10:57:20 UTC and
