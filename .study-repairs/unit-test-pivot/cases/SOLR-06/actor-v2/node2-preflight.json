@@ -1,14 +1,19 @@
 {
   "case_id": "SOLR-06",
   "node": "node2",
-  "status": "ready_for_healthy_calibration",
+  "status": "healthy_calibrated_ready_for_pilot",
   "build_receipt_sha256": "44380985325f97d8171511d5733defbcada96f6d2c12e598c105958c9e61a423",
   "agent_sha256": "f6f9297028c38f453ce35daa4ba854cbfb41049a139e6867192f0e1c4bdfff61",
   "classpath_entries": 268,
   "missing_classpath_entries": 0,
   "remote_verify_build": "passed",
   "remote_offline_smoke": "SOLR06_V2_OFFLINE_OK {org/apache/solr/cloud/ZkController=3, org/apache/solr/common/cloud/SolrZkClient=6}; SOLR06_V2_TARGET_FAIL_CLOSED_OK",
-  "healthy_junit_runs": 0,
+  "healthy_junit_runs": 2,
+  "healthy_junit_elapsed_seconds": [15.114, 16.829],
+  "healthy_junit_exits": [0, 0],
+  "healthy_selected_pull_guard_counts": [12, 12],
+  "common_exact_target_signatures": 8,
+  "calibration_receipt": "calibration-receipt.json",
   "fault_trials": 0,
-  "note": "The original Solr 8.11.4 source, release JARs, test helper, Java 8 and isolated V2 adapter are present on node2. The same build receipt and agent hashes were verified on node0 and node2. Cluster JUnit awaits a node2 execution slot."
+  "note": "Two unchanged assertion-enabled TestPullReplica cluster JUnit runs passed on node2. Each original JUnit repeats its test twice, bound both Jetty clients, and reached 12 eligible PULL assertion guards. Their eight exact actor/core/leader target signatures overlap. Fault injection awaits a node2 slot; no V2 fault trial has run."
 }
