@@ -17378,7 +17378,7 @@
       "source_line": 911,
       "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
       "status": "quality_complete",
-      "stop_reason": "Near trial 64, six strict faults exhausted the original test's six RPC attempts and added one production retry branch, so the authorized 128 ceiling was opened. The additional distinct five-fault order r066 added no production coverage or new I/O family. The observed meta table-state Get door has been exercised with 1–6 faults and all four legal exception families; seven or eight requests cannot match under the original retry limit. Further queued orders reuse the same door and retry paths, so the effective candidate queue was exhausted before the 128 ceiling.",
+      "stop_reason": "Near trial 64, six strict faults exhausted the original test's six RPC attempts and added one production retry branch, so the authorized 128 ceiling was opened. The additional distinct five-fault order r066 added no production coverage or new I/O family. The observed meta table-state Get door has been exercised with 1\u20136 faults and all four legal exception families; seven or eight requests cannot match under the original retry limit. Further queued orders reuse the same door and retry paths, so the effective candidate queue was exhausted before the 128 ceiling.",
       "strict_injections": 65,
       "system": "HBase 2.6.6",
       "target_after_fault": 61,
@@ -206143,7 +206143,7 @@
       "check_code": "assert regionNode.isInState(State.ABNORMALLY_CLOSED);",
       "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer.test",
       "coverage_gain": 27,
-      "coverage_note": "V2 fixed production JaCoCo scope: two-seed union 228 methods/334 branches/1115 lines; final union 229/361/1187. Stable I/O sites 11→17 with ordinal excluded from site identity. Last 20 trials added no production coverage or stable I/O site.",
+      "coverage_note": "V2 fixed production JaCoCo scope: two-seed union 228 methods/334 branches/1115 lines; final union 229/361/1187. Stable I/O sites 11\u219217 with ordinal excluded from site identity. Last 20 trials added no production coverage or stable I/O site.",
       "current_campaign": {
         "actor_audit": "independent/trial_actor_audit_v2.json",
         "actor_identity_errors": [],
@@ -206622,7 +206622,7 @@
       },
       "selection_group": "original_102",
       "site_id": "<org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure: org.apache.hadoop.hbase.procedure2.StateMachineProcedure$Flow confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)>#u38",
-      "source_audit_note": "Released HBase 2.6.6 TransitRegionStateProcedure.confirmClosed B5 line379 reached on unchanged TestReportRegionStateTransitionFromDeadServer.test. 80 post-final-fault B5 trials had no false assertion outcome, target exception, or subsequent JUnit failure. r001/r013/r049/r057/r085 META_PUT IOException caused direct RegionStateStore persist failure→HMaster.abort before target; r066/r079/r101 B5 preceded the final fault. See independent/v2_source_review.md.",
+      "source_audit_note": "Released HBase 2.6.6 TransitRegionStateProcedure.confirmClosed B5 line379 reached on unchanged TestReportRegionStateTransitionFromDeadServer.test. 80 post-final-fault B5 trials had no false assertion outcome, target exception, or subsequent JUnit failure. r001/r013/r049/r057/r085 META_PUT IOException caused direct RegionStateStore persist failure\u2192HMaster.abort before target; r066/r079/r101 B5 preceded the final fault. See independent/v2_source_review.md.",
       "source_line": 379,
       "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
       "status": "quality_complete",
@@ -253473,49 +253473,143 @@
             "lock": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
             "upstream": "783ac1b6fbe847c19270372767670d9ae9963dbb051770433eb13f68beab0604"
           },
+          "archiver": "work-role/archive_role_pilot.py",
+          "archiver_sha256": "f65ec9014d16ea4ce52629bb70b45289a4e6d67036fa6132fd84de3612afcad5",
           "attempted_trials": 0,
           "classification": "distinct_plan_not_s272_exact_replay",
           "cluster_junit_executed": true,
-          "effective_trials": 0,
-          "fuzz_budget_admitted": false,
-          "java8_build_smoke": true,
-          "next_gate": "two independent unchanged fault-free original JUnit passes in released node0 slot; then up to 3 distinct role-aware fault diagnostics",
-          "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
-          "plan_sha256": "c201789d264c40d45184802b75839c0a1baaa3020649715cadcef3a82e2a1740",
-          "runtime_identity_smoke_negative_rejected": true,
-          "runtime_identity_smoke_positive": true,
-          "spec": "work-role/role-plan.json",
-          "state": "fixed_region_plan_unreachable_in_first_healthy",
-          "pilot_controller": "work-role/role_pilot.py",
-          "pilot_controller_sha256": "598a1311913293fc1e64f4866efd2ac1341b53e1cf00540586a5251cb8d3378c",
-          "runner_sha256": "f24c4e1b9488a0cd824fafb797794d726495b5f83c6d8ac753deb1a9b8ee3bd3",
-          "independent_checkpoint": "work-role/role-pilot-checkpoint.json",
-          "healthy_timeout_seconds": 360,
-          "fault_timeout_seconds": 600,
-          "fault_attempt_cap": 3,
-          "archiver": "work-role/archive_role_pilot.py",
-          "archiver_sha256": "f65ec9014d16ea4ce52629bb70b45289a4e6d67036fa6132fd84de3612afcad5",
-          "resume_policy": "settle durable finished in-flight receipt or classify interrupted attempt; never rerun an old suffix",
-          "healthy_passes_required": 2,
-          "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
           "conservative_space_review_bytes": 4294967296,
-          "healthy_attempts": 1,
-          "healthy_passes": 0,
+          "effective_trials": 0,
+          "fault_attempt_cap": 3,
+          "fault_timeout_seconds": 600,
+          "first_plan_not_imported_into_v2": true,
+          "fuzz_budget_admitted": false,
+          "healthy_001_archive_sha256": "42f66615f14e88caeceaf1a29a721b190213be615c748e644774d2060c2e7b4a",
           "healthy_001_elapsed_seconds": 58.36,
+          "healthy_001_manifest_sha256": "840c228272d5a89f1d1343fda47ae23d966b11103087abcb94999189189414ea",
           "healthy_001_original_junit": {
             "failed": 0,
             "found": 1,
             "succeeded": 1
           },
-          "healthy_001_target_invocations": 542,
-          "healthy_001_role_matched_master_reports": 204,
+          "healthy_001_raw_sha256": "fa35936d51586fc461a3f4e16524feef4e293142e03fcfa8b7c3943130b00e67",
           "healthy_001_reason": [
             "no_exact_meta_role_actor_target_rpc_path"
           ],
-          "healthy_001_raw_sha256": "fa35936d51586fc461a3f4e16524feef4e293142e03fcfa8b7c3943130b00e67",
-          "healthy_001_manifest_sha256": "840c228272d5a89f1d1343fda47ae23d966b11103087abcb94999189189414ea",
-          "healthy_001_archive_sha256": "42f66615f14e88caeceaf1a29a721b190213be615c748e644774d2060c2e7b4a",
-          "first_plan_not_imported_into_v2": true
+          "healthy_001_role_matched_master_reports": 204,
+          "healthy_001_target_invocations": 542,
+          "healthy_attempts": 1,
+          "healthy_passes": 0,
+          "healthy_passes_required": 2,
+          "healthy_timeout_seconds": 360,
+          "independent_checkpoint": "work-role/role-pilot-checkpoint.json",
+          "java8_build_smoke": true,
+          "next_gate": "two independent unchanged fault-free original JUnit passes in released node0 slot; then up to 3 distinct role-aware fault diagnostics",
+          "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+          "pilot_controller": "work-role/role_pilot.py",
+          "pilot_controller_sha256": "598a1311913293fc1e64f4866efd2ac1341b53e1cf00540586a5251cb8d3378c",
+          "plan_sha256": "c201789d264c40d45184802b75839c0a1baaa3020649715cadcef3a82e2a1740",
+          "resume_policy": "settle durable finished in-flight receipt or classify interrupted attempt; never rerun an old suffix",
+          "runner_sha256": "f24c4e1b9488a0cd824fafb797794d726495b5f83c6d8ac753deb1a9b8ee3bd3",
+          "runtime_identity_smoke_negative_rejected": true,
+          "runtime_identity_smoke_positive": true,
+          "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+          "spec": "work-role/role-plan.json",
+          "state": "fixed_region_plan_unreachable_in_first_healthy"
+        },
+        "role_aware_variation_v2": {
+          "base_agent_sha256": "ae5291dc9fe77fe42f88f2389215037b3c27e74ce63db25c5c66c3db08ee7f94",
+          "checkpoint": "work-role-v2/role-pilot-checkpoint.json",
+          "classification": "distinct_dynamic_meta_host_role_plan_not_s272_exact_replay_or_fixed_region_v1",
+          "cluster_junit_executed": true,
+          "fault_attempt_cap": 3,
+          "fault_attempts": 0,
+          "first_plan_not_imported_into_v3": true,
+          "fuzz_budget_admitted": false,
+          "healthy_001_archive_sha256": "934004b507674d4e4481bd0324bec31e31913f5fa5f1b2b12784482fc310f433",
+          "healthy_001_elapsed_seconds": 57.47,
+          "healthy_001_manifest_sha256": "66b25562c25736417343b1f91dcb4e0d222af8bf79dc7c258efc6f290140db2e",
+          "healthy_001_original_junit": {
+            "failed": 0,
+            "found": 1,
+            "succeeded": 1
+          },
+          "healthy_001_raw_sha256": "b86fbedd5c922031045ade567dbc7dc3dbe68b2d1943ab5a4b2c334eb3bbe1d5",
+          "healthy_001_reason": [
+            "no_exact_meta_role_actor_target_rpc_path"
+          ],
+          "healthy_001_target_invocations": 542,
+          "healthy_attempts": 1,
+          "healthy_passes": 0,
+          "healthy_passes_required": 2,
+          "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
+          "new_bug": false,
+          "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+          "plan_sha256": "f71d0f242450a6c2e34efb22dd4e9d94be1b87c00572e5e4ffa5b8ea1cedf01b",
+          "s272_exact_replay": false,
+          "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+          "spec": "work-role-v2/role-plan.json",
+          "state": "replica2_not_meta_host_in_first_healthy",
+          "upstream_agent_sha256": "6f07d8bcf785c660d8d2bc21cfe25edfd2f0273e45809c973abaaa759d5fa90c"
+        },
+        "role_aware_variation_v3": {
+          "base_agent_sha256": "9bcfb2fd27fe62dc138c75ecd43ebd646bcb807a9caa4bc42a38efeb75ea7008",
+          "checkpoint": "work-role-v3/role-pilot-checkpoint.json",
+          "classification": "distinct_runtime_meta_host_and_actual_secondary_replica_not_s272_exact_replay_or_v1_v2",
+          "cluster_junit_executed": true,
+          "fault_attempt_cap": 3,
+          "fault_attempts": 0,
+          "fuzz_budget_admitted": false,
+          "healthy_attempts": 2,
+          "healthy_passes": 2,
+          "healthy_passes_required": 2,
+          "healthy_runs": [
+            {
+              "archive_sha256": "e878fe455016a6275cef9d5b04d6916c9e417c373e7a315c4417f3691d06a7e6",
+              "elapsed_seconds": 59.96,
+              "eligible_actor_count": 164,
+              "finished_utc": "2026-10-07T13:27:38.771124+00:00",
+              "healthy_gate_passed": true,
+              "jacoco_sha256": "6034f3dda23740664f41e71cc96e85aa7e576e46dc73dc16b567d279e9efe081",
+              "manifest_sha256": "1532996ca9b30355e26ea9b1c9e96e9deae4a5ec72f18ed7b74227cb4a47e2a4",
+              "original_junit": {
+                "failed": 0,
+                "found": 1,
+                "succeeded": 1
+              },
+              "raw_log_sha256": "bba14069dbbef076329f75a4bc10a07769cd04b9f6220bef5a64fbb49a7af60a",
+              "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-001",
+              "started_utc": "2026-10-07T13:26:37.549316+00:00",
+              "suffix": "healthy-001"
+            },
+            {
+              "archive_sha256": "aef01d699c03c0e6e1dbeec8c618ad57fee10f1e7057a8e78abb469f47acee23",
+              "elapsed_seconds": 60.69,
+              "eligible_actor_count": 175,
+              "finished_utc": "2026-10-07T13:29:10.713732+00:00",
+              "healthy_gate_passed": true,
+              "jacoco_sha256": "16fafcce48eb9aa5916a27cf0baf4e95b7edc47adc82678ec74cbf6fe48c59bd",
+              "manifest_sha256": "76348253b3aaae31da2fb8c03ed42c3d409581f787da774164918c5306535ae2",
+              "original_junit": {
+                "failed": 0,
+                "found": 1,
+                "succeeded": 1
+              },
+              "raw_log_sha256": "98bb152dc621ae669cc39bcd5628af31bdd62248a0b2ee6ca107a0659a400486",
+              "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-002",
+              "started_utc": "2026-10-07T13:28:08.422205+00:00",
+              "suffix": "healthy-002"
+            }
+          ],
+          "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
+          "new_bug": false,
+          "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+          "plan_sha256": "e3e52e9a77b03c047a25fca1d26b405985a9f7c5f931923981a2fbc07f97e1d0",
+          "s272_exact_replay": false,
+          "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+          "spec": "work-role-v3/role-plan.json",
+          "state": "two_original_healthy_passes_fault_diagnostic_running",
+          "upstream_agent_sha256": "b9c28c4b8f35d1c275a907a2ac0e2b0ba0462e92c9cee1b369826e9ae64931df"
         },
         "s272": {
           "all_replays_children_success": 600,
@@ -253544,101 +253638,7 @@
           "strict": true,
           "thread_dump_count": 4
         },
-        "state": "paused_after_bounded_s272_review",
-        "role_aware_variation_v2": {
-          "state": "replica2_not_meta_host_in_first_healthy",
-          "classification": "distinct_dynamic_meta_host_role_plan_not_s272_exact_replay_or_fixed_region_v1",
-          "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
-          "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
-          "spec": "work-role-v2/role-plan.json",
-          "plan_sha256": "f71d0f242450a6c2e34efb22dd4e9d94be1b87c00572e5e4ffa5b8ea1cedf01b",
-          "base_agent_sha256": "ae5291dc9fe77fe42f88f2389215037b3c27e74ce63db25c5c66c3db08ee7f94",
-          "upstream_agent_sha256": "6f07d8bcf785c660d8d2bc21cfe25edfd2f0273e45809c973abaaa759d5fa90c",
-          "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
-          "healthy_passes_required": 2,
-          "healthy_attempts": 1,
-          "fault_attempts": 0,
-          "fault_attempt_cap": 3,
-          "fuzz_budget_admitted": false,
-          "s272_exact_replay": false,
-          "cluster_junit_executed": true,
-          "new_bug": false,
-          "checkpoint": "work-role-v2/role-pilot-checkpoint.json",
-          "healthy_passes": 0,
-          "healthy_001_elapsed_seconds": 57.47,
-          "healthy_001_original_junit": {
-            "failed": 0,
-            "found": 1,
-            "succeeded": 1
-          },
-          "healthy_001_target_invocations": 542,
-          "healthy_001_reason": [
-            "no_exact_meta_role_actor_target_rpc_path"
-          ],
-          "healthy_001_raw_sha256": "b86fbedd5c922031045ade567dbc7dc3dbe68b2d1943ab5a4b2c334eb3bbe1d5",
-          "healthy_001_manifest_sha256": "66b25562c25736417343b1f91dcb4e0d222af8bf79dc7c258efc6f290140db2e",
-          "healthy_001_archive_sha256": "934004b507674d4e4481bd0324bec31e31913f5fa5f1b2b12784482fc310f433",
-          "first_plan_not_imported_into_v3": true
-        },
-        "role_aware_variation_v3": {
-          "state": "two_original_healthy_passes_fault_diagnostic_running",
-          "classification": "distinct_runtime_meta_host_and_actual_secondary_replica_not_s272_exact_replay_or_v1_v2",
-          "spec": "work-role-v3/role-plan.json",
-          "plan_sha256": "e3e52e9a77b03c047a25fca1d26b405985a9f7c5f931923981a2fbc07f97e1d0",
-          "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
-          "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
-          "base_agent_sha256": "9bcfb2fd27fe62dc138c75ecd43ebd646bcb807a9caa4bc42a38efeb75ea7008",
-          "upstream_agent_sha256": "b9c28c4b8f35d1c275a907a2ac0e2b0ba0462e92c9cee1b369826e9ae64931df",
-          "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
-          "healthy_passes_required": 2,
-          "healthy_attempts": 2,
-          "fault_attempts": 0,
-          "fault_attempt_cap": 3,
-          "fuzz_budget_admitted": false,
-          "s272_exact_replay": false,
-          "cluster_junit_executed": true,
-          "new_bug": false,
-          "checkpoint": "work-role-v3/role-pilot-checkpoint.json",
-          "healthy_passes": 2,
-          "healthy_runs": [
-            {
-              "suffix": "healthy-001",
-              "started_utc": "2026-10-07T13:26:37.549316+00:00",
-              "finished_utc": "2026-10-07T13:27:38.771124+00:00",
-              "elapsed_seconds": 59.96,
-              "original_junit": {
-                "failed": 0,
-                "found": 1,
-                "succeeded": 1
-              },
-              "healthy_gate_passed": true,
-              "eligible_actor_count": 164,
-              "raw_log_sha256": "bba14069dbbef076329f75a4bc10a07769cd04b9f6220bef5a64fbb49a7af60a",
-              "jacoco_sha256": "6034f3dda23740664f41e71cc96e85aa7e576e46dc73dc16b567d279e9efe081",
-              "archive_sha256": "e878fe455016a6275cef9d5b04d6916c9e417c373e7a315c4417f3691d06a7e6",
-              "manifest_sha256": "1532996ca9b30355e26ea9b1c9e96e9deae4a5ec72f18ed7b74227cb4a47e2a4",
-              "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-001"
-            },
-            {
-              "suffix": "healthy-002",
-              "started_utc": "2026-10-07T13:28:08.422205+00:00",
-              "finished_utc": "2026-10-07T13:29:10.713732+00:00",
-              "elapsed_seconds": 60.69,
-              "original_junit": {
-                "failed": 0,
-                "found": 1,
-                "succeeded": 1
-              },
-              "healthy_gate_passed": true,
-              "eligible_actor_count": 175,
-              "raw_log_sha256": "98bb152dc621ae669cc39bcd5628af31bdd62248a0b2ee6ca107a0659a400486",
-              "jacoco_sha256": "16fafcce48eb9aa5916a27cf0baf4e95b7edc47adc82678ec74cbf6fe48c59bd",
-              "archive_sha256": "aef01d699c03c0e6e1dbeec8c618ad57fee10f1e7057a8e78abb469f47acee23",
-              "manifest_sha256": "76348253b3aaae31da2fb8c03ed42c3d409581f787da774164918c5306535ae2",
-              "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-002"
-            }
-          ]
-        }
+        "state": "paused_after_bounded_s272_review"
       },
       "system": "HBase 2.6.6",
       "target_after_fault": 128,
@@ -329652,13 +329652,25 @@
       }
     },
     {
-      "actor_identity_audit": "independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md",
-      "actor_identity_gap": "Archived fault selectors normalize runtime RPC thread and endpoint; target probes lack DN/storage/startup-episode identity. Historical injection and coverage counts await actor-aware replay.",
-      "applied_fault_type_counts": {},
-      "applied_io_marker_counts": {},
+      "actor_identity_audit": "hdfs-storage-actor-v2-later/audit/hdfs24_extended128_review.md",
+      "actor_identity_gap": "resolved_for_v2; historical coarse-actor trials remain excluded",
+      "applied_fault_type_counts": {
+        "EOFException": 81,
+        "FileNotFoundException": 1,
+        "IOException": 141,
+        "SocketTimeoutException": 96
+      },
+      "applied_io_marker_counts": {
+        "FAULT:HDFS_BP_FILE:VERSION_READ": 1,
+        "FAULT:HDFS_BP_RPC:RESPONSE": 318
+      },
       "budget": {
-        "max_faults": 8,
-        "max_trials": 80
+        "attempt_cap_shared_group": 600,
+        "base_effective_goal": 80,
+        "conditional_extension_triggered": true,
+        "effective_goal": 128,
+        "max_faults": 10,
+        "max_trials": 128
       },
       "bug_mark": "none",
       "candidate_semantic_classification": {
@@ -329670,46 +329682,59 @@
       "check_code": "if (this.layoutVersion > DataNodeLayoutVersion.getCurrentLayoutVersion()\n|| this.cTime < nsInfo.getCTime()) {\ndoUpgrade(sd, nsInfo, callables, conf); // upgrade\nreturn true;\n}\n// layoutVersion == LAYOUT_VERSION && this.cTime > nsInfo.cTime\n// must shutdown\nthrow new IOException(\"Datanode state: LV = \" + this.getLayoutVersion()\n+ \" CTime = \" + this.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());",
       "cluster_test": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
       "coverage": {
-        "branch_counts": 0,
-        "lines": 0,
-        "methods": 0,
-        "probes": 0
+        "branch_counts": 9428,
+        "lines": 36861,
+        "methods": 8427,
+        "probes": 30524
       },
-      "coverage_gain": 0,
+      "coverage_gain": 121,
       "coverage_gain_detail": {
-        "branch_counts": 0,
-        "lines": 0,
-        "methods": 0,
-        "probes": 0
+        "branch_counts": 121,
+        "lines": 192,
+        "methods": 20,
+        "probes": 197
       },
-      "elapsed_seconds": 0.0,
-      "elapsed_seconds_semantics": "No actor-qualified campaign time is counted yet; prior measured time is preserved in legacy_coarse_actor.",
-      "evidence": "independent/evidence/campaign-state.json",
-      "expected_guard_response_trials": 0,
-      "fault_trials": 0,
-      "fully_applied_trials": 0,
+      "elapsed_seconds": 7170.048,
+      "elapsed_seconds_semantics": "Two healthy original JUnits (84.526 s) plus all 129 measured fault JUnit attempts (7085.522 s) until 128 actor-qualified effective trials; controller/lock waits and archival excluded.",
+      "evidence": "hdfs-storage-actor-v2-later/audit/hdfs24_extended128_review.md",
+      "expected_guard_response_trials": 46,
+      "fault_trials": 129,
+      "fully_applied_trials": 129,
       "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
       "healthy": {
-        "branch_count": 9155,
-        "elapsed_seconds": 43.449,
-        "io_points": 131,
-        "junit_exit": 0,
-        "target_checks": 18,
-        "target_exceptions": 3
+        "actor_binding": "startup_episode+DataNode_slot+configured_storage_directory+raw_NN0_endpoint",
+        "elapsed_seconds": [
+          44.12,
+          40.406
+        ],
+        "instrumentation_digest_sha256": "a4f3ec05f0b534105fdac4084ef1386fa859bb0e5ed8602735502182a0dfc8e9",
+        "original_junit_exit": [
+          0,
+          0
+        ],
+        "target_checks": [
+          18,
+          18
+        ],
+        "target_exceptions": [
+          3,
+          3
+        ]
       },
       "instrumentation_provenance": {
         "causal_graph_or_closure": false,
-        "coverage": "jacoco_0_8_15_production_hdfs_ipc_classes",
+        "coverage": "jacoco_0_8_15_original_hdfs_ipc_classes",
         "coverage_filter": "exclude_runtime_generated_MockitoMock_classes",
         "graphchecker_prewoven": false,
         "graphchecker_runtime_jar": false,
         "io_selection": "observed_original_junit_io_plus_production_coverage_feedback",
         "junit": "original_hadoop_3_4_3_test_jar_and_native_fixture",
         "region_skeleton": false,
-        "runtime_hooks": "case_local_offline_asm_9_6_overlay",
+        "runtime_hooks": "shared_hdfs_storage_actor_v2_offline_asm_overlay",
+        "runtime_identity": "startup_episode+DataNode_object/slot+storage_volume+raw_NN0_endpoint; fail_closed",
         "static_io_map": false
       },
-      "io_families": 0,
+      "io_families": 24,
       "legacy_coarse_actor": {
         "applied_fault_type_counts": {
           "EOFException": 37,
@@ -329783,22 +329808,24 @@
           "6": 5
         }
       },
-      "methodology": "actor_identity_recheck_pending_original_junit",
+      "methodology": "coverage_io_no_graph_actor_identity_original_junit_v2",
+      "new_bug": false,
       "own_mapped_cluster_test": null,
       "post_fault_target_branch_outcomes": {},
       "proposed_cluster_test": "TestDFSUpgrade.testUpgrade",
-      "quality_complete": false,
+      "quality_complete": true,
+      "resolved_check_line": 415,
       "selection_group": "original_102",
       "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#u137",
       "source_line": 424,
       "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
-      "source_review": "doTransition compares on-disk DataNode layout version and cTime with NameNode NamespaceInfo. Its IOException explicitly rejects storage newer than the namespace. TestDFSUpgrade intentionally includes incompatible upgrade variants; a matching rejection alone is expected behavior.",
-      "status": "actor_identity_recheck_pending",
-      "strict_injections": 0,
+      "source_review": "Hadoop 3.4.3 TestDFSUpgrade.testUpgrade deliberately constructs future DataNode layout versions and newer fsscTime, then expects block-pool startup to fail. BlockPoolSliceStorage.doTransition:414-415 compares on-disk layout/cTime with NameNode NamespaceInfo; a rejection IOException can be the original intended outcome. V2 binds each I/O fault and target to startup episode, DataNode, volume and raw NN0 endpoint. Both healthy JUnits passed with three matching target-throw signatures each. In 129 strictly injected plans, 128 reached the same-actor target; 67 target IOException events in 46 trials matched both healthy signatures, and none was novel. Plan 7 lost target under the original JUnit 60-second timeout. One incidental NameNodeResourceMonitor branch caused mechanical extension to 128, but the 48 extension trials added no global coverage or stable I/O family. See independent terminal review.",
+      "status": "quality_complete",
+      "strict_injections": 129,
       "system": "HDFS 3.4.3",
-      "target_after_fault": 0,
-      "target_code": "getLayoutVersion() > HdfsServerConstants.DATANODE_LAYOUT_VERSION || getCTime() < nsInfo.getCTime()",
-      "target_exception_after_fault": 0,
+      "target_after_fault": 128,
+      "target_code": "this.layoutVersion > DataNodeLayoutVersion.getCurrentLayoutVersion() || this.cTime < nsInfo.getCTime()",
+      "target_exception_after_fault": 67,
       "target_function": "BlockPoolSliceStorage.doTransition",
       "target_guard_sites": [
         "BlockPoolSliceStorage.doTransition#L414-IF_ICMPGT",
@@ -329806,10 +329833,24 @@
       ],
       "target_method_signature": "doTransition(StorageDirectory,NamespaceInfo,StartupOption,List<Callable<StorageDirectory>>,Configuration)",
       "target_reached": true,
-      "target_retaining_sequence_depths": {},
+      "target_retaining_sequence_depths": {
+        "1": 18,
+        "2": 54,
+        "3": 43,
+        "4": 3,
+        "5": 9,
+        "6": 1
+      },
       "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
-      "target_source_line": 424,
-      "tested_sequence_depths": {},
+      "target_source_line": 415,
+      "tested_sequence_depths": {
+        "1": 19,
+        "2": 54,
+        "3": 43,
+        "4": 3,
+        "5": 9,
+        "6": 1
+      },
       "trial_results": [
         {
           "applied_faults": 1,
@@ -335111,7 +335152,42 @@
           "valid_for_feedback": false
         }
       ],
-      "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials"
+      "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials",
+      "v2_actor_quality": {
+        "archive_121_129_sha256": "2fb46e15b7b02c9807448564f5d511309b220bdae9d14b30e8a35098a80d8711",
+        "checkpoint_prefix_distinct_sequences": 129,
+        "checkpoint_sha256": "867ba36871b72bc485b05fa90e7c0ae2267f0d21f5085b2fc5bc3e9410b876c0",
+        "coverage_gain": {
+          "branch_counts": 121,
+          "lines": 192,
+          "methods": 20,
+          "probes": 197
+        },
+        "effective_same_actor_postfault_checks": 128,
+        "exact_ordered_sequences_in_prefix": 129,
+        "expected_healthy_signature_throws": 67,
+        "extension_48_effective_coverage_gain": {
+          "branch_counts": 0,
+          "lines": 0,
+          "methods": 0,
+          "probes": 0
+        },
+        "extension_48_effective_new_io_families": 0,
+        "extension_trigger_incidental_branch": "FSNamesystem$NameNodeResourceMonitor.run",
+        "first_128_effective_finished_at_utc": "2026-10-07T13:39:11.308884+00:00",
+        "first_128_effective_sequence_id": "b04527f5640ec7dadbd4",
+        "healthy_seconds": 84.526,
+        "historical_coarse_actor_excluded": true,
+        "independent_raw_audit_pass": true,
+        "junit_attempt_seconds": 7085.522,
+        "novel_target_exception_signatures": 0,
+        "raw_evidence_anchor": "/users/ZhenyuLi/hdfs-storage-v2-later-a4f3ec05f0b5/evidence/upgrade-constructor",
+        "raw_evidence_host": "node1",
+        "review": "hdfs-storage-actor-v2-later/audit/hdfs24_extended128_review.md",
+        "supervisor_terminal": "effective_budget_met",
+        "target_exceptions": 67,
+        "two_healthy_seed_pass": true
+      }
     },
     {
       "actor_identity_audit": "hdfs-storage-actor-v2/audit/hdfs22_23_25_base80_review.md",
@@ -362611,86 +362687,71 @@
       "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials"
     },
     {
+      "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
+      "applied_fault_events": 205,
+      "budget": {
+        "actual_attempts": 173,
+        "actual_max_faults_applied": 4,
+        "actual_max_faults_requested": 4,
+        "attempt_cap": 320,
+        "conditional_extension_triggered": false,
+        "effective_goal": 80,
+        "extension_window_effective_ordinals": [
+          73,
+          80
+        ],
+        "extension_window_new_io_families": 0,
+        "extension_window_new_method_branch_ids": 0,
+        "initial_attempt_cap": 320,
+        "initial_effective_goal": 80,
+        "initial_max_faults": 8,
+        "max_faults": 8
+      },
+      "budget_interpretation": "An effective trial applies every ordered fault and revisits the exact same file/block target guard after the final fault.",
+      "bug_mark": "none",
+      "candidate_semantic_classification": {
+        "assessment": "One passing effective original JUnit emitted the exact postfault COMMITTED-block RetriableException. Released source retries it, the healthy original JUnit also emits the transient, and three clean exact-plan replays passed without a postfault throw. No new coordination bug is established.",
+        "label": "expected_committed_block_retry"
+      },
       "case_id": "HDFS-39",
-      "selection_group": "original_102",
-      "system": "HDFS 3.4.3",
-      "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
-      "source_line": 132,
-      "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
       "check_code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) {\nthrow new RetriableException(\nnew NotReplicatedYetException(\"append: lastBlock=\"\n+ lastBlock + \" of src=\" + path\n+ \" is COMMITTED but not yet COMPLETE.\"));",
-      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp: org.apache.hadoop.hdfs.protocol.LastBlockWithStatus appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)>#u96",
-      "proposed_cluster_test": "TestFileAppend.testAppendTwice",
+      "check_location": "FSDirAppendOp.java:131-135",
+      "cluster_nodes": "1 NameNode, 4 DataNodes",
       "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
-      "status": "quality_complete",
-      "target_reached": true,
-      "fault_trials": 173,
-      "strict_injections": 96,
-      "fully_applied_trials": 96,
-      "target_after_fault": 80,
+      "cluster_type": "MiniDFSCluster",
+      "completed_at_utc": "2026-10-07T13:23:07.653044+00:00",
+      "coverage": {
+        "BRANCH_UNIT": 9242,
+        "METHOD": 8297,
+        "PROBE": 29660
+      },
       "coverage_gain": {
         "BRANCH_UNIT": 614,
         "METHOD": 285,
         "PROBE": 1481
       },
-      "elapsed_seconds": 3832.736,
-      "bug_mark": "none",
-      "evidence": {
-        "terminal_archive": "hdfs39-rpc-actor-v2/evidence/hdfs39-v2-terminal-raw.tar.zst",
-        "terminal_archive_sha256": "d0f67f187af3421c9d89cbf99ed89656682606b455628e369e688f20da4f9321",
-        "terminal_archive_bytes": 67672602,
-        "terminal_archive_raw_files": 1227,
-        "terminal_checkpoint_sha256": "bc93ac1b343e98fb9d8a5bd4b49e7f287531be1875dffb104f0548ab3975397c",
-        "terminal_audit": "hdfs39-rpc-actor-v2/evidence/terminal-raw-audit.json",
-        "terminal_review": "audits/hdfs39-v2-terminal-review-2026-10-07.md",
-        "terminal_summary": "hdfs39-rpc-actor-v2/evidence/terminal-summary.json",
-        "terminal_receipt": "hdfs39-rpc-actor-v2/evidence/terminal-evidence-receipt.json",
-        "audit_program": "audits/hdfs39-live-raw-audit.py",
-        "trial56_source_replay_review": "audits/hdfs39-trial56-target-review.md",
-        "trial56_replay_archive": "audits/hdfs39-trial56-replay-evidence.tar.gz",
-        "locked_supervisor_handoff": "audits/hdfs39-locked-handoff-2026-10-07.md",
-        "legacy_result": "cases/HDFS-39/result.pre-actor-v2.json",
-        "legacy_raw_archive_doc": "cases/HDFS-39/independent-coverage-io/legacy-trials-archive.md"
-      },
-      "version": "3.4.3",
-      "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
-      "check_location": "FSDirAppendOp.java:131-135",
-      "cluster_type": "MiniDFSCluster",
-      "cluster_nodes": "1 NameNode, 4 DataNodes",
-      "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
-      "target_identity": {
-        "site": "FSDirAppendOp.appendFile:131",
-        "path": "/testMultipleAppend/foo",
-        "block_id": 1073741825
-      },
-      "quality_complete": true,
-      "new_bug": false,
-      "validated_new_bug_candidates": 0,
-      "unreviewed_candidates": 0,
-      "methodology": "actor_aware_graph_free_original_junit_coverage_guided_fault_injection",
-      "budget_interpretation": "An effective trial applies every ordered fault and revisits the exact same file/block target guard after the final fault.",
-      "budget": {
-        "initial_effective_goal": 80,
-        "initial_max_faults": 8,
-        "initial_attempt_cap": 320,
-        "conditional_extension_triggered": false,
-        "effective_goal": 80,
-        "max_faults": 8,
-        "attempt_cap": 320,
-        "actual_attempts": 173,
-        "actual_max_faults_requested": 4,
-        "actual_max_faults_applied": 4,
-        "extension_window_effective_ordinals": [
-          73,
-          80
-        ],
-        "extension_window_new_method_branch_ids": 0,
-        "extension_window_new_io_families": 0
-      },
+      "coverage_metric_note": "Production Hadoop JaCoCo branch-unit, method, and probe IDs relative to the union of two new actor-V2 healthy original JUnits.",
       "effective_trial_budget": 80,
       "effective_trials_remaining": 0,
-      "post_fault_target_reach_trials": 80,
-      "requested_fault_events": 323,
-      "applied_fault_events": 205,
+      "elapsed_seconds": 3832.736,
+      "elapsed_seconds_semantics": "Sum of two new healthy and 173 fault-trial original JUnit durations; replay and controller overhead excluded.",
+      "evidence": {
+        "audit_program": "audits/hdfs39-live-raw-audit.py",
+        "legacy_raw_archive_doc": "cases/HDFS-39/independent-coverage-io/legacy-trials-archive.md",
+        "legacy_result": "cases/HDFS-39/result.pre-actor-v2.json",
+        "locked_supervisor_handoff": "audits/hdfs39-locked-handoff-2026-10-07.md",
+        "terminal_archive": "hdfs39-rpc-actor-v2/evidence/hdfs39-v2-terminal-raw.tar.zst",
+        "terminal_archive_bytes": 67672602,
+        "terminal_archive_raw_files": 1227,
+        "terminal_archive_sha256": "d0f67f187af3421c9d89cbf99ed89656682606b455628e369e688f20da4f9321",
+        "terminal_audit": "hdfs39-rpc-actor-v2/evidence/terminal-raw-audit.json",
+        "terminal_checkpoint_sha256": "bc93ac1b343e98fb9d8a5bd4b49e7f287531be1875dffb104f0548ab3975397c",
+        "terminal_receipt": "hdfs39-rpc-actor-v2/evidence/terminal-evidence-receipt.json",
+        "terminal_review": "audits/hdfs39-v2-terminal-review-2026-10-07.md",
+        "terminal_summary": "hdfs39-rpc-actor-v2/evidence/terminal-summary.json",
+        "trial56_replay_archive": "audits/hdfs39-trial56-replay-evidence.tar.gz",
+        "trial56_source_replay_review": "audits/hdfs39-trial56-target-review.md"
+      },
       "fault_sequence_depth": {
         "effective_trials_by_fault_count": {
           "1": 45,
@@ -362700,88 +362761,103 @@
         "max_requested": 4,
         "max_strictly_applied": 4
       },
+      "fault_trial_elapsed_seconds": 3793.571,
+      "fault_trials": 173,
+      "fully_applied_trials": 96,
+      "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
       "healthy": {
-        "original_junit_seeds": 2,
-        "junit_exits": [
-          0,
-          0
-        ],
+        "data_node_roles": 4,
         "elapsed_seconds": [
           18.937,
           20.228
         ],
+        "junit_exits": [
+          0,
+          0
+        ],
+        "original_junit_seeds": 2,
         "overlay_test_class_sha256": "762da6dde4504b6a1689ccffa47c34538885fe11ae0bb4520e0faa73d9f29650",
-        "target_path": "/testMultipleAppend/foo",
         "target_block_id": 1073741825,
-        "data_node_roles": 4
+        "target_path": "/testMultipleAppend/foo"
       },
       "healthy_coverage": {
         "BRANCH_UNIT": 8628,
         "METHOD": 8012,
         "PROBE": 28179
       },
-      "coverage": {
-        "BRANCH_UNIT": 9242,
-        "METHOD": 8297,
-        "PROBE": 29660
+      "instrumentation_provenance": {
+        "causal_graph_or_closure": false,
+        "coverage": "JaCoCo_0_8_15_Hadoop_production_classes_including_overlay_class_IDs",
+        "file_block_identity": "exact_append_path_and_block_1073741825",
+        "io_selection": "observed_actor_bound_IO_plus_production_coverage_feedback",
+        "junit": "unchanged_Hadoop_3_4_3_TestFileAppend_testMultipleAppends_embedded_1NN_4DN",
+        "legacy_trials_imported": 0,
+        "rpc_actor_identity": "physical_DataNode_UUID_block_pool_and_actual_NameNode_peer_port"
       },
-      "coverage_metric_note": "Production Hadoop JaCoCo branch-unit, method, and probe IDs relative to the union of two new actor-V2 healthy original JUnits.",
       "io_families": 11,
-      "target_exception_after_fault_trials": 1,
-      "target_exception_after_fault_events": 1,
-      "reviewed_expected_transient_trials": [
-        "trial-0056-attempt-01"
-      ],
-      "candidate_semantic_classification": {
-        "label": "expected_committed_block_retry",
-        "assessment": "One passing effective original JUnit emitted the exact postfault COMMITTED-block RetriableException. Released source retries it, the healthy original JUnit also emits the transient, and three clean exact-plan replays passed without a postfault throw. No new coordination bug is established."
-      },
       "junit_outcomes": {
-        "nonzero_fault_trials": 24,
         "direct_injected_exception_failures": 21,
-        "timeout_trials": 3,
+        "nonzero_fault_trials": 24,
+        "nonzero_with_postfault_target_exception": 0,
         "timeout_run_ids": [
           "trial-0012-attempt-01",
           "trial-0020-attempt-01",
           "trial-0166-attempt-01"
         ],
-        "nonzero_with_postfault_target_exception": 0
-      },
-      "elapsed_seconds_semantics": "Sum of two new healthy and 173 fault-trial original JUnit durations; replay and controller overhead excluded.",
-      "fault_trial_elapsed_seconds": 3793.571,
-      "wall_elapsed_seconds": 15508.056,
-      "started_at_utc": "2026-10-07T09:04:39.596894+00:00",
-      "completed_at_utc": "2026-10-07T13:23:07.653044+00:00",
-      "updated_at_utc": "2026-10-07T13:27:08.097440+00:00",
-      "stop_reason": "The 80-effective-trial budget was reached; effective trials 73–80 added no production method/branch coverage or stable actor-aware I/O family, so the conditional extension did not apply.",
-      "source_review": "The source guard emits a RetriableException while the last block is COMMITTED and not COMPLETE; DFSClient.callAppend retries that response. The original healthy JUnit observes this transient and succeeds. The sole V2 postfault target exception in trial 56 passed its full byte assertions and was classified by source and three clean exact-plan replays. Twenty-one other nonzero JUnits failed directly at their requested injected I/O exception, and three timed out without an exact postfault target exception. No new bug was validated.",
-      "instrumentation_provenance": {
-        "junit": "unchanged_Hadoop_3_4_3_TestFileAppend_testMultipleAppends_embedded_1NN_4DN",
-        "rpc_actor_identity": "physical_DataNode_UUID_block_pool_and_actual_NameNode_peer_port",
-        "file_block_identity": "exact_append_path_and_block_1073741825",
-        "coverage": "JaCoCo_0_8_15_Hadoop_production_classes_including_overlay_class_IDs",
-        "io_selection": "observed_actor_bound_IO_plus_production_coverage_feedback",
-        "causal_graph_or_closure": false,
-        "legacy_trials_imported": 0
+        "timeout_trials": 3
       },
       "legacy_historical": {
-        "attempts": 205,
-        "target_retaining_trials": 128,
         "archive_sha256": "60a115fd40798ae5cccc42970bbd961aa8323a37fa0a8c18c50828a59326ca4e",
+        "attempts": 205,
         "effective_imported_into_v2": 0,
-        "result": "result.pre-actor-v2.json"
+        "result": "result.pre-actor-v2.json",
+        "target_retaining_trials": 128
       },
+      "methodology": "actor_aware_graph_free_original_junit_coverage_guided_fault_injection",
+      "new_bug": false,
+      "post_fault_target_reach_trials": 80,
+      "proposed_cluster_test": "TestFileAppend.testAppendTwice",
+      "quality_complete": true,
       "quality_review": {
-        "prior_status": "actor_identity_recheck_pending",
         "issue": "Historical DataNode RPC selectors did not prove the physical sender on a multi-DataNode fixture.",
-        "resolution": "Fresh actor-bound V2 with two passing original healthy JUnits, 173 new distinct original fault JUnits, 80 strict postfault same-file/block trials, and a full independent raw terminal audit.",
-        "terminal_audit_pass": true,
         "new_bug_mark": "none",
-        "resolved_at_utc": "2026-10-07T13:23:07.653044+00:00"
+        "prior_status": "actor_identity_recheck_pending",
+        "resolution": "Fresh actor-bound V2 with two passing original healthy JUnits, 173 new distinct original fault JUnits, 80 strict postfault same-file/block trials, and a full independent raw terminal audit.",
+        "resolved_at_utc": "2026-10-07T13:23:07.653044+00:00",
+        "terminal_audit_pass": true
       },
-      "reported_function": "FSDirAppendOp.appendFile",
       "reported_check_code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) throw new RetriableException(new NotReplicatedYetException(...));",
-      "resolved_check_line": 131
+      "reported_function": "FSDirAppendOp.appendFile",
+      "requested_fault_events": 323,
+      "resolved_check_line": 131,
+      "reviewed_expected_transient_trials": [
+        "trial-0056-attempt-01"
+      ],
+      "selection_group": "original_102",
+      "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp: org.apache.hadoop.hdfs.protocol.LastBlockWithStatus appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)>#u96",
+      "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+      "source_line": 132,
+      "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+      "source_review": "The source guard emits a RetriableException while the last block is COMMITTED and not COMPLETE; DFSClient.callAppend retries that response. The original healthy JUnit observes this transient and succeeds. The sole V2 postfault target exception in trial 56 passed its full byte assertions and was classified by source and three clean exact-plan replays. Twenty-one other nonzero JUnits failed directly at their requested injected I/O exception, and three timed out without an exact postfault target exception. No new bug was validated.",
+      "started_at_utc": "2026-10-07T09:04:39.596894+00:00",
+      "status": "quality_complete",
+      "stop_reason": "The 80-effective-trial budget was reached; effective trials 73\u201380 added no production method/branch coverage or stable actor-aware I/O family, so the conditional extension did not apply.",
+      "strict_injections": 96,
+      "system": "HDFS 3.4.3",
+      "target_after_fault": 80,
+      "target_exception_after_fault_events": 1,
+      "target_exception_after_fault_trials": 1,
+      "target_identity": {
+        "block_id": 1073741825,
+        "path": "/testMultipleAppend/foo",
+        "site": "FSDirAppendOp.appendFile:131"
+      },
+      "target_reached": true,
+      "unreviewed_candidates": 0,
+      "updated_at_utc": "2026-10-07T13:27:08.097440+00:00",
+      "validated_new_bug_candidates": 0,
+      "version": "3.4.3",
+      "wall_elapsed_seconds": 15508.056
     },
     {
       "actor_v2_campaign": {
@@ -369969,26 +370045,6 @@
       "updated_at": 1791371807.2199035
     },
     {
-      "case_id": "SOLR-07",
-      "selection_group": "original_102",
-      "system": "Solr 8.11.4",
-      "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
-      "source_line": 1326,
-      "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
-      "check_code": "if (core == null) {\nthrow new SolrException(ErrorCode.SERVICE_UNAVAILABLE, \"SolrCore is no longer available to register\");",
-      "site_id": "<org.apache.solr.cloud.ZkController: java.lang.String register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)>#u113",
-      "proposed_cluster_test": "AddReplicaTest.testAddMultipleReplicas",
-      "cluster_test": "AddReplicaTest.testAddMultipleReplicas",
-      "status": "fuzz_running",
-      "target_reached": true,
-      "fault_trials": 150,
-      "strict_injections": 108,
-      "fully_applied_trials": 108,
-      "target_after_fault": 33,
-      "coverage_gain": 477,
-      "elapsed_seconds": 6514.776,
-      "bug_mark": "none",
-      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-07/actor-v2/calibration-receipt.json",
       "actor_v2_runtime": {
         "budget": {
           "conditional_extended_effective": 128,
@@ -370022,8 +370078,18 @@
         "max_faults": 10,
         "max_trials": 128
       },
+      "bug_mark": "none",
       "campaign_workspace": "cases/SOLR-07/actor-v2/campaign on node2",
+      "case_id": "SOLR-07",
+      "check_code": "if (core == null) {\nthrow new SolrException(ErrorCode.SERVICE_UNAVAILABLE, \"SolrCore is no longer available to register\");",
+      "cluster_test": "AddReplicaTest.testAddMultipleReplicas",
+      "coverage_gain": 477,
       "coverage_metric": "JaCoCo covered production probe IDs; V2 method/branch totals are not derived",
+      "elapsed_seconds": 6514.776,
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-07/actor-v2/calibration-receipt.json",
+      "fault_trials": 150,
+      "fully_applied_trials": 108,
+      "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
       "healthy_elapsed_seconds": 34.678,
       "healthy_target_checks": 9,
       "legacy_coarse_actor": {
@@ -370054,16 +370120,26 @@
       "max_applied_faults": 4,
       "methodology": "independent_graph_free_coverage_io_exception",
       "new_io_identities": 19,
+      "proposed_cluster_test": "AddReplicaTest.testAddMultipleReplicas",
       "quality_complete": false,
       "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-07/actor-v2/live-v4-audit-150.json",
       "reason": "Actor-bound V4 prefix independently audited through 150 original JUnit attempts (108 complete ordered injections, 33 same-actor postfault target checks, three exact selected throws). Trials 38, 48, and 64 remain source-reviewed test-teardown candidates, not a confirmed new bug. Campaign continues from the same atomic checkpoint toward 80 effective trials; V5 scheduler is prepared for a natural V4 budget boundary.",
+      "reported_check_code": "if (core == null) throw SolrException(SERVICE_UNAVAILABLE)",
+      "reported_function": "ZkController.register",
+      "resolved_check_line": 1325,
+      "selection_group": "original_102",
+      "site_id": "<org.apache.solr.cloud.ZkController: java.lang.String register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)>#u113",
       "source_file": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+      "source_line": 1326,
+      "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+      "status": "fuzz_running",
+      "strict_injections": 108,
+      "system": "Solr 8.11.4",
+      "target_after_fault": 33,
       "target_exception_candidates": 3,
       "target_guard_branch_taken": true,
-      "updated_at": 1791379703.779374,
-      "reported_function": "ZkController.register",
-      "reported_check_code": "if (core == null) throw SolrException(SERVICE_UNAVAILABLE)",
-      "resolved_check_line": 1325
+      "target_reached": true,
+      "updated_at": 1791379703.779374
     },
     {
       "actor_aware_nonbudget_replays": {

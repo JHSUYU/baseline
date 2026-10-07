@@ -1,11 +1,23 @@
 {
-  "actor_identity_audit": "independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md",
-  "actor_identity_gap": "Archived fault selectors normalize runtime RPC thread and endpoint; target probes lack DN/storage/startup-episode identity. Historical injection and coverage counts await actor-aware replay.",
-  "applied_fault_type_counts": {},
-  "applied_io_marker_counts": {},
+  "actor_identity_audit": "hdfs-storage-actor-v2-later/audit/hdfs24_extended128_review.md",
+  "actor_identity_gap": "resolved_for_v2; historical coarse-actor trials remain excluded",
+  "applied_fault_type_counts": {
+    "EOFException": 81,
+    "FileNotFoundException": 1,
+    "IOException": 141,
+    "SocketTimeoutException": 96
+  },
+  "applied_io_marker_counts": {
+    "FAULT:HDFS_BP_FILE:VERSION_READ": 1,
+    "FAULT:HDFS_BP_RPC:RESPONSE": 318
+  },
   "budget": {
-    "max_faults": 8,
-    "max_trials": 80
+    "attempt_cap_shared_group": 600,
+    "base_effective_goal": 80,
+    "conditional_extension_triggered": true,
+    "effective_goal": 128,
+    "max_faults": 10,
+    "max_trials": 128
   },
   "bug_mark": "none",
   "candidate_semantic_classification": {
@@ -16,45 +28,58 @@
   "case_id": "HDFS-24",
   "cluster_test": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
   "coverage": {
-    "branch_counts": 0,
-    "lines": 0,
-    "methods": 0,
-    "probes": 0
+    "branch_counts": 9428,
+    "lines": 36861,
+    "methods": 8427,
+    "probes": 30524
   },
-  "coverage_gain": 0,
+  "coverage_gain": 121,
   "coverage_gain_detail": {
-    "branch_counts": 0,
-    "lines": 0,
-    "methods": 0,
-    "probes": 0
+    "branch_counts": 121,
+    "lines": 192,
+    "methods": 20,
+    "probes": 197
   },
-  "elapsed_seconds": 0.0,
-  "elapsed_seconds_semantics": "No actor-qualified campaign time is counted yet; prior measured time is preserved in legacy_coarse_actor.",
-  "evidence": "independent/evidence/campaign-state.json",
-  "expected_guard_response_trials": 0,
-  "fault_trials": 0,
-  "fully_applied_trials": 0,
+  "elapsed_seconds": 7170.048,
+  "elapsed_seconds_semantics": "Two healthy original JUnits (84.526 s) plus all 129 measured fault JUnit attempts (7085.522 s) until 128 actor-qualified effective trials; controller/lock waits and archival excluded.",
+  "evidence": "hdfs-storage-actor-v2-later/audit/hdfs24_extended128_review.md",
+  "expected_guard_response_trials": 46,
+  "fault_trials": 129,
+  "fully_applied_trials": 129,
   "healthy": {
-    "branch_count": 9155,
-    "elapsed_seconds": 43.449,
-    "io_points": 131,
-    "junit_exit": 0,
-    "target_checks": 18,
-    "target_exceptions": 3
+    "actor_binding": "startup_episode+DataNode_slot+configured_storage_directory+raw_NN0_endpoint",
+    "elapsed_seconds": [
+      44.12,
+      40.406
+    ],
+    "instrumentation_digest_sha256": "a4f3ec05f0b534105fdac4084ef1386fa859bb0e5ed8602735502182a0dfc8e9",
+    "original_junit_exit": [
+      0,
+      0
+    ],
+    "target_checks": [
+      18,
+      18
+    ],
+    "target_exceptions": [
+      3,
+      3
+    ]
   },
   "instrumentation_provenance": {
     "causal_graph_or_closure": false,
-    "coverage": "jacoco_0_8_15_production_hdfs_ipc_classes",
+    "coverage": "jacoco_0_8_15_original_hdfs_ipc_classes",
     "coverage_filter": "exclude_runtime_generated_MockitoMock_classes",
     "graphchecker_prewoven": false,
     "graphchecker_runtime_jar": false,
     "io_selection": "observed_original_junit_io_plus_production_coverage_feedback",
     "junit": "original_hadoop_3_4_3_test_jar_and_native_fixture",
     "region_skeleton": false,
-    "runtime_hooks": "case_local_offline_asm_9_6_overlay",
+    "runtime_hooks": "shared_hdfs_storage_actor_v2_offline_asm_overlay",
+    "runtime_identity": "startup_episode+DataNode_object/slot+storage_volume+raw_NN0_endpoint; fail_closed",
     "static_io_map": false
   },
-  "io_families": 0,
+  "io_families": 24,
   "legacy_coarse_actor": {
     "applied_fault_type_counts": {
       "EOFException": 37,
@@ -128,17 +153,18 @@
       "6": 5
     }
   },
-  "methodology": "actor_identity_recheck_pending_original_junit",
+  "methodology": "coverage_io_no_graph_actor_identity_original_junit_v2",
+  "new_bug": false,
   "own_mapped_cluster_test": null,
   "post_fault_target_branch_outcomes": {},
-  "quality_complete": false,
+  "quality_complete": true,
   "resolved_check_line": 415,
-  "source_review": "doTransition compares on-disk DataNode layout version and cTime with NameNode NamespaceInfo. Its IOException explicitly rejects storage newer than the namespace. TestDFSUpgrade intentionally includes incompatible upgrade variants; a matching rejection alone is expected behavior.",
-  "status": "actor_identity_recheck_pending",
-  "strict_injections": 0,
-  "target_after_fault": 0,
+  "source_review": "Hadoop 3.4.3 TestDFSUpgrade.testUpgrade deliberately constructs future DataNode layout versions and newer fsscTime, then expects block-pool startup to fail. BlockPoolSliceStorage.doTransition:414-415 compares on-disk layout/cTime with NameNode NamespaceInfo; a rejection IOException can be the original intended outcome. V2 binds each I/O fault and target to startup episode, DataNode, volume and raw NN0 endpoint. Both healthy JUnits passed with three matching target-throw signatures each. In 129 strictly injected plans, 128 reached the same-actor target; 67 target IOException events in 46 trials matched both healthy signatures, and none was novel. Plan 7 lost target under the original JUnit 60-second timeout. One incidental NameNodeResourceMonitor branch caused mechanical extension to 128, but the 48 extension trials added no global coverage or stable I/O family. See independent terminal review.",
+  "status": "quality_complete",
+  "strict_injections": 129,
+  "target_after_fault": 128,
   "target_code": "this.layoutVersion > DataNodeLayoutVersion.getCurrentLayoutVersion() || this.cTime < nsInfo.getCTime()",
-  "target_exception_after_fault": 0,
+  "target_exception_after_fault": 67,
   "target_function": "BlockPoolSliceStorage.doTransition",
   "target_guard_sites": [
     "BlockPoolSliceStorage.doTransition#L414-IF_ICMPGT",
@@ -146,10 +172,24 @@
   ],
   "target_method_signature": "doTransition(StorageDirectory,NamespaceInfo,StartupOption,List<Callable<StorageDirectory>>,Configuration)",
   "target_reached": true,
-  "target_retaining_sequence_depths": {},
+  "target_retaining_sequence_depths": {
+    "1": 18,
+    "2": 54,
+    "3": 43,
+    "4": 3,
+    "5": 9,
+    "6": 1
+  },
   "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
   "target_source_line": 415,
-  "tested_sequence_depths": {},
+  "tested_sequence_depths": {
+    "1": 19,
+    "2": 54,
+    "3": 43,
+    "4": 3,
+    "5": 9,
+    "6": 1
+  },
   "trial_results": [
     {
       "applied_faults": 1,
@@ -5451,5 +5491,40 @@
       "valid_for_feedback": false
     }
   ],
-  "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials"
+  "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials",
+  "v2_actor_quality": {
+    "archive_121_129_sha256": "2fb46e15b7b02c9807448564f5d511309b220bdae9d14b30e8a35098a80d8711",
+    "checkpoint_prefix_distinct_sequences": 129,
+    "checkpoint_sha256": "867ba36871b72bc485b05fa90e7c0ae2267f0d21f5085b2fc5bc3e9410b876c0",
+    "coverage_gain": {
+      "branch_counts": 121,
+      "lines": 192,
+      "methods": 20,
+      "probes": 197
+    },
+    "effective_same_actor_postfault_checks": 128,
+    "exact_ordered_sequences_in_prefix": 129,
+    "expected_healthy_signature_throws": 67,
+    "extension_48_effective_coverage_gain": {
+      "branch_counts": 0,
+      "lines": 0,
+      "methods": 0,
+      "probes": 0
+    },
+    "extension_48_effective_new_io_families": 0,
+    "extension_trigger_incidental_branch": "FSNamesystem$NameNodeResourceMonitor.run",
+    "first_128_effective_finished_at_utc": "2026-10-07T13:39:11.308884+00:00",
+    "first_128_effective_sequence_id": "b04527f5640ec7dadbd4",
+    "healthy_seconds": 84.526,
+    "historical_coarse_actor_excluded": true,
+    "independent_raw_audit_pass": true,
+    "junit_attempt_seconds": 7085.522,
+    "novel_target_exception_signatures": 0,
+    "raw_evidence_anchor": "/users/ZhenyuLi/hdfs-storage-v2-later-a4f3ec05f0b5/evidence/upgrade-constructor",
+    "raw_evidence_host": "node1",
+    "review": "hdfs-storage-actor-v2-later/audit/hdfs24_extended128_review.md",
+    "supervisor_terminal": "effective_budget_met",
+    "target_exceptions": 67,
+    "two_healthy_seed_pass": true
+  }
 }
