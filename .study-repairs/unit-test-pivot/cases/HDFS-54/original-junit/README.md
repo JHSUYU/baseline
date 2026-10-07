@@ -49,7 +49,12 @@ plans. Initial budget: 80 effective trials and at most 8 faults per plan;
 conditional extension: 128 effective and at most 10 faults. An attempt cap
 keeps repeated nondeterministic misses bounded.
 
-Example, after reserving the node's JVM slot:
+After the node2 owner explicitly releases its JVM slot, resume the preserved
+checkpoint with `bash /users/ZhenyuLi/hdfs54-original-campaign/resume_node2.sh`.
+The launcher refuses to overlap an active Solr 36/37 tmux session or any
+other JVM, checks queue identity, and starts `hdfs54_original_80` in tmux at
+lower CPU priority. The campaign reads the existing 1/80 checkpoint and does
+not repeat completed plans. The direct command, for inspection, is:
 
 ```bash
 cd /users/ZhenyuLi/hdfs54-original-campaign
