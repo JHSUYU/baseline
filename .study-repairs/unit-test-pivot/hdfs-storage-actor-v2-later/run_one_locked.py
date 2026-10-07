@@ -46,10 +46,10 @@ def main() -> None:
                "started_at_utc": stamp(), "handoff": args.handoff,
                "lock": str(LOCK), "expected_overlay_sha256": args.expected_overlay_sha256}
     with LOCK.open("a+") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            raise RuntimeError("shared JVM launch lock busy") from error
+        # Another JUnit may be starting at this boundary. Wait for the shared
+        # lock, then recheck Java/disk under it; do not drop a queued plan.
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        receipt["lock_acquired_at_utc"] = stamp()
         gate_dir = anchor / "gates" / f"locked-plan-{old_count + 1:04d}"
         gate = subprocess.run([sys.executable, str(campaign.HERE / "host_gate.py"),
                                "--output", str(gate_dir), "--handoff", args.handoff,
