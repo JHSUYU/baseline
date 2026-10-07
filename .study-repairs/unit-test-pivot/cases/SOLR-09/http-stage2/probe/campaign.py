@@ -275,6 +275,7 @@ def write_results(state: dict) -> None:
             "methodology": "independent_graph_free_coverage_http_coreadmin_zk_io_exception",
             "selection_adjustment": adjustment_result,
             "retention_adjustment": retention_result,
+            "incomplete_plan_retry_policy": state.get("incomplete_plan_retry_policy"),
         }
         output = WORK / "result.json"
         atomic_json(output, result)
@@ -344,6 +345,14 @@ def mutate(state: dict, plan: list[str], trace: list[dict], trial: dict) -> None
 def run_campaign() -> None:
     CAMPAIGN.mkdir(parents=True, exist_ok=True)
     state = json.loads(STATE.read_text()) if STATE.exists() else initialize()
+    if "incomplete_plan_retry_policy" not in state:
+        state["incomplete_plan_retry_policy"] = {
+            "from_trial": len(state["trials"]) + 1,
+            "max_attempts_per_exact_plan": 3,
+            "reason": "Original JUnit leader choice and later I/O can vary across runs; incomplete fault sequences remain invalid and are retried only within the attempt cap",
+        }
+        atomic_json(STATE, state)
+        write_results(state)
     while (sum(valid(t) for t in state["trials"]) < state["budget"]["max_valid_trials"]
            and len(state["trials"]) < state["budget"]["max_attempts"]
            and state["queue"]):
@@ -396,10 +405,11 @@ def run_campaign() -> None:
         state["trials"].append(trial)
         state["elapsed_seconds"] += trial["elapsed_seconds"]
         mutate(state, plan, trace, trial)
-        # A healthy-root CoreAdmin UNLOAD may choose the other leader core in
-        # a nondeterministic run. Retry that exact selector a bounded number
-        # of times; every unmatched attempt stays in the ledger.
-        if not strict and len(plan) == 1 and state["plan_attempts"][key] < 3:
+        # The original JUnit may choose the other leader core, or a later
+        # observed I/O may disappear under a different schedule. Requeue a
+        # plan whose full sequence was not applied, at most twice. Each miss
+        # remains a separate attempt and never counts toward the valid budget.
+        if not strict and state["plan_attempts"][key] < 3:
             state["queue"].append(plan)
         atomic_json(output / "trial.json", trial)
         atomic_json(STATE, state)
