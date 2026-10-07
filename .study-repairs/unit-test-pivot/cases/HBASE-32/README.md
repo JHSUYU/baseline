@@ -479,3 +479,13 @@ passing no-fault original JUnits before up to three fault diagnostics.
 Its own checkpoint starts from zero and never imports the fixed-region
 calibration or supplemental 68 effective trials. A new timeout remains a
 candidate until raw lock-chain/source review and original same-plan replay.
+
+Its first no-fault original JUnit also passed (57.47 s, 542 target invocations),
+but all 60 table2 replica-2 OPENED reports came from a non-meta RS. The meta
+host served another secondary replica index. That raw calibration was
+separately SHA-verified on node1 and is not a V3 healthy pass. The new
+`work-role-v3/` plan selects the **actual secondary replica on the meta host**
+and requires F1, F2, target, and B7 to agree on the numeric replica and raw
+primary/secondary region. V3 starts a fresh two-healthy gate and at most
+three diagnostic fault attempts; it remains separate from s272 exact replay
+and both fuzz denominators.
