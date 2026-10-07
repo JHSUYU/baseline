@@ -1,0 +1,68 @@
+{
+  "artifact_manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/final-artifact-manifest.json",
+  "budget": {
+    "max_attempts": 320,
+    "max_effective": 80,
+    "max_faults": 8
+  },
+  "bug_mark": "none",
+  "case_id": "HDFS-43",
+  "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/checkpoint.json",
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether",
+  "coverage_gain": {
+    "BRANCH_UNIT": 77,
+    "METHOD": 21,
+    "PROBE": 170
+  },
+  "effective_trials": 80,
+  "elapsed_seconds": 4172.592,
+  "expected_original_guard_response_trials": 80,
+  "extended": false,
+  "extension_gate_novelty": false,
+  "fault_trials": 125,
+  "final_audit": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/final-audit.json",
+  "final_summary": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/final-summary.json",
+  "fully_applied_trials": 84,
+  "healthy_repeat_target": {
+    "blockId": 1073741924,
+    "inProgressLength": 399,
+    "path": "/testTruncateTwiceTogether/file",
+    "requestedLength": 398,
+    "truncateBlockId": 1073741924
+  },
+  "healthy_runs": 2,
+  "healthy_target": {
+    "blockId": 1073741924,
+    "inProgressLength": 399,
+    "path": "/testTruncateTwiceTogether/file",
+    "requestedLength": 398,
+    "truncateBlockId": 1073741924
+  },
+  "ledger": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-ledger.csv",
+  "legacy_equal_branch_trials_excluded": 128,
+  "legacy_no_actor_trials_excluded": 80,
+  "methodology": "original_embedded_cluster_junit_actor_aware_source_probes",
+  "original_junit_effective_outcomes": {
+    "injected_client_truncate_response": 55,
+    "passed": 25
+  },
+  "raw_trace_selector_archive": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/raw-trace-selector-evidence.tar.gz",
+  "resource_gate_wait": null,
+  "selection_policy": {
+    "name": "observed_io_shallow_first_v1",
+    "prefer_min_depth": true,
+    "remaining_depths": "all_queued_depths_retained_for_later_selection",
+    "start_after_completed": 110,
+    "within_depth": "original_coverage_io_score_and_waiting_age"
+  },
+  "source_review": "FSDirTruncateOp.java:113-118 throws AlreadyBeingCreatedException for a different second truncate length under recovery; original TestFileTruncate.java:279-282 intercepts it",
+  "status": "quality_complete",
+  "stop_reason": "effective_budget_reached",
+  "target_after_fault": 80,
+  "target_code": "newLength == truncateLength for a block UNDER_RECOVERY",
+  "target_exception_after_fault": 80,
+  "target_function": "FSDirTruncateOp.truncate",
+  "target_site": "FSDirTruncateOp.truncate:113-117",
+  "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java",
+  "updated_at_utc": "2026-10-07T10:50:13.169922+00:00"
+}

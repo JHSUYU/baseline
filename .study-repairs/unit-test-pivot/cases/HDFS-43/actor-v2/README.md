@@ -103,7 +103,7 @@ selection. The migration receipt records before/after checkpoint SHA-256,
 raw-artifact manifest SHA-256, and production coverage/I/O counts. No target,
 identity, strict injection, coverage admission, or bug oracle rule changed.
 
-## Setup status
+## Final result
 
 The six released source files were copied into this case and match the clean
 Hadoop 3.4.3 checkout. The V2 source overrides compiled with Java 8. The
@@ -111,12 +111,49 @@ synthetic, cluster-free `offline_smoke.py` passed its ordered selector and JSON
 trace checks. Coverage exporter compiled. Two fresh original MiniDFSCluster
 JUnit healthy calibrations passed and recorded the exact target guard,
 expected `AlreadyBeingCreatedException`, and relevant I/O. The actor-aware
-campaign runs from a checkpointed controller in node0 tmux
-`hdfs43_actor_v2_full`; each original JUnit runs over SSH in the coordinated
-node2 slot. At trial 40, the independent auditor reported 40 attempted, 25
-strict, 22 same-actor post-last-fault effective, and zero audit errors. No
-target outcome beyond the original expected exception was observed. The
-campaign remains in progress toward its effective-trial budget. At the second
-selection migration, the independently audited effective count was 65/80;
-the previous 80 main and 128 supplementary trials without physical actor
-identity remain excluded.
+campaign ran from a checkpointed controller in node0 tmux
+`hdfs43_actor_v2_full`; each original JUnit ran over SSH in the coordinated
+node2 slot. It stopped at **125 attempted / 84 strict / 80 effective** trials
+after 4 strict trials lost the same-actor target and 41 plans only partly
+matched. The 125 plans requested 279 faults; 215 matched and applied. The
+largest tested sequence had four ordered faults, within the maximum-eight
+budget. Across the two healthy calibrations and fault trials the controller
+recorded 4,172.592 seconds. Both healthy JUnit runs passed.
+
+All 80 effective trials reached the exact `FSDirTruncateOp.truncate:113-117`
+guard after their last applied fault on the same file and block. All 80
+reached the expected `AlreadyBeingCreatedException`; no new target outcome
+was observed. The released source returns for an equal second truncate
+length and throws this exception for a different length while the block is
+`UNDER_RECOVERY` (`FSDirTruncateOp.java:113-118`). The original JUnit
+explicitly intercepts the latter exception
+(`TestFileTruncate.java:279-282`). Of the 80 effective trials, 25 original
+JUnit methods exited zero; the other 55 failed on the fault injector's
+intentional client `truncate` response exception. All 55 raw JUnit failure
+summaries were checked and have the same injected response selector. These
+JUnit failures are retained in the manifest but are not new target bugs under
+the target-exception oracle.
+
+Accepted feedback added 21 production method IDs, 77 per-line branch-count
+units, 170 JaCoCo probe IDs, and three stable I/O families. JaCoCo is
+collected for the entire JUnit execution, so a new ID alone does not prove
+that a fault causally executed a method; the explicit target branch and actor
+linkage come from runtime events. Effective trials 73-80 added no production
+coverage ID or stable I/O family, so the predefined extension to 128
+effective trials did not activate. The previous 80 main and 128 supplementary
+trials without physical actor identity remain excluded.
+
+`campaign/final-audit.json` is the independent 125-trial replay of raw
+selectors, physical NN/DN identities, file/block target linkage, coverage
+IDs, and the ledger; it reports zero errors. `campaign/final-summary.json`
+records the totals and extension decision. The 507-file
+`campaign/raw-trace-selector-evidence.tar.gz` preserves healthy/trial trace,
+selector plan, manifest, trial result, checkpoint, and ledger. Its SHA-256 is
+`94a2fa634572e1f3b9edf8a703c2be6539526e1f4ecb83c6b8e486c7a1e9d11d`.
+`campaign/final-artifact-manifest.json` lists absolute local paths and
+SHA-256 hashes for all 888 raw artifacts, including 127 JaCoCo exec files
+and their exported coverage. The exporter command is
+`python3 system-test/run_coverage.py --exec <trial>/jacoco.exec --output <trial>/coverage.tsv`.
+The released Hadoop 3.4.3 JARs and case-local production overrides are
+identified by `system-test/build-probe.json`. The tmux controller and its
+node2 JUnit JVM had exited when the final audit ran.

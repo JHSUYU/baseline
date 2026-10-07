@@ -1,11 +1,22 @@
 # HDFS-43 independent original-JUnit fault campaign
 
-**Current status: `actor_identity_recheck_pending`.** The 80 main trials and
-128 supplementary equal-branch trials below are historical, graph-free
-coverage/I/O measurements. Their `Client.getRpcResponse` selectors used
-normalized thread names and did not record the RPC request, physical DataNode,
-or target block identity. None count as an actor-qualified completed trial.
-The isolated replacement and its evidence are in [actor V2](actor-v2/README.md).
+**Current status: `quality_complete` for the actor-aware V2 campaign.** Two
+fresh healthy original MiniDFSCluster JUnit runs reached the exact target.
+The new campaign completed 125 attempts, 84 fully applied sequences, and 80
+same-file/block target reaches after the last fault. All 80 target exceptions
+were the `AlreadyBeingCreatedException` expected by the original JUnit;
+independent raw audit found zero errors and no new target bug. The last eight
+effective trials added no production coverage or stable I/O family, so the
+budget stopped at 80/max8. [Actor V2 methods and evidence](actor-v2/README.md)
+include the source review, selector and actor rules, per-trial records,
+timings, coverage, archive, and audit.
+
+The 80 main trials and 128 supplementary equal-branch trials described below
+are historical, graph-free coverage/I/O measurements. Their
+`Client.getRpcResponse` selectors used normalized thread names and did not
+record the RPC request, physical DataNode, or target block identity. None
+count toward the actor-aware completed budget; the old result is preserved
+in [its snapshot](actor-v2/legacy-pre-v2-result.json).
 
 - Target: `hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java:117` in `FSDirTruncateOp.truncate(FSNamesystem,String,long,String,String,long,BlocksMapUpdateInfo,FSPermissionChecker)`; guard `newLength == truncateLength for a block UNDER_RECOVERY`. Exact bytecode sites: `FSDirTruncateOp.truncate#L113-IFNE`.
 - Workload: unchanged Hadoop 3.4.3 `org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether` (MiniDFSCluster).
