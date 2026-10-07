@@ -12,6 +12,14 @@ import re
 KEYS = ("marker", "api", "endpoint", "ordinal", "exception")
 TEST = "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends"
 TARGET = "FSDirAppendOp.appendFile:131"
+# Exact raw fingerprint for the source-reviewed, passing transient retry.
+# Do not classify any other post-fault target exception as reviewed by default.
+REVIEWED_EXPECTED_TRANSIENTS = {
+    "trial-0056-attempt-01": {
+        "trace_sha256": "a5e5274f01cd7d183b582cc8b5e5600231508daf1ac7ec56356d4312eecfe12b",
+        "plan_sha256": "854e0e095c0a84f19dd38f51ecc4f8c332791e602bf4c2cf99617a23efd052a2",
+    },
+}
 
 
 def read_json(path: Path):
@@ -80,7 +88,9 @@ def inspect(root: Path) -> dict:
         io_union.update("\t".join(str(e[k]) for k in ("marker", "api", "endpoint"))
                         for e in trace if e.get("seq", 0) < max(guards) and relevant(e, path, block))
     candidates: list[str] = []
-    missed_candidates: list[str] = []
+    reviewed_expected: list[str] = []
+    unreviewed_target_outcomes: list[str] = []
+    controller_unlabeled_target_outcomes: list[str] = []
     audited_effective = 0
     fully_applied = 0
     for number, row in enumerate(completed, 1):
@@ -187,7 +197,14 @@ def inspect(root: Path) -> dict:
             if independent_effective and exceptions:
                 candidates.append(run_id)
                 if not row["candidate"]:
-                    missed_candidates.append(run_id)
+                    controller_unlabeled_target_outcomes.append(run_id)
+                review = REVIEWED_EXPECTED_TRANSIENTS.get(run_id)
+                if (review and manifest["exit"] == 0 and
+                        manifest["trace_sha256"] == review["trace_sha256"] and
+                        manifest["plan_sha256"] == review["plan_sha256"]):
+                    reviewed_expected.append(run_id)
+                else:
+                    unreviewed_target_outcomes.append(run_id)
             if independent_effective != row["effective"]:
                 raise ValueError("recomputed target/effective receipt mismatch")
             if independent_effective and len(exceptions) != row["receipt"]["postfault_target_exceptions"]:
@@ -218,7 +235,9 @@ def inspect(root: Path) -> dict:
             "recomputed_coverage_ids": len(coverage_union),
             "recomputed_io_families": len(io_union),
             "postfault_target_exception_runs": candidates,
-            "missed_candidate_labels": missed_candidates,
+            "reviewed_expected_transient_runs": reviewed_expected,
+            "unreviewed_target_outcome_runs": unreviewed_target_outcomes,
+            "controller_unlabeled_target_outcome_runs": controller_unlabeled_target_outcomes,
             "errors": errors, "pass": not errors}
 
 
