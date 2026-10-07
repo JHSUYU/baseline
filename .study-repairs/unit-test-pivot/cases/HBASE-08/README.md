@@ -5,6 +5,49 @@ The selected check is `ClusterSchemaServiceImpl.getNamespace(String)` at
 It reads `TableNamespaceManager.get(name)` and throws
 `NamespaceNotFoundException` when the returned descriptor is null.
 
+## Audited actor-bound V2 result
+
+The current comparable result uses the unchanged original
+`TestNamespaceAuditor#testTableOperations` and a standalone ByteBuddy actor
+probe with JaCoCo. Two independent healthy JUnit runs passed, each reached the
+selected guard 10 times, and yielded 18 stable pretarget same-actor exact
+ZooKeeper I/O selectors across five families. Each injected I/O event and
+postfault guard had to bind to the same raw active Master `ServerName` and
+namespace-manager identity. A different or unassigned Master could not make
+a trial effective. The fault queue used observed I/O and production
+method/branch feedback; it used no graph or closure artifact.
+
+The V2 campaign stopped at the default budget after **124 attempted original
+JUnit runs**, of which **80 were strict, same-actor, postfault-guard effective**.
+All 678 planned high-level ZooKeeper exception events applied in order. One
+original JUnit failed during Master startup and lost the target; it did not
+enter feedback. Across all 124 raw runs, the selected target exited normally
+1,269 times and never threw an exact target exception. JaCoCo added one
+production branch, no method, and no new stable I/O family over the healthy
+seeds. The last eight effective runs added none of these, so the optional
+128-trial/10-fault extension did not open. Healthy plus fault run time was
+6,952.93 seconds. No new bug was established in this tested I/O scope.
+
+The read-only [raw audit](evidence/actor-v2-raw-audit.json) rechecked every
+plan, raw exit/log, ordered application, actor and manager identity, guard
+sequence, agent SHA, and cumulative JaCoCo coverage against the checkpoint;
+it found no mismatch. The [evidence archive](evidence/hbase08-actor-v2-evidence.tar.gz)
+contains the unchanged healthy and fault JUnit logs, `.exec` coverage,
+plans, exit receipts, controller, agent, and checkpoint (SHA-256
+`5113fb4faff6d4788c20c388a8338f984b5b00e64bb7381aa6ac6cc5cc842453`).
+The released source retries `IOException` in
+`CreateNamespaceProcedure.CREATE_NAMESPACE_UPDATE_ZK`; watcher read errors
+can abort a Master before this lookup, explaining target loss without a
+target-check outcome. The V2 [result](result.json) counts this campaign alone.
+
+## Historical unbound campaign
+
+The following account describes the earlier graph-free experiment whose I/O
+selectors did not bind a specific Master and manager. Its 80 runs and the
+five older GraphChecker pilot trials remain in
+[legacy-pre-actor-v2-result.json](legacy-pre-actor-v2-result.json) and are
+excluded from the V2 totals.
+
 The unchanged original `TestNamespaceAuditor#testTableOperations` runs in a
 two-master MiniHBaseCluster. It creates a named namespace and tables, exercises
 namespace quota limits, and then cleans them up. The current instrumented

@@ -1,0 +1,1895 @@
+{
+  "agent_sha256": [
+    "f6ac63c8ad2e07499f99f93e1b04f9cf53c5f849274b98828277b3fc159b8601"
+  ],
+  "attempts": 124,
+  "case_id": "HBASE-08",
+  "checkpoint_sha256": "85a74c50a4592a00f9565ddcc1528c5628c6ed962f0a1fb41411e5e14c5459ba",
+  "coverage_branch_lines": {
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=102": 1,
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=121": 2,
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=129": 1,
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=150": 2,
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=193": 2,
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=194": 2,
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=198": 1,
+    "BRANCH class=org/apache/hadoop/hbase/ZKNamespaceManager line=59": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl line=116": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl line=124": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl line=55": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl line=73": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=100": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=101": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=114": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=124": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=127": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=131": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=139": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=149": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=173": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=190": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=208": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=238": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=239": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=255": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=260": 4,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=267": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=270": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=274": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=281": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=320": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=324": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=333": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=349": 2,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=369": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=373": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=380": 1,
+    "BRANCH class=org/apache/hadoop/hbase/master/TableNamespaceManager line=91": 1,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=151": 1,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=156": 1,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=159": 2,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=166": 2,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=184": 1,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=202": 1,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=211": 1,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=215": 1,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=225": 2,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=228": 2,
+    "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=229": 1
+  },
+  "coverage_method_count": 60,
+  "depth_attempts": {
+    "1": 14,
+    "2": 27,
+    "3": 1,
+    "4": 3,
+    "5": 3,
+    "6": 9,
+    "7": 10,
+    "8": 57
+  },
+  "effective": 80,
+  "errors": [],
+  "fault_families": {
+    "ZK_CHILDREN_READ": 13,
+    "ZK_CREATE": 477,
+    "ZK_DATA_READ": 29,
+    "ZK_EXISTS": 1,
+    "ZK_WRITE": 158
+  },
+  "fault_kinds": {
+    "CONNECTIONLOSS": 548,
+    "OPERATIONTIMEOUT": 67,
+    "SYSTEMERROR": 63
+  },
+  "junit_exit_counts": {
+    "0": 123,
+    "1": 1
+  },
+  "last8_effective_novelty": [
+    {
+      "id": "r117",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    },
+    {
+      "id": "r118",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    },
+    {
+      "id": "r119",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    },
+    {
+      "id": "r120",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    },
+    {
+      "id": "r121",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    },
+    {
+      "id": "r122",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    },
+    {
+      "id": "r123",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    },
+    {
+      "id": "r124",
+      "new_branches": 0,
+      "new_methods": 0,
+      "new_stable_io_families": 0
+    }
+  ],
+  "queue_length": 299,
+  "raw_receipts": [
+    {
+      "effective": false,
+      "id": "r001",
+      "outcomes": [],
+      "sha256_exec": "9adf5ff7019a01a8aeb0d0431df610b11f93120088372afed3ec7cb62de9f506",
+      "sha256_log": "23ddf44ab7e9edc7973d7426ab04592d2bf9621647e70f3bd1accc20bd0018e1"
+    },
+    {
+      "effective": false,
+      "id": "r002",
+      "outcomes": [],
+      "sha256_exec": "c7fca341dee4450fde86354e2c28996dde4dca9d8e77fff9aacd52a81d008609",
+      "sha256_log": "4161f7161e2326459e2b414db624d599ed793d292945564db896842e1b032c89"
+    },
+    {
+      "effective": false,
+      "id": "r003",
+      "outcomes": [],
+      "sha256_exec": "867224a3f2c83e663847faefb03ed8104da90a3b9f56e39eba735ed94c939a26",
+      "sha256_log": "74515f4297c2690fe313838beeb8ebb522f43d06191baa5a9d3e44d37bc243ac"
+    },
+    {
+      "effective": false,
+      "id": "r004",
+      "outcomes": [],
+      "sha256_exec": "1e2ed829a39db098f497a920132c7c9e6934d53341d148c21d532e5a2e673407",
+      "sha256_log": "adca17303343cb3caab16a2b718da87b7ab72bf57f6affbbb01c61b7a658d2ee"
+    },
+    {
+      "effective": true,
+      "id": "r005",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "6ed63ce2a9b8ca9177bb57448f60098d183dfadc4144bd200bb28c98d62cf315",
+      "sha256_log": "d2683303604643c4f480a99d05e4043f6e0b6931edd81f0535bf84d46d6256e3"
+    },
+    {
+      "effective": true,
+      "id": "r006",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "8433edc4c3b74f7667656ae502644d12549d7764b52b375a3f4ca3e73be60ec3",
+      "sha256_log": "4a765d6fd520fec6ce755b02c23b08fc1531aeedcc5aed1b3f01e7fabe2f22c1"
+    },
+    {
+      "effective": true,
+      "id": "r007",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "645aee000a447a7404cbdcdbec358a10c4cfcc3bab879140e1c0fdc4b03ff847",
+      "sha256_log": "3dc02c7f6ffb01073d87d1cef96244a8a96d21853d079cf6a50633d0be36c762"
+    },
+    {
+      "effective": true,
+      "id": "r008",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "8d1804575e6d1940e124784e490ce236ce6e92dc0c7ce4b359a2f8daadfeae0b",
+      "sha256_log": "51a07a4af32eb5abe0839a812d671f0f7ff020519899e0b3c1def68c98a3b80c"
+    },
+    {
+      "effective": false,
+      "id": "r009",
+      "outcomes": [],
+      "sha256_exec": "63574204f9d6ea24ed96fd9c80faf7d4ebef9dd8fa1b906f071f836ba039fa23",
+      "sha256_log": "e2c6e2be9667d17bc5d843fb1f51f274d2b290ebd4b6abac2bb309a765a23b95"
+    },
+    {
+      "effective": false,
+      "id": "r010",
+      "outcomes": [],
+      "sha256_exec": "a93f8f701026f50e76f6128889c96df153aa4a6104310b9e35354f5274f54d9b",
+      "sha256_log": "6e522aebc70262285aaf2f9f9594a5c16840f412c69465e87b52419081bf50e6"
+    },
+    {
+      "effective": false,
+      "id": "r011",
+      "outcomes": [],
+      "sha256_exec": "3f795c4fceef534fcb75a616b668bbd67bbcf30449a75f4f738e7fc80b264972",
+      "sha256_log": "b0235fe5be768ea5dd8db6565b2afd2b62c4498968c7ca0867e37d95d9832f9a"
+    },
+    {
+      "effective": true,
+      "id": "r012",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "f9e5dca3703ad6f1e2c9de59f8c64846b2ea39d895417075fe5092cac3f1c422",
+      "sha256_log": "d0f7332e515c1b85972564fc97dfa7ac527513b715233b81735eba853b3cade2"
+    },
+    {
+      "effective": true,
+      "id": "r013",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "df9236fd422053a8f09fd0aa329c3d752f33f93f33feaa3e4c22440cc8c0128b",
+      "sha256_log": "f3c17aec4fb3121ada864708405ad8c66884ce4ebb7a23369bc0a680f753df3c"
+    },
+    {
+      "effective": true,
+      "id": "r014",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "fc7c7c9552d169f2ae9c236d4657fd990dc499d54e7295ec4f81f54d96963a84",
+      "sha256_log": "025b6a8b1f2a7bb48b776e79979df40bfe65f21af2aa44415239a43a19e2c850"
+    },
+    {
+      "effective": true,
+      "id": "r015",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "6d22bdcee4446b4e40be026acae9eaad0c34b784c8f31d63d0bf0f9de47288f0",
+      "sha256_log": "e99b7f236b81fe523495987da56c4c3e54299eb52e5ff5b68caea9cdc81e50f2"
+    },
+    {
+      "effective": false,
+      "id": "r016",
+      "outcomes": [],
+      "sha256_exec": "647ad821663f3f6a161a7c7c97fd77b00748b896c481b3aac3a1aa2a0fcf7d64",
+      "sha256_log": "d374650cbfe807599833cf25038dcb179115bd50130f21ade5ce0a22943e1fd4"
+    },
+    {
+      "effective": true,
+      "id": "r017",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "4d8111328bb9031f57c586a3f4566976c87fbd0439ddc7f881adc2a0c943c266",
+      "sha256_log": "30344622a3b9c473671dba011897b7b495c230d45dc8969db907100bbc734e86"
+    },
+    {
+      "effective": true,
+      "id": "r018",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "19f57d3bbfa9ebe0747a05af969fc8cb5c052dae6e68c5597262f7f8122fc4a9",
+      "sha256_log": "eba10cb9444c53851e4858e0d09d99bed93e7546168b7fe136f5ebf88a9e9331"
+    },
+    {
+      "effective": true,
+      "id": "r019",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "7d5b8bf202d04453564f9d8094c1f32da70ab5162a1cc1cf79792ce3148a4506",
+      "sha256_log": "8bd3b0931e4cbc5fff147ae8e82f35847a07dc42bad675ca019c0f360efe09e2"
+    },
+    {
+      "effective": false,
+      "id": "r020",
+      "outcomes": [],
+      "sha256_exec": "ca7f4746492a1d95ea20235ecdd1fbe82d977699cec25e30357a74b29e803237",
+      "sha256_log": "cd705330fde08784776ef05a883d3ba200d0018285db6292d59f14757dc63751"
+    },
+    {
+      "effective": true,
+      "id": "r021",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "b0ac31556bc26873619fb10898a10d5529243f4214617f72ab9b99f5bccc3ce6",
+      "sha256_log": "dd5de78731e58195d154db6bc5e04632e37ce7ebf3cfe78b540b7cc304365ca3"
+    },
+    {
+      "effective": true,
+      "id": "r022",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "12ba0a1217774904b388637039791c501a9ed00f8e9572859fdc045157cc855a",
+      "sha256_log": "fb5947da83f96a09b565d3b767581be9e863e6b121731330dcfd06ac871beb9f"
+    },
+    {
+      "effective": true,
+      "id": "r023",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "10d14667df2ee14bf148e07c763a352a5661ebb9e9129bc5dba624370ced5125",
+      "sha256_log": "60aa532683d17eb1e7b611087b3594453f5847a7f9f166a9c156acc4c878c751"
+    },
+    {
+      "effective": false,
+      "id": "r024",
+      "outcomes": [],
+      "sha256_exec": "a00da80096bf0791c12cbf4ebd89f522acdba52477b69c7f65509d3385804267",
+      "sha256_log": "ab4b1962e81343cf9c16a9bdd2d1ca8d14540db279e6550f781473971e8a91e2"
+    },
+    {
+      "effective": true,
+      "id": "r025",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "2fce5791a35a4727e3b48f91e58d1cc7923b06eedd03e287bfb0b3ef5f35042c",
+      "sha256_log": "734a5c31c19910f306660ef886bb55f3ebaa9341b182d17bd130d0d84d89bea6"
+    },
+    {
+      "effective": true,
+      "id": "r026",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "89297a49e37c23614fc3e084594a57fd36f8b4663d93695cc9728c461eb777b4",
+      "sha256_log": "afa78a968d7fbc5298a583d89d90fb23e6bf7a5faa8c8481dbde02d1aa0ebba3"
+    },
+    {
+      "effective": false,
+      "id": "r027",
+      "outcomes": [],
+      "sha256_exec": "3220a49b808f6caa0c5193fdd78f09f5ea9c78e5ce8145f585b0ba0730730f89",
+      "sha256_log": "b67aa94915c578170704e8746726733b9b461760e951001c0bc1f1bec4bee47d"
+    },
+    {
+      "effective": false,
+      "id": "r028",
+      "outcomes": [],
+      "sha256_exec": "742f6a5f8864ed7e5ec95d7f836e0ec7005981ee31216f2a15f7e2e3b95c949d",
+      "sha256_log": "2ec09a35423194c6cf0b4df354e031e01e598b660fc8694de663bb026e6c6561"
+    },
+    {
+      "effective": false,
+      "id": "r029",
+      "outcomes": [],
+      "sha256_exec": "99358e2f000f52cb5172d245a664460aa6f839102c398a5d75a2bc910c1197a6",
+      "sha256_log": "e2924d9d3763fcfcea011cd77181da62f7785b0f512235e2a8a9b5315167e29a"
+    },
+    {
+      "effective": false,
+      "id": "r030",
+      "outcomes": [],
+      "sha256_exec": "099ba88a882c74fa214dad214032541c9e8f66f6ff2041cbdd420661fb49dfb6",
+      "sha256_log": "d90398600d29ccde6a83fa719d69c8bfd1bcd0521f857f5e46350f4146d78474"
+    },
+    {
+      "effective": false,
+      "id": "r031",
+      "outcomes": [],
+      "sha256_exec": "b01dd1c7f051ae881757ad3d37e6051eadf7aebcb29507b977bf60810d4209a5",
+      "sha256_log": "741caec6fd68f48919ac5216e72a6ca0b4feaaa3b70e9125312c3bddccd11f2e"
+    },
+    {
+      "effective": true,
+      "id": "r032",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "99b162c9dab57371dc2369f9a2ad916a8c1c363cfb186cfe75a139a8b66f25c0",
+      "sha256_log": "2a67a3acc4617c206d7845c9bcbc0a331f1a04918385938919bd426c5454f20d"
+    },
+    {
+      "effective": false,
+      "id": "r033",
+      "outcomes": [],
+      "sha256_exec": "a28e1a2a6c5585be0772e67b06795da7f9aefc4e087f498b9bc661ad1b029cad",
+      "sha256_log": "227c1687825df2a246ee92d82386fb30d1769335a40b71a60c24b6949fdabb72"
+    },
+    {
+      "effective": false,
+      "id": "r034",
+      "outcomes": [],
+      "sha256_exec": "53af923340f6b504e18c601f442aa10e371a0dd2e46414697aac641fae750e15",
+      "sha256_log": "3350db4a02fb574e9766cf8821b2ac8d3cca4cb13f88c74d848b0cf294f37947"
+    },
+    {
+      "effective": false,
+      "id": "r035",
+      "outcomes": [],
+      "sha256_exec": "743d3b508e34ba56a7c33c4e0c1bcd4b72c28782f75978f959a95e0819be0b5b",
+      "sha256_log": "7bed55ccfe3cf076a782a8a91823f6d98adac726426abef66191e16dbe214b89"
+    },
+    {
+      "effective": false,
+      "id": "r036",
+      "outcomes": [],
+      "sha256_exec": "4eb7973642a54229d6784728c3b0a4877fab3c7f0321ecff0d9e31273d19b988",
+      "sha256_log": "81322fbbcb968d27f78d3c460a50062653967ec68c5bae6eb3fe204681455745"
+    },
+    {
+      "effective": true,
+      "id": "r037",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "4ad183b31c6e887b95616df002df116e6152a14997972f7cdedf6a9758e65df4",
+      "sha256_log": "590ca3c56c75895de279980588e19212561a79d94fe15e594491c88fe6f1203f"
+    },
+    {
+      "effective": true,
+      "id": "r038",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "f7a0af19242e391fb876f5a14ccded7d403aac9cdd609525e437d88fd45bc451",
+      "sha256_log": "7fdd51caa3964512e42d8f8bfe1e6f965374faf8d2da0579a6859ad6ba15d136"
+    },
+    {
+      "effective": true,
+      "id": "r039",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "191a1a5f7622a4ea9abd3630a50bfb194a376a650c097bb2ca6e00a860b4c98f",
+      "sha256_log": "27321cfac8dbb0b8bec70a3338308aec0ea2748953a73794a87962d9130f7657"
+    },
+    {
+      "effective": true,
+      "id": "r040",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "53ee3d66cfdd606b4850197d8fed17ada0a4963e495396dd45630c7766063564",
+      "sha256_log": "731bb125a0146fcdf2d9454eee8721b88d8b430186810b0fb55f95b8e07c58ba"
+    },
+    {
+      "effective": false,
+      "id": "r041",
+      "outcomes": [],
+      "sha256_exec": "25ca820e5113690e5d6561e0044525298ab2620cf40817cf278dd1741bd28029",
+      "sha256_log": "4ea25b522269c4cc6ae91c177269275649d997f6da62b164c23b04edd8054dcd"
+    },
+    {
+      "effective": true,
+      "id": "r042",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "ceb224bb22ab7ccf38a035c7532ab30cd5b5d6ff2e5a3ee8a2d40f32df780dca",
+      "sha256_log": "e03978ef162e988df35677c43f780b0725f820547d3ff784162643c7549018ec"
+    },
+    {
+      "effective": true,
+      "id": "r043",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "6b8bf974fbab014f0f96be2a0f330f2b710e232a053a547a17aaa6b823b37772",
+      "sha256_log": "3e3c6d27617f616b75e5bb8b0e8b3e5f56516e0de5adb42c0a84d31b2cb5f0c3"
+    },
+    {
+      "effective": true,
+      "id": "r044",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "429d296b084aef67034f9feb3388d298d537c7573c27dacbbe9c91f77676e0d3",
+      "sha256_log": "f9798f00fe1c33c3b6194751cba1d390d22b1a4ef7829df9739e967695ef8746"
+    },
+    {
+      "effective": true,
+      "id": "r045",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "e455e0ff8394f917352ceed6ac145f8a4902a884dd740a5c47ba696bbd930945",
+      "sha256_log": "87beea6fcb04d57ce568e0dc1381dc867e85879299be7fcd6916350768af4ca3"
+    },
+    {
+      "effective": true,
+      "id": "r046",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "5cf8a1ca69974fe03ed7baa783f8192969977e25a622e0f16821e6ce16edc4e9",
+      "sha256_log": "34c9934751cadf2c5b42f17218cfcfe79df607f819655e4551451f004073b980"
+    },
+    {
+      "effective": true,
+      "id": "r047",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "8b5465e1cd5ab9676d7391eb922e55883b2f9e0130f1e024fbecf8653d731c9b",
+      "sha256_log": "4149aa64c444cfcc67a6c13e6f1aa58b973cc013dc3df2d2f16220114d81ca0e"
+    },
+    {
+      "effective": true,
+      "id": "r048",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "24a617d2998cb1a23e1e80007112d0d9a6a0a6cc17a0f072b9febb71d2c30f91",
+      "sha256_log": "4a99beec29c3e4a153bd373c31e7cb7b0a70b57777ce8bd5687a5ac585276a59"
+    },
+    {
+      "effective": true,
+      "id": "r049",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "a9929bc6406ae4100894498f9e424e1c5485f5d50730b552f3d92365e3db2d1e",
+      "sha256_log": "0386a2fe37d0e799b40943b7bf8ff6cc607804885cee5fc4ce000a17875e9604"
+    },
+    {
+      "effective": true,
+      "id": "r050",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "b7960489d708d7d3c395b7765d3d6940087e11ab0cfdbb0019b4d569c0870589",
+      "sha256_log": "6d6a0aca29beb3eacf5a09c968b413c9b885f2eca83ef979684db8f9bf1f5a0c"
+    },
+    {
+      "effective": true,
+      "id": "r051",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "5a6d727a1895b225aecdf91ed77a849e308e09092c076a1c8e0ad55afe721bb8",
+      "sha256_log": "f3762441bb99efa9af06cc73f04116807a52731bfcb5660e4f19992ce488de65"
+    },
+    {
+      "effective": true,
+      "id": "r052",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "dbf8b0fabf1d166e7d975dd403dfa16b358cbb551ccecd3b151ae849c4444c43",
+      "sha256_log": "41a56af07b30f94efdc8779709ade23967d52cb7bc7eb4f22b06d3e450a7ed2d"
+    },
+    {
+      "effective": true,
+      "id": "r053",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "00a93c3fc95c4d9dd6be86deab6ea38514cf1727a3b35173880058001c5e1f13",
+      "sha256_log": "5007024e4ad8959648422a34d7eaf98f4acb7d22d2bab270d61cf4756370fab9"
+    },
+    {
+      "effective": false,
+      "id": "r054",
+      "outcomes": [],
+      "sha256_exec": "3976c8b78021d8764ea06853af382a8392956c5b8209c388bd35b3b80f6f7a2a",
+      "sha256_log": "8a129e2c744cc72d1f27b889d96db7ac4fa6d51d3e1b08800571669bb4a49f95"
+    },
+    {
+      "effective": false,
+      "id": "r055",
+      "outcomes": [],
+      "sha256_exec": "ff9e24d3db8ea83ce23b20022294c8fc15512a8513a1e72ade69854d43dd531a",
+      "sha256_log": "9071f0fc2d6603ff9ba315ddccab3509c51131e4324168bc30a87ffed5851c1e"
+    },
+    {
+      "effective": false,
+      "id": "r056",
+      "outcomes": [],
+      "sha256_exec": "1bf52c0045d94507d121f65cbf9c5eb6d74b4c7f7f1c56af5749696263e27bf0",
+      "sha256_log": "8ad5701e90cbe0971d5f3777dae27cd08c1d9dd8f2bba3d498f3ec3b0c17319f"
+    },
+    {
+      "effective": true,
+      "id": "r057",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "ab98034c34ee69271037e693ee7f181b8aec24b2630a0636b9fc7f13bfcdd71c",
+      "sha256_log": "dfc4392414d5c8311569bb78bc16e41479beac090fcc2b56cd0ee728fee55fd1"
+    },
+    {
+      "effective": true,
+      "id": "r058",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "23c224c7e76168059b04eb46f7488ecff4e679aedec45f097dbf049d772cf04e",
+      "sha256_log": "482d53d4a060d12f215ec92225d8eb1e27f5882423c5b25930825378589ade24"
+    },
+    {
+      "effective": true,
+      "id": "r059",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "02f0b98e9b28ed0743bceb14fc69a7960a2fd003e3312f3fc6352f92ad859321",
+      "sha256_log": "73f8b3dcb084f84498bff7c325cb49b8affcbb33afe6b7a1616b9c693bac845f"
+    },
+    {
+      "effective": true,
+      "id": "r060",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "5890e097cf819cb69649984991d394cba2ee61c48facf776808d27c37f2f5495",
+      "sha256_log": "11ceb6453c2328a26119c87ec831800206ad0383772f2dad0b93a6fb38c4443c"
+    },
+    {
+      "effective": true,
+      "id": "r061",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "8655934cc23613e36664725d587106142b3bfe92a0ec30c1173fea5cea8c2d60",
+      "sha256_log": "2f184186080bfd058cf583b1abbbbfe02a862797b2db62328966b00726f936a5"
+    },
+    {
+      "effective": false,
+      "id": "r062",
+      "outcomes": [],
+      "sha256_exec": "048d052a110feefc9142fbfeead028fcb2be300c4637a134f707f2f38dcb8a86",
+      "sha256_log": "eefba17d8de9e92060e91c16e86d414822e623aa6b910713c9fa52cd2d005f41"
+    },
+    {
+      "effective": false,
+      "id": "r063",
+      "outcomes": [],
+      "sha256_exec": "20e96a9b26970d16d8e10c3f8cfa6f1b43e9a4ba2ba9708f84a48f0e01c5c4b2",
+      "sha256_log": "8e04c269e46ed5f2fefbc4413830c5592cbdd726de44285456b1b98fb8d54075"
+    },
+    {
+      "effective": false,
+      "id": "r064",
+      "outcomes": [],
+      "sha256_exec": "395fb71e0696c757d784177be4eb3b9fca8ce97d897518f310f3bfb63039d8e3",
+      "sha256_log": "bffc45900e761293b0fd5ea1d7c3068264a68501632f3c38f36e33a8a3b55917"
+    },
+    {
+      "effective": true,
+      "id": "r065",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "b8c0af72c384627f878b8a5df51e712f2b9b790fd4aabf7a57436f804adeb11d",
+      "sha256_log": "945d69eb05790c2ff6f450e76352a6e470ad724959df42e6578ffb046be00e72"
+    },
+    {
+      "effective": true,
+      "id": "r066",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "38e7f75d3f7f3b2fa5ce445729a70a31c18c907a05c3bbd2e85442c0ccf07a72",
+      "sha256_log": "acf1d5498dba30f01ff93c7e64825daa06b175744a319a83c39cf0443653a844"
+    },
+    {
+      "effective": true,
+      "id": "r067",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "66dc8d5f5729193cc50187a5785bcef48eb7285815794f6a4711ceb73fe3a634",
+      "sha256_log": "6691c8374147f3f22b6b0aebe851e7b4adb6e4cd9cb166c5994c0e83e2431880"
+    },
+    {
+      "effective": true,
+      "id": "r068",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "4ee0cad4b84a167de32ab9cce76c8956b4c42bb2bd0a221ff42ac1a267532994",
+      "sha256_log": "40630ddcb1270b7fb42ffee08bc18533c05d7ee3b2a2d1e91858cb168a683a1d"
+    },
+    {
+      "effective": true,
+      "id": "r069",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "d57cfbaafa38d440c4d576cd2489416227993afb0231dac1a69764a2da9e0df1",
+      "sha256_log": "bc40db70f8a3117fb497e954119f425f7c89cb63b00984c5364d11ef8d79e0b0"
+    },
+    {
+      "effective": true,
+      "id": "r070",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "1fc28e9c11e14ee9125f97c38131e13bc19107fe04e5a0e55ceedfccb9947eda",
+      "sha256_log": "a79de73562c63b224f2f90e289658a39a9182aa3df37fb5278a4477a9e68bc04"
+    },
+    {
+      "effective": true,
+      "id": "r071",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "a72e7b8249b64861ec05527cb35d552baa9acbdb42c67205911a88eccb923462",
+      "sha256_log": "89f66b59143b2be878476aaf00776b77fc7e16cdb26802420dab8e61fe58e974"
+    },
+    {
+      "effective": true,
+      "id": "r072",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "c4aab69d1c335282f0574df066c2b18fad6fa8fd9da51076946f1df34509cbb9",
+      "sha256_log": "c24d459d0fc6b578ff048c4a3e8ae04d505e42d6ebefa2ab0561501f504c32c5"
+    },
+    {
+      "effective": true,
+      "id": "r073",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "982c6823f7c1c00acea12ada6ac5c9f8a98c77c680e1fe6c746ba30cbbf347b8",
+      "sha256_log": "35a051e7736ef29116d649b84308ddc7f9cfee0b8b2e42d6cbb53aa850e367f8"
+    },
+    {
+      "effective": false,
+      "id": "r074",
+      "outcomes": [],
+      "sha256_exec": "e3c74a9e72389df4ca0a19c1fefdbf3820ea120aeacc75aa764d87ce8bda3155",
+      "sha256_log": "c469372dae1d7434b7b336004cbe7345b56e7220779e2dacbddd29540feaa72e"
+    },
+    {
+      "effective": false,
+      "id": "r075",
+      "outcomes": [],
+      "sha256_exec": "e7575015f062473026545f79804e61f5cfd13cda5625766e02d1d24d81434fff",
+      "sha256_log": "ed57db59be23f88c4e05799867c2c00fafd822604491750842e1348c98b34cf4"
+    },
+    {
+      "effective": false,
+      "id": "r076",
+      "outcomes": [],
+      "sha256_exec": "21267875f92dbce8060aed040b42123f29b111f81fa790ddf9714e1f2e34cdc4",
+      "sha256_log": "5287a2ca226a40f62945b461775e4614c539747d60e56d7243999f120d8ecb56"
+    },
+    {
+      "effective": true,
+      "id": "r077",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "bd55d1a1b6e543652d011eae8d0fd6b2670b2b693593ea0d1b1d061d3f6815d1",
+      "sha256_log": "a96b73d6ad099e0e245f3ff13ef9a3fc3667ce55274a851f299ab7c71705aa95"
+    },
+    {
+      "effective": true,
+      "id": "r078",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "ace4b0d5bc2329dd36173aeba242a4feee743a81eaeb0ea36890972063fba3c9",
+      "sha256_log": "cd63b31d0ab5a42cc79231e825d3c3afb87afb1b61439bc0c58b11bf9403f37a"
+    },
+    {
+      "effective": true,
+      "id": "r079",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "de66f1643985ab46422d8f50fac9bf5bb2965f470411508ff34b64edf9d6c4e9",
+      "sha256_log": "f75e3ad9b7c4344472dac30620effc3d67dc000c304210bf4cc15908aff69003"
+    },
+    {
+      "effective": true,
+      "id": "r080",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "8bc30e35529908e0b9ed86c51839545acb6db5808d8ce0e9942e9e2dbe56859f",
+      "sha256_log": "f993eb895dfd2db5613726dd706c03b23288bf9ca4aa04f1fbd909b8b9af024a"
+    },
+    {
+      "effective": true,
+      "id": "r081",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "0cecc25b6edca03df951de38f27297bef6b8e9602c6f8ec66185e8d87b13ee33",
+      "sha256_log": "074001533bb3c0e495e6027a828761df4553fd6e8e722f7f4e43de1d64a2cf82"
+    },
+    {
+      "effective": true,
+      "id": "r082",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "cbdf646224bd5eae51afedf4e5a22f2d42f755d037b91a05779418320a1d930f",
+      "sha256_log": "6422ac52747802687e19c0b5193f1069819775f8b48c9e9de94b7163004b8be4"
+    },
+    {
+      "effective": false,
+      "id": "r083",
+      "outcomes": [],
+      "sha256_exec": "766ca94cce0d8f2d1bf1b9e6e7ef6bc6f018ba62ffe44eafdca84de144f761ab",
+      "sha256_log": "1773f359b7b09bb44b2b5a1699ed7738aec4c1e73e2f4f96cce7a2046e998c65"
+    },
+    {
+      "effective": false,
+      "id": "r084",
+      "outcomes": [],
+      "sha256_exec": "70d5999cf06f1ae1f012c3386accf8499cccac97e57f425ab3b00559d438c189",
+      "sha256_log": "d4b08e4887d2d1ba0be3669d2f4551c59372fbb18e44ea3bd9bb7f86b8c1e60c"
+    },
+    {
+      "effective": false,
+      "id": "r085",
+      "outcomes": [],
+      "sha256_exec": "749a779551c8a267cd7f0899f4be74664e53a34e7f382d9e0ba237b80bbe31b3",
+      "sha256_log": "03445ede3794e045ced8dd8a1571c1fa1bfe34b8534104e774cd4bff290eadc3"
+    },
+    {
+      "effective": true,
+      "id": "r086",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "14d5c306ecd0f6b90b94f9cea353a65d1da270226fc000991949a8e4e147c05f",
+      "sha256_log": "e8743ea144425ca44d707d841f8ca3f0948a05d02e51810c5cedf73880775c80"
+    },
+    {
+      "effective": true,
+      "id": "r087",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "acac029e2b63f614bb223cc91f2ec3dcfe80cd4038aaafa3a5a6a55aecc8d28e",
+      "sha256_log": "3201e9596aedfbd44193ef0fd3711659ab9f38fd3b224c2598c023ddf7630e36"
+    },
+    {
+      "effective": true,
+      "id": "r088",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "f242beaf8ee811d3038352e2d6da3c6c2877b3e563e5da957ad4d4fb424bbbad",
+      "sha256_log": "dce4eac9641a914e9aad97dfe9e9806940daa25e291fe0e4cad12047769737af"
+    },
+    {
+      "effective": true,
+      "id": "r089",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "5fc04bf08c35ee642242fe8f3d8333f91d0c1d0c6af01acefd47565f64da148c",
+      "sha256_log": "94ed9d8afde531eedb902bd6671d513b538d7bd1be0bd6d3eb07593687070bba"
+    },
+    {
+      "effective": true,
+      "id": "r090",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "e45d1733b4b4b729f976617f929bb9ba1cdd6ff7cefe439b9a08cebb105a9a51",
+      "sha256_log": "87c3bb10f3d31072732871b2099a490397a7755270aed21546a639325411f69a"
+    },
+    {
+      "effective": true,
+      "id": "r091",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "ec7023e69c26aa1e3bee2f20b9c16a93352e8bbafdea4d2725ccc7e39fb4a700",
+      "sha256_log": "25d1e1552224362f12098a5d1af2eafb593b6b4faf45216e0c74a07ddc1fb1c5"
+    },
+    {
+      "effective": false,
+      "id": "r092",
+      "outcomes": [],
+      "sha256_exec": "412b219bc3537aa05eac8304b50f515b6c307fb0a0a0675b5263f8f201781e89",
+      "sha256_log": "038f0b96fdf57b898198ceeda8bed5fbc5128d77dc26184e5654c774275ce3dd"
+    },
+    {
+      "effective": false,
+      "id": "r093",
+      "outcomes": [],
+      "sha256_exec": "b2082bff3d07d81e256d9f7c4be92c0c14934f3d97ac540b1b4cd3511c43e555",
+      "sha256_log": "585216d5ade1a6d70410929d19391e677c16bf954eb7b99fba977905aa11246e"
+    },
+    {
+      "effective": false,
+      "id": "r094",
+      "outcomes": [],
+      "sha256_exec": "0c24be60260e4aeb6064f6b382b75dcbe43e8675d86bb5da89e7081141d02da7",
+      "sha256_log": "d5a4b7ec0eb7b309a5eb52f1092b052f311ca73499f0cec72a50e84ab065079f"
+    },
+    {
+      "effective": true,
+      "id": "r095",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "301e377eba36a2e49ac738a2bc43156b9021887f46c3b140164e900edb88ca18",
+      "sha256_log": "c0b2f6189a13cdc248ac1e9f9c43b03655039877f456f5006ac7411c1f7f909d"
+    },
+    {
+      "effective": true,
+      "id": "r096",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "53da4c67d48550167370c98b4fc042bc9eeacbc8ab065ac19d3bc587b6f029b1",
+      "sha256_log": "aaa763a3fe834134aa6e8bfb194ecc8c907d9fccac6324213e352a401923ecc4"
+    },
+    {
+      "effective": true,
+      "id": "r097",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "34cfb5b4bfec16763901c2f48f54f7a6298d9feba48f904958455a528d894bae",
+      "sha256_log": "4c39f3769171a1afaf6592b6a325ef185156b63f2700867578daabcd2e768cc5"
+    },
+    {
+      "effective": false,
+      "id": "r098",
+      "outcomes": [],
+      "sha256_exec": "2efd5a2178d30a76b9d9c705cd41dbcebeea25682ac5fd668a501b6f3b605c7f",
+      "sha256_log": "62a20cf287313ab3eaff9e8ecb62c988e82c98fb4d470fb2deb9d37bf1dad3f1"
+    },
+    {
+      "effective": false,
+      "id": "r099",
+      "outcomes": [],
+      "sha256_exec": "d9057bf70d7becb7fe961731b69c6d7df08663b9013ed0f735163bda7d5519bd",
+      "sha256_log": "35d923f5b6fd22281c98cf1b2cefd68424a96e0f1ef2ca1d8eb11fd5640c74df"
+    },
+    {
+      "effective": false,
+      "id": "r100",
+      "outcomes": [],
+      "sha256_exec": "deea8c50949ca166e0a785bbdb1deafc2be1981ee6ffe304b3dd9569487b5da1",
+      "sha256_log": "3a278b433b317c7c208e986fabf598f2d8898b98e916660dd1a79b91e9beab4d"
+    },
+    {
+      "effective": true,
+      "id": "r101",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "21cf1626920109af89d642c1d0a4f459866499e4b28858b22cf879c88d58f334",
+      "sha256_log": "edfe04ed3a63295e51f4d9bfacbc2eb63da130b930c5927becedc827ba7ef823"
+    },
+    {
+      "effective": true,
+      "id": "r102",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "e44ddb881f3840e2bf6375e32382fc9e68643c6d6054e99986c2189d4cd0bb79",
+      "sha256_log": "657617b3ad6bd9473f55f913065bfc379c9629e8c6b52aca87ef3616987f8fee"
+    },
+    {
+      "effective": true,
+      "id": "r103",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "a9dc62610c31b8056bfa48e92cb50706b8f56ee31b67478674a303f528bca208",
+      "sha256_log": "b60692baa72dff82463671a1f45165729f78a124ee6d08cbab1022fc59b09e49"
+    },
+    {
+      "effective": true,
+      "id": "r104",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "e966daf94053afae6ac12dd0e8e899aa7409e32bc4583ad74220e75e1019c773",
+      "sha256_log": "d6649d759fe68f5461fd8f8750f90e7f7e69395f67d22008384b0621887ddb0e"
+    },
+    {
+      "effective": true,
+      "id": "r105",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "5fcfb240b7d631e09c71b59106ce2c4022efa0e461d57d006320e8d78db06569",
+      "sha256_log": "aa6be2e9786fe4dc2bad4e855cb648618c65e92f2234f6afe19882014fbcf3e2"
+    },
+    {
+      "effective": true,
+      "id": "r106",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "409ff31a76539e98253492766a25636948784363e9b472338425ad345f9933d3",
+      "sha256_log": "e9e64f92472b55170ea3953223af9df78af3b20422a7e61568f897060b38ce80"
+    },
+    {
+      "effective": false,
+      "id": "r107",
+      "outcomes": [],
+      "sha256_exec": "31c951e6c970c4fbef11f1d300e234293ec80eec871d3dc3b4c56d452d3988d3",
+      "sha256_log": "27c5f29936da1144d0f27077f4657bd824566067cce92252276923e4d0e4dac6"
+    },
+    {
+      "effective": false,
+      "id": "r108",
+      "outcomes": [],
+      "sha256_exec": "32b955980b52192a5b4530c1f60645584c682f85b0402b3156bfd4d61d2d52c2",
+      "sha256_log": "d9ba9e2056d039cc789f80dc0c6f6100d04af5cbf735b4cdceb50dd11a249a55"
+    },
+    {
+      "effective": false,
+      "id": "r109",
+      "outcomes": [],
+      "sha256_exec": "c4adb9c04ca7135549f9904a6149d31a19d21c9f24df431e98b1215a887598a5",
+      "sha256_log": "f2448ede47d0e9cfb9dfc0f2b46f5e94613ed9a8b52f8184dbffda272452f644"
+    },
+    {
+      "effective": true,
+      "id": "r110",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "5c6f9aca148b0f886eaa570106314ff3bf829940d151548766f455ba34e05fac",
+      "sha256_log": "fd5a37365c1cef89daff4af794705b6c5d1611f74faa76596205cfe8893250ef"
+    },
+    {
+      "effective": true,
+      "id": "r111",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "fe78d42ed25de606a5cde884c422d98fcbbf7faefb1e848aec33148820dacdcf",
+      "sha256_log": "d5f79a17da669c8cb2aaba8e7f1848336e5e8b08e05e3034d52f3acbb78ee133"
+    },
+    {
+      "effective": true,
+      "id": "r112",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "ae607bf89083f6c80db3e9670984eed7b66386c23337b10670acfc4ed2e3afa3",
+      "sha256_log": "f603f233eedf69aa2b51af5dd5be6dbcebe3238a50567892d079a8fbb778968f"
+    },
+    {
+      "effective": false,
+      "id": "r113",
+      "outcomes": [],
+      "sha256_exec": "c6f1a9d880878a8a78f74333b95e8b8d5612bacaf83ed301dc16b3c7d45071fb",
+      "sha256_log": "2ee4b38bdc31613b25d4a15bdfd5a4168c2e2b9400d4e239b144fd786922b47b"
+    },
+    {
+      "effective": false,
+      "id": "r114",
+      "outcomes": [],
+      "sha256_exec": "b97d1dd7c565699c6e4bd280b984a1d62492393f07616429775c5f27c4c48e3e",
+      "sha256_log": "2ef4b4b73f9d1c7609fc4687d5aac08047502b11cc490dfb92ab7974e7b94e42"
+    },
+    {
+      "effective": false,
+      "id": "r115",
+      "outcomes": [],
+      "sha256_exec": "e17d9d86b65a26fe5f4654863772139c64f02a2d649121510b6bc2b540317d20",
+      "sha256_log": "bd830fc5befafd6c8436fa3dd2c0a203791d532b0693c0ad2f51fc4a90d00bc0"
+    },
+    {
+      "effective": true,
+      "id": "r116",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "04b474a4ec86571c7c7d8ef73cf96a6ecd7146fdd817d403244530f490e9df4c",
+      "sha256_log": "385e558e7efe9e10ece118fd8aa6146c2eee42482cc1f1c1636848058d9c7db9"
+    },
+    {
+      "effective": true,
+      "id": "r117",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "cbe4aba2a692cf94be95b68e59f0a31fec12d156412997dc0a00d40a27c60bb7",
+      "sha256_log": "058a4536e925fcf5f1e852b930981e3aeb8ed708de2fc1bf3e77817cc1eb9f68"
+    },
+    {
+      "effective": true,
+      "id": "r118",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "f5f03b08040b866b1e02bcfe1fdfdfef91c7740eede90ee0bd06e7da213f466c",
+      "sha256_log": "d458a84c3855622620929fe95c14c2346b967d3e323ca6c6f296898db25a202d"
+    },
+    {
+      "effective": true,
+      "id": "r119",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "ed06c9735ce8ca66369b340311e6da6beaf6671338c41cb92ab9d7b378b164ad",
+      "sha256_log": "f04e0a2fd88d6d9fdcbd86a2bf00521b73d3416ead7d48ef01ead0edd5e55656"
+    },
+    {
+      "effective": true,
+      "id": "r120",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "889681f4f032c75052d2fa22df9292464200fce377348f04fc7723ffb6c26f55",
+      "sha256_log": "0848d6bed0dfaad068e4b6028d47bec8d3778f2999e84eb5b2165e7c6dbf5579"
+    },
+    {
+      "effective": true,
+      "id": "r121",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "18d052987942b69e8b6f4bac39e60f793d8b2bc663321e8ac48d606791cf54da",
+      "sha256_log": "38c766e277bf029ab21cfe6e34df1b7cfe14cad9f52f1ff355f95c9782209364"
+    },
+    {
+      "effective": true,
+      "id": "r122",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "88d8b7a4bfe4fef3ef1c2929225155cedbd5db99f3682a93ccf022f44f29bd6d",
+      "sha256_log": "b1cf8f669e21485ec58fb9b2c7583946336814b500d9c2131b36b4a8c4ae0a4e"
+    },
+    {
+      "effective": true,
+      "id": "r123",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "d28cd5562925bebc4034a94db9afd9e3a8bbea79287d2b41ca0a9a703353b985",
+      "sha256_log": "2a8855dc81847acd875b246fb9eac523f421ccab480cac3f48493864a5460620"
+    },
+    {
+      "effective": true,
+      "id": "r124",
+      "outcomes": [
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal",
+        "normal"
+      ],
+      "sha256_exec": "b438435dbc0bf76df651f1576697cebff24a42547521ed4239371336efe350a7",
+      "sha256_log": "393ed30ba0e0af5bce1851f81fd5ed4d87dbae81901f3a0bce8f3527db43eb9b"
+    }
+  ],
+  "selected_outcomes_all_raw": {
+    "normal": 1269
+  },
+  "status": "budget_complete_pending_audit",
+  "strict_trials": 124
+}

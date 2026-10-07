@@ -1,203 +1,157 @@
 {
   "case_id": "HBASE-08",
-  "status": "actor_identity_recheck_pending",
-  "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
+  "system": "HBase",
+  "version": "2.6.6",
+  "status": "quality_complete",
+  "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java",
+  "target_function": "getNamespace(String)",
+  "target_guard_line": 116,
+  "cluster_test": "TestNamespaceAuditor#testTableOperations",
   "target_reached": true,
-  "fault_trials": 80,
-  "strict_injections": 80,
-  "target_after_fault": 65,
-  "coverage_gain": 10,
-  "elapsed_seconds": 4205.04,
+  "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+  "fault_trials": 124,
+  "effective_fault_trials": 80,
+  "strict_injections": 124,
+  "target_after_fault": 80,
+  "requested_faults": 678,
+  "applied_faults": 678,
+  "coverage_gain": 1,
+  "new_production_methods": 0,
+  "new_production_branches": 1,
+  "new_stable_io_families": [],
+  "healthy_elapsed_seconds": 106.72,
+  "fault_elapsed_seconds": 6846.21,
+  "elapsed_seconds": 6952.93,
   "bug_mark": "none",
-  "evidence": [
-    "README.md",
-    "work/src/HBase08Agent.java",
-    "work/src/NativeJUnit.java",
-    "work/src/CoverageReport.java",
-    "work/run.sh",
-    "work/campaign.py",
-    "work/checkpoint.json",
-    "evidence/hbase08-coverage-io-80.tar.gz"
-  ],
-  "campaign_state": "graph_free_coverage_io_80_trial_campaign_complete",
-  "next_fault_families": "Campaign complete. Additional trials require a new workload or a genuinely new related I/O family.",
-  "methodology": "graph_free_original_junit_observed_zk_io_jacoco_feedback",
-  "baseline_trial_budget": 80,
-  "baseline_max_faults_per_sequence": 8,
+  "target_exception_candidates": 0,
+  "budget": {
+    "effective_trials": 80,
+    "max_attempts": 320,
+    "max_faults": 8
+  },
+  "stop_reason": "budget_complete",
+  "extension_decision": {
+    "last8_effective_novelty": false,
+    "extended_to_128": false
+  },
+  "source_audit_note": "The original getNamespace(String) null check is at ClusterSchemaServiceImpl.java:116. CreateNamespaceProcedure retries IOException during CREATE_NAMESPACE_UPDATE_ZK; ZKNamespaceManager watcher read errors can abort a Master and lose the target. The raw audit found selected outcomes {'normal': 1269}; none established a new bug within the admitted fault scope.",
   "current_campaign": {
-    "healthy_elapsed_seconds": 48.67,
-    "healthy_target_checks": 12,
-    "healthy_fatal_target_checks": 0,
-    "healthy_io_events": 16,
-    "healthy_coverage": {
-      "classes": {
-        "org/apache/hadoop/hbase/master/TableNamespaceManager": {
-          "methods": 24,
-          "branches": 39,
-          "lines": 129
-        },
-        "org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl": {
-          "methods": 10,
-          "branches": 5,
-          "lines": 32
-        },
-        "org/apache/hadoop/hbase/master/procedure/CreateNamespaceProcedure": {
-          "methods": 21,
-          "branches": 22,
-          "lines": 63
-        },
-        "org/apache/hadoop/hbase/ZKNamespaceManager": {
-          "methods": 14,
-          "branches": 11,
-          "lines": 63
-        }
-      },
-      "methods": 69,
-      "branches": 77,
-      "lines": 287
-    },
-    "attempted_trials": 80,
-    "strict_trials": 80,
-    "strict_post_fault_target_trials": 65,
-    "requested_fault_events": 385,
-    "applied_fault_events": 385,
-    "new_production_methods": 2,
-    "new_production_branches": 10,
-    "new_io_selectors": 21,
-    "new_io_sites": 1,
-    "elapsed_seconds": 4205.040000000001,
-    "queue_length": 391,
+    "applied_faults": 678,
+    "attempted_trials": 124,
     "budget": {
-      "trials": 80,
+      "effective_trials": 80,
+      "max_attempts": 320,
       "max_faults": 8
     },
-    "checkpoint": "work/checkpoint.json",
-    "strict_post_fault_named_namespace_trials": 64,
-    "junit_passed_trials": 64,
-    "target_lost_abandoned_trials": 15,
-    "max_sequence_depth_observed": 8,
-    "distinct_fault_sequences": 80,
-    "extension_decision": {
-      "checked_at_trial": 80,
-      "late_novel_production_methods": 0,
-      "late_novel_production_branches": 0,
-      "late_new_stable_io_families": 0,
-      "extended_to_128": false
+    "bug_mark": "none",
+    "case_id": "HBASE-08",
+    "checkpoint": "campaigns/HBASE-08/checkpoint.json",
+    "effective_trials": 80,
+    "fault_elapsed_seconds": 6846.209999999998,
+    "healthy_elapsed_seconds": 106.72,
+    "healthy_expected_outcomes": [
+      "normal"
+    ],
+    "healthy_expected_target_exception_trials": 0,
+    "healthy_io_families": [
+      "ZK_CHILDREN_READ",
+      "ZK_CREATE",
+      "ZK_DATA_READ",
+      "ZK_EXISTS",
+      "ZK_WRITE"
+    ],
+    "healthy_seeds": [
+      "h1",
+      "h2"
+    ],
+    "healthy_selected_target_counts": [
+      10,
+      10
+    ],
+    "healthy_stable_selectors": 18,
+    "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+    "new_production_branches": 1,
+    "new_production_methods": 0,
+    "new_stable_io_families": [],
+    "original_junit": "TestNamespaceAuditor#testTableOperations",
+    "priority_migrated_after_attempt": 4,
+    "priority_policy": "healthy_guard_distance_with_periodic_exploration_v1",
+    "requested_faults": 678,
+    "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java",
+    "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+    "status": "budget_complete_pending_audit",
+    "strict_postfault_target_trials": 80,
+    "strict_trials": 124,
+    "system": "HBase",
+    "target_exception_candidates": 0,
+    "target_function": "getNamespace(String)",
+    "target_guard_line": 116,
+    "total_elapsed_seconds": 6952.9299999999985,
+    "version": "2.6.6"
+  },
+  "raw_audit": {
+    "checkpoint_sha256": "85a74c50a4592a00f9565ddcc1528c5628c6ed962f0a1fb41411e5e14c5459ba",
+    "attempts": 124,
+    "effective": 80,
+    "strict_trials": 124,
+    "selected_outcomes_all_raw": {
+      "normal": 1269
     },
-    "source_review": "No new bug candidate. The injected write failures are retried by CreateNamespaceProcedure; watcher failures that abort both masters lose the target and contribute no feedback.",
-    "evidence_archive": "evidence/hbase08-coverage-io-80.tar.gz"
+    "depth_attempts": {
+      "1": 14,
+      "2": 27,
+      "3": 1,
+      "4": 3,
+      "5": 3,
+      "6": 9,
+      "7": 10,
+      "8": 57
+    },
+    "fault_kinds": {
+      "CONNECTIONLOSS": 548,
+      "OPERATIONTIMEOUT": 67,
+      "SYSTEMERROR": 63
+    },
+    "fault_families": {
+      "ZK_CHILDREN_READ": 13,
+      "ZK_CREATE": 477,
+      "ZK_DATA_READ": 29,
+      "ZK_EXISTS": 1,
+      "ZK_WRITE": 158
+    },
+    "junit_exit_counts": {
+      "0": 123,
+      "1": 1
+    },
+    "errors": []
   },
   "instrumentation_provenance": {
-    "runtime_source": "Apache HBase 2.6.6 binary distribution, original hbase-server-2.6.6-tests.jar",
+    "runtime_source": "unchanged original HBase 2.6.6 server and test JARs",
     "server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
     "test_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
-    "zk_jar_sha256": "6ad67305af4910e61e324034cab9ce0f50b966ce203c195581daeff552a8b957",
-    "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
-    "runtime_instrumentation": "case-local ByteBuddy Java agent plus JaCoCo 0.8.15",
-    "case_agent_sha256": "5d30e7bf93db0d7bdeb9f3b1da7ef2f2db2a1fe76cd5bf65082ea910eb8c78af",
+    "agent": "standalone namespace actor V2 ByteBuddy agent plus JaCoCo 0.8.15",
+    "agent_jar_sha256": "f6ac63c8ad2e07499f99f93e1b04f9cf53c5f849274b98828277b3fc159b8601",
+    "same_actor_gate": "raw ACTIVE_MASTER ServerName and manager identity, exact ordered I/O, postfault guard",
     "graphchecker_prewoven_jar": false,
-    "graphchecker_region_skeleton": false,
-    "static_map_or_closure_feedback": false,
-    "observed_io_identity": "I/O family, exact ZK path, production call site, hit ordinal, ordered runtime match",
-    "scope": "current 80-trial graph-free campaign only; legacy GraphChecker pilots are excluded from comparable totals"
+    "graph_or_closure_feedback": false
   },
-  "completion_reason": "Completed 80 distinct, strictly applied original-JUnit fault sequences through eight ordered faults. No exact target exception occurred. The final 16 strict target-retaining rounds added no production method/branch coverage or stable I/O family, so the conditional 128/10 extension did not open.",
-  "source_audit_note": "At the selected ClusterSchemaServiceImpl.getNamespace null check, a normal return proves the false branch and NamespaceNotFoundException would prove the true branch. None occurred after injection. In HBase 2.6.6 CreateNamespaceProcedure, IOException during CREATE_NAMESPACE_UPDATE_ZK is retried because rollback is unsupported; the many recovered write-fault sequences are expected. ZKNamespaceManager watcher child-read failures abort the master and those target-lost trials are excluded from feedback.",
-  "evidence_archive_sha256": "da3b791bbd2b632171729abe45d2a5dc885e7e373621ecdc5223775f8d459224",
-  "evidence_archive_bytes": 4412382,
-  "historical_trials_count": 5,
-  "current_method_trials_count": 80,
-  "legacy_evidence": {
-    "methodology": "historical GraphChecker-instrumented, build-specific pilot; excluded from current graph-free baseline totals",
-    "fault_trials": 5,
-    "strict_injections": 4,
-    "target_after_fault": 4,
-    "elapsed_seconds": 761.55,
-    "healthy_target_checks": 9,
-    "healthy_fatal_target_checks": 0,
-    "timing_note": "761.55 s is the previously recorded 498.74 s subset plus v4/v5/v6 healthy seeds (35.37, 35.65, 37.88 s), v6 ZK write-response fault trial (37.93 s), merged-core healthy compatibility run (35.79 s), and node1 isolated HBase source validation (3.51 s javac, 22.47 s static analysis, 21.36 s instrumentation, 32.85 s JUnit). It excludes earlier adapter compiles and static analysis and instrumentation passes; each fault trial is separately timed below.",
-    "coverage_metric": "New instrumented branch outcomes versus each version's healthy run: v3 watcher +19 (11 new methods); v6 ZooKeeper write response +4 (1 new method). These are scoped measurements.",
-    "unique_fault_points_tested": 2,
-    "fault_trial_details": [
-      {
-        "id": "zkchild-001",
-        "seconds": 36.15,
-        "matched": 0,
-        "target_after_fault": false,
-        "target_guard_count": 9,
-        "fatal_target_guard_count": 0,
-        "note": "Selector did not match; injection invalid."
-      },
-      {
-        "id": "zkchild-002",
-        "seconds": 36.39,
-        "matched": 1,
-        "target_after_fault": true,
-        "target_guard_count": 12,
-        "fatal_target_guard_count": 0,
-        "note": "Matched and applied; target retained."
-      },
-      {
-        "id": "zkchild-v2-001",
-        "seconds": 38.87,
-        "matched": 1,
-        "target_after_fault": true,
-        "target_guard_count": 12,
-        "fatal_target_guard_count": 0,
-        "note": "Matched and applied; target retained."
-      },
-      {
-        "id": "zkchild-v3-001",
-        "seconds": 39.28,
-        "matched": 1,
-        "target_after_fault": true,
-        "target_guard_count": 12,
-        "fatal_target_guard_count": 0,
-        "note": "Matched and applied; target retained; 19 new scoped branch outcomes."
-      },
-      {
-        "id": "zk-write-v6-001",
-        "seconds": 37.93,
-        "matched": 1,
-        "applied": 1,
-        "target_after_fault": true,
-        "target_guard_count": 9,
-        "fatal_target_guard_count": 0,
-        "new_branch_outcomes_vs_seed": 4,
-        "new_methods_vs_seed": 1,
-        "note": "Matched and applied; target retained; original JUnit exited 0; four new scoped branch outcomes."
-      }
-    ],
-    "matched_applied_trials": 4,
-    "coverage_gain_by_trial": {
-      "zkchild-v3-001": 19,
-      "zk-write-v6-001": 4
-    },
-    "evidence": [
-      "evidence/legacy-trials/coverage-v3.json",
-      "evidence/legacy-trials/coverage-v6.json",
-      "evidence/legacy-trials/checkpoint-v4",
-      "evidence/legacy-trials/checkpoint-v5",
-      "evidence/legacy-trials/checkpoint-v6"
-    ]
-  },
-  "healthy_target_checks": 12,
-  "healthy_fatal_target_checks": 0,
-  "comparison_scope": "Only the current 80-trial ByteBuddy + JaCoCo campaign is counted in top-level fields and the 102-site checklist.",
+  "evidence": [
+    "README.md",
+    "evidence/actor-v2-result-row.json",
+    "evidence/actor-v2-raw-audit.json",
+    "evidence/hbase08-actor-v2-evidence.tar.gz",
+    "legacy-pre-actor-v2-result.json"
+  ],
+  "evidence_archive_sha256": "5113fb4faff6d4788c20c388a8338f984b5b00e64bb7381aa6ac6cc5cc842453",
+  "evidence_archive_bytes": 7702349,
+  "current_method_trials_count": 124,
+  "historical_unbound_trials_count": 80,
+  "historical_graphchecker_pilot_trials_count": 5,
+  "historical_evidence": "legacy-pre-actor-v2-result.json",
+  "comparison_scope": "Only actor-bound V2 trials contribute to top-level fault, target, time, and coverage counters; prior unbound results are archived separately.",
   "quality_review": {
-    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
-    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
-    "prior_status": "quality_complete",
-    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
-    "historical_counters_not_current_quality_effective": true,
-    "historical_counters": {
-      "fault_trials": 80,
-      "strict_injections": 80,
-      "target_after_fault": 65,
-      "coverage_gain": 10,
-      "elapsed_seconds": 4205.04
-    },
-    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
-    "bug_mark_unchanged": "none"
+    "prior_issue": "Earlier graph-free selectors did not prove the communicating Master/manager identity.",
+    "resolution": "Independent actor-bound V2 runs and raw audit prove the selected guard after exact faults on the same Master/manager."
   }
 }
