@@ -2,8 +2,8 @@
 
 > **Actor identity recheck pending.** The earlier I/O fault selector used a global call-site ordinal and did not bind the peer/client/socket or file owner. Its raw trials, coverage, and elapsed time are preserved as historical selector-level evidence in `result.json`, but are excluded from the current actor-matched budget. See [independent audit](../../audits/zookeeper-terminal-actor-identity-2026-10-07.md).
 
-**Status: `quality_complete`.** The independent recorder replay below completed
-80 new fault trials. The 128 trials using GraphChecker-prewoven classes and a
+**Historical independent replay: actor identity recheck pending.** The independent recorder replay below completed
+80 fault trials, but its selectors did not prove the required peer/client identity across runs. The 128 trials using GraphChecker-prewoven classes and a
 precomputed static region skeleton remain historical evidence in
 [`legacy-graph-result.json`](legacy-graph-result.json) and
 [`trial-ledger.jsonl`](trial-ledger.jsonl), excluded from current counts.
@@ -17,6 +17,10 @@ The campaign completed 80 original-cluster JUnit fault trials under an eight-fau
 Target-retaining runs among trials 73–80 added no new production line, method, or stable target-pre I/O family, so the conditional 128-trial extension was not triggered. The recorder observed 230 target-pre I/O site and ordinal positions, with no new site family beyond the healthy run. At the 80-trial ceiling, 425 feedback-generated plans remained queued; this is a budget result, not selector-frontier exhaustion. `evidence/independent/trial-summary.csv` lists each plan, elapsed time, exact match, target retention, and outcome. The raw 82-JVM archive is `evidence/independent/raw-runs.tar.gz` (SHA-256 `aa61c11eb87fe4cdeabac31b8bc736e68a406e37eafe0ff0b6bd26be32e91418`). Fault JVMs took 494.171 seconds in aggregate and 250.899 seconds of wall time across two workers; including healthy and positive-control JVMs, the recorded total is 507.015 seconds.
 
 ## Historical graph-derived evidence
+
+The retired GraphChecker runner scripts were removed from this workspace. Raw
+records and provenance remain for auditing; only the independent actor-aware
+runner can contribute new effective trials to this case.
 
 ## Source check and original JUnit
 

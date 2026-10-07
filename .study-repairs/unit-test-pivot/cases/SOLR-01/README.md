@@ -2,7 +2,7 @@
 
 # SOLR-01: HTTP alias fallback guard
 
-**Current 102-check status: quality complete for the independent graph-free method.** The unchanged `CloudHttp2SolrClientTest.testAliasHandling` passed without instrumentation in 20.895 seconds and with case-local instrumentation in 25.942 seconds. The healthy trace reached the selected `getAliases` outcome 36 times and observed 15 actual `LISTALIASES` HTTP calls, yielding 30 initial request-failure selectors across two exception families. The method records the HTTP operation/resource, production callsite, alias-fetch invocation and attempt ordinal, plus the actual endpoint URL. Complete ordered injection and a later selected check are required for feedback; JaCoCo production coverage and stable I/O identities guide mutation.
+**Historical graph-free run: actor identity recheck pending.** The unchanged `CloudHttp2SolrClientTest.testAliasHandling` passed without instrumentation in 20.895 seconds and with case-local instrumentation in 25.942 seconds. The healthy trace reached the selected `getAliases` outcome 36 times and observed 15 actual `LISTALIASES` HTTP calls, yielding 30 initial request-failure selectors across two exception families. The method records the HTTP operation/resource, production callsite, alias-fetch invocation and attempt ordinal, plus the actual endpoint URL. Complete ordered injection and a later selected check were required for feedback; JaCoCo production coverage and stable I/O identities guided mutation. These measurements remain historical until the runtime actor relation is verified.
 
 The independent campaign finished **80/80 valid trials**, all with exact ordered injections and a selected check after the final fault. It used at most three faults per sequence, gained **110 production coverage probes, 12 methods, and 59 branches**, and observed **39 exact selected exceptions**. The last eight valid trials added neither production coverage nor a stable I/O identity, so the 128/max10 extension did not apply. Faulted JUnit runs used **1,809.497 seconds** in total. Every trial has its own raw event trace, JaCoCo file, JUnit log, elapsed time, and atomic checkpoint under `independent/evidence/campaign/`. The [trace audit](independent/evidence/campaign/audit.json), [coverage summary](independent/evidence/campaign/coverage-summary.json), and [candidate review](independent/evidence/campaign/candidate-review.json) reconcile the saved results.
 
@@ -11,8 +11,8 @@ All 39 selected exceptions followed injected failures at **every known live-node
 The six trials below remain historical evidence in `legacy-graph-result.json`.
 
 The independent method's trial 3 injected three `IOException`s at the `LISTALIASES` HTTP callsite for attempts 1, 2 and 3 of one `getAliases` invocation, each against a distinct observed live-node URL. Its clean replay applied the same three logical selectors in order and reached the same selected throw. The replay trace and `independent/evidence/campaign/replay-summary.json` preserve the evidence; mixed-exception trial 7 has a second replay under `independent/evidence/replay-trial-007/`.
-`run.sh` loads the GraphChecker runtime, and the exact selectors contain
-precomputed `REGION.*` identities. The source review that all three failed
+The retired runner loaded the GraphChecker runtime, and the exact selectors contain
+precomputed `REGION.*` identities. Its executable scripts were removed; the source review that all three failed
 endpoints cause the expected exception remains useful, but these trials do not
 count as the graph-independent runtime campaign.
 
