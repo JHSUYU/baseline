@@ -93,6 +93,12 @@ exception or JUnit failure alone is not the target oracle.
 
 ## Source interpretation
 
+The historical `evidence/runs/` payload was compressed after its 1,440 files
+were checked byte for byte. The archive, per-file SHA-256 manifest, restore
+command, and a verified copy on node1 are recorded in
+`archives/legacy-runs-receipt.json`. The local raw directory was removed to
+release node0 space for active campaigns; it can be restored from the archive.
+
 `DFSClient.getLocatedBlocks` is a thin wrapper around the NameNode
 `getBlockLocations` RPC. The selected guard compares the returned block-list
 emptiness with the requested read offset and the stream's locally cached file
