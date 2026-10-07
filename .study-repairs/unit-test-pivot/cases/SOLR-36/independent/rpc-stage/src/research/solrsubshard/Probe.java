@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import org.apache.solr.common.SolrException;
 import org.apache.solr.common.cloud.DocRouter;
+import org.apache.solr.common.cloud.ClusterState;
+import org.apache.solr.common.cloud.DocCollection;
 import org.apache.solr.common.cloud.Replica;
 import org.apache.solr.common.cloud.Slice;
 import org.apache.solr.cloud.CloudDescriptor;
@@ -27,6 +29,7 @@ import org.slf4j.MDC;
 
 /** Logical subshard/replica identity and physical Jetty node recorded separately. */
 public final class Probe {
+  private static final String IDENTITY_VERSION = "ROLE_VERIFIED_NONLAZY_V2";
   private static final AtomicLong SEQUENCE = new AtomicLong();
   private static final ConcurrentHashMap<String, AtomicInteger> ORDINALS =
       new ConcurrentHashMap<>();
@@ -109,8 +112,19 @@ public final class Probe {
                                         String source, String senderKey,
                                         String physicalNode, String resource,
                                         int ordinal, boolean applied, String detail) {
+    emitWithActors(event, marker, site, source, senderKey, "", "", "",
+                   physicalNode, resource, ordinal, applied, detail);
+  }
+
+  private static synchronized void emitWithActors(String event, String marker, String site,
+                                        String source, String senderKey,
+                                        String senderActorKey, String leaderActorKey,
+                                        String senderPhysicalNode,
+                                        String physicalNode, String resource,
+                                        int ordinal, boolean applied, String detail) {
     if (output == null) return;
     String row = "{\"event\":" + quote(event)
+        + ",\"identityVersion\":" + quote(IDENTITY_VERSION)
         + ",\"seq\":" + SEQUENCE.incrementAndGet()
         + ",\"timeNs\":" + System.nanoTime()
         + ",\"threadId\":" + Thread.currentThread().getId()
@@ -118,6 +132,9 @@ public final class Probe {
         + ",\"siteId\":" + quote(site)
         + ",\"sourceKey\":" + quote(source)
         + ",\"senderKey\":" + quote(senderKey)
+        + ",\"senderActorKey\":" + quote(senderActorKey)
+        + ",\"leaderActorKey\":" + quote(leaderActorKey)
+        + ",\"senderPhysicalNode\":" + quote(senderPhysicalNode)
         + ",\"physicalNode\":" + quote(physicalNode)
         + ",\"resource\":" + quote(resource)
         + ",\"hitOrdinal\":" + ordinal
@@ -212,12 +229,50 @@ public final class Probe {
         || sender.getShardId() == null || sender.getCoreNodeName() == null
         || !collection.equals(sender.getCollectionName())
         || !fromParent.equals(sender.getShardId())) return;
-    String senderKey = "SOLR/PARENT/" + sender.getCollectionName() + "/"
-        + sender.getShardId() + "/" + sender.getCoreNodeName();
+    // setupRequest() establishes isLeader by comparing getLeaderRetry() with
+    // CloudDescriptor.getCoreNodeName(); doDistribAdd/DeleteById then set
+    // DISTRIB_FROM_PARENT only for isLeader && !isSubShardLeader. Recheck the
+    // originating core against its own current local cluster-state view here,
+    // immediately before submit's HTTP call. An absent/ambiguous view never
+    // becomes a role-relative fault candidate.
+    if (senderCore.getCoreContainer() == null
+        || senderCore.getCoreContainer().getZkController() == null) return;
+    ClusterState state = senderCore.getCoreContainer().getZkController().getClusterState();
+    if (state == null) return;
+    // getCollectionOrNull() can resolve a LazyCollectionRef through ZooKeeper.
+    // Only inspect the already loaded state; the probe must not add I/O to the
+    // original test in order to decide whether it may inject an I/O fault.
+    ClusterState.CollectionRef parentRef = state.getCollectionRef(collection);
+    if (parentRef == null || parentRef.isLazilyLoaded()) return;
+    DocCollection parentCollection = parentRef.get();
+    if (parentCollection == null) return;
+    Slice parent = parentCollection.getSlice(fromParent);
+    if (parent == null) return;
+    Replica leader = null;
+    int leaderCount = 0;
+    for (Replica candidate : parent.getReplicas()) {
+      if (candidate.isLeader()) {
+        leader = candidate;
+        leaderCount++;
+      }
+    }
+    String senderNode = senderCore.getCoreContainer().getZkController().getNodeName();
+    if (!liveLeaderMatches(sender.getCoreNodeName(),
+                           leader == null ? null : leader.getName(),
+                           senderNode, leader == null ? null : leader.getNodeName(),
+                           leaderCount, sender.isLeader(),
+                           leader != null && leader.isActive(state.getLiveNodes()))) return;
+    String senderKey = "SOLR/PARENT_LEADER/" + collection + "/" + fromParent;
+    String senderActorKey = "SOLR/PARENT/" + collection + "/" + fromParent
+        + "/" + sender.getCoreNodeName();
+    String leaderActorKey = "SOLR/PARENT/" + collection + "/" + fromParent
+        + "/" + leader.getName();
     String marker = "FAULT:HTTP:parentForward" + commandKind;
     String site = "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request";
     String logicalTarget = "SOLR/SUBSHARD/" + collection + "/" + shard + "/" + replica;
     String physicalTarget = request.node.getUrl();
+    if (physicalTarget == null || !physicalTarget.equals(child.getCoreUrl())
+        || child.getNodeName() == null) return;
     String resource = "/update/" + commandKind + "/" + collection + "/" + shard
         + "/" + replica;
     String key = marker + '\u0000' + site + '\u0000' + senderKey
@@ -226,7 +281,8 @@ public final class Probe {
         .incrementAndGet();
     int step = NEXT_STEP.get();
     boolean matched = apply(marker, site, logicalTarget, senderKey, resource, ordinal);
-    emitWithSender("IO_OBSERVED", marker, site, logicalTarget, senderKey, physicalTarget,
+    emitWithActors("IO_OBSERVED", marker, site, logicalTarget, senderKey,
+        senderActorKey, leaderActorKey, senderNode, physicalTarget,
         resource, ordinal, matched,
         "command=" + commandKind + ";fromParent=" + fromParent
             + ";senderCore=" + senderCore.getName()
@@ -247,8 +303,29 @@ public final class Probe {
       Thread.currentThread().interrupt();
       throw new SocketTimeoutException("injected parent-to-child HTTP delay interrupted");
     }
-    emitWithSender("FAULT_EFFECT", marker, site, logicalTarget, senderKey, physicalTarget,
+    emitWithActors("FAULT_EFFECT", marker, site, logicalTarget, senderKey,
+        senderActorKey, leaderActorKey, senderNode, physicalTarget,
         resource, ordinal, true, "delayMs=" + delayMs + ";sent=next");
+  }
+
+  static boolean liveLeaderMatches(String rawSender, String rawLeader,
+                                   String senderNode, String leaderNode,
+                                   int leaderCount, boolean cloudIsLeader,
+                                   boolean leaderActive) {
+    return leaderCount == 1 && cloudIsLeader && leaderActive
+        && rawSender != null && rawSender.equals(rawLeader)
+        && senderNode != null && senderNode.equals(leaderNode);
+  }
+
+  static boolean exactPointMatches(Properties plan, String prefix,
+                                   String marker, String site, String source,
+                                   String senderKey, String resource, int ordinal) {
+    return marker.equals(plan.getProperty(prefix + "marker"))
+        && site.equals(plan.getProperty(prefix + "siteId"))
+        && source.equals(plan.getProperty(prefix + "sourceKey"))
+        && senderKey.equals(plan.getProperty(prefix + "senderKey"))
+        && resource.equals(plan.getProperty(prefix + "resource"))
+        && ordinal == Integer.parseInt(plan.getProperty(prefix + "hitOrdinal"));
   }
 
   private static String mdcValue(String name, String prefix) {
@@ -269,12 +346,8 @@ public final class Probe {
     int step = NEXT_STEP.get();
     if (step > plannedSteps) return false;
     String prefix = "step." + step + ".";
-    boolean exact = marker.equals(FAULT.getProperty(prefix + "marker"))
-        && site.equals(FAULT.getProperty(prefix + "siteId"))
-        && source.equals(FAULT.getProperty(prefix + "sourceKey"))
-        && senderKey.equals(FAULT.getProperty(prefix + "senderKey"))
-        && resource.equals(FAULT.getProperty(prefix + "resource"))
-        && ordinal == Integer.parseInt(FAULT.getProperty(prefix + "hitOrdinal"));
+    boolean exact = exactPointMatches(FAULT, prefix, marker, site, source,
+                                      senderKey, resource, ordinal);
     if (exact && (source.startsWith("UNRESOLVED:") || site.startsWith("UNRESOLVED:")))
       throw new IllegalStateException("refuse fault on unresolved I/O identity");
     return exact && NEXT_STEP.compareAndSet(step, step + 1);

@@ -41,6 +41,10 @@ def main() -> None:
         'classpath_contains_graphchecker': 'graphchecker' in cp.lower(),
         'hook': ('SolrCmdDistributor.submit L309 Http2SolrClient.request '
                  'for parent-forward add and delete-by-id'),
+        'identity_version': 'ROLE_VERIFIED_NONLAZY_V2',
+        'leader_binding': ('actual Req.cmd request core, CloudDescriptor leader, '
+                           'unique active parent leader from non-lazy in-memory '
+                           'ClusterState.CollectionRef, raw sender and node match'),
     }
     (HERE / 'agent-build.json').write_text(json.dumps(report, indent=2,
                                                       sort_keys=True) + '\n')

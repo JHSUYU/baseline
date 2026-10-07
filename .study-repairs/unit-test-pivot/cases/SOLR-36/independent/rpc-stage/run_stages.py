@@ -98,6 +98,9 @@ def decide(state: dict | None, *, novel: bool = False) -> tuple[str, int, int, s
         return ('queue_exhausted', budget['max_trials'], budget['max_faults'],
                 'no further exact HTTP selectors')
     if budget['max_faults'] == 2:
+        if selected < PILOT_SELECTED:
+            return ('run', PILOT_SELECTED, 2,
+                    'finish 24-plan pilot from bounded selected-plan checkpoint')
         return ('run', max(DEFAULT_EFFECTIVE, selected + 1), 8,
                 'pilot checkpoint; retain completed plans')
     target = NOVEL_EFFECTIVE if budget['max_faults'] >= 10 else DEFAULT_EFFECTIVE

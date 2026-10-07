@@ -19,6 +19,8 @@ sys.path.insert(0, str(PARENT))
 from coverage import covered_probes  # noqa: E402
 from fuzz import junit_gate, load_events, point_id  # noqa: E402
 from run import run as run_junit  # noqa: E402
+sys.path.insert(0, str(HERE))
+from seed_audit import SENDER_ROLE, role_receipt_valid  # noqa: E402
 
 
 AGENT = HERE / 'solrsubshard-rpc-agent.jar'
@@ -28,13 +30,13 @@ SELECTION = HERE / 'seed-selection.json'
 
 def selected_seeds() -> tuple[Path, Path]:
     if not SELECTION.is_file():
-        return HERE / 'healthy-sender-01', HERE / 'healthy-sender-02'
+        return HERE / 'healthy-role-01', HERE / 'healthy-role-02'
     names = json.loads(SELECTION.read_text())['selected_runs']
     if (len(names) != 2 or len(set(names)) != 2
-            or any(not name.startswith('healthy-sender-')
-                   or not name.removeprefix('healthy-sender-').isdigit()
+            or any(not name.startswith('healthy-role-')
+                   or not name.removeprefix('healthy-role-').isdigit()
                    for name in names)):
-        raise RuntimeError('invalid sender-aware healthy seed selection')
+        raise RuntimeError('invalid role-verified healthy seed selection')
     return HERE / names[0], HERE / names[1]
 
 
@@ -42,12 +44,44 @@ SEEDS = selected_seeds()
 MARKERS = frozenset(('FAULT:HTTP:parentForwardAdd',
                      'FAULT:HTTP:parentForwardDeleteById'))
 SOURCE_PREFIX = 'SOLR/SUBSHARD/collection1/shard1_'
-SENDER_PREFIX = 'SOLR/PARENT/collection1/shard1/'
+SENDER_PREFIX = SENDER_ROLE
 WOVEN_COVERAGE = ':org/apache/solr/update/SolrCmdDistributor:'
 CHECKS = {'SOLR-36': ('SOLR36:ACTIVE_SUBSHARD_GUARD',
                       'SOLR36:ACTIVE_SUBSHARD_THROW'),
           'SOLR-37': ('SOLR37:CHILD_RANGE_SUBSET_GUARD',
                       'SOLR37:CHILD_RANGE_THROW')}
+REVIEWED_SOLR36_THROW = (
+    'org.apache.solr.common.SolrException: Request says it is coming '
+    'from parent shard leader but we are in active state')
+
+
+def reviewed_protective_rejection(events: list[dict], source: str,
+                                  boundary: int, gate: tuple[int, int, int] | None,
+                                  exit_code: int) -> bool:
+    """Recognize only the source-reviewed ACTIVE child 503 with JUnit recovery."""
+    if gate != (1, 0, 0) or exit_code != 0:
+        return False
+    guards = [event for event in events
+              if event['event'] == 'TARGET_CHECK'
+              and event['marker'] == CHECKS['SOLR-36'][0]
+              and event['sourceKey'] == source
+              and event['seq'] > boundary
+              and event['siteId'] == 'DistributedZkUpdateProcessor.java:986'
+              and event['detail'] == 'state=active;phase=FROMLEADER']
+    throws = [event for event in events
+              if event['event'] == 'TARGET_THROW'
+              and event['marker'] == CHECKS['SOLR-36'][1]
+              and event['sourceKey'] == source
+              and event['seq'] > boundary]
+    if not guards or not throws:
+        return False
+    if any(event['siteId'] != 'DistributedZkUpdateProcessor.java:987'
+           or event['detail'] != REVIEWED_SOLR36_THROW for event in throws):
+        return False
+    return all(any(guard['seq'] < thrown['seq']
+                   and guard['threadId'] == thrown['threadId']
+                   and guard['physicalNode'] == thrown['physicalNode']
+                   for guard in guards) for thrown in throws)
 
 
 def atomic(path: Path, value: object) -> None:
@@ -82,7 +116,7 @@ def rpc_events(directory: Path) -> list[dict]:
             if event['event'] == 'IO_OBSERVED'
             and event['marker'] in MARKERS
             and event['sourceKey'].startswith(SOURCE_PREFIX)
-            and event.get('senderKey', '').startswith(SENDER_PREFIX)]
+            and role_receipt_valid(event)]
 
 
 def point(event: dict) -> dict:
@@ -217,12 +251,35 @@ def analyze(directory: Path, sequence: list[dict], state: dict) -> tuple[dict, s
                 and event['sourceKey'].startswith(SOURCE_PREFIX)]
     applied = [event for event in observed if event['applied']]
     summaries = [event for event in events if event['event'] == 'SUMMARY']
-    strict = (len(applied) == len(sequence)
+    matched = (len(applied) == len(sequence)
+              and all(role_receipt_valid(event) for event in applied)
               and all(point(event) == item['point']
                       for event, item in zip(applied, sequence))
               and len(summaries) == 1
               and summaries[0]['detail'] == f'applied={len(sequence)}/{len(sequence)}')
-    last_fault_seq = applied[-1]['seq'] if applied else -1
+    # DELAY is effective only once the sleep finishes and submit can send.
+    # A target guard during the sleep is not a post-fault target for that
+    # delayed HTTP operation. TIMEOUT throws synchronously after IO_OBSERVED.
+    boundaries = []
+    if matched:
+        for event, item in zip(applied, sequence):
+            if item['fault_mode'] == 'TIMEOUT':
+                boundaries.append(event['seq'])
+                continue
+            effects = [effect for effect in events
+                       if effect['event'] == 'FAULT_EFFECT'
+                       and effect['seq'] > event['seq']
+                       and point(effect) == point(event)
+                       and role_receipt_valid(effect)
+                       and effect.get('senderActorKey') == event.get('senderActorKey')
+                       and effect.get('physicalNode') == event.get('physicalNode')
+                       and f"delayMs={item['delay_ms']}" in effect.get('detail', '')]
+            if not effects:
+                matched = False
+                break
+            boundaries.append(effects[0]['seq'])
+    strict = matched
+    last_fault_seq = max(boundaries) if strict else -1
     last_source = sequence[-1]['point']['sourceKey']
     post_guards = {}
     post_throws = {}
@@ -245,11 +302,26 @@ def analyze(directory: Path, sequence: list[dict], state: dict) -> tuple[dict, s
     selectors = {point_id(point(event)) for event in observed}
     metadata = json.loads((directory / 'run.json').read_text())
     gate = junit_gate((directory / 'console.log').read_text())
+    reviewed = (strict and post_throws['SOLR-36'] > 0
+                and post_throws['SOLR-37'] == 0
+                and reviewed_protective_rejection(events, last_source,
+                                                  last_fault_seq, gate,
+                                                  metadata['exit_code']))
     result = {
         'elapsed_seconds': metadata['elapsed_seconds'],
         'junit_exit': metadata['exit_code'], 'junit_gate': gate,
         'strict_injection': strict, 'planned_faults': len(sequence),
         'applied_faults': len(applied),
+        'applied_raw_sender_actors': [event.get('senderActorKey')
+                                      for event in applied],
+        'applied_raw_leader_actors': [event.get('leaderActorKey')
+                                      for event in applied],
+        'applied_sender_physical_nodes': [event.get('senderPhysicalNode')
+                                          for event in applied],
+        'applied_child_urls': [event.get('physicalNode')
+                               for event in applied],
+        'fault_effect_boundary_seq': last_fault_seq if strict else None,
+        'fault_effects_verified': strict and len(boundaries) == len(sequence),
         'last_fault_source': last_source,
         'last_fault_sender': sequence[-1]['point']['senderKey'],
         'last_fault_marker': sequence[-1]['point']['marker'],
@@ -257,6 +329,7 @@ def analyze(directory: Path, sequence: list[dict], state: dict) -> tuple[dict, s
         'last_fault_point_id': point_id(sequence[-1]['point']),
         'postfault_same_child_guards': post_guards,
         'postfault_same_child_throws': post_throws,
+        'reviewed_expected_target_rejection': bool(reviewed),
         'postfault_guard_operands': operands,
         'new_production_probes': len(probes - set(state['covered_probes'])),
         'new_exact_rpc_selectors': len(selectors - set(state['observed_rpc_selectors'])),
@@ -275,13 +348,13 @@ def mutate(state: dict, parent: list[dict], directory: Path, result: dict,
     events = load_events(directory)
     applied = [event for event in events
                if event['event'] == 'IO_OBSERVED' and event['applied']]
-    last = applied[-1]
+    last_seq = result['fault_effect_boundary_seq']
     source = parent[-1]['point']['sourceKey']
     available = []
     used = {point_id(item['point']) for item in parent}
     for event in events:
         if (event['event'] == 'IO_OBSERVED' and event['marker'] in MARKERS
-            and event['sourceKey'] == source and event['seq'] > last['seq']
+            and event['sourceKey'] == source and event['seq'] > last_seq
             and point_id(point(event)) not in used):
             available.append(point(event))
     unique = {point_id(item): item for item in available}
@@ -314,9 +387,14 @@ def publish(state: dict) -> None:
                          and row['postfault_same_child_throws'][case_id] > 0
                          for row in rows)
             for case_id in CHECKS},
+        'reviewed_expected_target_rejection_trials': sum(
+            row.get('reviewed_expected_target_rejection', False)
+            for row in rows),
         'elapsed_seconds': round(sum(row['elapsed_seconds'] for row in rows), 3),
-        'production_probe_gain': sum(row['new_production_probes'] for row in rows),
-        'new_rpc_selectors': sum(row['new_exact_rpc_selectors'] for row in rows),
+        'production_probe_gain': sum(row['new_production_probes'] for row in rows
+                                     if row['strict_injection']),
+        'new_rpc_selectors': sum(row['new_exact_rpc_selectors'] for row in rows
+                                 if row['strict_injection']),
         'distinct_first_rpc_fault_sites': len({
             point_id(row['sequence'][0]['point']) for row in rows}),
         'fault_depths': dict(Counter(str(row['planned_faults']) for row in rows)),
@@ -398,7 +476,8 @@ def main() -> None:
             mutate(state, sequence, out, result,
                    result['new_production_probes'] +
                    result['new_exact_rpc_selectors'], newly_observed)
-        if any(result['postfault_same_child_throws'].values()):
+        if (any(result['postfault_same_child_throws'].values())
+                and not result['reviewed_expected_target_rejection']):
             state['status'] = 'candidate_target_exception'
         atomic(state_file, state)
         publish(state)

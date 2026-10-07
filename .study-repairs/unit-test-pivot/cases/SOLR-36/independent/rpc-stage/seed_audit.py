@@ -19,8 +19,19 @@ from fuzz import junit_gate, load_events, point_id  # noqa: E402
 MARKERS = frozenset(('FAULT:HTTP:parentForwardAdd',
                      'FAULT:HTTP:parentForwardDeleteById'))
 TARGET_PREFIX = 'SOLR/SUBSHARD/collection1/shard1_'
-SENDER_PREFIX = 'SOLR/PARENT/collection1/shard1/'
+SENDER_ROLE = 'SOLR/PARENT_LEADER/collection1/shard1'
+RAW_SENDER_PREFIX = 'SOLR/PARENT/collection1/shard1/'
 MAX_ATTEMPTS = 8
+
+
+def role_receipt_valid(event: dict) -> bool:
+    raw = event.get('senderActorKey', '')
+    return (event.get('identityVersion') == 'ROLE_VERIFIED_NONLAZY_V2'
+            and event.get('senderKey') == SENDER_ROLE
+            and raw.startswith(RAW_SENDER_PREFIX)
+            and raw == event.get('leaderActorKey')
+            and bool(event.get('senderPhysicalNode'))
+            and bool(event.get('physicalNode')))
 
 
 def point(event: dict) -> dict:
@@ -44,18 +55,18 @@ def stable_pair(exact: list[set[str]]) -> tuple[int, int, set[str]] | None:
 def main() -> bool:
     attempts = []
     exact = []
-    directories = [HERE / f'healthy-sender-{number:02d}'
+    directories = [HERE / f'healthy-role-{number:02d}'
                    for number in range(1, MAX_ATTEMPTS + 1)
-                   if (HERE / f'healthy-sender-{number:02d}' / 'run.json').is_file()]
+                   if (HERE / f'healthy-role-{number:02d}' / 'run.json').is_file()]
     for directory in directories:
         events = load_events(directory)
         metadata = json.loads((directory / 'run.json').read_text())
         gate = junit_gate((directory / 'console.log').read_text())
-        sends = [event for event in events
-                 if event['event'] == 'IO_OBSERVED'
-                 and event['marker'] in MARKERS
-                 and event['sourceKey'].startswith(TARGET_PREFIX)
-                 and event.get('senderKey', '').startswith(SENDER_PREFIX)]
+        candidate_sends = [event for event in events
+                           if event['event'] == 'IO_OBSERVED'
+                           and event['marker'] in MARKERS
+                           and event['sourceKey'].startswith(TARGET_PREFIX)]
+        sends = [event for event in candidate_sends if role_receipt_valid(event)]
         guards_by_case = {
             case_id: [event for event in events
                       if event['event'] == 'TARGET_CHECK'
@@ -69,6 +80,7 @@ def main() -> bool:
                   and event['marker'] in ('SOLR36:ACTIVE_SUBSHARD_THROW',
                                           'SOLR37:CHILD_RANGE_THROW')]
         if (metadata['exit_code'] != 0 or gate != (1, 0, 0)
+                or len(sends) != len(candidate_sends)
                 or {event['marker'] for event in sends} != MARKERS
                 or any(not guards for guards in guards_by_case.values())):
             raise RuntimeError(f'{directory}: original JUnit/HTTP/target gate failed')
@@ -85,10 +97,12 @@ def main() -> bool:
             'parent_forward_http_sends_by_command': dict(
                 Counter(event['marker'] for event in sends)),
             'parent_sender_replicas': dict(Counter(
-                event['senderKey'] for event in sends)),
+                event['senderActorKey'] for event in sends)),
             'parent_sender_to_child_pairs': dict(Counter(
-                event['senderKey'] + ' -> ' + event['sourceKey']
+                event['senderActorKey'] + ' -> ' + event['sourceKey']
                 for event in sends)),
+            'sender_physical_nodes': dict(Counter(
+                event['senderPhysicalNode'] for event in sends)),
             'logical_targets': dict(Counter(event['sourceKey'] for event in sends)),
             'physical_urls_by_logical_target': {
                 source: sorted({event['physicalNode'] for event in sends
@@ -121,8 +135,9 @@ def main() -> bool:
         'all_healthy_attempts': attempts,
         'selected_runs': [run['run'] for run in runs],
         'selection_reason': ('earliest pair with both parent-forward commands, '
-                             'four exact parent-replica/child command families, '
-                             'and full selector overlap'),
+                             'four current-parent-leader/child command families, '
+                             'full role-relative selector overlap, and raw '
+                             'sender==unique active local leader per receipt'),
         'stable_exact_http_selector_count': len(common),
         'stable_exact_http_selector_ids': sorted(common),
     }

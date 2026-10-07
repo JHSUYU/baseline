@@ -44,15 +44,24 @@ NO_NOVELTY = lambda state: {'extend': False,
 
 
 class StageCheckpointTest(unittest.TestCase):
-    def test_parent_sender_is_part_of_exact_http_plan(self) -> None:
+    def test_one_plan_coexistence_pilot_resumes_to_24_then_80(self) -> None:
+        state = {'status': 'budget_complete',
+                 'budget': {'max_trials': 1, 'max_faults': 2},
+                 'completed': [row(1)], 'queue': ['remaining'], 'active': None}
+        self.assertEqual(stages.decide(state)[:3], ('run', 24, 2))
+        state['budget']['max_trials'] = 24
+        state['completed'] = [row(i) for i in range(1, 25)]
+        self.assertEqual(stages.decide(state)[:3], ('run', 80, 8))
+
+    def test_parent_leader_role_is_part_of_exact_http_plan(self) -> None:
         event = {'marker': 'FAULT:HTTP:parentForwardAdd',
                  'siteId': 'SolrCmdDistributor.submit#L309',
-                 'senderKey': 'SOLR/PARENT/collection1/shard1/core_node3',
+                 'senderKey': 'SOLR/PARENT_LEADER/collection1/shard1',
                  'sourceKey': 'SOLR/SUBSHARD/collection1/shard1_0/core_node11',
                  'resource': '/update/Add/collection1/shard1_0/core_node11',
                  'hitOrdinal': 1}
         selected = fuzz_rpc.point(event)
-        migrated = dict(event, senderKey='SOLR/PARENT/collection1/shard1/core_node4')
+        migrated = dict(event, senderKey='SOLR/PARENT_LEADER/collection1/shard2')
         self.assertNotEqual(fuzz_rpc.point_id(selected),
                             fuzz_rpc.point_id(fuzz_rpc.point(migrated)))
         with tempfile.TemporaryDirectory(prefix='solr-http-sender-') as scratch:
@@ -61,11 +70,15 @@ class StageCheckpointTest(unittest.TestCase):
             self.assertIn('step.1.senderKey=' + selected['senderKey'],
                           plan.read_text())
 
-    def test_http_io_family_retains_sender_and_child(self) -> None:
+    def test_http_io_family_retains_leader_role_and_child(self) -> None:
         event = {'event': 'IO_OBSERVED',
+                 'identityVersion': 'ROLE_VERIFIED_NONLAZY_V2',
                  'marker': 'FAULT:HTTP:parentForwardDeleteById',
                  'siteId': 'SolrCmdDistributor.submit#L309',
-                 'senderKey': 'SOLR/PARENT/collection1/shard1/core_node3',
+                 'senderKey': 'SOLR/PARENT_LEADER/collection1/shard1',
+                 'senderActorKey': 'SOLR/PARENT/collection1/shard1/core_node3',
+                 'leaderActorKey': 'SOLR/PARENT/collection1/shard1/core_node3',
+                 'senderPhysicalNode': 'jetty3', 'physicalNode': 'http://child',
                  'sourceKey': 'SOLR/SUBSHARD/collection1/shard1_0/core_node11',
                  'resource': '/update/DeleteById/collection1/shard1_0/core_node11',
                  'hitOrdinal': 1}

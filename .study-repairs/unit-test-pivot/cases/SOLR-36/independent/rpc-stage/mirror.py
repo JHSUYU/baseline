@@ -52,16 +52,19 @@ def publish(rpc: dict, stage: dict) -> None:
             (CASE / f'campaign/final-audit-{case_id}.json').read_text())
         stage1_identity = json.loads(
             (CASE / f'campaign/identity-audit-{case_id}.json').read_text())
-        result_path = ROOT / case_id / 'result.json'
+        result_path = ROOT / 'cases' / case_id / 'result.json'
         result = json.loads(result_path.read_text())
         rpc_n = rpc['fault_trials']
         strict = rpc['strict_injections']
         reached = rpc['same_child_post_target_trials'][case_id]
         thrown = rpc['exact_target_throw_trials'][case_id]
+        reviewed = (rpc.get('reviewed_expected_target_rejection_trials', 0)
+                    if case_id == 'SOLR-36' else 0)
         stage_status = stage['status']
+        pending_candidate = (rpc['status'] == 'candidate_target_exception'
+                             or stage_status == 'candidate')
         status = ('target_exception_candidate_source_review'
-                  if rpc['status'] == 'candidate_target_exception'
-                  or stage_status == 'candidate'
+                  if pending_candidate
                   else 'pending_actor_aware_zk_v2_http_source_audit'
                   if stage_status == 'complete'
                   else 'pending_actor_aware_zk_v2_http_queue_exhausted'
@@ -81,6 +84,12 @@ def publish(rpc: dict, stage: dict) -> None:
             total_attempts=rpc['total_attempts'],
             elapsed_seconds=round(result['baseline_seconds']
                                   + stage1['elapsed_seconds']
+                                  + result['legacy_http_raw_sender_seed'][
+                                      'all_attempt_elapsed_seconds']
+                                  + result['legacy_http_raw_sender_pilot'][
+                                      'elapsed_seconds']
+                                  + result['legacy_http_role_lazylookup_seed'][
+                                      'elapsed_seconds']
                                   + seed_seconds
                                   + rpc['elapsed_seconds'], 3),
             coverage_gain=rpc['production_probe_gain'],
@@ -103,6 +112,19 @@ def publish(rpc: dict, stage: dict) -> None:
                 rpc['same_child_post_target_trials'][case_id]),
             rpc_stage_target_exception_after_fault_trials=(
                 rpc['exact_target_throw_trials'][case_id]),
+            rpc_stage_expected_target_rejection_trials=reviewed,
+            rpc_stage_unreviewed_target_exception_trials=thrown - reviewed,
+            bug_mark='none',
+            new_bug=False,
+            reason=('An unreviewed exact target exception needs separate '
+                    'source review and replay.' if pending_candidate else
+                    'SOLR-36 exact active-child 503 after a delayed parent '
+                    'Add is source-reviewed as a protective rejection; '
+                    'the original JUnit passed and subsequent checks remain '
+                    'under test.' if case_id == 'SOLR-36' else
+                    'The first strict role-V2 HTTP fault did not reach the '
+                    'SOLR-37 guard after fault effect; its effective budget '
+                    'remains open.'),
             evidence=('.study-repairs/unit-test-pivot/cases/SOLR-36/'
                       'independent/rpc-stage/campaign/progress.json'),
             updated_at=time.time())
