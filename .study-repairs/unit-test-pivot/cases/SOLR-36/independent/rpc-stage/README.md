@@ -10,6 +10,8 @@ The case-local ASM probe sits immediately before the original `Http2SolrClient.r
 
 Two fresh healthy JUnit runs must each pass and observe both exact target guards plus both parent-forward HTTP command families. Each family must have exact selectors in the intersection of the two runs. The campaign uses its own `campaign/state.json` checkpoint and JaCoCo feedback; every selected trial records plan, trace, JUnit result, elapsed time, exact injection, same-logical-child target guard after injection, and exact target throw. The ZooKeeper and HTTP stage counts remain separate in both checklist rows.
 
+The two original healthy runs passed in 101.32 and 100.917 seconds. They observed 90 and 98 exact guard evaluations for each check, with 45 stable full HTTP selectors across the runs: 30 add and 15 delete-by-id. Runtime port URLs changed between runs, while the logical child shard and replica selectors remained stable. `seed-audit.json` records both trace digests, JUnit gates, source revision, physical URLs, and exact selector intersection.
+
 The selected trial is written to the checkpoint before its JVM starts. On restart, the runner keeps that exact selector and reuses an attempt only if its complete `run.json` exists; finished trials are never selected again. The runner hash, agent JAR, and healthy trace digests are pinned in the checkpoint.
 
 The HTTP agent uses the same internal class names as stage one, but a Java 8 `-verbose:class` preflight with the original classpath confirmed that both `research.solrsubshard.Agent` and `Probe` load from the HTTP stage's own agent JAR. Its SHA-256 is recorded in `agent-build.json`. The stage is therefore not accidentally using the earlier ZooKeeper-only probe.

@@ -8,6 +8,7 @@ import sys
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
 from run import run  # noqa: E402
+sys.path.insert(0, str(HERE))
 from seed_audit import main as audit  # noqa: E402
 
 

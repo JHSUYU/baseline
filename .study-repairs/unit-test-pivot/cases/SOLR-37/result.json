@@ -3,8 +3,8 @@
   "bug_mark": "none",
   "campaign": {
     "budget": {
-      "max_faults": 8,
-      "max_trials": 80
+      "max_faults": 10,
+      "max_trials": 128
     },
     "case_id": "SOLR-37",
     "elapsed_seconds": 8509.388,
@@ -121,7 +121,7 @@
     "methodology": "coverage_io_independent_asm_jacoco",
     "post_fault_target_reach_trials": 80,
     "production_probe_gain": 555,
-    "status": "budget_complete",
+    "status": "running",
     "strict_injections": 80,
     "target_exception_after_fault_trials": 0,
     "target_preserved_trials": 80,
@@ -262,9 +262,9 @@
   "case_id": "SOLR-37",
   "cluster_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
   "coverage_gain": 555,
-  "coverage_gain_scope": "Raw production-only JaCoCo probe feedback from the frozen scheduler; audited methods and branches use only same-logical-child postfault trials.",
+  "coverage_gain_scope": "Raw production-only JaCoCo probe feedback from the frozen scheduler; final method/branch union excludes trials without a postfault guard on the affected child.",
   "elapsed_seconds": 8821.172,
-  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/campaign/final-audit-SOLR-37.json",
+  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/campaign/progress-SOLR-37.json",
   "fault_trials": 80,
   "healthy_exact_target_throw_counts": [
     0,
@@ -274,6 +274,35 @@
     92,
     100
   ],
+  "http_stage_seed": {
+    "agent_sha256": "65e6f9edcb0b633828d63e36175ae58a4345f4baee30e5e9f1a01e24111567b3",
+    "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/seed-audit.json",
+    "methodology": "independent_asm_original_junit_parent_forward_http",
+    "original_junit_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
+    "passing_runs": 2,
+    "run_elapsed_seconds": [
+      101.32,
+      100.917
+    ],
+    "run_junit_gates": [
+      [
+        1,
+        0,
+        0
+      ],
+      [
+        1,
+        0,
+        0
+      ]
+    ],
+    "source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+    "stable_exact_http_selector_count": 45,
+    "stable_exact_http_selectors_by_command": {
+      "FAULT:HTTP:parentForwardAdd": 30,
+      "FAULT:HTTP:parentForwardDeleteById": 15
+    }
+  },
   "io_family_gain": 0,
   "logical_identity_audit": {
     "case_id": "SOLR-37",
@@ -302,7 +331,7 @@
   "stable_precursor_io_families": 120,
   "stable_precursor_io_selectors": 200,
   "stage1_stop_reason": "Shared SOLR-36 exact target-throw candidate at trial 58; SOLR-37 had no target throw and resumes from trial 59 after replay.",
-  "status": "pending_zk_extension_http_stage",
+  "status": "fuzz_running",
   "strict_injections": 80,
   "target_after_fault": 76,
   "target_check_description": "child hash range outside parent range under parent forwarding",
@@ -310,7 +339,7 @@
   "target_exception_after_fault_trials": 0,
   "target_reached": true,
   "unreviewed_exact_target_throw_trial_numbers": [],
-  "updated_at": 1791340942.3691397,
+  "updated_at": 1791341178.4294562,
   "zk_stage_extension": {
     "design_gate": "last_eight_strict_same_child_original_release_jar_production_probe_gain",
     "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/campaign/trial-77-probe-audit.json",
