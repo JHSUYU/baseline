@@ -52,11 +52,27 @@ def recount(state: dict, allow_running: bool) -> dict:
     families = set(healthy_families)
     rows = []
     valid_coverage = []
+    seen_plan_ids = set()
     for number, trial in enumerate(state['completed'], 1):
         if trial['trial_number'] != number:
             raise RuntimeError('completed plan order changed')
         path = Path(trial['trace'])
         trial_dir = path.parent.parent
+        plan_id = hashlib.sha256(json.dumps(
+            trial['fault_sequence'], sort_keys=True).encode()).hexdigest()[:20]
+        if (trial_dir.name != f'{number:04d}-{plan_id}'
+                or plan_id in seen_plan_ids):
+            raise RuntimeError(f'trial {number}: selected fault plan identity differs')
+        seen_plan_ids.add(plan_id)
+        plan_file = (trial_dir / 'fault.properties').resolve()
+        expected_lines = ['count=' + str(len(trial['fault_sequence']))]
+        for step_number, item in enumerate(trial['fault_sequence'], 1):
+            for field in ('marker', 'siteId', 'sourceKey', 'actorKey',
+                          'resource', 'hitOrdinal'):
+                expected_lines.append(
+                    f'step.{step_number}.{field}={item[field]}')
+        if plan_file.read_text() != '\n'.join(expected_lines) + '\n':
+            raise RuntimeError(f'trial {number}: fault.properties differs from checkpoint')
         run_times = []
         for attempt in range(1, trial['attempts'] + 1):
             attempt_dir = trial_dir / f'attempt-{attempt:02d}'
@@ -64,7 +80,8 @@ def recount(state: dict, allow_running: bool) -> dict:
             if (metadata['test'] != original_test
                     or metadata['original_source_revision'] != build['source_revision']
                     or metadata['agent_sha256'] != state['agent_sha256']
-                    or metadata['classpath_contains_graphchecker']):
+                    or metadata['classpath_contains_graphchecker']
+                    or metadata['fault_plan'] != str(plan_file)):
                 raise RuntimeError(f'trial {number} attempt {attempt}: JUnit provenance differs')
             run_times.append(metadata['elapsed_seconds'])
         if abs(sum(run_times) - trial['elapsed_seconds']) > 0.01:
@@ -123,6 +140,7 @@ def recount(state: dict, allow_running: bool) -> dict:
             valid_coverage.append(jacoco)
         rows.append({
             'trial_number': number,
+            'selected_plan_id': plan_id,
             'attempts': trial['attempts'],
             'strict_injection': exact,
             'post_final_target_same_actor_and_physical_node': effective,
