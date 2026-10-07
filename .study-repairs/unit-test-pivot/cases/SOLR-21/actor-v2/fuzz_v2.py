@@ -18,7 +18,7 @@ PARENT = HERE.parent / 'independent'
 sys.path.insert(0, str(PARENT))
 from build import TEST_CLASS, TEST_METHOD
 from coverage import covered_probes
-from run import run as run_junit
+from run_v2 import run as run_junit
 
 
 ROOT = HERE / 'campaign'
@@ -32,13 +32,14 @@ FILE = 'SOLR/CORE_PROPERTIES/' + CORE
 COLLECTION_PATH = '/collections/c8n_1x1'
 GUARD = 'SOLR21:REPLICA_NONNULL_GUARD'
 THROW = 'SOLR21:REPLICA_NULL_ASSERTION'
-LOCKED_FILES = ('fuzz_v2.py', 'calibrate.py', 'run_healthy.py', 'build_agent.py')
+LOCKED_FILES = ('fuzz_v2.py', 'calibrate.py', 'run_healthy.py',
+                'build_agent.py', 'build_junit.py', 'run_v2.py')
 
 
 def runner_hashes() -> dict[str, str]:
     paths = [HERE / name for name in LOCKED_FILES]
-    paths.extend((PARENT / 'run.py', PARENT / 'coverage.py',
-                  PARENT / 'build.py', AGENT))
+    paths.extend((PARENT / 'coverage.py', PARENT / 'build.py',
+                  HERE / 'junit-build.json', AGENT))
     return {str(path.relative_to(HERE.parent)): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in paths}
 

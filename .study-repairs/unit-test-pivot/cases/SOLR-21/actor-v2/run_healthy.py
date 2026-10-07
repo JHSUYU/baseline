@@ -8,9 +8,7 @@ from pathlib import Path
 import sys
 
 HERE = Path(__file__).resolve().parent
-PARENT = HERE.parent / "independent"
-sys.path.insert(0, str(PARENT))
-from run import run  # noqa: E402
+from run_v2 import run  # noqa: E402
 
 
 def main() -> None:

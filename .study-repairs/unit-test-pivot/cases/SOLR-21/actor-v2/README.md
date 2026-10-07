@@ -35,6 +35,7 @@ run two **new** clean original JUnit JVMs and audit their raw actor bindings:
 
 ```sh
 python3 build_agent.py
+python3 build_junit.py
 python3 smoke_transform.py
 python3 smoke_actor_match.py
 python3 run_healthy.py
@@ -42,9 +43,11 @@ python3 calibrate.py
 python3 fuzz_v2.py --max-effective 80 --max-faults 8
 ```
 
-Run these cluster JUnit steps only on a released node with the pristine Solr
-source and classpath in `../independent/`; do not overlap another Solr campaign
-on the same node. The checkpoint, raw traces, JaCoCo coverage, plans, and
+`build_junit.py` uses either the pristine checkout at `../independent/` or
+the local Solr 8.11.4 source at the same Git revision. It verifies every
+original test source hash and original Solr core JAR hash against the prior
+pristine build. Run cluster JUnit steps only on a released node; do not overlap
+another Solr campaign on the same node. The checkpoint, raw traces, JaCoCo coverage, plans, and
 per-trial elapsed times remain under this directory. A completed plan is not
 repeated after resume. Only all-faults-matched trials reaching the exact
 target after the final fault count toward 80. The default 256 selected-plan
