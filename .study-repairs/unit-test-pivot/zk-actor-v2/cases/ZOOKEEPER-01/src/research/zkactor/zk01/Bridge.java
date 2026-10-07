@@ -22,6 +22,7 @@ public final class Bridge {
   private static final IdentityHashMap<Object, String> CLIENT_ROLES = new IdentityHashMap<>();
   private static final Set<String> REPORTED_SESSIONS = new HashSet<>();
   private static volatile long selectedLeader = -1;
+  private static volatile boolean clusterBound;
   private static final String CHECK = "SessionTrackerImpl#checkSession:316:isClosing";
 
   private Bridge() {}
@@ -53,6 +54,7 @@ public final class Bridge {
 
   /** Test's selected array slot is a physical leader peer; role alias is stable. */
   public static synchronized void enterTest(Object test, int selectedSlot) {
+    clusterBound = false;
     try {
       Object peerArray = value(test, "qpMain");
       int[] ports = (int[]) value(test, "clientPorts");
@@ -75,6 +77,7 @@ public final class Bridge {
       }
       Probe.diagnostic("SELECTED_LEADER", Integer.toString(selectedSlot),
           Long.toString(selectedLeader));
+      clusterBound = true;
     } catch (Throwable failure) { error("enterTest", failure); }
   }
 
@@ -116,14 +119,19 @@ public final class Bridge {
           }
         }
       }
-    } catch (Throwable failure) { error("clientIo", failure); }
+    } catch (Throwable failure) {
+      error("clientIo", failure);
+      Probe.io(site, null);
+      return;
+    }
     clientIoResolved(client, channel, remotePort, site, operation);
   }
 
   /** Also used by an offline two-actor test; production resolves the actual socket above. */
   static void clientIoResolved(Object client, Object channel, int remotePort,
       String site, String operation) throws IOException {
-    Probe.io(site, REGISTRY.clientIo(client, channel, remotePort, operation));
+    Probe.io(site, clusterBound ? REGISTRY.clientIo(client, channel, remotePort, operation)
+        : null);
   }
 
   public static void serverIo(Object connection, String site, String operation)
@@ -134,7 +142,7 @@ public final class Bridge {
       long sid = ((Number) call(server, "getServerId")).longValue();
       long session = ((Number) value(connection, "sessionId")).longValue();
       synchronized (Bridge.class) {
-        if (PEER_SIDS.contains(sid)) {
+        if (clusterBound && PEER_SIDS.contains(sid)) {
           REGISTRY.registerServer(server, sid);
           identity = REGISTRY.serverIo(connection, server, session, operation);
         }
@@ -148,7 +156,9 @@ public final class Bridge {
     ActorRegistry.IoIdentity identity = null;
     try {
       File snapDir = (File) call(call(peer, "getTxnFactory"), "getSnapDir");
-      identity = REGISTRY.epochFileIo(peer, new File(snapDir, filename), operation);
+      if (clusterBound) {
+        identity = REGISTRY.epochFileIo(peer, new File(snapDir, filename), operation);
+      }
     } catch (Throwable failure) { error("peerFileIo", failure); }
     Probe.io(site, identity);
   }
@@ -158,7 +168,7 @@ public final class Bridge {
       Object server = value(tracker, "expirer");
       long sid = ((Number) call(server, "getServerId")).longValue();
       synchronized (Bridge.class) {
-        if (!PEER_SIDS.contains(sid) || sid != selectedLeader) return null;
+        if (!clusterBound || !PEER_SIDS.contains(sid) || sid != selectedLeader) return null;
         REGISTRY.registerServer(server, sid);
         return REGISTRY.target(server, "leader", session);
       }
