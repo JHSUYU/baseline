@@ -12,6 +12,8 @@ Pure WAL retry exhaustion eventually throws a newly constructed `IOException` fr
 
 Checkpoint version 5 changes only queue scoring. It treats a fault identity as the exact I/O selector plus exception kind, counts that identity as tested only when the whole planned sequence was applied, rewards measured parent JaCoCo and related I/O novelty, and slightly reduces priority for mixed plans whose upstream prefix has repeatedly disappeared. Waiting age and the every-tenth-round legal depth choice still prevent one family from monopolizing the queue. The migration keeps all prior plans, trials, coverage, and effective counts.
 
+Checkpoint version 6 also lowers the priority of a terminal RPC ordinal after repeated trials applied the whole upstream prefix but never reached that RPC. It preserves the late ordinal for occasional exploration. For future controlled pauses, create `pause-after-checkpoint`; the controller finishes the current trial, atomically checkpoints it, and then exits its tmux pane. Remove the sentinel before restarting. Inflight receipts still support recovery from an unexpected interruption.
+
 ```sh
 cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream
 tmux attach -t hbase32-upstream-fuzz

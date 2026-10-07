@@ -22,6 +22,7 @@ HERE = Path(__file__).resolve().parent
 CHECKPOINT = HERE / "supplemental-checkpoint.json"
 INFLIGHT = HERE / "supplemental-inflight.json"
 RESULT = HERE / "supplemental-result.json"
+PAUSE_AFTER_CHECKPOINT = HERE / "pause-after-checkpoint"
 KINDS = ("DO_NOT_RETRY_IOEXCEPTION", "IOEXCEPTION", "SOCKET_TIMEOUT", "EOF_EXCEPTION")
 RNG_SEED = 32032
 CHILD_CAP = 24
@@ -338,12 +339,14 @@ def enqueue(state, prefix, selectors, after, novelty, seconds, rpc_selectors=(),
     state["seen_plans"] = sorted(seen)
 
 
-def priority(entry, tried, family_counts, tried_fault=None, prefix_failures=None):
+def priority(entry, tried, family_counts, tried_fault=None, prefix_failures=None,
+             terminal_misses=None):
     last = entry["plan"][-1]
     selector = last.rsplit("~", 1)[0]
     family = selector.split("~", 1)[0]
     tried_fault = tried_fault or Counter()
     prefix_failures = prefix_failures or Counter()
+    terminal_misses = terminal_misses or Counter()
     actors = [re.search(r"~([^~]+)~replica-(\d+)~(?:target-(\d+)~)?", step)
               for step in entry["plan"]]
     same_actor = (len(actors) > 1 and all(actor is not None for actor in actors)
@@ -358,6 +361,7 @@ def priority(entry, tried, family_counts, tried_fault=None, prefix_failures=None
             + (20 if same_actor else 0)
             + (28 if len(entry["plan"]) > 1 and last.startswith("RPC_FLUSH_REGION~") else 0)
             - 12 * min(prefix_failures[tuple(entry["plan"][:-1])], 2)
+            - 12 * min(terminal_misses[selector], 2)
             - 30 * entry.get("unmatched_retries", 0)
             - min(entry["parent_seconds"] / 20, 12))
 
@@ -533,6 +537,21 @@ def main():
                     json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
             state["version"] = 5
             publish(state)
+        if state.get("version", 1) < 6:
+            # Scoring-only: repeated runs may apply the full upstream prefix
+            # but never execute a late RPC ordinal. Prefer an earlier observed
+            # RPC without deleting the rare late-ordinal candidate.
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 6,
+                "reason": "deprioritize_unobserved_terminal_RPC_after_complete_prefix",
+                "queue_length_unchanged": len(state["queue"]),
+                "trial_count_unchanged": len(state["trials"]),
+                "coverage_union_unchanged": state["coverage_union"],
+                "io_union_unchanged_sha256": hashlib.sha256(
+                    json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
+            state["version"] = 6
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -547,7 +566,7 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 5, "rng_seed": RNG_SEED,
+        state = {"version": 6, "rng_seed": RNG_SEED,
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -565,6 +584,10 @@ def main():
               "queue", len(state["queue"]), flush=True)
         return
     while True:
+        if PAUSE_AFTER_CHECKPOINT.exists():
+            print("HBASE32U paused at complete checkpoint", len(state["trials"]),
+                  flush=True)
+            return
         effective_count = sum(t["effective"] for t in state["trials"])
         if effective_count >= state["effective_budget"]:
             if not state["extended"] and effective_count >= INITIAL_EFFECTIVE:
@@ -598,8 +621,13 @@ def main():
             prefix_failures = Counter(tuple(t["plan"][:-1]) for t in state["trials"]
                                       if t.get("mixed_rpc_terminal") and
                                       t["applied_fault_events"] == 0)
+            terminal_misses = Counter(t["plan"][-1].rsplit("~", 1)[0]
+                                      for t in state["trials"]
+                                      if t.get("mixed_rpc_terminal") and not t["strict"]
+                                      and t["applied_fault_events"] == len(t["plan"]) - 1)
             state["queue"].sort(key=lambda item: (-priority(item, tried, families,
-                                                            tried_fault, prefix_failures),
+                                                            tried_fault, prefix_failures,
+                                                            terminal_misses),
                                                    ";".join(item["plan"])))
             depth_round = (len(state["trials"]) + 1) % 10 == 0
             if depth_round:
