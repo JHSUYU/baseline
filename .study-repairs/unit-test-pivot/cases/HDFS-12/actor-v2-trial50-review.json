@@ -1,0 +1,98 @@
+{
+  "applied_faults": 3,
+  "applied_prefix_plan_indices": [
+    0,
+    1,
+    2
+  ],
+  "authoritative_host": "node1",
+  "case_id": "HDFS-12",
+  "classification": "fault_induced_target_lost_unmatched_suffix_invalid_for_feedback",
+  "continuation": "Do not replay; skip from effective feedback and resume after attempted50/effective41.",
+  "elapsed_seconds": 33.474,
+  "fault_events": [
+    {
+      "event": "FAULT_MATCHED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "plan_index": 0,
+      "resource": "BP0",
+      "seq": 30,
+      "site_id": "BPServiceActor.offerService#keyUpdateResponse/NN0"
+    },
+    {
+      "event": "FAULT_APPLIED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "plan_index": 0,
+      "resource": "BP0",
+      "seq": 31,
+      "site_id": "BPServiceActor.offerService#keyUpdateResponse/NN0"
+    },
+    {
+      "event": "FAULT_MATCHED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "plan_index": 1,
+      "resource": "BP0",
+      "seq": 33,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readMagic"
+    },
+    {
+      "event": "FAULT_APPLIED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "plan_index": 1,
+      "resource": "BP0",
+      "seq": 34,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readMagic"
+    },
+    {
+      "event": "FAULT_MATCHED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "plan_index": 2,
+      "resource": "BP0",
+      "seq": 42,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readSecret"
+    },
+    {
+      "event": "FAULT_APPLIED",
+      "fault_actor": "episode=2/dn=1/dirs=dfs/data/data1,dfs/data/data2",
+      "plan_index": 2,
+      "resource": "BP0",
+      "seq": 43,
+      "site_id": "SaslDataTransferServer.doSaslHandshake#readSecret"
+    }
+  ],
+  "finished_at_utc": "2026-10-07T08:20:11.924604+00:00",
+  "junit_exit": 1,
+  "junit_log_sha256": "fd3bbe41f614bb6a1f08973cd1588238fe2ae91804ca1be410eb80f3454e44eb",
+  "manifest_sha256": "fe6cb2cb590451d79fcc2bfb36d3637e88d1153dfe0aa740b670a99c348e3063",
+  "matched_faults": 3,
+  "plan_sha256": "345eca1c8a29c9c163e50df0657dbf1cab20d48eab0f157201f7b5f999a6f8be",
+  "post_last_applied_target_count": 0,
+  "requested_faults": 4,
+  "resource_interference_evidence": {
+    "address_in_use_count": 0,
+    "bind_exception_count": 0,
+    "oom_count": 0,
+    "peak_junit_rss_kib": 1117636
+  },
+  "result_sha256": "bd71958cf6f0e89cf83ebc16d39aa3b5577c8a247c343da625c77078ed04e236",
+  "schema": "hdfs12-actor-v2-trial-review-1",
+  "selected_target_exception_count": 0,
+  "sequence_id": "26025474d1f6cdc966df",
+  "source_evidence": "After the third planned fault at HDFS 3.4.3 SaslDataTransferServer.doSaslHandshake#readSecret, the client fails FileChecksumHelper.checksumBlocks for /non-encrypted-file; the fourth key response point is never reached. Original TestEncryptedTransfer.testLongLivedClient lines300-322 requests this checksum after the 15s sleep.",
+  "started_at_utc": "2026-10-07T08:19:38.450372+00:00",
+  "target_events": [
+    {
+      "seq": 12,
+      "site_id": "BlockTokenSecretManager.retrievePassword#L511"
+    },
+    {
+      "seq": 17,
+      "site_id": "BlockTokenSecretManager.retrievePassword#L511"
+    },
+    {
+      "seq": 39,
+      "site_id": "BlockTokenSecretManager.retrievePassword#L511"
+    }
+  ],
+  "trace_sha256": "021a127b1d9bb9bbeebe709b78dae27f2ad3662f086115016f274fffdb693355"
+}

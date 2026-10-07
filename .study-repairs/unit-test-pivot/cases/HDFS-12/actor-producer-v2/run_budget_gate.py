@@ -60,14 +60,28 @@ def java_process_count() -> int:
                if line.split() and not line.endswith("sun.tools.jps.Jps"))
 
 
-def fault_induced_target_loss(manifest: dict, result: dict, junit_log: str) -> bool:
+def fault_induced_target_loss(manifest: dict, result: dict, junit_log: str,
+                              trace: list[dict]) -> bool:
+    matched = [row for row in trace if row.get("event") == "FAULT_MATCHED"]
+    applied = [row for row in trace if row.get("event") == "FAULT_APPLIED"]
+    count = result["applied_faults"]
+    ordered_prefix = (
+        len(matched) == len(applied) == count and
+        [row.get("planIndex") for row in matched] == list(range(count)) and
+        [row.get("planIndex") for row in applied] == list(range(count)) and
+        all(m["seq"] < a["seq"] for m, a in zip(matched, applied)) and
+        all(applied[i]["seq"] < matched[i + 1]["seq"]
+            for i in range(count - 1)))
+    later_target = bool(applied) and any(
+        row.get("event") == "TARGET_CHECK" and row.get("caseId") == "HDFS-12" and
+        row["seq"] > applied[-1]["seq"] for row in trace)
     return (manifest["returncode"] != 0 and
             result["classification"] == "unmatched_or_target_lost" and
-            result["exact_order_applied"] and
-            result["requested_faults"] == result["matched_faults"] ==
-            result["applied_faults"] and
+            0 < count == result["matched_faults"] <= result["requested_faults"] and
+            ordered_prefix and not later_target and
             result["postfault_target_count"] == 0 and
             "V2 injected I/O" in junit_log and
+            "Fail to get block MD5" in junit_log and
             not any(error in junit_log for error in
                     ("BindException", "Address already in use", "OutOfMemoryError")))
 
@@ -139,6 +153,8 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                 manifest = read_json(run_dir / "manifest.json")
                 result = read_json(run_dir / "v2_result.json")
                 junit_log = (run_dir / "junit.log").read_text(errors="replace")
+                trace = [json.loads(line) for line in
+                         (run_dir / "runtime_trace.jsonl").read_text().splitlines()]
                 entry.update({"junit_exit": manifest["returncode"],
                               "junit_elapsed_seconds": manifest["elapsed_seconds"],
                               "peak_junit_rss_kib": manifest["peak_junit_rss_kib"],
@@ -149,7 +165,7 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                               "postfault_target_exception_count": result["postfault_target_exception_count"],
                               "classification": result["classification"],
                               "fault_induced_target_loss": fault_induced_target_loss(
-                                  manifest, result, junit_log),
+                                  manifest, result, junit_log, trace),
                               "new_coverage": result["new_coverage"],
                               "new_io_families": result["new_io_families"]})
             append_jsonl(ledger, entry)
