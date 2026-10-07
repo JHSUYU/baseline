@@ -25,6 +25,9 @@ public final class TransformSmoke {
       String name = names[i];
       byte[] original = Files.readAllBytes(Paths.get(args[i], name + ".class"));
       byte[] transformed = CaseAgent.transformBytes(name, original);
+      java.nio.file.Path output = Paths.get(args[5], name + ".class");
+      Files.createDirectories(output.getParent());
+      Files.write(output, transformed);
       ClassNode checked = new ClassNode(Opcodes.ASM9);
       new ClassReader(transformed).accept(checked, 0);
       for (MethodNode method : checked.methods) {

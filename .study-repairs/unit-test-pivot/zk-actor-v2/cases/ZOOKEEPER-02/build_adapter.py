@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import xml.etree.ElementTree as ET
 
 CASE = Path(__file__).resolve().parent
 V2 = CASE.parents[1]
@@ -16,6 +17,7 @@ JAVA = Path('/usr/lib/jvm/java-8-openjdk-amd64/bin')
 ASM = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/9.4/asm-9.4.jar')
 TREE = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm-tree/9.4/asm-tree-9.4.jar')
 ANALYSIS = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm-analysis/9.4/asm-analysis-9.4.jar')
+REPORT = Path('/tmp/zk387-unit-smoke-20261006/zookeeper-server/target/surefire-reports/TEST-org.apache.zookeeper.test.QuorumRestartTest.xml')
 SITE = 'ClientCnxnSocketNIO#doIO:119:SocketChannel.write'
 SELECTOR = SITE + '@@client:handle:1:session:movedSession@@peer:2:channel:1:op:write@@1'
 
@@ -32,11 +34,22 @@ def main():
     subprocess.run([str(JAVA / 'javac'), '-source', '8', '-target', '8',
                     '-cp', ':'.join(map(str, (ASM, TREE, ANALYSIS))), '-d', str(classes),
                     *map(str, sources)], check=True)
-    cp = ':'.join(map(str, (classes, ASM, TREE, ANALYSIS)))
+    props = ET.parse(REPORT).getroot().findall('./properties/property')
+    original_cp = next(p.get('value') for p in props if p.get('name') == 'java.class.path')
+    original_cp = original_cp.replace('/tmp/zk387-unit-smoke-20261006', str(SOURCE))
+    cp = ':'.join(map(str, (classes, ASM, TREE, ANALYSIS))) + ':' + original_cp
+    transformed = BUILD / 'transformed'
+    names = [CaseName.TEST, 'org/apache/zookeeper/ClientCnxnSocketNIO',
+             'org/apache/zookeeper/server/NIOServerCnxn',
+             'org/apache/zookeeper/server/SessionTrackerImpl',
+             'org/apache/zookeeper/server/quorum/QuorumPeer']
     transform = subprocess.run([str(JAVA / 'java'), '-cp', cp,
                                 'research.zkactor.zk02.TransformSmoke', str(TEST), str(SERVER),
-                                str(SERVER), str(SERVER), str(SERVER)],
+                                str(SERVER), str(SERVER), str(SERVER), str(transformed)],
                                check=True, text=True, capture_output=True)
+    verified = subprocess.run([str(JAVA / 'java'), '-Xverify:all', '-cp', str(transformed) + ':' + cp,
+                               'research.zkactor.VerifyTransformed', str(transformed), *names],
+                              check=True, text=True, capture_output=True)
     smoke = subprocess.run([str(JAVA / 'java'), '-Dzk.actor.plan=' + SELECTOR,
                             '-cp', cp, 'research.zkactor.zk02.OfflineCaseSmoke',
                             str(BUILD), str(BUILD / 'offline-events.tsv')],
@@ -51,7 +64,8 @@ def main():
         'status': 'offline_pass', 'agent': str(agent), 'agent_sha256': digest(agent),
         'source_commit': '9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae',
         'original_test_class_sha256': digest(TEST / (CaseName.TEST + '.class')),
-        'transform_smoke': transform.stdout.strip(), 'two_actor_smoke': smoke.stdout.strip(),
+        'transform_smoke': transform.stdout.strip(), 'jvm_verify': verified.stdout.strip(),
+        'two_actor_smoke': smoke.stdout.strip(),
         'junit_executed': False,
     }
     (BUILD / 'build-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')

@@ -45,7 +45,7 @@ public final class CaseAgent {
   static byte[] transformBytes(String className, byte[] bytes) {
     if (!SELECTED.contains(className)) throw new IllegalArgumentException(className);
     ClassReader reader = new ClassReader(bytes);
-    ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
+    ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_FRAMES);
     reader.accept(new ClassVisitor(Opcodes.ASM9, writer) {
       @Override public MethodVisitor visitMethod(int access, String name, String descriptor,
           String signature, String[] exceptions) {
