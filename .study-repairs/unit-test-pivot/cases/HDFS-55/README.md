@@ -9,6 +9,22 @@ Balancer cache state, and the remote DataNode SASL result. The original
 embedded-cluster workload is the unmodified
 `TestBalancerWithEncryptedTransfer#testEncryptedBalancer0` JUnit.
 
+The evidence has two workload layers. The unchanged original JUnit supplied
+44 site-level fault attempts: one initial stateful control, 31 exact-plan
+trials, and 12 runtime-prefix trials. Thirty-one of these fully applied a
+fault, and 27 reached this target after the final fault. These runs establish
+site reachability and coverage; they do not by themselves reproduce the
+known issue. The causal HDFS-17899 differential used a **case-local adapted**
+encrypted one-node phase via the original `TestBalancer.integrationTest` /
+`oneNodeTest` helper, with one Balancer mover thread and a 180-second JUnit
+bound. Its two original-version faulted runs (first run and clean replay)
+applied the same persistent DataNode rejection model, reached the cached-key
+guard, failed the Balancer operation, and differed from the minimal fixed
+run. The checklist's 46 fault trials, 33 fully applied trials, 29 postfault
+target reaches and 2831.325 seconds aggregate these layers. The known-bug
+mark belongs to the adapted differential; it is not a claim that the
+unchanged JUnit directly reproduced HDFS-17899.
+
 `build_overlay.py` instruments the exact KeyManager guard without changing
 its boolean result and the outbound Balancer SASL call. Every event logs
 the Balancer manager identity, cached key ID, target DataNode, guard result,

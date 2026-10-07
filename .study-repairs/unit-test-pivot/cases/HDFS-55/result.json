@@ -3,7 +3,7 @@
   "system": "hdfs",
   "status": "quality_complete",
   "bug_mark": "known_HDFS-17899_reproduced",
-  "cluster_test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+  "cluster_test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0 (unchanged site-level); adapted integrationTest/oneNodeTest (known-bug differential)",
   "target_reached": true,
   "healthy_target_checks": 30,
   "healthy_sasl_attempts": 15,
@@ -243,5 +243,38 @@
   "stateful_control_injected_events": 18,
   "stateful_control_post_fault_target_guard_events": 17,
   "stateful_control_post_fault_cached_key_reuse_events": 17,
-  "stateful_control_fault_policy": "All observed Balancer outbound SASL attempts from attempt 1 until cache clear or cap 24; all 18 observed attempts were injected in original 3.4.3"
+  "stateful_control_fault_policy": "All observed Balancer outbound SASL attempts from attempt 1 until cache clear or cap 24; all 18 observed attempts were injected in original 3.4.3",
+  "quality_complete": true,
+  "workload_evidence_layers": {
+    "unchanged_original_junit_site_level": {
+      "test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+      "workload_modified": false,
+      "fault_trials": 44,
+      "fully_applied_trials": 31,
+      "target_after_fault": 27,
+      "components": {
+        "initial_stateful_control": 1,
+        "exact_plan_campaign": 31,
+        "runtime_prefix_campaign": 12
+      },
+      "known_bug_direct_reproduction": false,
+      "scope": "runtime target identity, fault application, production coverage, and possible oracle candidates"
+    },
+    "adapted_known_bug_differential": {
+      "workload": "case-local encrypted integrationTest/oneNodeTest with one mover thread and 180-second JUnit bound",
+      "workload_modified": true,
+      "fault_trials": 2,
+      "fully_applied_trials": 2,
+      "target_after_fault": 2,
+      "known_bug_reproduced": true,
+      "source_version": "Hadoop 3.4.3",
+      "original_version_outcome": "remote INVALID_KEY response 23/24 times; same-manager cached-key guard 44/46 times; Balancer NO_MOVE_PROGRESS (-3); JUnit fail in original and clean replay",
+      "fixed_outcome": "one remote INVALID_KEY, one cache clear, five successful block moves, JUnit pass",
+      "qualification": "campaign/dn-wire/qualification.json"
+    }
+  },
+  "table_counts_scope": "Aggregated unchanged original-JUnit site-level 44/31/27 and adapted known-bug differential 2/2/2. The known HDFS-17899 reproduction belongs only to the adapted differential.",
+  "elapsed_seconds_scope": "2831.325 seconds aggregate the original-JUnit site-level and adapted differential phases; phase-specific times and evidence remain separately recorded.",
+  "known_bug_detection_workload_modified": true,
+  "unchanged_junit_direct_known_bug_reproduction": false
 }
