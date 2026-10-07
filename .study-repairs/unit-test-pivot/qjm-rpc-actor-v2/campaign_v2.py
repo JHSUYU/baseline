@@ -222,8 +222,9 @@ def analyze_run(state: dict, item: dict, run: Path, case: str) -> dict:
              if receipt["pass"] else [] for key, values in current.items()}
     new_io = sorted({family(e) for e in trace if observed(e)} -
                     set(state["io_union"])) if receipt["pass"] else []
-    candidate = (receipt["pass"] and receipt["post_fault_target_throws"] > 0 and
-                 manifest["returncode"] != 0)
+    # The original JUnit may tolerate a failed JournalNode and still pass.
+    # A post-fault target exception remains a candidate observation either way.
+    candidate = receipt["pass"] and receipt["post_fault_target_throws"] > 0
     return {"run": run.name, "id": item["id"], "sequence": item["sequence"],
             "target_actor": item["target_actor"], "reason": item["reason"],
             "receipt": receipt, "effective": receipt["pass"],

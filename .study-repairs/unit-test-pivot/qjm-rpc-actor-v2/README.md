@@ -110,6 +110,15 @@ prioritizes new production method/branch and I/O-family feedback. A trial is
 effective only when every planned fault applies and the selected
 `journalnode-N/test-journal` target executes after the final fault. A target
 throw remains a candidate, pending source review and clean replay.
+The candidate oracle uses the exact post-fault target throw regardless of the
+original JUnit exit status, because the three-JournalNode workload can tolerate
+one server exception. At an audited pause boundary, the first 41 HDFS-10
+trials were reclassified under this rule: six target throws became candidate
+observations, with no change to raw data or the 27 effective trials. Two
+representative plans reproduced the target throw in fresh fixtures; source
+review classifies the family as the direct expected response to an injected
+writer-epoch persistence failure. See
+`evidence/HDFS-10/target-oracle-review.md` and its raw archive.
 
 The initial budget is 80 effective trials, at most eight faults per sequence,
 with a 320-attempt cap. If any of the last eight effective trials adds method,

@@ -78,7 +78,8 @@ def start_jvm(cmd: list[str], scratch: Path, log, output: Path) -> subprocess.Po
                 fcntl.flock(gate, fcntl.LOCK_UN)
                 return process
             fcntl.flock(gate, fcntl.LOCK_UN)
-            if (output.parent / "campaign-v2/PAUSE").exists():
+            if (output.name.startswith("trial-") and
+                    (output.parent / "campaign-v2/PAUSE").exists()):
                 raise RuntimeError("JVM start paused at the resource gate")
             time.sleep(1)
 

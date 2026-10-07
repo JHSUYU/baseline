@@ -91,8 +91,7 @@ def inspect(case: str) -> dict:
             new_io = sorted({family(e) for e in trace if observed(e)} - io_union)
             if not row["effective"]:
                 new_io = []
-            candidate = (receipt["pass"] and receipt["post_fault_target_throws"] > 0
-                         and manifest["returncode"] != 0)
+            candidate = receipt["pass"] and receipt["post_fault_target_throws"] > 0
             if (gain != row["new_coverage_ids"] or
                     new_io != row["new_io_family_ids"] or
                     candidate != row["candidate"] or
