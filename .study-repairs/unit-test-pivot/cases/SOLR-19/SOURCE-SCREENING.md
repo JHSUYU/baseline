@@ -35,18 +35,21 @@ actor join, so it is screening evidence rather than an actor-aware seed.
    (`CoreContainer.java:1326-1335`).
 
 For these two request producers, an exception in the state lookup can prevent
-the create RPC. When the returned `Replica.getName()` is nonempty, a delivered
-create RPC carries that value. `Replica` itself does not enforce a nonnull name
-in its constructor, so a fault-induced malformed state entry remains a question
-for runtime evidence. The selected check is a direct received-parameter
-validation in this workload; the source path alone does not demonstrate a
-multi-hop state comparison. The earlier 128 graph-free fault trials had coarse
-actor identities and remain historical evidence only; they do not make the V2
-check quality complete.
+the create RPC. A constructed `Replica` has a nonnull name: its constructor
+requires it (`Replica.java:148-160`). A nonempty name is still a separate
+condition because that constructor does not reject an empty string, and
+`buildCoreParams` drops empty values. The selected check is a direct
+received-parameter validation in this workload; the source path alone does
+not demonstrate a multi-hop state comparison. The earlier 128 graph-free
+fault trials had coarse actor identities and remain historical evidence only;
+they do not make the V2 check quality complete.
 
 **Decision pending independent review.** Before changing the checklist status,
 verify that all target guard hits in the unchanged healthy JUnit came from
-these producers and that exception/delay injection cannot admit another
-CoreAdmin create producer. If so, record a source-exclusion reason with raw
-healthy provenance. Otherwise, build an actor-aware V2 adapter that binds the
-sender's create request to the receiving `CoreContainer` and the exact core.
+these producers, that their replica names were nonempty, and that
+exception/delay injection cannot admit another CoreAdmin create producer. The
+existing healthy trace records the nine receiving guards but has no
+sender-to-receiver join, so this proof is currently missing. If established,
+record a source-exclusion reason with raw provenance. Otherwise, build an
+actor-aware V2 adapter that binds the sender's create request to the receiving
+`CoreContainer` and the exact core.
