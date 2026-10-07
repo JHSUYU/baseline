@@ -135,6 +135,15 @@ and I/O gains, and stop reason;
 the shared 102-case table can ingest this independently. These V2 counters start at
 zero and never import the older unbound runs.
 
+For an original JUnit with multiple selected target invocations, the oracle
+retains **all** same-actor postfault outcomes and prefers any selected throw
+over earlier normal outcomes. This was corrected at HBASE-08 attempt 34;
+all 35 raw attempts through the in-flight r035 receipt were audited and had
+zero non-normal selected target events. The r035 run was ingested from its
+existing raw exit without replay. Case-local `oracle-before.json`,
+`oracle-after.json`, and checkpoint copies preserve both controller versions
+and the unchanged agent SHA-256.
+
 ## Offline checks
 
 - Java 8 `javac` compiled the agent, coverage reporter, smoke, and
@@ -146,12 +155,13 @@ zero and never import the older unbound runs.
   Advice/helper package boundary at execution time. It also verified that a
   replacement manager receives a new ID and fail-closed watcher status.
   It started no HBase or ZooKeeper cluster.
-- Fifteen offline controller tests passed, covering exact same-actor admission,
+- Sixteen offline controller tests passed, covering exact same-actor admission,
   wrong Master, manager, and target subject rejection, target order, missing
   fault, ambiguous healthy selector, postfault feedback actor filtering, and
   target entry before fault followed by guard after fault, HBASE-21 guard-line
   admission, normal-outcome exception accounting, healthy guard distance and
-  near-target priority without dropping pending plans, and a zero-based V2 result
+  near-target priority without dropping pending plans, a later selected throw
+  after a normal invocation, and a zero-based V2 result
   row that excludes historical trial counts.
   A historical HBASE-22 JaCoCo file produced
   `NamespaceStateManager` branch line 166 with two covered outcomes; this
