@@ -202,13 +202,16 @@ def choose_pending(state: dict) -> dict:
         suite = [i for i in scored if ':SUITE@@' in pending[i]['plan'][0]]
         test = [i for i in scored if i not in suite]
         pool = suite if state.get('suite_gap', 0) >= 3 and suite else (test or suite)
+        prefer_deep = state.get('depth_gap', 0) >= 3
         index = max(pool, key=lambda i:
-                    (len(pending[i]['plan']),
+                    ((1 if prefer_deep else -1) * len(pending[i]['plan']),
                      int('/aliases.json' in pending[i]['plan'][-1]), -i))
     job = pending.pop(index)
     state['shallow_gap'] = 0 if len(job['plan']) == 1 else state['shallow_gap'] + 1
     state['suite_gap'] = (0 if ':SUITE@@' in job['plan'][0]
                           else state.get('suite_gap', 0) + 1)
+    state['depth_gap'] = (0 if len(job['plan']) >= 4
+                          else state.get('depth_gap', 0) + 1)
     job['run_id'] = 'trial-{:03d}'.format(state['next_trial'])
     state['next_trial'] += 1
     return job
