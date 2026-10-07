@@ -3,6 +3,40 @@
 This is a separate, graph-free experiment. It does not replace the existing
 adapted HDFS-17897 known-bug control in `../result.json`.
 
+## Terminal result
+
+The unchanged embedded-cluster JUnit campaign reached its **80/80 effective
+trial budget** on 2026-10-07 at 04:54:19 UTC. All 80 fault plans were applied
+in their planned order to runtime-identified DataNodes and reached the exact
+line-629 target after the final fault. The 80 trials applied 552 synthetic
+checksum RPC exceptions in total; the deepest selected plan had nine faults.
+The healthy JUnit took 17.72 seconds and the faulted JUnits took 1315.65
+seconds combined, for **1333.37 seconds of measured JUnit time**. The wall
+interval from campaign creation to completion was 02:34:00–04:54:19 UTC;
+it includes handoff, replay, and scheduling pauses. The queue retained 512
+untested plans when the 80-effective budget stopped the run.
+
+Production JaCoCo feedback increased the union over the healthy seed by
+1349 probe IDs, 295 method IDs and 498 branch-count slots; 20 faulted runs
+added probes. Forty-four faulted JUnits reached line 629 with
+`completed=false` and failed. Each was a nine-fault plan that exhausted all
+nine distinct located DataNodes for the same file and block group. Trial 28's
+identical plan reproduced this source-expected failure in a fresh fixture.
+The original JUnit did **not** demonstrate the real stale cached encryption
+key mechanism of HDFS-17897. The known-bug differential remains the
+separate adapted control; this campaign found no new bug.
+
+The [terminal audit](terminal/terminal-audit.json) checks every manifest,
+ordered runtime trace, DataNode UUID, exact target event, JUnit result,
+JaCoCo output and coverage union. The [per-trial ledger](terminal/trial-ledger.csv),
+[raw evidence index](terminal/terminal-evidence-index.json), and
+[compressed final checkpoint](terminal/terminal-campaign-state.json.gz)
+are archived here. Full raw JUnit logs, traces and JaCoCo `.exec` files stay
+under `/users/ZhenyuLi/hdfs54-original-campaign/runs` on node2; their hashes
+are in the index. The archived CSV uses LF line endings; the terminal audit
+records hashes for both it and the raw node2 CSV. The HDFS-54 tmux and JVM
+exited naturally after trial 80.
+
 ## Source and workload identity
 
 - Hadoop tag: `rel/release-3.4.3` (`9d50c688` locally).
@@ -40,10 +74,10 @@ the same file's line-629 target evaluated `completed=true` after the second
 fault. The unchanged JUnit passed. It covered 28,883 probes, with 156 probe
 tokens new to the prior global coverage set. The healthy and two fault runs
 together cover 28,885 distinct production probes, 162 more than the healthy
-seed. The node1 checkpoint now reports **2/80 effective**, 2 attempts, 46
-queued plans, and no in-flight plan. See
-[`node1-trial2-receipt.json`](node1-trial2-receipt.json). Full budget execution
-remains pending a safe node slot. The node2 copy remains paused at 1/80.
+seed. At that handoff boundary the node1 checkpoint reported **2/80
+effective**, 2 attempts, 46 queued plans, and no in-flight plan. See
+[`node1-trial2-receipt.json`](node1-trial2-receipt.json). The node2 copy was
+paused at 1/80 until reconciliation.
 
 ## Campaign
 
@@ -70,7 +104,7 @@ retaining production coverage and bounded waiting credit. See
 128-effective extension remains conditional on feedback. An attempt cap
 keeps nondeterministic misses bounded.
 
-After the node2 owner explicitly releases its JVM slot, reconcile the node1
+The historical handoff procedure was: after node2's owner released its JVM slot, reconcile the node1
 2/80 checkpoint and trial-2 evidence onto node2, verify both trial IDs and
 the 46-plan queue, and then clear the node2 pause marker. Only then use
 `bash /users/ZhenyuLi/hdfs54-original-campaign/resume_node2.sh`. The
