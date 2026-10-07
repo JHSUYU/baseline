@@ -291,7 +291,8 @@ def target_outcome(trace, plan):
     return {"method": method, "progress": progress, "guard": guard, "b7": b7}
 
 
-def enqueue(state, prefix, selectors, after, novelty, seconds, rpc_selectors=()):
+def enqueue(state, prefix, selectors, after, novelty, seconds, rpc_selectors=(),
+            io_novelty=0):
     if len(prefix) >= state["max_faults"] or any(
             step.startswith("RPC_FLUSH_REGION~") for step in prefix):
         return
@@ -332,25 +333,31 @@ def enqueue(state, prefix, selectors, after, novelty, seconds, rpc_selectors=())
             if key not in seen:
                 seen.add(key)
                 state["queue"].append({"plan": plan, "parent_novelty": novelty,
+                                       "parent_io_novelty": io_novelty,
                                        "parent_seconds": seconds or 60, "wait": 0})
     state["seen_plans"] = sorted(seen)
 
 
-def priority(entry, tried, family_counts):
+def priority(entry, tried, family_counts, tried_fault=None, prefix_failures=None):
     last = entry["plan"][-1]
     selector = last.rsplit("~", 1)[0]
     family = selector.split("~", 1)[0]
+    tried_fault = tried_fault or Counter()
+    prefix_failures = prefix_failures or Counter()
     actors = [re.search(r"~([^~]+)~replica-(\d+)~(?:target-(\d+)~)?", step)
               for step in entry["plan"]]
     same_actor = (len(actors) > 1 and all(actor is not None for actor in actors)
                   and len({(actor[1], actor[2], actor[3]) for actor in actors}) == 1)
-    return (30 * (not tried[selector]) + min(entry["wait"] // 5, 20)
+    return (10 * (not tried[selector]) + 20 * (not tried_fault[last])
+            + min(entry["wait"] // 5, 20)
             + min(entry["parent_novelty"] * 2, 12)
+            + min(entry.get("parent_io_novelty", 0) // 8, 12)
             + (25 if len(entry["plan"]) == 1 else 0)
             + (12 if family.startswith("WAL_") else 8)
             - min(family_counts[family] // 4, 20)
             + (20 if same_actor else 0)
             + (28 if len(entry["plan"]) > 1 and last.startswith("RPC_FLUSH_REGION~") else 0)
+            - 12 * min(prefix_failures[tuple(entry["plan"][:-1])], 2)
             - 30 * entry.get("unmatched_retries", 0)
             - min(entry["parent_seconds"] / 20, 12))
 
@@ -369,7 +376,8 @@ def publish(state, status="running"):
     trials = state["trials"]
     effective = [trial for trial in trials if trial["effective"]]
     result = {"case": "HBASE-32", "phase": "independent_upstream_and_terminal_rpc",
-              "status": status, "workload": "TestRegionReplicaFailover#testLotsOfRegionReplicas",
+              "status": status, "policy_version": state["version"],
+              "workload": "TestRegionReplicaFailover#testLotsOfRegionReplicas",
               "attempted": len(trials), "fully_applied": sum(t["strict"] for t in trials),
               "mixed_rpc_terminal_attempted": sum(t.get("mixed_rpc_terminal", False)
                                                   for t in trials),
@@ -485,7 +493,7 @@ def main():
                 enqueue(state, trial["plan"], selector_events(trace),
                         fault_events(trace)[-1]["line"],
                         trial["new_branches_methods"], trial["elapsed_seconds"],
-                        rpc_selector_events(trace))
+                        rpc_selector_events(trace), trial["new_io_selectors"])
                 restored_from.append(trial["id"])
             prune(state)
             state.setdefault("migration_log", []).append({
@@ -503,6 +511,28 @@ def main():
                     json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
             state["version"] = 4
             publish(state)
+        if state.get("version", 1) < 5:
+            # Scoring-only migration: retain every plan and trial, while
+            # giving children the parent's measured I/O novelty. A fault ID
+            # includes its exception kind; unmatched faults are not tested.
+            parents = {tuple(trial["plan"]): trial for trial in state["trials"]
+                       if trial["coverage_admitted"]}
+            for entry in state["queue"]:
+                parent = parents.get(tuple(entry["plan"][:-1]))
+                entry["parent_io_novelty"] = (
+                    parent["new_io_selectors"] if parent else
+                    entry.get("parent_io_novelty", 0))
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 5,
+                "reason": "fully_applied_fault_ID_and_parent_IO_novelty_priority",
+                "queue_length_unchanged": len(state["queue"]),
+                "trial_count_unchanged": len(state["trials"]),
+                "coverage_union_unchanged": state["coverage_union"],
+                "io_union_unchanged_sha256": hashlib.sha256(
+                    json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
+            state["version"] = 5
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -517,7 +547,7 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 4, "rng_seed": RNG_SEED,
+        state = {"version": 5, "rng_seed": RNG_SEED,
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -560,9 +590,16 @@ def main():
                 raise RuntimeError("Inflight trial ID conflicts with checkpoint")
             entry = inflight["entry"]
         else:
-            tried = Counter(t["plan"][-1].rsplit("~", 1)[0] for t in state["trials"])
+            tried = Counter(t["plan"][-1].rsplit("~", 1)[0] for t in state["trials"]
+                            if t["strict"])
+            tried_fault = Counter(t["plan"][-1] for t in state["trials"]
+                                  if t["strict"])
             families = Counter(t["plan"][-1].split("~", 1)[0] for t in state["trials"])
-            state["queue"].sort(key=lambda item: (-priority(item, tried, families),
+            prefix_failures = Counter(tuple(t["plan"][:-1]) for t in state["trials"]
+                                      if t.get("mixed_rpc_terminal") and
+                                      t["applied_fault_events"] == 0)
+            state["queue"].sort(key=lambda item: (-priority(item, tried, families,
+                                                            tried_fault, prefix_failures),
                                                    ";".join(item["plan"])))
             depth_round = (len(state["trials"]) + 1) % 10 == 0
             if depth_round:
@@ -665,7 +702,7 @@ def main():
             state["queue"].append(retry)
         if admitted and exit_code != 124:
             enqueue(state, entry["plan"], selectors, fault_events(trace)[-1]["line"],
-                    novelty, trace["elapsed_seconds"], rpc_selector_events(trace))
+                    novelty, trace["elapsed_seconds"], rpc_selector_events(trace), new_io)
         prune(state)
         publish(state)
         INFLIGHT.unlink(missing_ok=True)

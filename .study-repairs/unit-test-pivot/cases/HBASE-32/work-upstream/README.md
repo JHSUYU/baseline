@@ -10,6 +10,8 @@ Checkpoint version 3 removes an unjustified limit of two `DoNotRetryIOException`
 
 Pure WAL retry exhaustion eventually throws a newly constructed `IOException` from the response-false arm, so it does not execute the selected B7 rethrow in the flush-RPC catch. Checkpoint version 4 adds bounded mixed plans: a fully applied Master/WAL prefix retaining the exact raw target actor can be followed by one observed client flush RPC exception from that actor. The two agents receive their own plan parts; the controller validates the *combined* applied events in raw log order and checks each agent's step number separately. Mixed plans have no children after the terminal RPC fault. Only an exact same-actor B7 rethrow after the final fault counts toward the 80-effective budget. Pure WAL paths remain separate related-path exploration and may contribute coverage/I/O feedback, but never count as B7-effective merely for retry exhaustion.
 
+Checkpoint version 5 changes only queue scoring. It treats a fault identity as the exact I/O selector plus exception kind, counts that identity as tested only when the whole planned sequence was applied, rewards measured parent JaCoCo and related I/O novelty, and slightly reduces priority for mixed plans whose upstream prefix has repeatedly disappeared. Waiting age and the every-tenth-round legal depth choice still prevent one family from monopolizing the queue. The migration keeps all prior plans, trials, coverage, and effective counts.
+
 ```sh
 cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream
 tmux attach -t hbase32-upstream-fuzz
