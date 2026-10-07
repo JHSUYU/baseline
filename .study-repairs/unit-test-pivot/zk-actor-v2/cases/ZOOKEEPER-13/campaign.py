@@ -312,6 +312,8 @@ def record(state, job, receipt):
 
 def recover(state):
     inflight = state['inflight'][:]
+    if len(inflight) > 1:
+        raise RuntimeError('single-worker campaign cannot recover multiple inflight trials')
     state['inflight'] = []
     for job in inflight:
         path = ROOT / job['run_id'] / 'run.json'
@@ -327,6 +329,10 @@ def recover(state):
             shutil.move(str(abandoned), str(retained))
         state['pending'].insert(0, {key: value for key, value in job.items()
                                     if key not in ('run_id', 'worker_slot')})
+        if job['run_id'] != 'trial-{:04d}'.format(state['next_trial'] - 1) or \
+                len(state['results']) != state['next_trial'] - 2:
+            raise RuntimeError('interrupted original JUnit is not the next trial ID')
+        state['next_trial'] -= 1
     save(state)
 
 
