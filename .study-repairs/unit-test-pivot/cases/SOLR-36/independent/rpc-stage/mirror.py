@@ -15,6 +15,7 @@ CASE = HERE.parent
 ROOT = CASE.parents[2]
 REMOTE = '/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/progress.json'
 REMOTE_STAGE = '/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/stage-status.json'
+REMOTE_STATE = '/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/state.json'
 SSH = ('ssh', '-i', '/users/ZhenyuLi/.ssh/id_ed25519_nodes',
        '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', 'ZhenyuLi@node2')
 TERMINAL = {'complete', 'queue_exhausted', 'candidate',
@@ -31,19 +32,28 @@ def atomic(path: Path, value: dict) -> None:
     temporary.replace(path)
 
 
-def read_remote() -> tuple[dict, dict] | None:
+def read_remote() -> tuple[dict, dict, dict] | None:
     results = [subprocess.run((*SSH, 'cat ' + path), capture_output=True,
-                              text=True) for path in (REMOTE, REMOTE_STAGE)]
+                              text=True) for path in (REMOTE, REMOTE_STAGE,
+                                                     REMOTE_STATE)]
     if any(result.returncode for result in results):
         return None
     rpc, stage = json.loads(results[0].stdout), json.loads(results[1].stdout)
+    state = json.loads(results[2].stdout)
+    if len(state['completed']) != rpc['fault_trials']:
+        return None
     if (stage['status'] in TERMINAL
             and stage['counts']['selected_plans'] != rpc['fault_trials']):
         return None
-    return rpc, stage
+    gain_by_case = {case_id: sum(
+        row['new_production_probes'] for row in state['completed']
+        if row['strict_injection']
+        and row['postfault_same_child_guards'][case_id] > 0)
+        for case_id in ('SOLR-36', 'SOLR-37')}
+    return rpc, stage, gain_by_case
 
 
-def publish(rpc: dict, stage: dict) -> None:
+def publish(rpc: dict, stage: dict, gain_by_case: dict) -> None:
     seed_audit = json.loads((HERE / 'seed-audit.json').read_text())
     seed_seconds = sum(item['elapsed_seconds']
                        for item in seed_audit['all_healthy_attempts'])
@@ -92,9 +102,13 @@ def publish(rpc: dict, stage: dict) -> None:
                                       'elapsed_seconds']
                                   + seed_seconds
                                   + rpc['elapsed_seconds'], 3),
-            coverage_gain=rpc['production_probe_gain'],
-            coverage_gain_scope=('Current-quality HTTP release-JAR production probes; '
-                                 'legacy ZooKeeper actor-unverified probes excluded.'),
+            coverage_gain=gain_by_case[case_id],
+            coverage_gain_scope=('Current-quality HTTP release-JAR production probes '
+                                 'from strict trials reaching this case’s exact '
+                                 'same-child guard after the fault effect; legacy '
+                                 'ZooKeeper actor-unverified probes excluded.'),
+            rpc_stage_shared_production_probe_gain=rpc['production_probe_gain'],
+            rpc_stage_case_production_probe_gain=gain_by_case[case_id],
             legacy_zk_coarse_selected_plans=stage1['fault_trials'],
             legacy_zk_coarse_strict_point_matches=stage1['strict_injections'],
             legacy_zk_coarse_same_child_post_target=stage1_identity[
@@ -140,13 +154,13 @@ def main() -> None:
         if pair is None:
             time.sleep(20)
             continue
-        rpc, stage = pair
+        rpc, stage, gain_by_case = pair
         key = (rpc['status'], rpc['fault_trials'], stage['status'],
                stage['counts']['selected_plans'])
         if key != last:
             atomic(HERE / 'campaign/progress.json', rpc)
             atomic(HERE / 'campaign/stage-status.json', stage)
-            publish(rpc, stage)
+            publish(rpc, stage, gain_by_case)
             print(f'RPC mirrored {stage["status"]} selected={rpc["fault_trials"]} '
                   f'effective={rpc["same_child_post_target_trials"]}', flush=True)
             last = key
