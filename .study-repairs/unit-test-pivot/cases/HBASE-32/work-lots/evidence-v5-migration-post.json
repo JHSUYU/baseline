@@ -1,0 +1,98 @@
+{
+  "at_utc": "2026-10-07T04:44:58.087387+00:00",
+  "core": {
+    "attempted": 110,
+    "coverage_execs_sha256": "c61e89af272dcddc3eebe3fedb7aab4b5bd2eb76612e156241de648e93a492e0",
+    "coverage_sha256": "957a84bf4cf609be301002c07228861e11a5ff57bf9742497f43ee55b72f9e55",
+    "effective": 80,
+    "historical_plans_sha256": "66ce39658f6a47610755d92689f10a17abbfe671dd9be8ed91365fd61ec14c3b",
+    "inflight_exists": false,
+    "last_trial": "r110",
+    "queue_length": 13450,
+    "queue_sha256": "6797f684ad0abb4fb34f3f58a0f21fba856c60c0859cf85efbc7c51f734e4de6",
+    "seen_sha256": "c7588558f77a4939106f6a5ab4e5e5108db5c04775f8aeff9390514756942888"
+  },
+  "extended_budget": {
+    "effective_trials": 128,
+    "max_attempts": 384,
+    "max_faults": 10
+  },
+  "global_io_union_matches_pre": true,
+  "global_io_union_sha256": "c651961d85db21c608c631ce4af04e651f38fea70a22d41898b474158772f981",
+  "global_io_union_size": 2820,
+  "last8_code_sum": 0,
+  "last8_global_io_sum": 81,
+  "next_trial_not_run": true,
+  "phase": "after_v5_migration",
+  "policy": "lots_v5_global_io_novelty",
+  "policy_change": {
+    "at_utc": "2026-10-07T04:44:28.793032+00:00",
+    "calibration_first_trial": 19,
+    "completed_trials": 110,
+    "coverage_union_retained": {
+      "branches": 19,
+      "classes": {
+        "org/apache/hadoop/hbase/client/FlushRegionCallable": {
+          "branches": 1,
+          "lines": 15,
+          "methods": 5
+        },
+        "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler": {
+          "branches": 18,
+          "lines": 46,
+          "methods": 6
+        }
+      },
+      "lines": 61,
+      "methods": 11,
+      "target": {
+        "branches": 0,
+        "instructions": 2,
+        "line": 136
+      }
+    },
+    "depth_cadence": 10,
+    "effective_trials": 80,
+    "exception_kind_feedback": {
+      "DO_NOT_RETRY_IOEXCEPTION": {
+        "admitted_new_io_selectors": 1693,
+        "admitted_production_novelty": 0,
+        "attempts": 63,
+        "effective": 62
+      },
+      "EOF_EXCEPTION": {
+        "admitted_new_io_selectors": 0,
+        "admitted_production_novelty": 0,
+        "attempts": 10,
+        "effective": 0
+      },
+      "IOEXCEPTION": {
+        "admitted_new_io_selectors": 0,
+        "admitted_production_novelty": 0,
+        "attempts": 10,
+        "effective": 0
+      },
+      "SOCKET_TIMEOUT": {
+        "admitted_new_io_selectors": 0,
+        "admitted_production_novelty": 0,
+        "attempts": 9,
+        "effective": 0
+      }
+    },
+    "exception_kind_weights": {
+      "DO_NOT_RETRY_IOEXCEPTION": 0.7503123520436855,
+      "EOF_EXCEPTION": 0.08215730579235953,
+      "IOEXCEPTION": 0.08215730579235953,
+      "SOCKET_TIMEOUT": 0.08537303637159549
+    },
+    "from": "lots_v4_retention_io_coverage_weighted",
+    "future_child_selector_cap": 24,
+    "io_feedback": "accepted cross-trial selector union; historical baseline-relative field retained",
+    "minimum_kind_share": 0.05,
+    "queue_retained": 13450,
+    "rng_seed": 32,
+    "seen_plans_retained": 13752,
+    "to": "lots_v5_global_io_novelty"
+  },
+  "unchanged_core": true
+}

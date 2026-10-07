@@ -185,6 +185,18 @@ main controller runs in node1 tmux `hbase32-lots-fuzz`; node0 tmux
 `hbase32-result-mirror` copies only this case's atomic `result.json` every
 30 seconds and atomically refreshes the 104-row checklist when it changes.
 
+At the 80-effective checkpoint, policy v5 reconstructs a global union of
+target-related I/O selectors from the healthy trace and only accepted
+postfault trials, in execution order. Earlier `new_related_io_selectors`
+values were differences from the healthy trace for each individual run, so
+they could count the same recovery selector in many trials. The historical
+field remains for audit; `global_new_related_io_selectors` records genuinely
+new selectors against all prior accepted runs. Exception-kind and child
+selection use the global count after migration, alongside JaCoCo feedback.
+The migration keeps the trial list, pending plans, and coverage union intact;
+its before/after hashes and last-eight-effective novelty decide whether the
+conditional 128-effective/10-fault extension applies.
+
 ## Independent upstream I/O phase
 
 Source and passive MiniCluster calibration found two additional target-related

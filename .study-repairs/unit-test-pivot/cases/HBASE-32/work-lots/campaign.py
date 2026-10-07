@@ -29,7 +29,7 @@ MAX_ATTEMPTS = int(os.environ.get("HBASE32_MAX_ATTEMPTS", "240"))
 MAX_FAULTS = int(os.environ.get("HBASE32_MAX_FAULTS", "8"))
 MAX_CHILD_SELECTORS = 24
 RNG_SEED = 32
-SELECTION_POLICY = "lots_v4_retention_io_coverage_weighted"
+SELECTION_POLICY = "lots_v5_global_io_novelty"
 CALIBRATION_FIRST_TRIAL = 19
 MIN_KIND_SHARE = 0.05
 
@@ -98,11 +98,40 @@ def coverage(paths: list[Path]) -> dict:
             "lines": sum(value["lines"] for value in classes.values())}
 
 
-def admitted_new_io(state: dict, trace: dict) -> int:
+def related_selectors(trace: dict) -> set[str]:
+    return {event["selector"] for event in trace["io"]
+            if event.get("context_match") == "true"}
+
+
+def baseline_relative_io(state: dict, trace: dict) -> int:
+    """Keep the historical per-trial metric, without calling it global novelty."""
     baseline = {event["selector"] for event in state["healthy"]["io"]}
-    observed = {event["selector"] for event in trace["io"]
-                if event.get("context_match") == "true"}
-    return len(observed - baseline)
+    return len(related_selectors(trace) - baseline)
+
+
+def migrate_global_io(state: dict) -> None:
+    """Rebuild accepted cross-trial I/O feedback from immutable raw logs."""
+    if "related_io_union" in state:
+        return
+    seen = {event["selector"] for event in state["healthy"]["io"]}
+    for trial in state["trials"]:
+        if trial["effective"]:
+            observed = related_selectors(parse_log(CASE / trial["log"]))
+            trial["global_new_related_io_selectors"] = len(observed - seen)
+            seen.update(observed)
+        else:
+            trial["global_new_related_io_selectors"] = 0
+    state["related_io_union"] = sorted(seen)
+    state.setdefault("migration_log", []).append({
+        "at_utc": datetime.now(timezone.utc).isoformat(),
+        "reason": "replace baseline-relative I/O feedback with accepted cross-trial union",
+        "completed_trials": len(state["trials"]),
+        "effective_trials": sum(trial["effective"] for trial in state["trials"]),
+        "global_union_size": len(seen),
+        "queue_retained": len(state["queue"]),
+        "seen_plans_retained": len(state["seen_plans"]),
+        "coverage_union_retained": state["coverage_union"],
+    })
 
 
 def kind_feedback(state: dict) -> tuple[dict[str, float], dict[str, dict]]:
@@ -120,7 +149,7 @@ def kind_feedback(state: dict) -> tuple[dict[str, float], dict[str, dict]]:
         if trial["effective"]:
             item["effective"] += 1
             item["admitted_production_novelty"] += trial["new_production_branches_and_methods"]
-            item["admitted_new_io_selectors"] += trial.get("new_related_io_selectors", 0)
+            item["admitted_new_io_selectors"] += trial.get("global_new_related_io_selectors", 0)
     raw = {}
     for kind, item in metrics.items():
         retained = (item["effective"] + 0.5) / (item["attempts"] + 1)
@@ -170,7 +199,7 @@ def related_after_fault(trace: dict, strict: bool) -> tuple[list[dict], list[dic
 
 
 def enqueue(state: dict, prefix: list[str], trace: dict, after: int, novelty: int,
-            parent_seconds: float) -> None:
+            parent_seconds: float, new_selectors: set[str] | None = None) -> None:
     if len(prefix) >= MAX_FAULTS:
         return
     seen = set(state["seen_plans"])
@@ -184,9 +213,9 @@ def enqueue(state: dict, prefix: list[str], trace: dict, after: int, novelty: in
         # A 542-target healthy run already supplies >2,000 one-fault plans.
         # Bound each effective seed's children while retaining newly exposed
         # post-fault I/O identities ahead of familiar healthy identities.
-        baseline = {event["selector"] for event in state["healthy"]["io"]}
-        selectors = ([selector for selector in selectors if selector not in baseline]
-                     + [selector for selector in selectors if selector in baseline])
+        fresh = new_selectors or set()
+        selectors = ([selector for selector in selectors if selector in fresh]
+                     + [selector for selector in selectors if selector not in fresh])
         selectors = selectors[:MAX_CHILD_SELECTORS]
     for selector in selectors:
         for kind in KINDS:
@@ -196,7 +225,8 @@ def enqueue(state: dict, prefix: list[str], trace: dict, after: int, novelty: in
                 continue
             seen.add(key)
             state["queue"].append({"plan": plan, "parent_seconds": parent_seconds,
-                                   "novelty": novelty, "wait": 0})
+                                   "novelty": novelty,
+                                   "io_novelty": len(new_selectors or ()), "wait": 0})
     state["seen_plans"] = sorted(seen)
 
 
@@ -216,6 +246,7 @@ def priority(entry: dict, tried: Counter, b7_prefixes: list[list[str]]) -> float
             + (8 if recovery else 0)
             + (55 if len(entry["plan"]) == 1 else -10)
             + min(2 * entry["novelty"], 12)
+            + min(entry.get("io_novelty", 0) / 4, 12)
             + min(entry["wait"] // 5, 20)
             - min(entry["parent_seconds"] / 20, 12)
             - (25 if prior_abort else 0)
@@ -304,6 +335,10 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
                 - state["healthy_coverage"]["branches"],
             "new_production_methods": state["coverage_union"]["methods"]
                 - state["healthy_coverage"]["methods"],
+            "global_related_io_selector_union_size": len(state.get("related_io_union", [])),
+            "last_8_effective_global_io_novelty": sum(
+                trial.get("global_new_related_io_selectors", 0)
+                for trial in effective[-8:]),
             "target_line_136_coverage": state["coverage_union"]["target"],
             "queue_length": len(state["queue"]),
             "budget": {"effective_trials": MAX_EFFECTIVE, "max_attempts": MAX_ATTEMPTS,
@@ -323,13 +358,14 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
 def main() -> None:
     if CHECKPOINT.exists():
         state = json.loads(CHECKPOINT.read_text())
+        migrate_global_io(state)
         if state.get("selection_policy") != SELECTION_POLICY:
             # Backfill only accepted feedback. Target-lost logs remain raw
             # evidence and do not influence kind weights or queue mutation.
             for trial in state["trials"]:
                 if (trial["effective"] and int(trial["id"][1:]) >= CALIBRATION_FIRST_TRIAL
                         and "new_related_io_selectors" not in trial):
-                    trial["new_related_io_selectors"] = admitted_new_io(
+                    trial["new_related_io_selectors"] = baseline_relative_io(
                         state, parse_log(CASE / trial["log"]))
                 else:
                     trial.setdefault("new_related_io_selectors", 0)
@@ -350,6 +386,7 @@ def main() -> None:
                 "exception_kind_weights": weights,
                 "exception_kind_feedback": feedback,
                 "minimum_kind_share": MIN_KIND_SHARE,
+                "io_feedback": "accepted cross-trial selector union; historical baseline-relative field retained",
             })
             state["selection_policy"] = SELECTION_POLICY
         if not state.get("target_loss_migration_applied"):
@@ -396,11 +433,17 @@ def main() -> None:
                  "coverage_union": baseline,
                  "coverage_execs": [str(HERE / "logs" / "actor-healthy.exec")],
                  "trials": [], "queue": [], "seen_plans": [],
-                 "selection_policy": SELECTION_POLICY}
+                 "selection_policy": SELECTION_POLICY,
+                 "related_io_union": sorted({event["selector"] for event in healthy["io"]})}
         enqueue(state, [], healthy, -1, 0, healthy["elapsed_seconds"])
         publish(state)
     prune_queue(state)
     publish(state)
+    if os.environ.get("HBASE32_INIT_ONLY") == "1":
+        print("HBASE32 initialized", len(state["trials"]),
+              sum(trial["effective"] for trial in state["trials"]),
+              "queue", len(state["queue"]), flush=True)
+        return
     while (len([trial for trial in state["trials"] if trial["effective"]]) < MAX_EFFECTIVE
            and len(state["trials"]) < MAX_ATTEMPTS and state["queue"]):
         trial_id = "r%03d" % (len(state["trials"]) + 1)
@@ -463,6 +506,8 @@ def main() -> None:
         coverage_present = exec_file.is_file() and exec_file.stat().st_size > 0
         effective = strict and bool(guards) and coverage_present and not invalid_cluster
         coverage_admitted = effective
+        observed_selectors = related_selectors(trace) if effective else set()
+        fresh_selectors = observed_selectors - set(state["related_io_union"])
         old_coverage = state["coverage_union"]
         new_coverage = old_coverage
         if effective:
@@ -496,7 +541,8 @@ def main() -> None:
                 "elapsed_seconds": trace["elapsed_seconds"],
                 "observed_io_events": len(trace["io"]),
                 "new_production_branches_and_methods": novelty,
-                "new_related_io_selectors": admitted_new_io(state, trace) if effective else 0,
+                "new_related_io_selectors": baseline_relative_io(state, trace) if effective else 0,
+                "global_new_related_io_selectors": len(fresh_selectors),
                 "log": str(log.relative_to(CASE)),
                 "disposition": ("unmatched" if not strict else
                                 "invalid_all_region_servers_aborted" if invalid_cluster else
@@ -505,9 +551,11 @@ def main() -> None:
                                 "junit_failure_requires_review" if unexpected else
                                 "expected_b7_abort" if b7 else "guard_return_or_other")}
         state["trials"].append(item)
+        if effective:
+            state["related_io_union"] = sorted(set(state["related_io_union"]) | observed_selectors)
         if effective and not timed_out:
             enqueue(state, entry["plan"], trace, trace["applied"][-1]["line"],
-                    novelty, trace["elapsed_seconds"] or 60)
+                    novelty, trace["elapsed_seconds"] or 60, fresh_selectors)
         prune_queue(state)
         publish(state)
         INFLIGHT.unlink(missing_ok=True)
