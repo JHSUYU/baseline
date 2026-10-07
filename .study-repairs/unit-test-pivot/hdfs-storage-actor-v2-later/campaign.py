@@ -222,7 +222,7 @@ def pick(state: dict) -> dict | None:
             pending = [c for c in entry["cases"]
                        if progress.get(c, 0) < state["budget"]["goal_by_case"].get(c, 80)]
             deficit = frontier - min((progress.get(c, 0) for c in pending), default=frontier)
-            file_penalty = 1000 if (target_lost_file >= 3 and
+            file_penalty = 1000 if (target_lost_file >= 1 and
                                     "FILE:" in entry["sequence"][-1]["marker"]) else 0
             return (entry["score"] + 300 * deficit - file_penalty,
                     len(entry["sequence"]), -i)
@@ -356,16 +356,22 @@ def advance_goals(state: dict) -> None:
 
 
 def campaign(group: str, anchor: Path, max_attempts: int, timeout: int,
-             pause_after_first_effective: bool = False) -> dict:
+             pause_after_first_effective: bool = False,
+             max_new_completions: int | None = None) -> dict:
     case, cases = GROUPS[group]
     receipt = json.loads((anchor / "healthy_receipt.json").read_text())
     if not receipt["pass"] or receipt["group"] != group:
         raise RuntimeError("two healthy calibrations have not passed")
     state = load_state(anchor, group, receipt, max_attempts)
     state_path = anchor / "campaign-state.json"
+    completed_at_start = len(state["completion_order"])
     state["status"] = "running"
     write_json(state_path, state)
     while len(state["completion_order"]) < max_attempts:
+        if (max_new_completions is not None and
+                len(state["completion_order"]) - completed_at_start >= max_new_completions):
+            state["status"] = "batch_pause"
+            break
         if pause_after_first_effective and any(state["effective_by_case"].values()):
             state["status"] = "first_effective_pause"
             break
@@ -442,9 +448,13 @@ def main() -> None:
     parser.add_argument("--timeout", type=int, default=360)
     parser.add_argument("--pause-after-first-effective", action="store_true",
                         help="Stop after the first strict same-actor postfault target")
+    parser.add_argument("--max-new-completions", type=int,
+                        help="Pause at a complete plan boundary after this many new plans")
     args = parser.parse_args()
+    if args.max_new_completions is not None and args.max_new_completions < 1:
+        parser.error("--max-new-completions must be positive")
     state = campaign(args.group, args.output.resolve(), args.max_attempts, args.timeout,
-                     args.pause_after_first_effective)
+                     args.pause_after_first_effective, args.max_new_completions)
     print(json.dumps({"group": args.group, "status": state["status"],
                       "completed": len(state["completion_order"]),
                       "effective_by_case": state["effective_by_case"],
