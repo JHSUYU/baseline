@@ -8,6 +8,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
+import audit_campaign
 import fuzz_rpc
 import run_stages as stages
 
@@ -59,6 +60,22 @@ class StageCheckpointTest(unittest.TestCase):
             fuzz_rpc.write_plan(plan, [fuzz_rpc.step(selected, 'TIMEOUT')])
             self.assertIn('step.1.senderKey=' + selected['senderKey'],
                           plan.read_text())
+
+    def test_http_io_family_retains_sender_and_child(self) -> None:
+        event = {'event': 'IO_OBSERVED',
+                 'marker': 'FAULT:HTTP:parentForwardDeleteById',
+                 'siteId': 'SolrCmdDistributor.submit#L309',
+                 'senderKey': 'SOLR/PARENT/collection1/shard1/core_node3',
+                 'sourceKey': 'SOLR/SUBSHARD/collection1/shard1_0/core_node11',
+                 'resource': '/update/DeleteById/collection1/shard1_0/core_node11',
+                 'hitOrdinal': 1}
+        with tempfile.TemporaryDirectory(prefix='solr-http-family-') as scratch:
+            directory = Path(scratch)
+            (directory / 'events.jsonl').write_text(json.dumps(event) + '\n')
+            families = audit_campaign.rpc_families(directory)
+            self.assertEqual(len(families), 1)
+            self.assertIn(event['senderKey'], next(iter(families)))
+            self.assertIn(event['sourceKey'], next(iter(families)))
 
     def test_pilot_monotonically_reaches_80_effective(self) -> None:
         with tempfile.TemporaryDirectory(prefix='solr-http-stage-') as scratch:
