@@ -1,12 +1,51 @@
 {
-  "baseline_seconds": 186.909,
+  "actor_v2": {
+    "actor_bound_io_family_gain": 2,
+    "agent_sha256": "1a3d961abbd0f2bc9195401a03937fa548a5a04fa5415b410b6a7545ba798cb9",
+    "budget": {
+      "max_attempts": 512,
+      "max_faults": 10,
+      "max_trials": 128
+    },
+    "campaign_elapsed_seconds": 8201.066,
+    "effective_trials": 128,
+    "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-31/independent/actor-v2/campaign/audit-v2.json",
+    "exact_target_throw_after_fault_trials": 0,
+    "healthy_elapsed_seconds": 118.485,
+    "last8_effective_novelty": false,
+    "lost_target_sequences": [
+      113
+    ],
+    "nonpassing_effective_trials": [
+      110,
+      118,
+      127
+    ],
+    "original_test_class_sha256": "c774977ad4e1b6ca583ccc8b34d055bbec91d445f1dbdc7c732647e4c04ae8cb",
+    "original_test_source_sha256": "c9e660ce598703f618b00ff93dbb6e305e166686e8752d031caf7d75f580105f",
+    "passing_junit_trials": 125,
+    "post_fault_target_reach_trials": 128,
+    "production_branch_outcomes_gain": 205,
+    "production_methods_gain": 91,
+    "production_probe_gain": 580,
+    "raw_trial_archive": ".study-repairs/unit-test-pivot/cases/SOLR-31/independent/actor-v2/campaign/raw-trials-v2.tar.zst",
+    "raw_trial_archive_files": 1032,
+    "raw_trial_archive_sha256": "4b912e6ab70a1d334858fb8f3ce847cc9f0b2670f3e562d4a24afa7205d8e7f1",
+    "release_solr_core_jar_sha256": "e83db498c6af8f3eca14483ab42fd9fe30bbf795ceacab3b4d5eaa66f2461536",
+    "selected_sequences": 129,
+    "stable_pre_guard_actor_bound_selectors": 5,
+    "status": "budget_complete",
+    "strict_injections": 129,
+    "total_junit_attempts": 129
+  },
+  "baseline_seconds": 118.485,
   "bug_mark": "none",
   "case_id": "SOLR-31",
   "cluster_test": "org.apache.solr.cloud.ForceLeaderTest#testReplicasInLowerTerms",
-  "coverage_gain": 0,
-  "elapsed_seconds": 0.0,
-  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-31/independent/REVIEW.md",
-  "fault_trials": 0,
+  "coverage_gain": 580,
+  "elapsed_seconds": 8201.066,
+  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-31/independent/actor-v2/campaign/audit-v2.json",
+  "fault_trials": 128,
   "healthy_repeat": {
     "elapsed_seconds": 47.161,
     "eligible_exact_collection_io_before_target": 1266,
@@ -28,7 +67,7 @@
     "target_guard_hits": 1,
     "target_throw_hits": 0
   },
-  "io_family_gain": 0,
+  "io_family_gain": 2,
   "legacy_coarse_actor": {
     "calibration": {
       "elapsed_seconds": 52.883,
@@ -1060,12 +1099,12 @@
     "target_exception_after_fault_trials": 0
   },
   "methodology": "coverage_io_independent_asm_jacoco",
-  "post_fault_target_reach_trials": 0,
-  "production_branch_outcomes_gain": 0,
-  "production_methods_gain": 0,
-  "quality_complete": false,
+  "post_fault_target_reach_trials": 128,
+  "production_branch_outcomes_gain": 205,
+  "production_methods_gain": 91,
+  "quality_complete": true,
   "raw_io_family_gain": 0,
-  "reason": "Actor identity recheck pending; previous campaign is preserved under legacy_coarse_actor.",
+  "reason": "Actor-bound original ForceLeader JUnit V2 completed with 128 effective target-preserving trials; zero exact active-leader guard exceptions. Three target-preserving trials had later HTTP response timeouts, and one selected sequence lost the target. This is a bounded ZooKeeper I/O result; legacy coarse-actor trials remain non-credit.",
   "source_review": {
     "classification": "no_target_exception_observed",
     "file": "solr/core/src/java/org/apache/solr/handler/admin/CollectionsHandler.java",
@@ -1075,10 +1114,10 @@
     "target": "new SolrException if ClusterState slice leader exists and is ACTIVE"
   },
   "stable_direct_target_window_selectors": 0,
-  "status": "actor_identity_recheck_pending",
-  "strict_injections": 0,
-  "target_after_fault": 0,
+  "status": "quality_complete",
+  "strict_injections": 128,
+  "target_after_fault": 128,
   "target_exception_after_fault_trials": 0,
   "target_reached": true,
-  "updated_at": 1791331895.4851396
+  "updated_at": 1791362852.0087976
 }
