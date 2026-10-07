@@ -300,6 +300,27 @@ def main() -> None:
         offload(item)
     assert not state['finished'] or state['effective'] >= state['budget']
     while not state['finished'] and not STOP:
+        if state.get('awaiting_extension_review'):
+            decision = state.get('extension_decision')
+            if decision == 'extend':
+                state['budget'] = 128
+                state['max_faults'] = 10
+                state['extension_applied'] = True
+                state['awaiting_extension_review'] = False
+                state.pop('pause_reason', None)
+                for item in state['trials']:
+                    if item['effective'] and item['fault_count'] == 8:
+                        expand_feedback(state, item)
+                atomic_json(STATE, state)
+            elif decision == 'stop':
+                state['finished'] = True
+                state['stop_reason'] = '80_effective_trial_budget_complete_after_source_review'
+                state['awaiting_extension_review'] = False
+                atomic_json(STATE, state)
+                break
+            else:
+                print('late extension signal awaits source review', flush=True)
+                break
         free = shutil.disk_usage('/').free
         if free <= MIN_FREE_BYTES:
             state['pause_reason'] = 'node0_free_bytes_{}_below_2.2GiB_plus_16MiB_guard'.format(free)
@@ -313,14 +334,10 @@ def main() -> None:
                 signal_ = late_signal(state)
                 state['late_extension_signal'] = signal_
                 if signal_['extend']:
-                    state['budget'] = 128
-                    state['max_faults'] = 10
-                    state['extension_applied'] = True
-                    for item in state['trials']:
-                        if item['effective'] and item['fault_count'] == 8:
-                            expand_feedback(state, item)
+                    state['awaiting_extension_review'] = True
+                    state['pause_reason'] = 'late_extension_signal_needs_source_review'
                     atomic_json(STATE, state)
-                    continue
+                    break
             state['finished'] = True
             state['stop_reason'] = '{}_effective_trial_budget_complete'.format(state['budget'])
             atomic_json(STATE, state)

@@ -25,6 +25,14 @@ def main() -> int:
         if state['finished']:
             print(stamp(), 'campaign finished', state.get('stop_reason'), flush=True)
             return 0
+        if state.get('awaiting_extension_review') and not state.get('extension_decision'):
+            print(stamp(), 'waiting for late-signal source review', flush=True)
+            time.sleep(20)
+            continue
+        if state.get('pause_reason') == 'node0_resource_isolation_for_HBASE32U_s113_replay':
+            print(stamp(), 'waiting for node0 isolation release', flush=True)
+            time.sleep(20)
+            continue
         free = shutil.disk_usage('/').free
         if free < RESUME_FREE_BYTES:
             print(stamp(), 'waiting for 2.25 GiB node0 free; current', free, flush=True)
