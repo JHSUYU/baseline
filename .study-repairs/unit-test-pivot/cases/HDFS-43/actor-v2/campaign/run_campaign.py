@@ -437,6 +437,7 @@ def analyze(number: int, item: dict, out: Path, manifest: dict,
     new_family = {family_id(p) for p in observed} - family_union if valid else set()
     result = {"trial": number, "id": f"trial-{number:03d}",
               "sequence_id": item["id"], "selection_reason": item["reason"],
+              "selection_policy": item.get("selection_policy", "legacy_score"),
               "sequence": selected, "requested_faults": len(selected),
               "matched_faults": len(matched), "applied_faults": len(applied),
               "strict_injection": strict, "role_map_confirmed": mapped,
@@ -502,13 +503,25 @@ def mutate(state: dict, row: dict) -> None:
 def choose(state: dict) -> dict:
     queue = state["queue"]
     age = len(state["completed"])
-    ranked = sorted(queue, key=lambda item: -(
+    pool = queue
+    selection_policy = "coverage_io_score"
+    policy = state.get("selection_policy")
+    if policy and age >= policy["start_after_completed"] and (
+            (age - policy["start_after_completed"]) %
+            policy["client_every_nth_selection"] == 0):
+        client = [item for item in queue
+                  if item["sequence"][-1]["api"] == "truncate"]
+        if client:
+            pool = client
+            selection_policy = "client_truncate_diversity_quota"
+    ranked = sorted(pool, key=lambda item: -(
         item["score"] + min(age - item["queued_at"], 80)))
     top = ranked[:min(16, len(ranked))]
     rng = random.Random(0x430043 + age)
     weights = [max(1, item["score"] - top[-1]["score"] + 10) for item in top]
     selected = rng.choices(top, weights=weights, k=1)[0]
     queue.remove(selected)
+    selected["selection_policy"] = selection_policy
     return selected
 
 
@@ -549,6 +562,7 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
                   sum(r["elapsed_seconds"]
                                             for r in completed), 3),
               "budget": state["budget"], "extended": state["extended"],
+              "selection_policy": state.get("selection_policy"),
               "stop_reason": state["stop_reason"],
               "checkpoint": str(STATE), "ledger": str(LEDGER),
               "updated_at_utc": now(),

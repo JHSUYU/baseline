@@ -193,6 +193,9 @@ def run(limit: int = 0) -> dict:
         out = CAMP / label
         row = read(out / "trial-result.json")
         require(row == checkpoint_row, f"{label}: checkpoint/row mismatch", problems)
+        if row.get("selection_policy") == "client_truncate_diversity_quota":
+            require(row["sequence"][-1].get("api") == "truncate",
+                    f"{label}: client quota selected a different API", problems)
         plan = (CAMP / "plans" / (label + ".tsv")).read_text()
         expected_plan = "".join("\t".join(str(p[k]) for k in SELECTOR) + "\n"
                                 for p in row["sequence"])

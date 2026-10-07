@@ -69,6 +69,15 @@ node2 owners.
 campaign. It resumes the same checkpoint after a temporary node2 resource
 gate pause, and exits for a candidate or a terminal budget decision.
 
+After trial 18, the original coverage/I/O score had selected DN block reports
+for every last fault while client truncate RPC plans remained queued. At that
+complete boundary, `campaign/migrate_api_diversity.py` preserved the completed
+trials, queue, and seen selectors, then reserved every fourth subsequent
+selection slot for a queued client truncate RPC. All other slots keep the
+original score and waiting-age ranking. The before/after checkpoints and
+receipt record the change; strict injection, actor matching, oracle, and
+coverage admission rules remain the same.
+
 ## Setup status
 
 The six released source files were copied into this case and match the clean
