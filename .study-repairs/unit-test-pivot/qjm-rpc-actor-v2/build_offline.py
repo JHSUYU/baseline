@@ -34,6 +34,27 @@ def exact_replace(text: str, old: str, new: str) -> str:
 def adapted_probe(case: str) -> str:
     source = (BASE / f"HDFS-{case}" / "independent/src" /
               f"Hdfs{case}Probe.java").read_text()
+    source = exact_replace(source, "  private static long seq;",
+                           "  private static long seq;\n  private static int nextFault;")
+    source = exact_replace(source,
+        'q(Thread.currentThread().getName()) + fields + "}\\n");',
+        'q(Thread.currentThread().getName()) + ",\\\"threadId\\\":"'
+        ' + Thread.currentThread().getId() + fields + "}\\n");')
+    source = exact_replace(source,
+        '        if (fault[4].equals("applied")) continue;\n'
+        '        fault[4] = "applied";\n'
+        '      }\n'
+        '      String kind = fault[5];\n'
+        '      emit("FAULT_MATCHED", fields + ",\\"faultIndex\\":" + i + ",\\"faultType\\":" + q(kind));\n'
+        '      emit("FAULT_APPLIED", fields + ",\\"faultIndex\\":" + i + ",\\"faultType\\":" + q(kind));',
+        '        if (i != nextFault || fault[4].equals("applied")) continue;\n'
+        '        fault[4] = "applied";\n'
+        '        nextFault++;\n'
+        '        String kind = fault[5];\n'
+        '        emit("FAULT_MATCHED", fields + ",\\"faultIndex\\":" + i + ",\\"faultType\\":" + q(kind));\n'
+        '        emit("FAULT_APPLIED", fields + ",\\"faultIndex\\":" + i + ",\\"faultType\\":" + q(kind));\n'
+        '      }\n'
+        '      String kind = fault[5];')
     old = re.search(r"  public static void ipcResponse\(\) throws IOException \{.*?\n  \}",
                     source, re.DOTALL)
     if old is None:
@@ -60,10 +81,15 @@ def adapted_probe(case: str) -> str:
         field = "allowed" if case == "09" else "epochsEqual"
         old_field = f'        + ",\\"{field}\\":"'
         new_field = ('        + ",\\"journalNode\\":" + q(QjmRpcActor.targetActor())'
+                     ' + ",\\"journalId\\":" + q(req.getJournalId())'
                      f' + ",\\"{field}\\":"')
         source = exact_replace(source, old_field, new_field)
-        # The return/throw records follow the same thread-bound check. The check
-        # event itself carries the actor used for strict post-fault matching.
+        source = exact_replace(source,
+            'emit("TARGET_THROW", ",\\"siteId\\":',
+            'emit("TARGET_THROW", ",\\"journalNode\\":" + q(QjmRpcActor.targetActor())'
+            ' + ",\\"siteId\\":')
+        # The throwing edge is independently actor-bound; the check also carries
+        # the journal ID and must precede it on the same JVM thread.
     return source
 
 

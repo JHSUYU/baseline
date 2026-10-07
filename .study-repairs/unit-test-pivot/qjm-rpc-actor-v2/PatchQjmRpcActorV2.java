@@ -17,7 +17,6 @@ import org.objectweb.asm.tree.VarInsnNode;
 public final class PatchQjmRpcActorV2 implements Opcodes {
   private static final String CLIENT = "org/apache/hadoop/ipc/Client";
   private static final String CONNECTION = CLIENT + "$Connection";
-  private static final String CONNECTION_ID = CLIENT + "$ConnectionId";
   private static final String SERVER = "org/apache/hadoop/hdfs/qjournal/server/JournalNodeRpcServer";
   private static final String JOURNAL_NODE = "org/apache/hadoop/hdfs/qjournal/server/JournalNode";
   private static final String JOURNAL = "org/apache/hadoop/hdfs/qjournal/server/Journal";
@@ -38,12 +37,10 @@ public final class PatchQjmRpcActorV2 implements Opcodes {
       MethodInsnNode old = (MethodInsnNode) instruction;
       if (!old.owner.equals(probe) || !old.name.equals("ipcResponse") || !old.desc.equals("()V"))
         continue;
-      // Client is the outer class; access$1900 is the Java 8 synthetic accessor
-      // for private Connection.remoteId. Local 2 is the actual RPC connection.
+      // Local 2 is the actual RPC connection; use its resolved server address.
       InsnList replacement = new InsnList();
       replacement.add(new VarInsnNode(ALOAD, 2));
-      replacement.add(call(CONNECTION, "access$1900", "(L" + CONNECTION + ";)L" + CONNECTION_ID + ";"));
-      replacement.add(new MethodInsnNode(INVOKEVIRTUAL, CONNECTION_ID, "getAddress",
+      replacement.add(new MethodInsnNode(INVOKEVIRTUAL, CONNECTION, "getRemoteAddress",
           "()Ljava/net/InetSocketAddress;", false));
       replacement.add(new MethodInsnNode(INVOKEVIRTUAL, "java/net/InetSocketAddress", "getPort", "()I", false));
       replacement.add(call(probe, "ipcResponse", "(I)V"));
