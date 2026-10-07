@@ -14,6 +14,15 @@ LOCAL_STATE = HERE / "evidence/v3-campaign-node1-mirror/state.json"
 REMOTE_CASE = "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-19"
 REMOTE = "ZhenyuLi@node1:"
 SSH = "ssh -i /users/ZhenyuLi/.ssh/id_ed25519_nodes -o IdentitiesOnly=yes -o BatchMode=yes"
+TERMINAL = {"quality_complete", "source_excluded", "no_cluster_test",
+            "target_not_reached_no_suitable_original_test"}
+
+
+def local_terminal() -> bool:
+    if not LOCAL_RESULT.exists():
+        return False
+    result = json.loads(LOCAL_RESULT.read_text())
+    return result.get("quality_complete") is True or result.get("status") in TERMINAL
 
 
 def fetch(remote: str, target: Path) -> bool:
@@ -48,6 +57,9 @@ def fetch(remote: str, target: Path) -> bool:
 def main() -> None:
     print("SOLR-19 node1 result mirror started", flush=True)
     while not (HERE / "STOP_RESULT_SYNC").exists():
+        if local_terminal():
+            print("SOLR-19 terminal result retained; mirror stopped", flush=True)
+            break
         if fetch(REMOTE_CASE + "/result.json", LOCAL_RESULT):
             fetch(REMOTE_CASE + "/independent/actor_v2/evidence/v3-campaign/state.json",
                   LOCAL_STATE)
