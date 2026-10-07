@@ -1,13 +1,62 @@
 {
-  "case_id": "HDFS-29",
-  "status": "test_identified",
-  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "case_id": "HDFS-29",
+  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
+  "coverage_gain": 288,
+  "coverage_scope": "phase_v4_rpc_and_replica_file_io_only",
+  "elapsed_seconds": 3718.332,
+  "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/campaign-state.json; per-trial exact selector, JUnit, target, and JaCoCo evidence in /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/runs; prior RPC-only pilot in /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-29/legacy-rpc-result.json",
+  "fault_trials": 128,
+  "fully_applied_trials": 63,
+  "independent_campaign": {
+    "branch_count_gain": 129,
+    "budget": {
+      "max_faults": 10,
+      "max_trials": 128
+    },
+    "coverage_scope": "phase_v4_rpc_and_replica_file_io_only",
+    "default_trial_timeout_seconds_after_trial_4": 180,
+    "file_phase_calibration": {
+      "elapsed_seconds": 22.713,
+      "file_points": 16,
+      "historical_file_fault_phases_inferred": [
+        "initReplicaRecovery",
+        "initReplicaRecovery",
+        "updateReplicaUnderRecovery",
+        "initReplicaRecovery",
+        "initReplicaRecovery",
+        "initReplicaRecovery",
+        "initReplicaRecovery"
+      ],
+      "inference": "released source puts replica init before HDFS-29 and local replica update after it; original JUnit calibration confirms ordinals 1 versus 2/3",
+      "init_points": 8,
+      "local_update_points": 8,
+      "seed": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-phase"
+    },
+    "final_audit": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/final-audit.json",
+    "legacy_rpc_pilot": {
+      "elapsed_seconds": 509.569,
+      "fault_trials": 13,
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-29/legacy-rpc-result.json",
+      "strict_injections": 6,
+      "target_after_fault": 2
+    },
+    "method_gain": 57,
+    "production_probe_gain": 288,
+    "raw_archive_receipt": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/raw-evidence-receipt.json",
+    "shared_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/campaign-state.json",
+    "shared_healthy": [
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-pilot",
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-pilot-b",
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-phase"
+    ],
+    "strict_target_trials": 39,
+    "target_exception_candidates": 0
+  },
+  "methodology": "original_junit_case_local_asm_jacoco_graph_free",
+  "status": "quality_complete",
+  "strict_injections": 63,
+  "target_after_fault": 39,
+  "target_exception_after_fault_trials": 0,
+  "target_reached": true
 }

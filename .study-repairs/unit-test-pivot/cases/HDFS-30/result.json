@@ -1,13 +1,103 @@
 {
-  "case_id": "HDFS-30",
-  "status": "test_identified",
-  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "case_id": "HDFS-30",
+  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
+  "cluster_tests": [
+    "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
+    "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization"
+  ],
+  "conclusion": "No selected HDFS-30 IOException observed after strict same-identity target retention in either bounded campaign; 60 queued HA sequences remain untested.",
+  "coverage_gain": {
+    "ha_supplement_probes": 22,
+    "main_v4_probes": 288
+  },
+  "coverage_scope": "separate_production_jacoco_unions_per_original_junit; gains are not deduplicated across tests",
+  "elapsed_seconds": 4689.058,
+  "evidence": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/final-audit.json; .study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/raw-evidence-receipt.json; .study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-final-audit.json; .study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-raw-evidence-receipt.json; legacy RPC-only pilot separate in .study-repairs/unit-test-pivot/cases/HDFS-30/legacy-rpc-result.json",
+  "fault_trials": 152,
+  "fully_applied_trials": 74,
+  "ha_supplement": {
+    "checkpoint": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-campaign-state.json",
+    "cluster": "3 NameNodes + 3 DataNodes",
+    "covered_branch_count_gain": 5,
+    "fault_trial_elapsed_seconds": 970.726,
+    "fault_trials": 24,
+    "final_audit": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-final-audit.json",
+    "healthy_calibration_elapsed_seconds": 179.793,
+    "healthy_seed": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/healthy-active1-v2",
+    "ledger": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-trial-ledger.csv",
+    "location": "node2",
+    "method_gain": 1,
+    "note": "Original embedded-cluster JUnit operations and assertions unchanged. The two node0 no-fault timeouts are calibration only and not target-valid trials.",
+    "owner_test": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+    "production_probe_gain": 22,
+    "raw_archive_receipt": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-raw-evidence-receipt.json",
+    "same_identity_oracle": "same DataNode, block ID, recovery ID and within-run block pool; target check must follow final applied fault; fatal guard plus exact target IOException required for bug candidate",
+    "status": "complete",
+    "status_counts": {
+      "original_junit_pre_failover_flake": 6,
+      "target_lost_or_owner_changed": 9,
+      "target_retained_nonfatal": 2,
+      "unmatched_or_partial": 1,
+      "unmatched_schedule": 6
+    },
+    "stop_reason": "attempt_budget_reached",
+    "strict_injections": 11,
+    "target_after_fault": 2,
+    "target_exception_candidates": 0,
+    "untried_queued_sequences": 60
+  },
+  "independent_campaign": {
+    "branch_count_gain": 129,
+    "budget": {
+      "max_faults": 10,
+      "max_trials": 128
+    },
+    "coverage_scope": "phase_v4_rpc_and_replica_file_io_only",
+    "default_trial_timeout_seconds_after_trial_4": 180,
+    "file_phase_calibration": {
+      "elapsed_seconds": 22.713,
+      "file_points": 16,
+      "historical_file_fault_phases_inferred": [
+        "initReplicaRecovery",
+        "initReplicaRecovery",
+        "updateReplicaUnderRecovery",
+        "initReplicaRecovery",
+        "initReplicaRecovery",
+        "initReplicaRecovery",
+        "initReplicaRecovery"
+      ],
+      "inference": "released source puts replica init before HDFS-29 and local replica update after it; original JUnit calibration confirms ordinals 1 versus 2/3",
+      "init_points": 8,
+      "local_update_points": 8,
+      "seed": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-phase"
+    },
+    "final_audit": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/final-audit.json",
+    "legacy_rpc_pilot": {
+      "elapsed_seconds": 509.569,
+      "fault_trials": 13,
+      "result": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-30/legacy-rpc-result.json",
+      "strict_injections": 6,
+      "target_after_fault": 2
+    },
+    "method_gain": 57,
+    "production_probe_gain": 288,
+    "raw_archive_receipt": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/raw-evidence-receipt.json",
+    "shared_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/campaign-state.json",
+    "shared_healthy": [
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-pilot",
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-pilot-b",
+      "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/healthy-file-phase"
+    ],
+    "strict_target_trials": 39,
+    "target_exception_candidates": 0
+  },
+  "methodology": "original_junit_case_local_asm_jacoco_graph_free",
+  "status": "quality_complete",
+  "strict_injections": 74,
+  "target_after_fault": 41,
+  "target_exception_after_fault_trials": 0,
+  "target_reached": true,
+  "total_elapsed_seconds": 4868.851,
+  "trial_count_scope": "128 V4 recovery trials + 24 HA heartbeat trials; older 13-trial RPC pilot excluded"
 }
