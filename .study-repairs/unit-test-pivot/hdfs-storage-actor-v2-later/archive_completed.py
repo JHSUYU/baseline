@@ -50,17 +50,19 @@ def archive_path(anchor: Path, manifest: dict) -> Path:
     return anchor / "archives" / manifest["archive_name"]
 
 
-def prepare(anchor: Path, count: int) -> Path:
+def prepare(anchor: Path, start: int, count: int) -> Path:
     state_path = anchor / "campaign-state.json"
     state = json.loads(state_path.read_text())
-    ids = state["completion_order"][:count]
+    if start < 1 or count < 1:
+        raise RuntimeError("archive range must be positive")
+    first, last = start, start + count - 1
+    ids = state["completion_order"][first - 1:last]
     if len(ids) != count or not ids:
         raise RuntimeError("requested count is not completed")
     if len(ids) != len(set(ids)) or any(i not in state["completed"] for i in ids):
         raise RuntimeError("checkpoint completed IDs are inconsistent")
     if any(i == (state.get("in_flight") or {}).get("id") for i in ids):
         raise RuntimeError("in-flight trial appears in archive selection")
-    first, last = 1, count
     prefix = f"rollback-{first:04d}-{last:04d}"
     directory = anchor / "archives"
     directory.mkdir(exist_ok=True)
@@ -99,6 +101,7 @@ def prepare(anchor: Path, count: int) -> Path:
     manifest = {"schema": "hdfs-storage-v2-completed-archive-1",
                 "created_at_utc": datetime.now(timezone.utc).isoformat(),
                 "source_host": socket.gethostname(), "completed_count": count,
+                "first_index": first, "last_index": last,
                 "sequence_ids": ids, "checkpoint_sha256": sha(state_path),
                 "archive_name": tar_path.name, "archive_sha256": archive_sha,
                 "archive_bytes": archive_bytes, "files": files}
@@ -155,7 +158,9 @@ def prune(anchor: Path, manifest_path: Path, remote_receipt_path: Path) -> Path:
     if sha(archive_path(anchor, manifest)) != manifest["archive_sha256"]:
         raise RuntimeError("local archive SHA changed")
     state = json.loads((anchor / "campaign-state.json").read_text())
-    if (state["completion_order"][:manifest["completed_count"]] != manifest["sequence_ids"]
+    first = manifest.get("first_index", 1)
+    last = manifest.get("last_index", manifest["completed_count"])
+    if (state["completion_order"][first - 1:last] != manifest["sequence_ids"]
             or any(i not in state["completed"] for i in manifest["sequence_ids"])):
         raise RuntimeError("completed checkpoint prefix changed")
     files = {item["path"]: item for item in manifest["files"]}
@@ -215,6 +220,7 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("action", choices=("prepare", "verify", "prune"))
     parser.add_argument("anchor", type=Path)
+    parser.add_argument("--start", type=int, default=1)
     parser.add_argument("--count", type=int)
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--remote-receipt", type=Path)
@@ -223,7 +229,7 @@ def main() -> None:
     if args.action == "prepare":
         if args.count is None:
             parser.error("prepare requires --count")
-        path = prepare(args.anchor, args.count)
+        path = prepare(args.anchor, args.start, args.count)
     elif args.action == "verify":
         if args.manifest is None:
             parser.error("verify requires --manifest")
