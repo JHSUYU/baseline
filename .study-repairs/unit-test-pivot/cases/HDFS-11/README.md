@@ -1,20 +1,36 @@
 # HDFS-11: encrypted transfer key lookup
 
-**Actor V2 recheck in progress.** The 208 archived fault trials and their
-reported coverage/time remain historical observations. Their SASL selector
-hard-coded `hdfs/datanode/0` and a global call-site ordinal; the original JUnit
-creates two MiniDFSCluster incarnations, so the old trace cannot prove that
-each post-fault guard ran on the faulted DataNode incarnation. The isolated
-[V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual SASL server
-and key manager to the same DataNode/startup episode and block pool. Two fresh
-healthy original-JUnit seeds passed. The node1 fault campaign is paused at a
-completed JUnit boundary while a concurrent HBASE-32 long trial is classified.
-Its [pause receipt](../../hdfs-key-actor-v2/evidence/HDFS-11/coexistence-pause.json)
-records the finished manifest and checkpoint; it will resume in tmux
-`hdfs11_key_v2_fuzz`. The counts below are preserved from the earlier
-experiment and are not V2 completion counts.
+**Actor V2 recheck waiting for a node1 JVM slot.** Two fresh original Hadoop
+3.4.3 JUnit seeds of
+`TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]` passed.
+The isolated [V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual
+SASL receiver and key manager to the same DataNode startup episode and block
+pool. Its [54-attempt raw audit](actor-v2-segment-54-attempts.json) verifies 54
+fully ordered fault sequences, 29 strict same-actor target-retaining sequences,
+and zero selected `InvalidEncryptionKeyException` throws. The 25 other
+sequences cause an injected-I/O checksum failure before a later target check;
+they are recorded but not effective. The audit hashes each original JUnit
+manifest, raw trace, fault plan, result, and JaCoCo file. It reports 238 added
+probes, 28 methods, and 123 branch-count buckets relative to healthy seed A,
+and no new I/O family beyond the two healthy seeds' union. The already
+finished in-flight JUnit manifest from the
+[coexistence pause](../../hdfs-key-actor-v2/evidence/HDFS-11/coexistence-pause.json)
+was consumed without starting another JVM, moving the durable node1 checkpoint
+from 53/28 to 54/29. The new
+[supervisor](../../hdfs-key-actor-v2/run_hdfs11_budget_gate.py) will resume that checkpoint in
+tmux `hdfs11_key_v2_fuzz` only when its startup gate sees fewer than five Java
+processes. The budget remains 80 effective sequences with up to eight faults,
+conditionally extending to 128/ten for recent new coverage or I/O.
 
-The current campaign runs the original Hadoop 3.4.3 embedded-cluster JUnit
+## Historical campaigns
+
+The 208 archived fault trials and their reported coverage/time remain
+historical observations. Their SASL selector hard-coded `hdfs/datanode/0` and
+a global call-site ordinal; the original JUnit creates two MiniDFSCluster
+incarnations, so those traces cannot prove that each post-fault guard ran on
+the faulted DataNode incarnation. The counts below are excluded from V2.
+
+The archived campaign ran the original Hadoop 3.4.3 embedded-cluster JUnit
 `TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]` in a
 fresh test directory for each trial. Its `MiniDFSCluster` has one NameNode and
 one DataNode. The healthy original JUnit passed, and the independent

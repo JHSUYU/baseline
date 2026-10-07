@@ -112,6 +112,11 @@ finished JUnit manifest for the next in-flight plan; restart consumed that
 manifest without rerunning the JUnit. At 2026-10-07 05:03:34 UTC the campaign
 paused at another completed JUnit boundary for a node1 coexistence audit:
 53 completed/28 effective, with the next JUnit manifest already finished.
-The [pause receipt](evidence/HDFS-11/coexistence-pause.json) fixes this exact
-resume point. HDFS-12 has not yet started a V2 JUnit on node1 and remains
-separate from the HDFS-11 campaign.
+The [pause receipt](evidence/HDFS-11/coexistence-pause.json) fixes that
+boundary. The finished manifest has since been consumed without launching a
+new JVM; the node1 HDFS-11 checkpoint is now 54 completed/29 effective. The
+[54-attempt audit](../cases/HDFS-11/actor-v2-segment-54-attempts.json) checks
+the raw fault order, actor target, JaCoCo data, and artifact hashes. Resume
+under tmux with `run_hdfs11_budget_gate.py` only when its startup check sees
+fewer than five Java processes. HDFS-12 uses a separate producer-side overlay
+and has completed its [bounded V2 budget](../cases/HDFS-12/README.md).
