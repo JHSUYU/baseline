@@ -5,6 +5,11 @@ Status: isolated producer overlay compiled and passed offline verification;
 overlay/checkpoint intact, and wait for node1's explicit handoff before
 starting a cluster.
 
+The machine-readable [node1 calibration plan](actor-v2-calibration-plan.json)
+pins the original `[0]` JUnit method, current overlay/JAR hashes, separate
+seed output paths, sequential commands, and the required producer identity
+gate. Its execution count is zero until node1 releases a slot.
+
 ## Original workload and target
 
 Use the released Hadoop 3.4.3 `TestEncryptedTransfer#testLongLivedClient[0]`
