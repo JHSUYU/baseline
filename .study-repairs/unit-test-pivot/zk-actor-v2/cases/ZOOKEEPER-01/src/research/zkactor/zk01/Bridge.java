@@ -170,7 +170,9 @@ public final class Bridge {
       synchronized (Bridge.class) {
         if (!clusterBound || !PEER_SIDS.contains(sid) || sid != selectedLeader) return null;
         REGISTRY.registerServer(server, sid);
-        return REGISTRY.target(server, "leader", session);
+        ActorRegistry.TargetIdentity identity = REGISTRY.target(server, "leader", session);
+        return identity.bound() && "creatorCloser".equals(identity.sessionTag)
+            ? identity : null;
       }
     } catch (Throwable failure) { error("target", failure); return null; }
   }

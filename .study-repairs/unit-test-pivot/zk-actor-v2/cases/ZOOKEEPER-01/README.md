@@ -24,7 +24,8 @@ excluded. On peer epoch-file operations it checks the actual peer receiver
 against the file's snapshot-directory owner. The selected target is
 `SessionTrackerImpl#checkSession` line 316, with the throw on line 317. Its
 `expirer` is the actual `ZooKeeperServer`; that server's quorum SID must equal
-the selected leader and the raw session must join one registered client.
+the selected leader and the raw session must join the first (`creatorCloser`)
+client. Checks on the later verifier session cannot count as the target.
 Unknown actor, server, session, destination, or file owner emits an `UNBOUND`
 event and cannot match an injection plan.
 
