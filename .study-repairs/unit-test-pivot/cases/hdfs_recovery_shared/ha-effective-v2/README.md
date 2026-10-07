@@ -61,9 +61,17 @@ fault matching, physical identity, postfault target visits, selected throws,
 coverage/I/O novelty, timing, and final unions. It writes `raw-audit.json`.
 An attempt cap with fewer than 80 effective trials is **inconclusive**.
 
-The code is prepared offline. **No fresh HA calibration or budget trial has
-been run in this directory yet.** The shared host slot must be released
-before the following commands are used:
+The first fresh instrumented healthy run failed the original JUnit's
+60-second timeout with no fault selected; its manifest, raw trace, JUnit log,
+JaCoCo output, and derived coverage are preserved under
+`failed-healthy/healthy-a-001`, with per-file hashes in `archive-receipt.json`.
+This run is excluded from both calibration and the fault budget. The retried
+`healthy-a` and `healthy-b` passed the original JUnit in 26.766 and 27.308
+seconds. Their raw traces passed the independent `audit_raw.py` baseline
+check (zero errors). A bounded first fault trial was then launched from the
+new atomic checkpoint; subsequent work resumes that checkpoint.
+
+The campaign can be inspected or resumed with:
 
 ```sh
 python3 campaign.py --preview
