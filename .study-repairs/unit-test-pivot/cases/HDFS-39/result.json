@@ -1,4 +1,16 @@
 {
+  "actor_identity_audit": {
+    "base_effective_budget": 80,
+    "budget_met": false,
+    "current_actor_qualified_effective_trials": 52,
+    "excluded_historical_target_retaining_trials": 76,
+    "expected_selected_retry_trial": 140,
+    "file": "actor-audit/bp-rpc-subset.json",
+    "new_bug_mark": "none",
+    "next_action": "case-local actor-aware RPC/storage hook and original embedded-cluster JUnit continuation",
+    "readme": "actor-audit/README.md",
+    "sha256": "296a4609cc9165af41594e3bf13f71ed1a08de7ff00b22a10cbae4af8c5cbbd3"
+  },
   "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
   "applied_fault_events": 453,
   "baseline_max_faults_per_sequence": 10,
@@ -82,6 +94,27 @@
   "oracle_candidates": 4,
   "original_junit_nonzero_trials": 87,
   "post_fault_target_reach_trials": 128,
+  "quality_review": {
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "bug_mark_unchanged": "none",
+    "historical_counters": {
+      "coverage_gain": {
+        "BRANCH_UNIT": 599,
+        "METHOD": 373,
+        "PROBE": 1565
+      },
+      "elapsed_seconds": 5748.106,
+      "fault_trials": 205,
+      "fully_applied_trials": 171,
+      "strict_injections": 171,
+      "target_after_fault": 128
+    },
+    "historical_counters_not_current_quality_effective": true,
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "prior_status": "quality_complete",
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00"
+  },
   "requested_fault_events": 508,
   "reviewed_rejected_candidates": 4,
   "selection_changes": [
@@ -151,26 +184,5 @@
   "updated_at_utc": "2026-10-07T01:11:30.624458+00:00",
   "validated_new_bug_candidates": 0,
   "version": "3.4.3",
-  "workload_timeout_trials": 0,
-  "quality_review": {
-    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
-    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
-    "prior_status": "quality_complete",
-    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
-    "historical_counters_not_current_quality_effective": true,
-    "historical_counters": {
-      "fault_trials": 205,
-      "fully_applied_trials": 171,
-      "strict_injections": 171,
-      "target_after_fault": 128,
-      "coverage_gain": {
-        "BRANCH_UNIT": 599,
-        "METHOD": 373,
-        "PROBE": 1565
-      },
-      "elapsed_seconds": 5748.106
-    },
-    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
-    "bug_mark_unchanged": "none"
-  }
+  "workload_timeout_trials": 0
 }
