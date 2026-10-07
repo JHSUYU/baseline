@@ -43,3 +43,9 @@ Historical GraphChecker trials remain in
 [legacy-graph-result.json](legacy-graph-result.json) and
 [legacy-graph-README.md](legacy-graph-README.md). Those 11 trials are excluded
 from all independent-method counts.
+
+Four older `record*` runtime traces totaling 358,567,183 bytes were moved
+from node0 to node1 on 2026-10-07 to preserve disk space for active runs.
+Their original relative paths, SHA-256 hashes, and restore root are in
+[offload-node1-2026-10-07.json](offload-node1-2026-10-07.json). The independent
+campaign archive and result above remain in place.
