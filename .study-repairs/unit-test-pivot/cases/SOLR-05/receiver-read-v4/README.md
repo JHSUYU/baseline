@@ -18,7 +18,10 @@ the real `SolrZkClient.getData` and parses its returned data. The V4 hook then
 checks that the read `Stat` has that exact version and the parsed collection
 contains the same replica, core and node. It also verifies the concrete
 receiver `SolrZkClient`/`ZkStateReader` objects and physical Jetty role.
-Only this uniquely bound read-response point may throw
+`evidence/hook-order-audit.json` verifies the generated source places the
+read hook after the real `getData` and state parse, the writer hook after
+`setData` returns, and the selected hook immediately before the original
+guard. Only this uniquely bound read-response point may throw
 `KeeperException.ConnectionLossException`. The probe never infers a receiver
 from its callback thread name or a shared path alone.
 
