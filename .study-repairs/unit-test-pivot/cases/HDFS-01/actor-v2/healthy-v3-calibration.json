@@ -1,0 +1,120 @@
+{
+  "case_id": "HDFS-01",
+  "generated_at_utc": "2026-10-07T07:21:55.348555+00:00",
+  "original_junit": "org.apache.hadoop.hdfs.TestPread#testPreadDFS",
+  "overlay_receipt_sha256": "beec246f84899d1e92eabf240d04f969a08df282f9bd2f3caa41dd840d6b07aa",
+  "seeds": [
+    {
+      "name": "healthy-v3-a",
+      "manifest_sha256": "999d9b8eed62e958a548b45ed4d3bc19cd22e9ced809836ce4319c1c44614ccb",
+      "trace_sha256": "1e4ab49b62b2724874cfe840e4833727f6346e792641183653e00f19aefe2a36",
+      "elapsed_seconds": 22.021,
+      "target_checks": 18,
+      "data_reads": 6,
+      "bound_data_reads": 6,
+      "unbound_data_reads": 0,
+      "raw_datanodes": 4,
+      "stable_read_selectors": [
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@0",
+          1
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@0",
+          2
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@4096",
+          1
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@4096",
+          2
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@8192",
+          1
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@8192",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "healthy-v3-b",
+      "manifest_sha256": "b5c8a094b26c868232cc09675addd285b10dbd7d4f7d0afaafb3511c6ca4c776",
+      "trace_sha256": "4349449cb704963c73cb4eb7030fd9405baa1a8f94cd64ca28d0c594ca8ea422",
+      "elapsed_seconds": 21.42,
+      "target_checks": 18,
+      "data_reads": 6,
+      "bound_data_reads": 6,
+      "unbound_data_reads": 0,
+      "raw_datanodes": 4,
+      "stable_read_selectors": [
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@0",
+          1
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@0",
+          2
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@4096",
+          1
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@4096",
+          2
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@8192",
+          1
+        ],
+        [
+          "FAULT:HDFS_DATA_TRANSFER:READ",
+          "BlockReaderRemote.read",
+          "replica:0",
+          "/preadtest.dat@8192",
+          2
+        ]
+      ]
+    }
+  ],
+  "common_bound_read_selectors": 6,
+  "start_policy": "fresh MiniDFSCluster per seed; no fault"
+}
