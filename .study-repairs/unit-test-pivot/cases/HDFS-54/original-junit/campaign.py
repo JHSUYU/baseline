@@ -122,10 +122,19 @@ def score(candidate, state):
 def add_mutations(state, candidate, events, last_fault_seq):
     if len(candidate["faults"]) >= state["max_faults"]:
         return 0
+    target_after = [event["seq"] for event in events
+                    if event.get("event") == "TARGET_CHECK"
+                    and event.get("siteId") == SITE
+                    and event.get("file") == state["target_file"]
+                    and event["seq"] > last_fault_seq]
+    if not target_after:
+        return 0
+    end_seq = min(target_after)
     seen = set(state["seen_plans"])
     added = 0
     for event in events:
         if (event.get("event") != "IO_OBSERVED" or event["seq"] <= last_fault_seq
+                or event["seq"] >= end_seq
                 or event.get("file") != state["target_file"]):
             continue
         for fault_type in FAULT_TYPES:
