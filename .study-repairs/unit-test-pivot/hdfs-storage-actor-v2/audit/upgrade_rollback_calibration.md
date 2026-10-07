@@ -12,6 +12,11 @@ run. A postfault target exception is therefore recorded as a replay/source
 review candidate; its presence alone cannot establish a new bug. The
 `TestDatanodeLayoutUpgrade` workload covers the HDFS-27 asynchronous upgrade
 path directly; its legacy healthy trace reached that guard on a pool thread.
+Its configured directory is `dfs/data` (without a numeric suffix), which is
+recognized by the V2 actor and storage-volume mapper after the offline
+2026-10-07 fix. This changes the overlay bytecode digest. Keep the running
+startup campaign on its calibrated overlay; build the updated overlay in a
+separate host/work directory for these later groups.
 The legacy original healthy traces already contain three target throws at
 HDFS-24 and three at HDFS-37; HDFS-26 and HDFS-27 contain none. V2 records
 the healthy actor, storage-volume, and exception-class signatures from two

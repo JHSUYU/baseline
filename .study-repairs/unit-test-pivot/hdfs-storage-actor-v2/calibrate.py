@@ -34,7 +34,7 @@ def selector(row: dict) -> tuple:
 
 
 def storage_volume(path: str | None) -> str:
-    match = re.match(r"^dfs/(?:data[0-9]+|datanodeMaster)(?:/|$)", path or "")
+    match = re.match(r"^dfs/(?:data[0-9]+|data|datanodeMaster)(?:/|$)", path or "")
     return match.group(0).rstrip("/") if match else "unbound"
 
 
