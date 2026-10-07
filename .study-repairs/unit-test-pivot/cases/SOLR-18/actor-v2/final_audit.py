@@ -70,16 +70,28 @@ def audit_all() -> dict:
         plan = tuple(skipped['plan'])
         assert len(plan) > 1 and ':SUITE@@' in plan[0]
         assert plan not in executed_plans and plan not in pending_plans
-        assert skipped['reason'] == 'suite_setup_ended_after_first_fault'
         witnesses = skipped['witnesses']
-        for kind in ('standalone', 'suffix'):
-            witness = by_id[witnesses[kind]]
-            assert witness['plan'][0] == plan[0]
-            assert (len(witness['plan']) == 1) == (kind == 'standalone')
-            assert witness['applied'] == [plan[0]]
-            assert witness['test_started_count'] == 0 and not witness['effective']
-        assert not any(item['effective'] for item in state['trials']
-                       if item['plan'][0] == plan[0])
+        if skipped['reason'] == 'suite_setup_ended_after_first_fault':
+            for kind in ('standalone', 'suffix'):
+                witness = by_id[witnesses[kind]]
+                assert witness['plan'][0] == plan[0]
+                assert (len(witness['plan']) == 1) == (kind == 'standalone')
+                assert witness['applied'] == [plan[0]]
+                assert witness['test_started_count'] == 0 and not witness['effective']
+            assert not any(item['effective'] for item in state['trials']
+                           if item['plan'][0] == plan[0])
+        else:
+            assert skipped['reason'] == 'suite_setup_ended_after_observed_fault_prefix'
+            prefix = skipped['prefix']
+            assert len(prefix) >= 2 and len(plan) > len(prefix)
+            assert tuple(prefix) == plan[:len(prefix)]
+            solo = by_id[witnesses['standalone']]
+            prior = by_id[witnesses['prefix_trial']]
+            assert solo['plan'] == [prefix[-1]] and solo['applied'] == [prefix[-1]]
+            assert solo['test_started_count'] == 0 and not solo['effective']
+            assert prior['applied'] == prefix == prior['plan'][:len(prefix)]
+            assert prior['test_started_count'] == 0
+            assert prior['selected_target_sequence'] is None and not prior['effective']
     valid, strict, wrong, lost, unreviewed, expected_fault_site = [], [], [], [], [], []
     probes, methods, lines = set(), set(), set()
     elapsed = 0.0
@@ -168,6 +180,9 @@ def audit_all() -> dict:
         'all_junit_nonzero_trials': all_junit_nonzero,
         'max_depth_attempted': max((x['fault_count'] for x in state['trials']), default=0),
         'unreachable_suite_suffix_plans_pruned': len(state.get('pruned_plans', [])),
+        'unreachable_observed_prefix_suffix_plans_pruned': sum(
+            x['reason'] == 'suite_setup_ended_after_observed_fault_prefix'
+            for x in state.get('pruned_plans', [])),
         'new_production_probes': len(probes), 'new_production_methods': len(methods),
         'new_production_lines': len(lines),
         'fault_junit_elapsed_seconds': round(elapsed, 3),

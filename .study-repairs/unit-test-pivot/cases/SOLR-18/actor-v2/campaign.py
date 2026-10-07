@@ -234,11 +234,10 @@ def choose_pending(state: dict) -> dict:
 
 
 def prune_unreachable_suite_suffixes(state: dict) -> None:
-    """Skip suffix plans when two raw trials show the first fault aborts setup.
+    """Skip suffix plans with an observed setup-aborting fault prefix.
 
-    Require both a standalone and longer plan: in each, only that first fault
-    applied and the original test body never started. A later fault in a queued
-    suffix cannot run on a path that already ended during suite setup.
+    A standalone abort plus an observed longer abort witnesses the prefix.
+    Planned faults after that prefix cannot apply once suite setup ended.
     """
     witnesses: dict[str, dict[str, str]] = {}
     for item in state['trials']:
@@ -252,7 +251,19 @@ def prune_unreachable_suite_suffixes(state: dict) -> None:
               if {'standalone', 'suffix'} <= runs.keys()
               and not any(item['effective'] for item in state['trials']
                           if item['plan'][0] == first)}
-    if not proven:
+    standalone = {first: runs['standalone'] for first, runs in witnesses.items()
+                  if 'standalone' in runs}
+    proven_prefixes: dict[tuple[str, ...], dict[str, str]] = {}
+    for item in state['trials']:
+        applied = item['applied']
+        if (len(applied) < 2 or item['test_started_count'] != 0
+                or item['selected_target_sequence'] is not None
+                or applied != item['plan'][:len(applied)]
+                or applied[-1] not in standalone):
+            continue
+        proven_prefixes[tuple(applied)] = {
+            'standalone': standalone[applied[-1]], 'prefix_trial': item['run_id']}
+    if not proven and not proven_prefixes:
         return
     kept = []
     skipped = state.setdefault('pruned_plans', [])
@@ -263,7 +274,16 @@ def prune_unreachable_suite_suffixes(state: dict) -> None:
                             'reason': 'suite_setup_ended_after_first_fault',
                             'witnesses': proven[first]})
         else:
-            kept.append(job)
+            prefix = next((p for p in sorted(proven_prefixes, key=len, reverse=True)
+                           if len(job['plan']) > len(p)
+                           and tuple(job['plan'][:len(p)]) == p), None)
+            if prefix is None:
+                kept.append(job)
+            else:
+                skipped.append({'plan': job['plan'], 'parent': job['parent'],
+                                'prefix': list(prefix),
+                                'reason': 'suite_setup_ended_after_observed_fault_prefix',
+                                'witnesses': proven_prefixes[prefix]})
     if len(kept) != len(state['pending']):
         state['pending'] = kept
         atomic_json(STATE, state)
