@@ -18,7 +18,7 @@ first `SolrZkClient.getData("/aliases.json")` from
 `ZkStateReader$AliasesManager.process:2312` on the actual `jetty:node3`
 client. The hook records the live Solr node, `SolrZkClient`, and
 `AliasesManager` identities. In the failing executions, the later SOLR-40
-guard `RoutedAliasUpdateProcessor.getAliasProps:133-135` reads an empty
+guard `RoutedAliasUpdateProcessor.getAliasProps:132-134` reads an empty
 local `myalias` properties map on **that same client and manager** and throws
 `RoutedAlias.newAliasMustExistException`. The `/update` request returns 500,
 and the unchanged JUnit fails on its first document add after initial
@@ -36,6 +36,7 @@ observes the empty local properties map; it does not inspect the full cache.
 | Evidence | Strict injection | Same-reader target exception | ZK alias metadata | JUnit elapsed | Raw receipt |
 | --- | --- | --- | --- | ---: | --- |
 | Campaign trial 18 | yes | yes | present | 19.766 s | `evidence/campaign-v4/trial-018/` |
+| Campaign trial 36, physical `jetty:node4` reader | yes | yes | present | 18.867 s | `evidence/campaign-v4/trial-036/` |
 | Fresh replay 5 | yes | yes | present | 17.872 s | `evidence/candidate-solr40-v4/replay-005/` |
 | Fresh replay 7 | yes | yes | present | 17.721 s | `evidence/candidate-solr40-v4/replay-007/` |
 | Fresh replay 8 | yes | yes | present | 18.326 s | `evidence/candidate-solr40-v4/replay-008/` |
@@ -84,3 +85,10 @@ its JUnit log SHA-256 is
 and its retained ZooKeeper transaction-log SHA-256 is
 `0f8aa55315abb1d3ff3e8c4ecbe41915f55dab0530d9c17fe1866fe80621fe9c`.
 The three replay transaction-log hashes are in their per-run receipts.
+Campaign trial 36 independently reached the same selected guard on another
+physical reader; its ZooKeeper transaction-log SHA-256 is
+`f71bfb1eb252a35fc1699cdf178a44cc06d942e1af2e7be33d27398d84d5ae92`.
+This is a second reproduction of the same suspected mechanism, not a second
+bug. The running campaign checkpoint is on node2 at
+`evidence/campaign-v4/state.json`; completed V4 trials and their measured
+times are recorded there.
