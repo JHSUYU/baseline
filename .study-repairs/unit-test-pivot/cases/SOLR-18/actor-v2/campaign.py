@@ -103,6 +103,33 @@ def expand_feedback(state: dict, item: dict) -> None:
         queue(state, plan, item['run_id'], item.get('new_campaign_coverage_score', 0))
 
 
+def repair_feedback(state: dict, item: dict) -> None:
+    """Try bounded ordered deletions of faults applied in an invalid run."""
+    plan = item['plan']
+    applied = item['applied']
+    if (item['effective'] or item['needs_source_review'] or len(plan) < 2
+            or applied != plan[:len(applied)]):
+        return
+    indices = list(range(len(applied) - 1, max(-1, len(applied) - 4), -1))
+    wrong = ([i for i, actor_id in enumerate(item['applied_actor_ids'])
+              if actor_id != item['target_actor_id']]
+             if item['target_actor_id'] is not None else [])
+    if wrong and wrong[0] not in indices:
+        indices.insert(0, wrong[0])
+    if not indices and len(applied) < len(plan):
+        indices = [len(applied)]
+    for index in indices:
+        proposal = plan[:index] + plan[index + 1:]
+        before = len(state['known_plans'])
+        queue(state, proposal, item['run_id'])
+        if len(state['known_plans']) > before:
+            reason = ('first_unapplied_fault' if index >= len(applied)
+                      else 'applied_fault_in_invalid_plan')
+            state.setdefault('repair_feedback_receipts', []).append({
+                'source_run_id': item['run_id'], 'removed_index': index,
+                'removed_selector': plan[index], 'plan': proposal, 'reason': reason})
+
+
 def initial_state() -> dict:
     calibration = json.loads(CALIBRATION.read_text())
     assert calibration['source_junit_sha_equal']
@@ -338,6 +365,8 @@ def record(state: dict, job: dict, meta: dict) -> dict:
     state['effective'] += int(item['effective'])
     if item['effective']:
         expand_feedback(state, item)
+    else:
+        repair_feedback(state, item)
     state['inflight'] = None
     atomic_json(STATE, state)
     sync_ledger(state)
@@ -377,6 +406,11 @@ def main() -> None:
         for item in state['trials']:
             expand_feedback(state, item)
         state['schema_version'] = 4
+        atomic_json(STATE, state)
+    if not state.get('repair_feedback_seeded'):
+        for item in state['trials']:
+            repair_feedback(state, item)
+        state['repair_feedback_seeded'] = True
         atomic_json(STATE, state)
     sync_ledger(state)
     for item in state['trials']:

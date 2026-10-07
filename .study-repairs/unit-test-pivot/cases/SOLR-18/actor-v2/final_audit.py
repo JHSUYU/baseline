@@ -92,6 +92,20 @@ def audit_all() -> dict:
             assert prior['applied'] == prefix == prior['plan'][:len(prefix)]
             assert prior['test_started_count'] == 0
             assert prior['selected_target_sequence'] is None and not prior['effective']
+    for proposal in state.get('repair_feedback_receipts', []):
+        source = by_id[proposal['source_run_id']]
+        index = proposal['removed_index']
+        assert not source['effective'] and 0 <= index < len(source['plan'])
+        assert source['plan'][index] == proposal['removed_selector']
+        assert proposal['plan'] == source['plan'][:index] + source['plan'][index + 1:]
+        assert '|||'.join(proposal['plan']) in state['known_plans']
+        assert proposal['reason'] in ('applied_fault_in_invalid_plan',
+                                      'first_unapplied_fault')
+        assert source['applied'] == source['plan'][:len(source['applied'])]
+        if proposal['reason'] == 'applied_fault_in_invalid_plan':
+            assert index < len(source['applied'])
+        else:
+            assert index == len(source['applied'])
     valid, strict, wrong, lost, unreviewed, expected_fault_site = [], [], [], [], [], []
     probes, methods, lines = set(), set(), set()
     elapsed = 0.0
@@ -183,6 +197,7 @@ def audit_all() -> dict:
         'unreachable_observed_prefix_suffix_plans_pruned': sum(
             x['reason'] == 'suite_setup_ended_after_observed_fault_prefix'
             for x in state.get('pruned_plans', [])),
+        'ordered_deletion_feedback_plans': len(state.get('repair_feedback_receipts', [])),
         'new_production_probes': len(probes), 'new_production_methods': len(methods),
         'new_production_lines': len(lines),
         'fault_junit_elapsed_seconds': round(elapsed, 3),
