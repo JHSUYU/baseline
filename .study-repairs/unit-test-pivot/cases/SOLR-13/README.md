@@ -113,3 +113,17 @@ five ordered send/receive/alias-write/guard chains. Its evidence is in
 checkpoint backup and migration receipt are in its campaign evidence.
 `result.json` keeps the legacy top-level counters scoped to stage one and
 records both phases and audited combined counts separately.
+
+At 70 valid stage-two plans, feedback showed that several newly observed
+alias writes belonged to collections for which this JUnit never evaluated
+the selected guard. Eight recent `lost_target` traces confirmed that their
+last fault's alias/collection identity had no matching guard at any point in
+the run. The selector now favors queued plans whose last source has a
+witnessed selected guard; mutation adds an I/O point only when the **same**
+alias/collection has a later guard in the parent trace. Other plans remain
+in the checkpoint for fallback exploration. This change uses runtime
+identity and guard feedback only; it does not construct a causal graph.
+The SHA-backed migration preserved all 70 valid plans and 40 effective
+stage-two trials, archived the interrupted attempt 88, and recorded 217
+guarded versus 78 deferred queued plans in
+`independent/stage2/evidence/campaign/target_selector_migration.json`.

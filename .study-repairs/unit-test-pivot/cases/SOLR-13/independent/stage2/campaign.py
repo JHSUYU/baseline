@@ -221,6 +221,8 @@ def initialize() -> dict:
              'seed_io_family_count': len(seed_families),
              'covered_probes': sorted(seed_probes),
              'io_families': sorted(seed_families),
+             'observed_target_sources': sorted({e['sourceKey'] for d in SEEDS
+                                                for e in guard_events(events(d / 'events.jsonl'))}),
              'queue': [], 'seen_sequences': [], 'completed': [],
              'active': None}
     for row in stable:
@@ -240,13 +242,19 @@ def initialize() -> dict:
 
 def select(state: dict) -> dict:
     queue = state['queue']
+    # Keep other I/O candidates in the checkpoint, but spend the current
+    # target-retaining budget on identities with a witnessed selected guard.
+    target_sources = set(state.get('observed_target_sources', []))
+    guarded = [row for row in queue
+               if row['sequence'][-1]['sourceKey'] in target_sources]
+    pool = guarded or queue
     valid = [row for row in state['completed'] if not row.get('invalid_setup')]
     round_number = len(valid) + 1
     effective = sum(row['effective'] for row in valid)
     wants_multiple = effective >= 10 and round_number % 4 != 0
-    choices = [row for row in queue if (len(row['sequence']) > 1) == wants_multiple]
+    choices = [row for row in pool if (len(row['sequence']) > 1) == wants_multiple]
     if not choices:
-        choices = queue
+        choices = pool
     family_counts = Counter(row['first_family'] for row in valid)
     scored = []
     for row in choices:
@@ -306,6 +314,7 @@ def analyze(out: Path, sequence: list[dict], state: dict) -> tuple[dict, set, se
               'strict_injection': strict,
               'planned_faults': len(sequence), 'applied_faults': len(applied),
               'target_guard_count': len(guard_events(rows)),
+              'target_guard_sources': sorted({e['sourceKey'] for e in guard_events(rows)}),
               'target_guard_after_last_fault': len(post_guard),
               'target_exception_after_last_fault': len(post_throw),
               'target_source_after_last_fault': source if post_guard else None,
@@ -330,7 +339,8 @@ def mutate(state: dict, parent: list[dict], out: Path, gain: int) -> None:
     if not applied:
         return
     last_seq = applied[-1]['seq']
-    last_guard = max((e['seq'] for e in guard_events(rows)), default=-1)
+    guards = guard_events(rows)
+    last_guard = max((e['seq'] for e in guards), default=-1)
     if last_guard <= last_seq:
         return
     used = {point_id(item) for item in parent}
@@ -340,6 +350,9 @@ def mutate(state: dict, parent: list[dict], out: Path, gain: int) -> None:
             continue
         item = point(e)
         if not relevant(item) or unstable(item) or point_id(item) in used:
+            continue
+        if not any(g['sourceKey'] == item['sourceKey'] and g['seq'] > e['seq']
+                   for g in guards):
             continue
         candidates.setdefault(family(item), item)
     ranked = sorted(candidates.values(), key=lambda item:
@@ -475,6 +488,9 @@ def campaign() -> None:
             json.loads((trial / f'attempt-{i:02d}' / 'run.json').read_text())
             ['elapsed_seconds'] for i in range(1, active['attempts'] + 1)), 3)
         atomic(trial / 'result.json', result)
+        state['observed_target_sources'] = sorted(
+            set(state.get('observed_target_sources', []))
+            | set(result['target_guard_sources']))
         state['completed'].append(result)
         state['active'] = None
         if result['effective']:
