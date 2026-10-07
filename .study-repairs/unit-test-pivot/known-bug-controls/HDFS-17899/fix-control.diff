@@ -1,0 +1,89 @@
+--- release-3.4.3/KeyManager.java
++++ HDFS-17899-fix-control/KeyManager.java
+@@ -148,6 +148,17 @@
+     }
+   }
+ 
++  public synchronized void clearDataEncryptionKey() {
++    encryptionKey = null;
++    Hdfs17899Probe.markKeyCleared();
++  }
++
++  public void updateBlockKeys() throws IOException {
++    if (isBlockTokenEnabled) {
++      blockTokenSecretManager.addKeys(namenode.getBlockKeys());
++    }
++  }
++
+   @Override
+   public void close() {
+     shouldRun = false;
+--- release-3.4.3/Dispatcher.java
++++ HDFS-17899-fix-control/Dispatcher.java
+@@ -63,6 +63,7 @@
+ import org.apache.hadoop.hdfs.protocol.datatransfer.BlockPinningException;
+ import org.apache.hadoop.hdfs.protocol.datatransfer.DataTransferProtoUtil;
+ import org.apache.hadoop.hdfs.protocol.datatransfer.IOStreamPair;
++import org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException;
+ import org.apache.hadoop.hdfs.protocol.datatransfer.Sender;
+ import org.apache.hadoop.hdfs.protocol.datatransfer.TrustedChannelResolver;
+ import org.apache.hadoop.hdfs.protocol.datatransfer.sasl.DataTransferSaslUtil;
+@@ -372,29 +373,37 @@
+         LOG.info("Start moving " + this);
+         assert !(reportedBlock instanceof DBlockStriped);
+ 
+-        sock.connect(
+-            NetUtils.createSocketAddr(target.getDatanodeInfo().
+-                getXferAddr(Dispatcher.this.connectToDnViaHostname)),
+-                HdfsConstants.READ_TIMEOUT);
+-
+-        // Set read timeout so that it doesn't hang forever against
+-        // unresponsive nodes. Datanode normally sends IN_PROGRESS response
+-        // twice within the client read timeout period (every 30 seconds by
+-        // default). Here, we make it give up after 5 minutes of no response.
+-        sock.setSoTimeout(HdfsConstants.READ_TIMEOUT * 5);
+-        sock.setKeepAlive(true);
+-
+-        OutputStream unbufOut = sock.getOutputStream();
+-        InputStream unbufIn = sock.getInputStream();
+         ExtendedBlock eb = new ExtendedBlock(nnc.getBlockpoolID(),
+             reportedBlock.getBlock());
+-        final KeyManager km = nnc.getKeyManager(); 
+-        Token<BlockTokenIdentifier> accessToken = km.getAccessToken(eb,
+-            new StorageType[]{target.storageType}, new String[0]);
+-        IOStreamPair saslStreams = saslClient.socketSend(sock, unbufOut,
+-            unbufIn, km, accessToken, target.getDatanodeInfo());
+-        unbufOut = saslStreams.out;
+-        unbufIn = saslStreams.in;
++        final KeyManager km = nnc.getKeyManager();
++        Token<BlockTokenIdentifier> accessToken;
++        OutputStream unbufOut;
++        InputStream unbufIn;
++        int encryptionKeyRetryCount = 0;
++        while (true) {
++          try {
++            sock.connect(NetUtils.createSocketAddr(target.getDatanodeInfo()
++                .getXferAddr(Dispatcher.this.connectToDnViaHostname)),
++                HdfsConstants.READ_TIMEOUT);
++            sock.setSoTimeout(HdfsConstants.READ_TIMEOUT * 5);
++            sock.setKeepAlive(true);
++            unbufOut = sock.getOutputStream();
++            unbufIn = sock.getInputStream();
++            accessToken = km.getAccessToken(eb,
++                new StorageType[]{target.storageType}, new String[0]);
++            IOStreamPair saslStreams = saslClient.socketSend(sock, unbufOut,
++                unbufIn, km, accessToken, target.getDatanodeInfo());
++            unbufOut = saslStreams.out;
++            unbufIn = saslStreams.in;
++            break;
++          } catch (InvalidEncryptionKeyException e) {
++            IOUtils.closeSocket(sock);
++            if (++encryptionKeyRetryCount > 1) throw e;
++            km.updateBlockKeys();
++            km.clearDataEncryptionKey();
++            sock = new Socket();
++          }
++        }
+         out = new DataOutputStream(new BufferedOutputStream(unbufOut,
+             ioFileBufferSize));
+         in = new DataInputStream(new BufferedInputStream(unbufIn,
