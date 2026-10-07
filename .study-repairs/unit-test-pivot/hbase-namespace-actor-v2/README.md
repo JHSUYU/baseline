@@ -143,6 +143,24 @@ Java processes and at least 3 GiB free, and holds the lock until the new Java
 process appears. The node1 staging runner and HBASE-21 checkpoint remain
 separate.
 
+After HBASE-22 attempt 57, 15 strict trials at the final
+`ACTIVE_MASTER/ZK_DATA_READ/nodeDataChanged:131` site had lost the selected
+same-actor target. The node0 runner paused the already selected r058 before
+creating a run directory or JVM. At this complete checkpoint, the controller
+enabled the same bounded site-loss priority used for HBASE-21. It changes
+only selection order: no exact plan is deleted, the queue and seen hashes,
+57 completed trials, and original 80/8/320 budget are unchanged. Every eighth
+attempt retains the unpenalized exploration order. The original r058 plan was
+then executed exactly once as pilot r058, followed by r059. Both were strict
+eight-fault trials, retained the selected guard on the same Master after the
+last fault, and passed the unchanged `testTableOperations` JUnit with the
+healthy expected table quota outcome. The two-round pilot temporarily capped
+attempts at 59; its complete 59/44 checkpoint restored the 320-attempt cap
+without replay. The pre/post checkpoint and SHA receipts, unstarted inflight,
+and raw pilot receipt are in `evidence/HBASE-22/`. The remaining full JaCoCo
+re-audit is deferred until the node0 JVM slot is free; the controller's
+admission already required selected-branch coverage for both pilot trials.
+
 The default bound is **80 effective trials, at most eight ordered faults**.
 If any of the final eight effective trials first adds a production method,
 branch, or I/O family observed in at least two effective trials, the same

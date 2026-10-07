@@ -50,6 +50,14 @@ case "${1:?build, smoke, healthy, trial, or coverage}" in
       data_dir="$actor_dir/runs/$test_kind-$seed"
       stem=healthy
     fi
+    # Pause HBASE-22 only before any per-run artifact or JVM is created. This
+    # allows a controller to stop at a durable checkpoint without replaying a
+    # selected but never started plan.
+    if [[ "$mode" == trial && "$seed" == HBASE-22-r* ]]; then
+      while [[ -f "$actor_dir/campaigns/HBASE-22/PAUSE" ]]; do
+        sleep 1
+      done
+    fi
     mkdir -p "$actor_dir/runs"
     if ! mkdir "$data_dir"; then
       echo "Run directory already exists: $data_dir" >&2
