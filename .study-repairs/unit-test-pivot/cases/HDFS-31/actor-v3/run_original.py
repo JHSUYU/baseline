@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Original Hadoop 3.4.3 HDFS31 JUnit with isolated actor V3 overlay."""
 from __future__ import annotations
+import argparse
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -15,7 +17,8 @@ HERE = Path(__file__).resolve().parent
 BUILD = HERE / 'build'
 OVERLAY = BUILD / 'overlay'
 HADOOP = Path('/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3')
-SOURCE = Path('/users/ZhenyuLi/hdfs31-independent-source')
+RESOURCE = Path(os.environ.get('HDFS31_V3_TEST_RESOURCES',
+                               str(HERE / 'test-resources')))
 RUN_ROOT = HERE / 'evidence'
 JDK = Path('/usr/lib/jvm/java-8-openjdk-amd64/bin')
 ASM = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/9.6/asm-9.6.jar')
@@ -83,6 +86,8 @@ def build():
 
 def run(run_id='healthy-01', plan=None, timeout=360):
     build()
+    if not RESOURCE.is_dir():
+        raise RuntimeError('original Hadoop test resources are missing: ' + str(RESOURCE))
     out = RUN_ROOT / run_id
     out.mkdir(parents=True, exist_ok=True)
     scratch = out / 'scratch'
@@ -98,13 +103,14 @@ def run(run_id='healthy-01', plan=None, timeout=360):
              m2 / 'net/bytebuddy/byte-buddy-agent/1.12.16/byte-buddy-agent-1.12.16.jar',
              m2 / 'org/objenesis/objenesis/3.3/objenesis-3.3.jar']
     cp = os.pathsep.join((str(OVERLAY), str(BUILD / 'classes'),
-                          str(SOURCE / 'hadoop-hdfs-project/hadoop-hdfs/src/test/resources'),
+                          str(RESOURCE),
                           str(TESTS), str(HADOOP / 'share/hadoop/common/hadoop-common-3.4.3-tests.jar'),
                           hadoop_cp, *(str(x) for x in extra),
                           *(str(x) for x in sorted((HADOOP / 'share/hadoop/tools/lib').glob('*.jar')))))
     assert not any(x in cp.lower() for x in ('graphchecker', 'skeleton', 'causynth'))
     cmd = [str(JDK / 'java'), '-ea', '-Xverify:all', '-Xmx3g', '-Djava.awt.headless=true',
            '-Djava.net.preferIPv4Stack=true',
+           '-Dtest.cache.data=' + str(RESOURCE),
            '-Dtest.build.data=' + str(scratch / 'data'),
            '-Djava.io.tmpdir=' + str(scratch / 'tmp'),
            '-Dhadoop.log.dir=' + str(scratch / 'logs'),
@@ -113,6 +119,7 @@ def run(run_id='healthy-01', plan=None, timeout=360):
            '-javaagent:' + str(JACOCO) + '=destfile=' + str(out / 'jacoco.exec')
            + ',includes=org.apache.hadoop.hdfs.*:org.apache.hadoop.ipc.*,dumponexit=true,append=false',
            '-cp', cp, 'RunJUnitMethod', CLASS, METHOD]
+    started_at_utc = datetime.now(timezone.utc).isoformat()
     start = time.monotonic()
     with (out / 'junit.log').open('w') as log:
         try:
@@ -121,11 +128,14 @@ def run(run_id='healthy-01', plan=None, timeout=360):
         except subprocess.TimeoutExpired:
             code = 124
     manifest = {'case_id': 'HDFS-31', 'run_id': run_id, 'junit_exit': code,
+                'started_at_utc': started_at_utc,
+                'finished_at_utc': datetime.now(timezone.utc).isoformat(),
                 'elapsed_seconds': round(time.monotonic() - start, 3),
                 'test': CLASS + '#' + METHOD, 'original_source_commit': '9d50c6884666e794e45102260a4017bb31802e1b',
                 'original_test_jar_sha256': sha(TESTS), 'original_hdfs_jar_sha256': sha(HDFS), 'original_common_jar_sha256': sha(COMMON),
                 'overlay_class_sha256': {name: sha(OVERLAY / (name + '.class')) for name in PATCHED},
                 'classpath_sha256': hashlib.sha256(cp.encode()).hexdigest(),
+                'trace': str(out / 'runtime_trace.jsonl'),
                 'classpath_has_graphchecker_or_skeleton': False,
                 'plan': str(Path(plan).resolve()) if plan else None}
     if (out / 'jacoco.exec').exists() and (out / 'jacoco.exec').stat().st_size:
@@ -144,4 +154,9 @@ def run(run_id='healthy-01', plan=None, timeout=360):
 
 
 if __name__ == '__main__':
-    run(sys.argv[1] if len(sys.argv) > 1 else 'healthy-01')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--run-id', default='healthy-01')
+    parser.add_argument('--plan', type=Path)
+    parser.add_argument('--timeout', type=int, default=360)
+    args = parser.parse_args()
+    run(args.run_id, args.plan, args.timeout)

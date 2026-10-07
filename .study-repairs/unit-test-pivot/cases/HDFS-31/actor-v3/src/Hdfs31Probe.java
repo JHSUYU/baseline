@@ -198,18 +198,18 @@ public final class Hdfs31Probe {
   }
 
   public static void transfer(DataNode dn, ExtendedBlock block) {
-    emit("DIRECT_TRANSFER", blockFields(dn, block));
+    emit("DIRECT_TRANSFER", ",\"caseId\":\"HDFS-31\"" + blockFields(dn, block));
   }
 
   public static void guard(Object service, DataNode dn, ExtendedBlock block) {
-    emit("DIRECT_TARGET_CHECK", blockFields(dn, block)
+    emit("DIRECT_TARGET_CHECK", ",\"caseId\":\"HDFS-31\"" + blockFields(dn, block)
         + ",\"siteId\":\"DataNode.getBPOSForBlock#L1832\""
         + ",\"servicePresent\":" + (service != null)
         + ",\"serviceObjectHash\":" + (service == null ? -1 : System.identityHashCode(service)));
   }
 
   public static void targetThrow(Throwable error, DataNode dn, ExtendedBlock block) {
-    emit("DIRECT_TARGET_THROW", blockFields(dn, block)
+    emit("DIRECT_TARGET_THROW", ",\"caseId\":\"HDFS-31\"" + blockFields(dn, block)
         + ",\"siteId\":\"DataNode.getBPOSForBlock#L1835\""
         + ",\"exception\":" + q(error.getClass().getName())
         + ",\"message\":" + q(error.getMessage()));
