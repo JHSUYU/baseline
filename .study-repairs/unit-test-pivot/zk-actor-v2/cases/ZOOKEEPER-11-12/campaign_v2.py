@@ -114,6 +114,13 @@ def verify_state(state):
 
 def choose(state):
     rng = random.Random(1112000 + state['selected_count'])
+    losing_prefixes = {}
+    for result in state['results']:
+        if len(result['plan']) < 2 or not result['strict_injection'] or any(
+                item['postfault_guards'] for item in result['case_results'].values()):
+            continue
+        prefix = result['plan'][0]
+        losing_prefixes[prefix] = losing_prefixes.get(prefix, 0) + 1
     for job in state['queue']:
         job['wait'] += 1
     ranked = []
@@ -124,9 +131,14 @@ def choose(state):
             ranked.append(float('-inf'))
             continue
         deficit = budget['effective_target'] - budget['effective_count']
+        # A fault prefix that repeatedly removes both selected peer0 guards is
+        # poor for target-directed mutation. Keep one exploration turn in ten
+        # so a different second fault can still expose a recovery path.
+        repeated_loss = len(job['plan']) > 1 and losing_prefixes.get(job['plan'][0], 0) >= 3
+        penalty = (2 if state['selected_count'] % 10 == 9 else 12) if repeated_loss else 0
         ranked.append(4 * job['gain'] + min(job['wait'], 40) / 10
                       + min(len(job['plan']), 6) * 2 + deficit / 20
-                      + rng.random() / 8)
+                      + rng.random() / 8 - penalty)
     if not ranked or max(ranked) == float('-inf'):
         return None
     return state['queue'].pop(max(range(len(ranked)), key=ranked.__getitem__))
