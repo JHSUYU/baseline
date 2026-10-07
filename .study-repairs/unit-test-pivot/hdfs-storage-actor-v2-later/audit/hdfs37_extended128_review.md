@@ -65,8 +65,16 @@ restored the full archive on node2, recording tar SHA
 `b4795cf22628d48f77c082bbfdda994388f943c50994082df6f1e96aa275b001`.
 The archive and manifest were mirrored to node1; node1 restored and
 independently checked all 319 file sizes and SHA-256 hashes. Its receipt was
-mirrored back to node2. No original raw file was deleted in this final
-batch. Earlier batches 1–180 have their own SHA manifests and cross-node
+mirrored back to node2. After that audit, node1's 319 expanded mirror files
+were individually rehashed and pruned to recover 254,586,765 bytes. This
+removed only the expanded node1 copies: the compressed archive, manifest,
+verification and prune receipts remain on node1, and all original raw files
+remain on node2. The exact paths and per-file hashes are in
+`rollback_181_209_node1_mirror_prune_plan.json` and the completion receipt is
+`rollback_181_209_node1_mirror_pruned.json`. To restore the expanded node1
+mirror, run `python3 archive_completed.py verify <anchor> --manifest <manifest> --restore`
+against its retained archive and manifest. Earlier batches 1–180 have their
+own SHA manifests and cross-node
 receipts. The final checkpoint SHA is
 `ddeaddf7be2ae79a3fb2ae74f9877a36505914628eb68d6eaf349a73697dc07c`;
 the terminal independent audit SHA is
