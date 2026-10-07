@@ -110,7 +110,8 @@ def file_manifest() -> dict:
     files = {}
     for path in sorted(CASE.rglob("*")):
         name = path.relative_to(CASE).as_posix()
-        if name in EXCLUDED or name.startswith(DESTINATION_CALIBRATION):
+        if (name in EXCLUDED or name.startswith(DESTINATION_CALIBRATION) or
+                "__pycache__" in path.parts or path.suffix == ".pyc"):
             continue
         checked(not path.is_symlink(), f"unexpected symlink: {name}")
         if path.is_file():
