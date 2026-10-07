@@ -101,7 +101,8 @@ def freeze_zk() -> None:
 
 
 def verify_http_inputs() -> None:
-    for relative in ("fuzz_rpc.py", "solrsubshard-rpc-agent.jar", "seed-audit.json"):
+    for relative in ("fuzz_rpc.py", "run_stages.py",
+                     "solrsubshard-rpc-agent.jar", "seed-audit.json"):
         local_digest = hashlib.sha256((RPC / relative).read_bytes()).hexdigest()
         remote_digest = remote("sha256sum " + shlex.quote(str(RPC / relative)))
         if remote_digest.stdout.split()[0] != local_digest:
@@ -118,7 +119,7 @@ def verify_http_inputs() -> None:
 
 def launch_http() -> None:
     command = ("cd " + shlex.quote(str(RPC))
-               + " && python3 fuzz_rpc.py --max-trials 24 --max-faults 2"
+               + " && python3 run_stages.py"
                + " >> http-fuzz.log 2>&1")
     remote("tmux new-session -d -s " + shlex.quote(HTTP_SESSION)
            + " " + shlex.quote(command))

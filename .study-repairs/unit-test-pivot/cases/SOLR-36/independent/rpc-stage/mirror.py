@@ -14,10 +14,11 @@ HERE = Path(__file__).resolve().parent
 CASE = HERE.parent
 ROOT = CASE.parents[2]
 REMOTE = '/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/progress.json'
+REMOTE_STAGE = '/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/stage-status.json'
 SSH = ('ssh', '-i', '/users/ZhenyuLi/.ssh/id_ed25519_nodes',
        '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes', 'ZhenyuLi@node2')
-TERMINAL = {'budget_complete', 'queue_exhausted',
-            'candidate_target_exception'}
+TERMINAL = {'complete', 'queue_exhausted', 'candidate',
+            'incomplete_budget_limit', 'interrupted'}
 
 
 def atomic(path: Path, value: dict) -> None:
@@ -30,15 +31,19 @@ def atomic(path: Path, value: dict) -> None:
     temporary.replace(path)
 
 
-def read_remote() -> dict | None:
-    result = subprocess.run((*SSH, 'cat ' + REMOTE),
-                            capture_output=True, text=True)
-    if result.returncode:
+def read_remote() -> tuple[dict, dict] | None:
+    results = [subprocess.run((*SSH, 'cat ' + path), capture_output=True,
+                              text=True) for path in (REMOTE, REMOTE_STAGE)]
+    if any(result.returncode for result in results):
         return None
-    return json.loads(result.stdout)
+    rpc, stage = json.loads(results[0].stdout), json.loads(results[1].stdout)
+    if (stage['status'] in TERMINAL
+            and stage['counts']['selected_plans'] != rpc['fault_trials']):
+        return None
+    return rpc, stage
 
 
-def publish(rpc: dict) -> None:
+def publish(rpc: dict, stage: dict) -> None:
     for case_id in ('SOLR-36', 'SOLR-37'):
         stage1 = json.loads(
             (CASE / f'campaign/final-audit-{case_id}.json').read_text())
@@ -53,10 +58,18 @@ def publish(rpc: dict) -> None:
             + rpc['same_child_post_target_trials'][case_id])
         thrown = (stage1['strict_exact_target_throw_trials']
                   + rpc['exact_target_throw_trials'][case_id])
+        stage_status = stage['status']
         status = ('target_exception_candidate_source_review'
                   if rpc['status'] == 'candidate_target_exception'
-                  else 'fuzz_running' if rpc['status'] == 'running'
-                  else 'campaign_budget_complete_source_audit_pending')
+                  or stage_status == 'candidate'
+                  else 'campaign_budget_complete_source_audit_pending'
+                  if stage_status == 'complete'
+                  else 'campaign_queue_exhausted_audit_pending'
+                  if stage_status == 'queue_exhausted'
+                  else 'campaign_interrupted_resume_pending'
+                  if stage_status in ('interrupted', 'incomplete_budget_limit')
+                  else 'campaign_checkpoint'
+                  if rpc['status'] == 'budget_complete' else 'fuzz_running')
         result.update(
             status=status,
             methodology='coverage_io_independent_asm_jacoco',
@@ -72,7 +85,11 @@ def publish(rpc: dict) -> None:
             zk_stage_trials=stage1['fault_trials'],
             zk_stage_target_exceptions=stage1['strict_exact_target_throw_trials'],
             rpc_stage_progress=rpc,
+            rpc_stage_control=stage,
             rpc_stage_fault_trials=rpc_n,
+            rpc_stage_selected_plans=rpc_n,
+            rpc_stage_attempted_junits=rpc['total_attempts'],
+            rpc_stage_effective_by_case=rpc['same_child_post_target_trials'],
             rpc_stage_strict_injections=rpc['strict_injections'],
             rpc_stage_post_fault_target_reach_trials=(
                 rpc['same_child_post_target_trials'][case_id]),
@@ -89,17 +106,21 @@ def publish(rpc: dict) -> None:
 def main() -> None:
     last = None
     while True:
-        rpc = read_remote()
-        if rpc is None:
+        pair = read_remote()
+        if pair is None:
             time.sleep(20)
             continue
-        key = (rpc['status'], rpc['fault_trials'])
+        rpc, stage = pair
+        key = (rpc['status'], rpc['fault_trials'], stage['status'],
+               stage['counts']['selected_plans'])
         if key != last:
             atomic(HERE / 'campaign/progress.json', rpc)
-            publish(rpc)
-            print(f'RPC mirrored {rpc["status"]} {rpc["fault_trials"]}', flush=True)
+            atomic(HERE / 'campaign/stage-status.json', stage)
+            publish(rpc, stage)
+            print(f'RPC mirrored {stage["status"]} selected={rpc["fault_trials"]} '
+                  f'effective={rpc["same_child_post_target_trials"]}', flush=True)
             last = key
-        if rpc['status'] in TERMINAL:
+        if stage['status'] in TERMINAL:
             break
         time.sleep(20)
 
