@@ -1,0 +1,54 @@
+{
+  "applied_faults": 672,
+  "attempted_trials": 102,
+  "budget": {
+    "effective_trials": 80,
+    "max_attempts": 320,
+    "max_faults": 8
+  },
+  "bug_mark": "none",
+  "case_id": "HBASE-21",
+  "checkpoint": "campaigns/HBASE-21/checkpoint.json",
+  "effective_trials": 80,
+  "fault_elapsed_seconds": 5692.02,
+  "healthy_elapsed_seconds": 115.53999999999999,
+  "healthy_expected_outcomes": [
+    "selected_region_count_quota"
+  ],
+  "healthy_expected_target_exception_trials": 80,
+  "healthy_io_families": [
+    "ZK_CHILDREN_READ",
+    "ZK_CREATE",
+    "ZK_DATA_READ",
+    "ZK_EXISTS",
+    "ZK_WRITE"
+  ],
+  "healthy_seeds": [
+    "h1",
+    "h2"
+  ],
+  "healthy_selected_target_counts": [
+    1,
+    1
+  ],
+  "healthy_stable_selectors": 21,
+  "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+  "new_production_branches": 1,
+  "new_production_methods": 0,
+  "new_stable_io_families": [],
+  "original_junit": "TestNamespaceAuditor#testRestoreSnapshotQuotaExceed",
+  "priority_migrated_after_attempt": 0,
+  "priority_policy": "healthy_guard_distance_with_periodic_exploration_and_same_site_loss_v2",
+  "requested_faults": 672,
+  "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+  "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+  "status": "budget_complete_pending_audit",
+  "strict_postfault_target_trials": 80,
+  "strict_trials": 102,
+  "system": "HBase",
+  "target_exception_candidates": 0,
+  "target_function": "checkAndUpdateNamespaceRegionCount(TableName,int)",
+  "target_guard_line": 128,
+  "total_elapsed_seconds": 5807.56,
+  "version": "2.6.6"
+}

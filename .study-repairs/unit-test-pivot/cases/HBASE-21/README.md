@@ -1,5 +1,39 @@
 # HBASE-21: namespace quota during snapshot restore
 
+## Current actor-bound V2 result
+
+The unchanged HBase 2.6.6 `TestNamespaceAuditor#testRestoreSnapshotQuotaExceed`
+passed both healthy seeds and reached the selected production predicate at
+`NamespaceStateManager.checkAndUpdateNamespaceRegionCount(TableName,int)`,
+source line 128. The standalone ByteBuddy agent recorded exact ordered
+namespace ZooKeeper I/O and the raw active Master `ServerName` plus namespace
+manager ID; the target was admitted only when its guard ran on that same
+actor after the last applied fault. JaCoCo supplied production method and
+branch feedback. No GraphChecker prewoven JAR, static map, graph, or closure
+participated in these V2 trials.
+
+The V2 campaign stopped at its 80-effective-trial budget after 102 attempts:
+all 102 plans applied strictly (672 of 672 requested fault events), and 80
+retained the same-actor target guard. Its two healthy seeds and fault trials
+took 5,807.56 seconds combined. One production branch was newly covered; the
+last eight effective trials added no method, branch, or stable I/O family, so
+the same checkpoint did not extend to 128. The original JUnit passed in 101
+attempts; one target-losing attempt failed and was excluded from the effective
+denominator. Every observed selected outcome had the region quota signature
+that the healthy test already expects. Source review and the independent
+102-trial raw/JaCoCo audit found no new target exception or confirmed bug.
+
+The complete current ledger, two healthy seeds, raw logs, exact plans, agent
+hashes, and JaCoCo exec files are archived at
+`evidence/hbase21-actor-v2-evidence.tar.gz`. The per-case result is
+`result.json`; the independent zero-error audit and stop row are under
+`evidence/`. The earlier 144-attempt campaign used selectors without proof
+of the same Master/manager and is preserved as
+`legacy-pre-actor-v2-result.json`. Its counts are excluded from the current
+result and the shared checklist.
+
+## Historical, unbound campaign
+
 The selected HBase 2.6.6 site is
 `NamespaceStateManager.checkAndUpdateNamespaceRegionCount(TableName,int)` at
 line 133. It compares `namespaceTotal - existingTableRegions + snapshotRegions`
