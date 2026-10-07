@@ -180,7 +180,7 @@ def evaluate(job, receipt):
             'strict_receipt': strict_receipt, 'invalid_reason': reason,
             'selected_target_throw_count': len(throws),
             'selected_target_throws': throws,
-            'needs_source_review': bool(throws or (effective and receipt['exit_code'] != 0)),
+            'needs_source_review': bool(throws),
             'coverage': sorted(coverage),
             'mutation_io': observed,
             'bug_mark': 'candidate_needs_source_review' if throws else 'none'}
