@@ -165,6 +165,8 @@ def audit(terminal=False):
             'max_faults': budget['max_faults'],
             'max_fault_depth_selected': max((row['fault_depth'] for row in audited
                                              if row['case'] == case), default=0),
+            'max_fault_depth_effective': max((row['fault_depth'] for row in effective),
+                                             default=0),
             'extension_decided': budget['extension_decided'],
             'final_eight_effective_novelty': novelty if len(recent) == 8 else None,
             'extension_novelty_at_eighty': extension_novelty if len(effective) >= 80 else None,

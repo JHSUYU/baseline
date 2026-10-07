@@ -149,6 +149,7 @@ def main():
             'effective_junit_nonzero_trials': measured['effective_junit_nonzero'],
             'max_fault_depth_attempted': audit['max_fault_depth_attempted'],
             'max_fault_depth_selected': measured['max_fault_depth_selected'],
+            'max_fault_depth_effective': measured['max_fault_depth_effective'],
             'max_faults': measured['max_faults'],
             'coverage_feedback': ('ASM source-line coverage of QuorumPeer and '
                                   'AtomicFileOutputStream production methods'),
