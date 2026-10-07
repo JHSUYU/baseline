@@ -76,8 +76,30 @@ descendant generation.
 
 At the completed pilot boundary, the checkpoint was promoted to the formal
 80-effective/8-fault budget without repeating trials 1–23. Node2 tmux session
-`solr06_actor_v2_full` resumes at trial 24. The live atomic checkpoint is
+`solr06_actor_v2_full` resumed at trial 24. The live atomic checkpoint is
 `campaign/state.json` on node2; the pilot checkpoint and audit are mirrored
 here. A separate selected-attempt cap of 320 prevents endless unmatched
 runs. The 128-effective/10-fault extension is decided only at 80 effective
 trials from the last eight runs' coverage or actor-bound I/O novelty.
+
+## Queue selection handoff
+
+At the complete V2 trial-038 checkpoint (9 effective), deep descendants were
+repeatedly selected while 219 actor-bound one-fault seeds remained queued.
+The V2 process group was stopped after the trial-038 checkpoint; its
+uncompleted trial-039 directory was archived separately and did not enter
+feedback or budget. The first V3 invocation exited before modifying the
+checkpoint because its policy hash argument had the wrong Python type. The
+corrected wrapper has SHA-256
+`b58114e3b2e34f65f2e3db5d008b9287cbf5c04fc17e7af801604bb3b698b6e9`.
+
+`campaign_v3.py` resumes the same checkpoint and alternates a fresh
+actor-bound one-fault seed with the original V2 coverage/depth choice. Its
+root selections prefer previously untried I/O families and underexplored
+target identities. Instrumentation, exact fault matching, target oracle,
+mutation, and 80/128 effective-trial budgets remain in the unchanged V2
+module. The atomic state records the scheduler policy and hash. The first V3
+trial (039) used a new one-fault seed and was not effective. An independent
+recount through trial-039 found 39 selected, 18 exact injections, 9 effective,
+zero target throws, and zero issues. The live campaign is in node2 tmux
+`solr06_actor_v3_full`; `handoff-v3-receipt.json` records the stop point.
