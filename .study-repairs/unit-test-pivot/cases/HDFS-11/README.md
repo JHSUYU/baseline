@@ -7,9 +7,12 @@ creates two MiniDFSCluster incarnations, so the old trace cannot prove that
 each post-fault guard ran on the faulted DataNode incarnation. The isolated
 [V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual SASL server
 and key manager to the same DataNode/startup episode and block pool. Two fresh
-healthy original-JUnit seeds passed; its separate node1 fault campaign is
-running in tmux `hdfs11_key_v2_fuzz`. The counts below are preserved from the
-earlier experiment and are not V2 completion counts.
+healthy original-JUnit seeds passed. The node1 fault campaign is paused at a
+completed JUnit boundary while a concurrent HBASE-32 long trial is classified.
+Its [pause receipt](../../hdfs-key-actor-v2/evidence/HDFS-11/coexistence-pause.json)
+records the finished manifest and checkpoint; it will resume in tmux
+`hdfs11_key_v2_fuzz`. The counts below are preserved from the earlier
+experiment and are not V2 completion counts.
 
 The current campaign runs the original Hadoop 3.4.3 embedded-cluster JUnit
 `TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]` in a

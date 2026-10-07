@@ -107,5 +107,9 @@ SASL selectors. Its isolated campaign runs in tmux `hdfs11_key_v2_fuzz` and
 resumes from the atomic case checkpoint. The 2026-10-07 04:57:51 UTC
 scheduler handoff recorded 43 completed trials, 25 effective trials, and a
 finished JUnit manifest for the next in-flight plan; restart consumed that
-manifest without rerunning the JUnit. HDFS-12 has not yet started a V2 JUnit
-on node1 and remains separate from the HDFS-11 campaign.
+manifest without rerunning the JUnit. At 2026-10-07 05:03:34 UTC the campaign
+paused at another completed JUnit boundary for a node1 coexistence audit:
+53 completed/28 effective, with the next JUnit manifest already finished.
+The [pause receipt](evidence/HDFS-11/coexistence-pause.json) fixes this exact
+resume point. HDFS-12 has not yet started a V2 JUnit on node1 and remains
+separate from the HDFS-11 campaign.
