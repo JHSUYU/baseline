@@ -133,15 +133,54 @@ uses an independently derived deterministic seed for each prefix, and reserves
 one in ten selections for valid multi-fault descendants. The checkpoint's
 `policy_changes` entry records the migration counts and seed (32).
 
-Main trial r003 is a **candidate under review**, not a confirmed bug. A
-single no-retry flush-RPC exception reached the same actor's guard and B7; one
-region server aborted. The original JUnit remained in `Admin.createTable`
-at `TestRegionReplicaFailover.java:326` until the 360-second timeout. Two JVM
-thread dumps before timeout showed the master and two other region-server
-threads still alive. The two later server aborts occurred after the JVM
-shutdown hook began and resulted from closed connections during teardown;
-they are excluded from the runtime cluster-tolerance count. The raw log,
-JaCoCo file, exit status, and dumps are retained under `work-lots/logs/` on
-node1. `work-lots/replay-r003-plan.json` and `replay.py` prepare an isolated
-600-second replay with the same selector and matching HBase/agent bytecode;
-the diagnostic replay has not yet run.
+Main trials r003 and r011 each injected one no-retry flush-RPC exception,
+reached the same full raw primary region's guard and B7, and aborted one
+region server carrying `hbase:meta`. The original JUnit stalled in
+`Admin.createTable` and hit the 360-second test timeout, with 197/600 and
+72/600 assignment children complete, respectively. In both runs,
+`RegionServerTracker` waited for `AssignmentManager.submitServerCrash`'s
+server write lock until shutdown; the first crash procedure was scheduled
+only after shutdown began. `Thread.print -l` identifies two region-state
+lock holders in r011, but does not identify the shared server read-lock
+owners or prove a closed deadlock. The two other region-server aborts in each
+run followed timeout teardown and do not count as pre-timeout cluster
+exhaustion. The independent source review is in
+`independent/r003-timeout-source-review.md`.
+
+Both exact saved plans were replayed in fresh, isolated node2 clusters with
+the same agent and HBase JAR checksums and a 600-second cap. r003 passed the
+unchanged JUnit in 77.58 seconds; r011 passed in 76.97 seconds. Both replays
+fully applied their plan, reached the same actor's B7, aborted only one
+region server, scheduled its crash procedure promptly, and completed all
+600 assignment children. These are **unreproduced, scheduling-sensitive
+timeout candidates, not confirmed new bugs**. Original logs, JaCoCo data,
+thread dumps, replay logs, and checksums are archived in
+`evidence/hbase32-r003-candidate.tar.gz`,
+`evidence/hbase32-r003-node2-exact-replay.tar.gz`,
+`evidence/hbase32-r011-original-node1.tar.gz`, and
+`evidence/hbase32-r011-node2-exact-replay.tar.gz`; the two replay verdict
+JSON files record their classification. The checklist-facing `bug_mark` is
+`none` for these reviewed candidates. Any later unresolved JUnit failure or
+timeout remains `candidate_review` until replay and source review.
+
+The first 18 lots trials all selected `DoNotRetryIOException`. A clean
+checkpoint migration added a four-kind exception rotation, keeping the
+existing I/O and code-coverage scores and the one-in-ten legal multi-fault
+selection. Calibration trials r019-r034 found that five no-retry trials all
+retained the target and exposed 1,254 new normalized I/O selectors in total.
+Four ordinary `IOException`, three socket-timeout, and four EOF trials were
+fully injected but none retained the target after its final fault. HBase's
+`RpcRetryingCallerImpl.callWithRetries` can absorb these one-shot retryable
+exceptions before the source guard observes them. Those target-lost trials
+remain raw evidence and do not alter coverage or produce children.
+
+The current selection policy adjusts exception-kind weights after each
+trial using exact target retention and **admitted** code/I/O novelty, with a
+5% exploration floor for every kind. Initial weights at the r034 checkpoint
+were 0.655 no-retry, 0.11 ordinary I/O, 0.125 socket timeout, and 0.11 EOF;
+see `evidence/v3-kind-calibration.json` and
+`evidence/policy-v4-migration.json`. Within a chosen kind, the prior unique
+I/O, recovery, coverage, and waiting-time priority scores still apply. The
+main controller runs in node1 tmux `hbase32-lots-fuzz`; node0 tmux
+`hbase32-result-mirror` copies only this case's atomic `result.json` every
+30 seconds and atomically refreshes the 104-row checklist when it changes.

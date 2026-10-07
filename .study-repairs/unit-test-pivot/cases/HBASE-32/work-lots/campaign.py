@@ -29,7 +29,9 @@ MAX_ATTEMPTS = int(os.environ.get("HBASE32_MAX_ATTEMPTS", "240"))
 MAX_FAULTS = int(os.environ.get("HBASE32_MAX_FAULTS", "8"))
 MAX_CHILD_SELECTORS = 24
 RNG_SEED = 32
-SELECTION_POLICY = "lots_v3_exception_diversity_bounded_io_depth"
+SELECTION_POLICY = "lots_v4_retention_io_coverage_weighted"
+CALIBRATION_FIRST_TRIAL = 19
+MIN_KIND_SHARE = 0.05
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -94,6 +96,51 @@ def coverage(paths: list[Path]) -> dict:
             "methods": sum(value["methods"] for value in classes.values()),
             "branches": sum(value["branches"] for value in classes.values()),
             "lines": sum(value["lines"] for value in classes.values())}
+
+
+def admitted_new_io(state: dict, trace: dict) -> int:
+    baseline = {event["selector"] for event in state["healthy"]["io"]}
+    observed = {event["selector"] for event in trace["io"]
+                if event.get("context_match") == "true"}
+    return len(observed - baseline)
+
+
+def kind_feedback(state: dict) -> tuple[dict[str, float], dict[str, dict]]:
+    """Weight exception kinds by target retention and admitted feedback only."""
+    metrics = {kind: {"attempts": 0, "effective": 0,
+                      "admitted_production_novelty": 0,
+                      "admitted_new_io_selectors": 0}
+               for kind in KINDS}
+    for trial in state["trials"]:
+        if int(trial["id"][1:]) < CALIBRATION_FIRST_TRIAL:
+            continue
+        kind = trial["plan"][-1].rsplit("~", 1)[1]
+        item = metrics[kind]
+        item["attempts"] += 1
+        if trial["effective"]:
+            item["effective"] += 1
+            item["admitted_production_novelty"] += trial["new_production_branches_and_methods"]
+            item["admitted_new_io_selectors"] += trial.get("new_related_io_selectors", 0)
+    raw = {}
+    for kind, item in metrics.items():
+        retained = (item["effective"] + 0.5) / (item["attempts"] + 1)
+        per_effective_io = item["admitted_new_io_selectors"] / max(1, item["effective"])
+        per_effective_code = item["admitted_production_novelty"] / max(1, item["effective"])
+        novelty_bonus = (1 + 0.1 * min(per_effective_io / 200, 1)
+                         + 0.1 * min(per_effective_code / 3, 1))
+        raw[kind] = retained * novelty_bonus
+    total = sum(raw.values())
+    weights = {kind: MIN_KIND_SHARE + (1 - len(KINDS) * MIN_KIND_SHARE)
+               * raw[kind] / total for kind in KINDS}
+    return weights, metrics
+
+
+def choose_kind(state: dict, weights: dict[str, float]) -> str:
+    chosen = Counter(trial["plan"][-1].rsplit("~", 1)[1]
+                     for trial in state["trials"]
+                     if trial.get("selection_policy") == SELECTION_POLICY)
+    next_slot = sum(chosen.values()) + 1
+    return max(KINDS, key=lambda kind: next_slot * weights[kind] - chosen[kind])
 
 
 def strict_trace(trace: dict, plan: list[str]) -> bool:
@@ -220,6 +267,7 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
     reviewed = json.loads(REVIEW_VERDICTS.read_text()) if REVIEW_VERDICTS.exists() else {}
     pending_review = [trial for trial in trials
                       if trial["review_candidate"] and trial["id"] not in reviewed]
+    kind_weights, kind_metrics = kind_feedback(state)
     result.update({
         "status": status,
         "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
@@ -265,6 +313,8 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
             "child_selector_cap": MAX_CHILD_SELECTORS,
             "depth_cadence": 10,
             "rng_seed": RNG_SEED,
+            "exception_kind_weights": kind_weights,
+            "exception_kind_feedback": kind_metrics,
         },
     })
     atomic_json(result_path, result)
@@ -274,6 +324,16 @@ def main() -> None:
     if CHECKPOINT.exists():
         state = json.loads(CHECKPOINT.read_text())
         if state.get("selection_policy") != SELECTION_POLICY:
+            # Backfill only accepted feedback. Target-lost logs remain raw
+            # evidence and do not influence kind weights or queue mutation.
+            for trial in state["trials"]:
+                if (trial["effective"] and int(trial["id"][1:]) >= CALIBRATION_FIRST_TRIAL
+                        and "new_related_io_selectors" not in trial):
+                    trial["new_related_io_selectors"] = admitted_new_io(
+                        state, parse_log(CASE / trial["log"]))
+                else:
+                    trial.setdefault("new_related_io_selectors", 0)
+            weights, feedback = kind_feedback(state)
             state.setdefault("policy_changes", []).append({
                 "at_utc": datetime.now(timezone.utc).isoformat(),
                 "from": state.get("selection_policy", "lots_v1_full_children"),
@@ -286,7 +346,10 @@ def main() -> None:
                 "rng_seed": RNG_SEED,
                 "future_child_selector_cap": MAX_CHILD_SELECTORS,
                 "depth_cadence": 10,
-                "exception_cadence": list(KINDS),
+                "calibration_first_trial": CALIBRATION_FIRST_TRIAL,
+                "exception_kind_weights": weights,
+                "exception_kind_feedback": feedback,
+                "minimum_kind_share": MIN_KIND_SHARE,
             })
             state["selection_policy"] = SELECTION_POLICY
         if not state.get("target_loss_migration_applied"):
@@ -344,11 +407,13 @@ def main() -> None:
         for entry in state["queue"]:
             entry["wait"] += 1
         pending = json.loads(INFLIGHT.read_text()) if INFLIGHT.exists() else None
+        selection_weights, _ = kind_feedback(state)
         if pending and pending["id"] == trial_id:
             entry = next((item for item in state["queue"] if item["plan"] == pending["plan"]), None)
             if entry is None:
                 raise RuntimeError("Inflight plan absent from queue")
             state["queue"].remove(entry)
+            desired_kind = entry["plan"][-1].rsplit("~", 1)[1]
         else:
             INFLIGHT.unlink(missing_ok=True)
             tried = Counter(trial["plan"][-1] for trial in state["trials"])
@@ -360,7 +425,7 @@ def main() -> None:
             # Periodically sample legal multi-fault plans. The one-fault
             # preference otherwise starves depth with this large healthy seed.
             round_number = len(state["trials"]) + 1
-            desired_kind = KINDS[(round_number - 1) % len(KINDS)]
+            desired_kind = choose_kind(state, selection_weights)
             depth_round = round_number % 10 == 0
             chosen = next((index for index, item in enumerate(state["queue"])
                            if (not depth_round or len(item["plan"]) > 1)
@@ -413,6 +478,8 @@ def main() -> None:
                                         and trace["junit"]["failed"] > 0)))
         item = {"id": trial_id, "plan": entry["plan"], "strict": strict,
                 "selection_policy": state.get("selection_policy"),
+                "requested_exception_kind": desired_kind,
+                "selection_kind_weights": selection_weights,
                 "applied_fault_events": len(trace["applied"]),
                 "target_after_fault": bool(guards),
                 "exact_b7_after_fault": bool(b7),
@@ -429,6 +496,7 @@ def main() -> None:
                 "elapsed_seconds": trace["elapsed_seconds"],
                 "observed_io_events": len(trace["io"]),
                 "new_production_branches_and_methods": novelty,
+                "new_related_io_selectors": admitted_new_io(state, trace) if effective else 0,
                 "log": str(log.relative_to(CASE)),
                 "disposition": ("unmatched" if not strict else
                                 "invalid_all_region_servers_aborted" if invalid_cluster else

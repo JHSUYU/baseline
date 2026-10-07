@@ -1,0 +1,45 @@
+{
+  "case": "HBASE-32",
+  "time_utc": "2026-10-07T02:59:20.578232+00:00",
+  "from": "lots_v3_exception_diversity_bounded_io_depth",
+  "to": "lots_v4_retention_io_coverage_weighted",
+  "calibration": "v3-kind-calibration.json",
+  "calibration_trials": "r019-r034",
+  "calibration_result": {
+    "DO_NOT_RETRY_IOEXCEPTION": {"effective": 5, "attempts": 5, "admitted_new_io_selectors": 1254, "admitted_production_novelty": 0, "initial_weight": 0.655},
+    "IOEXCEPTION": {"effective": 0, "attempts": 4, "admitted_new_io_selectors": 0, "admitted_production_novelty": 0, "initial_weight": 0.11},
+    "SOCKET_TIMEOUT": {"effective": 0, "attempts": 3, "admitted_new_io_selectors": 0, "admitted_production_novelty": 0, "initial_weight": 0.125},
+    "EOF_EXCEPTION": {"effective": 0, "attempts": 4, "admitted_new_io_selectors": 0, "admitted_production_novelty": 0, "initial_weight": 0.11}
+  },
+  "weight_rule": "Jeffreys-smoothed exact target-retention rate multiplied by admitted production and normalized I/O novelty; 5% exploration floor per kind. Weighted-deficit scheduling updates weights after every trial. Target-lost feedback cannot increase a kind's weight.",
+  "preserved_search_rules": "Each tenth trial prefers a legal depth-two-or-greater descendant. Within the chosen exception kind, unique I/O identity, recovery, code novelty and waiting-time scores remain active; at most 24 distinct new target-linked selectors are added per effective seed.",
+  "checkpoint_boundary": {
+    "completed_trials_before": 34,
+    "effective_trials_before": 23,
+    "completed_trials_after_restart": 34,
+    "effective_trials_after_restart": 23,
+    "queue_entries_retained": 8510,
+    "seen_plans_retained": 8568,
+    "coverage_union_retained": {"methods": 11, "branches": 19, "lines": 61},
+    "coverage_union_sha256_before_and_after": "7117ed5ed5f45c6051c88b2526c793f489a9237bac8d2187a31dc651b3b72d9e",
+    "queue_sha256_before_and_after": "05d0b29eb0dbbff5d112adda43abaf470b2efe31df94ff54c8b76c9dc33c6c0e",
+    "pre_migration_checkpoint_archive": "checkpoint-r034-v3.json.gz",
+    "pre_migration_checkpoint_archive_sha256": "3b4bdae0f1635d482090a62d930174aed57e507edb541c7c01a1cf8df51a5a2a"
+  },
+  "pending_trial": {
+    "id": "r035",
+    "plan": [
+      "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMix0a5U~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+    ],
+    "plan_sha256_before_restart": "2d6fa33e1f0f0bd0a33ffd1dcb4321f5a5dfca664deae0a2bbad6368c0e385c7",
+    "plan_sha256_after_restart": "2d6fa33e1f0f0bd0a33ffd1dcb4321f5a5dfca664deae0a2bbad6368c0e385c7",
+    "execution": "The wrapper paused before launching the r035 JVM. The old controller was stopped after the r034 checkpoint, and the new controller resumed the unchanged r035 inflight plan once."
+  },
+  "checks": [
+    "python3 -m py_compile campaign.py passed on node0 and node1",
+    "all queue keys are unique and present in seen_plans",
+    "all multi-fault queue entries have an effective non-timeout parent",
+    "coverage_execs equals healthy exec plus each effective trial exec",
+    "every effective trial retained its exact target actor after the final fault"
+  ]
+}
