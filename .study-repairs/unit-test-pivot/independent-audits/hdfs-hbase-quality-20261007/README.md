@@ -9,6 +9,13 @@ Generated 2026-10-07 02:15 UTC. Scope: the 56 HDFS/HBase rows currently marked `
 - Independently parsed all 160 HDFS-31/32 `events.tsv` files: exact applied-count totals equal the result (61/74); every selected post-fault guard in the result has a later raw `TARGET_GUARD` event. HDFS-32 trials 30, 33, 70 timed out before target, so their empty JaCoCo files do not support coverage feedback and are excluded from the target-retaining count.
 - This audit does not assert exhaustive semantic review of every one of the thousands of plan events. `strict→target` below is the case result count, checked against case-level raw receipts and, for 31/32, directly against every raw trial. A target exception is a bug candidate until the original JUnit, source state and replay establish a contract violation.
 
+**Later actor audit:** The table below is a historical snapshot. A subsequent
+[runtime actor identity review](actor-identity-screen.md) found that nine HDFS
+storage cases used a normalized RPC selector without a DN/storage/startup
+episode key at the target. Their current case results are
+`actor_identity_recheck_pending`; old counts remain under
+`legacy_coarse_actor` and no longer count as high-quality completion.
+
 ## Case-by-case evidence
 
 | Case / selected source line | Original JUnit | Strict / attempts → postfault target | JUnit time | Raw evidence | Assessment |
@@ -73,6 +80,22 @@ Generated 2026-10-07 02:15 UTC. Scope: the 56 HDFS/HBase rows currently marked `
 ## Findings requiring action or explicit qualification
 
 1. **HDFS-54 had an unchanged-JUnit provenance gap at audit time.** Its README explicitly describes a case-local XOR-2-1 striped-file adaptation of `TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey`. The runtime evidence establishes the exact HDFS-54 false check after six injected SASL faults and the known HDFS-17897 differential. A later, separate unchanged `TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]` run now proves the original test reaches the selected check and retains it after one strict checksum-RPC fault; see [the supplemental pilot](../../cases/HDFS-54/original-junit/README.md). Its full original-JUnit fuzz budget remains pending, and the known-bug classification remains tied to the adapted control. HDFS-55 counts an unmodified original JUnit campaign and labels its adapted final differential separately.
+
+   **HDFS-54 node2 handoff (2026-10-07):** The separate original-JUnit
+   campaign is checkpointed at
+   `/users/ZhenyuLi/hdfs54-original-campaign/runs/campaign-state.json` with
+   `effective=1`, `attempts=1`, `queue=31`, and `in_flight=null`. The first
+   strict trial ID is `01f09073125e7810`; its exact checksum-RPC fault was
+   applied and the same target check completed after the fault. Resume with
+   `/users/ZhenyuLi/hdfs54-original-campaign/resume_node2.sh`, which starts
+   tmux `hdfs54_original_80` and continues from the queued plan, so the
+   completed first trial is not repeated. Launch only after the Solr 36/37
+   owner explicitly releases node2, its tmux session has exited, and `jps -l`
+   shows no competing JVM. The script checks those conditions plus checkpoint
+   consistency before starting. The 80-effective/8-fault campaign remains
+   pending; any 128/10 extension requires late production-coverage or I/O
+   novelty. Keep its result separate from the six-run adapted known-bug
+   control in HDFS-54.
 2. **Four HBase campaigns depend on node1 for the full raw record:** HBASE-10/11/12/21. Read-only SSH confirmed the HBASE-10/12 trial logs and coverage, HBASE-11 shared HBASE-10 records, and HBASE-21 `r001`/`r144` logs plus JaCoCo files on node1. Their local `result.json`/ledgers survive here, but the full raw record is not portable with this repository. HBASE-21 even points to a local `work/logs/healthy.log` that is absent locally (a copy exists inside its four-log manifest archive and on node1). Add a compact case-local raw archive or durable remote receipt before treating the evidence as independently recoverable after node1 loss.
 3. **HDFS-31/32 raw evidence is outside the case directories:** `/users/ZhenyuLi/hdfs31-independent-runs` and `/users/ZhenyuLi/hdfs32-independent-runs`. The new SHA receipt makes this location and its 1,268 files explicit, but it cannot restore missing raw bytes. Three HDFS-32 target-lost timeout trials have empty JaCoCo files and were correctly excluded from target-retaining coverage.
 4. **Coverage and budget bounds:** HDFS-28/29 retain the selected guard in 18/39 of 128 attempts; HDFS-30 has 41 postfault observations across its main and HA supplement. HDFS-50 used its documented older 48-trial/max-4-fault preset. These are valid bounded observations, not evidence that all potentially relevant I/O orders or branch states were exhausted. HBASE-02 stopped at 65 because the observed retry I/O queue was exhausted; its result explains that decision.
