@@ -14,6 +14,12 @@ REQUIRED = ("RECEIVE_CREATE", "DESCRIPTOR_BEFORE_FILE", "EXTRA_PROPERTIES_FILE",
             "DESCRIPTOR_AFTER_FILE", "TARGET_GUARD")
 
 
+def relevant_io_path(path: str) -> bool:
+    return (path == "/collections" or path == "/live_nodes" or
+            path.startswith("/collections/testAddMultipleReplicas") or
+            path.startswith("/overseer"))
+
+
 def read(seed: Path):
     rows = []
     for line in (seed / "actor-events.tsv").read_text().splitlines():
@@ -114,6 +120,21 @@ def audit(seed: Path):
         if result["producer_role"] is None or result["producer_role"] == "UNBOUND":
             result["issues"].append("producer_actor_lacks_zk_client_binding")
             issue_count += 1
+    relative_io = set()
+    for result in results:
+        phases = groups[result["core"]]
+        send = phases.get("SEND_CREATE_COLLECTION", []) + phases.get("SEND_ADD_REPLICA", [])
+        target = phases.get("TARGET_GUARD", [])
+        if len(send) != 1 or len(target) != 1:
+            continue
+        start, end = int(send[0]["seq"]), int(target[0]["seq"])
+        for row in io_rows:
+            if not start < int(row["seq"]) < end or not relevant_io_path(row["core"]):
+                continue
+            for side, role in (("OWNER", result["sender_role"]),
+                               ("PRODUCER", result["producer_role"])):
+                if role and role != "UNBOUND" and row["actor"] == role:
+                    relative_io.add((result["core"], side, row["phase"], row["core"], row["detail"]))
     return {"seed": str(seed), "elapsed_seconds": manifest["elapsed_seconds"],
             "junit_exit": manifest["exit_code"], "event_count": len(rows),
             "phase_counts": dict(Counter(row["phase"] for row in rows)),
@@ -124,6 +145,8 @@ def audit(seed: Path):
             "zk_bind_count": len(binds),
             "io_site_count": len({(row["phase"], row["detail"]) for row in io_rows}),
             "io_exact_identity_count": len({(row["phase"], row["core"], row["detail"], row["actor"]) for row in io_rows}),
+            "sender_to_guard_actor_relative_io_count": len(relative_io),
+            "sender_to_guard_actor_relative_io_identities": sorted(relative_io),
             "core_count": len(results), "issue_count": issue_count,
             "cores": results}
 
@@ -147,12 +170,16 @@ def main() -> None:
                 if r["phase"].startswith("IO_")}
         io_b = {(r["phase"], r["core"], r["detail"], r["actor"]) for r in read(args.seeds[1])[0]
                 if r["phase"].startswith("IO_")}
+        relative_a = {tuple(item) for item in result[0]["sender_to_guard_actor_relative_io_identities"]}
+        relative_b = {tuple(item) for item in result[1]["sender_to_guard_actor_relative_io_identities"]}
         output = {"seeds": result, "stable_core_selector_intersection": len(first & second),
                   "stable_core_selector_union": len(first | second),
                   "stable_actor_core_selector_intersection": len(actor_a & actor_b),
                   "stable_actor_core_selector_union": len(actor_a | actor_b),
                   "stable_io_exact_identity_intersection": len(io_a & io_b),
-                  "stable_io_exact_identity_union": len(io_a | io_b)}
+                  "stable_io_exact_identity_union": len(io_a | io_b),
+                  "stable_sender_to_guard_actor_relative_io_intersection": len(relative_a & relative_b),
+                  "stable_sender_to_guard_actor_relative_io_union": len(relative_a | relative_b)}
     else:
         output = {"seeds": result}
     payload = json.dumps(output, indent=2) + "\n"

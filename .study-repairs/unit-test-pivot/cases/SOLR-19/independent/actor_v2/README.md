@@ -4,6 +4,15 @@ This directory is an isolated, graph-free source overlay for the unchanged
 Solr 8.11.4 `AddReplicaTest.testAddMultipleReplicas` embedded cluster JUnit.
 The selected check is `CoreContainer.create(String, Path, Map, boolean)`:
 `cd.getCloudDescriptor().getCoreNodeName() == null` in non-legacy mode.
+The unchanged test configures three Jetty nodes, creates one replica, adds
+three, exercises a rejected overcapacity addition, then adds five using a
+randomly selected explicit create-node set. The last step can change physical
+core placement even with the same test seed; this is why a core name alone or
+a fixed port cannot identify the faulting actor across trials.
+The test does not supply `property.coreNodeName`; its `cloud-minimal/conf`
+fixture has no `solrcore.properties`. Both override mechanisms remain in
+production source, so their absence is verified per run rather than assumed
+from this healthy fixture alone.
 `build_v2.py` copies exactly seven release source files into `generated/`,
 adds observation calls, and compiles them into case-local `classes/`.
 `run_v2.py` puts those classes ahead of the original release jars and original

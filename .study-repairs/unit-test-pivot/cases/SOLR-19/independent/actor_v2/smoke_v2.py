@@ -2,6 +2,7 @@
 """Offline proof that I/O faults match role, path, callsite and ordinal."""
 
 from pathlib import Path
+import json
 import subprocess
 import tempfile
 
@@ -22,6 +23,7 @@ def main() -> None:
         "OWNER": "OWNER_OF_CORE:" + CORE,
         "PRODUCER": "PRODUCER_OF_CORE:" + CORE,
     }
+    results = []
     with tempfile.TemporaryDirectory(prefix="solr19-v2-smoke-") as directory:
         for mode, actor in actors.items():
             trace = Path(directory) / (mode + ".tsv")
@@ -36,7 +38,14 @@ def main() -> None:
                     sum("\tFAULT_MATCHED\t" in line for line in lines) != 1 or \
                     sum("\tFAULT_APPLIED_CONNECTION_LOSS\t" in line for line in lines) != 1:
                 raise AssertionError((mode, result.stdout, result.stderr, lines))
+            results.append({"mode": mode, "wrong_actor_ignored": True,
+                            "exact_matches": 1, "applied_connection_losses": 1,
+                            "trace_events": len(lines)})
             print("SMOKE_OK", mode, len(lines), "events")
+    (HERE / "smoke-receipt.json").write_text(json.dumps({
+        "scope": "offline_small_jvm_no_cluster",
+        "modes": results,
+    }, indent=2) + "\n")
 
 
 if __name__ == "__main__":
