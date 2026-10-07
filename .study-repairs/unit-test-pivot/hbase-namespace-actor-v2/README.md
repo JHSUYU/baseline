@@ -26,7 +26,10 @@ watcher identity, the operation, znode path, production call site, and the
 ordinal scoped to that watcher and point. It also logs whether the API
 returned or threw. At each of the three selected target methods it logs the
 same Master watcher, raw `ServerName`, and manager ID, plus the target
-argument and exception outcome. These are high-level ZooKeeper API attempts;
+argument and exception outcome. `TARGET_EXIT outcome` distinguishes
+HBASE-08's selected namespace-not-found throw, HBASE-21's selected region
+count quota throw, and HBASE-22's selected table-region quota throw from
+other exceptions in those methods. These are high-level ZooKeeper API attempts;
 they do not assert that an underlying network packet was sent or persisted.
 
 The optional `-Dns.actor.fault.plan` accepts semicolon-separated ordered
@@ -68,7 +71,7 @@ imported into a new V2 denominator.
   installed.
 
 The agent source SHA-256 is
-`705d653a5aa51e4f9c1cff01185ff3b42aee4d9f920ca10c680fb7139e03b8db`.
+`90825ce295df4aae6fdc050dba544559402328f08e052a6fc900d32275b48dde`.
 `bash run.sh build` regenerates the small local agent JAR; its timestamped
 archive bytes can differ between builds, so each cluster seed should record
 the JAR's SHA-256 in that seed's manifest.

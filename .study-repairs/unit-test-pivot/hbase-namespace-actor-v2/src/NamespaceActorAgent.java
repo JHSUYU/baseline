@@ -189,8 +189,29 @@ public final class NamespaceActorAgent {
   }
 
   private static void targetEnd(String tag, Throwable thrown) {
+    String outcome = "normal";
+    if (thrown != null) {
+      String name = thrown.getClass().getName();
+      String message = String.valueOf(thrown.getMessage());
+      if (tag.contains("point=HBASE-08 ")
+          && name.equals("org.apache.hadoop.hbase.NamespaceNotFoundException")) {
+        outcome = "selected_namespace_not_found";
+      } else if (tag.contains("point=HBASE-21 ")
+          && name.equals("org.apache.hadoop.hbase.quotas.QuotaExceededException")
+          && message.contains(" region count cannot be updated ")) {
+        outcome = "selected_region_count_quota";
+      } else if (tag.contains("point=HBASE-22 ")
+          && name.equals("org.apache.hadoop.hbase.quotas.QuotaExceededException")
+          && message.contains(" is not allowed to have ")
+          && message.contains(" regions. The total number of regions permitted is only ")) {
+        outcome = "selected_table_region_quota";
+      } else {
+        outcome = "other_exception";
+      }
+    }
     System.err.println("NSACTOR TARGET_EXIT " + tag + " exception="
-        + (thrown == null ? "none" : thrown.getClass().getName()));
+        + (thrown == null ? "none" : thrown.getClass().getName())
+        + " outcome=" + outcome);
   }
 
   public static final class WatcherConstructed {
