@@ -1,7 +1,7 @@
 # HDFS storage actor identity V2
 
 This independent overlay repairs the runtime identity gap in the archived
-HDFS-22/23/24/25/26/27/34/35/37 campaigns. It runs the unchanged Hadoop 3.4.3
+HDFS-22/23/25/34/35 startup campaigns. It runs the unchanged Hadoop 3.4.3
 MiniDFSCluster JUnit methods. It uses neither GraphChecker nor its graph/runtime
 JAR. The archived case checkpoints remain historical evidence; this directory
 owns new traces and a separate resumable campaign checkpoint.
@@ -56,15 +56,15 @@ directory. Every JUnit launch enables `-Xverify:all`.
 
 ## Healthy calibration after a host slot is free
 
-Start with the `startup` group: its one original JUnit checks five candidates,
-including HDFS-22/23. The four workload groups reuse one instrumentation:
+The `startup` group runs one original JUnit that checks five candidates,
+including HDFS-22/23. HDFS-24/26/27/37 use the separately versioned
+`hdfs-storage-actor-v2-later` work directory because HDFS-27 needs the bare
+`dfs/data` actor-volume mapping. Its overlay has a different digest; neither
+source nor evidence is mixed with this running startup campaign.
 
 | Group | Original JUnit | Cases |
 | --- | --- | --- |
 | `startup` | `TestDFSStartupVersions#testVersions` | HDFS-22/23/25/34/35 |
-| `upgrade` | `TestDFSUpgrade#testUpgrade` | HDFS-24 |
-| `layout_upgrade` | `TestDatanodeLayoutUpgrade#testUpgradeToIdBasedLayout` | HDFS-27 |
-| `rollback` | `TestDFSRollback#testRollback` | HDFS-26/37 |
 
 ```sh
 python3 calibrate.py --group startup --output evidence/startup-constructor --max-seeds 1
@@ -79,8 +79,8 @@ target is unbound, an actual RPC endpoint is not classified, a case has no
 stable same-actor upstream I/O selector, or the two healthy seeds disagree on
 target actor identities. It also requires the same overlay digest in both
 manifests, plus nonempty JaCoCo execution and production branch coverage.
-The same commands apply to `upgrade`, `layout_upgrade`, and `rollback`
-with isolated output directories.
+Commands for the remaining groups are in the later directory's
+`audit/upgrade_rollback_calibration.md`.
 
 The constructor-hook `startup` calibration on node1 passed on 2026-10-07:
 the original JUnit passed in 37.944 s and 41.562 s, all five startup target

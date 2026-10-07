@@ -66,7 +66,7 @@ public final class HdfsStorageProbe {
     List<String> dirs = new ArrayList<>();
     for (String item : raw.split(",")) {
       java.util.regex.Matcher m = java.util.regex.Pattern.compile(
-          "(?:^|/)dfs/(data[0-9]+|data|datanodeMaster)(?:/|$)").matcher(item);
+          "(?:^|/)dfs/(data[0-9]+|datanodeMaster)(?:/|$)").matcher(item);
       if (m.find()) dirs.add("dfs/" + m.group(1));
     }
     Collections.sort(dirs);
