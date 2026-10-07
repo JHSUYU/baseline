@@ -294,3 +294,10 @@ actor receipt is `evidence/s078-candidate-receipt.json`. The v8 checkpoint
 excludes this unreviewed run from the supplemental effective denominator and
 feedback. The supplemental controller continues under an 80-effective,
 384-attempt initial budget and pauses before node0 drops below 2.2 GiB free.
+Its later s101 Master-to-client-RPC sequence also reached B7 but timed out
+while two unrelated Solr JUnit clusters overlapped on node0. s101 is separately
+quarantined from effective and feedback counts pending a clean same-plan
+replay; `evidence/s101-candidate-receipt.json` records exact actor and raw
+checks. Checkpoint version 9 replenishes mixed-plan parents from distinct
+observed Master I/O identities when mixed terminal plans run out, while
+preserving coverage/I/O priority and periodic deeper-plan exploration.

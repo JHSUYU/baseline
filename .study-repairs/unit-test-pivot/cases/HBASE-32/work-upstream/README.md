@@ -41,6 +41,48 @@ receipt files (164,013,674 bytes) were copied to a dedicated node1 archive.
 `archive-s047-manifest.json` records each source SHA-256, and
 `archive-s047-verified.json` records the node1 verification of all 198 files.
 The node0 originals were retained and the controller resumed at s048.
+Another 99 completed raw log, JaCoCo, and exit files for s048–s080
+(30,036,213 bytes) were copied to a separate node1 case directory and
+verified file by file. `archive-s048-s080-manifest.json` and
+`archive-s048-s080-verified.json` record the hashes; node0 originals remain.
+
+Checkpoint version 9 replenishes mixed Master-to-client-RPC plans when the
+eligible mixed `DoNotRetryIOException` queue is empty. On a normal mixed
+selection round, it first chooses a previously untested single Master OPENED
+I/O identity from the original healthy trace. It only generates terminal RPC
+children if that faulted parent run actually observes the same actor's RPC
+after its injected fault. Existing production coverage, I/O novelty, waiting
+age, and fault-identity scores still order candidates; each tenth round keeps
+its legal deep-plan preference. The clean s101 boundary migration left 101
+attempts, 23 effective trials, 7,231 queued plans, 7,296 seen plans, and the
+coverage/I/O unions unchanged. `evidence-v9-pre.json` and
+`evidence-v9-post.json` record checkpoint, controller, queue, seen-plan, and
+feedback hashes. The controller does not repeat s101 when resumed.
+
+s101 itself applied one Master OPENED exception and one client flush-RPC
+exception to the same raw replica-5 actor and reached the B7 rethrow, but its
+original JUnit timed out after 397.42 seconds including shutdown. It finished
+only 120/600 table-assignment children before timeout. Three pre-timeout
+`Thread.print -l` samples show a persistent wait around ServerCrashProcedure
+submission and metadata writes, without proof of a closed deadlock cycle.
+Two unrelated Solr MiniCluster JUnits were also running on node0; one was
+mistakenly placed there instead of node2. This is a resource-confounded
+candidate, not a confirmed new bug. It is excluded from effective count,
+JaCoCo/I/O feedback, and mutation descendants pending an isolated same-plan
+replay. `../evidence/s101-candidate-receipt.json` and
+`../evidence/s101-original-node0.tar.gz` preserve full raw evidence and
+checksums. The version 9 migration happened only after s101's complete
+checkpoint and durable exit receipt.
+
+As node0 approached the 2.2 GiB pause threshold, 79 closed compressed logs
+from s001–s080 were relocated to their previously SHA-verified node1 case
+archives. The s078 candidate was excluded. The local JaCoCo files and exit
+receipts for every trial, plus the complete s078 and s101 candidate logs,
+remain on node0. `relocate-s001-s080-logs-pre.json`,
+`relocate-s001-s080-node1-verified.json`, and
+`relocate-s001-s080-logs-post.json` record each source/destination hash,
+checkpoint identity, and recovered space. Version 9 resumed from s102 with
+the same 101 completed trials and no repeated plan.
 
 ```sh
 cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream

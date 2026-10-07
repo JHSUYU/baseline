@@ -43,7 +43,8 @@ def choose_kind(state):
     """Sample exception semantics with observed B7 retention in the loop."""
     selected = Counter(trial["plan"][-1].rsplit("~", 1)[1]
                        for trial in state["trials"]
-                       if trial.get("selection_policy") == "upstream_v7_retention")
+                       if trial.get("selection_policy") in
+                       ("upstream_v7_retention", "upstream_v9_master_parent_replenish"))
     slot = sum(selected.values()) + 1
     return max(KINDS, key=lambda kind: slot * KIND_SHARE[kind] - selected[kind])
 
@@ -637,6 +638,27 @@ def main():
             })
             state["version"] = 8
             publish(state)
+        if state.get("version", 1) < 9:
+            # A mixed terminal plan is only generated from a faulted parent
+            # that actually observed the same actor's client flush RPC. When
+            # those plans run out, select another original healthy Master
+            # identity as a one-fault parent. The existing enqueue path then
+            # uses that parent's runtime trace; no synthetic RPC child is
+            # inserted here.
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 9,
+                "reason": "observed_master_parent_replenishment_for_mixed_RPC",
+                "trial_count_unchanged": len(state["trials"]),
+                "queue_length_unchanged": len(state["queue"]),
+                "seen_plan_count_unchanged": len(state["seen_plans"]),
+                "effective_budget_unchanged": state["effective_budget"],
+                "attempt_cap_unchanged": state["attempt_cap"],
+                "max_faults_unchanged": state["max_faults"],
+            })
+            state["selection_policy"] = "upstream_v9_master_parent_replenish"
+            state["version"] = 9
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -651,7 +673,8 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 8, "rng_seed": RNG_SEED,
+        state = {"version": 9, "rng_seed": RNG_SEED,
+                 "selection_policy": "upstream_v9_master_parent_replenish",
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -733,13 +756,29 @@ def main():
                               not plan[-1].startswith("RPC_FLUSH_REGION~"))))
             index = next((i for i, item in enumerate(state["queue"])
                           if eligible(item)), None)
+            selection_reason = "novelty_priority"
+            if (index is None and mixed_round and not depth_round
+                    and desired_kind == "DO_NOT_RETRY_IOEXCEPTION"):
+                # Keep the 1-in-10 deep exploration round intact. Otherwise,
+                # replenish the mixed queue from a distinct, observed Master
+                # OPENED I/O identity whenever no same-kind mixed child is
+                # currently available. Queue ordering still uses production
+                # coverage, I/O novelty, wait time, and fault novelty.
+                index = next((i for i, item in enumerate(state["queue"])
+                              if len(item["plan"]) == 1
+                              and item["plan"][0].startswith("MASTER_OPENED_RPC~")
+                              and item["plan"][0].endswith(
+                                  "~DO_NOT_RETRY_IOEXCEPTION")), None)
+                if index is not None:
+                    selection_reason = "observed_master_dnr_parent_replenish"
             if index is None:
                 index = next((i for i, item in enumerate(state["queue"])
                               if eligible(item, mixed=False)), None)
             if index is None:
                 index = next((i for i, item in enumerate(state["queue"])
                               if eligible(item, kind=False, mixed=False)), 0)
-            entry = state["queue"][index]
+            entry = dict(state["queue"][index])
+            entry["selection_reason"] = selection_reason
             atomic_json(INFLIGHT, {"id": trial_id, "entry": entry})
         log = HERE / "logs" / (trial_id + ".log")
         compressed = HERE / "logs" / (trial_id + ".log.gz")
@@ -795,7 +834,8 @@ def main():
         if admitted:
             state["io_union"] = sorted(set(state["io_union"]) | observed_selectors)
         trial = {"id": trial_id, "plan": entry["plan"], "strict": matched,
-                 "selection_policy": "upstream_v7_retention",
+                 "selection_policy": state.get("selection_policy", "upstream_v7_retention"),
+                 "selection_reason": entry.get("selection_reason", "pre_v9_selection"),
                  "mixed_rpc_terminal": entry["plan"][-1].startswith("RPC_FLUSH_REGION~"),
                  "unmatched_retries_before": entry.get("unmatched_retries", 0),
                  "applied_fault_events": len(fault_events(trace)),
