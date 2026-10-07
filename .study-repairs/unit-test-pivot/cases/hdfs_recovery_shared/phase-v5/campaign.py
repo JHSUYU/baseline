@@ -93,6 +93,8 @@ def assess(directory: Path, item: dict, state: dict) -> dict:
             "last_applied_seq": last["seq"] if last else None,
             "last_owner": model.owner(last) if last else None,
             "active_cases_at_selection": item["active_cases_at_selection"],
+            "max_faults_at_selection": item["max_faults_at_selection"],
+            "attempt_caps_at_selection": item["attempt_caps_at_selection"],
             "lane": item["lane"],
             "unmatched_attempts_before": item.get("legacy_unmatched_attempts", 0)
                 + item.get("v5_unmatched_attempts", 0)}
@@ -255,6 +257,10 @@ def main() -> None:
                     return
                 item = state["queue"].pop(index)
                 item["active_cases_at_selection"] = list(model.active_cases(state))
+                item["max_faults_at_selection"] = {case: state["cases"][case]["max_faults"]
+                                                   for case in item["active_cases_at_selection"]}
+                item["attempt_caps_at_selection"] = {case: state["cases"][case]["attempt_cap"]
+                                                     for case in item["active_cases_at_selection"]}
                 number = 129 + state["v5_attempts"]
                 state["active"] = {"item": item, "number": number,
                                    "run": str(HERE / "runs" / ("trial-%03d" % number)),

@@ -86,7 +86,9 @@ def synthetic_rules() -> dict:
                   ("probes", "methods", "branch_counts")} for case in model.CASES},
                   "io_families_v5": {case: [] for case in model.CASES}}
     item = {"id": model.sequence_id(seq), "sequence": seq, "expectedEpisode": 1,
-            "lane": "same_owner_second_fault", "active_cases_at_selection": ["HDFS-29"]}
+            "lane": "same_owner_second_fault", "active_cases_at_selection": ["HDFS-29"],
+            "max_faults_at_selection": {"HDFS-29": 8},
+            "attempt_caps_at_selection": {"HDFS-29": 320}}
     trial = campaign.assess(fake, item, fake_state)
     independently = audit_v5.receipt_verdict(trial)
     assert trial["exact_order_applied"] and independently["strict"]

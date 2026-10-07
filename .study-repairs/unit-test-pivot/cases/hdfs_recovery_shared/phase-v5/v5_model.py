@@ -152,7 +152,7 @@ def select_index(state: dict) -> int:
     """Three of four turns favor parent-proven second faults; one explores."""
     active = set(active_cases(state))
     eligible = [(i, item) for i, item in enumerate(state["queue"])
-                if len(item["sequence"]) <= max(state["cases"][case]["max_faults"] for case in active)
+                if len(item["sequence"]) <= min(state["cases"][case]["max_faults"] for case in active)
                 and (item.get("lane") != "hdfs28_producer" or "HDFS-28" in active)
                 and item["id"] not in state["strict_ids"]]
     if not eligible:

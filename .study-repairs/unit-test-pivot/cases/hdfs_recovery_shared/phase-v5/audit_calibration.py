@@ -68,6 +68,9 @@ def main() -> None:
     if state["v5_attempts"] or state["active"]:
         raise RuntimeError("cannot activate healthy gate after faults")
     a, b = (verify_seed(HERE / name) for name in ("healthy-v5-a", "healthy-v5-b"))
+    for seed in (a, b):
+        if any(seed["eligible_io_by_case"][case] == 0 for case in ("HDFS-29", "HDFS-30")):
+            raise RuntimeError("healthy seed lacks same-owner pre-target I/O for HDFS-29/30")
     for name in ("healthy-file-pilot", "healthy-file-pilot-b"):
         legacy = HERE.parent / "phase-v4" / name / "runtime_trace.jsonl"
         old_trace = [json.loads(line) for line in legacy.read_text().splitlines() if line]

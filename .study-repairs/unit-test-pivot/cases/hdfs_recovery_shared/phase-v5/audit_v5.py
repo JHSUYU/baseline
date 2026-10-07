@@ -215,6 +215,11 @@ def main() -> None:
                 or not (directory / "jacoco.exec").is_file()):
             issues.append("V5 original-JUnit/overlay/JaCoCo receipt mismatch " + trial["id"])
         verdict = receipt_verdict(trial)
+        for case in trial["active_cases_at_selection"]:
+            if len(trial["sequence"]) > trial["max_faults_at_selection"][case]:
+                issues.append("selected fault depth exceeded " + trial["id"] + " " + case)
+            if trial["attempt_caps_at_selection"][case] not in (320, 512):
+                issues.append("selected attempt cap invalid " + trial["id"] + " " + case)
         if verdict["strict"]:
             if trial["id"] in v4_strict_ids or trial["id"] in seen_v5_strict:
                 issues.append("duplicate strictly injected plan " + trial["id"])
