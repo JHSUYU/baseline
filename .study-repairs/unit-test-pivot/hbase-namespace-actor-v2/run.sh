@@ -59,7 +59,8 @@ case "${1:?build, smoke, healthy, trial, or coverage}" in
     printf '%s\n' "$plan" > "$data_dir/$stem.plan"
     sha256sum "$actor_dir/agent.jar" > "$data_dir/agent.sha256"
     export HBASE_HOME="$hbase_dist"
-    if /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout 240s \
+    if python3 "$actor_dir/jvm_gate.py" "$data_dir/$stem.log" \
+      /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout 240s \
       "$java_bin" -Xmx4g \
       -javaagent:"$jacoco_agent=destfile=$data_dir/$stem.exec,append=false,includes=org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl:org.apache.hadoop.hbase.namespace.NamespaceStateManager:org.apache.hadoop.hbase.master.TableNamespaceManager:org.apache.hadoop.hbase.ZKNamespaceManager" \
       -javaagent:"$actor_dir/agent.jar" \
@@ -67,8 +68,7 @@ case "${1:?build, smoke, healthy, trial, or coverage}" in
       -Djava.io.tmpdir="$data_dir/tmp" \
       -Dtest.build.data.basedirectory="$data_dir" \
       -cp "$classpath" NativeNamespaceJUnit \
-      org.apache.hadoop.hbase.namespace.TestNamespaceAuditor "$test_method" \
-      > "$data_dir/$stem.log" 2>&1; then
+      org.apache.hadoop.hbase.namespace.TestNamespaceAuditor "$test_method"; then
       run_exit=0
     else
       run_exit=$?
