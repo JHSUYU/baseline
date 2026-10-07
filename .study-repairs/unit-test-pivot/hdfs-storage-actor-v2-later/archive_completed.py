@@ -163,6 +163,22 @@ def prune(anchor: Path, manifest_path: Path, remote_receipt_path: Path) -> Path:
     if (state["completion_order"][first - 1:last] != manifest["sequence_ids"]
             or any(i not in state["completed"] for i in manifest["sequence_ids"])):
         raise RuntimeError("completed checkpoint prefix changed")
+    index_path = anchor / "archives" / "verified-pruned.json"
+    if index_path.exists():
+        index = json.loads(index_path.read_text())
+    else:
+        index = {"schema": "hdfs-storage-v2-verified-pruned-1", "batches": []}
+    previous = next((batch for batch in index["batches"]
+                     if batch["manifest_sha256"] == sha(manifest_path)), None)
+    if previous is not None:
+        # The index is published before deletion; finish an interrupted cleanup.
+        for item in previous["pruned"]:
+            path = anchor / item["path"]
+            if path.exists():
+                if path.is_symlink() or sha(path) != item["sha256"]:
+                    raise RuntimeError(f"indexed cleanup file changed: {path}")
+                path.unlink()
+        return index_path
     files = {item["path"]: item for item in manifest["files"]}
     pruned: list[dict] = []
     remove_paths: list[Path] = []
@@ -184,13 +200,6 @@ def prune(anchor: Path, manifest_path: Path, remote_receipt_path: Path) -> Path:
                 raise RuntimeError(f"unverified cleanup candidate: {path}")
             remove_paths.append(path)
             pruned.append(item)
-    index_path = anchor / "archives" / "verified-pruned.json"
-    if index_path.exists():
-        index = json.loads(index_path.read_text())
-    else:
-        index = {"schema": "hdfs-storage-v2-verified-pruned-1", "batches": []}
-    if any(batch["manifest_sha256"] == sha(manifest_path) for batch in index["batches"]):
-        raise RuntimeError("archive batch already indexed")
     index["batches"].append({
         "manifest": manifest_path.name, "manifest_sha256": sha(manifest_path),
         "archive": manifest["archive_name"], "archive_sha256": manifest["archive_sha256"],
