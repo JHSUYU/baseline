@@ -168,6 +168,44 @@ def seed_target_sites(traces: list[list[dict]]) -> dict[str, list[str]]:
     return {plan: sorted(sites) for plan, sites in site_map.items() if sites}
 
 
+def untested_lazy_roots(state: dict, traces: list[list[dict]]) -> dict[str, list[dict]]:
+    """Find real healthy I/O occurrences that precede SOLR-39 on one live reader."""
+    known = set(state["seen_plans"]) | {";".join(plan) for plan in state["queue"]}
+    observed = defaultdict(list)
+    for name, trace in zip(HEALTHY, traces):
+        targets = [event for event in trace if event["kind"] == "TARGET_CHECK" and
+                   len(event["parts"]) > 1 and event["parts"][1] == "SOLR-39"]
+        counts = Counter()
+        for event in trace:
+            key = io_identity(event)
+            if key is None:
+                continue
+            counts[key] += 1
+            operation, path, caller, actor = key
+            if (operation != "EXISTS_WATCH" or
+                    not path.startswith("/collections/myalias__TRA__") or
+                    not path.endswith("/state.json") or
+                    "LazyCollectionRef#get:" not in caller or
+                    not actor.startswith("actor=jetty:node")):
+                continue
+            plan = selector(key, counts[key])
+            if plan in known:
+                continue
+            for target in targets:
+                if (target["seq"] <= event["seq"] or
+                        actor_relation(event, target) != "same_live_client_manager"):
+                    continue
+                observed[plan].append({
+                    "healthy_trace": name, "io_seq": event["seq"],
+                    "target_seq": target["seq"],
+                    "io_runtime_actor": list(runtime_actor(event)),
+                    "target_runtime_actor": list(runtime_actor(target)),
+                    "event_gap": target["seq"] - event["seq"],
+                })
+                break
+    return {plan: observed[plan] for plan in sorted(observed)}
+
+
 def initialize() -> dict:
     summary = json.loads((EVIDENCE / "healthy-summary-v4.json").read_text())
     if not summary.get("calibration_complete"):
@@ -307,7 +345,8 @@ def pick(state: dict) -> list[str]:
     # under single-fault plans. Keep exploring the mutated queue on alternate
     # rounds, while spending the other rounds on previously unseen roots whose
     # healthy actor/target trace establishes the same-client relation.
-    if (state.get("scheduler_version") == "solr39_root_balance_v5" and
+    if (state.get("scheduler_version") in
+            ("solr39_root_balance_v5", "solr39_lazy_occurrence_v7") and
             state["site_progress"]["SOLR-39"]["effective"] <
             state["site_progress"]["SOLR-39"]["goal"] and number % 2 == 0):
         targeted = state.get("seed_target_sites", {})
@@ -353,7 +392,8 @@ def pick(state: dict) -> list[str]:
 
 def migrate_root_balance(state: dict) -> None:
     """Document the actor-retaining scheduler change without recounting trials."""
-    if state.get("scheduler_version") == "solr39_root_balance_v5":
+    if state.get("scheduler_version") in ("solr39_root_balance_v5",
+                                          "solr39_lazy_occurrence_v7"):
         return
     if state["inflight"] is not None:
         return  # Finish the already selected plan before changing selection.
@@ -379,7 +419,8 @@ def migrate_root_balance(state: dict) -> None:
 
 def migrate_reader_schedule(state: dict) -> None:
     """Annotate a stopped pilot checkpoint without replaying any old trial."""
-    if state.get("scheduler_version") in ("balanced_watch_reads_v4", "solr39_root_balance_v5"):
+    if state.get("scheduler_version") in ("balanced_watch_reads_v4", "solr39_root_balance_v5",
+                                          "solr39_lazy_occurrence_v7"):
         return
     if state["inflight"] is not None:
         raise RuntimeError("Scheduler migration requires a completed-trial boundary")
@@ -429,6 +470,47 @@ def migrate_reader_retries(state: dict) -> None:
     }
     atomic_json(STATE, state)
     atomic_json(CAMPAIGN / "reader-retry-migration.json", state["reader_retry_migration"])
+
+
+def migrate_lazy_occurrences(state: dict) -> None:
+    """Add untried healthy same-reader watch occurrences; retain the V5 queue."""
+    if state.get("scheduler_version") == "solr39_lazy_occurrence_v7":
+        return
+    if state.get("scheduler_version") != "solr39_root_balance_v5" or state["inflight"] is not None:
+        raise RuntimeError("Lazy occurrence migration requires a stopped V5 trial boundary")
+    before_state_sha = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    before_queue = list(state["queue"])
+    ledger = {"trials": state["trials"], "seen_plans": state["seen_plans"]}
+    canonical = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ledger_sha = hashlib.sha256(canonical(ledger)).hexdigest()
+    traces = [events(EVIDENCE / name / "events.tsv") for name in HEALTHY]
+    roots = untested_lazy_roots(state, traces)
+    if not roots:
+        raise RuntimeError("No untested healthy same-reader LazyCollectionRef roots")
+    new_plans = [[name] for name in roots]
+    state["queue"].extend(new_plans)
+    state["scheduler_version"] = "solr39_lazy_occurrence_v7"
+    source_sha = {name: hashlib.sha256((EVIDENCE / name / "events.tsv").read_bytes()).hexdigest()
+                  for name in HEALTHY}
+    state["lazy_root_expansion"] = {
+        "trials_before": len(state["trials"]),
+        "effective_before": {site: state["site_progress"][site]["effective"] for site in CASES},
+        "state_sha256_before": before_state_sha,
+        "ledger_sha256_before_and_after": ledger_sha,
+        "queue_sha256_before": hashlib.sha256(canonical(before_queue)).hexdigest(),
+        "queue_sha256_after": hashlib.sha256(canonical(state["queue"])).hexdigest(),
+        "queue_length_before": len(before_queue), "queue_length_after": len(state["queue"]),
+        "new_root_count": len(new_plans), "new_roots": roots,
+        "healthy_trace_sha256": source_sha,
+        "scheduler_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    }
+    if hashlib.sha256(canonical({"trials": state["trials"],
+                                 "seen_plans": state["seen_plans"]})).hexdigest() != ledger_sha:
+        raise RuntimeError("Trial ledger changed during root expansion")
+    atomic_json(STATE, state)
+    receipt = dict(state["lazy_root_expansion"])
+    receipt["state_sha256_after"] = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    atomic_json(CAMPAIGN / "lazy-root-expansion-v7.json", receipt)
 
 
 def schedule_reader_retry(state: dict, trial: dict) -> bool:
@@ -509,6 +591,9 @@ def run(max_new_trials: int | None = None) -> None:
     migrate_reader_schedule(state)
     migrate_reader_retries(state)
     migrate_root_balance(state)
+    if (len(state["trials"]) >= 189 and
+            (CAMPAIGN / "node1-handoff-calibration/handoff-calibration.json").exists()):
+        migrate_lazy_occurrences(state)
     starting_trials = len(state["trials"])
     reclaim_completed_scratch(state)
     update_stop_reasons(state)

@@ -47,7 +47,12 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--pid", type=int, required=True)
     parser.add_argument("--timeout", type=int, default=240)
+    parser.add_argument("--receipt", type=Path,
+                        default=CAMPAIGN / "migration-v5-stop.json")
     args = parser.parse_args()
+    receipt_path = args.receipt.resolve()
+    if not receipt_path.is_relative_to(CAMPAIGN.resolve()) or receipt_path.exists():
+        raise RuntimeError("stop receipt must be a new path inside campaign evidence")
     checked_driver(args.pid)
     end = time.monotonic() + args.timeout
     latest_mtime = STATE.stat().st_mtime_ns
@@ -86,7 +91,8 @@ def main() -> None:
                                       in frozen["site_progress"].items()},
                     }
                     os.kill(args.pid, signal.SIGKILL)
-                    (CAMPAIGN / "migration-v5-stop.json").write_text(
+                    receipt_path.parent.mkdir(parents=True, exist_ok=True)
+                    receipt_path.write_text(
                         json.dumps(receipt, indent=2, sort_keys=True) + "\n")
                     print(json.dumps(receipt, sort_keys=True), flush=True)
                     return
