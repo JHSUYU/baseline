@@ -77,6 +77,7 @@ def main():
     receipt = {
         'status': 'offline_pass', 'junit_executed': False, 'source_commit': revision,
         'agent': str(AGENT), 'agent_sha256': sha(AGENT),
+        'agent_sources_sha256': {str(path): sha(path) for path in sources},
         'original_test_class_sha256': sha(TEST / (TEST_NAME + '.class')),
         'original_peer_class_sha256': sha(SERVER / (PEER_NAME + '.class')),
         'original_atomic_class_sha256': sha(SERVER / (ATOMIC_NAME + '.class')),

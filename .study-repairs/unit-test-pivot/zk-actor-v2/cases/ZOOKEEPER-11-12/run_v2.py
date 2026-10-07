@@ -36,11 +36,22 @@ def verify_build():
         raise RuntimeError('original ZooKeeper revision changed')
     if sha(AGENT) != receipt['agent_sha256']:
         raise RuntimeError('V2 agent changed since offline smoke')
+    if any(sha(path) != digest for path, digest in
+           receipt['agent_sources_sha256'].items()):
+        raise RuntimeError('V2 agent source differs from verified JAR')
     if sha(TEST / (TEST_NAME + '.class')) != receipt['original_test_class_sha256']:
         raise RuntimeError('original JUnit class changed')
     if sha(SERVER / (PEER_NAME + '.class')) != receipt['original_peer_class_sha256'] or \
             sha(SERVER / (ATOMIC_NAME + '.class')) != receipt['original_atomic_class_sha256']:
         raise RuntimeError('original epoch production class changed')
+    source_root = SOURCE / 'zookeeper-server/src'
+    if sha(source_root / 'test/java' / (TEST_NAME + '.java')) != \
+            receipt['original_test_source_sha256'] or \
+            sha(source_root / 'main/java' / (PEER_NAME + '.java')) != \
+            receipt['original_peer_source_sha256'] or \
+            sha(source_root / 'main/java' / (ATOMIC_NAME + '.java')) != \
+            receipt['original_atomic_source_sha256']:
+        raise RuntimeError('original epoch source changed')
     if not RUNNER.is_file():
         raise RuntimeError('original JUnit launcher absent')
     return receipt
