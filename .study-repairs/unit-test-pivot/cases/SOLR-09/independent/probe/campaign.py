@@ -33,6 +33,30 @@ def valid(trial: dict) -> bool:
             trial["target_after_fault"]["SOLR-09"])
 
 
+def loss_reason(output: Path, strict: bool, target_after: bool,
+                junit_exit: int) -> str | None:
+    if strict and target_after:
+        return None
+    if not strict:
+        return "injection_not_strict"
+    if junit_exit == 124:
+        return "jvm_timeout"
+    log = (output / "junit.log").read_text(errors="replace")
+    if "Could not load collection from ZK" in log:
+        return "collection_state_load_failed"
+    if "Could not fully create collection" in log:
+        return "collection_creation_incomplete"
+    if "Timeout waiting for active collection" in log:
+        return "collection_active_timeout"
+    if "Timeout occurred while waiting response from server" in log:
+        return "server_response_timeout"
+    if "No registered leader was found" in log:
+        return "leader_retry_timeout"
+    if "SOLR05_JUNIT_FAILURE" in log:
+        return "other_junit_failure"
+    return "target_missing_without_junit_failure"
+
+
 def relevant(identity: tuple[str, str]) -> bool:
     _, path = identity
     return (path == "/collections" or
@@ -142,7 +166,8 @@ def plan_key(plan: list[str]) -> str:
 def select_next_plan(state: dict) -> list[str]:
     """Interleave feedback descendants with different observed healthy I/O sites."""
     queue = state["queue"]
-    if (len(state["trials"]) + 1) % 4 or not any(len(p) == 1 for p in queue):
+    root_interval = state.get("root_interval", 4)
+    if (len(state["trials"]) + 1) % root_interval or not any(len(p) == 1 for p in queue):
         return queue.pop(0)
 
     retained = {cid: sum(t["all_faults_applied"] and
@@ -159,29 +184,50 @@ def select_next_plan(state: dict) -> list[str]:
         identity = io_identity(event)
         if identity is not None:
             counts[identity] += 1
-            ordinal_seq[(identity, counts[identity])] = event["seq"]
+            ordinal_seq[(identity, counts[identity])] = (event["seq"], event["parts"][2])
 
     tried = Counter()
     tried_families = Counter()
+    root_attempts = Counter()
+    root_retained = Counter()
     for trial in state["trials"]:
-        operation, path = trial["plan"][0].split("|", 2)[:2]
+        operation, path, _, caller = trial["plan"][0].split("|", 3)
         identity = operation, path
         tried[identity] += 1
         tried_families[family(identity)] += 1
+        if len(trial["plan"]) == 1:
+            stable_site = operation, path, caller
+            root_attempts[stable_site] += 1
+            root_retained[stable_site] += bool(valid(trial))
+    explore_untried = state.get("retention_guided_roots", False) and \
+        sum(root_attempts.values()) % 4 == 3
     candidates = []
     for index, plan in enumerate(queue):
         if len(plan) != 1:
             continue
         operation, path, ordinal, caller = plan[0].split("|", 3)
         identity = operation, path
-        seq = ordinal_seq.get((identity, int(ordinal)))
-        if seq is None or seq >= last_target:
+        location = ordinal_seq.get((identity, int(ordinal)))
+        if location is None or location[1] != caller or location[0] >= last_target:
             continue
-        distance = last_target - seq
-        # A few hundred trace events leaves room for an I/O failure to be
-        # handled before the selected check, while sampling distinct sites.
-        score = (tried[identity], tried_families[family(identity)],
-                 rank(identity), abs(distance - 300), index)
+        distance = last_target - location[0]
+        stable_site = operation, path, caller
+        attempts = root_attempts[stable_site]
+        successes = root_retained[stable_site]
+        if state.get("retention_guided_roots", False):
+            if explore_untried:
+                score = (0 if attempts == 0 else 1, rank(identity),
+                         abs(distance - 190), attempts, index)
+            else:
+                category = 0 if successes else 1 if attempts == 0 else 2
+                retention = -(successes / attempts) if attempts else 0
+                score = (category, retention, attempts, rank(identity),
+                         abs(distance - 190), index)
+        else:
+            # Original CrashFuzz-style diversity preference, retained for
+            # completed trials before the checkpointed selection adjustment.
+            score = (tried[identity], tried_families[family(identity)],
+                     rank(identity), abs(distance - 300), index)
         candidates.append((score, index))
     if not candidates:
         return queue.pop(0)
@@ -223,6 +269,36 @@ def write_results(state: dict) -> None:
     base_cov = set(state["healthy_coverage"])
     base_io = set(state["healthy_io"])
     strict = sum(t["all_faults_applied"] for t in trials)
+    adjustment = state.get("selection_adjustment")
+    if adjustment:
+        later = [t for t in trials if t["number"] >= adjustment["from_trial"]]
+        adjustment_result = dict(adjustment)
+        adjustment_result["after"] = {
+            "attempts": len(later),
+            "strict_injections": sum(t["all_faults_applied"] for t in later),
+            "target_retained": sum(t["target_after_fault"]["SOLR-09"] for t in later),
+            "valid_trials": sum(valid(t) for t in later),
+            "production_probes_gained": sum(t["new_coverage"]["SOLR-09"] for t in later),
+            "stable_io_gained": sum(t["new_io"]["SOLR-09"] for t in later),
+        }
+    else:
+        adjustment_result = None
+    retention_adjustment = state.get("retention_adjustment")
+    if retention_adjustment:
+        later = [t for t in trials if t["number"] >= retention_adjustment["from_trial"]]
+        retention_result = dict(retention_adjustment)
+        retention_result["after"] = {
+            "attempts": len(later),
+            "strict_injections": sum(t["all_faults_applied"] for t in later),
+            "target_retained": sum(t["target_after_fault"]["SOLR-09"] for t in later),
+            "valid_trials": sum(valid(t) for t in later),
+            "production_probes_gained": sum(t["new_coverage"]["SOLR-09"] for t in later),
+            "stable_io_gained": sum(t["new_io"]["SOLR-09"] for t in later),
+            "target_loss_reasons": dict(Counter(t.get("loss_reason", "unclassified")
+                                                for t in later if not valid(t))),
+        }
+    else:
+        retention_result = None
     for cid in CASES:
         retained = sum(t["all_faults_applied"] and t["target_after_fault"][cid]
                        for t in trials)
@@ -251,6 +327,8 @@ def write_results(state: dict) -> None:
             "bug_mark": "candidate_needs_source_review" if candidates else "none",
             "evidence": str(STATE.relative_to(ROOT.parents[2])),
             "methodology": "independent_graph_free_coverage_io_exception",
+            "selection_adjustment": adjustment_result,
+            "retention_adjustment": retention_result,
             "legacy_evidence": legacy,
         }
         output = ROOT / cid / "result.json"
@@ -366,6 +444,8 @@ def run_campaign() -> None:
             "target_checks": target_counts(trace),
             "target_after_fault": target_after, "target_exception": exception,
             "new_coverage": novelty_cov, "new_io": novelty_io,
+            "loss_reason": loss_reason(output, strict, target_after["SOLR-09"],
+                                       manifest["exit_code"]),
             "evidence": str(output.relative_to(WORK)),
         }
         state["trials"].append(trial)
