@@ -1,5 +1,14 @@
 # HDFS-32: original JUnit independent fault campaign
 
+**Current quality review:** the 80 trials described below are historical.
+Their multi-actor I/O selectors did not establish the physical DataNode that
+issued each fault, so their 47 target-retaining trials do not count as the
+new actor-bound budget. The case-local [actor-v3/README.md](actor-v3/README.md)
+describes the new original-JUnit recheck with DataNode UUID, NN0 block-pool
+ID, RPC peer or dataset object identity, two fresh healthy runs, and its
+separate resumable campaign. Until its independent audit completes, this
+case remains `actor_identity_recheck_pending`.
+
 The selected `DataNode.deleteBlockPool` check at Hadoop 3.4.3
 `DataNode.java:3819–3824` throws an `IOException` while its block pool is
 still running. The correct original workload is
