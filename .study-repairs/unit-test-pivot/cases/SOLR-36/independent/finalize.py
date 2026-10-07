@@ -62,22 +62,37 @@ def main() -> None:
                       report['strict_exact_target_throw_trial_numbers']
                       if result.get(f'candidate_{number:04d}_review', {}).get(
                           'classification') != 'not_new_bug_protective_retry']
+        previous_campaign = result.pop('campaign', None)
+        if previous_campaign is not None:
+            result['legacy_zk_coarse_campaign'] = previous_campaign
+        result.pop('logical_identity_audit', None)
         result.update(
             campaign_final_audit=report,
-            logical_identity_audit=report['logical_identity_audit'],
-            target_after_fault=(
+            legacy_zk_coarse_identity_audit=report['logical_identity_audit'],
+            legacy_zk_coarse_quality_status='actor_unverified',
+            legacy_zk_coarse_selected_plans=report['fault_trials'],
+            legacy_zk_coarse_total_attempts=report['total_attempts'],
+            legacy_zk_coarse_strict_point_matches=report['strict_injections'],
+            legacy_zk_coarse_same_child_post_target=(
                 identity['strict_postfault_same_last_fault_child_or_collection_scope']),
-            post_fault_target_reach_trials=(
-                identity['strict_postfault_same_last_fault_child_or_collection_scope']),
-            post_fault_any_child_trials=identity['strict_postfault_any_child'],
-            production_methods_gain=report['new_production_methods'],
-            production_branch_outcomes_gain=report['new_production_branch_outcomes'],
-            io_family_gain=report['new_semantic_io_families'],
-            coverage_gain_scope=('Raw production-only JaCoCo probe feedback from the '
-                                 'frozen scheduler; audited methods and branches use '
-                                 'only same-logical-child postfault trials.'),
+            legacy_zk_coarse_elapsed_seconds=report['elapsed_seconds'],
+            fault_trials=0,
+            strict_injections=0,
+            target_after_fault=0,
+            post_fault_target_reach_trials=0,
+            post_fault_any_child_trials=0,
+            target_exception_after_fault_trials=0,
+            total_attempts=0,
+            production_methods_gain=0,
+            production_branch_outcomes_gain=0,
+            io_family_gain=0,
+            coverage_gain=0,
+            coverage_gain_scope=('Current-quality counters exclude the ZooKeeper phase: '
+                                 'its marker/site/path/ordinal selector lacked a stable '
+                                 'actor or SolrZkClient reader binding. Full raw counts '
+                                 'are retained under legacy_zk_coarse_*.'),
             status=('target_exception_candidate_source_review'
-                    if unreviewed else 'pending_http_stage'),
+                    if unreviewed else 'pending_http_and_actor_aware_zk_v2'),
             unreviewed_exact_target_throw_trial_numbers=unreviewed,
             evidence=f'.study-repairs/unit-test-pivot/cases/SOLR-36/independent/{name}',
             updated_at=time.time())

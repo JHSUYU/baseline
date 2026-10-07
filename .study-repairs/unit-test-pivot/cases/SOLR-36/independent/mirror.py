@@ -51,46 +51,56 @@ def mirror_once() -> dict[str, dict]:
     for case_id, row in progress.items():
         result_path = HERE.parent.parent / case_id / 'result.json'
         result = json.loads(result_path.read_text())
-        previous = result.get('campaign', {}).get('fault_trials', 0)
+        previous = max(result.get('campaign', {}).get('fault_trials', 0),
+                       result.get('legacy_zk_coarse_selected_plans', 0))
         if row['fault_trials'] < previous:
             raise RuntimeError(f'{case_id} checkpoint moved backwards')
+        result.pop('campaign', None)
+        result.pop('logical_identity_audit', None)
         if row['status'] == 'candidate_target_exception':
-            public_status = 'target_exception_candidate_source_review'
+            public_status = 'target_exception_candidate_source_review_actor_unverified'
         elif row['status'] == 'budget_complete' and row['budget']['max_trials'] >= 80:
-            public_status = 'campaign_budget_complete_audit_pending'
+            public_status = 'legacy_zk_budget_complete_actor_audit_pending'
         elif row['status'] == 'queue_exhausted':
-            public_status = 'campaign_queue_exhausted_audit_pending'
+            public_status = 'legacy_zk_queue_exhausted_actor_audit_pending'
         elif row['status'] == 'budget_complete':
-            public_status = 'campaign_checkpoint'
+            public_status = 'legacy_zk_checkpoint_actor_unverified'
         else:
-            public_status = 'fuzz_running'
+            public_status = 'legacy_zk_running_actor_unverified'
         result.update(
             status=public_status,
-            methodology='coverage_io_independent_asm_jacoco',
+            methodology='coverage_io_independent_asm_jacoco_with_legacy_zk_actor_gap',
             target_reached=True,
             baseline_seconds=BASELINE_SECONDS,
-            fault_trials=row['fault_trials'],
-            strict_injections=row['strict_injections'],
-            target_after_fault=identity[case_id][
+            fault_trials=0,
+            strict_injections=0,
+            target_after_fault=0,
+            post_fault_target_reach_trials=0,
+            post_fault_any_child_trials=0,
+            target_exception_after_fault_trials=0,
+            total_attempts=0,
+            legacy_zk_coarse_quality_status='actor_unverified',
+            legacy_zk_coarse_selected_plans=row['fault_trials'],
+            legacy_zk_coarse_total_attempts=row['total_attempts'],
+            legacy_zk_coarse_strict_point_matches=row['strict_injections'],
+            legacy_zk_coarse_same_child_post_target=identity[case_id][
                 'strict_postfault_same_last_fault_child_or_collection_scope'],
-            post_fault_target_reach_trials=identity[case_id][
-                'strict_postfault_same_last_fault_child_or_collection_scope'],
-            post_fault_any_child_trials=identity[case_id][
-                'strict_postfault_any_child'],
-            logical_identity_audit={key: value for key, value in identity[case_id].items()
-                                    if key != 'trials'},
-            target_exception_after_fault_trials=row['target_exception_after_fault_trials'],
+            legacy_zk_coarse_identity_audit={
+                key: value for key, value in identity[case_id].items()
+                if key != 'trials'},
+            legacy_zk_coarse_elapsed_seconds=row['elapsed_seconds'],
             elapsed_seconds=round(BASELINE_SECONDS + row['elapsed_seconds'], 3),
-            coverage_gain=row['production_probe_gain'],
-            coverage_gain_scope=('Raw production-only JaCoCo probe feedback from the '
-                                 'frozen scheduler; final method/branch union excludes '
-                                 'trials without a postfault guard on the affected child.'),
-            campaign=row,
-            reason=('Unchanged original ShardSplitTest.test embedded-cluster JUnit. '
-                    'Two passing healthy ASM records reach both exact guard sites; '
-                    'the shared I/O fault sequence has independent postfault '
-                    'reach and exact throw oracles for each case. '
-                    'Target exception candidates require source review and replay.'),
+            coverage_gain=0,
+            coverage_gain_scope=('ZooKeeper fault selectors match marker/site/source/path/'
+                                 'ordinal but do not bind the SolrZkClient actor. '
+                                 'Raw JaCoCo and target checks are legacy exploratory '
+                                 'evidence, not current-quality coverage.'),
+            legacy_zk_coarse_campaign=row,
+            reason=('The original embedded-cluster JUnit reaches both exact guards. '
+                    'This running ZooKeeper phase preserves raw plans, traces, '
+                    'JUnit outcomes, and physicalNode/mdcCore receipt fields, but '
+                    'its injector did not bind a stable actor. HTTP testing and '
+                    'actor-aware ZooKeeper V2 are separate follow-up phases.'),
             evidence=f'.study-repairs/unit-test-pivot/cases/SOLR-36/independent/'
                      f'campaign/progress-{case_id}.json',
             updated_at=time.time())
