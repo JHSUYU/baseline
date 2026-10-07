@@ -116,7 +116,8 @@ def recover_inflight(trial_id, log, receipt):
 def parse_log(path):
     trace = {key: [] for key in ("TARGET", "CLIENT_FLUSH_TAG", "SERVER_FLUSH_TAG",
              "MASTER_OPENED_RPC", "WAL_APPEND_START", "WAL_SYNC_START",
-             "FAULT_APPLIED", "TARGET_GUARD", "TARGET_B7_RETHROW", "RS_ABORT")}
+             "FAULT_APPLIED", "RPC_IO", "RPC_FAULT_APPLIED", "TARGET_GUARD",
+             "TARGET_B7_RETHROW", "RS_ABORT")}
     trace["junit"] = None
     trace["elapsed_seconds"] = None
     trace["shutdown_hook_line"] = None
@@ -128,7 +129,12 @@ def parse_log(path):
             kind = tail.split(" ", 1)[0]
             if kind in trace:
                 trace[kind].append({"line": number,
+                                    "source": "upstream",
                                     **dict(re.findall(r"([a-z_]+)=([^\s]+)", tail))})
+        if "HBASE32 IO " in line or "HBASE32 FAULT_APPLIED " in line:
+            kind = "RPC_IO" if "HBASE32 IO " in line else "RPC_FAULT_APPLIED"
+            trace[kind].append({"line": number, "source": "rpc",
+                                **dict(re.findall(r"([a-z_]+)=([^\s]+)", line))})
         if "HBASE32 TARGET_GUARD" in line or "HBASE32 TARGET_B7_RETHROW" in line:
             kind = "TARGET_GUARD" if "TARGET_GUARD" in line else "TARGET_B7_RETHROW"
             trace[kind].append({"line": number,
@@ -185,6 +191,31 @@ def selector_events(trace):
     return sorted(selected)
 
 
+def rpc_selector_events(trace):
+    """Actual client RPC callsites with same-run target and complete raw region."""
+    targets = {(e["raw_primary_region"], e["replica"], e["target_ordinal"])
+               for e in trace["TARGET"]}
+    selected = []
+    for event in trace["RPC_IO"]:
+        if event.get("context_match") != "true":
+            continue
+        selector = event.get("selector", "")
+        match = re.fullmatch(
+            r"RPC_FLUSH_REGION~([^~]+)~replica-(\d+)~target-(\d+)~rpc-(\d+)"
+            r"~FlushRegionCallable\.call:81", selector)
+        if match is None or (event["raw_primary_region"], match[2], match[3]) not in targets:
+            continue
+        stable = base64.urlsafe_b64decode(match[1] + "=" * (-len(match[1]) % 4))
+        if stable.startswith(b"testLotsOfRegionRepli2,"):
+            selected.append((event["line"], selector))
+    return sorted(selected)
+
+
+def fault_events(trace):
+    return sorted(trace["FAULT_APPLIED"] + trace["RPC_FAULT_APPLIED"],
+                  key=lambda item: item["line"])
+
+
 def coverage(paths):
     run = subprocess.run(["bash", str(HERE / "run.sh"), "coverage",
                           ",".join(str(path) for path in paths)],
@@ -211,17 +242,24 @@ def coverage(paths):
 
 
 def strict(trace, plan):
-    events = trace["FAULT_APPLIED"]
-    return len(events) == len(plan) and all(
-        event.get("selector", "") + "~" + event.get("kind", "") == expected
-        and event.get("step") == str(index)
-        for index, (event, expected) in enumerate(zip(events, plan), 1))
+    events = fault_events(trace)
+    if len(events) != len(plan):
+        return False
+    per_agent_steps = Counter()
+    for event, expected in zip(events, plan):
+        source = "rpc" if expected.startswith("RPC_FLUSH_REGION~") else "upstream"
+        per_agent_steps[source] += 1
+        if (event.get("source") != source or
+                event.get("selector", "") + "~" + event.get("kind", "") != expected or
+                event.get("step") != str(per_agent_steps[source])):
+            return False
+    return True
 
 
 def target_outcome(trace, plan):
     if not strict(trace, plan):
         return {"method": [], "progress": [], "guard": [], "b7": []}
-    last = trace["FAULT_APPLIED"][-1]
+    last = fault_events(trace)[-1]
     selector = last["selector"]
     family = selector.split("~", 1)[0]
     replica_match = re.search(r"~replica-(\d+)~", selector)
@@ -253,8 +291,9 @@ def target_outcome(trace, plan):
     return {"method": method, "progress": progress, "guard": guard, "b7": b7}
 
 
-def enqueue(state, prefix, selectors, after, novelty, seconds):
-    if len(prefix) >= state["max_faults"]:
+def enqueue(state, prefix, selectors, after, novelty, seconds, rpc_selectors=()):
+    if len(prefix) >= state["max_faults"] or any(
+            step.startswith("RPC_FLUSH_REGION~") for step in prefix):
         return
     pool = list(dict.fromkeys(selector for line, selector in selectors if line > after))
     seed = int.from_bytes(hashlib.sha256((str(RNG_SEED) + ";" + ";".join(prefix)).encode())
@@ -268,6 +307,8 @@ def enqueue(state, prefix, selectors, after, novelty, seconds):
         replica = re.search(r"~replica-(\d+)~", last)
         actor = re.search(r"~target-(\d+)~", last)
         familiar = set(state["healthy_selectors"])
+        common = ""
+        exact = None
         if replica:
             common = "~" + region + "~replica-" + replica[1] + "~"
             exact = common + "target-" + actor[1] + "~" if actor else None
@@ -276,7 +317,13 @@ def enqueue(state, prefix, selectors, after, novelty, seconds):
                                         item in familiar))
         else:
             pool.sort(key=lambda item: item in familiar)
-        pool = pool[:CHILD_CAP]
+        pool = pool[:CHILD_CAP - 2]
+        # Reserve two exact same-actor client RPCs as terminal faults. Their
+        # exception enters the selected B7 catch after the upstream prefix.
+        rpc_pool = list(dict.fromkeys(selector for line, selector in rpc_selectors
+                                      if line > after and common in selector
+                                      and (exact is None or exact in selector)))
+        pool.extend(rpc_pool[:2])
     seen = set(state["seen_plans"])
     for selector in pool:
         for kind in KINDS:
@@ -303,6 +350,7 @@ def priority(entry, tried, family_counts):
             + (12 if family.startswith("WAL_") else 8)
             - min(family_counts[family] // 4, 20)
             + (20 if same_actor else 0)
+            + (28 if len(entry["plan"]) > 1 and last.startswith("RPC_FLUSH_REGION~") else 0)
             - 30 * entry.get("unmatched_retries", 0)
             - min(entry["parent_seconds"] / 20, 12))
 
@@ -320,12 +368,20 @@ def publish(state, status="running"):
     atomic_json(CHECKPOINT, state)
     trials = state["trials"]
     effective = [trial for trial in trials if trial["effective"]]
-    result = {"case": "HBASE-32", "phase": "independent_upstream_master_wal",
+    result = {"case": "HBASE-32", "phase": "independent_upstream_and_terminal_rpc",
               "status": status, "workload": "TestRegionReplicaFailover#testLotsOfRegionReplicas",
               "attempted": len(trials), "fully_applied": sum(t["strict"] for t in trials),
+              "mixed_rpc_terminal_attempted": sum(t.get("mixed_rpc_terminal", False)
+                                                  for t in trials),
+              "mixed_rpc_terminal_effective_b7": sum(t["effective"] and
+                                                     t.get("mixed_rpc_terminal", False)
+                                                     for t in trials),
+              "pure_upstream_feedback_trials": sum(t["coverage_admitted"] and
+                                                     not t.get("mixed_rpc_terminal", False)
+                                                     for t in trials),
               "postfault_target_method": sum(t["target_method_after_fault"] for t in trials),
               "postfault_same_actor_retry": sum(t["same_actor_retry_after_fault"] for t in trials),
-              "postfault_same_actor_guard": len(effective),
+              "postfault_same_actor_guard": sum(t["postfault_guard"] for t in trials),
               "exact_b7": sum(t["exact_b7"] for t in trials),
               "target_lost": sum(t["strict"] and not t["target_retained"] for t in trials),
               "invalid_cluster": sum(t["invalid_cluster"] for t in trials),
@@ -412,6 +468,41 @@ def main():
                     json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
             state["version"] = 3
             publish(state)
+        if state.get("version", 1) < 4:
+            # Introduce terminal client flush RPC faults only after a fully
+            # applied upstream prefix has retained this exact target actor.
+            # Pure WAL retry exhaustion raises on a different source arm and
+            # cannot itself evaluate the selected B7 catch.
+            before_queue = len(state["queue"])
+            restored_from = []
+            for trial in state["trials"]:
+                if (not trial["coverage_admitted"] or
+                        any(step.startswith("RPC_FLUSH_REGION~") for step in trial["plan"])):
+                    continue
+                trace = parse_log(HERE.parent / trial["log"])
+                if not strict(trace, trial["plan"]):
+                    raise RuntimeError("Admitted parent lost exact trace: " + trial["id"])
+                enqueue(state, trial["plan"], selector_events(trace),
+                        fault_events(trace)[-1]["line"],
+                        trial["new_branches_methods"], trial["elapsed_seconds"],
+                        rpc_selector_events(trace))
+                restored_from.append(trial["id"])
+            prune(state)
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 4,
+                "reason": "terminal_same_actor_flush_RPC_after_upstream_fault",
+                "restored_from_admitted_parents": restored_from,
+                "queue_before": before_queue,
+                "queue_after": len(state["queue"]),
+                "mixed_queue_length": sum(any(step.startswith("RPC_FLUSH_REGION~")
+                                              for step in entry["plan"])
+                                          for entry in state["queue"]),
+                "coverage_union_unchanged": state["coverage_union"],
+                "io_union_unchanged_sha256": hashlib.sha256(
+                    json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
+            state["version"] = 4
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -426,7 +517,7 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 3, "rng_seed": RNG_SEED,
+        state = {"version": 4, "rng_seed": RNG_SEED,
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -516,7 +607,7 @@ def main():
         exec_file = HERE / "logs" / (trial_id + ".exec")
         exec_ok = exec_file.is_file() and exec_file.stat().st_size > 0
         admitted = matched and retained and not invalid and exec_ok
-        effective = admitted and guard
+        effective = admitted and bool(reached["b7"])
         old = state["coverage_union"]
         new = old
         if admitted:
@@ -533,8 +624,9 @@ def main():
         unexpected = matched and retained and not invalid and (exit_code == 124 or
             trace["junit"] is not None and trace["junit"]["failed"] > 0)
         trial = {"id": trial_id, "plan": entry["plan"], "strict": matched,
+                 "mixed_rpc_terminal": entry["plan"][-1].startswith("RPC_FLUSH_REGION~"),
                  "unmatched_retries_before": entry.get("unmatched_retries", 0),
-                 "applied_fault_events": len(trace["FAULT_APPLIED"]),
+                 "applied_fault_events": len(fault_events(trace)),
                  "target_method_after_fault": bool(reached["method"]),
                  "same_actor_retry_after_fault": bool(reached["progress"]),
                  "target_retained": retained, "postfault_guard": guard,
@@ -572,8 +664,8 @@ def main():
             retry["wait"] = 0
             state["queue"].append(retry)
         if admitted and exit_code != 124:
-            enqueue(state, entry["plan"], selectors, trace["FAULT_APPLIED"][-1]["line"],
-                    novelty, trace["elapsed_seconds"])
+            enqueue(state, entry["plan"], selectors, fault_events(trace)[-1]["line"],
+                    novelty, trace["elapsed_seconds"], rpc_selector_events(trace))
         prune(state)
         publish(state)
         INFLIGHT.unlink(missing_ok=True)
