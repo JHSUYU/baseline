@@ -1533,5 +1533,41 @@
       "proposed_cluster_test": "ReadOnlyModeTest.testGlobalSessionInRO",
       "proposed_cluster_test_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java"
     }
-  ]
+  ],
+  "additional_known_issue_checks": [
+    {
+      "case_id": "HDFS-54",
+      "system": "hdfs",
+      "number": 54,
+      "known_issue": "HDFS-17897",
+      "site_id": "<org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer: void checksumBlocks()>#L629",
+      "source_path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+      "source_line": 629,
+      "function": "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer.checksumBlocks()",
+      "check_code": "if (!checksumBlockGroup(blockGroup)) {\n  throw new PathIOException(getSrc(), \"Fail to get block checksum for \" + locatedBlock);\n}",
+      "target_guard": null,
+      "target_throw": null,
+      "target_exception": "org.apache.hadoop.fs.PathIOException",
+      "proposed_cluster_test": "TestEncryptedTransfer.testFileChecksumWithInvalidEncryptionKey (XOR-2-1 striped adaptation)",
+      "proposed_cluster_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java"
+    },
+    {
+      "case_id": "HDFS-55",
+      "system": "hdfs",
+      "number": 55,
+      "known_issue": "HDFS-17899",
+      "site_id": "<org.apache.hadoop.hdfs.server.balancer.KeyManager: org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey newDataEncryptionKey()>#L123",
+      "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/KeyManager.java",
+      "source_line": 123,
+      "function": "org.apache.hadoop.hdfs.server.balancer.KeyManager.newDataEncryptionKey()",
+      "check_code": "if (encryptionKey == null || encryptionKey.expiryDate < timer.now()) {\n  encryptionKey = blockTokenSecretManager.generateDataEncryptionKey();\n}",
+      "target_guard": null,
+      "target_throw": null,
+      "target_exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException at Balancer outbound SASL",
+      "proposed_cluster_test": "TestBalancerWithEncryptedTransfer.testEncryptedBalancer0",
+      "proposed_cluster_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java"
+    }
+  ],
+  "additional_selection_source": "HDFS-17897 striped checksum and HDFS-17899 Balancer stale-key checks in Hadoop 3.4.3",
+  "total_count": 104
 }

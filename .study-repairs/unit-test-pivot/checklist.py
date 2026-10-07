@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Render the 102-check unit-test campaign from isolated case results."""
+"""Render the original 102 checks plus explicitly added known-issue checks."""
 
 from __future__ import annotations
 
@@ -147,11 +147,19 @@ def normalize_trial_counts(record: dict, update: dict,
 
 def rows() -> list[dict]:
     selected = json.loads(SELECTION.read_text())
+    original = selected["checks"]
+    additions = selected.get("additional_known_issue_checks", [])
+    if len(original) != selected["count"] or selected["count"] != 102:
+        raise ValueError("the original selection must retain exactly 102 checks")
+    if {entry["case_id"] for entry in additions} != {"HDFS-54", "HDFS-55"}:
+        raise ValueError("the two known-issue additions must be HDFS-54 and HDFS-55")
     result = []
-    for entry in selected["checks"]:
+    for entry in original + additions:
             case_id = entry["case_id"]
             record = {
                 "case_id": case_id,
+                "selection_group": ("original_102" if entry in original
+                                    else "added_known_issue_check"),
                 "system": entry["system"],
                 "source_path": entry["source_path"],
                 "source_line": entry["source_line"],
@@ -179,12 +187,15 @@ def rows() -> list[dict]:
                 record.update(update)
                 normalize_trial_counts(record, update, entry)
             # Per-case results can use a short system key or a display name.
-            # Keep the 102-row ledger consistent regardless of worker format.
+            # Keep system names consistent regardless of worker format.
             record["system"] = SYSTEM_NAMES[entry["system"].lower()]
+            record["selection_group"] = ("original_102" if entry in original
+                                         else "added_known_issue_check")
             result.append(record)
     result.sort(key=lambda row: (row["system"], row["case_id"]))
-    if len(result) != 102 or len({row["case_id"] for row in result}) != 102:
-        raise ValueError("selection must contain exactly 102 distinct checks")
+    expected = 102 + len(additions)
+    if len(result) != expected or len({row["case_id"] for row in result}) != expected:
+        raise ValueError(f"selection must contain {expected} distinct checks")
     return result
 
 
@@ -214,7 +225,10 @@ def markdown(items: list[dict]) -> str:
 
     counts = Counter(row["status"] for row in items)
     lines = [
-        "# Unit-test cluster fuzz checklist (102 checks)", "",
+        f"# Unit-test cluster fuzz checklist ({len(items)} checks)", "",
+        "The original random selection contains 102 checks. Two HDFS known-issue "
+        "coordination checks were added as HDFS-54 and HDFS-55; their separate "
+        "cohort is shown in the table. Known bug reproduction is not a new finding.", "",
         "This is the new campaign. Legacy Docker trials and trials that load "
         "GraphChecker runtime or region-woven classes are not counted.", "",
         "Time uses total elapsed time when reported; otherwise it uses the "
@@ -228,17 +242,17 @@ def markdown(items: list[dict]) -> str:
         "recorded as run; they are not replayed.",
         "",
         "Status: " + ", ".join(f"{key}={value}" for key, value in sorted(counts.items())),
-        "", "| Check | System | Source | Function | Check code | Cluster test | "
+        "", "| Check | Cohort | System | Source | Function | Check code | Cluster test | "
         "Reported time (s) | Fault trials | Fully applied trials | Target after fault | "
         "Coverage gain | Result | Bug | Evidence |",
-        "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+        "| --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ]
     for row in items:
         line = row.get("resolved_check_line") or row["source_line"]
         source = f"{row['source_path']}:{line}"
         if line != row["source_line"]:
             source += f" (selection line {row['source_line']})"
-        values = [row["case_id"], row["system"],
+        values = [row["case_id"], row["selection_group"], row["system"],
                   source, row["function"],
                   row.get("check_code"),
                   row.get("cluster_test") or row.get("proposed_cluster_test"),

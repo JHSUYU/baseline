@@ -1,7 +1,8 @@
 # HDFS-17897 calibration: stale encryption key during striped checksum
 
-This is a **known bug control**, not a new finding or one of the 102 selected
-candidate checks. It uses Hadoop 3.4.3 release JARs and a case-local MiniDFSCluster
+This is a **known bug control**, not a new finding or one of the original 102
+selected candidate checks. Its check is now tracked separately as HDFS-54 in
+the expanded checklist. It uses Hadoop 3.4.3 release JARs and a case-local MiniDFSCluster
 JUnit derived from the unchanged `TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey`
 test. The one workload change is an XOR-2-1 erasure-coded file, to execute the
 striped checksum branch. No GraphChecker runtime or Docker cluster is used.

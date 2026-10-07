@@ -1,0 +1,27 @@
+{
+  "case_id": "HDFS-55",
+  "system": "hdfs",
+  "status": "known_bug_reproduced_fuzz_budget_pending",
+  "bug_mark": "known_HDFS-17899_reproduced",
+  "cluster_test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+  "target_reached": true,
+  "healthy_target_checks": 30,
+  "healthy_sasl_attempts": 15,
+  "fault_trials": 1,
+  "fully_applied_trials": 1,
+  "target_after_fault": 1,
+  "post_fault_target_guard_events": 17,
+  "post_fault_cached_key_reuse_events": 17,
+  "injected_fault_events": 18,
+  "fault_policy": "All observed Balancer outbound SASL attempts from attempt 1 until cache clear or cap 24; all 18 observed attempts were injected in original 3.4.3",
+  "coverage_gain": {"probes": 193, "production_methods": 48, "branch_count_slots": 66},
+  "elapsed_seconds": 139.858,
+  "new_bug": false,
+  "known_bug_reproduction": {
+    "healthy": {"elapsed_seconds": 38.695, "junit_pass": true, "successful_block_moves": 15, "faults": 0},
+    "original_fault": {"elapsed_seconds": 63.644, "junit_pass": false, "successful_block_moves": 0, "faults": 18, "cache_clears": 0},
+    "fixed_fault": {"elapsed_seconds": 37.519, "junit_pass": true, "successful_block_moves": 15, "faults": 2, "cache_clears": 2}
+  },
+  "evidence": "cases/HDFS-55/known-bug-evidence.tar.gz",
+  "evidence_sha256": "3fbc428c942331ac149c943ff49ee045ca1f731f8a85d6651500dfbe12c3b86e"
+}

@@ -1,7 +1,8 @@
 # HDFS-17899 calibration: stale key during Balancer block moves
 
-**Known upstream bug control, not a new bug and not one of the 102 candidate
-checks.** This controls the Balancer portion of HDFS-17899 on the released
+**Known upstream bug control, not a new bug and not one of the original 102
+candidate checks.** Its Balancer cached-key check is now tracked separately as
+HDFS-55 in the expanded checklist. This controls the Balancer portion of HDFS-17899 on the released
 Hadoop 3.4.3 code. The original embedded-cluster workload is unchanged
 `TestBalancerWithEncryptedTransfer#testEncryptedBalancer0`, loaded from the
 3.4.3 test JAR with the tagged source tree's original test resources. It
