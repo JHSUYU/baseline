@@ -48,6 +48,10 @@ runtime was 4,132.810 seconds. Each trial's duration and outcome are in
 The checkpoint and all 128 compact trial plans, traces, and manifests are
 also preserved in `independent/compact-evidence.tar.gz`, with SHA-256 in
 `independent/compact-evidence-index.json`.
+The complete raw `runs/` tree was separately archived on node1 and verified
+byte for byte before removing the node0 scratch copy; see
+[`full-raw-archive.md`](independent/full-raw-archive.md) for the receipt and
+restore command.
 
 Released Hadoop 3.4.3 source lines 411–414 call `checkAccess(id, ...)`, then
 recompute the token password and compare it with the password carried by the
