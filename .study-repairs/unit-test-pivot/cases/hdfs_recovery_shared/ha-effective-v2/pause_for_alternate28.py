@@ -49,21 +49,30 @@ def evidence() -> dict:
     shared_recent = sum(bool(row["exact_order_applied"] and
                              row["post_fault_target_checks"]["HDFS-28"])
                         for row in recent)
+    alt_tail = alternate["completed"][-12:]
+    alternate_recent = sum(bool(row["exact_order_applied"] and
+                                row["post_fault_target_checks"]["HDFS-28"])
+                           for row in alt_tail)
     basis = {"shared_effective": counts, "shared_recent_window": len(recent),
              "shared_recent_hdfs28_effective": shared_recent,
              "alternate_attempts": len(alternate["completed"]),
              "alternate_hdfs28_effective": alt_valid,
+             "alternate_recent_window": len(alt_tail),
+             "alternate_recent_hdfs28_effective": alternate_recent,
              "alternate_checkpoint_sha256": common.sha(ALT.read_bytes())}
     if (shared.get("focus28_scheduler", {}).get("policy") is None
             or shared.get("test") !=
             "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization"
             or alternate.get("test") !=
             "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testLeaseRecoveryAfterFailover"
-            or counts["HDFS-29"] < 80 or counts["HDFS-30"] < 80
+            or counts["HDFS-29"] < shared["goals"]["HDFS-29"]
+            or counts["HDFS-30"] < shared["goals"]["HDFS-30"]
+            or any(shared.get("extensions", {}).get(case, {}).get("novelty") is not False
+                   for case in ("HDFS-29", "HDFS-30"))
             or counts["HDFS-28"] >= shared["goals"]["HDFS-28"]
             or len(recent) < 24 or shared_recent * 4 > len(recent)
-            or len(alternate["completed"]) < 12
-            or alt_valid * 3 < len(alternate["completed"])
+            or len(alt_tail) < 12 or alternate_recent < 3
+            or alternate_recent * len(recent) <= shared_recent * len(alt_tail)
             or alternate.get("stop_reason") is not None
             or campaign.stop_reason(shared) is not None):
         raise RuntimeError("peer goals or measured alternate-yield basis not satisfied")
