@@ -23,6 +23,14 @@ CASES = {
     "HBASE-22": ("table", "TestNamespaceAuditor_np2:table2:5",
                  {"normal", "selected_table_region_quota"}),
 }
+CASE_META = {
+    "HBASE-08": ("hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java",
+                 "getNamespace(String)", 116),
+    "HBASE-21": ("hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+                 "checkAndUpdateNamespaceRegionCount(TableName,int)", 128),
+    "HBASE-22": ("hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+                 "checkAndUpdateNamespaceTableCount(TableName,int)", 166),
+}
 BRANCH_LINE = {"HBASE-21": 128, "HBASE-22": 166}
 TARGET_CLASS = "org/apache/hadoop/hbase/namespace/NamespaceStateManager"
 
@@ -39,7 +47,14 @@ def publish(state):
     trials = state["trials"]
     branches = state["covered_branches"]
     baseline = state["baseline_branches"]
-    row = {"case_id": state["case"],
+    row = {"case_id": state["case"], "system": "HBase", "version": "2.6.6",
+           "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+           "source_file": CASE_META[state["case"]][0],
+           "target_function": CASE_META[state["case"]][1],
+           "target_guard_line": CASE_META[state["case"]][2],
+           "original_junit": "TestNamespaceAuditor#" +
+                             ("testTableOperations" if state["case"] != "HBASE-21"
+                              else "testRestoreSnapshotQuotaExceed"),
            "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
            "status": state["status"],
            "healthy_seeds": state["healthy_seeds"],
@@ -54,6 +69,9 @@ def publish(state):
            "applied_faults": sum(x["applied_count"] for x in trials),
            "target_exception_candidates": sum(x["target_exception_review"] ==
                                                "candidate_needs_source_and_replay" for x in trials),
+           "bug_mark": ("candidate_review" if any(x["target_exception_review"] ==
+                                                       "candidate_needs_source_and_replay"
+                                                       for x in trials) else "none"),
            "healthy_expected_target_exception_trials": sum(x["target_exception_review"] ==
                                                           "healthy_expected" for x in trials),
            "new_production_methods": len(set(state["covered_methods"])
@@ -65,6 +83,8 @@ def publish(state):
                if count >= 2 and family not in state["healthy_io_families"]),
            "healthy_elapsed_seconds": state["healthy_elapsed_seconds"],
            "fault_elapsed_seconds": sum(x["elapsed_seconds"] or 0 for x in trials),
+           "total_elapsed_seconds": state["healthy_elapsed_seconds"]
+                                    + sum(x["elapsed_seconds"] or 0 for x in trials),
            "budget": {"effective_trials": state["max_effective"],
                       "max_faults": state["max_faults"],
                       "max_attempts": state["max_attempts"]},

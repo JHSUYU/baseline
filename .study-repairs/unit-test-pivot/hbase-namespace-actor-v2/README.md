@@ -115,7 +115,8 @@ exception pauses at `candidate_review_pending_source_and_replay`; HBASE-21/22
 quota signatures already present in healthy runs are recorded as expected
 signatures, not automatically called new bugs. Every checkpoint also writes
 an atomic case-local `campaigns/CASE/result.json` row with attempts, effective
-trials, fault count, elapsed time, coverage and I/O gains, and stop reason;
+trials, fault count, elapsed time, source file/function/guard line, coverage
+and I/O gains, and stop reason;
 the shared 102-case table can ingest this independently. These V2 counters start at
 zero and never import the older unbound runs.
 

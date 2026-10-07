@@ -137,6 +137,8 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(row["attempted_trials"], 0)
         self.assertEqual(row["effective_trials"], 0)
         self.assertEqual(row["budget"]["effective_trials"], 80)
+        self.assertEqual(row["target_function"], "getNamespace(String)")
+        self.assertEqual(row["total_elapsed_seconds"], 2.5)
 
 
 if __name__ == "__main__":
