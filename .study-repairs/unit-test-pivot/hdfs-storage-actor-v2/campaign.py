@@ -309,6 +309,8 @@ def campaign(group: str, anchor: Path, max_attempts: int, timeout: int,
         raise RuntimeError("two healthy calibrations have not passed")
     state = load_state(anchor, group, receipt, max_attempts)
     state_path = anchor / "campaign-state.json"
+    state["status"] = "running"
+    write_json(state_path, state)
     while len(state["completion_order"]) < max_attempts:
         if pause_after_first_effective and any(state["effective_by_case"].values()):
             state["status"] = "first_effective_pause"

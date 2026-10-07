@@ -5,6 +5,12 @@ JUnit mapping. The following commands are prepared for a separately released
 host slot. No extra cluster JVM should be started alongside the node1 startup
 campaign without a resource lease.
 
+Both original tests loop over one and two configured DataNode directories and
+deliberately create valid and invalid storage states. Their expected-failure
+subtests can throw at a target site even in a healthy run. A postfault target
+exception is therefore recorded as a replay/source-review candidate; its
+presence alone cannot establish a new bug.
+
 | Group | Original JUnit method | Exact target checks |
 | --- | --- | --- |
 | upgrade | `TestDFSUpgrade#testUpgrade` | HDFS-24 `BlockPoolSliceStorage.doTransition` layout/ctime guard; HDFS-27 `BlockPoolSliceStorage.doUpgradeNamespace` namespace guard |
