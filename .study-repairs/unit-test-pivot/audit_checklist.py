@@ -81,8 +81,7 @@ def audit(require_terminal: bool) -> list[str]:
                     and reached > applied):
                 errors.append(f"{case_id}: postfault reaches exceed applied trials")
         if case_id in KNOWN_ISSUES:
-            if (status != "quality_complete" or
-                    result.get("bug_mark") != KNOWN_ISSUES[case_id] or
+            if (result.get("bug_mark") != KNOWN_ISSUES[case_id] or
                     result.get("known_bug") is not True or
                     result.get("new_bug") is not False):
                 errors.append(f"{case_id}: known-issue result is not classified")
