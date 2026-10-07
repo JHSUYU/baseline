@@ -10,6 +10,7 @@ import argparse
 from datetime import datetime, timezone
 import hashlib
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -32,9 +33,8 @@ def selector(row: dict) -> tuple:
 
 
 def storage_volume(path: str | None) -> str:
-    if not path or not path.startswith("dfs/data"):
-        return "unbound"
-    return path.split("/", 2)[0] + "/" + path.split("/", 2)[1]
+    match = re.match(r"^dfs/(?:data[0-9]+|datanodeMaster)(?:/|$)", path or "")
+    return match.group(0).rstrip("/") if match else "unbound"
 
 
 def inspect(seed: Path, cases: tuple[str, ...]) -> dict:

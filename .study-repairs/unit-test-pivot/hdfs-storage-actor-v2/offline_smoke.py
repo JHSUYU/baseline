@@ -49,6 +49,7 @@ def check_bytecode() -> None:
 
 
 def check_identity() -> None:
+    assert campaign.storage_volume("dfs/datanodeMaster/current/BP-ID") == "dfs/datanodeMaster"
     actor1 = "episode=7/dn=1/dirs=dfs/data1,dfs/data2"
     actor2 = "episode=8/dn=1/dirs=dfs/data1,dfs/data2"
     target = {"event": "TARGET_CHECK", "seq": 30, "caseId": "HDFS-22",

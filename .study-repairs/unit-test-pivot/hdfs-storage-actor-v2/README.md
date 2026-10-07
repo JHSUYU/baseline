@@ -11,7 +11,7 @@ owns new traces and a separate resumable campaign checkpoint.
 | Hook | Hadoop 3.4.3 source path | Purpose |
 | --- | --- | --- |
 | Deepest `MiniDFSCluster.startDataNodes(...)` entry | `hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/MiniDFSCluster.java:1666` | Increment logical startup episode once per DataNode startup call. |
-| `DataNode.instantiateDataNode(String[], Configuration, SecureResources)` return | `hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:3241` | Bind the returned DataNode object to episode, within-call slot, and configured data directories. |
+| `DataNode` constructor, just before `startDataNode(...)` | `hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java:593` | Bind the DataNode object to its startup episode, within-call slot, and configured data directories before any BPServiceActor starts. The later `instantiateDataNode` return hook checks the same object and does not register it twice. |
 | `BPServiceActor.run()` entry | `hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java:881` | Adopt that DataNode in the actual heartbeat/startup thread, with its NameNode address. |
 | `Client.getRpcResponse(Call, Connection, long, TimeUnit)` entry | `hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java:1566` | Obtain `Connection.getRemoteAddress()`; classify only an exact match to the current actor's NameNode address as `NN0`. |
 | Storage `doTransition`, `doRollback`, and `doUpgrade` entries | `BlockPoolSliceStorage.java`, `DataStorage.java` | Attach exact `StorageDirectory` and volume to each check. An async upgrade callable rejoins its actor through the **same StorageDirectory object**, not a thread name. |
@@ -27,7 +27,7 @@ storage, or peer mapping is logged as `unbound` and cannot inject. Each plan
 step is matched atomically and in order.
 
 The source relationship used for selecting file I/O is the same DataNode
-**volume** (`dfs/dataN`) as a later target. This permits a DataStorage VERSION
+**volume** (`dfs/dataN` or `dfs/datanodeMaster`) as a later target. This permits a DataStorage VERSION
 read at `dfs/data1` to precede a block-pool check under
 `dfs/data1/current/BP-ID`; it excludes `data2`. RPC I/O requires the same actor
 and verified `NN0` endpoint. A trial counts for a case only after every planned
@@ -48,6 +48,12 @@ This compiles the shared overlay, checks all six rewritten classes with ASM
 `CheckClassAdapter`, and tests actor/volume/peer/order/target matching using
 synthetic traces. It does not start a cluster JVM.
 
+The first V2 startup healthy seed used a return-time actor registration hook.
+Its original JUnit passed, but the BPServiceActor threads had already entered,
+so its target events were unbound. That failed calibration remains in
+`evidence/startup`; the constructor-hook rerun uses a separate evidence
+directory. Every JUnit launch enables `-Xverify:all`.
+
 ## Healthy calibration after a host slot is free
 
 Start with the `startup` group: its one original JUnit checks five candidates,
@@ -60,8 +66,8 @@ including HDFS-22/23. The three groups are:
 | `rollback` | `TestDFSRollback#testRollback` | HDFS-26/37 |
 
 ```sh
-python3 calibrate.py --group startup --output evidence/startup --max-seeds 1
-python3 calibrate.py --group startup --output evidence/startup --max-seeds 2
+python3 calibrate.py --group startup --output evidence/startup-constructor --max-seeds 1
+python3 calibrate.py --group startup --output evidence/startup-constructor --max-seeds 2
 ```
 
 The first command runs only seed `a`, so other node1 campaign owners can
@@ -83,7 +89,7 @@ with other cluster JVMs.
 ## Campaign, budget, and resumption
 
 ```sh
-python3 campaign.py --group startup --output evidence/startup --max-attempts 600
+python3 campaign.py --group startup --output evidence/startup-constructor --max-attempts 600
 ```
 
 The campaign starts only with a passing two-seed receipt. Its atomic

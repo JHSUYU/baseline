@@ -55,6 +55,25 @@ public final class PatchHdfsStorage implements Opcodes {
   }
 
   private static int patchDataNode(MethodNode method) {
+    if (method.name.equals("<init>")) {
+      int starts = 0;
+      for (AbstractInsnNode insn = method.instructions.getFirst(); insn != null; insn = insn.getNext()) {
+        if (!(insn instanceof MethodInsnNode)) continue;
+        MethodInsnNode site = (MethodInsnNode) insn;
+        if (!site.owner.equals(DN) || !site.name.equals("startDataNode")) continue;
+        // Constructor-local configuration is still on the MiniDFSCluster startup thread.
+        // Register before startDataNode creates and starts the BPServiceActor thread.
+        InsnList hook = new InsnList();
+        hook.add(new VarInsnNode(ALOAD, 0));
+        hook.add(new VarInsnNode(ALOAD, 1));
+        hook.add(call("registerDataNode", "(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;"
+            + "Lorg/apache/hadoop/conf/Configuration;)Lorg/apache/hadoop/hdfs/server/datanode/DataNode;"));
+        hook.add(new InsnNode(POP));
+        method.instructions.insertBefore(insn, hook);
+        starts++;
+      }
+      return starts;
+    }
     if (!method.name.equals("instantiateDataNode") || Type.getArgumentTypes(method.desc).length != 3)
       return 0;
     int returns = 0;
@@ -449,7 +468,8 @@ public final class PatchHdfsStorage implements Opcodes {
       if (node.name.equals(ACTOR)) count += patchActor(method);
       if (node.name.equals(CLUSTER)) count += patchCluster(method);
     }
-    int expected = node.name.equals(BP) ? 19 : node.name.equals(DATA) ? 11 : 1;
+    int expected = node.name.equals(BP) ? 19 : node.name.equals(DATA) ? 11
+        : node.name.equals(DN) ? 2 : 1;
     if (count != expected) throw new IllegalStateException(node.name + " hooks=" + count);
     ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS);
     node.accept(writer);

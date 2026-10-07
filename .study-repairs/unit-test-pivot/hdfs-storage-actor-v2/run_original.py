@@ -107,7 +107,7 @@ def main() -> None:
                           str(HADOOP / "share/hadoop/common/hadoop-common-3.4.3-tests.jar"),
                           hadoop_cp, *(str(p) for p in test_dependencies),
                           *(str(p) for p in sorted((HADOOP / "share/hadoop/tools/lib").glob("*.jar")))))
-    cmd = [str(JDK / "java"), "-ea", "-Xmx3g", "-Djava.awt.headless=true",
+    cmd = [str(JDK / "java"), "-ea", "-Xverify:all", "-Xmx3g", "-Djava.awt.headless=true",
            "-Djava.net.preferIPv4Stack=true", "-Dorg.slf4j.simpleLogger.defaultLogLevel=warn",
            "-Dtest.cache.data=" + str(RESOURCE),
            "-Dtest.build.data=" + str(scratch / "data"), "-Djava.io.tmpdir=" + str(scratch / "tmp"),

@@ -65,7 +65,8 @@ public final class HdfsStorageProbe {
     String raw = conf == null ? "" : conf.get("dfs.datanode.data.dir", "");
     List<String> dirs = new ArrayList<>();
     for (String item : raw.split(",")) {
-      java.util.regex.Matcher m = java.util.regex.Pattern.compile("(?:^|/)dfs/(data[0-9]+)(?:/|$)").matcher(item);
+      java.util.regex.Matcher m = java.util.regex.Pattern.compile(
+          "(?:^|/)dfs/(data[0-9]+|datanodeMaster)(?:/|$)").matcher(item);
       if (m.find()) dirs.add("dfs/" + m.group(1));
     }
     Collections.sort(dirs);
@@ -80,6 +81,7 @@ public final class HdfsStorageProbe {
     }
     Actor actor;
     synchronized (HdfsStorageProbe.class) {
+      if (ACTORS.containsKey(dn)) return dn;
       int slot = EPISODE_SLOTS.containsKey(episode) ? EPISODE_SLOTS.get(episode) + 1 : 1;
       EPISODE_SLOTS.put(episode, slot);
       actor = new Actor(episode, slot, dataDirs(conf), ++nextDnObject);
