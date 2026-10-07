@@ -7,13 +7,13 @@ from pathlib import Path
 import subprocess
 import sys
 
+from deps import asm_jars
+
 
 CASE = Path(__file__).resolve().parents[1]
 OLD = CASE.parent / "work"
 SOURCE = OLD / "solr-source"
 JAVAC = "/usr/lib/jvm/java-8-openjdk-amd64/bin/javac"
-ASM = Path("/users/ZhenyuLi/.m2/repository/org/ow2/asm")
-VERSION = "9.10.1"
 
 
 def digest(path: Path) -> str:
@@ -39,9 +39,8 @@ def main() -> None:
         subprocess.run([JAVAC, "-cp", classpath, "-d", str(directory),
                         str(CASE / "probe/RunSingleJUnit.java"),
                         *map(str, tests)], check=True)
-    asm = [ASM / module / VERSION / f"{module}-{VERSION}.jar"
-           for module in ("asm", "asm-tree", "asm-commons")]
-    helpers = ":".join(map(str, [CASE / "classes", OLD / "lib/jacoco-core.jar", *asm]))
+    helpers = ":".join([str(CASE / "classes"), str(OLD / "lib/jacoco-core.jar"),
+                        *map(str, asm_jars()), *source_cp])
     subprocess.run([JAVAC, "-cp", helpers, "-d", str(CASE / "classes"),
                     str(CASE / "probe/CoverageProbes.java"),
                     str(CASE / "probe/CoverageSummary.java"),

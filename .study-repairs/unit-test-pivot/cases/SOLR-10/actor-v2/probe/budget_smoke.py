@@ -76,6 +76,15 @@ def main() -> None:
     assert boundary["budget"] == {"max_attempts": BASE_ATTEMPTS,
                                   "max_faults": BASE_FAULTS}
     boundary["trials"] = []
+    boundary["queue"] = []
+    boundary["inflight"] = None
+    campaign.update_stop_reasons(boundary)
+    assert boundary["site_progress"]["SOLR-10"]["stop_reason"] == "goal_met"
+    assert boundary["site_progress"]["SOLR-39"]["stop_reason"] == "queue_exhausted_before_goal"
+    boundary["trials"] = [{}] * BASE_ATTEMPTS
+    boundary["queue"] = [["unrun-actor-selector"]]
+    campaign.update_stop_reasons(boundary)
+    assert boundary["site_progress"]["SOLR-39"]["stop_reason"] == "attempt_cap_before_goal"
     original_directory = campaign.CAMPAIGN
     with tempfile.TemporaryDirectory(prefix="solr103940-v2-budget-smoke-") as temp:
         try:

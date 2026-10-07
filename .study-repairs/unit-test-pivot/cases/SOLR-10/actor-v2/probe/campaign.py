@@ -9,13 +9,16 @@ cluster slots are assigned.
 from collections import Counter, defaultdict
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
 
+from deps import asm_jars
 from feedback import (CASES, atomic_json, checked_target_identity, events,
-                      io_behavior_key, io_family, io_identity, strict_sequence,
-                      target_after, target_counts)
+                      io_behavior_key, io_family, io_identity, runtime_actor,
+                      strict_sequence, target_after, target_after_any_actor,
+                      target_counts)
 
 
 CASE = Path(__file__).resolve().parents[1]
@@ -25,8 +28,8 @@ STATE = CAMPAIGN / "state.json"
 HEALTHY = ("healthy-actor-001", "healthy-actor-002")
 JAVA = "/usr/lib/jvm/java-8-openjdk-amd64/bin/java"
 DIST = "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist"
-BASE_ATTEMPTS, BASE_VALID_PER_SITE, BASE_FAULTS = 240, 80, 8
-EXTENDED_ATTEMPTS, EXTENDED_VALID_PER_SITE, EXTENDED_FAULTS = 384, 128, 10
+BASE_ATTEMPTS, BASE_VALID_PER_SITE, BASE_FAULTS = 720, 80, 8
+EXTENDED_ATTEMPTS, EXTENDED_VALID_PER_SITE, EXTENDED_FAULTS = 1152, 128, 10
 
 
 def relevant(key: tuple[str, str, str, str]) -> bool:
@@ -73,11 +76,10 @@ def method_branch_coverage(directory: Path) -> tuple[set[str], dict[str, int]]:
     execution = directory / "jacoco.exec"
     if not execution.exists():
         return set(), {}
-    asm = "/users/ZhenyuLi/.m2/repository/org/ow2/asm"
-    jars = [f"{asm}/{module}/9.10.1/{module}-9.10.1.jar"
-            for module in ("asm", "asm-tree", "asm-commons")]
+    solr_cp = (CASE / "classpath.txt").read_text().strip()
     cp = ":".join([str(CASE / "classes"),
-                   str(CASE.parent / "work/lib/jacoco-core.jar"), *jars])
+                   str(CASE.parent / "work/lib/jacoco-core.jar"),
+                   *map(str, asm_jars()), solr_cp])
     output = subprocess.check_output([JAVA, "-cp", cp,
                                       "baseline.solr103940.CoverageFeedback",
                                       DIST, str(CASE / "classes"), str(execution)], text=True)
@@ -122,18 +124,22 @@ def initial_queue(traces: list[list[dict]]) -> list[list[str]]:
                 continue
             counts[key] += 1
             if relevant(key) and event["seq"] < last_target:
-                hits[key].append((counts[key], event["seq"]))
+                actor = runtime_actor(event)
+                if actor is not None and any(e["seq"] > event["seq"] and
+                                             runtime_actor(e) == actor for e in targets):
+                    hits[key].append((counts[key], event["seq"], actor))
         for key, occurrences in hits.items():
             sample = {0, len(occurrences) // 4, len(occurrences) // 2,
                       3 * len(occurrences) // 4, len(occurrences) - 1}
             for index in sorted(sample):
-                ordinal, seq = occurrences[index]
+                ordinal, seq, actor = occurrences[index]
                 plan = [selector(key, ordinal)]
                 encoded = ";".join(plan)
                 if encoded in seen:
                     continue
                 seen.add(encoded)
-                future = {e["parts"][1] for e in targets if e["seq"] > seq}
+                future = {e["parts"][1] for e in targets if e["seq"] > seq and
+                          runtime_actor(e) == actor}
                 seeds.append((-len(future), rank(key), -seq, plan))
     seeds.sort(key=lambda item: item[:3])
     return [plan for _, _, _, plan in seeds]
@@ -174,7 +180,8 @@ def initialize() -> dict:
         "seen_branches": {site: dict(base_branches) for site in CASES},
         "seen_io_families": {site: sorted(base_families) for site in CASES},
         "site_progress": {site: {"effective": 0, "goal": BASE_VALID_PER_SITE,
-                                 "extension": "pending", "last_eight_effective": []}
+                                 "extension": "pending", "last_eight_effective": [],
+                                 "stop_reason": "running"}
                           for site in CASES},
         "queue": initial_queue(traces), "seen_plans": [], "trials": [],
         "inflight": None,
@@ -201,6 +208,31 @@ def write_checkpoints(state: dict) -> None:
             "max_faults": state["budget"]["max_faults"],
             **state["site_progress"][site],
         })
+
+
+def update_stop_reasons(state: dict) -> None:
+    attempts_exhausted = len(state["trials"]) >= state["budget"]["max_attempts"]
+    queue_exhausted = not state["queue"] and state["inflight"] is None
+    for site in CASES:
+        progress = state["site_progress"][site]
+        if progress["effective"] >= progress["goal"]:
+            reason = "goal_met"
+        elif attempts_exhausted:
+            reason = "attempt_cap_before_goal"
+        elif queue_exhausted:
+            reason = "queue_exhausted_before_goal"
+        else:
+            reason = "running"
+        progress["stop_reason"] = reason
+
+
+def reclaim_completed_scratch(state: dict) -> None:
+    """After interruption, remove scratch only for completed non-candidates."""
+    for trial in state["trials"]:
+        if not trial.get("scratch_retained", True):
+            scratch = CAMPAIGN / f"trial-{trial['number']:03d}" / "scratch"
+            if scratch.exists():
+                shutil.rmtree(scratch)
 
 
 def update_progress(state: dict, trial: dict) -> None:
@@ -249,7 +281,10 @@ def mutate(state: dict, plan: list[str], trace: list[dict], trial: dict) -> None
             not any(trial["target_after_fault"].values())):
         return
     final = max(e["seq"] for e in trace if e["kind"] == "IO_APPLIED_CONNECTION_LOSS")
-    targets = [e for e in trace if e["kind"] == "TARGET_CHECK" and e["seq"] > final]
+    fault_actors = {runtime_actor(e) for e in trace
+                    if e["kind"] == "IO_APPLIED_CONNECTION_LOSS"}
+    targets = [e for e in trace if e["kind"] == "TARGET_CHECK" and e["seq"] > final
+               and runtime_actor(e) in fault_actors]
     final_target = max(e["seq"] for e in targets)
     global_count, relative_count = Counter(), Counter()
     candidates = []
@@ -263,7 +298,9 @@ def mutate(state: dict, plan: list[str], trace: list[dict], trial: dict) -> None
             relative_count[key] += 1
         if not (final + 2 < event["seq"] < final_target - 2 and relevant(key)):
             continue
-        future = {e["parts"][1] for e in targets if e["seq"] > event["seq"]}
+        actor = runtime_actor(event)
+        future = {e["parts"][1] for e in targets if e["seq"] > event["seq"] and
+                  runtime_actor(e) == actor}
         if not future:
             continue
         child = plan + [selector(key, relative_count[key],
@@ -297,6 +334,8 @@ def mutate(state: dict, plan: list[str], trace: list[dict], trial: dict) -> None
 def run() -> None:
     CAMPAIGN.mkdir(parents=True, exist_ok=True)
     state = json.loads(STATE.read_text()) if STATE.exists() else initialize()
+    reclaim_completed_scratch(state)
+    update_stop_reasons(state)
     write_checkpoints(state)
     while not done(state):
         if state["inflight"] is None:
@@ -314,7 +353,9 @@ def run() -> None:
         trace = events(output / "events.tsv")
         strict = strict_sequence(plan, trace) and checked_target_identity(trace)
         applied = [e for e in trace if e["kind"] == "IO_APPLIED_CONNECTION_LOSS"]
-        after, exception = target_after(trace, max((e["seq"] for e in applied), default=-1))
+        final_fault = max((e["seq"] for e in applied), default=-1)
+        raw_after, raw_exception = target_after_any_actor(trace, final_fault)
+        after, exception = target_after(trace, final_fault)
         current_cov = coverage(output) if strict and any(after.values()) else set()
         current_methods, current_branches = (method_branch_coverage(output)
                                              if strict and any(after.values()) else (set(), {}))
@@ -346,12 +387,19 @@ def run() -> None:
         trial = {
             "number": number, "plan": plan, "strict": strict,
             "faults_applied": len(applied), "junit_exit": manifest["exit_code"],
-            "target_checks": target_counts(trace), "target_after_fault": after,
-            "target_exception": exception, "new_coverage": novelty_cov,
+            "target_checks": target_counts(trace),
+            "target_after_fault_any_actor": raw_after,
+            "target_exception_any_actor": raw_exception,
+            "target_lost_actor_mismatch": {site: strict and raw_after[site] and not after[site]
+                                           for site in CASES},
+            "fault_actors": [list(runtime_actor(e)) for e in applied],
+            "target_after_fault": after, "target_exception": exception,
+            "new_coverage": novelty_cov,
             "new_methods": novelty_methods, "new_branches": novelty_branches,
             "new_io": novelty_io, "new_io_families": novelty_families,
             "elapsed_seconds": round(time.time() - started, 3),
             "evidence": str(output.relative_to(CASE)),
+            "scratch_retained": bool(strict and any(raw_exception.values())),
         }
         update_progress(state, trial)
         mutate(state, plan, trace, trial)
@@ -359,14 +407,21 @@ def run() -> None:
         state["seen_plans"].append(";".join(plan))
         state["elapsed_seconds"] += trial["elapsed_seconds"]
         state["inflight"] = None
+        update_stop_reasons(state)
         atomic_json(output / "trial.json", trial)
         atomic_json(STATE, state)
         write_checkpoints(state)
+        if not trial["scratch_retained"]:
+            scratch = output / "scratch"
+            if scratch.exists():
+                shutil.rmtree(scratch)
         print(json.dumps({"trial": number, "strict": strict, "after": after,
                           "exception": exception, "valid": {site: valid_count(state, site)
                                                           for site in CASES},
                           "goals": {site: state["site_progress"][site]["goal"]
-                                    for site in CASES}}), flush=True)
+                                    for site in CASES},
+                          "stop_reasons": {site: state["site_progress"][site]["stop_reason"]
+                                           for site in CASES}}), flush=True)
 
 
 if __name__ == "__main__":

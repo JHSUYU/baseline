@@ -97,11 +97,41 @@ def target_counts(trace: list[dict]) -> dict[str, int]:
                       e["parts"][1] == case for e in trace) for case in CASES}
 
 
-def target_after(trace: list[dict], final_fault: int) -> tuple[dict[str, bool], dict[str, bool]]:
+def runtime_actor(event: dict) -> tuple[str, str, str, str] | None:
+    """The live receiver/manager pair, not just a reusable Jetty slot label."""
+    f = fields(event)
+    keys = ("actor", "node", "client_id", "manager_id")
+    if not all(f.get(key) for key in keys):
+        return None
+    return tuple(f[key] for key in keys)
+
+
+def target_after_any_actor(trace: list[dict], final_fault: int) -> tuple[dict[str, bool], dict[str, bool]]:
+    """Diagnostic only: a guard may run on a different client after the fault."""
     reached = {case: False for case in CASES}
     exception = {case: False for case in CASES}
     for event in trace:
         if event["seq"] <= final_fault:
+            continue
+        p = event["parts"]
+        if event["kind"] == "TARGET_CHECK" and len(p) >= 2 and p[1] in reached:
+            reached[p[1]] = True
+        if event["kind"] == "TARGET_EXCEPTION" and p and p[0] in exception:
+            exception[p[0]] = True
+    return reached, exception
+
+
+def target_after(trace: list[dict], final_fault: int) -> tuple[dict[str, bool], dict[str, bool]]:
+    """Count a guard only on a real client/manager used by an applied fault."""
+    reached = {case: False for case in CASES}
+    exception = {case: False for case in CASES}
+    fault_actors = {runtime_actor(e) for e in trace
+                    if e["kind"] == "IO_APPLIED_CONNECTION_LOSS" and e["seq"] <= final_fault}
+    fault_actors.discard(None)
+    for event in trace:
+        if event["seq"] <= final_fault:
+            continue
+        if runtime_actor(event) not in fault_actors:
             continue
         p = event["parts"]
         if event["kind"] == "TARGET_CHECK" and len(p) >= 2 and p[1] in reached:

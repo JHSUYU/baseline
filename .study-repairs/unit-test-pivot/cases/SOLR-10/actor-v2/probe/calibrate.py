@@ -4,8 +4,10 @@
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
+import time
 
 from feedback import (CASES, actor_registrations, atomic_json,
                       checked_target_identity, events, fields, target_counts)
@@ -72,8 +74,21 @@ def main() -> None:
         actor_name = "healthy-actor-" + suffix
         for name, flags in ((original_name, ["--original"]),
                             (actor_name, ["--coverage"])):
-            subprocess.run([sys.executable, str(RUN), str(EVIDENCE / name), *flags],
-                           check=True)
+            directory = EVIDENCE / name
+            manifest = directory / "manifest.json"
+            if not manifest.exists():
+                if directory.exists():
+                    interrupted = EVIDENCE / (name + "-interrupted-" + str(int(time.time())))
+                    directory.rename(interrupted)
+                subprocess.run([sys.executable, str(RUN), str(directory), *flags],
+                               check=True)
+            if name == original_name:
+                verify_original(name)
+            else:
+                verify_instrumented(name)
+            scratch = directory / "scratch"
+            if scratch.exists():
+                shutil.rmtree(scratch)
         originals.append(verify_original(original_name))
         instrumented.append(verify_instrumented(actor_name))
         atomic_json(EVIDENCE / "healthy-summary.json", {
