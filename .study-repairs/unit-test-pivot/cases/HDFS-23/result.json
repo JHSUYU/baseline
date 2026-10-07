@@ -1,4 +1,6 @@
 {
+  "actor_identity_audit": "independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md",
+  "actor_identity_gap": "Archived fault selectors normalize runtime RPC thread and endpoint; target probes lack DN/storage/startup-episode identity. Historical injection and coverage counts await actor-aware replay.",
   "budget": {
     "max_faults": 8,
     "max_trials": 80
@@ -11,33 +13,25 @@
   },
   "case_id": "HDFS-23",
   "cluster_test": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
-  "completed_at_utc": "2026-10-06T22:06:19.355148+00:00",
   "coverage": {
-    "branch_counts": 9198,
-    "lines": 36318,
-    "methods": 8308,
-    "probes": 30127
+    "branch_counts": 0,
+    "lines": 0,
+    "methods": 0,
+    "probes": 0
   },
-  "coverage_gain": 36,
+  "coverage_gain": 0,
   "coverage_gain_detail": {
-    "branch_counts": 36,
-    "lines": 60,
-    "methods": 5,
-    "probes": 93
+    "branch_counts": 0,
+    "lines": 0,
+    "methods": 0,
+    "probes": 0
   },
-  "coverage_metric_note": "JaCoCo probe IDs are exact; branch_counts uses per-method covered branch counts as monotone feedback rather than individual branch outcomes; generated Mockito classes excluded.",
-  "elapsed_seconds": 3245.356,
-  "elapsed_seconds_semantics": "Shared original JUnit: one healthy duration plus each actual shared fault-trial JUnit duration; the same run is attributed separately to all five checks, not summed five times.",
+  "elapsed_seconds": 0.0,
+  "elapsed_seconds_semantics": "No actor-qualified campaign time is counted yet; prior measured time is preserved in legacy_coarse_actor.",
   "evidence": "../HDFS-22/independent/evidence/campaign-state.json",
   "expected_guard_response_trials": 0,
-  "extension_decision": {
-    "budget_ceiling_reached": false,
-    "new_production_coverage_or_io_family_on_either_check": false,
-    "next_budget_if_needed": null,
-    "shared_near_limit_window_trials": 8
-  },
-  "fault_trials": 80,
-  "fully_applied_trials": 78,
+  "fault_trials": 0,
+  "fully_applied_trials": 0,
   "healthy": {
     "branch_count": 9162,
     "elapsed_seconds": 68.108,
@@ -58,19 +52,54 @@
     "runtime_hooks": "case_local_offline_asm_9_6_overlay",
     "static_io_map": false
   },
-  "io_families": 8,
-  "methodology": "independent_coverage_io_original_junit_shared_run",
-  "shared_run_case_ids": [
-    "HDFS-22",
-    "HDFS-23",
-    "HDFS-25",
-    "HDFS-34",
-    "HDFS-35"
-  ],
+  "io_families": 0,
+  "legacy_coarse_actor": {
+    "completed_at_utc": "2026-10-06T22:06:19.355148+00:00",
+    "coverage": {
+      "branch_counts": 9198,
+      "lines": 36318,
+      "methods": 8308,
+      "probes": 30127
+    },
+    "coverage_gain": 36,
+    "coverage_gain_detail": {
+      "branch_counts": 36,
+      "lines": 60,
+      "methods": 5,
+      "probes": 93
+    },
+    "coverage_metric_note": "JaCoCo probe IDs are exact; branch_counts uses per-method covered branch counts as monotone feedback rather than individual branch outcomes; generated Mockito classes excluded.",
+    "elapsed_seconds": 3245.356,
+    "elapsed_seconds_semantics": "Shared original JUnit: one healthy duration plus each actual shared fault-trial JUnit duration; the same run is attributed separately to all five checks, not summed five times.",
+    "expected_guard_response_trials": 0,
+    "extension_decision": {
+      "budget_ceiling_reached": false,
+      "new_production_coverage_or_io_family_on_either_check": false,
+      "next_budget_if_needed": null,
+      "shared_near_limit_window_trials": 8
+    },
+    "fault_trials": 80,
+    "fully_applied_trials": 78,
+    "io_families": 8,
+    "methodology": "independent_coverage_io_original_junit_shared_run",
+    "shared_run_case_ids": [
+      "HDFS-22",
+      "HDFS-23",
+      "HDFS-25",
+      "HDFS-34",
+      "HDFS-35"
+    ],
+    "status": "quality_complete",
+    "strict_injections": 78,
+    "target_after_fault": 57,
+    "target_exception_after_fault": 0
+  },
+  "methodology": "actor_identity_recheck_pending_original_junit",
+  "quality_complete": false,
   "source_review": "TestDFSStartupVersions.testVersions intentionally starts DataNodes with 20 VERSION variants. The selected storage guards compare VERSION namespaceID, blockpoolID, clusterID, or CTime with NameNode NamespaceInfo. The original test expects many incompatibilities and checks whether each DataNode starts; a matching version rejection alone is not a new bug.",
-  "status": "quality_complete",
-  "strict_injections": 78,
-  "target_after_fault": 57,
+  "status": "actor_identity_recheck_pending",
+  "strict_injections": 0,
+  "target_after_fault": 0,
   "target_code": "blockpoolID.equals(nsInfo.getBlockPoolID())",
   "target_exception_after_fault": 0,
   "target_function": "BlockPoolSliceStorage.doTransition(StorageDirectory,NamespaceInfo,StartupOption,List,Configuration)",
@@ -3975,5 +4004,6 @@
       "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-22/independent/evidence/runs/6828dfd00db9706e/attempt-1/runtime_trace.jsonl",
       "valid_for_feedback": true
     }
-  ]
+  ],
+  "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials"
 }

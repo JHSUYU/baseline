@@ -1,16 +1,8 @@
 {
-  "applied_fault_type_counts": {
-    "EOFException": 34,
-    "FileNotFoundException": 7,
-    "IOException": 40,
-    "SocketTimeoutException": 53
-  },
-  "applied_io_marker_counts": {
-    "FAULT:HDFS_BP_FILE:DN_VERSION_READ": 6,
-    "FAULT:HDFS_BP_FILE:PREVIOUS_VERSION_READ": 6,
-    "FAULT:HDFS_BP_FILE:VERSION_READ": 2,
-    "FAULT:HDFS_BP_RPC:RESPONSE": 120
-  },
+  "actor_identity_audit": "independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md",
+  "actor_identity_gap": "Archived fault selectors normalize runtime RPC thread and endpoint; target probes lack DN/storage/startup-episode identity. Historical injection and coverage counts await actor-aware replay.",
+  "applied_fault_type_counts": {},
+  "applied_io_marker_counts": {},
   "budget": {
     "max_faults": 8,
     "max_trials": 80
@@ -23,33 +15,25 @@
   },
   "case_id": "HDFS-26",
   "cluster_test": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
-  "completed_at_utc": "2026-10-06T23:31:32.377241+00:00",
   "coverage": {
-    "branch_counts": 9274,
-    "lines": 36456,
-    "methods": 8332,
-    "probes": 30572
+    "branch_counts": 0,
+    "lines": 0,
+    "methods": 0,
+    "probes": 0
   },
-  "coverage_gain": 108,
+  "coverage_gain": 0,
   "coverage_gain_detail": {
-    "branch_counts": 108,
-    "lines": 246,
-    "methods": 25,
-    "probes": 285
+    "branch_counts": 0,
+    "lines": 0,
+    "methods": 0,
+    "probes": 0
   },
-  "coverage_metric_note": "JaCoCo probe identities and production method/line coverage are exact; branch_counts are per-method covered branch counts, used as monotone feedback. Runtime-generated Mockito mock classes are excluded.",
-  "elapsed_seconds": 3971.045,
-  "elapsed_seconds_semantics": "One healthy JUnit plus each actual fault-trial JUnit; the upgrade run is attributed separately to HDFS-24 and HDFS-27, never added together.",
+  "elapsed_seconds": 0.0,
+  "elapsed_seconds_semantics": "No actor-qualified campaign time is counted yet; prior measured time is preserved in legacy_coarse_actor.",
   "evidence": "independent/evidence/campaign-state.json",
   "expected_guard_response_trials": 0,
-  "extension_decision": {
-    "budget_ceiling_reached": false,
-    "last_chronological_trials": 8,
-    "new_production_coverage_or_stable_io_family": false,
-    "next_budget_if_needed": null
-  },
-  "fault_trials": 80,
-  "fully_applied_trials": 78,
+  "fault_trials": 0,
+  "fully_applied_trials": 0,
   "healthy": {
     "branch_count": 9166,
     "elapsed_seconds": 49.158,
@@ -70,26 +54,94 @@
     "runtime_hooks": "case_local_offline_asm_9_6_overlay",
     "static_io_map": false
   },
-  "io_families": 12,
-  "methodology": "independent_coverage_io_original_junit",
-  "own_mapped_cluster_test": null,
-  "post_fault_target_branch_outcomes": {
-    "BlockPoolSliceStorage.doRollback#L619-IF_ICMPLT": {
-      "false": 148,
-      "true": 0
+  "io_families": 0,
+  "legacy_coarse_actor": {
+    "applied_fault_type_counts": {
+      "EOFException": 34,
+      "FileNotFoundException": 7,
+      "IOException": 40,
+      "SocketTimeoutException": 53
     },
-    "BlockPoolSliceStorage.doRollback#L620-IFLE": {
-      "false": 148,
-      "true": 0
+    "applied_io_marker_counts": {
+      "FAULT:HDFS_BP_FILE:DN_VERSION_READ": 6,
+      "FAULT:HDFS_BP_FILE:PREVIOUS_VERSION_READ": 6,
+      "FAULT:HDFS_BP_FILE:VERSION_READ": 2,
+      "FAULT:HDFS_BP_RPC:RESPONSE": 120
+    },
+    "completed_at_utc": "2026-10-06T23:31:32.377241+00:00",
+    "coverage": {
+      "branch_counts": 9274,
+      "lines": 36456,
+      "methods": 8332,
+      "probes": 30572
+    },
+    "coverage_gain": 108,
+    "coverage_gain_detail": {
+      "branch_counts": 108,
+      "lines": 246,
+      "methods": 25,
+      "probes": 285
+    },
+    "coverage_metric_note": "JaCoCo probe identities and production method/line coverage are exact; branch_counts are per-method covered branch counts, used as monotone feedback. Runtime-generated Mockito mock classes are excluded.",
+    "elapsed_seconds": 3971.045,
+    "elapsed_seconds_semantics": "One healthy JUnit plus each actual fault-trial JUnit; the upgrade run is attributed separately to HDFS-24 and HDFS-27, never added together.",
+    "expected_guard_response_trials": 0,
+    "extension_decision": {
+      "budget_ceiling_reached": false,
+      "last_chronological_trials": 8,
+      "new_production_coverage_or_stable_io_family": false,
+      "next_budget_if_needed": null
+    },
+    "fault_trials": 80,
+    "fully_applied_trials": 78,
+    "io_families": 12,
+    "methodology": "independent_coverage_io_original_junit",
+    "post_fault_target_branch_outcomes": {
+      "BlockPoolSliceStorage.doRollback#L619-IF_ICMPLT": {
+        "false": 148,
+        "true": 0
+      },
+      "BlockPoolSliceStorage.doRollback#L620-IFLE": {
+        "false": 148,
+        "true": 0
+      }
+    },
+    "shared_run_case_ids": [
+      "HDFS-26"
+    ],
+    "status": "quality_complete",
+    "strict_injections": 78,
+    "target_after_fault": 69,
+    "target_exception_after_fault": 0,
+    "target_retaining_sequence_depths": {
+      "1": 51,
+      "2": 5,
+      "3": 4,
+      "4": 4,
+      "5": 2,
+      "6": 1,
+      "7": 1,
+      "8": 1
+    },
+    "tested_sequence_depths": {
+      "1": 57,
+      "2": 6,
+      "3": 8,
+      "4": 4,
+      "5": 2,
+      "6": 1,
+      "7": 1,
+      "8": 1
     }
   },
-  "shared_run_case_ids": [
-    "HDFS-26"
-  ],
+  "methodology": "actor_identity_recheck_pending_original_junit",
+  "own_mapped_cluster_test": null,
+  "post_fault_target_branch_outcomes": {},
+  "quality_complete": false,
   "source_review": "doRollback reads the previous VERSION and checks layout version and cTime against the running software and NamespaceInfo. The explicit InconsistentFSStateException rejects rollback to a newer state; a matching rejection alone is expected behavior.",
-  "status": "quality_complete",
-  "strict_injections": 78,
-  "target_after_fault": 69,
+  "status": "actor_identity_recheck_pending",
+  "strict_injections": 0,
+  "target_after_fault": 0,
   "target_code": "previousLV >= HdfsServerConstants.DATANODE_LAYOUT_VERSION && previousCTime <= nsInfo.getCTime()",
   "target_exception_after_fault": 0,
   "target_function": "BlockPoolSliceStorage.doRollback",
@@ -99,28 +151,10 @@
   ],
   "target_method_signature": "doRollback(StorageDirectory,NamespaceInfo)",
   "target_reached": true,
-  "target_retaining_sequence_depths": {
-    "1": 51,
-    "2": 5,
-    "3": 4,
-    "4": 4,
-    "5": 2,
-    "6": 1,
-    "7": 1,
-    "8": 1
-  },
+  "target_retaining_sequence_depths": {},
   "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
   "target_source_line": 626,
-  "tested_sequence_depths": {
-    "1": 57,
-    "2": 6,
-    "3": 8,
-    "4": 4,
-    "5": 2,
-    "6": 1,
-    "7": 1,
-    "8": 1
-  },
+  "tested_sequence_depths": {},
   "trial_results": [
     {
       "applied_faults": 1,
@@ -4204,5 +4238,6 @@
       "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-26/independent/evidence/runs/6ffbc76da10bcb2d/attempt-1/runtime_trace.jsonl",
       "valid_for_feedback": true
     }
-  ]
+  ],
+  "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials"
 }

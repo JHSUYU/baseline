@@ -1,5 +1,7 @@
 # HDFS-37 independent original-JUnit fault campaign
 
+> **Actor identity recheck pending.** The earlier original-JUnit fault campaign matched a normalized RPC thread/port selector, while its target probe did not record the DataNode, storage directory, or startup episode needed to join the fault to this check. The former trial, coverage, and measured-time figures below are retained as historical coarse-actor observations in `result.json` under `legacy_coarse_actor`; they are not counted as current high-quality completion. See the [independent actor audit](../../independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md).
+
 - Target: `hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java:947` in `DataStorage.doRollback(StorageDirectory,NamespaceInfo)`; guard `previousLV >= DataNodeLayoutVersion.getCurrentLayoutVersion() && previousCTime <= nsInfo.getCTime()`. Exact bytecode sites: `DataStorage.doRollback#L940-IF_ICMPLT`, `DataStorage.doRollback#L941-IFLE`.
 - Workload: unchanged Hadoop 3.4.3 `org.apache.hadoop.hdfs.TestDFSRollback#testRollback` (MiniDFSCluster).
 - Healthy run: 12 exact branch events, 3 target exceptions.
