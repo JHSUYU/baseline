@@ -179,3 +179,46 @@ hash. An early handoff also records the unstarted plan and checkpoint backup
 SHA. Repeating the command
 after interruption resumes the recorded checkpoint, including any active
 trial, without redoing completed trial directories.
+
+## Versioned HDFS-28 early RPC focus
+
+`focus28_v2.py` is a second, bounded scheduler prepared for a separate audited
+successor boundary. It takes the same original HA JUnit, existing fault queue,
+and `seen` ledger. Both fresh healthy traces supply pre-HDFS-28 RPC and
+Hadoop IPC observations with a registered physical recovery owner, the same
+block/recovery root, and a later HDFS-28 guard in that root. Their 12 observed
+points yield 30 unique one-fault selectors across the three existing RPC
+exception types. In the dry-run snapshot, all 30 are already in `seen`: 20
+have been applied exactly, three have a missed attempt, and seven are in the
+queue (the sets overlap because a missed selector may be retried). The new
+policy adds **no** duplicate plans and rejects any exact-tested ID in the
+queue. It first favors queued healthy one-fault RPC plans eligible for
+HDFS-28, then other observed one-fault HDFS-28 RPC plans. This priority is
+active when HDFS-28 trails both peers by at least ten effective trials or
+when the peers have each reached 80 and HDFS-28 is still short. The existing
+four RPC slots to one file-I/O slot remain in the same order; file exploration
+and the original per-case 80/conditional128, max8/conditional10, and
+320/conditional512 bounds remain.
+
+`focus28_quiesce.py` is an optional safe stop of the *Python successor only*.
+It requires a reserved plan whose driver/JUnit/trace/manifest and Java child
+do not yet exist, the controller waiting as one thread on the shared JVM
+start lock, a remaining one-fault HDFS-28 RPC plan, and the focus trigger.
+While that controller is SIGSTOPped, it audits every completed raw trial and
+checks the checkpoint SHA before signalling SIGKILL. It then writes a durable
+checkpoint backup and receipt containing the active plan SHA. Failure before
+SIGKILL resumes the original successor. `focus28_v2.py` independently checks
+the receipt, raw audit, healthy selector IDs, source SHA and complete old
+checkpoint; it changes only scheduler metadata (and extends 320 to 512 if
+the old attempt cap had already stopped). The old `completed`, `queue`,
+`seen`, and `active` values remain identical across handoff. A natural
+wall/attempt-cap stop can also be used; an active plan is accepted only if
+still unstarted. No running JUnit is interrupted.
+
+An offline copy of the two healthy manifest/trace pairs is under `fixtures/`.
+Synthetic scheduler dry-run on a current checkpoint snapshot verified the
+same RPC/file lane on ten successive choices, seven changed plan choices,
+all ledger/goal/depth fields retained, and rejection of a started JUnit.
+The separate budget dry-run verified only the authorized 320→512 cap
+extension; a prior 128/max10 extension remains intact. Deploy only at an
+audited boundary and record the actual SHA receipt for that boundary.
