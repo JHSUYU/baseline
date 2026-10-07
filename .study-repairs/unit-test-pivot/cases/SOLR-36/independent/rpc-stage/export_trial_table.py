@@ -118,9 +118,11 @@ def rows_for_trial(entry: dict) -> list[dict]:
 def main() -> None:
     state = json.loads((ROOT / 'state.json').read_text())
     stage = json.loads((ROOT / 'stage-status.json').read_text())
-    if state['status'] not in ('budget_complete', 'queue_exhausted'):
+    if state['status'] not in ('budget_complete', 'queue_exhausted',
+                               'candidate_target_exception'):
         raise RuntimeError('fault campaign has not reached a complete trial boundary')
-    if stage['status'] not in ('complete', 'queue_exhausted', 'incomplete_budget_limit'):
+    if stage['status'] not in ('complete', 'queue_exhausted', 'incomplete_budget_limit',
+                               'candidate'):
         raise RuntimeError('stage controller is still running')
     if state['active'] is not None:
         raise RuntimeError('active trial still present')
