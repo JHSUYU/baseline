@@ -33,6 +33,7 @@ DIST = "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist"
 BASE_ATTEMPTS, BASE_VALID_PER_SITE, BASE_FAULTS = 720, 80, 8
 EXTENDED_ATTEMPTS, EXTENDED_VALID_PER_SITE, EXTENDED_FAULTS = 1152, 128, 10
 V4_SCHEDULER_SHA256 = "0ad2cc385e4839af4be8ebadc72eac24262b95f2cc083c1eb7469f62e8f79742"
+V7_SCHEDULER_SHA256 = "15b4a3a5d6351163b15bd10aa9184edc059ca86efee545a134642661cc933a68"
 
 
 def relevant(key: tuple[str, str, str, str]) -> bool:
@@ -346,10 +347,12 @@ def pick(state: dict) -> list[str]:
     # rounds, while spending the other rounds on previously unseen roots whose
     # healthy actor/target trace establishes the same-client relation.
     if (state.get("scheduler_version") in
-            ("solr39_root_balance_v5", "solr39_lazy_occurrence_v7") and
+            ("solr39_root_balance_v5", "solr39_lazy_occurrence_v7",
+             "solr39_lazy_retry_v8") and
             state["site_progress"]["SOLR-39"]["effective"] <
             state["site_progress"]["SOLR-39"]["goal"] and number % 2 == 0):
         targeted = state.get("seed_target_sites", {})
+        seen = set(state["seen_plans"])
         candidates = []
         for index, plan in enumerate(queue):
             if len(plan) != 1 or "SOLR-39" not in targeted.get(plan[0], []):
@@ -369,9 +372,13 @@ def pick(state: dict) -> list[str]:
             else:
                 family = 2
             ordinal = int(parts[2]) if parts[2].isdigit() else 100000
-            candidates.append((family, ordinal, index))
+            # V8 exhausts distinct healthy roots before bounded replays of
+            # exact selectors whose fault succeeded but missed this reader.
+            replay = (int(selector in seen)
+                      if state.get("scheduler_version") == "solr39_lazy_retry_v8" else 0)
+            candidates.append((family, replay, ordinal, index))
         if candidates:
-            return queue.pop(min(candidates)[2])
+            return queue.pop(min(candidates)[3])
     if number % 3 == 0:
         priority = min(("SOLR-39", "SOLR-10", "SOLR-40"),
                        key=lambda site: state["site_progress"][site]["effective"] /
@@ -393,7 +400,8 @@ def pick(state: dict) -> list[str]:
 def migrate_root_balance(state: dict) -> None:
     """Document the actor-retaining scheduler change without recounting trials."""
     if state.get("scheduler_version") in ("solr39_root_balance_v5",
-                                          "solr39_lazy_occurrence_v7"):
+                                          "solr39_lazy_occurrence_v7",
+                                          "solr39_lazy_retry_v8"):
         return
     if state["inflight"] is not None:
         return  # Finish the already selected plan before changing selection.
@@ -420,7 +428,8 @@ def migrate_root_balance(state: dict) -> None:
 def migrate_reader_schedule(state: dict) -> None:
     """Annotate a stopped pilot checkpoint without replaying any old trial."""
     if state.get("scheduler_version") in ("balanced_watch_reads_v4", "solr39_root_balance_v5",
-                                          "solr39_lazy_occurrence_v7"):
+                                          "solr39_lazy_occurrence_v7",
+                                          "solr39_lazy_retry_v8"):
         return
     if state["inflight"] is not None:
         raise RuntimeError("Scheduler migration requires a completed-trial boundary")
@@ -474,7 +483,8 @@ def migrate_reader_retries(state: dict) -> None:
 
 def migrate_lazy_occurrences(state: dict) -> None:
     """Add untried healthy same-reader watch occurrences; retain the V5 queue."""
-    if state.get("scheduler_version") == "solr39_lazy_occurrence_v7":
+    if state.get("scheduler_version") in ("solr39_lazy_occurrence_v7",
+                                          "solr39_lazy_retry_v8"):
         return
     if state.get("scheduler_version") != "solr39_root_balance_v5" or state["inflight"] is not None:
         raise RuntimeError("Lazy occurrence migration requires a stopped V5 trial boundary")
@@ -511,6 +521,120 @@ def migrate_lazy_occurrences(state: dict) -> None:
     receipt = dict(state["lazy_root_expansion"])
     receipt["state_sha256_after"] = hashlib.sha256(STATE.read_bytes()).hexdigest()
     atomic_json(CAMPAIGN / "lazy-root-expansion-v7.json", receipt)
+
+
+def target_linked_lazy_root(plan: list[str], state: dict) -> bool:
+    """A healthy-observed state watch on the same actor as SOLR-39."""
+    if len(plan) != 1:
+        return False
+    selector = plan[0]
+    parts = selector.split("|")
+    return (len(parts) >= 5 and parts[0] == "EXISTS_WATCH" and
+            parts[1].startswith("/collections/myalias__TRA__") and
+            parts[1].endswith("/state.json") and
+            "LazyCollectionRef#get:" in parts[3] and
+            parts[4].startswith("actor=jetty:node") and
+            "SOLR-39" in state.get("seed_target_sites", {}).get(selector, []))
+
+
+def migrate_lazy_retries(state: dict) -> None:
+    """Backfill bounded replays only for exactly injected, ineffective roots."""
+    receipt_path = CAMPAIGN / "lazy-retry-migration-v8.json"
+    if state.get("scheduler_version") == "solr39_lazy_retry_v8":
+        if not receipt_path.exists():
+            raise RuntimeError("V8 checkpoint lacks immutable migration receipt")
+        return
+    if state.get("scheduler_version") != "solr39_lazy_occurrence_v7" or state["inflight"] is not None:
+        raise RuntimeError("Lazy retry migration requires a stopped V7 trial boundary")
+    before_state_sha = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    before_queue = list(state["queue"])
+    ledger = {"trials": state["trials"], "seen_plans": state["seen_plans"]}
+    canonical = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ledger_sha = hashlib.sha256(canonical(ledger)).hexdigest()
+    grouped = defaultdict(list)
+    for trial in state["trials"]:
+        if target_linked_lazy_root(trial["plan"], state):
+            grouped[trial["plan"][0]].append(trial)
+    queued = {";".join(plan) for plan in before_queue}
+    retries = []
+    counts = {}
+    excluded = Counter()
+    for selector, runs in sorted(grouped.items()):
+        if any(trial["strict"] and trial["target_after_fault"]["SOLR-39"]
+               for trial in runs):
+            excluded["already_effective"] += 1
+            continue
+        latest = runs[-1]
+        if not latest["strict"]:
+            excluded["unmatched_injection"] += 1
+            continue
+        if len(runs) >= 3:
+            excluded["two_extra_attempts_used"] += 1
+            continue
+        if selector in queued:
+            excluded["already_queued"] += 1
+            continue
+        # Counts mean extra runs *scheduled*. The just-enqueued attempt is
+        # one of at most two after the original run.
+        counts[selector] = len(runs)
+        state["queue"].append([selector])
+        queued.add(selector)
+        retries.append({"selector": selector,
+                        "previous_trial_numbers": [trial["number"] for trial in runs],
+                        "last_target_after_fault_any_actor":
+                            latest["target_after_fault_any_actor"]["SOLR-39"],
+                        "scheduled_extra_run": counts[selector]})
+    if not retries:
+        raise RuntimeError("No strictly injected, ineffective healthy Lazy roots to retry")
+    if state["queue"][:len(before_queue)] != before_queue:
+        raise RuntimeError("V8 migration changed an existing queued plan")
+    if hashlib.sha256(canonical({"trials": state["trials"],
+                                 "seen_plans": state["seen_plans"]})).hexdigest() != ledger_sha:
+        raise RuntimeError("V8 migration changed the completed trial ledger")
+    state["lazy_retry_counts"] = counts
+    state["lazy_retry_version"] = "v8_max_two_extra_strict_only"
+    state["scheduler_version"] = "solr39_lazy_retry_v8"
+    receipt = {
+        "trials_before": len(state["trials"]),
+        "effective_before": {site: state["site_progress"][site]["effective"] for site in CASES},
+        "state_sha256_before": before_state_sha,
+        "ledger_sha256_before_and_after": ledger_sha,
+        "queue_sha256_before": hashlib.sha256(canonical(before_queue)).hexdigest(),
+        "queue_sha256_after": hashlib.sha256(canonical(state["queue"])).hexdigest(),
+        "queue_length_before": len(before_queue),
+        "queue_length_after": len(state["queue"]),
+        "queue_prefix_preserved": True,
+        "old_scheduler_sha256": V7_SCHEDULER_SHA256,
+        "new_scheduler_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "max_extra_runs_per_selector": 2,
+        "exclusions": dict(excluded),
+        "retries": retries,
+    }
+    state["lazy_retry_migration"] = {key: value for key, value in receipt.items()
+                                     if key != "retries"}
+    atomic_json(STATE, state)
+    receipt["state_sha256_after"] = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    atomic_json(receipt_path, receipt)
+
+
+def schedule_lazy_retry(state: dict, trial: dict) -> bool:
+    """Retry an exact root only when SOLR-39 missed this live reader."""
+    if (state.get("scheduler_version") != "solr39_lazy_retry_v8" or
+            state["site_progress"]["SOLR-39"]["effective"] >=
+            state["site_progress"]["SOLR-39"]["goal"] or
+            not target_linked_lazy_root(trial["plan"], state) or
+            not trial["strict"] or trial["target_after_fault"]["SOLR-39"]):
+        return False
+    selector = trial["plan"][0]
+    if any(old["plan"] == trial["plan"] and old["strict"] and
+           old["target_after_fault"]["SOLR-39"] for old in state["trials"]):
+        return False
+    counts = state["lazy_retry_counts"]
+    if counts.get(selector, 0) >= 2 or any(plan == trial["plan"] for plan in state["queue"]):
+        return False
+    counts[selector] = counts.get(selector, 0) + 1
+    state["queue"].append(list(trial["plan"]))
+    return True
 
 
 def schedule_reader_retry(state: dict, trial: dict) -> bool:
@@ -594,6 +718,7 @@ def run(max_new_trials: int | None = None) -> None:
     if (len(state["trials"]) >= 189 and
             (CAMPAIGN / "node1-handoff-calibration/handoff-calibration.json").exists()):
         migrate_lazy_occurrences(state)
+        migrate_lazy_retries(state)
     starting_trials = len(state["trials"])
     reclaim_completed_scratch(state)
     update_stop_reasons(state)
@@ -694,9 +819,14 @@ def run(max_new_trials: int | None = None) -> None:
             "evidence": str(output.relative_to(CASE)),
             "scratch_retained": bool(strict and any(raw_exception.values())),
         }
+        prior_lazy_runs = ([old["number"] for old in state["trials"] if old["plan"] == plan]
+                           if target_linked_lazy_root(plan, state) else [])
+        trial["lazy_retry_of_trial_numbers"] = prior_lazy_runs
+        trial["lazy_retry_attempt_index"] = len(prior_lazy_runs)
         update_progress(state, trial)
         mutate(state, plan, trace, trial)
         trial["reader_role_retry_scheduled"] = schedule_reader_retry(state, trial)
+        trial["lazy_root_retry_scheduled"] = schedule_lazy_retry(state, trial)
         state["trials"].append(trial)
         state["seen_plans"].append(";".join(plan))
         state["elapsed_seconds"] += trial["elapsed_seconds"]

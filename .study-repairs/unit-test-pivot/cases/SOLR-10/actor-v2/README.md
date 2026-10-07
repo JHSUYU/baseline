@@ -229,3 +229,34 @@ target-after-fault. Logical `nodeN` alone does not prove cross-run semantic
 actor identity. At the time of this historical calibration, the fuzz campaign
 had not been launched. The current V4 campaign and its results are described
 above and recorded in its separate checkpoint.
+
+## V8 bounded same-reader retry, 2026-10-07
+
+The V7 scheduler added 52 distinct healthy-trace `LazyCollectionRef#get`
+`/state.json` occurrence selectors on the SOLR-39 target's physical Jetty
+client. At the complete node1 trial-328 boundary, 30 such selectors had
+already produced a strictly injected fault followed by the same-reader
+SOLR-39 check. Another 17 most recent attempts had no exact injection, and
+34 had an exact injection but the target check did not reappear on that
+reader. V8 retains the original queue and completed/seen ledger, appends
+only those 34 selectors, and permits at most two extra exact-selector runs
+per root. It stops retrying a root as soon as the same-reader target appears;
+unmatched injections do not enter the retry set. Fresh untested healthy roots
+retain priority over retries. All fault and target gates remain unchanged.
+
+The pause gate finished trial 328 and intercepted unstarted trial 329.
+`evidence/campaign-v4/node1-handoff-calibration/pause-applied-v8.json`
+records the complete boundary and state SHA. The V8 migration receipt at
+`evidence/campaign-v4/lazy-retry-migration-v8.json` verifies the 877-plan
+queue prefix and all 328 completed/seen plans were preserved. Source SHA-256
+changed from `15b4a3a5d6351163b15bd10aa9184edc059ca86efee545a134642661cc933a68`
+to `a3cb548fec2807323df258dbd1f649162ec177d86c44738aa91048decb5a6b8e`;
+the original runner SHA-256 remains
+`7a1850ff1233aac53114cd340d2795bb9d8ba28e491534a759a64850b871e15d`.
+The two-trial V8 pilot ended at trial 330 with an atomic checkpoint. Trial
+329 did not inject its entire two-fault plan. Trial 330 injected its one
+fault exactly but did not reach SOLR-39 on that reader; its selector was
+queued for one final bounded retry. Neither pilot trial counted as effective.
+The full continuation runs in node1 tmux `solr103940_v8_full` and stops at
+each check's effective budget or a recorded queue/attempt limit. The
+per-check result records and 104-row checklist report current counts.
