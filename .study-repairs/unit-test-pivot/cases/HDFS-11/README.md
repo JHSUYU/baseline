@@ -19,7 +19,8 @@ was consumed without starting another JVM, moving the durable node1 checkpoint
 from 53/28 to 54/29. The new
 [supervisor](../../hdfs-key-actor-v2/run_hdfs11_budget_gate.py) will resume that checkpoint in
 tmux `hdfs11_key_v2_fuzz` only when its startup gate sees fewer than five Java
-processes. The budget remains 80 effective sequences with up to eight faults,
+processes. A selected target exception sets a durable review latch before any
+later plan can start. The budget remains 80 effective sequences with up to eight faults,
 conditionally extending to 128/ten for recent new coverage or I/O.
 
 ## Historical campaigns

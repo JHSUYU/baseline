@@ -87,6 +87,8 @@ def fault_induced_target_loss(manifest: dict, result: dict, junit_log: str,
 
 
 def stop_reason(state: dict, output: Path, args: argparse.Namespace) -> str | None:
+    if (output / "candidate-review-required.json").exists():
+        return "target_exception_candidate_requires_review"
     if (output / "pause-request.txt").exists():
         return "external_pause_requested"
     if state.get("status") == "candidate_paused_for_replay":
@@ -163,6 +165,7 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                               "applied_faults": result["applied_faults"],
                               "postfault_target_count": result["postfault_target_count"],
                               "postfault_target_exception_count": result["postfault_target_exception_count"],
+                              "target_exception_candidate": result["target_exception_candidate"],
                               "classification": result["classification"],
                               "fault_induced_target_loss": fault_induced_target_loss(
                                   manifest, result, junit_log, trace),
@@ -170,10 +173,20 @@ def run(output: Path, args: argparse.Namespace) -> dict:
                               "new_io_families": result["new_io_families"]})
             append_jsonl(ledger, entry)
             print(json.dumps(entry, sort_keys=True), flush=True)
+            if len(new_ids) == 1 and result["target_exception_candidate"]:
+                atomic_json(output / "candidate-review-required.json", {
+                    "at_utc": utc(), "sequence_id": new_ids[0],
+                    "attempted_trials": after["attempted_trials"],
+                    "postfault_target_exception_count":
+                        result["postfault_target_exception_count"],
+                    "reason": "selected HDFS-11 exception after exact same-actor fault",
+                })
             if process.returncode:
                 reason = "campaign_error"
             elif len(new_ids) != 1 or after["attempted_trials"] != next_cap:
                 reason = "unexpected_checkpoint_transition"
+            elif result["target_exception_candidate"]:
+                reason = "target_exception_candidate_requires_review"
             elif entry["junit_elapsed_seconds"] > args.max_junit_seconds:
                 reason = "junit_more_than_twice_healthy_time"
             elif entry["peak_junit_rss_kib"] > args.max_junit_rss_kib:
