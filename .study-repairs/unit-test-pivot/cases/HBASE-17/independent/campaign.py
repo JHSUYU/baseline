@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resume-safe coverage/I/O mutation on the unchanged TestProcDispatcher JUnit."""
+"""Resume-safe coverage/I/O mutation on an unchanged original cluster JUnit."""
 import json
 import os
 import random
@@ -180,6 +180,8 @@ def publish(state):
                           or item['junit_failed_after_target'] for item in trials)
                           else 'none' if trials else 'not_evaluated')
     result['current_campaign'] = {
+        'original_cluster_junit':
+            'TestReportRegionStateTransitionFromDeadServer.test',
         'instrumented_seed_junit': state['seed']['junit'],
         'instrumented_seed_elapsed_seconds': state['seed']['elapsed_seconds'],
         'instrumented_seed_exact_b5': len(state['seed']['b5']),
@@ -217,6 +219,8 @@ def initialize():
     pilot_logs = sorted(LOGS.glob('seed_pilot*_junit_timeout.log'))
     pilot_logs += sorted(path for path in LOGS.glob('calibration-*.log')
                          if path.stem != selected)
+    pilot_logs.append(HERE / 'report_dead_server_healthy.log')
+    pilot_logs.append(LOGS / 'report-overlay-setup.log')
     pilot_elapsed = sum(parse_log(path)['elapsed_seconds'] or 0 for path in pilot_logs)
     state = {'status': 'running', 'started_utc': now(), 'started_unix': time.time(),
              'historical_elapsed_seconds': round(376.12 + pilot_elapsed, 2),

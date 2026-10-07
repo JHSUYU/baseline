@@ -1,5 +1,47 @@
 # HBASE-17: original cluster-test reachability audit
 
+## Active original cluster workload and graph-free campaign
+
+The unchanged original `TestReportRegionStateTransitionFromDeadServer.test`
+uses a three-RegionServer MiniCluster. Its test code pauses a region move's
+CLOSED report, aborts the source server, and holds/restarts the server-crash
+procedure with latches. Production `AssignmentManager.regionClosedAbnormally`
+then transitions the same region to `ABNORMALLY_CLOSED`; the selected
+`TransitRegionStateProcedure.confirmClosed` assertion evaluates true.
+
+| Independent run | JUnit | Exact B5 | I/O | Wall time |
+| --- | --- | --- | ---: | ---: |
+| Target-only ByteBuddy probe | 1/1 passed | 1 true | not collected | 48.83 s |
+| Full ByteBuddy I/O plus JaCoCo seed | 1/1 passed | 1 true | 62 observed events | 48.78 s |
+
+The full seed observed 13 stable I/O sites before B5, including the move's
+`ExecuteProcedures` RPC, the RegionServer state-transition report, and
+`RegionStateStore` writes to `hbase:meta`. Its production JaCoCo scope covers
+228 methods and 329 branches at baseline. The exact-guard advice records
+method and branch outcome; the fault controller matches each observed I/O by
+operation, callsite, thread role, and per-family occurrence. No graph,
+GraphChecker JAR, static skeleton, or prewoven classes are used. The original
+JUnit's server abort is part of its own scenario and is not counted as an
+injected campaign fault.
+
+The two raw logs are on node1 at `independent/report_dead_server_healthy.log`
+and `independent/logs/seed.log`; their SHA-256 values are respectively
+`cdef9d15c5d230c34fd6b2c2d81fe24933c46cfff67e190ce7c0c7cea26d8d8c`
+and `6e72f09bf79589fc7ae70c59693bfce2ab29e736ffca57f9f64bf6de348c78ef`.
+The campaign is resume-safe in node1 tmux `hbase17-campaign` with
+`independent/checkpoint.json`, `trial_ledger.json`, and per-trial logs. Its
+budget is 80 strict target-retaining trials with at most eight ordered faults;
+it also has explicit 180-attempt and 11,000-second wall caps. Exact matches,
+applied faults, post-fault B5, JUnit outcome, time, stable I/O sites, and
+production method/branch coverage are recorded for every attempt.
+
+The earlier `TestProcDispatcher.testRetryLimitOnConnClosedErrors` proof below
+is preserved but excluded from the active workload. Six later unchanged-JUnit
+calibrations all passed in 58.42–61.60 seconds but reached B5 in 0/6 runs.
+Two full-overlay pilots failed their original 5-second wait without reaching
+B5, and a 3.25-second wrong-method selector launch never executed a test.
+These are setup/calibration evidence and contribute zero fault trials.
+
 ## New original test reaches the exact guard
 
 The unchanged original `TestProcDispatcher.testRetryLimitOnConnClosedErrors`

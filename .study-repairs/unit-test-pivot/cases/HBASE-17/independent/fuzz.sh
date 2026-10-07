@@ -28,6 +28,8 @@ case "${1:?build run or coverage}" in
     plan="${3:-}"
     data_dir="$case_dir/fuzz-data-$suffix"
     mkdir -p "$data_dir/tmp" "$case_dir/logs"
+    test_class="${HBASE17_TEST_CLASS:-org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer}"
+    test_method="${HBASE17_TEST_METHOD:-test}"
     export HBASE_HOME="$hbase_dist"
     exec /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout 360s \
       "$java_bin" -ea -Xmx5g \
@@ -38,7 +40,7 @@ case "${1:?build run or coverage}" in
         -Djava.io.tmpdir="$data_dir/tmp" \
         -Dtest.build.data.basedirectory="$data_dir" \
         -cp "$classpath" NativeJUnit17 \
-        org.apache.hadoop.hbase.util.TestProcDispatcher testRetryLimitOnConnClosedErrors
+        "$test_class" "$test_method"
     ;;
   coverage)
     exec "$java_bin" -cp "$coverage_cp" CoverageReport17 "${2:?comma-separated exec files}" \
