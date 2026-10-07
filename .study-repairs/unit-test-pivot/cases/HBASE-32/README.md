@@ -262,7 +262,26 @@ in `work-lots/evidence-r123-pending-pre.json` and
 excluded from coverage and I/O feedback; `evidence/r123-review-checkpoint-audit.json`
 shows that review settlement kept 123 attempts, 88 effective trials, the
 14,205-entry queue, and r124's in-flight plan unchanged. The main controller
-is paused at this complete checkpoint while node1 is used by other campaigns.
+then resumed from r124 without repeating an earlier trial.
+
+Main trial r136 was a separate exact single-fault timeout during overlapping
+node1 JUnit campaigns. The selected replica-4 flush RPC exception and same
+raw-region B7 rethrow occurred, but the original JUnit had completed only
+149/600 table-assignment children at the 360-second cap. Its pre-timeout
+`Thread.print -l` samples show a delayed ServerCrashProcedure submission;
+they do not establish a closed deadlock. Policy v6 checkpointed r136 as
+**not effective** and admitted none of its JaCoCo/I/O feedback or children.
+With the other node1 JUnit campaigns paused, an isolated exact 600-second
+replay reached the same actor's B7 rethrow and passed the unchanged JUnit in
+57.25 seconds: 600/600 assignment children succeeded, one RegionServer
+aborted, and the Master promptly scheduled its crash procedure. The original
+timeout is an **unreproduced, scheduling-sensitive candidate**, not a
+confirmed new bug. `evidence/r136-replay-verdict.json`,
+`evidence/r136-checkpoint-exclusion.json`, and
+`evidence/r136-original-and-clean-replay-node1.tar.gz` preserve the plan,
+raw logs, JaCoCo data, thread dumps, and SHA checks. The controller resumed
+its saved r137 plan after the replay; the r136 trial remains excluded from
+the effective denominator and feedback.
 
 In the independent upstream phase, s078 applied a Master OPENED report
 exception and then a client flush RPC exception to the same raw region and
