@@ -95,11 +95,11 @@ def build():
                                    'source_commit': '9d50c6884666e794e45102260a4017bb31802e1b'}, indent=2) + '\n')
 
 
-def run(run_id='healthy-01', plan=None, timeout=360):
+def run(run_id='healthy-01', plan=None, timeout=360, output=None):
     build()
     if not RESOURCE.is_dir():
         raise RuntimeError('original Hadoop test resources are missing: ' + str(RESOURCE))
-    out = RUN_ROOT / run_id
+    out = Path(output).resolve() if output is not None else RUN_ROOT / run_id
     out.mkdir(parents=True, exist_ok=True)
     scratch = out / 'scratch'
     shutil.rmtree(scratch, ignore_errors=True)
@@ -169,7 +169,8 @@ def run(run_id='healthy-01', plan=None, timeout=360):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--run-id', default='healthy-01')
+    parser.add_argument('--output', type=Path)
     parser.add_argument('--plan', type=Path)
     parser.add_argument('--timeout', type=int, default=360)
     args = parser.parse_args()
-    run(args.run_id, args.plan, args.timeout)
+    run(args.run_id, args.plan, args.timeout, args.output)

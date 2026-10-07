@@ -84,23 +84,6 @@ public final class PatchHdfs31 {
                   + "Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)V", false);
               counts[2]++;
             }
-            if (add || remove) {
-              super.visitVarInsn(Opcodes.ALOAD, 0);
-              super.visitFieldInsn(Opcodes.GETFIELD,
-                  "org/apache/hadoop/hdfs/server/datanode/BlockPoolManager", "dn",
-                  "Lorg/apache/hadoop/hdfs/server/datanode/DataNode;");
-              super.visitVarInsn(Opcodes.ALOAD, 1);
-              super.visitVarInsn(Opcodes.ALOAD, 1);
-              super.visitInsn(Opcodes.ICONST_1);
-              super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
-                  "org/apache/hadoop/hdfs/server/datanode/BPOfferService", "getBlockPoolId",
-                  "(Z)Ljava/lang/String;", false);
-              super.visitMethodInsn(Opcodes.INVOKESTATIC, "Hdfs31Probe",
-                  add ? "poolAdd" : "poolRemove",
-                  "(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;"
-                  + "Ljava/lang/Object;Ljava/lang/String;)V", false);
-              counts[add ? 3 : 4]++;
-            }
           }
           @Override public void visitLineNumber(int number, Label start) {
             line = number;
@@ -132,6 +115,24 @@ public final class PatchHdfs31 {
             }
           }
           @Override public void visitInsn(int opcode) {
+            if ((add || remove) && opcode == Opcodes.RETURN) {
+              // Record only after the manager update completed successfully.
+              super.visitVarInsn(Opcodes.ALOAD, 0);
+              super.visitFieldInsn(Opcodes.GETFIELD,
+                  "org/apache/hadoop/hdfs/server/datanode/BlockPoolManager", "dn",
+                  "Lorg/apache/hadoop/hdfs/server/datanode/DataNode;");
+              super.visitVarInsn(Opcodes.ALOAD, 1);
+              super.visitVarInsn(Opcodes.ALOAD, 1);
+              super.visitInsn(Opcodes.ICONST_1);
+              super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
+                  "org/apache/hadoop/hdfs/server/datanode/BPOfferService", "getBlockPoolId",
+                  "(Z)Ljava/lang/String;", false);
+              super.visitMethodInsn(Opcodes.INVOKESTATIC, "Hdfs31Probe",
+                  add ? "poolAdd" : "poolRemove",
+                  "(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;"
+                  + "Ljava/lang/Object;Ljava/lang/String;)V", false);
+              counts[add ? 3 : 4]++;
+            }
             if (cluster && opcode == Opcodes.RETURN) {
               super.visitMethodInsn(Opcodes.INVOKESTATIC, "Hdfs31Probe", "endEpisode", "()V", false);
             }

@@ -24,6 +24,7 @@ public final class Hdfs31Probe {
       Collections.synchronizedMap(new WeakHashMap<DataNode, Actor>());
   private static final ThreadLocal<Integer> START_EPISODE = new ThreadLocal<>();
   private static final ThreadLocal<Actor> CURRENT_ACTOR = new ThreadLocal<>();
+  private static final ThreadLocal<DataNode> CURRENT_DN = new ThreadLocal<>();
   private static final ThreadLocal<InetSocketAddress> CURRENT_NN = new ThreadLocal<>();
   private static final ThreadLocal<Object> CURRENT_SERVICE = new ThreadLocal<>();
   private static final Map<Object, Integer> SERVICE_IDS = new IdentityHashMap<>();
@@ -144,6 +145,7 @@ public final class Hdfs31Probe {
   public static void enterActor(DataNode dn, InetSocketAddress nn, Object service) {
     Actor actor = ACTORS.get(dn);
     CURRENT_ACTOR.set(actor);
+    CURRENT_DN.set(dn);
     CURRENT_NN.set(nn);
     CURRENT_SERVICE.set(service);
     if (actor != null && service != null) {
@@ -162,6 +164,7 @@ public final class Hdfs31Probe {
 
   public static void exitActor() {
     CURRENT_ACTOR.remove();
+    CURRENT_DN.remove();
     CURRENT_NN.remove();
     CURRENT_SERVICE.remove();
   }
@@ -186,6 +189,8 @@ public final class Hdfs31Probe {
           + ",\"hitOrdinal\":" + ordinal
           + ",\"actorKey\":" + q(actor == null ? "unbound" : actor.key)
           + ",\"dnObjectId\":" + (actor == null ? -1 : actor.objectId)
+          + ",\"dnUuidRaw\":" + q(CURRENT_DN.get() == null
+              ? null : CURRENT_DN.get().getDatanodeUuid())
           + ",\"peerRole\":" + q(bound ? "NN0" : "unbound")
           + ",\"endpointRaw\":" + q(endpoint)
           + ",\"actorNamenodeRaw\":" + q(nn);
