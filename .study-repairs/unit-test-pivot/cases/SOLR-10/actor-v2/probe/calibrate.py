@@ -16,6 +16,7 @@ from feedback import (CASES, actor_registrations, atomic_json,
 CASE = Path(__file__).resolve().parents[1]
 EVIDENCE = CASE / "evidence"
 RUN = CASE / "probe/run.py"
+SUMMARY = EVIDENCE / "healthy-summary-v4.json"
 
 
 def sha(path: Path) -> str:
@@ -70,8 +71,8 @@ def main() -> None:
     instrumented = []
     for round_number in (1, 2):
         suffix = f"{round_number:03d}"
-        original_name = "healthy-original-" + suffix
-        actor_name = "healthy-actor-" + suffix
+        original_name = "healthy-original-v4-" + suffix
+        actor_name = "healthy-actor-v4-" + suffix
         for name, flags in ((original_name, ["--original"]),
                             (actor_name, ["--coverage"])):
             directory = EVIDENCE / name
@@ -91,9 +92,12 @@ def main() -> None:
                 shutil.rmtree(scratch)
         originals.append(verify_original(original_name))
         instrumented.append(verify_instrumented(actor_name))
-        atomic_json(EVIDENCE / "healthy-summary.json", {
+        atomic_json(SUMMARY, {
             "original_junit": originals, "actor_instrumented_junit": instrumented,
             "test": "TimeRoutedAliasUpdateProcessorTest.test",
+            "build_receipt_sha256": sha(CASE / "build-receipt.json"),
+            "source_commit": json.loads((CASE / "build-receipt.json").read_text())["source_commit"],
+            "actor_probe_class_sha256": json.loads((CASE / "build-receipt.json").read_text())["actor_probe_class_sha256"],
             "original_test_class_sha256": json.loads((CASE / "build-receipt.json").read_text())["test_class_sha256"],
             "calibration_complete": round_number == 2,
         })

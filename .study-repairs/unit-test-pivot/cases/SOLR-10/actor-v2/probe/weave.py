@@ -56,7 +56,7 @@ def main() -> None:
         ("  public byte[] getData(final String path, final Watcher watcher, final Stat stat, boolean retryOnConnLoss)\n      throws KeeperException, InterruptedException {",
          "  public byte[] getData(final String path, final Watcher watcher, final Stat stat, boolean retryOnConnLoss)\n      throws KeeperException, InterruptedException {\n    baseline.solr103940.FeedbackProbe.io(\"GET_DATA\", path, this);"),
         ("  public Stat setData(final String path, final byte data[], final int version, boolean retryOnConnLoss)\n      throws KeeperException, InterruptedException {",
-         "  public Stat setData(final String path, final byte data[], final int version, boolean retryOnConnLoss)\n      throws KeeperException, InterruptedException {\n    baseline.solr103940.FeedbackProbe.io(\"SET_DATA\", path, this);"),
+         "  public Stat setData(final String path, final byte data[], final int version, boolean retryOnConnLoss)\n      throws KeeperException, InterruptedException {\n    baseline.solr103940.FeedbackProbe.io(\"SET_DATA\", path, this, data);"),
     ])
     controller = prepare("solr/core/src/java/org/apache/solr/cloud/ZkController.java", [
         ("    zkStateReader = new ZkStateReader(zkClient, () -> {\n      if (cc != null) cc.securityNodeChanged();\n    });",

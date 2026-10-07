@@ -51,10 +51,32 @@ def main() -> None:
     instrumented_hash = digest(CASE / "classes" / target)
     if original_hash != instrumented_hash:
         raise RuntimeError("Original JUnit bytecode differs between classpaths")
+    source_commit = subprocess.check_output(
+        ["git", "-C", str(SOURCE), "rev-parse", "HEAD"], text=True).strip()
+    production = (
+        "org/apache/solr/common/cloud/SolrZkClient.class",
+        "org/apache/solr/cloud/ZkController.class",
+        "org/apache/solr/cloud/MiniSolrCloudCluster.class",
+        "org/apache/solr/cloud/api/collections/MaintainRoutedAliasCmd.class",
+        "org/apache/solr/update/processor/RoutedAliasUpdateProcessor.class",
+    )
+    source_files = (
+        "solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java",
+        "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+        "solr/test-framework/src/java/org/apache/solr/cloud/MiniSolrCloudCluster.java",
+        "solr/core/src/java/org/apache/solr/cloud/api/collections/MaintainRoutedAliasCmd.java",
+        "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+        "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java",
+    )
     (CASE / "build-receipt.json").write_text(json.dumps({
         "test_class_sha256": original_hash,
         "unchanged_junit_class": True,
         "source": str(SOURCE),
+        "source_commit": source_commit,
+        "source_file_sha256": {name: digest(SOURCE / name) for name in source_files},
+        "actor_probe_class_sha256": digest(CASE / "classes/baseline/solr103940/FeedbackProbe.class"),
+        "instrumented_production_class_sha256": {
+            name: digest(CASE / "classes" / name) for name in production},
         "instrumented_classpath": str(CASE / "classpath.txt"),
         "original_classpath": str(CASE / "original-classpath.txt"),
     }, indent=2) + "\n")

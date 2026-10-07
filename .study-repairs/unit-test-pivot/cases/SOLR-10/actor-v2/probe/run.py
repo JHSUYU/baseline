@@ -2,6 +2,7 @@
 """Run unchanged TimeRoutedAliasUpdateProcessorTest.test in an isolated directory."""
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import shutil
@@ -78,6 +79,15 @@ def main() -> int:
         "trace": str(output / "events.tsv"),
         "log": str(output / "junit.log"),
     }
+    build_receipt = CASE / "build-receipt.json"
+    if build_receipt.exists():
+        build = json.loads(build_receipt.read_text())
+        result.update({
+            "build_receipt_sha256": hashlib.sha256(build_receipt.read_bytes()).hexdigest(),
+            "source_commit": build.get("source_commit"),
+            "original_test_class_sha256": build.get("test_class_sha256"),
+            "actor_probe_class_sha256": build.get("actor_probe_class_sha256"),
+        })
     temporary = output / "manifest.json.tmp"
     temporary.write_text(json.dumps(result, indent=2) + "\n")
     temporary.replace(output / "manifest.json")

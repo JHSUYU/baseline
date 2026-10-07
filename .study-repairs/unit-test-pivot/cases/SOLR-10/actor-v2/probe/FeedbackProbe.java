@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeSet;
+import org.apache.solr.common.util.Utils;
 import org.apache.zookeeper.KeeperException;
 
 /** Actor-bound I/O and the three exact production guards. No test workload is changed. */
@@ -29,7 +31,8 @@ public final class FeedbackProbe {
       caller = fields[3];
       actor = fields[4];
       if (operation.isEmpty() || path.isEmpty() || ordinal <= 0 ||
-          !caller.startsWith("caller=") || !actor.matches("actor=jetty:node[1-4]"))
+          !caller.startsWith("caller=") ||
+          !(actor.matches("actor=jetty:node[1-4]") || actor.equals("actor=alias-writer")))
         throw new IllegalArgumentException("Invalid actor-bound selector: " + spec);
       if (relative != (fields.length == 7))
         throw new IllegalArgumentException("Relative selector requires after and seed_global: " + spec);
@@ -109,18 +112,43 @@ public final class FeedbackProbe {
     return "<external>";
   }
 
+  private static String payloadAliases(String operation, String path, byte[] payload) {
+    if (!"SET_DATA".equals(operation) || !"/aliases.json".equals(path) || payload == null)
+      return "<none>";
+    try {
+      Object parsed = Utils.fromJSON(payload);
+      if (!(parsed instanceof Map)) return "<unparsed>";
+      Object aliases = ((Map<?, ?>) parsed).get("collection");
+      if (!(aliases instanceof Map)) return "<unparsed>";
+      TreeSet<String> names = new TreeSet<>();
+      for (Object name : ((Map<?, ?>) aliases).keySet()) names.add(String.valueOf(name));
+      return safe(String.join(",", names));
+    } catch (RuntimeException error) {
+      return "<unparsed>";
+    }
+  }
+
   public static synchronized void io(String operation, String path, Object receiver)
+      throws KeeperException.ConnectionLossException {
+    io(operation, path, receiver, null);
+  }
+
+  public static synchronized void io(String operation, String path, Object receiver, byte[] payload)
       throws KeeperException.ConnectionLossException {
     String node = NODE_BY_CLIENT.get(receiver);
     String role = node == null ? null : ROLE_BY_NODE.get(node);
     String caller = "caller=" + stableCaller();
-    String actor = "actor=" + (role == null ? "unbound" : "jetty:" + role);
+    boolean aliasWrite = "SET_DATA".equals(operation) && "/aliases.json".equals(path);
+    String actor = "actor=" + (role == null ? "unbound" :
+        aliasWrite ? "alias-writer" : "jetty:" + role);
     String identity = operation + "\t" + safe(path);
     String runtime = "\tnode=" + safe(node) + "\tclient_id=" +
         System.identityHashCode(receiver) + "\tmanager_id=" +
         (MANAGER_BY_CLIENT.containsKey(receiver)
             ? System.identityHashCode(MANAGER_BY_CLIENT.get(receiver)) : -1) +
-        "\tthread=" + safe(Thread.currentThread().getName());
+        "\tphysical_actor=" + (role == null ? "unbound" : "jetty:" + role) +
+        "\tthread=" + safe(Thread.currentThread().getName()) +
+        "\tpayload_aliases=" + payloadAliases(operation, path, payload);
     event("IO_OBSERVED", identity + "\t" + caller + "\t" + actor + runtime);
     int active = nextFault;
     for (int index = 0; index < FAULTS.size(); index++) {

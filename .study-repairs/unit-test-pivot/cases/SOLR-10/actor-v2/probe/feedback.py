@@ -59,7 +59,7 @@ def io_family(event: dict) -> str | None:
     if identity is None:
         return None
     operation, path, _, actor = identity
-    if not actor.startswith("actor=jetty:node"):
+    if not (actor.startswith("actor=jetty:node") or actor == "actor=alias-writer"):
         return None
     if path == "/aliases.json":
         resource = "aliases"
@@ -106,6 +106,29 @@ def runtime_actor(event: dict) -> tuple[str, str, str, str] | None:
     return tuple(f[key] for key in keys)
 
 
+def actor_relation(io_event: dict, target_event: dict) -> str | None:
+    """Join a guard to its real I/O actor or an alias write of that exact key.
+
+    The cross-node case is source-backed: AliasesManager writes the `collection`
+    map to /aliases.json, and each node's AliasesManager reads/watches that same
+    znode. It is a relevant shared-state relation, not a claim that a write
+    completed or that a particular watch callback fired after this fault.
+    """
+    source, destination = runtime_actor(io_event), runtime_actor(target_event)
+    if source is None or destination is None:
+        return None
+    if source[1:] == destination[1:]:
+        return "same_live_client_manager"
+    parts = io_event["parts"]
+    alias_index = 1 if target_event["kind"] == "TARGET_EXCEPTION" else 2
+    if (len(parts) >= 2 and parts[:2] == ["SET_DATA", "/aliases.json"] and
+            len(target_event["parts"]) > alias_index and
+            target_event["parts"][alias_index] in fields(io_event).get("payload_aliases", "").split(",") and
+            source[0] == "alias-writer" and destination[0].startswith("jetty:node")):
+        return "alias_payload_shared_znode"
+    return None
+
+
 def target_after_any_actor(trace: list[dict], final_fault: int) -> tuple[dict[str, bool], dict[str, bool]]:
     """Diagnostic only: a guard may run on a different client after the fault."""
     reached = {case: False for case in CASES}
@@ -122,16 +145,15 @@ def target_after_any_actor(trace: list[dict], final_fault: int) -> tuple[dict[st
 
 
 def target_after(trace: list[dict], final_fault: int) -> tuple[dict[str, bool], dict[str, bool]]:
-    """Count a guard only on a real client/manager used by an applied fault."""
+    """Count a guard only with a verified case-specific runtime I/O relation."""
     reached = {case: False for case in CASES}
     exception = {case: False for case in CASES}
-    fault_actors = {runtime_actor(e) for e in trace
-                    if e["kind"] == "IO_APPLIED_CONNECTION_LOSS" and e["seq"] <= final_fault}
-    fault_actors.discard(None)
+    faults = [e for e in trace if e["kind"] == "IO_APPLIED_CONNECTION_LOSS" and
+              e["seq"] <= final_fault]
     for event in trace:
         if event["seq"] <= final_fault:
             continue
-        if runtime_actor(event) not in fault_actors:
+        if not any(actor_relation(fault, event) for fault in faults):
             continue
         p = event["parts"]
         if event["kind"] == "TARGET_CHECK" and len(p) >= 2 and p[1] in reached:
@@ -139,6 +161,22 @@ def target_after(trace: list[dict], final_fault: int) -> tuple[dict[str, bool], 
         if event["kind"] == "TARGET_EXCEPTION" and p and p[0] in exception:
             exception[p[0]] = True
     return reached, exception
+
+
+def target_relations(trace: list[dict], final_fault: int) -> dict[str, list[str]]:
+    """Keep the specific actor join supporting each effective case receipt."""
+    result = {case: set() for case in CASES}
+    faults = [e for e in trace if e["kind"] == "IO_APPLIED_CONNECTION_LOSS" and
+              e["seq"] <= final_fault]
+    for event in trace:
+        if (event["seq"] <= final_fault or event["kind"] != "TARGET_CHECK" or
+                len(event["parts"]) < 2 or event["parts"][1] not in result):
+            continue
+        for fault in faults:
+            relation = actor_relation(fault, event)
+            if relation:
+                result[event["parts"][1]].add(relation)
+    return {case: sorted(value) for case, value in result.items()}
 
 
 def strict_sequence(plan: list[str], trace: list[dict]) -> bool:
@@ -167,7 +205,10 @@ def strict_sequence(plan: list[str], trace: list[dict]) -> bool:
         client = registrations.get(f.get("client_id"))
         if (client is None or client["node"] != f.get("node") or
                 f.get("manager_id") != client["manager_id"] or
-                f.get("actor") != "jetty:" + client["role"]):
+                f.get("physical_actor") != "jetty:" + client["role"] or
+                (f.get("actor") == "alias-writer" and p[:2] != ["SET_DATA", "/aliases.json"]) or
+                (f.get("actor") != "alias-writer" and
+                 f.get("actor") != "jetty:" + client["role"])):
             return False
         identity = (p[0], p[1], spec[3], spec[4])
         observed = [e for e in trace if e["seq"] < match["seq"] and io_identity(e) == identity]

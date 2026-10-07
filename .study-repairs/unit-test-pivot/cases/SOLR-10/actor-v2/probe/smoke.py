@@ -7,7 +7,8 @@ from pathlib import Path
 import subprocess
 
 from feedback import (actor_registrations, checked_target_identity, events,
-                      strict_sequence, target_after, target_after_any_actor)
+                      strict_sequence, target_after, target_after_any_actor,
+                      target_relations)
 from deps import asm_jars
 
 
@@ -31,7 +32,8 @@ def main() -> None:
     asm = asm_jars()[0]
     subprocess.run([str(JAVA8 / "javac"), "-cp", cp + ":" + str(asm),
                     "-d", str(smoke_classes), str(CASE / "probe/AsmHookAudit.java"),
-                    str(CASE / "probe/SmokeProbe.java")], check=True)
+                    str(CASE / "probe/SmokeProbe.java"),
+                    str(CASE / "probe/CrossAliasSmoke.java")], check=True)
     counts = {}
     for name, expected in HOOKS.items():
         source = CASE / "classes" / (name.replace(".", "/") + ".class")
@@ -101,6 +103,24 @@ def main() -> None:
             not strict_sequence(plan.split(";"), same_node_new_client) or
             target_after(same_node_new_client, final_fault)[0]["SOLR-39"]):
         raise RuntimeError("Ledger counted a replacement client on the same Jetty node")
+    cross_plan = "SET_DATA|/aliases.json|1|caller=<external>|actor=alias-writer"
+    cross_trace = EVIDENCE / "cross-alias-events.tsv"
+    cross = subprocess.run([str(JAVA8 / "java"),
+                            "-Dsolr103940.v2.trace=" + str(cross_trace),
+                            "-Dsolr103940.v2.faults=" + cross_plan,
+                            "-cp", str(smoke_classes) + ":" + cp,
+                            "baseline.solr103940.CrossAliasSmoke"],
+                           capture_output=True, text=True, check=True)
+    crossed = events(cross_trace)
+    cross_applied = [event for event in crossed if event["kind"] == "IO_APPLIED_CONNECTION_LOSS"]
+    if ("SOLR103940_V2_CROSS_ALIAS_SMOKE_PASS" not in cross.stdout or
+            not strict_sequence([cross_plan], crossed) or
+            not checked_target_identity(crossed) or len(cross_applied) != 1 or
+            target_after(crossed, cross_applied[0]["seq"])[0] != {
+                "SOLR-10": False, "SOLR-39": True, "SOLR-40": False} or
+            target_relations(crossed, cross_applied[0]["seq"])["SOLR-39"] !=
+                ["alias_payload_shared_znode"]):
+        raise RuntimeError("Cross-node alias payload relation accepted the wrong key or actor")
     (EVIDENCE / "receipt.json").write_text(json.dumps({
         "asm_bytecode_hook_counts": counts,
         "wrong_actor_observed": 2,
@@ -109,6 +129,8 @@ def main() -> None:
         "ledger_verifier_rejects_wrong_actor": True,
         "wrong_actor_target_after_rejected": True,
         "same_node_replacement_client_target_after_rejected": True,
+        "cross_node_matching_alias_accepted": True,
+        "cross_node_unrelated_alias_rejected": True,
         "wrong_alias_manager_rejected": True,
         "plan": plan,
         "cluster_started": False,

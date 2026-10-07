@@ -85,6 +85,26 @@ def main() -> None:
     boundary["queue"] = [["unrun-actor-selector"]]
     campaign.update_stop_reasons(boundary)
     assert boundary["site_progress"]["SOLR-39"]["stop_reason"] == "attempt_cap_before_goal"
+    read_plan = "GET_DATA|/aliases.json|1|caller=org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process:2312|actor=jetty:node1"
+    writer_plan = "SET_DATA|/aliases.json|1|caller=org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk:2259|actor=alias-writer"
+    schedule = state()
+    schedule["trials"] = [{}] * 5  # next trial is divisible by three
+    schedule["queue"] = [[writer_plan], [read_plan]]
+    schedule["seed_target_sites"] = {read_plan: ["SOLR-39"]}
+    assert campaign.pick(schedule) == [read_plan]
+    assert schedule["queue"] == [[writer_plan]]
+    retries = state()
+    retries["queue"] = []
+    retries["seed_target_sites"] = {read_plan: ["SOLR-39"]}
+    retries["reader_retry_counts"] = {}
+    mismatch = {"plan": [read_plan], "strict": True,
+                "target_after_fault_any_actor": {"SOLR-39": True},
+                "target_after_fault": {"SOLR-39": False}}
+    assert campaign.schedule_reader_retry(retries, mismatch)
+    assert retries["queue"].pop() == [read_plan]
+    assert campaign.schedule_reader_retry(retries, mismatch)
+    assert retries["queue"].pop() == [read_plan]
+    assert not campaign.schedule_reader_retry(retries, mismatch)
     original_directory = campaign.CAMPAIGN
     with tempfile.TemporaryDirectory(prefix="solr103940-v2-budget-smoke-") as temp:
         try:

@@ -1,11 +1,24 @@
-# SOLR-10/39/40 actor V2 preparation
+# SOLR-10/39/40 actor-aware campaign
 
-This is an **independent, calibrated but not-yet-fuzzed campaign** for the unchanged Solr 8.11.4
+This is an **independent, active actor-aware campaign** for the unchanged Solr 8.11.4
 `TimeRoutedAliasUpdateProcessorTest.test`. It uses the existing clean source and
 dependency jars in `../work`, but writes new traces and checkpoints only here.
 The older `../work/evidence/campaign` is historical coarse-actor evidence and is
 not an actor V2 seed or completion result. No checklist or case result is changed
 by these scripts.
+
+The authoritative current checkpoint is `evidence/campaign-v4/state.json` on node2,
+in isolated tmux. The earlier five-trial actor V3 pilot remains in
+`evidence/campaign/` and is excluded from the V4 effective count. Its physical
+Jetty-role selector missed a moving Overseer writer four times. The V4 hook
+uses the real bound `SolrZkClient` that performs `SET_DATA /aliases.json` as a
+stable logical `alias-writer` selector, while recording its actual physical
+Jetty node, client and `AliasesManager` identity on every event. Source-backed
+cross-node relevance additionally requires the exact alias key in the
+proposed `/aliases.json` write payload; no write success is inferred from a
+pre-write exception. A target on another node with a different alias key is
+ineligible. The V4 build receipt hashes the clean source commit, source files,
+unchanged JUnit bytecode and actor-hook production bytecode.
 
 ## Runtime identity contract
 
@@ -14,13 +27,16 @@ by these scripts.
 `MiniSolrCloudCluster` assigns `node1` through `node4` instance names; a
 case-local hook maps each name to the corresponding live Jetty node name after
 startup. Every intercepted `SolrZkClient` I/O records operation, exact path,
-source callsite, stable `actor=jetty:nodeN`, runtime node, client object ID,
+source callsite, physical `jetty:nodeN` role, runtime node, client object ID,
 alias manager object ID, and thread. IDs are within-JVM diagnostics, not stable
 cross-run identifiers or ZooKeeper session IDs. An unbound client gets
 `actor=unbound` and cannot match a fault selector. The real receiver is passed
 as `this`; no thread-name inference is used to assign actors.
 
 Each selector has the form `OP|exact-path|ordinal|caller=Class#method:line|actor=jetty:nodeN`.
+The exact alias writer uses `actor=alias-writer` because Overseer leadership
+can move among the four Jetty nodes between fresh runs. Its receipt still
+names and verifies the physical node and live client/manager pair.
 Mutation appends `@relative-ordinal|...|after=F0|seed_global=N`. Both global
 and relative ordinals count **only the matching actor, callsite, operation and
 path**. The selected three guards separately emit `SOLR-10`, `SOLR-39`, or
@@ -28,11 +44,10 @@ path**. The selected three guards separately emit `SOLR-10`, `SOLR-39`, or
 whose manager does not belong to the registered client fails closed. Only
 fully applied sequences that reach a specific guard after the final fault **on
 the exact client, alias manager, runtime node and Jetty role of an applied
-fault in that trial** contribute feedback for that check. A guard reached on
-another registered client is recorded as `target_lost_actor_mismatch` and does
-not count as effective or drive mutation. This limits the current campaign to
-direct actor overlap; cross-node causal relevance requires a separate
-source-supported relation. The exact target exception is a candidate
+fault in that trial**, or after an alias-writer fault carrying that precise
+alias key, contribute feedback for that check. A guard with no verified
+runtime relation is recorded as `target_lost_runtime_relation` and does not
+count as effective or drive mutation. The exact target exception is a candidate
 requiring replay and source review, not an automatically labeled new bug.
 
 The selected guards are:
@@ -43,7 +58,7 @@ The selected guards are:
 | SOLR-39 | `RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections`: `collections == null` |
 | SOLR-40 | `RoutedAliasUpdateProcessor.getAliasProps`: `aliasProperties.isEmpty()` |
 
-## Preparation and later execution
+## Build and execution
 
 Offline work already completed:
 
@@ -65,10 +80,12 @@ per-site effective counts, the last-eight boundary, rejection of a failed
 injection, and the 720/1152-attempt and 8/10-fault transitions without
 starting a cluster.
 
-When a cluster slot is available, run the following **sequentially**:
+The fresh V4 healthy seeds and the V4 checkpoint use these commands. Start the
+campaign in tmux so it survives terminal disconnects:
 
 ```sh
 python3 .study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/probe/calibrate.py
+python3 .study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/probe/campaign.py --max-new-trials 5
 python3 .study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/probe/campaign.py
 ```
 
@@ -80,8 +97,8 @@ uses the `_default` configset compatibility property from the prior successful
 run. `campaign.py` cannot initialize without the two verified actor-aware
 healthy traces. It keeps a case-local durable `inflight` checkpoint so an
 interrupted trial restarts from its own clean scratch; it never imports old
-coarse trial results. `evidence/campaign/state.json` is authoritative, with a
-separate checkpoint mirror for each check in `evidence/campaign/checkpoints/`.
+coarse trial results. `evidence/campaign-v4/state.json` is authoritative, with a
+separate checkpoint mirror for each check in `evidence/campaign-v4/checkpoints/`.
 
 The **base budget is 80 effective trials per check**, 720 shared attempts, and
 at most 8 ordered faults. Effective means every fault in the plan matched and
@@ -104,7 +121,42 @@ per-method branch count is a conservative novelty signal: a higher count proves
 additional branch coverage, while equal counts cannot distinguish different
 branches. These are configured caps, not completed counts.
 
-## Node2 healthy calibration, 2026-10-06
+## Current V4 evidence, 2026-10-07
+
+V4 was rebuilt on node2 from clean Solr source commit
+`e27f44e3d78dfcec230c97e0a1240e3751daeff9`. The unchanged original JUnit
+class SHA-256 is `288ade17cb538b6226d1a61b863569a2b7bace75a228e58d60f18d5d2fed5749`;
+the V4 actor hook class SHA-256 is
+`8146a455d16ca8c3702e7180d388fb60a9a428ae0c49045b876e54ca529c8947`.
+Both original healthy JUnits passed in 22.984 and 22.731 seconds, and both
+current-instrumented healthy JUnits passed in 25.939 and 25.884 seconds. All
+three target guards ran without a target exception. The four raw runs and their
+SHA receipts are under `evidence/healthy-*-v4-*` and
+`evidence/healthy-summary-v4.json`; the prior V3 seeds are not used.
+
+The first V4 pilot stopped after five completed trials at a durable boundary.
+Four fault sequences matched and applied all selected faults. One sequence
+reached SOLR-10 through the same live client/manager after the fault and
+SOLR-40 through the exact `myalias` shared-znode payload relation. SOLR-39
+did not receive an effective trial in these five attempts. There were no
+selected target exceptions. Independent recomputation from the five raw traces
+reported zero ledger discrepancies in `evidence/campaign-v4/audit.json`; summed
+trial time was 97.832 seconds. The subsequent scheduler migration preserves
+all five trials and periodically selects single-fault `/aliases.json` watch
+reads that precede SOLR-39 on the same healthy reader. Its source and checkpoint
+SHA are recorded in `evidence/campaign-v4/scheduler-migration.json`. The full
+V4 result remains in progress and the effective counts must be read from the
+checkpoint, not from this pilot paragraph.
+
+After 17 V4 trials, a second checkpoint migration added at most two extra
+fresh runs of each strict alias-watch read that was followed by SOLR-39 on a
+different reader. These repeats sample nondeterministic request placement;
+the other-reader checks remain ineligible for the effective count. The
+migration receipt records the exact prior checkpoint SHA and trial numbers in
+`evidence/campaign-v4/reader-retry-migration.json`. The campaign continues in
+the isolated node2 tmux session `solr103940_v4_role_retry`.
+
+## Historical node2 healthy calibration, 2026-10-06
 
 Four bounded healthy invocations ran in persistent tmux session
 `solr103940_v2_calibrate` on node2, using clean source commit
@@ -128,6 +180,6 @@ derived only from I/O on a healthy target's actual client/manager pair.
 `smoke.py` also moves a guard to a different **registered** client while
 leaving both faults intact; the ledger must reject that guard as an effective
 target-after-fault. Logical `nodeN` alone does not prove cross-run semantic
-actor identity. The fuzz campaign has **not been launched** and no actor V2
-fault result or new bug is claimed here. It requires a separately allocated
-node2 slot after the current priority work.
+actor identity. At the time of this historical calibration, the fuzz campaign
+had not been launched. The current V4 campaign and its results are described
+above and recorded in its separate checkpoint.
