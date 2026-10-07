@@ -1,0 +1,74 @@
+{
+  "archive_sha256": "b8ab54e8a8fb6bd79f181479c2c8bdf48333db84bf04890e8efba752896505e3",
+  "base_agent_class_sha256": "edb7757522361622087f3a5be2f7efded71281da4ff27bcf62d82b235de1bdbd",
+  "checkpoint_exclusion_evidence": "s078-checkpoint-exclusion.json",
+  "classification": "unreproduced_timeout_candidate",
+  "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+  "interpretation": "Both source and isolated replay applied the same ordered Master OPENED and client flush RPC exceptions to the same raw region/replica actor, then reached B7. Original 360-second JUnit timed out with incomplete table assignment; isolated same-plan 600-second replay passed unchanged JUnit with 600/600 children. This does not establish a stable HBase hang or new bug.",
+  "new_bug_confirmed": false,
+  "replay_applied_faults": [
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 8259,
+      "proc_id": "712",
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1NDk4Nzg4MS45ZDNmYzExZDBkNGExNjQ3NDg3NTVjMTgzYjc2ZWU2NC4",
+      "raw_secondary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1NDk4Nzg4MV8wMDAxLjc3NTI2ZDFhZjE2OTk2NDdlMWQ3YjlkZDY4NmJhZDRlLg",
+      "selector": "MASTER_OPENED_RPC~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~attempt-1",
+      "seq": "396",
+      "server": "ms1140.utah.cloudlab.us,41159,1791354974322",
+      "source": "upstream",
+      "step": "1"
+    },
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 9373,
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1NDk4Nzg4MS45ZDNmYzExZDBkNGExNjQ3NDg3NTVjMTgzYjc2ZWU2NC4",
+      "selector": "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~target-1~rpc-1~FlushRegionCallable.call:81",
+      "seq": "77",
+      "source": "rpc",
+      "step": "1"
+    }
+  ],
+  "replay_create_table_child_success_count": 600,
+  "replay_elapsed_seconds": 77.99,
+  "replay_exit": 0,
+  "replay_first_scp": {
+    "line": 10290,
+    "message": "2026-10-07T06:36:43,718 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=751 for ms1140.utah.cloudlab.us,41159,1791354974322 (carryingMeta=true) ms1140.utah.cloudlab.us,41159,1791354974322/CRASHED/regionCount=33/lock=java.util.concurrent.locks.ReentrantReadWriteLock@6fb0663f[Write locks = 1, Read locks = 0], oldState=ONLINE."
+  },
+  "replay_fully_applied": true,
+  "replay_jacoco_sha256": "e6be1460f52d319aaf148e366a63ef7c3e7b9d1b2be43def2fdf5892c63dc934",
+  "replay_junit": {
+    "failed": 0,
+    "found": 1,
+    "succeeded": 1
+  },
+  "replay_log_sha256": "7f0597cb302abc24d1a79c776a51786af8c41e9a6e92e05182c02512d2bf41b6",
+  "replay_pre_shutdown_region_server_abort_count": 1,
+  "replay_same_actor_b7": 1,
+  "replay_same_actor_guard": 1,
+  "replay_spec_sha256": "a3d0250a4dfee6b716248a10343c6a9b5b0dacd41b4dec66e26e00fe8460cbfb",
+  "replay_timeout_seconds": 600,
+  "reviewed_at_utc": "2026-10-07T06:38:54.899720+00:00",
+  "source_compressed_log_sha256": "3d54c56bed530f110a2eb7adac6f8463cd37c55fefabdde50556235e7be64daf",
+  "source_create_table_child_success_count": 139,
+  "source_elapsed_seconds": 402.76,
+  "source_exact_faults": 2,
+  "source_exit": 124,
+  "source_first_scp": {
+    "line": 30317,
+    "message": "2026-10-07T05:28:59,494 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=781 for ms1140.utah.cloudlab.us,43819,1791350570865 (carryingMeta=true) ms1140.utah.cloudlab.us,43819,1791350570865/CRASHED/regionCount=76/lock=java.util.concurrent.locks.ReentrantReadWriteLock@3a15c26a[Write locks = 1, Read locks = 0], oldState=ONLINE."
+  },
+  "source_jacoco_sha256": "1cedb4dcd02c3e3b8e5b0f33105d7f9552681b6ec3a5495d92176eb901ce2fff",
+  "source_junit": null,
+  "source_plan": [
+    "MASTER_OPENED_RPC~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~attempt-1~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+  ],
+  "source_plan_sha256": "a976a42fb097330b0dfc39b7b81de7f8401335e91ecb7dc10cd0e0550c27c420",
+  "source_raw_log_sha256": "f18ec37e937f785d59b1d55af8ee793f55a97cd7886ba5122e5550540df0a102",
+  "source_same_actor_b7": 1,
+  "source_shutdown_hook_line": 32537,
+  "source_trial": "s078",
+  "upstream_agent_class_sha256": "346a48855fdf0877c3ae096a0c8fb15982bf2d4a9ff26fd957bb7fb3963e4277"
+}

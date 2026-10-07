@@ -303,20 +303,27 @@ In the independent upstream phase, s078 applied a Master OPENED report
 exception and then a client flush RPC exception to the same raw region and
 replica-1 actor. The selected B7 rethrow occurred after both faults, but the
 unchanged JUnit timed out after 402.76 seconds including shutdown. This is a
-candidate awaiting an isolated same-plan replay, not a confirmed new bug.
+candidate that was later replayed in an isolated node0 slot.
 The full original trace, exit receipt, JaCoCo file, and v8 migration audit
 are archived in `evidence/hbase32-s078-original-node0.tar.gz`; the exact
 actor receipt is `evidence/s078-candidate-receipt.json`. The v8 checkpoint
-excludes this unreviewed run from the supplemental effective denominator and
+excludes this run from the supplemental effective denominator and
 feedback. The supplemental controller continues under an 80-effective,
 384-attempt initial budget and pauses before node0 drops below 2.2 GiB free.
 Its later s101 Master-to-client-RPC sequence also reached B7 but timed out
 while two unrelated Solr JUnit clusters overlapped on node0. s101 is separately
-quarantined from effective and feedback counts pending a clean same-plan
-replay; `evidence/s101-candidate-receipt.json` records exact actor and raw
+quarantined from effective and feedback counts;
+`evidence/s101-candidate-receipt.json` records exact actor and raw
 checks. Checkpoint version 9 replenishes mixed-plan parents from distinct
 observed Master I/O identities when mixed terminal plans run out, while
 preserving coverage/I/O priority and periodic deeper-plan exploration.
+Isolated 600-second same-plan replays of s101 and s078 each applied both
+faults, reached the same actor's B7 rethrow, and passed the unchanged JUnit
+with 600/600 assignment children in 59.77 and 77.99 seconds, respectively.
+Their original timeouts are **unreproduced candidates**, not confirmed new
+bugs. Per-trial raw bundles, SHA checks, verdicts, and checkpoint exclusion
+receipts are in `evidence/s101-*` and `evidence/s078-*`. Neither source
+trial was imported into the effective denominator or feedback.
 Supplemental trial s113 applied a distinct same-actor Master OPENED and
 client flush RPC no-retry sequence to replica 9. Both faults and the later B7
 rethrow occurred, but the original JUnit timed out with 111/600 assignment
@@ -329,7 +336,7 @@ are in `evidence/s113-original-and-clean-replay-node0.tar.gz`,
 `evidence/s113-replay-verdict.json`, and
 `evidence/s113-checkpoint-exclusion.json`. It remains excluded from effective,
 coverage, and descendant counts. The supplemental reporting review map marks
-s113 reviewed while s078 and s101 still await replay.
+s078, s101, and s113 reviewed; no supplemental candidate remains pending.
 To protect node0 disk space, 25 completed noncandidate raw logs from
 s081-s100 and s102-s106 were copied to the HBASE-32 archive on node1 and
 verified byte-for-byte by SHA-256 before their node0 copies were removed.
