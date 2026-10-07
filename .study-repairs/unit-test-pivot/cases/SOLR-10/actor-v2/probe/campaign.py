@@ -33,6 +33,7 @@ DIST = "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist"
 BASE_ATTEMPTS, BASE_VALID_PER_SITE, BASE_FAULTS = 720, 80, 8
 EXTENDED_ATTEMPTS, EXTENDED_VALID_PER_SITE, EXTENDED_FAULTS = 1152, 128, 10
 V4_SCHEDULER_SHA256 = "0ad2cc385e4839af4be8ebadc72eac24262b95f2cc083c1eb7469f62e8f79742"
+V5_SCHEDULER_SHA256 = "749089fd1b442d27c72dd721567ccdd492d89ebae3a370b8a1cf8664f77f3582"
 
 
 def relevant(key: tuple[str, str, str, str]) -> bool:
@@ -166,6 +167,34 @@ def seed_target_sites(traces: list[list[dict]]) -> dict[str, list[str]]:
                                   if target["seq"] > event["seq"] and
                                   actor_relation(event, target))
     return {plan: sorted(sites) for plan, sites in site_map.items() if sites}
+
+
+def seed_target_gap(traces: list[list[dict]], site: str) -> dict[str, int]:
+    """Shortest healthy same-actor I/O-to-guard distance for one site.
+
+    This is only a scheduling hint. Runtime eligibility still requires the
+    actual fault and target to share a verified client/manager or alias key.
+    """
+    gaps = {}
+    for trace in traces:
+        targets = [event for event in trace if event["kind"] == "TARGET_CHECK" and
+                   len(event["parts"]) > 1 and event["parts"][1] == site]
+        counts = Counter()
+        for event in trace:
+            key = io_identity(event)
+            if key is None:
+                continue
+            counts[key] += 1
+            if not relevant(key):
+                continue
+            distance = min((target["seq"] - event["seq"] for target in targets
+                            if target["seq"] > event["seq"] and
+                            actor_relation(event, target)), default=None)
+            if distance is None:
+                continue
+            plan = selector(key, counts[key])
+            gaps[plan] = min(gaps.get(plan, distance), distance)
+    return gaps
 
 
 def initialize() -> dict:
@@ -303,11 +332,20 @@ def done(state: dict) -> bool:
 def pick(state: dict) -> list[str]:
     queue = state["queue"]
     number = len(state["trials"]) + 1
+    if (state.get("scheduler_version") == "balanced_target_roots_v6" and
+            number % 4 == 1 and state["site_progress"]["SOLR-10"]["effective"] <
+            state["site_progress"]["SOLR-10"]["goal"]):
+        gaps = state.get("seed_target_gap_solr10", {})
+        candidates = [(gaps[plan[0]], index) for index, plan in enumerate(queue)
+                      if len(plan) == 1 and plan[0] in gaps]
+        if candidates:
+            return queue.pop(min(candidates)[1])
     # The first V4 tranche showed that SOLR-39 retained its exact reader only
     # under single-fault plans. Keep exploring the mutated queue on alternate
     # rounds, while spending the other rounds on previously unseen roots whose
     # healthy actor/target trace establishes the same-client relation.
-    if (state.get("scheduler_version") == "solr39_root_balance_v5" and
+    if (state.get("scheduler_version") in ("solr39_root_balance_v5",
+                                            "balanced_target_roots_v6") and
             state["site_progress"]["SOLR-39"]["effective"] <
             state["site_progress"]["SOLR-39"]["goal"] and number % 2 == 0):
         targeted = state.get("seed_target_sites", {})
@@ -353,7 +391,8 @@ def pick(state: dict) -> list[str]:
 
 def migrate_root_balance(state: dict) -> None:
     """Document the actor-retaining scheduler change without recounting trials."""
-    if state.get("scheduler_version") == "solr39_root_balance_v5":
+    if state.get("scheduler_version") in ("solr39_root_balance_v5",
+                                          "balanced_target_roots_v6"):
         return
     if state["inflight"] is not None:
         return  # Finish the already selected plan before changing selection.
@@ -377,9 +416,39 @@ def migrate_root_balance(state: dict) -> None:
     })
 
 
+def migrate_target_roots(state: dict) -> None:
+    """Add bounded SOLR-10 root exploration at a completed-trial boundary."""
+    if state.get("scheduler_version") == "balanced_target_roots_v6":
+        return
+    if state["inflight"] is not None:
+        return
+    if state.get("scheduler_version") != "solr39_root_balance_v5":
+        raise RuntimeError("SOLR-10 root migration requires the V5 checkpoint")
+    before = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    traces = [events(EVIDENCE / name / "events.tsv") for name in HEALTHY]
+    state["seed_target_gap_solr10"] = seed_target_gap(traces, "SOLR-10")
+    state["target_root_migration"] = {
+        "trials_before": len(state["trials"]),
+        "seen_plans_before": len(state["seen_plans"]),
+        "queue_before": len(state["queue"]),
+        "checkpoint_sha256_before": before,
+        "scheduler_sha256_before": V5_SCHEDULER_SHA256,
+        "scheduler_sha256_after": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "healthy_gap_roots": len(state["seed_target_gap_solr10"]),
+        "rule": "one in four rounds prefers an untested SOLR-10 same-actor healthy root; even rounds retain SOLR-39 root priority; remaining rounds mutate",
+    }
+    state["scheduler_version"] = "balanced_target_roots_v6"
+    atomic_json(STATE, state)
+    atomic_json(CAMPAIGN / "target-root-migration.json", {
+        **state["target_root_migration"],
+        "checkpoint_sha256_after": hashlib.sha256(STATE.read_bytes()).hexdigest(),
+    })
+
+
 def migrate_reader_schedule(state: dict) -> None:
     """Annotate a stopped pilot checkpoint without replaying any old trial."""
-    if state.get("scheduler_version") in ("balanced_watch_reads_v4", "solr39_root_balance_v5"):
+    if state.get("scheduler_version") in ("balanced_watch_reads_v4", "solr39_root_balance_v5",
+                                          "balanced_target_roots_v6"):
         return
     if state["inflight"] is not None:
         raise RuntimeError("Scheduler migration requires a completed-trial boundary")
@@ -509,6 +578,7 @@ def run(max_new_trials: int | None = None) -> None:
     migrate_reader_schedule(state)
     migrate_reader_retries(state)
     migrate_root_balance(state)
+    migrate_target_roots(state)
     starting_trials = len(state["trials"])
     reclaim_completed_scratch(state)
     update_stop_reasons(state)
@@ -595,6 +665,7 @@ def run(max_new_trials: int | None = None) -> None:
         atomic_json(output / "trial.json", trial)
         atomic_json(STATE, state)
         migrate_root_balance(state)
+        migrate_target_roots(state)
         write_checkpoints(state)
         if not trial["scratch_retained"]:
             scratch = output / "scratch"
