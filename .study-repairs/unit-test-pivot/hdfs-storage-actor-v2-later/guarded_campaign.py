@@ -39,12 +39,15 @@ def main() -> None:
     parser.add_argument("--timeout", type=int, default=360)
     parser.add_argument("--max-hours", type=float, default=8)
     parser.add_argument("--min-free-gib", type=float, default=10)
+    parser.add_argument("--gate-retry-seconds", type=float, default=30)
     args = parser.parse_args()
     anchor = args.output.resolve()
     if args.max_hours <= 0 or args.max_attempts <= 0:
         parser.error("time and attempt caps must be positive")
     if args.min_free_gib < 8:
         parser.error("disk floor cannot be less than 8 GiB")
+    if args.gate_retry_seconds <= 0:
+        parser.error("gate retry interval must be positive")
     receipt = json.loads((anchor / "healthy_receipt.json").read_text())
     if not receipt["pass"] or receipt["group"] != args.group:
         raise RuntimeError("two healthy calibrations have not passed")
@@ -57,6 +60,10 @@ def main() -> None:
         while True:
             state = state_at(anchor)
             before = len(state["completion_order"])
+            if (anchor / "pause.request").exists() and state["in_flight"] is None:
+                append_jsonl(ledger, {"at_utc": stamp(), "status": "requested_boundary_pause",
+                                      "completed": before, "effective": state["effective_by_case"]})
+                break
             if all(state["effective_by_case"][case] >=
                    state["budget"]["goal_by_case"][case] for case in state["case_ids"]):
                 append_jsonl(ledger, {"at_utc": stamp(), "status": "effective_budget_met",
@@ -77,9 +84,21 @@ def main() -> None:
                                    "--min-free-gib", str(args.min_free_gib)],
                                   capture_output=True, text=True)
             if gate.returncode:
-                append_jsonl(ledger, {"at_utc": stamp(), "status": "resource_gate_pause",
+                gate_receipt = json.loads((gate_dir / "launch_gate.json").read_text())
+                issues = gate_receipt["issues"]
+                resource_only = bool(issues) and all(
+                    issue == "more than four existing Java processes" or
+                    (issue.startswith("less than ") and issue.endswith(" GiB free on the output filesystem"))
+                    for issue in issues)
+                append_jsonl(ledger, {"at_utc": stamp(),
+                                      "status": "resource_gate_wait" if resource_only
+                                      else "resource_gate_pause",
                                       "completed": before, "gate": str(gate_dir / "launch_gate.json"),
-                                      "stdout": gate.stdout, "stderr": gate.stderr})
+                                      "stdout": gate.stdout, "stderr": gate.stderr,
+                                      "retry_seconds": args.gate_retry_seconds if resource_only else None})
+                if resource_only:
+                    time.sleep(args.gate_retry_seconds)
+                    continue
                 break
             log_path = anchor / f"guarded-batch-{before + 1:04d}.log"
             with log_path.open("w") as log:
