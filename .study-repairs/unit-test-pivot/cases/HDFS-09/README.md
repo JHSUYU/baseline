@@ -1,3 +1,15 @@
+# HDFS-09: endpoint-aware original-JUnit campaign complete
+
+## Current endpoint-aware V2 result
+
+The unchanged Hadoop 3.4.3 `TestQuorumJournalManager#testSingleWriter` ran in a fresh three-JournalNode embedded cluster per trial. Two healthy seeds passed in 12.743 and 11.863 seconds. The graph-free ASM hook binds the client RPC's actual remote endpoint and each file write to a physical JournalNode/`test-journal`; the strict receipt requires that same actor to execute the chosen check after the final fault.
+
+The new campaign attempted **180** sequences, 180 with all planned faults applied, and **128 effective** postfault same-actor checks. Original JUnit execution totaled 2383.082s (wall 3040.876s). The initial 80-effective/max-8 budget extended to 128/max-10 after one new production Hadoop IPC `ProcessingDetails.get` branch in the last eight effective trials; this feedback is an RPC timing branch and only weakly related to QJM recovery. The deepest tested sequence had 4 faults. The selected target exception appeared 0 times. No new bug is established. JUnit nonzero exits alone are not target exceptions.
+
+The [terminal raw audit](../../qjm-rpc-actor-v2/evidence/HDFS-09/audit-terminal-128.json) passes with zero errors; the [per-trial ledger](qjm-v2-trial-ledger.csv) records time, exact faults, actor, postfault target, coverage and candidate status. The [raw archive](../../qjm-rpc-actor-v2/evidence/HDFS-09/final-raw-128.tar.gz) has SHA-256 `dd946cd7ed7206fceef615c1832efd4d1d3b62b4faa70ea4cacb1c5bbbf82c58`. Earlier coarse actor trials remain under `legacy_coarse_actor` in `result.json` and do not enter the new denominator.
+
+## Historical coarse actor campaign
+
 # HDFS-09: committed transaction ID monotonicity
 
 **Current 102-check status: quality complete, no confirmed new bug.** The
