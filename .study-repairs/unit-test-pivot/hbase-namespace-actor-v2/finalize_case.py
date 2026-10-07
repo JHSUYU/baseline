@@ -66,6 +66,9 @@ def finalize(case):
         raise ValueError("Late novelty requires extension before completion")
     stop_reason = row["status"].replace("_pending_audit", "")
     selected_outcomes = audit["selected_outcomes_all_raw"]
+    if case in ("HBASE-21", "HBASE-22") and (
+            set(selected_outcomes) - set(row["healthy_expected_outcomes"])):
+        raise ValueError("A selected guard outcome differs from healthy quota behavior; review source and replay")
     result = {
         "case_id": case, "system": "HBase", "version": "2.6.6",
         "status": "quality_complete" if row["status"] == "budget_complete_pending_audit"
