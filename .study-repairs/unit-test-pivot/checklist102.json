@@ -233013,355 +233013,334 @@
       "target_reached": true
     },
     {
-      "budget": {
-        "conditional_extension_max_faults": 10,
-        "conditional_extension_trials": 128,
-        "max_ordered_faults": 8,
-        "trials": 80
-      },
-      "bug_candidates": [],
-      "bug_mark": "none",
       "case_id": "HBASE-21",
+      "selection_group": "original_102",
+      "system": "HBase 2.6.6",
+      "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+      "source_line": 133,
+      "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)",
       "check_code": "if (\n(currentStatus.getRegionCount() - regionCountOfTable + incr)\n> TableNamespaceManager.getMaxRegions(nspdesc)\n) {\nthrow new QuotaExceededException(\"The table \" + name.getNameAsString()\n+ \" region count cannot be updated as it would exceed maximum number \"\n+ \"of regions allowed in the namespace.  The total number of regions permitted is \"\n+ TableNamespaceManager.getMaxRegions(nspdesc));",
-      "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor.testRestoreSnapshotQuotaExceed",
-      "completed_at_utc": "2026-10-07T01:53:34.858104+00:00",
-      "coverage_gain": 12,
-      "current_campaign": {
-        "applied_fault_events": 858,
-        "attempted_trials": 144,
-        "budget": {
-          "effective_trials": 128,
-          "max_attempts": 180,
-          "max_faults": 10,
-          "max_wall_seconds": 12000
-        },
-        "checkpoint": "work/checkpoint.json",
-        "effective_budget_trials": 128,
-        "elapsed_seconds": 10378.26,
-        "healthy_coverage": {
-          "branches": 169,
-          "classes": {
-            "org/apache/hadoop/hbase/ZKNamespaceManager": {
-              "branches": 11,
-              "lines": 63,
-              "methods": 14
-            },
-            "org/apache/hadoop/hbase/master/TableNamespaceManager": {
-              "branches": 38,
-              "lines": 127,
-              "methods": 24
-            },
-            "org/apache/hadoop/hbase/master/procedure/RestoreSnapshotProcedure": {
-              "branches": 35,
-              "lines": 142,
-              "methods": 20
-            },
-            "org/apache/hadoop/hbase/master/snapshot/SnapshotManager": {
-              "branches": 64,
-              "lines": 249,
-              "methods": 33
-            },
-            "org/apache/hadoop/hbase/namespace/NamespaceStateManager": {
-              "branches": 16,
-              "lines": 61,
-              "methods": 13
-            },
-            "org/apache/hadoop/hbase/namespace/NamespaceTableAndRegionInfo": {
-              "branches": 5,
-              "lines": 18,
-              "methods": 6
-            }
-          },
-          "lines": 660,
-          "methods": 110
-        },
-        "healthy_elapsed_seconds": 49.76,
-        "healthy_io_events": 21,
-        "healthy_region_quota_throws": 1,
-        "healthy_target_checks": 1,
-        "healthy_target_signatures": [
-          [
-            "TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1",
-            4,
-            1,
-            1,
-            3,
-            "region_quota"
-          ]
-        ],
-        "junit_failures_after_target": 0,
-        "new_io_selectors": 23,
-        "new_io_sites": 1,
-        "new_production_branches": 12,
-        "new_production_methods": 2,
-        "queue_length": 1467,
-        "requested_fault_events": 859,
-        "strict_post_fault_expected_region_quota_trials": 128,
-        "strict_post_fault_target_trials": 128,
-        "strict_post_fault_unexpected_region_quota_trials": 0,
-        "strict_trials": 143,
-        "viable_queue_length": 1072,
-        "wall_seconds_since_healthy": 11234.29
-      },
-      "effective_trials": 128,
-      "elapsed_basis": "Wall time from main original-JUnit healthy start through manifest calibration final log mtime; includes scheduling pauses and source review.",
-      "elapsed_seconds": 11547.28,
+      "site_id": "<org.apache.hadoop.hbase.namespace.NamespaceStateManager: void checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)>#u30",
+      "proposed_cluster_test": "TestNamespaceAuditor.testRestoreSnapshotQuotaExceed",
+      "cluster_test": "TestNamespaceAuditor#testRestoreSnapshotQuotaExceed",
+      "status": "quality_complete",
+      "target_reached": true,
+      "fault_trials": 102,
+      "strict_injections": 102,
+      "fully_applied_trials": 102,
+      "target_after_fault": 80,
+      "coverage_gain": 1,
+      "elapsed_seconds": 5807.56,
+      "bug_mark": "none",
       "evidence": [
         "README.md",
-        "work/checkpoint.json",
-        "work/logs/healthy.log",
-        "work/src/HBase21Agent.java",
-        "work/run.sh",
-        "work/trial_ledger.json",
-        "work/manifest/result.json",
-        "work/checkpoint.json.gz",
-        "work/manifest/evidence_logs.tar.gz"
+        "evidence/actor-v2-result-row.json",
+        "evidence/actor-v2-raw-audit.json",
+        "evidence/hbase21-actor-v2-evidence.tar.gz",
+        "legacy-pre-actor-v2-result.json"
       ],
-      "fault_trials": 144,
-      "fully_applied_trials": 143,
-      "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)",
-      "healthy_elapsed_seconds": 49.76,
-      "healthy_expected_signature": {
-        "max_regions": 3,
-        "namespace_total_regions": 1,
-        "outcome": "region_quota",
-        "previous_regions_for_table": 1,
-        "requested_regions": 4,
-        "table": "TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1"
+      "version": "2.6.6",
+      "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+      "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+      "target_function": "checkAndUpdateNamespaceRegionCount(TableName,int)",
+      "target_guard_line": 128,
+      "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+      "effective_fault_trials": 80,
+      "requested_faults": 672,
+      "applied_faults": 672,
+      "new_production_methods": 0,
+      "new_production_branches": 1,
+      "new_stable_io_families": [],
+      "healthy_elapsed_seconds": 115.54,
+      "fault_elapsed_seconds": 5692.02,
+      "target_exception_candidates": 0,
+      "budget": {
+        "effective_trials": 80,
+        "max_attempts": 320,
+        "max_faults": 8
       },
-      "healthy_expected_target_throws": 1,
-      "healthy_junit_passed": true,
-      "healthy_related_io_events": 20,
-      "healthy_target_guard_evaluations": 2,
-      "manifest_supplement": {
-        "abandoned_initial_temporary_snapshot_calibration": {
-          "id": "m001",
-          "log": "logs/m001.preempted_tmp_snapshot.log",
-          "reason": "The initial picker selected a temporary snapshot-creation manifest before the restore manifest. Stopped before completion; not counted as a fault trial."
+      "stop_reason": "budget_complete",
+      "extension_decision": {
+        "last8_effective_novelty": false,
+        "extended_to_128": false
+      },
+      "source_audit_note": "The original region quota predicate is at NamespaceStateManager.java:128. The unchanged restore-snapshot JUnit expects a QuotaExceededException inside RestoreSnapshotException when four snapshot regions exceed the limit of three. The raw audit found selected outcomes {'selected_region_count_quota': 101}; none established a new bug within the admitted fault scope.",
+      "current_campaign": {
+        "applied_faults": 672,
+        "attempted_trials": 102,
+        "budget": {
+          "effective_trials": 80,
+          "max_attempts": 320,
+          "max_faults": 8
         },
-        "completed_fault_trials": 2,
-        "elapsed_seconds": 144.13,
-        "excluded_from_main_budget": true,
-        "junit_failures": 2,
-        "observed_actual_restore_manifest_selectors": [
-          "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~1",
-          "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~2"
+        "bug_mark": "none",
+        "case_id": "HBASE-21",
+        "checkpoint": "campaigns/HBASE-21/checkpoint.json",
+        "effective_trials": 80,
+        "fault_elapsed_seconds": 5692.02,
+        "healthy_elapsed_seconds": 115.53999999999999,
+        "healthy_expected_outcomes": [
+          "selected_region_count_quota"
         ],
-        "original_junit_healthy_elapsed_seconds": 50.16,
-        "original_junit_healthy_passed": true,
-        "result": "work/manifest/result.json",
-        "source_review": "Both real DistributedFileSystem.open IOException injections occur in SnapshotManifest.readDataManifest before RestoreSnapshotProcedure.prepareRestore calls checkAndUpdateNamespaceRegionQuota. The IOException propagates through SnapshotManifest.open; restore fails and the log reports successful rollback. The original JUnit then fails because its expected QuotaExceededException cause is absent. Exact B3 check is not reached after either fault, so both trials are excluded under the selected-target rule.",
-        "status": "complete_target_lost_excluded",
-        "strict_fault_trials": 2,
-        "target_after_fault_trials": 0
+        "healthy_expected_target_exception_trials": 80,
+        "healthy_io_families": [
+          "ZK_CHILDREN_READ",
+          "ZK_CREATE",
+          "ZK_DATA_READ",
+          "ZK_EXISTS",
+          "ZK_WRITE"
+        ],
+        "healthy_seeds": [
+          "h1",
+          "h2"
+        ],
+        "healthy_selected_target_counts": [
+          1,
+          1
+        ],
+        "healthy_stable_selectors": 21,
+        "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+        "new_production_branches": 1,
+        "new_production_methods": 0,
+        "new_stable_io_families": [],
+        "original_junit": "TestNamespaceAuditor#testRestoreSnapshotQuotaExceed",
+        "priority_migrated_after_attempt": 0,
+        "priority_policy": "healthy_guard_distance_with_periodic_exploration_and_same_site_loss_v2",
+        "requested_faults": 672,
+        "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+        "status": "budget_complete_pending_audit",
+        "strict_postfault_target_trials": 80,
+        "strict_trials": 102,
+        "system": "HBase",
+        "target_exception_candidates": 0,
+        "target_function": "checkAndUpdateNamespaceRegionCount(TableName,int)",
+        "target_guard_line": 128,
+        "total_elapsed_seconds": 5807.56,
+        "version": "2.6.6"
       },
-      "methodology": "coverage_io_no_graph",
-      "proposed_cluster_test": "TestNamespaceAuditor.testRestoreSnapshotQuotaExceed",
-      "quality_complete": true,
-      "quality_completion_note": "Original embedded two-master JUnit healthy seed and 128 distinct strict fault sequences retaining exact B3 were completed. A separate two-selector real manifest-file I/O calibration documented the target-loss boundary. Per-trial UTC time, identity, target/JUnit and production coverage are in work/trial_ledger.json; full checkpoint remains in work/checkpoint.json.",
+      "raw_audit": {
+        "checkpoint_sha256": "cfd5f6a912880182da394c31c4726ff719d56fa7bc7afa6af8fd34abf5070ea8",
+        "attempts": 102,
+        "effective": 80,
+        "strict_trials": 102,
+        "selected_outcomes_all_raw": {
+          "selected_region_count_quota": 101
+        },
+        "depth_attempts": {
+          "1": 4,
+          "2": 5,
+          "3": 4,
+          "4": 6,
+          "5": 6,
+          "6": 6,
+          "7": 12,
+          "8": 59
+        },
+        "fault_kinds": {
+          "CONNECTIONLOSS": 478,
+          "OPERATIONTIMEOUT": 144,
+          "SYSTEMERROR": 50
+        },
+        "fault_families": {
+          "ZK_CHILDREN_READ": 1,
+          "ZK_CREATE": 448,
+          "ZK_DATA_READ": 21,
+          "ZK_WRITE": 202
+        },
+        "junit_exit_counts": {
+          "0": 101,
+          "1": 1
+        },
+        "errors": []
+      },
+      "instrumentation_provenance": {
+        "runtime_source": "unchanged original HBase 2.6.6 server and test JARs",
+        "server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+        "test_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+        "agent": "standalone namespace actor V2 ByteBuddy agent plus JaCoCo 0.8.15",
+        "agent_jar_sha256": "f6ac63c8ad2e07499f99f93e1b04f9cf53c5f849274b98828277b3fc159b8601",
+        "same_actor_gate": "raw ACTIVE_MASTER ServerName and manager identity, exact ordered I/O, postfault guard",
+        "graphchecker_prewoven_jar": false,
+        "graph_or_closure_feedback": false
+      },
+      "evidence_archive_sha256": "48b8f1ca199416d447fbe86e36953bf6517b5c50e133e68682b4422b9208e896",
+      "evidence_archive_bytes": 7356851,
+      "current_method_trials_count": 102,
+      "historical_unbound_trials_count": 144,
+      "historical_graphchecker_pilot_trials_count": 0,
+      "historical_evidence": "legacy-pre-actor-v2-result.json",
+      "comparison_scope": "Only actor-bound V2 trials contribute to top-level fault, target, time, and coverage counters; prior unbound results are archived separately.",
       "quality_review": {
-        "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
-        "bug_mark_unchanged": "none",
-        "historical_counters": {
-          "coverage_gain": 12,
-          "elapsed_seconds": 11547.28,
-          "fault_trials": 144,
-          "strict_injections": 143,
-          "target_after_fault": 128
-        },
-        "historical_counters_not_current_quality_effective": true,
-        "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
-        "prior_status": "quality_complete",
-        "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
-        "reviewed_at_utc": "2026-10-07T06:52:08+00:00"
+        "prior_issue": "Earlier graph-free selectors did not prove the communicating Master/manager identity.",
+        "resolution": "Independent actor-bound V2 runs and raw audit prove the selected guard after exact faults on the same Master/manager."
       },
-      "selection_group": "original_102",
-      "site_id": "<org.apache.hadoop.hbase.namespace.NamespaceStateManager: void checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)>#u30",
-      "source_audit_note": "The original two-master cluster test lowers maxRegions to 3 and restores a four-region snapshot. The exact B3 check evaluated with namespace total=1, previous table regions=1, requested=4, max=3, threw QuotaExceededException, and the original JUnit passed because it expected RestoreSnapshotException with that cause. Identical target exceptions under faults are expected observations, not bugs.",
-      "source_line": 133,
-      "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
-      "source_review": {
-        "healthy_values": {
-          "max_regions": 3,
-          "namespace_total": 1,
-          "prior_table_regions": 1,
-          "requested_snapshot_regions": 4
-        },
-        "instrumentation_provenance": "Case-local runtime ByteBuddy target/ZK I/O probe, case-local DFS.open ByteBuddy supplement and JaCoCo coverage on original release JAR/test JAR; no GraphChecker skeleton, static map, graph or closure.",
-        "main_fault_outcome": "All 128 strict target-retaining trials re-executed the exact guard, saw the expected quota exception and passed the unchanged original JUnit; zero unexpected target exceptions or post-target JUnit failures.",
-        "manifest_boundary": "Two strict actual restore-manifest DFS.open IOException trials lost the target before the quota guard; test failures are excluded and do not prove a new bug.",
-        "original_junit": "TestNamespaceAuditor.testRestoreSnapshotQuotaExceed, lines 701-742",
-        "original_junit_assertion": "The test explicitly expects RestoreSnapshotException caused by QuotaExceededException and checks the namespace count remains one.",
-        "target_condition": "namespaceTotal - priorTableRegions + requestedSnapshotRegions > namespaceMaxRegions",
-        "target_source": "NamespaceStateManager.checkAndUpdateNamespaceRegionCount(TableName,int), HBase 2.6.6 source line 133"
-      },
-      "source_review_complete": true,
-      "started_at_utc": "2026-10-06T22:41:07.575074+00:00",
-      "status": "actor_identity_recheck_pending",
-      "stopping_reason": "Authorized 128 strict target-retaining trials reached; one conditional extension from 80, no further expansion.",
-      "strict_injections": 143,
-      "system": "HBase 2.6.6",
-      "target_after_fault": 128,
-      "target_exception": "org.apache.hadoop.hbase.quotas.QuotaExceededException",
-      "target_guard": "NamespaceStateManager.checkAndUpdateNamespaceRegionCount(TableName,int)#B3",
-      "target_reached": true,
-      "timing": {
-        "case_wall_seconds": 11547.28,
-        "main_completed_trial_runtime_seconds": 10378.26,
-        "main_original_junit_healthy_seconds": 49.76,
-        "main_wall_seconds_since_healthy": 11234.29,
-        "manifest_original_junit_healthy_and_two_fault_trials_seconds": 144.13
-      }
+      "reported_function": "checkAndUpdateNamespaceRegionCount(TableName,int)",
+      "resolved_check_line": 128
     },
     {
-      "baseline_max_faults_per_sequence": 8,
-      "baseline_trial_budget": 80,
-      "bug_mark": "none",
       "case_id": "HBASE-22",
+      "selection_group": "original_102",
+      "system": "HBase 2.6.6",
+      "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+      "source_line": 172,
+      "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)",
       "check_code": "if (\n(currentStatus.getRegionCount() + numRegions) > TableNamespaceManager.getMaxRegions(nspdesc)\n) {\nthrow new QuotaExceededException(\n\"The table \" + table.getNameAsString() + \" is not allowed to have \" + numRegions\n+ \" regions. The total number of regions permitted is only \"\n+ TableNamespaceManager.getMaxRegions(nspdesc) + \", while current region count is \"\n+ currentStatus.getRegionCount()\n+ \". This may be transient, please retry later if there are any\"\n+ \" ongoing split operations in the namespace.\");",
-      "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
-      "completion_utc": "2026-10-06T21:54:18.452071+00:00",
-      "conditional_extension": {
-        "gate": "new production method/branch or stable I/O family in final 16 strict target-retaining trials",
-        "max_faults": 10,
-        "trials": 128
-      },
-      "coverage_gain": 9,
-      "current_campaign": {
-        "applied_fault_events": 446,
-        "archive_sha256": "3a432c4b3ec80e38b2d39924b401a2029793e4b5abc929f2e04fe8ad9754f77b",
-        "attempted_trials": 80,
-        "budget": {
-          "max_faults": 8,
-          "trials": 80
-        },
-        "checkpoint": "work/checkpoint.json",
-        "conditional_extension_taken": false,
-        "coverage_union_recomputed": true,
-        "elapsed_seconds": 5071.409999999997,
-        "exact_io_plan_identity_audited": true,
-        "first_guard_after_last_fault_audited": true,
-        "healthy_coverage": {
-          "branches": 87,
-          "classes": {
-            "org/apache/hadoop/hbase/ZKNamespaceManager": {
-              "branches": 11,
-              "lines": 63,
-              "methods": 14
-            },
-            "org/apache/hadoop/hbase/master/TableNamespaceManager": {
-              "branches": 39,
-              "lines": 129,
-              "methods": 24
-            },
-            "org/apache/hadoop/hbase/master/procedure/CreateNamespaceProcedure": {
-              "branches": 22,
-              "lines": 63,
-              "methods": 21
-            },
-            "org/apache/hadoop/hbase/namespace/NamespaceStateManager": {
-              "branches": 15,
-              "lines": 56,
-              "methods": 12
-            }
-          },
-          "lines": 311,
-          "methods": 71
-        },
-        "healthy_elapsed_seconds": 53.51,
-        "healthy_io_events": 18,
-        "healthy_region_quota_throws": 1,
-        "healthy_target_checks": 3,
-        "healthy_target_signatures": [
-          [
-            "TestNamespaceAuditor_np2:table2",
-            5,
-            "region_quota"
-          ]
-        ],
-        "junit_passes": 63,
-        "last_16_new_production_coverage_or_stable_io_family": false,
-        "new_io_selectors": 25,
-        "new_io_sites": 2,
-        "new_production_branches": 9,
-        "new_production_methods": 2,
-        "post_fault_quota_message_signature": {
-          "current_region_count": 1,
-          "max_regions": 5,
-          "observations": 63,
-          "requested_regions": 5,
-          "table": "TestNamespaceAuditor_np2:table2"
-        },
-        "queue_length": 301,
-        "requested_fault_events": 446,
-        "strict_post_fault_expected_region_quota_trials": 63,
-        "strict_post_fault_target_trials": 63,
-        "strict_post_fault_unexpected_region_quota_trials": 0,
-        "strict_target_lost_trials": 17,
-        "strict_trials": 80
-      },
-      "elapsed_seconds": 5071.41,
+      "site_id": "<org.apache.hadoop.hbase.namespace.NamespaceStateManager: void checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)>#u54",
+      "proposed_cluster_test": "TestNamespaceAuditor.testTableOperations",
+      "cluster_test": "TestNamespaceAuditor#testTableOperations",
+      "status": "quality_complete",
+      "target_reached": true,
+      "fault_trials": 100,
+      "strict_injections": 100,
+      "fully_applied_trials": 100,
+      "target_after_fault": 80,
+      "coverage_gain": 1,
+      "elapsed_seconds": 4919.81,
+      "bug_mark": "none",
       "evidence": [
         "README.md",
-        "evidence/hbase22-coverage-io-80.tar.gz",
-        "work/checkpoint.json",
-        "work/src/HBase22Agent.java",
-        "work/run.sh"
+        "evidence/actor-v2-result-row.json",
+        "evidence/actor-v2-raw-audit.json",
+        "evidence/hbase22-actor-v2-evidence.tar.gz",
+        "legacy-pre-actor-v2-result.json"
       ],
-      "fault_trials": 80,
-      "fully_applied_trials": 80,
-      "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)",
-      "healthy_elapsed_seconds": 53.51,
-      "healthy_expected_region_quota_throws": 1,
-      "healthy_expected_signature": [
-        "TestNamespaceAuditor_np2:table2",
-        5,
-        "region_quota"
-      ],
-      "healthy_guard_evaluations": 4,
-      "healthy_junit_passed": true,
-      "healthy_related_io_events": 18,
-      "healthy_target_method_calls": 3,
-      "instrumentation_provenance": {
-        "bytebuddy_agent_jar_sha256": "0bc1f64cd8d2c5f3f3a83492f2f8e93323819f501a041f8f5a026ab2df03b16a",
-        "bytebuddy_agent_source_sha256": "a79debd92f6acd61b373d31db5a837482917d3f777457909f83ecc0efa8377a0",
-        "coverage": "JaCoCo production method and branch",
-        "graphchecker_prewoven_or_graph_feedback": false,
-        "server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
-        "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
-        "tests_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+      "version": "2.6.6",
+      "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+      "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+      "target_function": "checkAndUpdateNamespaceTableCount(TableName,int)",
+      "target_guard_line": 166,
+      "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+      "effective_fault_trials": 80,
+      "requested_faults": 689,
+      "applied_faults": 689,
+      "new_production_methods": 0,
+      "new_production_branches": 1,
+      "new_stable_io_families": [],
+      "healthy_elapsed_seconds": 99.35,
+      "fault_elapsed_seconds": 4820.46,
+      "target_exception_candidates": 0,
+      "budget": {
+        "effective_trials": 80,
+        "max_attempts": 320,
+        "max_faults": 8
       },
-      "methodology": "graph_free_original_junit_observed_zk_io_jacoco_feedback",
-      "proposed_cluster_test": "TestNamespaceAuditor.testTableOperations",
-      "quality_complete": true,
-      "quality_review": {
-        "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
-        "bug_mark_unchanged": "none",
-        "historical_counters": {
-          "coverage_gain": 9,
-          "elapsed_seconds": 5071.41,
-          "fault_trials": 80,
-          "strict_injections": 80,
-          "target_after_fault": 63
+      "stop_reason": "budget_complete",
+      "extension_decision": {
+        "last8_effective_novelty": false,
+        "extended_to_128": false
+      },
+      "source_audit_note": "The original table creation region quota predicate is at NamespaceStateManager.java:166. The unchanged table-operations JUnit expects a QuotaExceededException when five new regions exceed the limit of five with one existing region. The raw audit found selected outcomes {'selected_table_region_quota': 100}; none established a new bug within the admitted fault scope.",
+      "current_campaign": {
+        "applied_faults": 689,
+        "attempted_trials": 100,
+        "budget": {
+          "effective_trials": 80,
+          "max_attempts": 320,
+          "max_faults": 8
         },
-        "historical_counters_not_current_quality_effective": true,
-        "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
-        "prior_status": "quality_complete",
-        "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
-        "reviewed_at_utc": "2026-10-07T06:52:08+00:00"
+        "bug_mark": "none",
+        "case_id": "HBASE-22",
+        "checkpoint": "campaigns/HBASE-22/checkpoint.json",
+        "effective_trials": 80,
+        "fault_elapsed_seconds": 4820.459999999999,
+        "healthy_elapsed_seconds": 99.35,
+        "healthy_expected_outcomes": [
+          "selected_table_region_quota"
+        ],
+        "healthy_expected_target_exception_trials": 80,
+        "healthy_io_families": [
+          "ZK_CHILDREN_READ",
+          "ZK_CREATE",
+          "ZK_DATA_READ",
+          "ZK_EXISTS",
+          "ZK_WRITE"
+        ],
+        "healthy_seeds": [
+          "h1",
+          "h2"
+        ],
+        "healthy_selected_target_counts": [
+          1,
+          1
+        ],
+        "healthy_stable_selectors": 18,
+        "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+        "new_production_branches": 1,
+        "new_production_methods": 0,
+        "new_stable_io_families": [],
+        "original_junit": "TestNamespaceAuditor#testTableOperations",
+        "priority_migrated_after_attempt": null,
+        "priority_policy": "healthy_guard_distance_with_periodic_exploration_and_same_site_loss_v2",
+        "requested_faults": 689,
+        "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+        "status": "budget_complete_pending_audit",
+        "strict_postfault_target_trials": 80,
+        "strict_trials": 100,
+        "system": "HBase",
+        "target_exception_candidates": 0,
+        "target_function": "checkAndUpdateNamespaceTableCount(TableName,int)",
+        "target_guard_line": 166,
+        "total_elapsed_seconds": 4919.8099999999995,
+        "version": "2.6.6"
       },
-      "selection_group": "original_102",
-      "site_id": "<org.apache.hadoop.hbase.namespace.NamespaceStateManager: void checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)>#u54",
-      "source_audit_note": "Checklist anchor :172 reads current region count in the exception message; the region-quota predicate is at lines 165-167. The unchanged original JUnit expects and catches table2 quota failure for requested=5,max=5,current=1. All 63 strict post-fault target exceptions kept that exact state. CreateNamespaceProcedure retries UPDATE_ZK IOException; watcher read faults can abort masters, and 17 such target-lost trials were excluded. No new bug candidate.",
-      "source_line": 172,
-      "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
-      "status": "actor_identity_recheck_pending",
-      "strict_injections": 80,
-      "system": "HBase 2.6.6",
-      "target_after_fault": 63,
-      "target_exception": "org.apache.hadoop.hbase.quotas.QuotaExceededException from region-count condition",
-      "target_guard": "NamespaceStateManager.checkAndUpdateNamespaceTableCount(TableName,int):172",
-      "target_reached": true
+      "raw_audit": {
+        "checkpoint_sha256": "9b6856b0343fb0f1c11c7c9efff243557b89a698cc69bd12237c8ae8495fe5cd",
+        "attempts": 100,
+        "effective": 80,
+        "strict_trials": 100,
+        "selected_outcomes_all_raw": {
+          "selected_table_region_quota": 100
+        },
+        "depth_attempts": {
+          "1": 1,
+          "2": 9,
+          "3": 1,
+          "4": 3,
+          "5": 3,
+          "6": 6,
+          "7": 12,
+          "8": 65
+        },
+        "fault_kinds": {
+          "CONNECTIONLOSS": 565,
+          "OPERATIONTIMEOUT": 74,
+          "SYSTEMERROR": 50
+        },
+        "fault_families": {
+          "ZK_CREATE": 513,
+          "ZK_DATA_READ": 20,
+          "ZK_WRITE": 156
+        },
+        "junit_exit_counts": {
+          "0": 100
+        },
+        "errors": []
+      },
+      "instrumentation_provenance": {
+        "runtime_source": "unchanged original HBase 2.6.6 server and test JARs",
+        "server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+        "test_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+        "agent": "standalone namespace actor V2 ByteBuddy agent plus JaCoCo 0.8.15",
+        "agent_jar_sha256": "f6ac63c8ad2e07499f99f93e1b04f9cf53c5f849274b98828277b3fc159b8601",
+        "same_actor_gate": "raw ACTIVE_MASTER ServerName and manager identity, exact ordered I/O, postfault guard",
+        "graphchecker_prewoven_jar": false,
+        "graph_or_closure_feedback": false
+      },
+      "evidence_archive_sha256": "4c6b3c944f533b34523e47bbcbffd4d7d79bdbcf70957d210ae6f8c4b8825185",
+      "evidence_archive_bytes": 5967524,
+      "current_method_trials_count": 100,
+      "historical_unbound_trials_count": 80,
+      "historical_graphchecker_pilot_trials_count": 0,
+      "historical_evidence": "legacy-pre-actor-v2-result.json",
+      "comparison_scope": "Only actor-bound V2 trials contribute to top-level fault, target, time, and coverage counters; prior unbound results are archived separately.",
+      "quality_review": {
+        "prior_issue": "Earlier graph-free selectors did not prove the communicating Master/manager identity.",
+        "resolution": "Independent actor-bound V2 runs and raw audit prove the selected guard after exact faults on the same Master/manager."
+      },
+      "reported_function": "checkAndUpdateNamespaceTableCount(TableName,int)",
+      "resolved_check_line": 166
     },
     {
       "bug_mark": "not_evaluated",
