@@ -80,7 +80,8 @@ def synthetic_rules() -> dict:
     matched = {**good, "event": "FAULT_MATCHED", "seq": 12}
     applied = {**good, "event": "FAULT_APPLIED", "seq": 13}
     target = {**target, "seq": 14, "outcome": False}
-    fake_trace = [registration, begin, matched, applied, target]
+    fake_trace = [{"schemaVersion": 4, **row} for row in
+                  (registration, begin, matched, applied, target)]
     (fake / "runtime_trace.jsonl").write_text("\n".join(map(json.dumps, fake_trace)) + "\n")
     fake_state = {"coverage_v5": {case: {kind: [] for kind in
                   ("probes", "methods", "branch_counts")} for case in model.CASES},
@@ -94,7 +95,7 @@ def synthetic_rules() -> dict:
     assert trial["exact_order_applied"] and independently["strict"]
     assert trial["post_fault_target_checks"]["HDFS-29"] == 1
     assert independently["post"]["HDFS-29"] == 1
-    fake_trace[-1] = {**target, "bpid": "BP-other"}
+    fake_trace[-1] = {**fake_trace[-1], "bpid": "BP-other"}
     (fake / "runtime_trace.jsonl").write_text("\n".join(map(json.dumps, fake_trace)) + "\n")
     trial_wrong = campaign.assess(fake, item, fake_state)
     assert trial_wrong["exact_order_applied"]
@@ -121,6 +122,7 @@ def main() -> None:
                     "-Dhdfs.recovery.trace=" + str(trace), "-cp", classpath,
                     "OfflineProbeSmoke"], check=True)
     parsed = [json.loads(line) for line in trace.read_text().splitlines()]
+    assert all(row["schemaVersion"] == 4 for row in parsed)
     assert [row["event"] for row in parsed] == ["TARGET_CHECK", "BRANCH",
                                                     "TARGET_THROW", "FAULT_POINT_OBSERVED"]
     assert parsed[2]["runtimeType"] == "java.io.IOException"

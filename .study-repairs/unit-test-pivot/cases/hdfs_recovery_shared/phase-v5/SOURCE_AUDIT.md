@@ -33,5 +33,5 @@ claim that HDFS-28 is unreachable under all workloads.
 
 The old V4 `TARGET_THROW` JSON appended a quote after numeric `blockId`.
 The isolated probe fixes that format and emits BP/recovery/episode/token on
-the throw. The full V5 overlay digest is in `offline-smoke.json`; future
+the throw under raw schema version 4. The full V5 overlay digest is in `offline-smoke.json`; future
 healthy and fault manifests must match it exactly.

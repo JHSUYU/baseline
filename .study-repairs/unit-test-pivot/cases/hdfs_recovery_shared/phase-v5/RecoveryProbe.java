@@ -79,7 +79,7 @@ public final class RecoveryProbe {
   private static synchronized void record(String payload) {
     if (TRACE == null) return;
     try (PrintWriter out = new PrintWriter(new FileWriter(TRACE, true))) {
-      out.println("{\"schemaVersion\":3,\"seq\":" + SEQUENCE.incrementAndGet()
+      out.println("{\"schemaVersion\":4,\"seq\":" + SEQUENCE.incrementAndGet()
           + ",\"thread\":\"" + escape(Thread.currentThread().getName())
           + "\"," + payload + "}");
     } catch (IOException exception) {

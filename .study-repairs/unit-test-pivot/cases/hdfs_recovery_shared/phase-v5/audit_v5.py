@@ -79,6 +79,8 @@ def known_owner(row: dict) -> bool:
 
 def receipt_verdict(trial: dict) -> dict:
     trace = rows(trial["run"])
+    if not trace or any(row.get("schemaVersion") != 4 for row in trace):
+        raise RuntimeError("V5 raw trace schema mismatch: " + trial["run"])
     selected = trial["sequence"]
     matched = [r for r in trace if r.get("event") == "FAULT_MATCHED"]
     applied = [r for r in trace if r.get("event") == "FAULT_APPLIED"]

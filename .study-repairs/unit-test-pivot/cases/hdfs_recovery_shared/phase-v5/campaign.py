@@ -44,6 +44,8 @@ def io_family(event: dict) -> str:
 
 def assess(directory: Path, item: dict, state: dict) -> dict:
     trace = rows(directory)
+    if not trace or any(row.get("schemaVersion") != 4 for row in trace):
+        raise RuntimeError("V5 trial trace has wrong schema")
     manifest = json.loads((directory / "manifest.json").read_text())
     if manifest.get("overlay_digest") != json.loads(GATE.read_text())["overlay_digest"]:
         raise RuntimeError("trial overlay digest differs from healthy calibration")

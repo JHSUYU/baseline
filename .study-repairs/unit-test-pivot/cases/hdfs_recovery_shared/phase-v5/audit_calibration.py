@@ -27,6 +27,8 @@ def verify_seed(directory: Path) -> dict:
         raise RuntimeError("healthy production JaCoCo report is missing: " + str(directory))
     trace = [json.loads(line) for line in (directory / "runtime_trace.jsonl").read_text().splitlines()
              if line]
+    if not trace or any(row.get("schemaVersion") != 4 for row in trace):
+        raise RuntimeError("healthy trace has wrong V5 schema: " + str(directory))
     if any(row.get("event") in ("FAULT_APPLIED", "TARGET_THROW") for row in trace):
         raise RuntimeError("healthy seed applied fault or threw selected target: " + str(directory))
     checks = {}
