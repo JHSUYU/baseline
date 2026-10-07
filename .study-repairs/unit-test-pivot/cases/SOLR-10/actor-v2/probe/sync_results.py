@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Mirror authoritative node2 V4 checkpoints into three case results and 104 table."""
+"""Mirror authoritative node1 V5 checkpoints into three case results and 104 table."""
 
 import argparse
 from datetime import datetime, timezone
@@ -17,6 +17,7 @@ UNIT = CASE.parents[2]
 RESULTS = UNIT / "cases"
 REMOTE_STATE = CASE / "evidence/campaign-v4/state.json"
 SSH_ID = Path.home() / ".ssh/id_ed25519_nodes"
+REMOTE_HOST = "node1"
 SITES = ("SOLR-10", "SOLR-39", "SOLR-40")
 SOURCE_LINES = {"SOLR-10": 116, "SOLR-39": 246, "SOLR-40": 132}
 
@@ -26,7 +27,7 @@ def pull() -> dict:
         dest = Path(tmp) / "state.json"
         subprocess.run(["scp", "-q", "-i", str(SSH_ID),
                         "-o", "IdentitiesOnly=yes", "-o", "BatchMode=yes",
-                        f"ZhenyuLi@node2:{REMOTE_STATE}", str(dest)], check=True)
+                        f"ZhenyuLi@{REMOTE_HOST}:{REMOTE_STATE}", str(dest)], check=True)
         return json.loads(dest.read_text())
 
 
@@ -106,8 +107,9 @@ def metrics(state: dict, site: str) -> dict:
         "shared_elapsed_seconds_at_snapshot": round(state["elapsed_seconds"], 3),
         "shared_execution_group": "SOLR-10/39/40",
         "healthy_target_checks": state["healthy_target_checks"][site],
-        "evidence": str(REMOTE_STATE) + " (node2)",
-        "v4_checkpoint": str(REMOTE_STATE) + " (node2)",
+        "evidence": str(REMOTE_STATE) + f" ({REMOTE_HOST})",
+        "v4_checkpoint": str(REMOTE_STATE) + " (node2, frozen at trial 189)",
+        "v5_checkpoint": str(REMOTE_STATE) + f" ({REMOTE_HOST}, continuation)",
         "build_receipt_sha256": state["build_receipt_sha256"],
         "snapshot_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
