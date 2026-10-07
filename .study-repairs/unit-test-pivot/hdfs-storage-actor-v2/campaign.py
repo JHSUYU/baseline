@@ -83,7 +83,7 @@ def plan_text(sequence: list[dict]) -> str:
 def exact_applied(sequence: list[dict], trace: list[dict]) -> tuple[bool, list[dict]]:
     applied = [r for r in trace if r["event"] == "FAULT_APPLIED"]
     fields = ("marker", "siteId", "sourceKey", "occurrence", "hitOrdinal",
-              "actorKey", "faultType")
+              "actorKey", "storageKey", "peerRole", "faultType")
     exact = len(sequence) == len(applied) and all(
         all(a.get(k) == s.get(k) for k in fields) and a.get("faultIndex") == index
         for index, (s, a) in enumerate(zip(sequence, applied)))

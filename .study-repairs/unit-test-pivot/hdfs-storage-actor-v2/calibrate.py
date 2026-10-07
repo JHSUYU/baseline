@@ -63,7 +63,7 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
     by_case = {case: [r for r in targets if r["caseId"] == case] for case in cases}
     eligible = {case: [r for r in bound if any(
         t["seq"] > r["seq"] and t.get("actorKey") == r.get("actorKey")
-        and ("RPC:" in r["marker"] or
+        and (("RPC:" in r["marker"] and r.get("peerRole") == "NN0") or
              (storage_volume(t.get("storageKey")) != "unbound" and
               storage_volume(t.get("storageKey")) == storage_volume(r.get("storageKey"))))
         for t in events)] for case, events in by_case.items()}

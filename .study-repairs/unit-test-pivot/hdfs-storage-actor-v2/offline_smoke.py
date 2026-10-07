@@ -73,6 +73,8 @@ def check_identity() -> None:
     applied = {**rpc1, "event": "FAULT_APPLIED", "faultType": "IOException", "faultIndex": 0}
     assert campaign.exact_applied([selected], [applied])[0]
     assert not campaign.exact_applied([selected], [{**applied, "actorKey": actor2}])[0]
+    assert not campaign.exact_applied([selected], [{**applied, "peerRole": "unbound"}])[0]
+    assert not campaign.exact_applied([selected], [{**applied, "storageKey": "dfs/data1"}])[0]
     assert campaign.postfault([applied, target], "HDFS-22", [selected], [applied], True)[0] == [target]
     assert not campaign.postfault([applied, {**target, "actorKey": actor2}],
                                   "HDFS-22", [selected], [applied], True)[0]
