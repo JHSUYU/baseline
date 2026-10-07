@@ -20,9 +20,16 @@ def check_bytecode() -> None:
         [str(run_original.HADOOP / "bin/hadoop"), "classpath", "--glob"],
         text=True, env=env).strip()
     asm = Path("/users/ZhenyuLi/.m2/repository/org/ow2/asm")
+    def asm_jar(name: str) -> Path:
+        repository = asm / name / "9.6" / (name + "-9.6.jar")
+        local = HERE / "build/verification-lib" / (name + "-9.6.jar")
+        path = repository if repository.is_file() else local
+        if not path.is_file():
+            raise FileNotFoundError(f"missing ASM verifier dependency: {name}")
+        return path
     cp = os.pathsep.join((str(run_original.OVERLAY), str(run_original.BUILD / "classes"),
                           str(run_original.TESTS), hadoop_cp,
-                          *(str(asm / name / "9.6" / (name + "-9.6.jar")) for name
+                          *(str(asm_jar(name)) for name
                             in ("asm", "asm-tree", "asm-util", "asm-analysis"))))
     patched = ("org/apache/hadoop/hdfs/MiniDFSCluster",
                "org/apache/hadoop/hdfs/server/datanode/DataNode",
