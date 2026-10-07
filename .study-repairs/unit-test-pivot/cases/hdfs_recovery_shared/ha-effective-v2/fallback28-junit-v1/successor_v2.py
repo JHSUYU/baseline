@@ -85,6 +85,9 @@ def add_singletons(state: dict, candidates: list[dict]) -> list[dict]:
         before = len(state["seen"])
         C.add(state, candidate["sequence"], priority=12, eligible=("HDFS-28",))
         if len(state["seen"]) > before:
+            state["queue"][-1]["created"] = (
+                state["scheduler_v2"]["anchor_attempt"] +
+                (state["scheduler_v2"]["new_singletons_added"] + len(inserted)) / 1000)
             inserted.append(candidate)
     state["scheduler_v2"]["new_singletons_added"] += len(inserted)
     return inserted
@@ -129,6 +132,17 @@ def handoff() -> dict:
                 or len(state["completed"]) < receipt["anchor_attempt"]):
             raise RuntimeError("existing successor receipt disagrees with checkpoint")
         return receipt
+    if INTENT.exists():
+        pending = json.loads(INTENT.read_text())
+        current = sha(STATE.read_bytes())
+        if (pending.get("successor_source_sha256") != sha(Path(__file__).read_bytes())
+                or pending.get("original_source_sha256") != SOURCE_SHA):
+            raise RuntimeError("pending successor intent has different source SHA")
+        if current == pending["new_checkpoint_sha256"]:
+            durable(RECEIPT, encoded(pending))
+            return pending
+        if current != pending["old_checkpoint_sha256"]:
+            raise RuntimeError("pending successor intent conflicts with checkpoint")
     old = STATE.read_bytes()
     state = json.loads(old)
     if (state.get("test") != campaign_v1.TEST or state.get("scheduler_v2")
