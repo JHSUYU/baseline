@@ -2,12 +2,44 @@
   "bug_mark": "none",
   "case_id": "HDFS-28",
   "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
+  "cluster_tests": [
+    "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
+    "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization"
+  ],
   "coverage_gain": 272,
   "coverage_scope": "phase_v4_rpc_and_replica_file_io_only",
   "elapsed_seconds": 3718.332,
   "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/campaign-state.json; per-trial exact selector, JUnit, target, and JaCoCo evidence in /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/runs; prior RPC-only pilot in /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-28/legacy-rpc-result.json",
   "fault_trials": 128,
   "fully_applied_trials": 63,
+  "ha_effective_campaign": {
+    "attempt_cap": 320,
+    "attempts": 76,
+    "candidate_review": null,
+    "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-effective-v2/checkpoint.json",
+    "checkpoint_sha256": "0cd14334f10f8d556f987f9cedd13af8ad4c3128db320ff63144e66dbb44b1bc",
+    "effective_goal": 80,
+    "effective_trials": 17,
+    "exact_full_sequence": 30,
+    "fault_junit_seconds_shared": 2479.94,
+    "healthy_seconds_shared": 54.074,
+    "independent_raw_audit_completed_prefix": 74,
+    "independent_raw_audit_errors": 0,
+    "max_faults": 8,
+    "pending_queue": 208,
+    "production_coverage_gain": {
+      "branch_counts": 673,
+      "methods": 343,
+      "probes": 1623
+    },
+    "selected_target_exceptions": 0,
+    "separate_from_historical_v4_counts": true,
+    "snapshot_at_utc": "2026-10-07T11:05:53.493698+00:00",
+    "snapshot_path": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-effective-v2/audits/live-progress-snapshot.json",
+    "state": "running",
+    "stop_reason": null,
+    "workload": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization"
+  },
   "independent_campaign": {
     "branch_count_gain": 118,
     "budget": {
@@ -54,26 +86,26 @@
     "target_exception_candidates": 0
   },
   "methodology": "original_junit_case_local_asm_jacoco_graph_free",
-  "status": "budget_recheck_pending",
-  "strict_injections": 63,
-  "target_after_fault": 18,
-  "target_exception_after_fault_trials": 0,
-  "target_reached": true,
   "quality_review": {
-    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
     "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
-    "prior_status": "quality_complete",
-    "issue": "Historical trial cap was reached with fewer than 80 same-owner postfault target-retaining effective trials and an untested feasible queue; resume without repeating completed trials.",
-    "historical_counters_not_current_quality_effective": true,
+    "bug_mark_unchanged": "none",
     "historical_counters": {
+      "coverage_gain": 272,
+      "elapsed_seconds": 3718.332,
       "fault_trials": 128,
       "fully_applied_trials": 63,
       "strict_injections": 63,
-      "target_after_fault": 18,
-      "coverage_gain": 272,
-      "elapsed_seconds": 3718.332
+      "target_after_fault": 18
     },
+    "historical_counters_not_current_quality_effective": true,
+    "issue": "Historical trial cap was reached with fewer than 80 same-owner postfault target-retaining effective trials and an untested feasible queue; resume without repeating completed trials.",
+    "prior_status": "quality_complete",
     "required_action": "Resume the original actor-aware checkpoint toward 80 effective target-retaining trials or document a justified early stop.",
-    "bug_mark_unchanged": "none"
-  }
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00"
+  },
+  "status": "fuzz_running",
+  "strict_injections": 63,
+  "target_after_fault": 18,
+  "target_exception_after_fault_trials": 0,
+  "target_reached": true
 }
