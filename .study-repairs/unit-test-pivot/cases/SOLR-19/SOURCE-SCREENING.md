@@ -26,30 +26,37 @@ actor join, so it is screening evidence rather than an actor-aware seed.
    optional `createReplica.coreNodeName` is null.
 3. The receiver's `CoreAdminOperation.CREATE_OP` calls
    `CoreAdminHandler.buildCoreParams` and then `CoreContainer.create`
-   (`CoreAdminOperation.java:73-95`). `buildCoreParams` copies every nonempty
-   `CORE_NODE_NAME` request value into the `CoreDescriptor.CORE_NODE_NAME`
-   property (`CoreAdminHandler.java:236-260`). `CloudDescriptor` reads that
-   property directly and turns missing/empty into null
-   (`CloudDescriptor.java:61-69`). The selected guard checks that value before
-   `checkIfCoreNodeNameAlreadyExists` and later core creation I/O
+   (`CoreAdminOperation.java:73-95`). `buildCoreParams` copies a nonempty
+   standard `CORE_NODE_NAME` request value into the
+   `CoreDescriptor.CORE_NODE_NAME` property, but then copies `property.*`
+   request values and can overwrite the same key
+   (`CoreAdminHandler.java:236-260`). `AddReplicaCmd` also appends these
+   properties after setting the standard name
+   (`OverseerCollectionMessageHandler.java:615-620`).
+4. `CoreDescriptor` copies request properties, then `loadExtraProperties()`
+   may read `conf/solrcore.properties` (or a configured path) and overwrite
+   them again (`CoreDescriptor.java:185-244`). `CloudDescriptor` finally reads
+   `coreNodeName` from the resulting properties and turns missing/empty into
+   null (`CloudDescriptor.java:61-69`). The selected guard checks that value
+   before `checkIfCoreNodeNameAlreadyExists` and later core creation I/O
    (`CoreContainer.java:1326-1335`).
 
 For these two request producers, an exception in the state lookup can prevent
 the create RPC. A constructed `Replica` has a nonnull name: its constructor
-requires it (`Replica.java:148-160`). A nonempty name is still a separate
-condition because that constructor does not reject an empty string, and
-`buildCoreParams` drops empty values. The selected check is a direct
-received-parameter validation in this workload; the source path alone does
-not demonstrate a multi-hop state comparison. The earlier 128 graph-free
-fault trials had coarse actor identities and remain historical evidence only;
-they do not make the V2 check quality complete.
+requires it (`Replica.java:148-160`), but does not reject an empty string.
+Even a nonempty standard RPC field does not prove the guard's value because
+`property.coreNodeName` or an external properties file can override it. The
+unchanged test does not visibly request either override, but the existing
+healthy trace does not capture the full sender-to-receiver request and file
+state. The earlier 128 graph-free fault trials had coarse actor identities and
+remain historical evidence only; they do not make the V2 check quality
+complete.
 
-**Decision pending independent review.** Before changing the checklist status,
-verify that all target guard hits in the unchanged healthy JUnit came from
-these producers, that their replica names were nonempty, and that
-exception/delay injection cannot admit another CoreAdmin create producer. The
-existing healthy trace records the nine receiving guards but has no
-sender-to-receiver join, so this proof is currently missing. If established,
-record a source-exclusion reason with raw provenance. Otherwise, build an
-actor-aware V2 adapter that binds the sender's create request to the receiving
-`CoreContainer` and the exact core.
+**Decision pending runtime evidence.** The current source analysis cannot
+justify `source_excluded`: two concrete override paths remain. A V2 adapter
+should bind the sender's CoreAdmin create request to the receiving
+`CoreContainer` and exact core, record both the standard and `property.*`
+values, and observe any external properties file read before this guard. The
+healthy trace's nine receiving guards lack that join. If an injection removes
+the entire RPC or aborts descriptor construction, record `lost_target`
+instead of treating an unrelated JUnit failure as this check's outcome.
