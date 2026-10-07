@@ -1,0 +1,11 @@
+# HDFS-39 V2 complete-boundary locked handoff
+
+The original node1 supervisor in tmux `hdfs39_v2_budget` used an 8 GiB disk gate and did not hold the shared `jvm-start.lock`. It was stopped while its trial 97 child was still running; the child finished and atomically committed the trial. The old supervisor remained stopped, so it could not start trial 98. After the child became a zombie and no live campaign child remained, the old supervisor was removed. No checkpoint or trial result was edited at this handoff.
+
+- Boundary: 97 completed V2 attempts, 47 independently effective, `current=null`, checkpoint SHA-256 `2854a44309beb41b9e97d3b0bdb20d6f020e62a372dd09e904d1eef2eb6b4133`.
+- The independent raw plan, JUnit, trace, physical actor, file/block, JaCoCo and feedback audit passed at that boundary: 56 fully applied, 47 effective, zero errors. Its only postfault target exception was the separately reviewed passing transient in trial 56.
+- A new `guarded_locked_campaign.py` supervisor accepts an exact completed-count/checkpoint-SHA handoff. It holds the shared `jvm-start.lock` from the resource check through the entire `campaign_v2.py --once 1` child, requires at least 10 GiB free, and permits at most three pre-existing Java processes so this JUnit raises the total to at most four. It uses the same V2 checkpoint, queue, seen plans, test overlay and trial numbering.
+- The two-trial pilot completed original JUnits 98 and 99, both exit 0. Both were retained as ineffective attempts. Gate receipts record three and two pre-existing Java processes, and 14.9 and 14.8 GB free, respectively. Neither trial had a postfault target exception.
+- At the pilot boundary, the independent raw audit passed across all 99 V2 attempts with 56 fully applied, 47 effective, zero errors, and no new unreviewed postfault target exception. Checkpoint SHA-256 was `8975303610553d1992a3d2d0acbdb95555e9f59ad8abcbd91c19a3fa44f7788b`; `current=null`.
+
+The continuing node1 tmux session is `hdfs39_v2_locked_budget`. Its only handoff input is the 99-attempt checkpoint SHA above; it does not import or rerun the 205 archived historical trials.
