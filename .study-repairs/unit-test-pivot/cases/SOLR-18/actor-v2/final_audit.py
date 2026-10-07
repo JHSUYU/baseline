@@ -7,9 +7,11 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import subprocess
 
 from actor_audit import audit
 from build import CLASSES, HERE
+from mirror import DEST, HOST, SSH
 from run_native import RUN_ROOT
 
 STATE = HERE / 'campaign-state.json'
@@ -28,10 +30,22 @@ def sha(path: Path) -> str:
     return h.hexdigest()
 
 
+def remote_hashes() -> dict[tuple[str, str], str]:
+    command = "find '" + DEST + "' -mindepth 2 -maxdepth 2 -type f -exec sha256sum -- {} +"
+    output = subprocess.run(SSH + [HOST, command], capture_output=True,
+                            text=True, check=True).stdout
+    result = {}
+    for line in output.splitlines():
+        path = Path(line[66:])
+        result[(path.parent.name, path.name)] = line[:64]
+    return result
+
+
 def audit_all() -> dict:
     state = json.loads(STATE.read_text())
     mirror = json.loads(MIRROR.read_text())
     offloaded = json.loads(OFFLOAD.read_text())['runs'] if OFFLOAD.exists() else {}
+    remote = remote_hashes()
     calibration = json.loads(CALIBRATION.read_text())
     junit_sha = calibration['junit_class_sha256']
     junit_class = CLASSES / 'org/apache/solr/cloud/AliasIntegrationTest.class'
@@ -64,6 +78,8 @@ def audit_all() -> dict:
         digests = mirror['runs'][run_id]['sha256']
         assert mirror['runs'][run_id]['rsync_checksum_dry_run_exit'] == 0
         assert mirror['runs'][run_id]['rsync_checksum_dry_run_output'] == ''
+        for name, expected in digests.items():
+            assert remote[(run_id, name)] == expected, (run_id, name, 'node2')
         for name in RAW_NAMES:
             local = directory / name
             if name == 'console.log' and not local.exists():
@@ -121,6 +137,8 @@ def audit_all() -> dict:
         'raw_mirror_source': mirror['source_root'],
         'raw_mirror_destination': mirror['destination_root'],
         'raw_mirror_verified_runs': len(state['trials']),
+        'raw_mirror_remote_sha_reverified_files': sum(
+            len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']),
         'noncandidate_consoles_offloaded_to_node2': len(offloaded),
         'graphchecker_runtime': False,
     }
