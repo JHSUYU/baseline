@@ -1,0 +1,45 @@
+{
+  "fault_trials": 0,
+  "io_observations": 1135,
+  "original_test_source_sha256": "1772a1d7d06a8fcf9d2a5d545c8e9bb0778b27bdfe2c1248b07606062bb395c7",
+  "run": {
+    "agent_sha256": "a43e871a4f83d8080b8279c86d145150767564398a3ddc1319c4a364bdf8ad78",
+    "classpath_contains_graphchecker": false,
+    "elapsed_seconds": 18.169,
+    "exit_code": 0,
+    "fault_plan": null,
+    "original_source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+    "test": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testRetryUpdatesWhenClusterStateIsStale",
+    "test_seed": "F0993D5343E20BA4",
+    "timed_out": false
+  },
+  "source_timing": "The unchanged test deletes the original leader, waits for recoveries to finish, then sends the stale-client update; the target guard executes on the replacement leader with localLeader=true. This healthy smoke has no target disagreement.",
+  "target_events": [
+    {
+      "detail": "clusterLeader=true;subShardLeader=false;localLeader=true;retries=0;mismatch=false;phase=NONE",
+      "event": "TARGET_CHECK",
+      "marker": "SOLR38:LEADER_IDENTITY_GUARD",
+      "physicalNode": "127.0.0.1:42719_solr",
+      "seq": 1124,
+      "siteId": "DistributedZkUpdateProcessor.java:1021",
+      "sourceKey": "SOLR/REPLICA/stale_state_test_col/shard1/core_node4"
+    },
+    {
+      "detail": "clusterLeader=true;subShardLeader=false;localLeader=true;retries=0;mismatch=false;phase=NONE",
+      "event": "TARGET_CHECK",
+      "marker": "SOLR38:LEADER_IDENTITY_GUARD",
+      "physicalNode": "127.0.0.1:42719_solr",
+      "seq": 1126,
+      "siteId": "DistributedZkUpdateProcessor.java:1021",
+      "sourceKey": "SOLR/REPLICA/stale_state_test_col/shard1/core_node4"
+    }
+  ],
+  "target_guard_details": {
+    "clusterLeader=true;subShardLeader=false;localLeader=true;retries=0;mismatch=false;phase=NONE": 2
+  },
+  "target_marker_counts": {
+    "SOLR38:LEADER_IDENTITY_GUARD": 2
+  },
+  "test": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testRetryUpdatesWhenClusterStateIsStale",
+  "trace_sha256": "9604c7856b0979f14a4f39fbea07474852f9319f67b04f363cfe5e961200b534"
+}
