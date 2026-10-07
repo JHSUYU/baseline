@@ -202,7 +202,8 @@ def choose_pending(state: dict) -> dict:
         suite = [i for i in scored if ':SUITE@@' in pending[i]['plan'][0]]
         test = [i for i in scored if i not in suite]
         pool = suite if state.get('suite_gap', 0) >= 3 and suite else (test or suite)
-        prefer_deep = state.get('depth_gap', 0) >= 3
+        phase = 'suite' if pool is suite else 'test'
+        prefer_deep = state.get(phase + '_depth_gap', 0) >= 3
         yields: dict[str, list[int]] = {}
         for trial in state['trials']:
             count = yields.setdefault(trial['plan'][0], [0, 0])
@@ -224,6 +225,9 @@ def choose_pending(state: dict) -> dict:
                           else state.get('suite_gap', 0) + 1)
     state['depth_gap'] = (0 if len(job['plan']) >= 4
                           else state.get('depth_gap', 0) + 1)
+    phase = 'suite' if ':SUITE@@' in job['plan'][0] else 'test'
+    state[phase + '_depth_gap'] = (0 if len(job['plan']) >= 4
+                                   else state.get(phase + '_depth_gap', 0) + 1)
     job['run_id'] = 'trial-{:03d}'.format(state['next_trial'])
     state['next_trial'] += 1
     return job
