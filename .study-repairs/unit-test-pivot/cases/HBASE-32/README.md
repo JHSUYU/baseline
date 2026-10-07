@@ -123,3 +123,25 @@ one `DoNotRetryIOException` to a selector present in the healthy seed,
 reached that exact actor's guard and B7 rethrow, and passed JUnit in 57.01
 seconds after the expected server abort. `result.json` and the 104-row
 checklist reflect the latest synchronized main-campaign checkpoint.
+
+The main campaign initially generated every target-linked child of an
+effective trial. After two accepted trials, the queue held 6,742 plans. At
+the next complete trial boundary, a versioned scheduling change preserved the
+entire existing queue and JaCoCo union, then limited *future* children to 24
+distinct selectors per parent. It samples newly exposed I/O identities first,
+uses an independently derived deterministic seed for each prefix, and reserves
+one in ten selections for valid multi-fault descendants. The checkpoint's
+`policy_changes` entry records the migration counts and seed (32).
+
+Main trial r003 is a **candidate under review**, not a confirmed bug. A
+single no-retry flush-RPC exception reached the same actor's guard and B7; one
+region server aborted. The original JUnit remained in `Admin.createTable`
+at `TestRegionReplicaFailover.java:326` until the 360-second timeout. Two JVM
+thread dumps before timeout showed the master and two other region-server
+threads still alive. The two later server aborts occurred after the JVM
+shutdown hook began and resulted from closed connections during teardown;
+they are excluded from the runtime cluster-tolerance count. The raw log,
+JaCoCo file, exit status, and dumps are retained under `work-lots/logs/` on
+node1. `work-lots/replay-r003-plan.json` and `replay.py` prepare an isolated
+600-second replay with the same selector and matching HBase/agent bytecode;
+the diagnostic replay has not yet run.
