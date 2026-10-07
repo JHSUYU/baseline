@@ -1,5 +1,38 @@
 # HBASE-22: namespace region quota check
 
+## Current actor-bound V2 result
+
+The unchanged HBase 2.6.6 `TestNamespaceAuditor#testTableOperations`
+passed both healthy seeds and reached the selected region quota predicate at
+`NamespaceStateManager.checkAndUpdateNamespaceTableCount(TableName,int)`,
+source line 166. The standalone ByteBuddy agent recorded exact ordered
+namespace ZooKeeper I/O and the raw active Master `ServerName` plus namespace
+manager ID. A trial counted only when the selected guard ran on that same
+actor after the last applied fault; JaCoCo supplied production method and
+branch feedback. No GraphChecker prewoven JAR, static map, graph, or closure
+participated in this V2 campaign.
+
+The current campaign stopped at the 80-effective-trial budget after 100
+attempts. All 100 fault plans applied strictly (689 of 689 requested fault
+events), while 80 retained the same-actor selected guard. Every original
+JUnit passed. The two healthy seeds and fault trials took 4,919.81 seconds
+combined. One production branch was newly covered; the final eight effective
+trials added no method, branch, or stable I/O family, so the checkpoint did
+not extend to 128. All observed selected outcomes had the same table-region
+quota signature already expected by the healthy JUnit. Source review and
+the independent 100-trial raw/JaCoCo audit found no new target exception or
+confirmed bug.
+
+The full current ledger, original JUnit logs, exact plans, agent hashes,
+and JaCoCo exec files are preserved in
+`evidence/hbase22-actor-v2-evidence.tar.gz`; `result.json` and the independent
+zero-error audit are also under this case. The earlier 80-attempt campaign
+lacked proof of the same Master/manager and is archived as
+`legacy-pre-actor-v2-result.json`. Its counts are excluded from the current
+result and the shared checklist.
+
+## Historical, unbound campaign
+
 The selected site is recorded as
 `NamespaceStateManager.checkAndUpdateNamespaceTableCount(TableName,int):172`
 in the checklist. In the original HBase 2.6.6 source, the second quota
