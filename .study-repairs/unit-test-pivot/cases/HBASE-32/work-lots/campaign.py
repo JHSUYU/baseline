@@ -18,6 +18,7 @@ HERE = Path(__file__).resolve().parent
 CASE = HERE.parent
 CHECKPOINT = HERE / "checkpoint.json"
 INFLIGHT = HERE / "inflight.json"
+REVIEW_VERDICTS = HERE / "review-verdicts.json"
 # TABLE_NOT_FOUND was calibrated separately. Injecting it while the test's
 # table exists violates the response's state precondition, so it is excluded
 # from the main fault queue.
@@ -28,7 +29,7 @@ MAX_ATTEMPTS = int(os.environ.get("HBASE32_MAX_ATTEMPTS", "240"))
 MAX_FAULTS = int(os.environ.get("HBASE32_MAX_FAULTS", "8"))
 MAX_CHILD_SELECTORS = 24
 RNG_SEED = 32
-SELECTION_POLICY = "lots_v2_bounded_novel_io_and_depth_cadence"
+SELECTION_POLICY = "lots_v3_exception_diversity_bounded_io_depth"
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -216,6 +217,9 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
     result = json.loads(result_path.read_text())
     strict = [trial for trial in trials if trial["strict"]]
     effective = [trial for trial in trials if trial["effective"]]
+    reviewed = json.loads(REVIEW_VERDICTS.read_text()) if REVIEW_VERDICTS.exists() else {}
+    pending_review = [trial for trial in trials
+                      if trial["review_candidate"] and trial["id"] not in reviewed]
     result.update({
         "status": status,
         "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
@@ -226,7 +230,7 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
         "fully_applied_trials": len(strict),
         "target_after_fault": len(effective),
         "coverage_gain": state["coverage_union"]["branches"] - state["healthy_coverage"]["branches"],
-        "bug_mark": "candidate_review" if any(trial["review_candidate"] for trial in trials) else "none",
+        "bug_mark": "candidate_review" if pending_review else "none",
         "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
         "evidence": ["README.md", "work-lots/checkpoint.json", "work-lots/logs/actor-healthy.log",
                      "work/src/HBase32Agent.java", "work/src/CoverageReport.java", "work/run.sh"],
@@ -242,6 +246,8 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
             "invalid_cluster_exhaustion_trials": sum(trial.get("invalid_cluster", False)
                                                      for trial in trials),
             "review_candidates": sum(trial["review_candidate"] for trial in trials),
+            "pending_review_candidates": len(pending_review),
+            "reviewed_candidate_dispositions": reviewed,
             "coverage_admitted_trials": sum(trial["effective"]
                                             for trial in trials),
             "requested_fault_events": sum(len(trial["plan"]) for trial in trials),
@@ -280,6 +286,7 @@ def main() -> None:
                 "rng_seed": RNG_SEED,
                 "future_child_selector_cap": MAX_CHILD_SELECTORS,
                 "depth_cadence": 10,
+                "exception_cadence": list(KINDS),
             })
             state["selection_policy"] = SELECTION_POLICY
         if not state.get("target_loss_migration_applied"):
@@ -352,10 +359,17 @@ def main() -> None:
                                                    ";".join(item["plan"])))
             # Periodically sample legal multi-fault plans. The one-fault
             # preference otherwise starves depth with this large healthy seed.
-            chosen = 0
-            if (len(state["trials"]) + 1) % 10 == 0:
+            round_number = len(state["trials"]) + 1
+            desired_kind = KINDS[(round_number - 1) % len(KINDS)]
+            depth_round = round_number % 10 == 0
+            chosen = next((index for index, item in enumerate(state["queue"])
+                           if (not depth_round or len(item["plan"]) > 1)
+                           and item["plan"][-1].endswith("~" + desired_kind)), None)
+            if chosen is None and depth_round:
                 chosen = next((index for index, item in enumerate(state["queue"])
-                               if len(item["plan"]) > 1), 0)
+                               if len(item["plan"]) > 1), None)
+            if chosen is None:
+                chosen = 0
             entry = state["queue"].pop(chosen)
             atomic_json(INFLIGHT, {"id": trial_id, "plan": entry["plan"]})
         log = HERE / "logs" / (trial_id + ".log")
@@ -398,6 +412,7 @@ def main() -> None:
                       and (timed_out or (trace["junit"] is not None
                                         and trace["junit"]["failed"] > 0)))
         item = {"id": trial_id, "plan": entry["plan"], "strict": strict,
+                "selection_policy": state.get("selection_policy"),
                 "applied_fault_events": len(trace["applied"]),
                 "target_after_fault": bool(guards),
                 "exact_b7_after_fault": bool(b7),

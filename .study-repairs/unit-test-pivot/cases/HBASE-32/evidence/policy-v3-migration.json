@@ -1,0 +1,40 @@
+{
+  "case": "HBASE-32",
+  "time_utc": "2026-10-07T02:39:19.816985+00:00",
+  "from": "lots_v2_bounded_novel_io_and_depth_cadence",
+  "to": "lots_v3_exception_diversity_bounded_io_depth",
+  "reason": "First 18 distinct trials all selected DO_NOT_RETRY_IOEXCEPTION because its score bonus dominated the large healthy I/O selector pool.",
+  "selection_change": "Cycle DO_NOT_RETRY_IOEXCEPTION, IOEXCEPTION, SOCKET_TIMEOUT and EOF_EXCEPTION at trial selection. Within each requested exception kind, keep the existing unique fault-I/O, coverage novelty, recovery, waiting-time and execution-time scores. Every tenth selection still prefers a legal depth-two-or-greater descendant from an effective target-retaining parent.",
+  "checkpoint_boundary": {
+    "completed_trials_before": 18,
+    "effective_trials_before": 18,
+    "completed_trials_after_restart": 18,
+    "effective_trials_after_restart": 18,
+    "queue_entries_retained": 8046,
+    "seen_plans_retained": 8088,
+    "coverage_union_retained": {
+      "methods": 11,
+      "branches": 19,
+      "lines": 61
+    },
+    "coverage_union_sha256_after_restart": "7117ed5ed5f45c6051c88b2526c793f489a9237bac8d2187a31dc651b3b72d9e",
+    "queue_sha256_after_restart": "e4ae3066be500cb479b4fe058be96a59cf41b71c569ec2f6d263c43f2dfe586e"
+  },
+  "pending_trial": {
+    "id": "r019",
+    "plan": [
+      "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMixh0Cg~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+    ],
+    "plan_sha256_before_restart": "e5bc7801630a5500ae50c80843a7f2dc69d1e39971fd25d37f7fdc0fbd4705fa",
+    "plan_sha256_after_restart": "e5bc7801630a5500ae50c80843a7f2dc69d1e39971fd25d37f7fdc0fbd4705fa",
+    "execution": "The wrapper paused before launching the r019 JVM. The old controller was stopped with 18 completed trials, the pause was cleared, and the new controller resumed the unchanged r019 inflight plan. No r019 JUnit run or JaCoCo output existed before restart."
+  },
+  "checks": [
+    "python3 -m py_compile campaign.py passed",
+    "bash -n run.sh passed",
+    "All queue keys are unique and present in seen_plans",
+    "Every multi-fault queue entry has an effective, non-timeout, target-retaining parent",
+    "coverage_execs equals healthy exec plus each effective trial exec",
+    "Every effective trial retained its exact target actor after the last fault"
+  ]
+}
