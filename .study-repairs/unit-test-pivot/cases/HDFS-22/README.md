@@ -16,6 +16,8 @@ The [V2 source and raw-evidence review](../../hdfs-storage-actor-v2/audit/hdfs22
 
 The earlier campaign's RPC selector normalized thread/port digits, and its target probe lacked DataNode/storage/startup-episode identity. Its 80 trials, 78 strict injections, 57 target-retaining observations, 3,245.356 seconds, and original [trial ledger](trial-ledger.csv) remain under `legacy_coarse_actor` and `trial_results` in `result.json`; they are **excluded** from the V2 counts above. The [identity screen](../../independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md) explains the gap.
 
+The 83 completed node0 raw run directories from that historical campaign are preserved in a verified [local and node1 archive](independent/evidence/raw-runs-node0-archive.md); the original directories were removed after the full tar comparison passed. This archive is separate from the actor-qualified V2 evidence on node1.
+
 ## Source interpretation
 
 `TestDFSStartupVersions#testVersions` constructs valid and invalid VERSION states and checks expected startup compatibility. This guard compares a stored block-pool field with NameNode `NamespaceInfo`. It is a direct storage-version compatibility condition; the source and test do not establish a multi-hop ad hoc coordination chain at this site. A deliberately incompatible VERSION refusal is expected test behavior. No new target exception was observed in this case's actor-qualified base-budget trials.
