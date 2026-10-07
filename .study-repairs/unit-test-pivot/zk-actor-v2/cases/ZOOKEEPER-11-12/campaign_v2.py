@@ -17,6 +17,7 @@ from run_v2 import AGENT, run, verify_build
 STATE = ROOT / 'zk1112-v2-state.json'
 LOCK = ROOT / 'zk1112-v2.lock'
 MAX_SELECTED = 480
+FAULT_KIND = 'java.io.IOException'
 
 
 def atomic(path, value):
@@ -120,15 +121,24 @@ def choose(state):
     # trial-002, including the valid trial-007/008/010 recovery path.
     losing_followups = {}
     retaining_followups = set()
+    losing_sites = {}
+    retaining_sites = set()
     for result in state['results']:
-        if len(result['plan']) < 2 or not result['strict_injection']:
+        if not result['strict_injection']:
             continue
-        actor = result['plan'][-1].split('@@')[1]
-        key = (tuple(result['plan'][:-1]), actor)
-        if any(item['postfault_guards'] for item in result['case_results'].values()):
-            retaining_followups.add(key)
+        site_key = (result['plan'][-1], FAULT_KIND)
+        retained = any(item['postfault_guards'] for item in result['case_results'].values())
+        if retained:
+            retaining_sites.add(site_key)
         else:
-            losing_followups[key] = losing_followups.get(key, 0) + 1
+            losing_sites[site_key] = losing_sites.get(site_key, 0) + 1
+        if len(result['plan']) >= 2:
+            actor = result['plan'][-1].split('@@')[1]
+            key = (tuple(result['plan'][:-1]), actor)
+            if retained:
+                retaining_followups.add(key)
+            else:
+                losing_followups[key] = losing_followups.get(key, 0) + 1
     for job in state['queue']:
         job['wait'] += 1
     ranked = []
@@ -142,8 +152,12 @@ def choose(state):
         # Penalize only repeatedly losing follow-ups of this exact parent, not
         # all descendants of its first fault. Keep one exploration turn in ten.
         key = (tuple(job['plan'][:-1]), job['plan'][-1].split('@@')[1])
-        repeated_loss = len(job['plan']) > 1 and losing_followups.get(key, 0) >= 3 \
-            and key not in retaining_followups
+        site_key = (job['plan'][-1], FAULT_KIND)
+        repeated_followup_loss = len(job['plan']) > 1 and \
+            losing_followups.get(key, 0) >= 3 and key not in retaining_followups
+        repeated_site_loss = losing_sites.get(site_key, 0) >= 3 and \
+            site_key not in retaining_sites
+        repeated_loss = repeated_followup_loss or repeated_site_loss
         penalty = (0 if state['selected_count'] % 10 == 9 else 1000) if repeated_loss else 0
         ranked.append(4 * job['gain'] + min(job['wait'], 40) / 10
                       + min(len(job['plan']), 6) * 2 + deficit / 20
