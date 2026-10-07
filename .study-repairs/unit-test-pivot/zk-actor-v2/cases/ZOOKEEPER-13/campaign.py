@@ -126,13 +126,17 @@ def seed_queue():
                 ordered.append(groups[family].pop(0))
     jobs = [{'plan': [x['selector']], 'relations': [x['relation']],
              'parent': 'healthy-a', 'score': 10.0} for x in ordered]
-    baseline_cov = set((ROOT / 'healthy-a/coverage.tsv').read_text().splitlines())
-    state = {'schema': 2, 'status': 'running', 'budget_effective': INITIAL_BUDGET,
+    baseline_cov = set().union(*(
+        set((ROOT / name / 'coverage.tsv').read_text().splitlines())
+        for name in ('healthy-a', 'healthy-b')))
+    state = {'schema': 3, 'feedback_baseline': 'healthy_union_v2',
+             'status': 'running', 'budget_effective': INITIAL_BUDGET,
              'max_faults': INITIAL_MAX_FAULTS, 'max_attempts': MAX_ATTEMPTS,
              'next_trial': 1, 'pending': jobs, 'queued': [x['plan'] for x in jobs],
              'inflight': [], 'results': [], 'effective_count': 0,
              'seen_coverage': sorted(baseline_cov),
-             'seen_families': sorted({x['family'] for x in initial}),
+             'seen_families': sorted({x['family'] for name in ('healthy-a', 'healthy-b')
+                                      for x in candidates(parse_events(ROOT / name / 'events.tsv'))}),
              'healthy_elapsed_seconds': sum(x['elapsed_seconds'] for x in metadata),
              'created_at': time.time(), 'extended': False,
              'calibration': runs}
@@ -344,6 +348,10 @@ def main():
     with LOCK.open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         state = json.loads(CHECKPOINT.read_text()) if CHECKPOINT.exists() else seed_queue()
+        if (ROOT / 'feedback-migration-in-progress').exists():
+            raise RuntimeError('feedback baseline migration is incomplete')
+        if state.get('feedback_baseline') != 'healthy_union_v2':
+            raise RuntimeError('existing checkpoint requires healthy-union feedback migration')
         if state['status'] not in ('running', 'paused_at_trial_boundary'):
             print(json.dumps({'status': state['status'],
                               'effective_count': state['effective_count']}))

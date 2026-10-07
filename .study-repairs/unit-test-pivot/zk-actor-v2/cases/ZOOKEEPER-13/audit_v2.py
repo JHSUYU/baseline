@@ -19,6 +19,8 @@ def audit(terminal=False):
         raise RuntimeError('campaign has not reached terminal status')
     if state['inflight']:
         raise RuntimeError('inflight original JUnit trial remains')
+    if state.get('feedback_baseline') != 'healthy_union_v2':
+        raise RuntimeError('fault feedback did not use both healthy seeds')
     if len(state['results']) != state['next_trial'] - 1:
         raise RuntimeError('run IDs or checkpoint selected count differ')
     if state['effective_count'] != sum(item['effective'] for item in state['results']):
@@ -37,9 +39,12 @@ def audit(terminal=False):
             receipt[key] != value for receipt in seed_receipts
             for key, value in stable.items()):
         raise RuntimeError('healthy source, JUnit runner, or agent identity changed')
-    coverage = set((ROOT / 'healthy-a/coverage.tsv').read_text().splitlines())
+    coverage = set().union(*(
+        set((ROOT / name / 'coverage.tsv').read_text().splitlines())
+        for name in ('healthy-a', 'healthy-b')))
     from receipt_validator import parse_events
-    families = {x['family'] for x in candidates(parse_events(ROOT / 'healthy-a/events.tsv'))}
+    families = {x['family'] for name in ('healthy-a', 'healthy-b')
+                for x in candidates(parse_events(ROOT / name / 'events.tsv'))}
     rows = []
     for number, stored in enumerate(state['results'], 1):
         run_id = 'trial-{:04d}'.format(number)
@@ -90,7 +95,9 @@ def audit(terminal=False):
                 x['new_coverage_lines'] or x['new_io_families']
                 for x in first_eighty[-8:]):
             raise RuntimeError('extended budget lacks permitted late novelty')
-    healthy_coverage = set((ROOT / 'healthy-a/coverage.tsv').read_text().splitlines())
+    healthy_coverage = set().union(*(
+        set((ROOT / name / 'coverage.tsv').read_text().splitlines())
+        for name in ('healthy-a', 'healthy-b')))
     return {'status': state['status'], 'utc': datetime.now(timezone.utc).isoformat(),
             'checkpoint_sha256': hashlib.sha256(checkpoint_bytes).hexdigest(),
             'agent_sha256': stable['agent_sha256'],
@@ -103,7 +110,8 @@ def audit(terminal=False):
             'selected_target_throw_events': sum(x['selected_target_throws'] for x in rows),
             'effective_coverage_gain': len(coverage - healthy_coverage),
             'effective_io_family_gain': len(families - {
-                x['family'] for x in candidates(parse_events(ROOT / 'healthy-a/events.tsv'))}),
+                x['family'] for name in ('healthy-a', 'healthy-b')
+                for x in candidates(parse_events(ROOT / name / 'events.tsv'))}),
             'healthy': [{'run_id': x, 'events_sha256': sha(ROOT / x / 'events.tsv'),
                          'coverage_sha256': sha(ROOT / x / 'coverage.tsv')}
                         for x in ('healthy-a', 'healthy-b')],
