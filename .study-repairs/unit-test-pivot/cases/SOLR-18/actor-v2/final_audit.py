@@ -19,6 +19,7 @@ STATE = HERE / 'campaign-state.json'
 MIRROR = HERE / 'mirror-receipt.json'
 OFFLOAD = HERE / 'console-offload.json'
 RAW_OFFLOAD = HERE / 'noncandidate-raw-offload.json'
+NODE2_PULL = HERE / 'node2-pull-receipt.json'
 CALIBRATION = HERE / 'calibration.json'
 OUTPUT = HERE / 'final-audit.json'
 RAW_NAMES = ('events.tsv', 'jacoco.exec', 'console.log', 'run.json')
@@ -52,6 +53,7 @@ def audit_all() -> dict:
     mirror = json.loads(MIRROR.read_text())
     offloaded = json.loads(OFFLOAD.read_text())['runs'] if OFFLOAD.exists() else {}
     raw_offloaded = json.loads(RAW_OFFLOAD.read_text())['runs'] if RAW_OFFLOAD.exists() else {}
+    pulled = json.loads(NODE2_PULL.read_text())['runs'] if NODE2_PULL.exists() else {}
     remote = remote_hashes()
     calibration = json.loads(CALIBRATION.read_text())
     junit_sha = calibration['junit_class_sha256']
@@ -140,6 +142,12 @@ def audit_all() -> dict:
         digests = mirror_entry['sha256']
         if mirror_entry.get('archive_status') == 'pending_node0_pull':
             assert NODE2_LOCAL and mirror_entry['raw_retained_on_node2']
+            if run_id in pulled:
+                archived = pulled[run_id]
+                assert archived['sha256'] == digests
+                assert archived['rsync_checksum_dry_run_exit'] == 0
+                assert archived['rsync_checksum_dry_run_output'] == ''
+                assert archived['node2_raw_retained']
         else:
             assert mirror_entry['rsync_checksum_dry_run_exit'] == 0
             assert mirror_entry['rsync_checksum_dry_run_output'] == ''
@@ -225,9 +233,15 @@ def audit_all() -> dict:
         'raw_mirror_destination': mirror['destination_root'],
         'raw_mirror_verified_runs': sum(
             mirror['runs'][x['run_id']].get('archive_status') != 'pending_node0_pull'
+            or x['run_id'] in pulled
             for x in state['trials']),
         'raw_archive_pending_node0_pull_runs': [x['run_id'] for x in state['trials']
-            if mirror['runs'][x['run_id']].get('archive_status') == 'pending_node0_pull'],
+            if mirror['runs'][x['run_id']].get('archive_status') == 'pending_node0_pull'
+            and x['run_id'] not in pulled],
+        'node0_archive_verified_runs': sum(x['run_id'] in pulled for x in state['trials']),
+        'node0_archive_sha_attested_files': sum(
+            len(pulled[x['run_id']]['sha256']) for x in state['trials']
+            if x['run_id'] in pulled),
         'raw_mirror_remote_sha_reverified_files': sum(
             len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']
             if mirror['runs'][x['run_id']].get('archive_status') != 'pending_node0_pull'),
