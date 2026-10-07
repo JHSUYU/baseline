@@ -132,11 +132,12 @@
   "own_mapped_cluster_test": null,
   "post_fault_target_branch_outcomes": {},
   "quality_complete": false,
+  "resolved_check_line": 415,
   "source_review": "doTransition compares on-disk DataNode layout version and cTime with NameNode NamespaceInfo. Its IOException explicitly rejects storage newer than the namespace. TestDFSUpgrade intentionally includes incompatible upgrade variants; a matching rejection alone is expected behavior.",
   "status": "actor_identity_recheck_pending",
   "strict_injections": 0,
   "target_after_fault": 0,
-  "target_code": "getLayoutVersion() > HdfsServerConstants.DATANODE_LAYOUT_VERSION || getCTime() < nsInfo.getCTime()",
+  "target_code": "this.layoutVersion > DataNodeLayoutVersion.getCurrentLayoutVersion() || this.cTime < nsInfo.getCTime()",
   "target_exception_after_fault": 0,
   "target_function": "BlockPoolSliceStorage.doTransition",
   "target_guard_sites": [
@@ -147,7 +148,7 @@
   "target_reached": true,
   "target_retaining_sequence_depths": {},
   "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
-  "target_source_line": 424,
+  "target_source_line": 415,
   "tested_sequence_depths": {},
   "trial_results": [
     {
