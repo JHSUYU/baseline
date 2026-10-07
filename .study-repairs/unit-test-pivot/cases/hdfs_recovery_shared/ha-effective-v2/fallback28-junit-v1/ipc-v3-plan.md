@@ -19,6 +19,13 @@ HDFS RPC singleton, then new IPC singleton, and retaining file plans when
 new feedback creates them. The attempt cap stays 320, effective goal 80,
 depth max 8, and identity gate unchanged.
 
+The handoff ran after the 126-attempt audit reported 23 effective trials,
+zero candidates, and zero audit errors. Its immutable
+`ipc-v3-receipt.json` binds the predecessor checkpoint SHA, raw-audit SHA,
+23 new plan IDs, successor source SHA, and new checkpoint SHA. The new tmux
+session is `hdfs28_alt_ipc_v3`; subsequent attempts continue the same ledger
+starting at trial 127.
+
 The earlier one-fault HADOOP IPC pilot missed its exact selector, so these
 new plans have an acknowledged low-match risk. A miss does not count as an
 effective trial; queue exhaustion or cap before 80 must be reported
