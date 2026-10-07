@@ -19,7 +19,8 @@ import sys
 import time
 
 from audit_calibration import CHECK, one as audit_seed
-from calibrate_healthy import AGENT, MIN_FREE_BYTES, ROOT, sha
+from calibrate_healthy import (AGENT, MIN_FREE_BYTES, REPORT, ROOT, RUNNER,
+                               TEST_CLASS_FILE, classpath, sha, verify_build)
 from run_trial import run
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -348,6 +349,11 @@ def main():
                           'slots': slots, 'worker_count': args.worker_count,
                           'budget': '80 effective/max8; conditional 128/max10'}))
         return
+    if not (AGENT.is_file() and RUNNER.is_file() and TEST_CLASS_FILE.is_file()
+            and REPORT.is_file()):
+        raise RuntimeError('original JUnit/agent artifacts absent before scheduling')
+    verify_build()
+    classpath()
     ROOT.mkdir(parents=True, exist_ok=True)
     with LOCK.open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
