@@ -14,10 +14,11 @@ from calibrate_v2 import rows, selected, target_signature
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument('--state', type=Path, default=v2.STATE)
     parser.add_argument('--output', type=Path,
                         default=v2.HERE / 'handoff-v3-audit.json')
     args = parser.parse_args()
-    state = json.loads(v2.STATE.read_text())
+    state = json.loads(args.state.read_text())
     errors = []
     coverage = set(state['baseline_coverage'])
     families = set(state['baseline_families'])
@@ -77,7 +78,7 @@ def main() -> None:
     if families != set(state['seen_families']):
         errors.append('cumulative I/O family mismatch')
     output = {
-        'case_id': 'SOLR-07', 'checkpoint_sha256': sha(v2.STATE),
+        'case_id': 'SOLR-07', 'checkpoint_sha256': sha(args.state),
         'selected': len(state['trials']), 'strict': exact_count,
         'effective': effective_count, 'exact_target_throws': target_throws,
         'errors': errors,

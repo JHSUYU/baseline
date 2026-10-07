@@ -29,3 +29,13 @@ and existing queue/seen state intact. Node2 tmux
 `solr07_actor_v4_campaign` runs the [shared-lock guarded launcher](campaign_v4_node2_guarded.sh)
 against the same atomic checkpoint. It must not count the older coarse-actor
 campaign or the five diagnostic replays as V4 trials.
+
+At the next frozen checkpoint, the [53-trial independent raw audit](live-v4-audit.json)
+reports 34 exact ordered injections, 10 same-actor postfault target checks,
+two exact selected throws, and zero discrepancies. The corresponding
+[immutable checkpoint](live-v4-state-snapshot.json) has SHA-256
+`32502ef1ae88f61c505dcde66d56eaee15b37d47d27147334f9b014bf2590f32`.
+Trial 48's third fault and exact throw occurred during core-container
+shutdown; the [source and timeline review](trial038-review.md) classifies it
+with trial 38 as a candidate, not a confirmed new bug. The campaign remains
+live under the same V4 tmux and effective-trial budget.

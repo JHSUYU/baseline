@@ -36,3 +36,21 @@ The [replay raw archive](evidence/trial038-replays-raw.tar.gz) has SHA-256
 `154acc2f7945a9149edfde8af62a5c37341996059209c796ca1b49388270134c`.
 The live fuzz checkpoint was paused at 39 selected attempts during replay, so
 these diagnostic JUnits do not consume the campaign budget.
+
+## Trial 48: same selected guard during shutdown
+
+V4 trial 48 applied the same first two faults and a third `getData` fault at
+`ZkStateReader.fetchCollectionState:1641` (ordinal 5), all on the same
+`JETTY/node1` client identity `274237255`. Raw `IO_APPLIED` events 424, 435,
+and 517 precede the exact `ZkController.register:1326` throw at event 526;
+the independent 53-trial checkpoint audit reports zero errors. The original
+JUnit failed after an HTTP response timeout. Its log places the test's end
+at 98,579 ms, `CoreContainer.shutdown` at 98,695 ms, the selected core's
+`CLOSING` event at 98,710 ms, and the request-thread error at 98,826 ms.
+The third injected fault is on the shutdown path
+`CoreContainer.shutdown -> ZkController.preClose -> publishNodeAsDown`.
+Thus this is another exact target-exception candidate in the same teardown
+family, not evidence of a live-core coordination failure or a confirmed new
+bug. Trial 48 has not yet had an exact same-plan replay. The
+[six-file raw archive](evidence/trial048-raw.tar.gz) has SHA-256
+`8cd8623e9241bb79fe6c71a5b31c1bed6ff9ea6c76ab05e6b414513d96a588a9`.
