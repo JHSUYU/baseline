@@ -16,7 +16,25 @@ Checkpoint version 6 also lowers the priority of a terminal RPC ordinal after re
 
 Checkpoint version 7 retains every version 6 plan and receipt. Among new selections, it assigns about 70% to `DoNotRetryIOException` because this was the only exception kind reaching B7 in the first 39 trials; the other three kinds each retain about 10% for semantic exploration. Four of five selections favor a mixed same-actor upstream prefix and terminal client RPC. One of five favors pure upstream exploration, and every tenth round still seeks the deepest legal plan. Existing production coverage, global I/O novelty, waiting age, and unmatched-fault penalties remain in the score. The migration's unchanged queue, trial, coverage, and I/O hashes are recorded in `evidence-v7-migration-pre.json` and `evidence-v7-migration-post.json`.
 
-Before starting a new JUnit, the controller checks local free space. Below 2 GiB it atomically publishes `paused_low_disk` and exits at the checkpoint. Existing raw traces, JaCoCo files, and receipts remain intact; moving them to a larger node requires a separate verified archival step.
+Checkpoint version 8 retains all 78 completed attempts and the existing queue
+while raising the initial attempt safety cap from 240 to 384. The goal remains
+80 B7-effective trials with at most eight faults. A future timeout or failed
+original JUnit that reaches the target is held for exact replay: its raw
+receipts remain, but it cannot contribute to the effective denominator,
+coverage/I/O feedback, or child sequences. The version 7 controller had
+admitted s078 despite its timeout. Version 8 excluded that one candidate,
+recomputed JaCoCo and I/O unions from accepted trials, and corrected the
+count from 19 to 18 effective. The queue and all completed source identities
+and raw hashes stayed unchanged; `evidence-v8-migration-pre.json` and
+`evidence-v8-migration-post.json` record both checkpoint and controller
+script hashes. `../evidence/s078-candidate-receipt.json` preserves its exact
+two-fault, same-actor B7 observation pending a separate clean replay.
+
+Before starting a new JUnit, the controller checks local free space. Below
+2.2 GiB it atomically publishes `paused_low_disk` and exits at the checkpoint,
+leaving a margin above the 2 GiB hard floor. Existing raw traces, JaCoCo
+files, and receipts remain intact; moving them to a larger node requires a
+separate verified archival step.
 
 At the s047 complete checkpoint, 198 closed source, trace, coverage, and
 receipt files (164,013,674 bytes) were copied to a dedicated node1 archive.
@@ -29,6 +47,17 @@ cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-u
 tmux attach -t hbase32-upstream-fuzz
 ```
 
-The initial budget is 80 effective trials, 240 attempted trials, and at most eight faults per sequence. Only novelty in the last eight effective trials extends it to 128 effective, 384 attempted, and at most ten faults. Each tenth selection prefers a legal deeper fault sequence. Seeds without postfault target progress, or sequences aborting all three RegionServers, are not mutated. JaCoCo and I/O novelty enter feedback only for fully applied sequences retaining the same raw target actor. The effective denominator is stricter: the same raw region, replica, and target invocation must execute the B7 rethrow after the final fault. A Master report retry that merely enters the target method, or a WAL error that merely causes a same-actor retry, can generate children but does not count as a B7-effective trial.
+The current budget is 80 effective trials, at most 384 attempted trials, and
+at most eight faults per sequence. Only novelty in the last eight effective
+trials extends the goal to 128 effective and at most ten faults, within the
+same attempted-trial cap. Each tenth selection prefers a legal deeper fault
+sequence. Seeds without postfault target progress, or sequences aborting all
+three RegionServers, are not mutated. JaCoCo and I/O novelty enter feedback
+only for fully applied sequences retaining the same raw target actor and
+without an unreviewed JUnit anomaly. The effective denominator is stricter:
+the same raw region, replica, and target invocation must execute the B7
+rethrow after the final fault. A Master report retry that merely enters the
+target method, or a WAL error that merely causes a same-actor retry, can
+generate children but does not count as a B7-effective trial.
 
 `../evidence/upstream-passive-findings.md` records the original-JUnit calibrations, exact actor matching, exclusions, and separate diagnostic pilots. A target B7 throw or an expected server abort is an observation, not by itself a new bug. JUnit failure and timeout trials remain candidates until exact clean replay and source review.

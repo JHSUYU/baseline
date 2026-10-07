@@ -263,3 +263,15 @@ excluded from coverage and I/O feedback; `evidence/r123-review-checkpoint-audit.
 shows that review settlement kept 123 attempts, 88 effective trials, the
 14,205-entry queue, and r124's in-flight plan unchanged. The main controller
 is paused at this complete checkpoint while node1 is used by other campaigns.
+
+In the independent upstream phase, s078 applied a Master OPENED report
+exception and then a client flush RPC exception to the same raw region and
+replica-1 actor. The selected B7 rethrow occurred after both faults, but the
+unchanged JUnit timed out after 402.76 seconds including shutdown. This is a
+candidate awaiting an isolated same-plan replay, not a confirmed new bug.
+The full original trace, exit receipt, JaCoCo file, and v8 migration audit
+are archived in `evidence/hbase32-s078-original-node0.tar.gz`; the exact
+actor receipt is `evidence/s078-candidate-receipt.json`. The v8 checkpoint
+excludes this unreviewed run from the supplemental effective denominator and
+feedback. The supplemental controller continues under an 80-effective,
+384-attempt initial budget and pauses before node0 drops below 2.2 GiB free.

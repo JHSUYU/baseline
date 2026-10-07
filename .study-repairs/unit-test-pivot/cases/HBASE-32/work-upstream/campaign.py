@@ -30,9 +30,10 @@ CHILD_CAP = 24
 UNMATCHED_RETRY_LIMIT = 2
 INITIAL_EFFECTIVE = 80
 EXTENDED_EFFECTIVE = 128
-INITIAL_ATTEMPT_CAP = 240
+INITIAL_ATTEMPT_CAP = 384
 EXTENDED_ATTEMPT_CAP = 384
-MIN_FREE_BYTES = 2 * 1024**3
+# Pause before the node0 shared filesystem approaches the 2 GiB hard floor.
+MIN_FREE_BYTES = int(2.2 * 1024**3)
 KIND_SHARE = {"DO_NOT_RETRY_IOEXCEPTION": 0.70,
               "IOEXCEPTION": 0.10, "SOCKET_TIMEOUT": 0.10,
               "EOF_EXCEPTION": 0.10}
@@ -585,6 +586,57 @@ def main():
                     json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
             state["version"] = 7
             publish(state)
+        if state.get("version", 1) < 8:
+            # A larger attempt cap compensates for target loss without
+            # changing the 80-effective/8-fault budget. The old controller
+            # admitted a timeout at the just-completed boundary; quarantine
+            # it and rebuild accepted feedback from immutable raw traces.
+            anomalous = [trial for trial in state["trials"]
+                         if trial["review_candidate"] and trial["coverage_admitted"]]
+            for trial in anomalous:
+                if trial is not state["trials"][-1] or trial["exit"] != 124:
+                    raise RuntimeError("unexpected older admitted review candidate: "
+                                       + trial["id"])
+                if any(len(item["plan"]) > len(trial["plan"])
+                       and item["plan"][:len(trial["plan"])] == trial["plan"]
+                       for item in state["queue"]):
+                    raise RuntimeError("review candidate has queued descendants: "
+                                       + trial["id"])
+                trial.update({"effective": False, "coverage_admitted": False,
+                              "pending_replay": True,
+                              "new_branches_methods": 0, "new_io_selectors": 0,
+                              "disposition": "timeout_pending_exact_replay"})
+            if anomalous:
+                excluded = {trial["id"] + ".exec" for trial in anomalous}
+                state["coverage_execs"] = [path for path in state["coverage_execs"]
+                                          if Path(path).name not in excluded]
+                state["coverage_union"] = coverage(
+                    [Path(path) for path in state["coverage_execs"]])
+                observed = set(state["healthy_selectors"])
+                for trial in state["trials"]:
+                    if trial["coverage_admitted"]:
+                        trace = parse_log(HERE.parent / trial["log"])
+                        observed.update(item for _, item in selector_events(trace))
+                state["io_union"] = sorted(observed)
+            previous_cap = state["attempt_cap"]
+            state["attempt_cap"] = max(state["attempt_cap"], INITIAL_ATTEMPT_CAP)
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 8,
+                "reason": "384_attempt_cap_and_unreviewed_failure_feedback_quarantine",
+                "excluded_review_candidates": [trial["id"] for trial in anomalous],
+                "previous_attempt_cap": previous_cap,
+                "new_attempt_cap": state["attempt_cap"],
+                "effective_budget_unchanged": state["effective_budget"],
+                "max_faults_unchanged": state["max_faults"],
+                "queue_length_unchanged": len(state["queue"]),
+                "trial_count_unchanged": len(state["trials"]),
+                "coverage_union_unchanged": state["coverage_union"],
+                "io_union_unchanged_sha256": hashlib.sha256(
+                    json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest(),
+            })
+            state["version"] = 8
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -599,7 +651,7 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 7, "rng_seed": RNG_SEED,
+        state = {"version": 8, "rng_seed": RNG_SEED,
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -722,7 +774,13 @@ def main():
         guard = bool(reached["guard"])
         exec_file = HERE / "logs" / (trial_id + ".exec")
         exec_ok = exec_file.is_file() and exec_file.stat().st_size > 0
-        admitted = matched and retained and not invalid and exec_ok
+        exit_code = int(receipt.read_text().strip())
+        unexpected = matched and retained and not invalid and (exit_code == 124 or
+            trace["junit"] is not None and trace["junit"]["failed"] > 0)
+        # Quarantine an anomalous original JUnit until its exact replay and
+        # source review finish. Keep raw receipts, but do not let coverage,
+        # I/O novelty, or descendants bias the next fault sequence.
+        admitted = matched and retained and not invalid and exec_ok and not unexpected
         effective = admitted and bool(reached["b7"])
         old = state["coverage_union"]
         new = old
@@ -736,9 +794,6 @@ def main():
         new_io = len(observed_selectors - set(state["io_union"])) if admitted else 0
         if admitted:
             state["io_union"] = sorted(set(state["io_union"]) | observed_selectors)
-        exit_code = int(receipt.read_text().strip())
-        unexpected = matched and retained and not invalid and (exit_code == 124 or
-            trace["junit"] is not None and trace["junit"]["failed"] > 0)
         trial = {"id": trial_id, "plan": entry["plan"], "strict": matched,
                  "selection_policy": "upstream_v7_retention",
                  "mixed_rpc_terminal": entry["plan"][-1].startswith("RPC_FLUSH_REGION~"),
