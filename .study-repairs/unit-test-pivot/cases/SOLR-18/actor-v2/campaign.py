@@ -203,9 +203,21 @@ def choose_pending(state: dict) -> dict:
         test = [i for i in scored if i not in suite]
         pool = suite if state.get('suite_gap', 0) >= 3 and suite else (test or suite)
         prefer_deep = state.get('depth_gap', 0) >= 3
+        yields: dict[str, list[int]] = {}
+        for trial in state['trials']:
+            count = yields.setdefault(trial['plan'][0], [0, 0])
+            count[0] += int(trial['effective'])
+            count[1] += 1
+        def priority(i: int) -> tuple[float, int, int, int]:
+            job = pending[i]
+            successes, attempts = yields.get(job['plan'][0], [0, 0])
+            # Smoothed observed eligibility keeps unseen prefixes in play.
+            yield_score = (successes + 1) / (attempts + 2)
+            return (yield_score,
+                    (1 if prefer_deep else -1) * len(job['plan']),
+                    int('/aliases.json' in job['plan'][-1]), -i)
         index = max(pool, key=lambda i:
-                    ((1 if prefer_deep else -1) * len(pending[i]['plan']),
-                     int('/aliases.json' in pending[i]['plan'][-1]), -i))
+                    priority(i))
     job = pending.pop(index)
     state['shallow_gap'] = 0 if len(job['plan']) == 1 else state['shallow_gap'] + 1
     state['suite_gap'] = (0 if ':SUITE@@' in job['plan'][0]
