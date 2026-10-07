@@ -102,6 +102,16 @@ def known_target_loss_plan(entry, trials):
     siblings = [x for x in trials if x['strict'] and x['plan'][:-1] == prefix]
     if len(siblings) >= 2 and all(not x['target_after_final_fault'] for x in siblings):
         return True
+    # A paired read/write failure can repeatedly remove the selected check
+    # even when this final write also has successful trials with other prior
+    # I/O. Keep fault ordinals/types in exact matching, but defer an evidenced
+    # two-site suffix after two strict target-loss trials and no retained one.
+    if len(entry['plan']) >= 2:
+        suffix_sites = tuple(io_site(step) for step in entry['plan'][-2:])
+        paired = [x for x in trials if x['strict'] and len(x['plan']) >= 2
+                  and tuple(io_site(step) for step in x['plan'][-2:]) == suffix_sites]
+        if len(paired) >= 2 and all(not x['target_after_final_fault'] for x in paired):
+            return True
     # Generalize repeated target loss across ordered prefixes at a stable
     # final I/O site. Hit ordinal and exception kind remain exact selectors,
     # but do not create a new family for the queue stopping decision.

@@ -55,6 +55,12 @@ For multi-fault plans, two observed losses at the same stable final I/O site
 also skip further combinations at that site. Hit ordinal and exception kind
 remain part of each exact injection selector. System namespace `default` and
 `hbase` I/O share a target-loss family after independent multi-fault losses.
+After eight independently completed target-loss trials ended at the same
+selected namespace `GET_DATA → WRITE` I/O-site pair and none retained the
+target, the queue also defers that evidenced two-site suffix. It still records
+the exact ordinal and exception type and leaves sequences with other suffixes
+eligible. This queue correction was installed after trial `r105` and is not
+retroactively applied to earlier results.
 If only such plans remain, the
 campaign stops with an explicit queue reason. The result records
 both total attempts and valid target-retaining trials, plus elapsed test time
