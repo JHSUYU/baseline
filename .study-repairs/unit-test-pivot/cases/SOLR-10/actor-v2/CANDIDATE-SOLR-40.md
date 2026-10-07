@@ -70,13 +70,26 @@ that this is an unreported bug in current Solr.
 
 The related closed ASF issues [SOLR-12256](https://issues.apache.org/jira/browse/SOLR-12256)
 and [SOLR-12258](https://issues.apache.org/jira/browse/SOLR-12258) discuss
-alias synchronization or unresolved-alias retry. They do not directly
-document the one-shot watch read loss reproduced here. This is a scoped
-duplicate check, not proof of novelty. The injected exception is a one-shot
+alias synchronization or unresolved-alias retry. SOLR-12258 even discusses a
+historical failure of this same test's V2 collection-configuration request;
+its described endpoint and mechanism differ from the post-create routed
+`/update` guard in this trial. [SOLR-13059](https://issues.apache.org/jira/browse/SOLR-13059)
+tracks a separate `testSliceRouting` failure to see a newly created
+collection. These issues do not directly document the one-shot alias watch
+read loss reproduced here. This is a scoped duplicate check, not proof of
+novelty. The injected exception is a one-shot
 application-level `ConnectionLossException`; a production ZooKeeper
 disconnection, later client reconnect, or other watch registrations might
 change recovery behavior. The failure and exact target condition are proven
 for the unchanged four-node embedded-cluster test under this fault model.
+In particular, `SolrZkClient.getData(..., retryOnConnLoss=true)` normally
+passes the underlying ZooKeeper read through `zkCmdExecutor.retryOperation`.
+This probe throws at method entry, so it models a **final visible I/O failure**
+and bypasses that internal retry interval. A full client reconnect invokes
+`ZkStateReader.createClusterStateWatchersAndUpdate`, which calls
+`refreshAliases` and re-registers the alias watch. Those paths may repair a
+real disconnection before the next update request; the present trial does not
+establish behavior for every production network outage.
 
 The campaign trial-18 raw trace SHA-256 is
 `778d1ce04f02b7ce0dc252886c4a81d99ba6548de8ea8e166d1b744c3c285501`;
@@ -92,3 +105,36 @@ This is a second reproduction of the same suspected mechanism, not a second
 bug. The running campaign checkpoint is on node2 at
 `evidence/campaign-v4/state.json`; completed V4 trials and their measured
 times are recorded there.
+
+## Isolated cache-refresh control
+
+To test whether the empty local cache actually causes the selected exception,
+we copied the Solr source and V4 class directory to a separate build path on
+node2. The only production change was in `getAliasProps`: when the local alias
+properties are empty, call `aliasesManager.update()` and reread the same map
+before the existing target marker and guard. This variant kept the original
+JUnit class and fault hook byte for byte identical. Its route class SHA-256 is
+`1267cbbaa701b754a6eed163310567e5dde2d4fff70ed54752520f2f12eb4c4c`;
+the unchanged original JUnit and hook hashes are in
+`evidence/causal-control-v4/build-receipt.json`.
+
+Five fresh runs with the same `jetty:node3` watch-read selector all injected
+strictly. Four reached SOLR-40 on the faulted live reader; none took its
+empty-properties branch. In three of the four, a same-client
+`AliasesManager.update#getData` appeared between the injected failure and the
+first same-reader target check, which then reported properties present. The
+fourth already saw present properties without a control-path refresh. Three
+of the four same-reader JUnit runs passed; one failed later with a different
+`expected:<4> but was:<2>` assertion and no SOLR-40 exception. The fifth run
+routed the post-fault target to another reader and does not test this guard's
+same-reader causal path. Therefore this control supports the local-cache
+mechanism for the selected exception, while making no claim that one refresh
+repairs every consequence of the injected fault.
+
+The complete five-run classification, class/source hashes, and raw trace,
+JUnit, and JaCoCo SHA-256 values are in
+`evidence/causal-control-v4/summary.json`. A passing same-reader control run's
+raw `control-003/{events.tsv,junit.log,jacoco.exec,receipt.json}` is retained
+here; all five raw runs remain on node2 under the same evidence directory.
+`probe/causal_control.py` rebuilds the variant only in its isolated source
+and class directory.
