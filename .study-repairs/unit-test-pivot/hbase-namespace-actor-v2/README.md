@@ -34,7 +34,11 @@ argument and exception outcome. The six intercepted ZK families are
 `getChildDataAndWatchForNewChildren`, `getDataAndWatch`,
 `watchAndCheckExists`, and the two-argument `deleteNode`. The last two cover
 `ZKNamespaceManager.start` and `deleteNamespace` paths missed by the first
-pass. `TARGET_EXIT outcome` distinguishes
+pass. A passive `TableNamespaceManager.getMaxRegions` hook emits
+`GUARD_OPERAND` only for the released HBASE-21 predicate call site (line 128)
+or HBASE-22 predicate call site (line 166). It carries the enclosing target
+invocation's sequence, subject, and actor, even when an HBASE-08 lookup is
+nested in that invocation. `TARGET_EXIT outcome` distinguishes
 HBASE-08's selected namespace-not-found throw, HBASE-21's selected region
 count quota throw, and HBASE-22's selected table-region quota throw from
 other exceptions in those methods. These are high-level ZooKeeper API attempts;
@@ -83,9 +87,9 @@ throw is an expected healthy result.
 `controller.py run CASE` draws ordered fault plans from the observed I/O
 queue. A trial is effective only if every planned fault is applied in order
 at its exact selector and a selected target receipt **after the final fault**
-has the same raw active Master and manager ID. For a normal HBASE-21 or
-HBASE-22 target return, the run must also cover the released bytecode's
-selected predicate line (128 or 166); otherwise the guard is unproven and
+has the same raw active Master and manager ID. HBASE-21 and HBASE-22 also
+require the `GUARD_OPERAND` receipt for that exact target invocation and
+JaCoCo coverage of the predicate line (128 or 166); otherwise the guard is unproven and
 the trial is excluded. The HBASE-21 null-namespace early return is therefore
 not mistaken for selected-predicate execution. Wrong-actor, unmatched,
 target-lost, and guard-unproven trials keep their raw evidence and time but
@@ -114,10 +118,12 @@ zero and never import the older unbound runs.
 - Java 8 `javac` compiled the agent, coverage reporter, smoke, and
   original-JUnit launcher sources against the release distribution;
   `bash -n run.sh` and `python3 -m py_compile controller.py` passed.
-- `NamespaceActorSmoke` loaded all five instrumented classes with the agent;
-  no ByteBuddy transform error appeared. It also verified that a replacement
-  manager receives a new ID on the same synthetic watcher. It started no
-  HBase or ZooKeeper cluster.
+- `NamespaceActorSmoke` loaded all six instrumented classes with the agent;
+  no ByteBuddy transform error appeared. It exercised transformed ZK exists,
+  delete, and max-region calls without a ZooKeeper connection, checking the
+  Advice/helper package boundary at execution time. It also verified that a
+  replacement manager receives a new ID and fail-closed watcher status.
+  It started no HBase or ZooKeeper cluster.
 - Ten offline receipt tests passed, covering exact same-actor admission,
   wrong Master, manager, and target subject rejection, target order, missing
   fault, ambiguous healthy selector, postfault feedback actor filtering, and
@@ -126,9 +132,10 @@ zero and never import the older unbound runs.
   `NamespaceStateManager` branch line 166 with two covered outcomes; this
   checks the reporter against released bytecode without claiming a V2 run.
 - ByteBuddy's class dump contains transformed `ZKWatcher`,
-  `ZKNamespaceManager`, `ZKUtil`, `ClusterSchemaServiceImpl`, and
-  `NamespaceStateManager`. `javap` confirmed constructor advice in the
-  transformed `ZKWatcher`. `ZKWatcher` needs retransformation because the
+  `ZKNamespaceManager`, `ZKUtil`, `TableNamespaceManager`,
+  `ClusterSchemaServiceImpl`, and `NamespaceStateManager`. `javap` confirmed
+  the new ZK exists/delete entry hooks and direct public helper calls,
+  without package-private `access$...` bridges. `ZKWatcher` needs retransformation because the
   agent's own type references cause it to load before the transformer is
   installed.
 

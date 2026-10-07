@@ -20,6 +20,14 @@ def target(actor="m1", manager=3, point="HBASE-08", subject="TestNamespaceAudito
             f"bound_match={bound} exception=none outcome={outcome}")
 
 
+def guard(point, subject, seq=2):
+    site = "checkAndUpdateNamespaceRegionCount:128" if point == "HBASE-21" \
+        else "checkAndUpdateNamespaceTableCount:166"
+    return (f"NSACTOR GUARD_OPERAND seq={seq} point={point} subject={subject} "
+            f"role=ACTIVE_MASTER actor_raw=m1 manager=3 watcher=7 "
+            f"bound_match=true site={site}")
+
+
 class ReceiptTests(unittest.TestCase):
     def test_exact_same_actor_after_fault(self):
         trace = controller.parse("\n".join((IO, FAULT, target())))
@@ -53,18 +61,23 @@ class ReceiptTests(unittest.TestCase):
         self.assertFalse(controller.exact_receipt("HBASE-08", [STEP, STEP], trace)["strict"])
 
     def test_region_quota_expected_signature(self):
-        trace = controller.parse("\n".join((IO, FAULT, target(
-            point="HBASE-21", subject="TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1:4",
-            outcome="selected_region_count_quota"))))
-        self.assertTrue(controller.exact_receipt("HBASE-21", [STEP], trace)
+        subject = "TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1:4"
+        trace = controller.parse("\n".join((IO, FAULT, guard("HBASE-21", subject), target(
+            point="HBASE-21", subject=subject, outcome="selected_region_count_quota"))))
+        coverage = "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=128 covered=1"
+        self.assertTrue(controller.exact_receipt("HBASE-21", [STEP], trace, coverage)
                         ["target_after_final_fault"])
 
     def test_region_count_normal_requires_guard_line(self):
-        trace = controller.parse("\n".join((IO, FAULT, target(
-            point="HBASE-21", subject="TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1:4"))))
+        subject = "TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1:4"
+        trace = controller.parse("\n".join((IO, FAULT, target(point="HBASE-21", subject=subject))))
         self.assertFalse(controller.exact_receipt("HBASE-21", [STEP], trace)
                          ["target_after_final_fault"])
         coverage = "BRANCH class=org/apache/hadoop/hbase/namespace/NamespaceStateManager line=128 covered=1"
+        self.assertFalse(controller.exact_receipt("HBASE-21", [STEP], trace, coverage)
+                         ["target_after_final_fault"])
+        trace = controller.parse("\n".join((IO, FAULT, guard("HBASE-21", subject),
+                                           target(point="HBASE-21", subject=subject))))
         self.assertTrue(controller.exact_receipt("HBASE-21", [STEP], trace, coverage)
                         ["target_after_final_fault"])
 

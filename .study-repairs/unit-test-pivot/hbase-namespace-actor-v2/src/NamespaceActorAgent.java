@@ -1,4 +1,6 @@
 import java.lang.instrument.Instrumentation;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -26,6 +28,9 @@ public final class NamespaceActorAgent {
   private static final Set<ZKWatcher> AMBIGUOUS_WATCHERS =
       Collections.newSetFromMap(new IdentityHashMap<ZKWatcher, Boolean>());
   private static final Map<ZKWatcher, Map<String, Integer>> HITS = new IdentityHashMap<>();
+  private static final ThreadLocal<Deque<String>> TARGET_STACK = new ThreadLocal<Deque<String>>() {
+    @Override protected Deque<String> initialValue() { return new ArrayDeque<>(); }
+  };
   private static final String[] PLAN = System.getProperty("ns.actor.fault.plan", "").split(";");
   private static int nextManager;
   private static long nextEvent;
@@ -57,6 +62,11 @@ public final class NamespaceActorAgent {
         .visit(Advice.to(ZkDelete.class).on(named("deleteNode").and(takesArguments(2)))))
       .installOn(inst);
     new AgentBuilder.Default().with(AgentBuilder.Listener.StreamWriting.toSystemError().withErrorsOnly())
+      .type(named("org.apache.hadoop.hbase.master.TableNamespaceManager"))
+      .transform((builder, type, loader, module, domain) -> builder
+        .visit(Advice.to(MaxRegionsOperand.class).on(named("getMaxRegions").and(takesArguments(1)))))
+      .installOn(inst);
+    new AgentBuilder.Default().with(AgentBuilder.Listener.StreamWriting.toSystemError().withErrorsOnly())
       .type(named("org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl"))
       .transform((builder, type, loader, module, domain) -> builder
         .visit(Advice.to(NamespaceLookup.class).on(named("getNamespace").and(takesArguments(1)))))
@@ -69,13 +79,13 @@ public final class NamespaceActorAgent {
       .installOn(inst);
   }
 
-  private static synchronized void owner(ZKWatcher watcher, Abortable abortable) {
+  public static synchronized void owner(ZKWatcher watcher, Abortable abortable) {
     OWNERS.put(watcher, abortable);
     System.err.println("NSACTOR WATCHER watcher=" + System.identityHashCode(watcher)
         + " owner_type=" + (abortable == null ? "null" : abortable.getClass().getName()));
   }
 
-  private static synchronized void manager(Object manager, ZKWatcher watcher) {
+  public static synchronized void manager(Object manager, ZKWatcher watcher) {
     Integer id = MANAGERS.get(watcher);
     Object old = MANAGER_OBJECTS.get(watcher);
     if (id == null || old != manager) {
@@ -150,7 +160,7 @@ public final class NamespaceActorAgent {
         .encodeToString(value.getBytes(StandardCharsets.UTF_8));
   }
 
-  private static synchronized long ioStart(String family, ZKWatcher watcher, String path)
+  public static synchronized long ioStart(String family, ZKWatcher watcher, String path)
       throws KeeperException {
     String site = namespaceSite();
     if (site == null) return 0;
@@ -206,12 +216,12 @@ public final class NamespaceActorAgent {
     return event;
   }
 
-  private static void ioEnd(long event, Throwable thrown) {
+  public static void ioEnd(long event, Throwable thrown) {
     if (event != 0) System.err.println("NSACTOR IO_END seq=" + event + " outcome="
         + (thrown == null ? "returned" : thrown.getClass().getName()));
   }
 
-  private static synchronized String target(String point, MasterServices master, String subject) {
+  public static synchronized String target(String point, MasterServices master, String subject) {
     ZKWatcher watcher = master.getZooKeeper();
     Actor actor = actor(watcher);
     String tag = "seq=" + (++nextEvent) + " point=" + point + " subject=" + subject
@@ -220,11 +230,34 @@ public final class NamespaceActorAgent {
         + " watcher=" + System.identityHashCode(watcher)
         + " bound_match=" + (boundActorRaw != null && boundActorRaw.equals(actor.raw)
             && boundManager == actor.manager);
+    TARGET_STACK.get().push(tag);
     System.err.println("NSACTOR TARGET_ENTER " + tag);
     return tag;
   }
 
-  private static void targetEnd(String tag, Throwable thrown) {
+  /** Marks the exact quota predicate operand in its selected invocation. */
+  public static synchronized void guardOperand() {
+    Deque<String> stack = TARGET_STACK.get();
+    if (stack.isEmpty()) return;
+    String tag = stack.peek();
+    boolean region = tag.contains("point=HBASE-21 ");
+    boolean table = tag.contains("point=HBASE-22 ");
+    if (!region && !table) return;
+    for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
+      if (!frame.getClassName().equals("org.apache.hadoop.hbase.namespace.NamespaceStateManager"))
+        continue;
+      if ((region && frame.getMethodName().equals("checkAndUpdateNamespaceRegionCount")
+          && frame.getLineNumber() == 128)
+          || (table && frame.getMethodName().equals("checkAndUpdateNamespaceTableCount")
+          && frame.getLineNumber() == 166)) {
+        System.err.println("NSACTOR GUARD_OPERAND " + tag + " site="
+            + frame.getMethodName() + ":" + frame.getLineNumber());
+        return;
+      }
+    }
+  }
+
+  public static void targetEnd(String tag, Throwable thrown) {
     String outcome = "normal";
     if (thrown != null) {
       String name = thrown.getClass().getName();
@@ -248,6 +281,13 @@ public final class NamespaceActorAgent {
     System.err.println("NSACTOR TARGET_EXIT " + tag + " exception="
         + (thrown == null ? "none" : thrown.getClass().getName())
         + " outcome=" + outcome);
+    Deque<String> stack = TARGET_STACK.get();
+    if (!stack.isEmpty() && tag.equals(stack.peek())) stack.pop();
+    else {
+      System.err.println("NSACTOR TARGET_STACK_MISMATCH " + tag);
+      stack.clear();
+    }
+    if (stack.isEmpty()) TARGET_STACK.remove();
   }
 
   public static final class WatcherConstructed {
@@ -327,6 +367,12 @@ public final class NamespaceActorAgent {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Enter long event, @Advice.Thrown Throwable thrown) {
       ioEnd(event, thrown);
+    }
+  }
+  public static final class MaxRegionsOperand {
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(@Advice.Thrown Throwable thrown) {
+      if (thrown == null) guardOperand();
     }
   }
   public static final class NamespaceLookup {

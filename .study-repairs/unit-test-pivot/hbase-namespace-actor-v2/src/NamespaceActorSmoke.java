@@ -6,6 +6,7 @@ public final class NamespaceActorSmoke {
       "org.apache.hadoop.hbase.zookeeper.ZKWatcher",
       "org.apache.hadoop.hbase.ZKNamespaceManager",
       "org.apache.hadoop.hbase.zookeeper.ZKUtil",
+      "org.apache.hadoop.hbase.master.TableNamespaceManager",
       "org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl",
       "org.apache.hadoop.hbase.namespace.NamespaceStateManager"
     };
@@ -13,6 +14,22 @@ public final class NamespaceActorSmoke {
       Class.forName(name, false, loader);
       System.out.println("NSACTOR SMOKE_LOADED " + name);
     }
+    // Exercise transformed ZKUtil entries without a ZooKeeper connection.
+    // Their original body must reject the null watcher, while Advice must
+    // cross the package boundary without IllegalAccessError.
+    try {
+      org.apache.hadoop.hbase.zookeeper.ZKUtil.watchAndCheckExists(null, "/smoke");
+    } catch (NullPointerException expected) {
+      // The original method dereferences its watcher.
+    }
+    try {
+      org.apache.hadoop.hbase.zookeeper.ZKUtil.deleteNode(null, "/smoke");
+    } catch (NullPointerException expected) {
+      // The original method dereferences its watcher.
+    }
+    org.apache.hadoop.hbase.master.TableNamespaceManager.getMaxRegions(
+        org.apache.hadoop.hbase.NamespaceDescriptor.create("smoke").build());
+    System.out.println("NSACTOR SMOKE_ADVICE_CALLS passed");
     // A synthetic null watcher exercises manager rotation without creating a
     // ZooKeeper client or MiniCluster. The same object must retain its ID;
     // a replacement manager on the same watcher must receive a fresh ID.

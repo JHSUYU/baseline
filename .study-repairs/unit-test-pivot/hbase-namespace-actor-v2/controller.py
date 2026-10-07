@@ -36,9 +36,10 @@ def atomic_json(path, value):
 
 def parse(log):
     events = {"IO_ATTEMPT": [], "IO_END": [], "FAULT_APPLIED": [],
-              "FAULT_REJECTED": [], "TARGET_EXIT": [], "TARGET_ENTER": [], "MANAGER": []}
+              "FAULT_REJECTED": [], "TARGET_EXIT": [], "TARGET_ENTER": [],
+              "GUARD_OPERAND": [], "MANAGER": []}
     for line_number, line in enumerate(log.splitlines()):
-        match = re.search(r"NSACTOR (IO_ATTEMPT|IO_END|FAULT_APPLIED|FAULT_REJECTED|TARGET_EXIT|TARGET_ENTER|MANAGER) (.*)", line)
+        match = re.search(r"NSACTOR (IO_ATTEMPT|IO_END|FAULT_APPLIED|FAULT_REJECTED|TARGET_EXIT|TARGET_ENTER|GUARD_OPERAND|MANAGER) (.*)", line)
         if not match:
             continue
         fields = dict(re.findall(r"(?:^| )([a-z_]+)=([^ ]+)", match.group(2)))
@@ -72,15 +73,18 @@ def same_actor(left, right):
 def eligible_target(case, target, coverage_text="", trace=None):
     if target.get("role") != "ACTIVE_MASTER" or target.get("outcome") not in CASES[case][2]:
         return False
-    if target.get("outcome") != "normal" or case == "HBASE-08":
+    if case == "HBASE-08":
         return True
-    # HBASE-21 can return normally before the selected predicate if the
-    # namespace lookup failed. A covered predicate line is necessary. Another
-    # same-method subject would make that line ambiguous, so fail closed.
-    if case == "HBASE-21":
-        if trace is None or any(x.get("point") == case and x.get("subject") != CASES[case][1]
-                                for x in trace["TARGET_EXIT"] if x["seq"] >= target["seq"]):
-            return False
+    # A method exit alone does not prove that the quota predicate ran; in
+    # HBASE-21 a null namespace descriptor can return before that predicate.
+    # The operand marker is tied to this invocation's target sequence and
+    # same Master/manager, so another table cannot supply its evidence.
+    if trace is None or not any(x["seq"] == target["seq"]
+                                and x.get("point") == case
+                                and x.get("subject") == target.get("subject")
+                                and same_actor(x, target)
+                                for x in trace["GUARD_OPERAND"]):
+        return False
     line = BRANCH_LINE[case]
     return bool(re.search(rf"BRANCH class={TARGET_CLASS} line={line} covered=[1-9]", coverage_text))
 
