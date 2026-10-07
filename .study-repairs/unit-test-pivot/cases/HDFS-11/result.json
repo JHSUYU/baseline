@@ -11,12 +11,12 @@
       "valid_target_retaining": 29
     },
     "java_slot_wait_enabled": true,
-    "last_audited_attempted": 100,
-    "last_audited_effective": 46,
-    "last_audited_full_fault_sequences": 100,
-    "last_audited_segment": "actor-v2-segment-100-attempts.json",
-    "last_audited_segment_sha256": "15bea109de236112c316819b7346c7bfa2ebd0b4b7a109b14e55dde07cffb67c",
-    "last_audited_target_lost_or_unmatched": 54,
+    "last_audited_attempted": 115,
+    "last_audited_effective": 60,
+    "last_audited_full_fault_sequences": 115,
+    "last_audited_segment": "actor-v2-segment-115-attempts.json",
+    "last_audited_segment_sha256": "f30ce468528316d790e0f4e91b20caae3cbafe3c37660fe7c867892100acaa16",
+    "last_audited_target_lost_or_unmatched": 55,
     "local_mirror_note": "Node1 campaign-state.json is authoritative; the local mirror is a snapshot. Resume in tmux hdfs11_key_v2_fuzz only after the coexistence audit.",
     "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/campaign-state.json",
     "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
@@ -42,11 +42,11 @@
   "cluster_nodes": "MiniDFSCluster, one NameNode and one DataNode (builder defaults)",
   "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]",
   "coverage_gain": {
-    "branch_counts": 123,
+    "branch_counts": 125,
     "methods": 28,
-    "probes": 238
+    "probes": 243
   },
-  "elapsed_seconds": 2850.499,
+  "elapsed_seconds": 3395.701,
   "expired_key_supplement": {
     "audit": "independent/expiry/audit-result.json",
     "elapsed_seconds": 3584.545,
@@ -58,8 +58,8 @@
     "trial_ledger": "expiry-trial-ledger.csv",
     "unexpected_target_exception_candidates": 0
   },
-  "fault_trials": 100,
-  "fully_applied_trials": 100,
+  "fault_trials": 115,
+  "fully_applied_trials": 115,
   "function": "retrieveDataEncryptionKey(int, byte[])",
   "historical_campaign_summary": {
     "cluster_test": [
@@ -200,11 +200,11 @@
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_line": 552,
   "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
-  "source_review": "The original normal-read TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0] reaches the allKeys null guard; none of the 46 V2 strict same-actor target-retaining fault sequences threw the selected InvalidEncryptionKeyException. The separate expired-key JUnit deliberately expects one such exception and is historical until actor V2 rechecked.",
+  "source_review": "The original normal-read TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0] reaches the allKeys null guard; none of the 60 V2 strict same-actor target-retaining fault sequences threw the selected InvalidEncryptionKeyException. The separate expired-key JUnit deliberately expects one such exception and is historical until actor V2 rechecked.",
   "status": "actor_v2_running",
-  "strict_injections": 100,
+  "strict_injections": 115,
   "system": "HDFS 3.4.3",
-  "target_after_fault": 46,
+  "target_after_fault": 60,
   "target_exception_after_fault_trials": 0,
   "target_reached": true
 }

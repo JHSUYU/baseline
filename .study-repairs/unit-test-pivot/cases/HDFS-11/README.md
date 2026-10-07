@@ -5,13 +5,13 @@
 `TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]` passed.
 The isolated [V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual
 SASL receiver and key manager to the same DataNode startup episode and block
-pool. Its [100-attempt raw audit](actor-v2-segment-100-attempts.json) verifies 100
-fully ordered fault sequences, 46 strict same-actor target-retaining sequences,
-and zero selected `InvalidEncryptionKeyException` throws. The other 54
+pool. Its [115-attempt raw audit](actor-v2-segment-115-attempts.json) verifies 115
+fully ordered fault sequences, 60 strict same-actor target-retaining sequences,
+and zero selected `InvalidEncryptionKeyException` throws. The other 55
 sequences lose the target after an injected-I/O checksum or block-read failure;
 they are recorded but not effective. The audit hashes each original JUnit
-manifest, raw trace, fault plan, result, and JaCoCo file. It reports 238 added
-probes, 28 methods, and 123 branch-count buckets relative to healthy seed A,
+manifest, raw trace, fault plan, result, and JaCoCo file. It reports 243 added
+probes, 28 methods, and 125 branch-count buckets relative to healthy seed A,
 and no new I/O family beyond the two healthy seeds' union. The already
 finished in-flight JUnit manifest from the
 [coexistence pause](../../hdfs-key-actor-v2/evidence/HDFS-11/coexistence-pause.json)
@@ -33,6 +33,8 @@ the checkpoint byte for byte, every queued sequence, and all measured coverage.
 It ranks the poorly retaining depth below shallower plans while still sampling
 penalized plans every twelfth selection. The existing tmux session resumed
 from attempt 100; the 80-effective budget and eight-fault limit remain intact.
+In the next 15 completed attempts, 14 three-fault plans retained the exact
+same-actor target, bringing the independently audited total to 60 effective.
 
 ## Historical campaigns
 
