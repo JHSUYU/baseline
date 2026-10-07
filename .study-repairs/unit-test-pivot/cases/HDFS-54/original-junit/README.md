@@ -179,6 +179,18 @@ completed-trial count and checkpoint were preserved, and trial 52 was
 summarized once from its existing manifest on resume. See
 [`scheduling-boundary-receipt.json`](scheduling-boundary-receipt.json).
 
+The first refinement distinguished full ordered role/site paths. Changing
+an earlier RPC site still produced many nine-DN terminal variants: through
+trial 62, 32 effective plans had the same all-nine-DN false outcome. A second
+completed-JUnit boundary at trial 63 added a broader family score. Once at
+least 12 strict 9/9 false outcomes exist for the same file, block group and
+set of nine DN roles, another nine-fault plan loses 1200 points. The penalty
+does not apply when its parent gained new production coverage or when the
+plan contains an untested role × I/O-site pair. The first post-boundary new
+plan was depth eight. Trial 63 was summarized once from its already complete
+manifest; prior evidence and the 80-effective budget stayed intact. See
+[`scheduling-second-boundary-receipt.json`](scheduling-second-boundary-receipt.json).
+
 ## Interpretation limit
 
 The original JUnit enables block access tokens but does not set up an expired

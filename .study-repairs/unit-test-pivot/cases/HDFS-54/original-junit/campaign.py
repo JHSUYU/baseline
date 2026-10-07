@@ -121,6 +121,10 @@ def score(candidate, state):
     family = (*role_site, last["type"])
     distinct_roles = len({fault["dnRole"] for fault in candidate["faults"]})
     wait_rounds = len(state["attempts"]) - candidate["added_round"]
+    parent_covered_new_code = any(novelty.get(kind, 0) > 0 for kind in
+                                  ("probes", "methods", "branch_counts"))
+    new_actor_site = any((fault["dnRole"], fault["site"]) not in prior_role_sites
+                         for fault in candidate["faults"])
     # A nine-DN sequence can exhaust every checksum source and take the
     # expected false branch. Treat plans with the same ordered actor/site
     # path as one recovery family, regardless of synthetic exception subtype.
@@ -136,6 +140,24 @@ def score(candidate, state):
         and prior["faults"][0]["file"] == candidate["faults"][0]["file"]
         and prior["faults"][0]["blockGroup"] == candidate["faults"][0]["blockGroup"]
         for prior in state["attempts"])
+    # Changes at an earlier I/O site create many different ordered paths that
+    # still disable the same nine located DNs. Apply a second, broader
+    # penalty only when twelve fully applied members of this file/block/actor
+    # family have already reached the expected false branch. A newly observed
+    # actor/site or a seed with new production coverage keeps its priority.
+    actor_set = {fault["dnRole"] for fault in candidate["faults"]}
+    exhausted_actor_group = sum(
+        prior.get("result") == "effective"
+        and prior.get("strict_ordered")
+        and prior.get("requested") == prior.get("applied") == 9
+        and prior.get("target_false_after_final_fault", 0) > 0
+        and len(prior["faults"]) == 9
+        and {fault["dnRole"] for fault in prior["faults"]} == actor_set
+        and prior["faults"][0]["file"] == candidate["faults"][0]["file"]
+        and prior["faults"][0]["blockGroup"] == candidate["faults"][0]["blockGroup"]
+        for prior in state["attempts"])
+    repeated_exhaustion = (n == 9 and distinct_roles == 9
+                          and not parent_covered_new_code and not new_actor_site)
     # The original RS-6+3 checksum may need all nine located DNs to fail.
     # Favor new actor/site families and deep sequences, while capping one
     # parent's coverage windfall so its many sibling exception variants do
@@ -148,7 +170,8 @@ def score(candidate, state):
             + 2 * min(novelty.get("branch_counts", 0), 40)
             + 140 * min(n, 9) - 180 * max(0, n - 9)
             + 160 * distinct_roles + 1500 * (n >= 9)
-            - 1200 * (n >= 9 and exhausted_equivalents >= 2)
+            - 1200 * (repeated_exhaustion and exhausted_equivalents >= 2)
+            - 1200 * (repeated_exhaustion and exhausted_actor_group >= 12)
             + min(400, 10 * wait_rounds)
             - (parent.get("seconds", 0) / 10 if parent else 0))
 
