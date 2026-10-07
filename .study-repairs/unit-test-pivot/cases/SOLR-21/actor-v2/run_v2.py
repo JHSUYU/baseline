@@ -11,7 +11,7 @@ from pathlib import Path
 import subprocess
 import time
 
-from build_junit import (CASE22, HERE, JAVA8, SOURCE, TEST_CLASS, TEST_METHOD,
+from build_junit import (CASE22, HERE, JAVA8, SOLR_DIST, SOURCE, TEST_CLASS, TEST_METHOD,
                          original_classpath, source_revision)
 
 
@@ -25,6 +25,10 @@ def run(out: Path, test_seed: str = 'D82A1912E3C1791F',
     receipt = json.loads((HERE / 'junit-build.json').read_text())
     if receipt['source_revision'] != revision:
         raise RuntimeError('original JUnit build source revision changed')
+    original_core = SOLR_DIST / 'dist/solr-core-8.11.4.jar'
+    if (hashlib.sha256(original_core.read_bytes()).hexdigest()
+            != receipt['original_solr_core_jar_sha256']):
+        raise RuntimeError('original Solr release JAR changed since JUnit build')
     for relative, expected in receipt['source_sha256'].items():
         if hashlib.sha256((SOURCE / relative).read_bytes()).hexdigest() != expected:
             raise RuntimeError(f'original JUnit source changed: {relative}')
