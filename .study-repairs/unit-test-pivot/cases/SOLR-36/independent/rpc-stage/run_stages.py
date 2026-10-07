@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -12,7 +13,7 @@ import sys
 import time
 from typing import Callable
 
-from fuzz_rpc import CHECKS, ROOT, SEEDS, point, point_id, rpc_events
+from fuzz_rpc import CHECKS, ROOT
 
 
 HERE = Path(__file__).resolve().parent
@@ -47,30 +48,24 @@ def summarize(state: dict | None) -> dict:
 
 
 def late_novelty(state: dict) -> dict:
-    rows = [row for row in state['completed']
-            if row['strict_injection']
-            and all(row['postfault_same_child_guards'][case_id] > 0
-                    for case_id in CHECKS)][-8:]
-    production = [row['trial_number'] for row in rows
-                  if row['new_production_probes'] > 0]
-    healthy = {point_id(point(event)) for seed in SEEDS
-               for event in rpc_events(seed)}
-    counts: Counter[str] = Counter()
-    for row in rows:
-        trace = Path(row['trace'])
-        unique: set[str] = set()
-        for event in rpc_events(trace.parent):
-            identity = point_id(point(event))
-            if identity not in healthy:
-                unique.add(identity)
-        counts.update(unique)
-    stable_new = sorted(identity for identity, count in counts.items()
-                        if count >= 2)
-    return {'last_effective_trial_numbers': [row['trial_number'] for row in rows],
-            'production_probe_gain_trial_numbers': production,
-            'stable_new_rpc_selector_count': len(stable_new),
-            'stable_new_rpc_selector_ids': stable_new,
-            'extend': len(rows) == 8 and bool(production or stable_new)}
+    from late_novelty_audit import audit
+    path = ROOT / 'late-novelty-global-audit.json'
+    state_sha = hashlib.sha256((ROOT / 'state.json').read_bytes()).hexdigest()
+    report = json.loads(path.read_text()) if path.is_file() else None
+    if report is None or report.get('campaign_state_sha256') != state_sha:
+        report = audit(state)
+        atomic(path, report)
+    return {
+        'method': report['method'],
+        'campaign_state_sha256': state_sha,
+        'by_case': {case_id: {key: value for key, value in item.items()
+                              if key in ('last_eight_effective_trial_numbers',
+                                         'new_production_methods',
+                                         'new_production_branch_outcomes',
+                                         'new_relevant_http_io_families', 'extend')}
+                    for case_id, item in report['cases'].items()},
+        'extend': report['extend'],
+    }
 
 
 def decide(state: dict | None, *, novel: bool = False) -> tuple[str, int, int, str]:
