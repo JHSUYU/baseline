@@ -30,10 +30,19 @@ fault to apply in order on these runtime-bound I/O points. A trial is
 BPID* after the final fault.
 
 RPC injections use `IOException`, `EOFException`, or
-`SocketTimeoutException`; file injections use `IOException`. Production
-JaCoCo probe, method, and branch counts plus stable actor-bound I/O families
-guide sequence mutation. At 80 effective trials, novelty in the last eight
-effective trials extends the goal to 128 and depth from 8 to 10; otherwise
+`SocketTimeoutException`; file injections use `IOException`. Stable
+actor-bound I/O families guide sequence mutation and queue priority.
+Production JaCoCo probe, method, and branch-count feedback is recorded
+per effective trial and controls the conditional budget extension. The
+versioned `coverage_successor.py` additionally gives later queued plans a
+bounded priority boost when their parent trial gained production coverage.
+Its handoff preserves the completed ledger, queue, seen IDs, and any reserved
+but unstarted active plan; `quiesce.py` freezes only the Python controller
+while it waits for the shared start lock, and verifies that no JUnit has
+started before stopping it. The handoff receipt records the old and new
+controller SHA and unchanged ledger/queue/seen counts. At 80 effective
+trials, novelty in the last eight effective trials extends the goal to 128
+and depth from 8 to 10; otherwise
 it stops. The attempt cap is 320 initially and 512 if extended. Queue
 exhaustion or a differing selected-check outcome is also a recorded stop.
 A differing outcome is a **candidate** requiring replay and source review.
@@ -56,3 +65,11 @@ interruption without repeating a completed trial.
 The pilot and healthy calibrations are outside the V3 fault budget. The
 campaign result is recorded in `../result.json` under `actor_v3`; the old
 top-level counters are retained as historical evidence.
+
+The first controller completed 17 strict, effective trials. It was stopped
+with trial 18 reserved but unstarted; `quiescent-stop-receipt.json` records
+that boundary. The coverage successor independently audited all 17 raw
+trials before its handoff, retained the reserved trial and every queue/seen
+entry, and wrote `coverage-handoff-receipt.json`. The scheduling change
+therefore begins **after** reserved trial 18; earlier trials retain their
+original recorded policy and outcome.
