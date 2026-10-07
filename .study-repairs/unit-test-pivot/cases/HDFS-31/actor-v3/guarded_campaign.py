@@ -57,6 +57,8 @@ def main() -> None:
     parser.add_argument("--gate-retry-seconds", type=float, default=30)
     parser.add_argument("--max-new-completions", type=int,
                         help="stop at a complete checkpoint after this many new plans")
+    parser.add_argument("--pause-at-base", action="store_true",
+                        help="stop at 80 effective for source/coverage review before any extension")
     args = parser.parse_args()
     if (args.max_attempts < 1 or args.max_attempts > 512 or args.max_hours <= 0
             or args.gate_retry_seconds <= 0 or
@@ -79,6 +81,11 @@ def main() -> None:
         while True:
             state = json.loads((anchor / "campaign-state.json").read_text())
             completed = len(state["completion_order"])
+            if args.pause_at_base and state["effective"] >= state["budget"]["base_effective"]:
+                append(ledger, {"at_utc": now(), "status": "base_review_pause",
+                                "completed": completed, "effective": state["effective"],
+                                "goal": state["budget"]["goal"]})
+                break
             if (args.max_new_completions is not None and
                     completed - initial_completed >= args.max_new_completions):
                 append(ledger, {"at_utc": now(), "status": "complete_boundary_cap",
