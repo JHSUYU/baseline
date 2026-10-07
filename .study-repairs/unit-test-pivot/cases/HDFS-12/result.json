@@ -10,10 +10,12 @@
     "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
     "healthy_io_family_union_size": 5,
     "healthy_two_seed_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/healthy_receipt.json",
-    "last_audited_attempted": 40,
-    "last_audited_effective": 40,
-    "last_audited_segment": "actor-v2-segment-40.json",
-    "last_audited_segment_sha256": "8c2e4c2c6423d4d72d10260082d22dd75849aeb7458882cb4acb110d0065b04b",
+    "last_audited_attempted": 60,
+    "last_audited_effective": 46,
+    "last_audited_full_fault_sequences": 54,
+    "last_audited_segment": "actor-v2-segment-60.json",
+    "last_audited_segment_sha256": "517aa7aca7372bde16859c03105d7f4ae0fb86f51eaa7b38c55e68417811f777",
+    "last_audited_target_lost_or_unmatched": 14,
     "new_counts_exclude_legacy": true,
     "new_io_family_count": 0,
     "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
@@ -39,13 +41,13 @@
     "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient[0]"
   ],
   "coverage_gain": {
-    "branch_counts": 87,
-    "methods": 24,
-    "probes": 202
+    "branch_counts": 117,
+    "methods": 29,
+    "probes": 247
   },
-  "elapsed_seconds": 1379.08,
-  "fault_trials": 40,
-  "fully_applied_trials": 40,
+  "elapsed_seconds": 2119.556,
+  "fault_trials": 60,
+  "fully_applied_trials": 54,
   "function": "retrievePassword(BlockTokenIdentifier)",
   "historical_campaign_summary": {
     "counts_excluded_from_actor_v2_budget": true,
@@ -245,14 +247,14 @@
     "file_count": 1551,
     "sha256": "d5e9d5a9cc94de65cd9994e3ff11e5bda086308fc8c4eb1fd319147fd50c4ee6"
   },
-  "reason": "Actor-precise V2 formal budget has 40 independently audited original JUnit trials, all with exact ordered faults and the same DataNode/block pool target afterward. Depths 1\u20133 include key-update response, local key apply, and SASL read faults. No selected InvalidToken occurred. The campaign continues in tmux; historical coarse-actor trials remain excluded.",
+  "reason": "Actor-precise V2 formal budget has 60 audited original-JUnit attempts: 54 exact full fault sequences, 46 effective same-actor target-retaining trials, and 14 fault-induced target-lost or unmatched trials excluded from feedback. No selected InvalidToken occurred. The campaign continues in tmux; historical coarse-actor trials remain excluded.",
   "selection_line": 514,
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_review": "BlockTokenSecretManager.retrievePassword first rejects expired tokens, then looks up keyId in allKeys and throws InvalidToken if absent. The long-lived original test rotates keys and verifies later reads and checksums. No selected null-key throw followed a strict, target-retaining fault sequence in either workload. Fault-induced JUnit failures are recorded separately from this selected throw.",
   "status": "actor_v2_running",
-  "strict_injections": 40,
+  "strict_injections": 54,
   "system": "HDFS 3.4.3",
-  "target_after_fault": 40,
+  "target_after_fault": 46,
   "target_exception_after_fault_trials": 0,
   "target_reached": true
 }

@@ -89,6 +89,7 @@ def audit(output: Path, count: int) -> dict:
             "junit_exit": manifest["returncode"],
             "fault_depth": len(plan), "fault_families": fault_families,
             "matched_faults": len(matched), "applied_faults": len(applied),
+            "exact_order_applied": result["exact_order_applied"],
             "classification": result["classification"],
             "valid_for_feedback": result["valid_for_feedback"],
             "postfault_target_count": result["postfault_target_count"],
@@ -106,9 +107,10 @@ def audit(output: Path, count: int) -> dict:
         "schema": "hdfs12-actor-v2-segment-audit-1", "case_id": "HDFS-12",
         "authoritative_host": "node1", "audited_prefix_trials": count,
         "checkpoint_attempted_at_audit": state["attempted_trials"],
+        "fully_applied_trials": sum(row["exact_order_applied"] for row in runs),
         "effective_trials": sum(row["valid_for_feedback"] for row in runs),
         "strict_target_retaining_trials": sum(
-            row["applied_faults"] == row["fault_depth"] and
+            row["exact_order_applied"] and
             row["postfault_target_count"] > 0 and row["postfault_same_actor"]
             for row in runs),
         "target_exception_candidates": sum(row["target_exception_candidate"] for row in runs),
