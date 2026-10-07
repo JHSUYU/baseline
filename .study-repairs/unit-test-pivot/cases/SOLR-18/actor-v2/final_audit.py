@@ -14,6 +14,7 @@ from run_native import RUN_ROOT
 
 STATE = HERE / 'campaign-state.json'
 MIRROR = HERE / 'mirror-receipt.json'
+OFFLOAD = HERE / 'console-offload.json'
 CALIBRATION = HERE / 'calibration.json'
 OUTPUT = HERE / 'final-audit.json'
 RAW_NAMES = ('events.tsv', 'jacoco.exec', 'console.log', 'run.json')
@@ -30,6 +31,7 @@ def sha(path: Path) -> str:
 def audit_all() -> dict:
     state = json.loads(STATE.read_text())
     mirror = json.loads(MIRROR.read_text())
+    offloaded = json.loads(OFFLOAD.read_text())['runs'] if OFFLOAD.exists() else {}
     calibration = json.loads(CALIBRATION.read_text())
     junit_sha = calibration['junit_class_sha256']
     junit_class = CLASSES / 'org/apache/solr/cloud/AliasIntegrationTest.class'
@@ -63,7 +65,12 @@ def audit_all() -> dict:
         assert mirror['runs'][run_id]['rsync_checksum_dry_run_exit'] == 0
         assert mirror['runs'][run_id]['rsync_checksum_dry_run_output'] == ''
         for name in RAW_NAMES:
-            assert sha(directory / name) == digests[name], (run_id, name)
+            local = directory / name
+            if name == 'console.log' and not local.exists():
+                assert run_id in offloaded and offloaded[run_id]['sha256'] == digests[name]
+                assert not item['effective'] and offloaded[run_id]['local_events_jacoco_run_retained']
+            else:
+                assert sha(local) == digests[name], (run_id, name)
         observed = audit(directory / 'events.tsv', item['plan'])
         assert observed['strict_ordered_faults'] == item['strict_ordered_injection']
         assert observed['all_faults_on_target_client'] == item['all_faults_on_target_client']
@@ -114,6 +121,7 @@ def audit_all() -> dict:
         'raw_mirror_source': mirror['source_root'],
         'raw_mirror_destination': mirror['destination_root'],
         'raw_mirror_verified_runs': len(state['trials']),
+        'noncandidate_consoles_offloaded_to_node2': len(offloaded),
         'graphchecker_runtime': False,
     }
 
