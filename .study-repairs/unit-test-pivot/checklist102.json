@@ -294364,17 +294364,100 @@
       "site_id": "<org.apache.hadoop.hdfs.DFSInputStream: org.apache.hadoop.hdfs.protocol.LocatedBlock fetchBlockAt(long,long,boolean)>#u33",
       "proposed_cluster_test": "TestPread.testPreadDFS",
       "cluster_test": "org.apache.hadoop.hdfs.TestPread#testPreadDFS",
-      "status": "actor_v3_fuzz_running",
+      "status": "quality_complete",
       "target_reached": true,
-      "fault_trials": 55,
-      "strict_injections": 50,
-      "fully_applied_trials": 50,
-      "target_after_fault": 50,
-      "coverage_gain": 71,
-      "elapsed_seconds": 1158.938,
+      "fault_trials": 114,
+      "strict_injections": 105,
+      "fully_applied_trials": 105,
+      "target_after_fault": 80,
+      "coverage_gain": 100,
+      "elapsed_seconds": 2257.742,
       "bug_mark": "none",
       "evidence": "cases/HDFS-01/actor-v2/README.md",
       "actor_v3_audit": {
+        "case_id": "HDFS-01",
+        "checkpoint_sha256": "8aae67ea0aaef7c012671880ba5023059184233e560741ff55ada51fd5a41137",
+        "completed": 114,
+        "coverage_gain_over_two_healthy_seeds": {
+          "branch_counts": 100,
+          "lines": 190,
+          "methods": 22,
+          "probes": 176
+        },
+        "effective": 80,
+        "elapsed_healthy_seconds": 43.441,
+        "elapsed_total_junit_seconds": 2257.742,
+        "elapsed_trial_seconds": 2214.301,
+        "exact_target_throws": 0,
+        "fault_depths": {
+          "1": 29,
+          "2": 12,
+          "3": 18,
+          "4": 41,
+          "5": 14
+        },
+        "last_eight_effective_novelty": [
+          {
+            "attempt": 96,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          },
+          {
+            "attempt": 99,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          },
+          {
+            "attempt": 104,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          },
+          {
+            "attempt": 108,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          },
+          {
+            "attempt": 110,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          },
+          {
+            "attempt": 111,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          },
+          {
+            "attempt": 112,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          },
+          {
+            "attempt": 114,
+            "branch_counts": 0,
+            "io_families": 0,
+            "methods": 0
+          }
+        ],
+        "new_actor_bound_io_families": 6,
+        "original_junit_returncodes": {
+          "0": 89,
+          "1": 25
+        },
+        "pending": 1476,
+        "raw_read_actor_joins": 904,
+        "stop_reason": "base_budget_complete",
+        "strict": 105
+      },
+      "actor_v3_audit_path": "cases/HDFS-01/actor-v2/audit-final-v3.json",
+      "actor_v3_interim_audit": {
         "case_id": "HDFS-01",
         "checkpoint_sha256": "6b74cfcbdf22b44bf84c9d648d102cecdfcb7e1a4eea0ff13ee2fcca8ca722d3",
         "completed": 55,
@@ -294386,7 +294469,7 @@
         "stop_reason": null,
         "strict": 50
       },
-      "actor_v3_audit_path": "cases/HDFS-01/actor-v2/audit-through-t0055.json",
+      "actor_v3_interim_audit_path": "cases/HDFS-01/actor-v2/audit-through-t0055.json",
       "budget": {
         "conditional_extension_effective_trials": 128,
         "conditional_extension_max_attempts": 512,
@@ -294395,8 +294478,14 @@
         "max_attempts": 320,
         "max_faults_per_trial": 8
       },
+      "coverage_gain_breakdown": {
+        "branch_counts": 100,
+        "lines": 190,
+        "methods": 22,
+        "probes": 176
+      },
       "coverage_metric_note": "new covered HDFS production branch-count IDs after the union of two V3 healthy seeds, through trial 55",
-      "elapsed_seconds_semantics": "two V3 healthy original JUnits plus 55 independently audited V3 fault trials; live runner continues",
+      "elapsed_seconds_semantics": "two V3 healthy original JUnits plus 114 original JUnit fault trials; summed JUnit durations, not wall-clock campaign time",
       "exact_target_exceptions": 0,
       "healthy": {
         "bound_read_events_per_seed": [
@@ -294424,10 +294513,11 @@
         "runtime_hooks": "case_local_asm_9_6_actor_v3_overlay"
       },
       "io_family_gain": 6,
-      "last_audited_at_utc": "2026-10-07T07:49:59.265740+00:00",
+      "last_audited_at_utc": "2026-10-07T08:30:57Z",
       "new_bug": false,
       "remote_checkpoint": "node1:/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-01/actor-v2/campaign-v3/checkpoint.json",
-      "remote_tmux": "hdfs01_actor_v3_full"
+      "remote_tmux": "hdfs01_actor_v3_full",
+      "stop_reason": "base_budget_complete"
     },
     {
       "case_id": "HDFS-07",
@@ -309600,16 +309690,16 @@
       ],
       "status": "actor_v2_running",
       "target_reached": true,
-      "fault_trials": 5,
-      "strict_injections": 5,
-      "fully_applied_trials": 5,
-      "target_after_fault": 5,
+      "fault_trials": 60,
+      "strict_injections": 54,
+      "fully_applied_trials": 54,
+      "target_after_fault": 46,
       "coverage_gain": {
-        "branch_counts": 5,
-        "methods": 2,
-        "probes": 16
+        "branch_counts": 117,
+        "methods": 29,
+        "probes": 247
       },
-      "elapsed_seconds": 159.825,
+      "elapsed_seconds": 2119.556,
       "bug_mark": "none",
       "evidence": null,
       "actor_v2_recheck": {
@@ -309621,8 +309711,16 @@
           "max_faults": 8
         },
         "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
+        "healthy_io_family_union_size": 5,
         "healthy_two_seed_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/healthy_receipt.json",
+        "last_audited_attempted": 60,
+        "last_audited_effective": 46,
+        "last_audited_full_fault_sequences": 54,
+        "last_audited_segment": "actor-v2-segment-60.json",
+        "last_audited_segment_sha256": "517aa7aca7372bde16859c03105d7f4ae0fb86f51eaa7b38c55e68417811f777",
+        "last_audited_target_lost_or_unmatched": 14,
         "new_counts_exclude_legacy": true,
+        "new_io_family_count": 0,
         "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2/evidence/HDFS-12/campaign-state.json",
         "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/actor-producer-v2",
         "phase": "formal_budget_running",
@@ -309827,6 +309925,7 @@
         "trial_ledger": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-12/independent/long-lived/control-plane/trial-ledger.csv"
       },
       "methodology": "actor_precise_original_junit_graph_free_coverage_io_v2",
+      "new_io_families_against_healthy_union": 0,
       "raw_event_audit": "independent/audit-all.json",
       "raw_evidence_archive": {
         "archive": "HDFS-12-independent-evidence.tar.gz",
@@ -309835,7 +309934,7 @@
         "file_count": 1551,
         "sha256": "d5e9d5a9cc94de65cd9994e3ff11e5bda086308fc8c4eb1fd319147fd50c4ee6"
       },
-      "reason": "Two fresh original testLongLivedClient[0] calibrations and five actor-precise fault pilots passed. Each pilot matched one DN1/BP0 key-update response fault and reached the selected allKeys.get guard afterward without InvalidToken. The formal V2 budget continues from this checkpoint. Historical 256-trial coarse-actor counts are excluded from the V2 totals.",
+      "reason": "Actor-precise V2 formal budget has 60 audited original-JUnit attempts: 54 exact full fault sequences, 46 effective same-actor target-retaining trials, and 14 fault-induced target-lost or unmatched trials excluded from feedback. No selected InvalidToken occurred. The campaign continues in tmux; historical coarse-actor trials remain excluded.",
       "selection_line": 514,
       "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
       "source_review": "BlockTokenSecretManager.retrievePassword first rejects expired tokens, then looks up keyId in allKeys and throws InvalidToken if absent. The long-lived original test rotates keys and verifies later reads and checksums. No selected null-key throw followed a strict, target-retaining fault sequence in either workload. Fault-induced JUnit failures are recorded separately from this selected throw.",
@@ -358041,14 +358140,15 @@
       "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
       "status": "fuzz_running",
       "target_reached": true,
-      "fault_trials": 181,
-      "strict_injections": 117,
-      "fully_applied_trials": 117,
-      "target_after_fault": 29,
-      "coverage_gain": 265,
-      "elapsed_seconds": 5927.812,
+      "fault_trials": 255,
+      "strict_injections": 161,
+      "fully_applied_trials": 161,
+      "target_after_fault": 39,
+      "coverage_gain": 369,
+      "elapsed_seconds": 8038.489,
       "bug_mark": "none",
-      "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)",
+      "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1)",
+      "active_scheduler_version": "solr39_lazy_occurrence_v7",
       "budget": {
         "base_effective_goal": 80,
         "base_max_attempts": 720,
@@ -358062,7 +358162,7 @@
       },
       "build_receipt_sha256": "1e939577aa0b848806b29dbda72f1086cab1266cffc229cae8d26912f813c084",
       "case_completion_elapsed_seconds": null,
-      "effective_trials": 29,
+      "effective_trials": 39,
       "healthy_target_checks": 8,
       "legacy_coarse_actor": {
         "conclusion": "no selected target exception observed within this I/O scope and budget",
@@ -358082,23 +358182,26 @@
         "unique_applied_callsite_operation_resource": 26
       },
       "max_applied_faults": 6,
-      "new_io_families": 12,
-      "new_io_identities": 503,
-      "production_branches_gained": 118,
-      "production_methods_gained": 29,
+      "new_io_families": 14,
+      "new_io_identities": 531,
+      "production_branches_gained": 166,
+      "production_methods_gained": 37,
       "quality_complete": false,
       "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-10/work/evidence/campaign/audit.json",
-      "reason": "V4 actor-aware unchanged JUnit campaign: 181 shared attempts, 117 strict, 29/80 effective for this guard; stop=running.",
-      "shared_elapsed_seconds_at_snapshot": 5927.812,
+      "reason": "Actor-aware unchanged JUnit campaign (solr39_lazy_occurrence_v7): 255 shared attempts, 161 strict, 39/80 effective for this guard; stop=running.",
+      "shared_elapsed_seconds_at_snapshot": 8038.489,
       "shared_execution_group": "SOLR-10/39/40",
-      "snapshot_utc": "2026-10-07T07:48:53+00:00",
+      "snapshot_utc": "2026-10-07T08:32:50+00:00",
       "source_file": "solr/core/src/java/org/apache/solr/cloud/api/collections/MaintainRoutedAliasCmd.java",
       "target_exception_candidates": 0,
       "target_exception_trial_numbers": [],
       "target_guard_branch_taken": false,
-      "unique_applied_callsite_operation_resource": 16,
+      "unique_applied_callsite_operation_resource": 19,
       "unreviewed_target_exception_trials": [],
-      "v4_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)",
+      "v4_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2, frozen at trial 189)",
+      "v5_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1, completed trial 222 before V7)",
+      "v7_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1, active continuation)",
+      "v7_root_expansion_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/lazy-root-expansion-v7.json (node1)",
       "reported_function": "MaintainRoutedAliasCmd.call",
       "reported_check_code": "if (ra == null) throw SolrException",
       "resolved_check_line": 116
@@ -360979,12 +361082,12 @@
       "cluster_test": "AddReplicaTest.testAddMultipleReplicas",
       "status": "running",
       "target_reached": true,
-      "fault_trials": 87,
-      "strict_injections": 62,
-      "fully_applied_trials": 62,
-      "target_after_fault": 51,
-      "coverage_gain": 432,
-      "elapsed_seconds": 3290.583,
+      "fault_trials": 118,
+      "strict_injections": 83,
+      "fully_applied_trials": 83,
+      "target_after_fault": 71,
+      "coverage_gain": 436,
+      "elapsed_seconds": 5819.18,
       "bug_mark": "none",
       "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-19/independent/actor_v2/evidence/v3-campaign/state.json",
       "actor_v3_healthy_receipt": ".study-repairs/unit-test-pivot/cases/SOLR-19/independent/actor_v2/evidence/v3-healthy-receipt.json",
@@ -364974,12 +365077,12 @@
       "cluster_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
       "status": "fuzz_running",
       "target_reached": true,
-      "fault_trials": 77,
-      "strict_injections": 67,
-      "fully_applied_trials": 67,
-      "target_after_fault": 59,
-      "coverage_gain": 322,
-      "elapsed_seconds": 10256.913,
+      "fault_trials": 98,
+      "strict_injections": 85,
+      "fully_applied_trials": 85,
+      "target_after_fault": 77,
+      "coverage_gain": 341,
+      "elapsed_seconds": 12955.617,
       "bug_mark": "none",
       "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/progress.json",
       "baseline_seconds": 311.784,
@@ -365192,7 +365295,7 @@
         "source_review": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/campaign/candidate-0078-review.md"
       },
       "coverage_gain_scope": "Current-quality HTTP release-JAR production probes from strict trials reaching this case’s exact same-child guard after the fault effect; legacy ZooKeeper actor-unverified probes excluded.",
-      "current_method_elapsed_seconds": 10256.913,
+      "current_method_elapsed_seconds": 12955.617,
       "extension_coverage_audits": [
         {
           "class": "org/apache/lucene/index/DocumentsWriter",
@@ -365541,99 +365644,94 @@
         "seed": "F0993D5343E20BA4"
       },
       "post_fault_any_child_trials": 0,
-      "post_fault_target_reach_trials": 59,
+      "post_fault_target_reach_trials": 77,
       "production_branch_outcomes_gain": 0,
       "production_methods_gain": 0,
-      "reason": "25 exact ACTIVE-child 503 outcomes were source-reviewed as protective rejections with original JUnit success; HTTP and actor-aware ZooKeeper coverage remain under test.",
+      "reason": "29 exact ACTIVE-child 503 outcomes were source-reviewed as protective rejections with original JUnit success; HTTP and actor-aware ZooKeeper coverage remain under test.",
       "remaining_work": "Continue saved HTTP role-V2 checkpoint to 80 strict same-child postfault effective trials per check; source-review any unrecognized exact target exception. Actor-aware ZK V2 remains a separate campaign.",
-      "rpc_stage_attempted_junits": 94,
-      "rpc_stage_case_production_probe_gain": 322,
+      "rpc_stage_attempted_junits": 120,
+      "rpc_stage_case_production_probe_gain": 341,
       "rpc_stage_control": {
         "counts": {
-          "attempted_junits": 30,
+          "attempted_junits": 99,
           "effective_by_case": {
-            "SOLR-36": 20,
-            "SOLR-37": 6
+            "SOLR-36": 61,
+            "SOLR-37": 35
           },
-          "elapsed_seconds": 3231.556,
+          "elapsed_seconds": 10578.552,
           "fault_depths": {
-            "1": 18,
-            "2": 6
+            "1": 29,
+            "2": 29,
+            "3": 16,
+            "4": 5,
+            "5": 1
           },
-          "selected_plans": 24,
-          "strict_injections": 22,
-          "unmatched_plans": 2
+          "selected_plans": 80,
+          "strict_injections": 69,
+          "unmatched_plans": 11
         },
         "late_novelty": null,
         "max_faults": 8,
-        "reason": "pilot checkpoint; retain completed plans",
-        "selected_cap": 80,
+        "reason": "extend selected plans to reach 80 effective",
+        "selected_cap": 133,
         "status": "running",
         "target_effective": 80,
-        "updated_at": 1791352331.8038714
+        "updated_at": 1791359767.7783172
       },
       "rpc_stage_effective_by_case": {
-        "SOLR-36": 59,
-        "SOLR-37": 34
+        "SOLR-36": 77,
+        "SOLR-37": 48
       },
-      "rpc_stage_expected_target_rejection_trials": 25,
-      "rpc_stage_fault_trials": 77,
-      "rpc_stage_post_fault_target_reach_trials": 59,
+      "rpc_stage_expected_target_rejection_trials": 29,
+      "rpc_stage_fault_trials": 98,
+      "rpc_stage_post_fault_target_reach_trials": 77,
       "rpc_stage_progress": {
         "budget": {
           "max_faults": 8,
-          "max_trials": 80
+          "max_trials": 133
         },
-        "distinct_first_rpc_fault_sites": 19,
-        "elapsed_seconds": 10055.083,
+        "distinct_first_rpc_fault_sites": 30,
+        "elapsed_seconds": 12753.787,
         "exact_target_throw_trials": {
-          "SOLR-36": 25,
+          "SOLR-36": 29,
           "SOLR-37": 0
         },
         "fault_command_families": {
-          "FAULT:HTTP:parentForwardAdd": 39,
-          "FAULT:HTTP:parentForwardDeleteById": 38
+          "FAULT:HTTP:parentForwardAdd": 49,
+          "FAULT:HTTP:parentForwardDeleteById": 49
         },
         "fault_depths": {
-          "1": 29,
-          "2": 28,
-          "3": 14,
-          "4": 5,
+          "1": 44,
+          "2": 30,
+          "3": 17,
+          "4": 6,
           "5": 1
         },
         "fault_modes": {
-          "DELAY": 29,
-          "TIMEOUT": 48
+          "DELAY": 34,
+          "TIMEOUT": 64
         },
-        "fault_trials": 77,
+        "fault_trials": 98,
         "latest": {
           "applied_child_urls": [
-            "http://127.0.0.1:41171/collection1_shard1_0_replica_n9/",
-            "http://127.0.0.1:41171/collection1_shard1_0_replica_n9/",
-            "http://127.0.0.1:41171/collection1_shard1_0_replica_n9/"
+            "http://127.0.0.1:43781/collection1_shard1_1_replica_n10/"
           ],
-          "applied_faults": 3,
+          "applied_faults": 1,
           "applied_raw_leader_actors": [
-            "SOLR/PARENT/collection1/shard1/core_node4",
-            "SOLR/PARENT/collection1/shard1/core_node4",
             "SOLR/PARENT/collection1/shard1/core_node4"
           ],
           "applied_raw_sender_actors": [
-            "SOLR/PARENT/collection1/shard1/core_node4",
-            "SOLR/PARENT/collection1/shard1/core_node4",
             "SOLR/PARENT/collection1/shard1/core_node4"
           ],
           "applied_sender_physical_nodes": [
-            "127.0.0.1:41171_",
-            "127.0.0.1:41171_",
-            "127.0.0.1:41171_"
+            "127.0.0.1:43781_"
           ],
           "attempt": 1,
           "attempts": 1,
-          "elapsed_seconds": 106.119,
-          "fault_effect_boundary_seq": 4035,
+          "elapsed_seconds": 100.933,
+          "fault_effect_boundary_seq": 2751,
           "fault_effects_verified": true,
-          "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0077-c45e15062759ba4b0925/attempt-01/jacoco.exec",
+          "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0098-3cb376204f0b590a8f07/attempt-01/jacoco.exec",
           "junit_exit": 0,
           "junit_gate": [
             1,
@@ -365642,19 +365740,24 @@
           ],
           "last_fault_marker": "FAULT:HTTP:parentForwardAdd",
           "last_fault_mode": "TIMEOUT",
-          "last_fault_point_id": "{\"hitOrdinal\":17,\"marker\":\"FAULT:HTTP:parentForwardAdd\",\"resource\":\"/update/Add/collection1/shard1_0/core_node11\",\"senderKey\":\"SOLR/PARENT_LEADER/collection1/shard1\",\"siteId\":\"org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request\",\"sourceKey\":\"SOLR/SUBSHARD/collection1/shard1_0/core_node11\"}",
+          "last_fault_point_id": "{\"hitOrdinal\":1,\"marker\":\"FAULT:HTTP:parentForwardAdd\",\"resource\":\"/update/Add/collection1/shard1_1/core_node12\",\"senderKey\":\"SOLR/PARENT_LEADER/collection1/shard1\",\"siteId\":\"org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request\",\"sourceKey\":\"SOLR/SUBSHARD/collection1/shard1_1/core_node12\"}",
           "last_fault_sender": "SOLR/PARENT_LEADER/collection1/shard1",
-          "last_fault_source": "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+          "last_fault_source": "SOLR/SUBSHARD/collection1/shard1_1/core_node12",
           "new_exact_rpc_selectors": 0,
           "new_production_probes": 0,
-          "planned_faults": 3,
+          "planned_faults": 1,
           "postfault_guard_operands": {
-            "SOLR-36": {},
-            "SOLR-37": {}
+            "SOLR-36": {
+              "state=construction;phase=FROMLEADER": 10,
+              "state=recovery;phase=FROMLEADER": 26
+            },
+            "SOLR-37": {
+              "child=c0000000-ffffffff;parent=80000000-ffffffff;subset=true;phase=FROMLEADER": 36
+            }
           },
           "postfault_same_child_guards": {
-            "SOLR-36": 0,
-            "SOLR-37": 0
+            "SOLR-36": 36,
+            "SOLR-37": 36
           },
           "postfault_same_child_throws": {
             "SOLR-36": 0,
@@ -365662,64 +365765,40 @@
           },
           "reviewed_expected_target_rejection": false,
           "selected_parent_gain": 0,
-          "selected_queue_id": "c45e15062759ba4b0925",
+          "selected_queue_id": "3cb376204f0b590a8f07",
           "sequence": [
             {
               "delay_ms": 0,
               "fault_mode": "TIMEOUT",
               "point": {
-                "hitOrdinal": 8,
-                "marker": "FAULT:HTTP:parentForwardDeleteById",
-                "resource": "/update/DeleteById/collection1/shard1_0/core_node11",
-                "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
-                "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
-                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
-              }
-            },
-            {
-              "delay_ms": 0,
-              "fault_mode": "TIMEOUT",
-              "point": {
-                "hitOrdinal": 9,
-                "marker": "FAULT:HTTP:parentForwardDeleteById",
-                "resource": "/update/DeleteById/collection1/shard1_0/core_node11",
-                "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
-                "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
-                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
-              }
-            },
-            {
-              "delay_ms": 0,
-              "fault_mode": "TIMEOUT",
-              "point": {
-                "hitOrdinal": 17,
+                "hitOrdinal": 1,
                 "marker": "FAULT:HTTP:parentForwardAdd",
-                "resource": "/update/Add/collection1/shard1_0/core_node11",
+                "resource": "/update/Add/collection1/shard1_1/core_node12",
                 "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
                 "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
-                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
+                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_1/core_node12"
               }
             }
           ],
           "strict_injection": true,
-          "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0077-c45e15062759ba4b0925/attempt-01/events.jsonl",
-          "trial_number": 77
+          "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0098-3cb376204f0b590a8f07/attempt-01/events.jsonl",
+          "trial_number": 98
         },
-        "new_rpc_selectors": 10,
-        "production_probe_gain": 335,
-        "reviewed_expected_target_rejection_trials": 25,
+        "new_rpc_selectors": 14,
+        "production_probe_gain": 354,
+        "reviewed_expected_target_rejection_trials": 29,
         "same_child_post_target_trials": {
-          "SOLR-36": 59,
-          "SOLR-37": 34
+          "SOLR-36": 77,
+          "SOLR-37": 48
         },
         "status": "running",
-        "strict_injections": 67,
-        "total_attempts": 94
+        "strict_injections": 85,
+        "total_attempts": 120
       },
-      "rpc_stage_selected_plans": 77,
-      "rpc_stage_shared_production_probe_gain": 335,
-      "rpc_stage_strict_injections": 67,
-      "rpc_stage_target_exception_after_fault_trials": 25,
+      "rpc_stage_selected_plans": 98,
+      "rpc_stage_shared_production_probe_gain": 354,
+      "rpc_stage_strict_injections": 85,
+      "rpc_stage_target_exception_after_fault_trials": 29,
       "rpc_stage_unreviewed_target_exception_trials": 0,
       "seed_audit": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/seed-audit.json",
       "shared_run_with": "SOLR-37",
@@ -365727,11 +365806,11 @@
       "stable_precursor_io_selectors": 200,
       "target_check_description": "ACTIVE child shard state under parent forwarding",
       "target_check_source": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java:987",
-      "target_exception_after_fault_trials": 25,
-      "total_attempts": 94,
-      "total_including_legacy_elapsed_seconds": 24669.618,
+      "target_exception_after_fault_trials": 29,
+      "total_attempts": 120,
+      "total_including_legacy_elapsed_seconds": 27368.322,
       "unreviewed_exact_target_throw_trial_numbers": [],
-      "updated_at": 1791359251.3028677,
+      "updated_at": 1791361981.1723058,
       "zk_budget_semantics": {
         "effective_trial_definition": "strict_injection and same_logical_child_target_guard_after_last_fault",
         "max_original_junit_attempts_per_plan": 2,
@@ -365769,12 +365848,12 @@
       "cluster_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
       "status": "fuzz_running",
       "target_reached": true,
-      "fault_trials": 77,
-      "strict_injections": 67,
-      "fully_applied_trials": 67,
-      "target_after_fault": 34,
-      "coverage_gain": 95,
-      "elapsed_seconds": 10256.913,
+      "fault_trials": 98,
+      "strict_injections": 85,
+      "fully_applied_trials": 85,
+      "target_after_fault": 48,
+      "coverage_gain": 96,
+      "elapsed_seconds": 12955.617,
       "bug_mark": "none",
       "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/progress.json",
       "baseline_seconds": 311.784,
@@ -365962,7 +366041,7 @@
         ]
       },
       "coverage_gain_scope": "Current-quality HTTP release-JAR production probes from strict trials reaching this case’s exact same-child guard after the fault effect; legacy ZooKeeper actor-unverified probes excluded.",
-      "current_method_elapsed_seconds": 10256.913,
+      "current_method_elapsed_seconds": 12955.617,
       "extension_coverage_audits": [
         {
           "class": "org/apache/lucene/index/DocumentsWriter",
@@ -366311,99 +366390,94 @@
         "seed": "F0993D5343E20BA4"
       },
       "post_fault_any_child_trials": 0,
-      "post_fault_target_reach_trials": 34,
+      "post_fault_target_reach_trials": 48,
       "production_branch_outcomes_gain": 0,
       "production_methods_gain": 0,
-      "reason": "34 strict HTTP trials reached the exact SOLR-37 guard on the injected child after fault effect; 0 exact throws observed. HTTP and actor-aware ZooKeeper coverage remain under test.",
+      "reason": "48 strict HTTP trials reached the exact SOLR-37 guard on the injected child after fault effect; 0 exact throws observed. HTTP and actor-aware ZooKeeper coverage remain under test.",
       "remaining_work": "Continue saved HTTP role-V2 checkpoint to 80 strict same-child postfault effective trials per check; source-review any unrecognized exact target exception. Actor-aware ZK V2 remains a separate campaign.",
-      "rpc_stage_attempted_junits": 94,
-      "rpc_stage_case_production_probe_gain": 95,
+      "rpc_stage_attempted_junits": 120,
+      "rpc_stage_case_production_probe_gain": 96,
       "rpc_stage_control": {
         "counts": {
-          "attempted_junits": 30,
+          "attempted_junits": 99,
           "effective_by_case": {
-            "SOLR-36": 20,
-            "SOLR-37": 6
+            "SOLR-36": 61,
+            "SOLR-37": 35
           },
-          "elapsed_seconds": 3231.556,
+          "elapsed_seconds": 10578.552,
           "fault_depths": {
-            "1": 18,
-            "2": 6
+            "1": 29,
+            "2": 29,
+            "3": 16,
+            "4": 5,
+            "5": 1
           },
-          "selected_plans": 24,
-          "strict_injections": 22,
-          "unmatched_plans": 2
+          "selected_plans": 80,
+          "strict_injections": 69,
+          "unmatched_plans": 11
         },
         "late_novelty": null,
         "max_faults": 8,
-        "reason": "pilot checkpoint; retain completed plans",
-        "selected_cap": 80,
+        "reason": "extend selected plans to reach 80 effective",
+        "selected_cap": 133,
         "status": "running",
         "target_effective": 80,
-        "updated_at": 1791352331.8038714
+        "updated_at": 1791359767.7783172
       },
       "rpc_stage_effective_by_case": {
-        "SOLR-36": 59,
-        "SOLR-37": 34
+        "SOLR-36": 77,
+        "SOLR-37": 48
       },
       "rpc_stage_expected_target_rejection_trials": 0,
-      "rpc_stage_fault_trials": 77,
-      "rpc_stage_post_fault_target_reach_trials": 34,
+      "rpc_stage_fault_trials": 98,
+      "rpc_stage_post_fault_target_reach_trials": 48,
       "rpc_stage_progress": {
         "budget": {
           "max_faults": 8,
-          "max_trials": 80
+          "max_trials": 133
         },
-        "distinct_first_rpc_fault_sites": 19,
-        "elapsed_seconds": 10055.083,
+        "distinct_first_rpc_fault_sites": 30,
+        "elapsed_seconds": 12753.787,
         "exact_target_throw_trials": {
-          "SOLR-36": 25,
+          "SOLR-36": 29,
           "SOLR-37": 0
         },
         "fault_command_families": {
-          "FAULT:HTTP:parentForwardAdd": 39,
-          "FAULT:HTTP:parentForwardDeleteById": 38
+          "FAULT:HTTP:parentForwardAdd": 49,
+          "FAULT:HTTP:parentForwardDeleteById": 49
         },
         "fault_depths": {
-          "1": 29,
-          "2": 28,
-          "3": 14,
-          "4": 5,
+          "1": 44,
+          "2": 30,
+          "3": 17,
+          "4": 6,
           "5": 1
         },
         "fault_modes": {
-          "DELAY": 29,
-          "TIMEOUT": 48
+          "DELAY": 34,
+          "TIMEOUT": 64
         },
-        "fault_trials": 77,
+        "fault_trials": 98,
         "latest": {
           "applied_child_urls": [
-            "http://127.0.0.1:41171/collection1_shard1_0_replica_n9/",
-            "http://127.0.0.1:41171/collection1_shard1_0_replica_n9/",
-            "http://127.0.0.1:41171/collection1_shard1_0_replica_n9/"
+            "http://127.0.0.1:43781/collection1_shard1_1_replica_n10/"
           ],
-          "applied_faults": 3,
+          "applied_faults": 1,
           "applied_raw_leader_actors": [
-            "SOLR/PARENT/collection1/shard1/core_node4",
-            "SOLR/PARENT/collection1/shard1/core_node4",
             "SOLR/PARENT/collection1/shard1/core_node4"
           ],
           "applied_raw_sender_actors": [
-            "SOLR/PARENT/collection1/shard1/core_node4",
-            "SOLR/PARENT/collection1/shard1/core_node4",
             "SOLR/PARENT/collection1/shard1/core_node4"
           ],
           "applied_sender_physical_nodes": [
-            "127.0.0.1:41171_",
-            "127.0.0.1:41171_",
-            "127.0.0.1:41171_"
+            "127.0.0.1:43781_"
           ],
           "attempt": 1,
           "attempts": 1,
-          "elapsed_seconds": 106.119,
-          "fault_effect_boundary_seq": 4035,
+          "elapsed_seconds": 100.933,
+          "fault_effect_boundary_seq": 2751,
           "fault_effects_verified": true,
-          "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0077-c45e15062759ba4b0925/attempt-01/jacoco.exec",
+          "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0098-3cb376204f0b590a8f07/attempt-01/jacoco.exec",
           "junit_exit": 0,
           "junit_gate": [
             1,
@@ -366412,19 +366486,24 @@
           ],
           "last_fault_marker": "FAULT:HTTP:parentForwardAdd",
           "last_fault_mode": "TIMEOUT",
-          "last_fault_point_id": "{\"hitOrdinal\":17,\"marker\":\"FAULT:HTTP:parentForwardAdd\",\"resource\":\"/update/Add/collection1/shard1_0/core_node11\",\"senderKey\":\"SOLR/PARENT_LEADER/collection1/shard1\",\"siteId\":\"org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request\",\"sourceKey\":\"SOLR/SUBSHARD/collection1/shard1_0/core_node11\"}",
+          "last_fault_point_id": "{\"hitOrdinal\":1,\"marker\":\"FAULT:HTTP:parentForwardAdd\",\"resource\":\"/update/Add/collection1/shard1_1/core_node12\",\"senderKey\":\"SOLR/PARENT_LEADER/collection1/shard1\",\"siteId\":\"org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request\",\"sourceKey\":\"SOLR/SUBSHARD/collection1/shard1_1/core_node12\"}",
           "last_fault_sender": "SOLR/PARENT_LEADER/collection1/shard1",
-          "last_fault_source": "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+          "last_fault_source": "SOLR/SUBSHARD/collection1/shard1_1/core_node12",
           "new_exact_rpc_selectors": 0,
           "new_production_probes": 0,
-          "planned_faults": 3,
+          "planned_faults": 1,
           "postfault_guard_operands": {
-            "SOLR-36": {},
-            "SOLR-37": {}
+            "SOLR-36": {
+              "state=construction;phase=FROMLEADER": 10,
+              "state=recovery;phase=FROMLEADER": 26
+            },
+            "SOLR-37": {
+              "child=c0000000-ffffffff;parent=80000000-ffffffff;subset=true;phase=FROMLEADER": 36
+            }
           },
           "postfault_same_child_guards": {
-            "SOLR-36": 0,
-            "SOLR-37": 0
+            "SOLR-36": 36,
+            "SOLR-37": 36
           },
           "postfault_same_child_throws": {
             "SOLR-36": 0,
@@ -366432,63 +366511,39 @@
           },
           "reviewed_expected_target_rejection": false,
           "selected_parent_gain": 0,
-          "selected_queue_id": "c45e15062759ba4b0925",
+          "selected_queue_id": "3cb376204f0b590a8f07",
           "sequence": [
             {
               "delay_ms": 0,
               "fault_mode": "TIMEOUT",
               "point": {
-                "hitOrdinal": 8,
-                "marker": "FAULT:HTTP:parentForwardDeleteById",
-                "resource": "/update/DeleteById/collection1/shard1_0/core_node11",
-                "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
-                "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
-                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
-              }
-            },
-            {
-              "delay_ms": 0,
-              "fault_mode": "TIMEOUT",
-              "point": {
-                "hitOrdinal": 9,
-                "marker": "FAULT:HTTP:parentForwardDeleteById",
-                "resource": "/update/DeleteById/collection1/shard1_0/core_node11",
-                "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
-                "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
-                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
-              }
-            },
-            {
-              "delay_ms": 0,
-              "fault_mode": "TIMEOUT",
-              "point": {
-                "hitOrdinal": 17,
+                "hitOrdinal": 1,
                 "marker": "FAULT:HTTP:parentForwardAdd",
-                "resource": "/update/Add/collection1/shard1_0/core_node11",
+                "resource": "/update/Add/collection1/shard1_1/core_node12",
                 "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
                 "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
-                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
+                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_1/core_node12"
               }
             }
           ],
           "strict_injection": true,
-          "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0077-c45e15062759ba4b0925/attempt-01/events.jsonl",
-          "trial_number": 77
+          "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0098-3cb376204f0b590a8f07/attempt-01/events.jsonl",
+          "trial_number": 98
         },
-        "new_rpc_selectors": 10,
-        "production_probe_gain": 335,
-        "reviewed_expected_target_rejection_trials": 25,
+        "new_rpc_selectors": 14,
+        "production_probe_gain": 354,
+        "reviewed_expected_target_rejection_trials": 29,
         "same_child_post_target_trials": {
-          "SOLR-36": 59,
-          "SOLR-37": 34
+          "SOLR-36": 77,
+          "SOLR-37": 48
         },
         "status": "running",
-        "strict_injections": 67,
-        "total_attempts": 94
+        "strict_injections": 85,
+        "total_attempts": 120
       },
-      "rpc_stage_selected_plans": 77,
-      "rpc_stage_shared_production_probe_gain": 335,
-      "rpc_stage_strict_injections": 67,
+      "rpc_stage_selected_plans": 98,
+      "rpc_stage_shared_production_probe_gain": 354,
+      "rpc_stage_strict_injections": 85,
       "rpc_stage_target_exception_after_fault_trials": 0,
       "rpc_stage_unreviewed_target_exception_trials": 0,
       "seed_audit": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/seed-audit.json",
@@ -366499,10 +366554,10 @@
       "target_check_description": "child hash range outside parent range under parent forwarding",
       "target_check_source": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java:995",
       "target_exception_after_fault_trials": 0,
-      "total_attempts": 94,
-      "total_including_legacy_elapsed_seconds": 24669.618,
+      "total_attempts": 120,
+      "total_including_legacy_elapsed_seconds": 27368.322,
       "unreviewed_exact_target_throw_trial_numbers": [],
-      "updated_at": 1791359251.3087926,
+      "updated_at": 1791361981.17636,
       "zk_budget_semantics": {
         "effective_trial_definition": "strict_injection and same_logical_child_target_guard_after_last_fault",
         "max_original_junit_attempts_per_plan": 2,
@@ -366932,14 +366987,15 @@
       "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
       "status": "fuzz_running",
       "target_reached": true,
-      "fault_trials": 181,
-      "strict_injections": 117,
-      "fully_applied_trials": 117,
-      "target_after_fault": 14,
-      "coverage_gain": 94,
-      "elapsed_seconds": 5927.812,
+      "fault_trials": 255,
+      "strict_injections": 161,
+      "fully_applied_trials": 161,
+      "target_after_fault": 26,
+      "coverage_gain": 293,
+      "elapsed_seconds": 8038.489,
       "bug_mark": "none",
-      "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)",
+      "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1)",
+      "active_scheduler_version": "solr39_lazy_occurrence_v7",
       "budget": {
         "base_effective_goal": 80,
         "base_max_attempts": 720,
@@ -366953,7 +367009,7 @@
       },
       "build_receipt_sha256": "1e939577aa0b848806b29dbda72f1086cab1266cffc229cae8d26912f813c084",
       "case_completion_elapsed_seconds": null,
-      "effective_trials": 14,
+      "effective_trials": 26,
       "healthy_target_checks": 8,
       "legacy_coarse_actor": {
         "conclusion": "no selected target exception observed within this I/O scope and budget",
@@ -366974,22 +367030,25 @@
       },
       "max_applied_faults": 6,
       "new_io_families": 14,
-      "new_io_identities": 567,
-      "production_branches_gained": 45,
-      "production_methods_gained": 6,
+      "new_io_identities": 569,
+      "production_branches_gained": 137,
+      "production_methods_gained": 37,
       "quality_complete": false,
       "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-10/work/evidence/campaign/audit.json",
-      "reason": "V4 actor-aware unchanged JUnit campaign: 181 shared attempts, 117 strict, 14/80 effective for this guard; stop=running.",
-      "shared_elapsed_seconds_at_snapshot": 5927.812,
+      "reason": "Actor-aware unchanged JUnit campaign (solr39_lazy_occurrence_v7): 255 shared attempts, 161 strict, 26/80 effective for this guard; stop=running.",
+      "shared_elapsed_seconds_at_snapshot": 8038.489,
       "shared_execution_group": "SOLR-10/39/40",
-      "snapshot_utc": "2026-10-07T07:48:53+00:00",
+      "snapshot_utc": "2026-10-07T08:32:50+00:00",
       "source_file": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
       "target_exception_candidates": 0,
       "target_exception_trial_numbers": [],
       "target_guard_branch_taken": false,
-      "unique_applied_callsite_operation_resource": 6,
+      "unique_applied_callsite_operation_resource": 10,
       "unreviewed_target_exception_trials": [],
-      "v4_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)",
+      "v4_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2, frozen at trial 189)",
+      "v5_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1, completed trial 222 before V7)",
+      "v7_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1, active continuation)",
+      "v7_root_expansion_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/lazy-root-expansion-v7.json (node1)",
       "reported_function": "RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections",
       "reported_check_code": "if (collections == null) throw newAliasMustExistException",
       "resolved_check_line": 246
@@ -367007,14 +367066,15 @@
       "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
       "status": "fuzz_running",
       "target_reached": true,
-      "fault_trials": 181,
-      "strict_injections": 117,
-      "fully_applied_trials": 117,
-      "target_after_fault": 29,
-      "coverage_gain": 319,
-      "elapsed_seconds": 5927.812,
+      "fault_trials": 255,
+      "strict_injections": 161,
+      "fully_applied_trials": 161,
+      "target_after_fault": 47,
+      "coverage_gain": 494,
+      "elapsed_seconds": 8038.489,
       "bug_mark": "reproduced_candidate_novelty_pending",
-      "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)",
+      "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1)",
+      "active_scheduler_version": "solr39_lazy_occurrence_v7",
       "additional_candidate_audits": [
         {
           "classification": "same_selected_cache_miss_mechanism",
@@ -367059,7 +367119,7 @@
       "candidate_replay_summary": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/candidate-solr40-v4/summary.json",
       "candidate_report": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/CANDIDATE-SOLR-40.md",
       "case_completion_elapsed_seconds": null,
-      "effective_trials": 29,
+      "effective_trials": 47,
       "healthy_target_checks": 22,
       "legacy_coarse_actor": {
         "conclusion": "no selected target exception observed within this I/O scope and budget",
@@ -367080,15 +367140,15 @@
       },
       "max_applied_faults": 6,
       "new_io_families": 14,
-      "new_io_identities": 571,
-      "production_branches_gained": 156,
-      "production_methods_gained": 34,
+      "new_io_identities": 572,
+      "production_branches_gained": 240,
+      "production_methods_gained": 57,
       "quality_complete": false,
       "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/candidate-solr40-v4/summary.json",
-      "reason": "V4 actor-aware unchanged JUnit campaign: 181 shared attempts, 117 strict, 29/80 effective for this guard; stop=running. Strict target exception is a reproduced fault-induced candidate; novelty remains pending. See candidate report and controls.",
-      "shared_elapsed_seconds_at_snapshot": 5927.812,
+      "reason": "Actor-aware unchanged JUnit campaign (solr39_lazy_occurrence_v7): 255 shared attempts, 161 strict, 47/80 effective for this guard; stop=running. Strict target exception is a reproduced fault-induced candidate; novelty remains pending. See candidate report and controls.",
+      "shared_elapsed_seconds_at_snapshot": 8038.489,
       "shared_execution_group": "SOLR-10/39/40",
-      "snapshot_utc": "2026-10-07T07:48:53+00:00",
+      "snapshot_utc": "2026-10-07T08:32:50+00:00",
       "source_file": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
       "target_exception_candidates": 3,
       "target_exception_trial_numbers": [
@@ -367097,9 +367157,12 @@
         163
       ],
       "target_guard_branch_taken": true,
-      "unique_applied_callsite_operation_resource": 12,
+      "unique_applied_callsite_operation_resource": 16,
       "unreviewed_target_exception_trials": [],
-      "v4_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)",
+      "v4_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2, frozen at trial 189)",
+      "v5_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1, completed trial 222 before V7)",
+      "v7_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node1, active continuation)",
+      "v7_root_expansion_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/lazy-root-expansion-v7.json (node1)",
       "reported_function": "RoutedAliasUpdateProcessor.getAliasProps",
       "reported_check_code": "if (aliasProperties.isEmpty()) throw newAliasMustExistException",
       "resolved_check_line": 132

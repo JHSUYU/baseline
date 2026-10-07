@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from collections import Counter
 import json
 from pathlib import Path
 
@@ -46,22 +47,30 @@ def audit() -> dict:
     seeds = [HERE / "healthy-v3-a", HERE / "healthy-v3-b"]
     union = {category: set().union(*(covered(seed, category) for seed in seeds))
              for category in COVERAGE}
+    healthy_coverage = {category: set(values) for category, values in union.items()}
     io_union = set()
     actor_checks = 0
+    healthy_elapsed = 0.0
     for seed in seeds:
         manifest = json.loads((seed / "manifest.json").read_text())
         if manifest["returncode"] != 0 or manifest["test"] != state["original_junit"]:
             raise AssertionError("healthy original JUnit failed/mismatched")
+        healthy_elapsed += manifest["elapsed_seconds"]
         rows = trace(seed / "runtime_trace.jsonl")
         actor_checks += check_bindings(rows)
         io_union |= {family(row) for row in rows if selectable(row)}
+    healthy_io = set(io_union)
     effective = 0
     strict = 0
     candidates = 0
     elapsed = 0.0
+    junit_returncodes = Counter()
+    depths = Counter()
     for index, stored in enumerate(state["completed"], 1):
         directory = CAMPAIGN / "trials" / ("t%04d" % index)
         manifest = json.loads((directory / "manifest.json").read_text())
+        junit_returncodes[str(manifest["returncode"])] += 1
+        depths[str(len(stored["plan"]))] += 1
         if manifest["test"] != state["original_junit"]:
             raise AssertionError(f"trial {index} original JUnit mismatch")
         plan_lines = (directory / "faults.tsv").read_text().splitlines()
@@ -106,11 +115,26 @@ def audit() -> dict:
             raise AssertionError("coverage union mismatch: " + category)
     if io_union != set(state["io_families"]):
         raise AssertionError("I/O family union mismatch")
+    effective_rows = [row for row in state["completed"] if row["effective"]]
     return {"case_id": "HDFS-01", "checkpoint_sha256": sha256(STATE),
             "completed": len(state["completed"]), "strict": strict,
             "effective": effective, "exact_target_throws": candidates,
             "raw_read_actor_joins": actor_checks,
             "elapsed_trial_seconds": round(elapsed, 3),
+            "elapsed_healthy_seconds": round(healthy_elapsed, 3),
+            "elapsed_total_junit_seconds": round(elapsed + healthy_elapsed, 3),
+            "original_junit_returncodes": dict(junit_returncodes),
+            "fault_depths": dict(depths),
+            "coverage_gain_over_two_healthy_seeds": {
+                category: len(union[category] - healthy_coverage[category])
+                for category in COVERAGE},
+            "new_actor_bound_io_families": len(io_union - healthy_io),
+            "last_eight_effective_novelty": [
+                {"attempt": row["attempt"],
+                 "methods": row["coverage_gain"]["methods"],
+                 "branch_counts": row["coverage_gain"]["branch_counts"],
+                 "io_families": row["new_io_families"]}
+                for row in effective_rows[-8:]],
             "pending": len(state["queue"]), "stop_reason": state["stop_reason"]}
 
 

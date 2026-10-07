@@ -74,3 +74,24 @@ Node1 runs the case in tmux using the exact original JUnit and isolated
 scratch directories. `calibrate.py --prefix healthy-v3` produced the two
 healthy seeds. The first three V3 fault trials are a bounded pilot; the full
 runner resumes the same checkpoint after its raw audit.
+
+## Final audited result
+
+The V3 campaign stopped at its base budget: **114 attempts, 105 exact ordered
+injections and 80 effective same-file post-fault target visits**. The original
+JUnit returned 0 in 89 fault trials and 1 in 25; a JUnit failure alone is not
+the selected exception oracle. No fault trial produced the selected target
+`EOFException`, so this case has no new-bug mark. The two healthy JUnits and
+114 fault JUnits consumed 2,257.742 seconds of summed JUnit time. The longest
+executed plan contained five faults.
+
+Compared with the union of both healthy runs, effective trials added 176
+production probes, 22 methods, 100 branch-count identifiers, 190 lines and
+six actor-bound I/O families. The final eight effective trials (attempts 96,
+99, 104, 108, 110, 111, 112 and 114) added none of those method/branch/I/O
+feedback categories, so the conditional 128/10 extension did not activate.
+`audit-final-v3.json` independently recomputes all 114 plans against raw
+manifests, trace events and JaCoCo files, including 904 raw read-to-location
+joins. It records the final checkpoint SHA and duration breakdown. The raw
+trial directories remain on node1 under `campaign-v3/trials/`; the checkpoint
+retains 1,476 untested plans for any future, separately authorized budget.
