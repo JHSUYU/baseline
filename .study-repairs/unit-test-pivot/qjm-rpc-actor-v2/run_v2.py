@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
@@ -19,6 +20,7 @@ METHOD = {"07": "testRecoverAfterIncompleteRecovery",
 JDK = Path("/usr/lib/jvm/java-8-openjdk-amd64/bin")
 JACOCO = Path("/users/ZhenyuLi/.m2/repository/org/jacoco/org.jacoco.agent/0.8.15/"
               "org.jacoco.agent-0.8.15-runtime.jar")
+JVM_START_LOCK = HERE.parent / "jvm-start.lock"
 
 
 def sha(path: Path) -> str:
@@ -42,6 +44,43 @@ def classpath(case: str, overlay: Path) -> str:
         str(HADOOP / "share/hadoop/common/hadoop-common-3.4.3-tests.jar"),
         base, *(str(path) for path in test_dependencies),
         *(str(path) for path in sorted((HADOOP / "share/hadoop/tools/lib").glob("*.jar")))))
+
+
+def start_jvm(cmd: list[str], scratch: Path, log, output: Path) -> subprocess.Popen:
+    """Atomically check node capacity and start one QJM JVM.
+
+    Other controllers can use the same lock path. The lock covers only the
+    capacity check and Popen, not the JUnit run, so trials still overlap.
+    """
+    JVM_START_LOCK.parent.mkdir(parents=True, exist_ok=True)
+    with JVM_START_LOCK.open("a") as gate:
+        while True:
+            fcntl.flock(gate, fcntl.LOCK_EX)
+            active = subprocess.run(["pgrep", "-x", "java"], capture_output=True,
+                                    text=True, check=False)
+            free_gib = shutil.disk_usage(HERE).free / (1024 ** 3)
+            if len(active.stdout.splitlines()) <= 4 and free_gib >= 8:
+                process = subprocess.Popen(cmd, cwd=scratch,
+                    env=dict(os.environ, JAVA_HOME=str(JDK.parent)),
+                    stdout=log, stderr=subprocess.STDOUT)
+                (output / "jvm.pid").write_text(str(process.pid) + "\n")
+                # Make the reservation visible to the next holder before
+                # releasing the lock; Popen can return before exec(java).
+                for _ in range(50):
+                    if process.poll() is not None:
+                        break
+                    try:
+                        if Path(f"/proc/{process.pid}/comm").read_text().strip() == "java":
+                            break
+                    except OSError:
+                        break
+                    time.sleep(0.1)
+                fcntl.flock(gate, fcntl.LOCK_UN)
+                return process
+            fcntl.flock(gate, fcntl.LOCK_UN)
+            if (output.parent / "campaign-v2/PAUSE").exists():
+                raise RuntimeError("JVM start paused at the resource gate")
+            time.sleep(1)
 
 
 def main() -> None:
@@ -88,10 +127,7 @@ def main() -> None:
             METHOD[args.case]]
     started = time.monotonic()
     with (output / "junit.log").open("w") as log:
-        process = subprocess.Popen(cmd, cwd=scratch,
-            env=dict(os.environ, JAVA_HOME=str(JDK.parent)),
-            stdout=log, stderr=subprocess.STDOUT)
-        (output / "jvm.pid").write_text(str(process.pid) + "\n")
+        process = start_jvm(cmd, scratch, log, output)
         try:
             returncode = process.wait(timeout=args.timeout)
         except subprocess.TimeoutExpired:

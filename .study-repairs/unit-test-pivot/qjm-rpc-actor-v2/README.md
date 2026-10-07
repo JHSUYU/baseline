@@ -99,6 +99,11 @@ Place `campaign-v2/PAUSE` to stop at the next JUnit boundary. Before each new
 JUnit, the controller requires fewer than five existing Java processes and at
 least 8 GiB free disk by default; `--wait-for-resources` keeps the tmux worker
 at its checkpoint until these conditions return. The controller
+and `run_v2.py` repeat that capacity check under the short shared
+`unit-test-pivot/jvm-start.lock` immediately before starting Java; the lock
+is released once the JVM process becomes visible, so concurrent JUnit runs
+remain possible without the two QJM workers racing past the launch limit.
+The controller
 selects observed actor-bound RPC/file I/O preceding the exact target, applies
 faults in order, and mutates from newly observed I/O in effective trials. It
 prioritizes new production method/branch and I/O-family feedback. A trial is
