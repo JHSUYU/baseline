@@ -111,4 +111,8 @@ Fifteen block receipts cover the node2 per-file SHA mirror through trial 150;
 a final checksum dry run found no difference among files retained on node0.
 The [terminal receipt](terminal-receipt.json) records the source and JUnit
 hashes, actor/guard counts, coverage, elapsed time, and remaining 1,348
-untried plans. No new bug was confirmed.
+untried plans. An [independent TSV recount](independent-recount.json) uses a
+separate event parser without importing the campaign oracle and independently
+matches 150 attempts, 80 effective trials, 125 exact ordered injections, 86
+selected guards, 86 true JSON equalities, and zero target throws. No new bug
+was confirmed.

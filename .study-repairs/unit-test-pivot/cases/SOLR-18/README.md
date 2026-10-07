@@ -32,8 +32,9 @@ faults; actual attempts reached depth three before budget completion, leaving
 exhaustive proof over fault schedules.
 
 [Full checkpoint](actor-v2/alternate-junit/full-state.json),
-[independent raw audit](actor-v2/alternate-junit/full-audit.json), and
-[terminal receipt](actor-v2/alternate-junit/terminal-receipt.json) retain the
+[independent raw audit](actor-v2/alternate-junit/full-audit.json),
+[independent TSV recount](actor-v2/alternate-junit/independent-recount.json),
+and [terminal receipt](actor-v2/alternate-junit/terminal-receipt.json) retain the
 separate denominators, source/JUnit hashes, target identity checks, coverage,
 elapsed time, and 15 node2 SHA mirror receipts. Node0 keeps every trial's
 event trace, JaCoCo, JUnit console and run receipt. Only SHA verified derived
