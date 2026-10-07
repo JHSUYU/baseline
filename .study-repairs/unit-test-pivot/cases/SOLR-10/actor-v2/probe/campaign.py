@@ -32,6 +32,7 @@ JAVA = "/usr/lib/jvm/java-8-openjdk-amd64/bin/java"
 DIST = "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist"
 BASE_ATTEMPTS, BASE_VALID_PER_SITE, BASE_FAULTS = 720, 80, 8
 EXTENDED_ATTEMPTS, EXTENDED_VALID_PER_SITE, EXTENDED_FAULTS = 1152, 128, 10
+V4_SCHEDULER_SHA256 = "0ad2cc385e4839af4be8ebadc72eac24262b95f2cc083c1eb7469f62e8f79742"
 
 
 def relevant(key: tuple[str, str, str, str]) -> bool:
@@ -302,6 +303,36 @@ def done(state: dict) -> bool:
 def pick(state: dict) -> list[str]:
     queue = state["queue"]
     number = len(state["trials"]) + 1
+    # The first V4 tranche showed that SOLR-39 retained its exact reader only
+    # under single-fault plans. Keep exploring the mutated queue on alternate
+    # rounds, while spending the other rounds on previously unseen roots whose
+    # healthy actor/target trace establishes the same-client relation.
+    if (state.get("scheduler_version") == "solr39_root_balance_v5" and
+            state["site_progress"]["SOLR-39"]["effective"] <
+            state["site_progress"]["SOLR-39"]["goal"] and number % 2 == 0):
+        targeted = state.get("seed_target_sites", {})
+        candidates = []
+        for index, plan in enumerate(queue):
+            if len(plan) != 1 or "SOLR-39" not in targeted.get(plan[0], []):
+                continue
+            selector = plan[0]
+            parts = selector.split("|")
+            # Two observed effective roots were reads through LazyCollectionRef.
+            # Other target-linked collection-state roots remain eligible, then
+            # the remaining healthy same-reader candidates follow.
+            if ("LazyCollectionRef#get:" in selector and
+                    parts[0] == "EXISTS_WATCH" and
+                    parts[1].startswith("/collections/myalias")):
+                family = 0
+            elif (parts[1].startswith("/collections/myalias") and
+                  parts[1].endswith("/state.json")):
+                family = 1
+            else:
+                family = 2
+            ordinal = int(parts[2]) if parts[2].isdigit() else 100000
+            candidates.append((family, ordinal, index))
+        if candidates:
+            return queue.pop(min(candidates)[2])
     if number % 3 == 0:
         priority = min(("SOLR-39", "SOLR-10", "SOLR-40"),
                        key=lambda site: state["site_progress"][site]["effective"] /
@@ -320,9 +351,35 @@ def pick(state: dict) -> list[str]:
     return queue.pop(0)
 
 
+def migrate_root_balance(state: dict) -> None:
+    """Document the actor-retaining scheduler change without recounting trials."""
+    if state.get("scheduler_version") == "solr39_root_balance_v5":
+        return
+    if state["inflight"] is not None:
+        return  # Finish the already selected plan before changing selection.
+    before = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    source = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    state["root_balance_migration"] = {
+        "trials_before": len(state["trials"]),
+        "seen_plans_before": len(state["seen_plans"]),
+        "queue_before": len(state["queue"]),
+        "checkpoint_sha256_before": before,
+        "scheduler_sha256_before": V4_SCHEDULER_SHA256,
+        "scheduler_sha256_after": source,
+        "reason": "SOLR-39 exact-actor postfault reach occurred only in single-fault roots in the audited first tranche",
+        "rule": "alternate target-linked roots and the existing multi-fault queue; do not replay completed plans",
+    }
+    state["scheduler_version"] = "solr39_root_balance_v5"
+    atomic_json(STATE, state)
+    atomic_json(CAMPAIGN / "root-balance-migration.json", {
+        **state["root_balance_migration"],
+        "checkpoint_sha256_after": hashlib.sha256(STATE.read_bytes()).hexdigest(),
+    })
+
+
 def migrate_reader_schedule(state: dict) -> None:
     """Annotate a stopped pilot checkpoint without replaying any old trial."""
-    if state.get("scheduler_version") == "balanced_watch_reads_v4":
+    if state.get("scheduler_version") in ("balanced_watch_reads_v4", "solr39_root_balance_v5"):
         return
     if state["inflight"] is not None:
         raise RuntimeError("Scheduler migration requires a completed-trial boundary")
@@ -451,6 +508,7 @@ def run(max_new_trials: int | None = None) -> None:
         raise RuntimeError("Checkpoint build differs from current actor hooks")
     migrate_reader_schedule(state)
     migrate_reader_retries(state)
+    migrate_root_balance(state)
     starting_trials = len(state["trials"])
     reclaim_completed_scratch(state)
     update_stop_reasons(state)
@@ -536,6 +594,7 @@ def run(max_new_trials: int | None = None) -> None:
         update_stop_reasons(state)
         atomic_json(output / "trial.json", trial)
         atomic_json(STATE, state)
+        migrate_root_balance(state)
         write_checkpoints(state)
         if not trial["scratch_retained"]:
             scratch = output / "scratch"
