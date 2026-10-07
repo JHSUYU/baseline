@@ -10,7 +10,7 @@ import subprocess
 
 from build import CASE22, HERE, JAVA8, original_classpath
 from coverage import production_classes
-from fuzz import SEEDS, family, load_events, point, relevant
+from fuzz import GUARDS, SEEDS, family, load_events, point, relevant
 
 
 ROOT = HERE / 'campaign'
@@ -72,8 +72,26 @@ def main() -> None:
                          and Path(row['jacoco']).stat().st_size]
         combined_coverage = coverage_totals(healthy_exec + injected_exec)
         combined_io = set(healthy_io)
+        guard_operands = Counter()
+        identity_by_trial = {item['trial_number']: item for item in identity['trials']}
         for row in valid:
-            combined_io |= io_families(Path(row['trace']).parent)
+            events = load_events(Path(row['trace']).parent)
+            combined_io |= {family(point(event)) for event in events
+                            if event['event'] == 'IO_OBSERVED'
+                            and relevant(point(event))}
+            last_fault = max(event['seq'] for event in events
+                             if event['event'] == 'IO_OBSERVED'
+                             and event['applied'])
+            affected_child = identity_by_trial[row['trial_number']][
+                'expected_child_for_last_fault']
+            for event in events:
+                if (event['event'] == 'TARGET_CHECK'
+                        and event['marker'] == GUARDS[case_id]
+                        and event['seq'] > last_fault
+                        and (event['sourceKey'] == affected_child
+                             if affected_child else event['sourceKey'].startswith(
+                                 'SOLR/SUBSHARD/collection1/shard1_'))):
+                    guard_operands[event['detail']] += 1
         report = {
             'case_id': case_id,
             'methodology': 'original_release_jar_jacoco_union_and_exact_zookeeper_io',
@@ -93,6 +111,10 @@ def main() -> None:
                 row['trial_number'] for row in state['completed']
                 if row['strict_injection']
                 and row['exact_target_throw_after_last_fault'][case_id] > 0],
+            'unmatched_trial_numbers': [row['trial_number']
+                                        for row in state['completed']
+                                        if not row['strict_injection']],
+            'postfault_guard_operand_counts_on_affected_child': dict(guard_operands),
             'fault_depths': dict(Counter(str(row['planned_faults'])
                                          for row in state['completed'])),
             'junit_gate_counts': dict(Counter(str(row['junit_gate'])
