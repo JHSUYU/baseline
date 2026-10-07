@@ -253170,7 +253170,7 @@
         }
       },
       "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
-      "source_audit_note": "Main 128/128 effective phase completed and audited; independent Master/WAL supplemental is paused at 203 attempts/51 effective while s203 reproduced exact timeout awaits lock-owner/source and novelty review.",
+      "source_audit_note": "Main 128/128 effective phase complete; supplemental 203 attempts/51 effective paused for s203 reproduced exact timeout. Trace-only diagnostic healthy passed; same-plan fault-1 passed when aborted server did not carry hbase:meta, a conditional negative control. Candidate novelty remains unconfirmed.",
       "supplemental_stage": {
         "attempt_cap": 384,
         "attempted_trials": 203,
@@ -253186,6 +253186,30 @@
         "candidate_replay_same_actor_b7": 1,
         "candidate_replay_timeout_seconds": 600,
         "checkpoint": "work-upstream/supplemental-checkpoint.json",
+        "diagnostic_overlay": {
+          "agent_jar_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
+          "fault_1": {
+            "aborted_server_carrying_meta": false,
+            "classification": "non_meta_role_conditional_negative_control",
+            "elapsed_seconds": 57.89,
+            "exact_faults": 2,
+            "exit": 0,
+            "first_server_crash_procedure_prompt": true,
+            "junit": "1/1 pass",
+            "manifest_sha256": "eb199ab13fecc1ac8522b7c7a7c8d4b593b8679ce977643aba3b7d5e420d1bb3",
+            "same_actor_b7": 1
+          },
+          "fuzz_budget_admitted": false,
+          "healthy": {
+            "elapsed_seconds": 59.97,
+            "exit": 0,
+            "junit": "1/1 pass",
+            "manifest_sha256": "25adb109adf8e5aae5dd8825e41d8a5446f7e65d67f6996176c1e41cb791bd0f",
+            "read_lock_acquired_markers": 1208,
+            "unknown_server_markers": 0
+          },
+          "overlay_spec_sha256": "699489a609080baac9107ded779b7aec87474f290bfc325f727ae31a7b8fd6a7"
+        },
         "effective_budget": 80,
         "effective_trials": 51,
         "elapsed_seconds": 13981.65,
@@ -253193,7 +253217,9 @@
           "work-upstream/evidence-s203-candidate-receipt.json",
           "work-upstream/evidence-s203-original-manifest.json",
           "work-upstream/evidence-s203-replay-manifest.json",
-          "work-upstream/evidence-s203-replay-remote-receipt.json"
+          "work-upstream/evidence-s203-replay-remote-receipt.json",
+          "work-upstream/diag-s203/evidence-diag-healthy-manifest.json",
+          "work-upstream/diag-s203/evidence-diag-fault-manifest.json"
         ],
         "max_faults": 8,
         "new_bug": false,

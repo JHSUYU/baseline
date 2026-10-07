@@ -403,3 +403,27 @@ per-file SHA-256 checks. `work-upstream/evidence-s203-candidate-receipt.json`,
 plan SHA, file hashes, and node1 locations. The main 128/128 phase remains
 complete; the independent supplemental budget is 51/80 effective at this
 interim checkpoint.
+
+### s203 trace-only lock identity control
+
+A separate observer agent logs the `ServerStateNode` server name and object
+identity when `readLock()` or `writeLock()` returns. Around the selected
+`AssignmentManager.reportRegionStateTransition` and `submitServerCrash` lock
+call sites, it logs the same identity before `lock()`, after successful
+acquisition, and after release. It does not change the original JUnit, HBase
+release JAR, fault selectors, or fuzz checkpoint. The diagnostic agent JAR SHA
+is `c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa`.
+The no-fault original JUnit passed in 59.97 seconds and produced 1,208
+balanced read-lock acquisitions with concrete server names. Its raw manifest
+SHA is `25adb109adf8e5aae5dd8825e41d8a5446f7e65d67f6996176c1e41cb791bd0f`.
+
+The first same-plan diagnostic fault run applied both faults to replica 7 and
+reached B7, but the aborted server did **not** carry `hbase:meta`. Its
+`ServerStateNode` read locks had all been released when the tracker requested
+the write lock; the tracker acquired it immediately, scheduled SCP promptly,
+and the original JUnit passed in 57.89 seconds. This is a conditional
+non-meta control, not evidence against the meta-hosting s203 timeout. Its
+raw manifest SHA is `eb199ab13fecc1ac8522b7c7a7c8d4b593b8679ce977643aba3b7d5e420d1bb3`.
+Both diagnostic raw sets were independently verified on node1. They are
+excluded from the fuzz attempt and effective counters. Direct proof of the
+meta-hosting reader/writer identity chain remains pending.
