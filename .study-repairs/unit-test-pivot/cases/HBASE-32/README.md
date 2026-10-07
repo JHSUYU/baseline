@@ -241,7 +241,9 @@ shutdown was 413.76 seconds. At 180 seconds and again near the cap,
 `Thread.print -l` captured the Master waiting to submit a ServerCrashProcedure
 while assignment workers were retrying metadata writes. This is an observed
 stall, not a confirmed deadlock or new bug. A clean same-plan 600-second
-replay with competing node1 JUnit campaigns paused is pending.
+replay with competing node1 JUnit campaigns paused is pending. The original
+log, exit, JaCoCo, both thread dumps, and replay specification are archived
+with checksums in `evidence/hbase32-r123-original-node1.tar.gz`.
 
 Policy v6 excludes an unresolved exact timeout or JUnit failure from the
 effective denominator, JaCoCo/I/O feedback unions, and mutation descendants
