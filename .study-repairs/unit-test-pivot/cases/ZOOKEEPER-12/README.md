@@ -1,5 +1,7 @@
 # ZOOKEEPER-12: independent original-JUnit replay
 
+> **Actor identity recheck pending.** The earlier I/O fault selector used a global call-site ordinal and did not bind the peer/client/socket or file owner. Its raw trials, coverage, and elapsed time are preserved as historical selector-level evidence in `result.json`, but are excluded from the current actor-matched budget. See [independent audit](../../audits/zookeeper-terminal-actor-identity-2026-10-07.md).
+
 The original ZooKeeper 3.8.7 three-peer JUnit method `CurrentEpochWriteFailureTest.testReadCurrentEpochFromAcceptedEpochTmpFile` passed in the healthy run. The selected check is `QuorumPeer.loadDataBase()` at `QuorumPeer.java:1193`, where `acceptedEpoch < currentEpoch` would raise an `IOException` whose `ATHROW` bytecode maps to line 1197. The case-local probe recorded nine healthy guard hits and no selected throw. Source and bytecode were reviewed against commit `9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae`.
 
 The campaign ran 80 new trials with at most eight ordered I/O faults. It chose direct TCP read/write, epoch `FileReader`, and atomic epoch-write sites from healthy and faulted runtime traces. A strict trial required every requested site and ordinal to match and apply in order; a target-retaining trial also required the same source guard after the last fault. Of 80 trials, 55 were strict and 45 retained the target. No trial executed the selected 1197 `IOException` after the last fault; no new selected-target bug was confirmed.

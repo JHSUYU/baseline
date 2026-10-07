@@ -8,9 +8,9 @@
   "case_id": "ZOOKEEPER-13",
   "case_started_utc": "2026-10-06T19:21:27.609Z",
   "cluster_test": "org.apache.zookeeper.test.ReadOnlyModeTest.testGlobalSessionInRO",
-  "coverage_gain": 10,
+  "coverage_gain": 0,
   "coverage_gain_all_attempts": 10,
-  "elapsed_seconds": 5446.568,
+  "elapsed_seconds": 0,
   "elapsed_semantics": "wall time from healthy JUnit start to final trial run.json completion (UTC)",
   "evidence": {
     "campaign_checkpoint": "evidence/campaign-checkpoint.json",
@@ -25,8 +25,8 @@
     "source_audit": "evidence/source-audit.json",
     "trial_ledger": "evidence/trials.jsonl"
   },
-  "fault_trials": 128,
-  "fully_applied_trials": 116,
+  "fault_trials": 0,
+  "fully_applied_trials": 0,
   "graphchecker_or_skeleton_runtime_used": false,
   "healthy_elapsed_seconds": 65.277,
   "healthy_exception_expected": true,
@@ -207,12 +207,26 @@
     "NIOServerCnxnFactory.removeCnxn:766: if (!cnxns.remove(cnxn)) true"
   ],
   "source_worktree": "/users/ZhenyuLi/zk13-unit",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "stop_reason": "128_trial_budget_complete_after_source_reviewed_late_branch_gain",
-  "strict_injections": 116,
-  "target_after_fault": 103,
+  "strict_injections": 0,
+  "target_after_fault": 0,
   "target_disconnect_reason": "RENEW_GLOBAL_SESSION_IN_RO_MODE",
   "target_exception_class": "org.apache.zookeeper.server.ServerCnxn$CloseRequestException",
   "target_exception_expected_by_original_junit": true,
-  "target_reached": true
+  "target_reached": true,
+  "legacy_coarse_actor": {
+    "identity_limit": "fault selector uses call site and global ordinal without stable peer/client/socket/file owner; old postfault target may be a different actor",
+    "audit": "../../audits/zookeeper-terminal-actor-identity-2026-10-07.md",
+    "fault_trials": 128,
+    "strict_injections": 116,
+    "fully_applied_trials": 116,
+    "target_after_fault": 103,
+    "coverage_gain": 10,
+    "elapsed_seconds": 5446.568,
+    "coverage_gain_all_attempts": 10
+  },
+  "quality_complete": false,
+  "identity_audit": "../../audits/zookeeper-terminal-actor-identity-2026-10-07.md",
+  "trial_results_scope": "historical_coarse_actor"
 }

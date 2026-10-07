@@ -1,5 +1,7 @@
 # ZOOKEEPER-13: read-only global-session renewal
 
+> **Actor identity recheck pending.** The earlier I/O fault selector used a global call-site ordinal and did not bind the peer/client/socket or file owner. Its raw trials, coverage, and elapsed time are preserved as historical selector-level evidence in `result.json`, but are excluded from the current actor-matched budget. See [independent audit](../../audits/zookeeper-terminal-actor-identity-2026-10-07.md).
+
 The selected production check is `ReadOnlyZooKeeperServer.validateSession` in
 ZooKeeper 3.8.7 (`9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae`). Its guard at
 line 123 calls `LearnerSessionTracker.isGlobalSession(sessionId)`. The selected

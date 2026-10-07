@@ -1,5 +1,7 @@
 # ZOOKEEPER-04: client zxid ahead
 
+> **Actor identity recheck pending.** The earlier I/O fault selector used a global call-site ordinal and did not bind the peer/client/socket or file owner. Its raw trials, coverage, and elapsed time are preserved as historical selector-level evidence in `result.json`, but are excluded from the current actor-matched budget. See [independent audit](../../audits/zookeeper-terminal-actor-identity-2026-10-07.md).
+
 **Current campaign status: quality_complete.** The independent recorder replay below completed 80 new fault trials. The 29 trials in the historical section remain legacy evidence and are excluded from the current counts: 25 used a GraphChecker JAR for the JUnit lifecycle and four were independent continuations of that older campaign. The current result is in `result.json`; the historical result is in `legacy-graph-result.json`.
 
 ## Independent recorder replay

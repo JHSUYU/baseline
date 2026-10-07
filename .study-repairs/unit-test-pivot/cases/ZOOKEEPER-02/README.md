@@ -1,5 +1,7 @@
 # ZOOKEEPER-02: session owner mismatch
 
+> **Actor identity recheck pending.** The earlier I/O fault selector used a global call-site ordinal and did not bind the peer/client/socket or file owner. Its raw trials, coverage, and elapsed time are preserved as historical selector-level evidence in `result.json`, but are excluded from the current actor-matched budget. See [independent audit](../../audits/zookeeper-terminal-actor-identity-2026-10-07.md).
+
 **Status: `quality_complete`.** The independent recorder replay below completed
 80 new fault trials. The 128 trials using GraphChecker-prewoven classes and a
 precomputed static region skeleton remain historical evidence in

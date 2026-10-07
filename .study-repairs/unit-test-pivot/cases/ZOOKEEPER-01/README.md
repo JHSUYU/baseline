@@ -1,5 +1,7 @@
 # ZOOKEEPER-01: closing-session check
 
+> **Actor identity recheck pending.** The earlier I/O fault selector used a global call-site ordinal and did not bind the peer/client/socket or file owner. Its raw trials, coverage, and elapsed time are preserved as historical selector-level evidence in `result.json`, but are excluded from the current actor-matched budget. See [independent audit](../../audits/zookeeper-terminal-actor-identity-2026-10-07.md).
+
 **Current 102-check status: quality_complete.** The independent recorder replay
 below completed the new budget. The 64 trials in the historical section remain
 in `legacy-graph-result.json` and are excluded from current counts because
