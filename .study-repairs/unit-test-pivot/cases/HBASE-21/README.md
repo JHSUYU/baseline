@@ -66,6 +66,13 @@ campaign to 128 trials and ten faults. The `hbase21-campaign` tmux session runs
 the campaign on node1; the `hbase21-result-pull` tmux session atomically copies
 its result to node0 for the 102-site checklist.
 
+The first checkpoint completed at 80 effective trials in 91 attempts. Trial
+`r077` added one production branch within the final 16 effective trials, so
+the same checkpoint was resumed with the authorized 128-trial/10-fault budget.
+The extended campaign retains the 180-attempt cap and uses a 12,000-second
+wall cap from the original healthy run. Earlier trials remain numbered and
+are not replayed.
+
 Short partial JVM runs stopped deliberately while installing queue changes are
 listed in `work/operator_preemptions.json`, separate from the completed trial
 ledger. Their time is included in wall time; none is counted as a strict or
