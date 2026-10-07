@@ -18,6 +18,12 @@ the older `hbase-namespace-actor-v2/` directory on node1 was not overwritten.
   `d8f148b9af03584c1c87d6066f8725dc7570cff6caa384d15c573e3d794bdb49`,
   launcher JAR
   `0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564`.
+- The locally repackaged agent JAR had a different ZIP timestamp despite
+  identical classes. The byte-identical node0 JAR was copied into this isolated
+  node1 staging directory. Both now have SHA-256
+  `f6ac63c8ad2e07499f99f93e1b04f9cf53c5f849274b98828277b3fc159b8601`.
+  Node1 `run.sh smoke` passed again with that exact JAR, including transformed
+  Advice calls and fail-closed manager rotation.
 - The HBase 2.6.6 server/test JARs, Hadoop 2.10.0 common tests JAR,
   JaCoCo 0.8.15 agent/core, and ASM 9.10.1 core/tree/commons JARs match
   node0 by SHA-256. The three ASM JARs were absent on node1 and were copied
@@ -28,6 +34,8 @@ the older `hbase-namespace-actor-v2/` directory on node1 was not overwritten.
 ## Capacity and ports
 
 - At preflight, node1 had about 23 GiB disk free and 57 GiB memory available.
+- At the last pre-start check, node1 had 22 GiB disk free and four Java JVMs,
+  including the still-active HDFS-01 campaign. The HBase JUnit has not started.
 - The original test calls `StartMiniClusterOption.builder().numMasters(2)`.
   `MiniZooKeeperCluster` defaults to a randomly selected client port in
   49152–65535 and retries a bind collision. `LocalHBaseCluster` sets default
