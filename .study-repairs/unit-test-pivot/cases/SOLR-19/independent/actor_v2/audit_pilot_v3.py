@@ -115,7 +115,7 @@ def audit_trial(trial, manifest, events):
         issues.append("strict_ledger_with_missing_fault")
     if bool(after) != trial["target_after_last_fault"]:
         issues.append("target_after_ledger_disagrees")
-    if any(e["detail"] == "missing" for e in after) != trial["target_exception"]:
+    if (trial["strict_exact_actor"] and any(e["detail"] == "missing" for e in after)) != trial["target_exception"]:
         issues.append("target_exception_ledger_disagrees")
     if manifest["exit_code"] != trial["junit_exit"]:
         issues.append("junit_exit_ledger_disagrees")
