@@ -59,8 +59,13 @@ public final class PatchHdfs31 {
               super.visitFieldInsn(Opcodes.GETFIELD,
                   "org/apache/hadoop/hdfs/server/datanode/BPServiceActor", "nnAddr",
                   "Ljava/net/InetSocketAddress;");
+              super.visitVarInsn(Opcodes.ALOAD, 0);
+              super.visitFieldInsn(Opcodes.GETFIELD,
+                  "org/apache/hadoop/hdfs/server/datanode/BPServiceActor", "bpos",
+                  "Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;");
               super.visitMethodInsn(Opcodes.INVOKESTATIC, "Hdfs31Probe", "enterActor",
-                  "(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Ljava/net/InetSocketAddress;)V", false);
+                  "(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;"
+                  + "Ljava/net/InetSocketAddress;Ljava/lang/Object;)V", false);
               counts[7]++;
             }
             if (rpc) {
@@ -81,9 +86,19 @@ public final class PatchHdfs31 {
             }
             if (add || remove) {
               super.visitVarInsn(Opcodes.ALOAD, 0);
+              super.visitFieldInsn(Opcodes.GETFIELD,
+                  "org/apache/hadoop/hdfs/server/datanode/BlockPoolManager", "dn",
+                  "Lorg/apache/hadoop/hdfs/server/datanode/DataNode;");
               super.visitVarInsn(Opcodes.ALOAD, 1);
+              super.visitVarInsn(Opcodes.ALOAD, 1);
+              super.visitInsn(Opcodes.ICONST_1);
+              super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
+                  "org/apache/hadoop/hdfs/server/datanode/BPOfferService", "getBlockPoolId",
+                  "(Z)Ljava/lang/String;", false);
               super.visitMethodInsn(Opcodes.INVOKESTATIC, "Hdfs31Probe",
-                  add ? "poolAdd" : "poolRemove", "(Ljava/lang/Object;Ljava/lang/Object;)V", false);
+                  add ? "poolAdd" : "poolRemove",
+                  "(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;"
+                  + "Ljava/lang/Object;Ljava/lang/String;)V", false);
               counts[add ? 3 : 4]++;
             }
           }

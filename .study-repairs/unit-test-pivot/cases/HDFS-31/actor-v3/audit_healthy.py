@@ -32,6 +32,7 @@ def inspect(path: Path) -> dict:
     trace = rows(path / "runtime_trace.jsonl")
     registered = [r for r in trace if r["event"] == "ACTOR_REGISTERED"]
     entered = [r for r in trace if r["event"] == "ACTOR_ENTER"]
+    pool_adds = [r for r in trace if r["event"] == "POOL_ADD"]
     transfers = [r for r in trace if r["event"] == "DIRECT_TRANSFER"
                  and r.get("caseId") == "HDFS-31"]
     checks = [r for r in trace if r["event"] == "DIRECT_TARGET_CHECK"
@@ -46,6 +47,8 @@ def inspect(path: Path) -> dict:
     eligible = [r for r in rpc if any(
         r["seq"] < t["seq"] and r.get("actorKey") == t.get("actorKey")
         and r.get("dnObjectId") == t.get("dnObjectId")
+        and r.get("serviceObjectId") == t.get("serviceObjectId")
+        and t.get("serviceObjectId", -1) > 0
         for t in matched_targets)]
     endpoint_by_actor: dict[str, set[str]] = {}
     for r in rpc:
@@ -65,6 +68,15 @@ def inspect(path: Path) -> dict:
         issues.append("DataNode object registration collision")
     if not transfers or not matched_targets:
         issues.append("same-block transfer then selected target absent")
+    if not pool_adds or any(not c.get("serviceOwnerSameDnBp")
+                            or not c.get("priorPoolOwnerSameDnBp")
+                            or not any(a["seq"] < c["seq"]
+                                       and a.get("dnObjectId") == c.get("dnObjectId")
+                                       and a.get("blockPoolIdRaw") == c.get("blockPoolIdRaw")
+                                       and a.get("serviceObjectId") == c.get("serviceObjectId")
+                                       for a in pool_adds)
+                            for c in matched_targets):
+        issues.append("target lacks same-BPOS pool registration on its DN and BP")
     for r in transfers + checks + throws:
         if (r.get("actorKey") in (None, "unbound") or r.get("dnObjectId") not in registered_by_object
                 or registered_by_object.get(r.get("dnObjectId")) != r.get("actorKey")
@@ -90,6 +102,7 @@ def inspect(path: Path) -> dict:
         "started_at_utc": manifest.get("started_at_utc"),
         "finished_at_utc": manifest.get("finished_at_utc"),
         "registered_dn": len(registered), "entered_bp_actor": len(entered),
+        "pool_adds": len(pool_adds),
         "transfer": len(transfers), "same_block_targets": len(matched_targets),
         "target_throws": len(throws), "bound_rpc": len(rpc), "eligible_rpc": len(eligible),
         "selectors": [list(selector(r)) for r in eligible],

@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -24,10 +25,14 @@ public final class Hdfs31Probe {
   private static final ThreadLocal<Integer> START_EPISODE = new ThreadLocal<>();
   private static final ThreadLocal<Actor> CURRENT_ACTOR = new ThreadLocal<>();
   private static final ThreadLocal<InetSocketAddress> CURRENT_NN = new ThreadLocal<>();
+  private static final ThreadLocal<Object> CURRENT_SERVICE = new ThreadLocal<>();
+  private static final Map<Object, Integer> SERVICE_IDS = new IdentityHashMap<>();
+  private static final Map<Object, Actor> SERVICE_ACTORS = new IdentityHashMap<>();
+  private static final Map<Object, String> SERVICE_BP = new IdentityHashMap<>();
   private static final Map<Integer, Integer> EPISODE_SLOTS = new HashMap<>();
   private static final Map<String, Integer> HITS = new HashMap<>();
   private static final List<String[]> FAULTS = new ArrayList<>();
-  private static int nextEpisode, nextObject, nextFault;
+  private static int nextEpisode, nextObject, nextService, nextFault;
   private static long seq;
   private static BufferedWriter writer;
 
@@ -126,22 +131,39 @@ public final class Hdfs31Probe {
         + ",\"dnUuidRaw\":" + q(dn == null ? null : dn.getDatanodeUuid());
   }
 
-  public static void enterActor(DataNode dn, InetSocketAddress nn) {
+  private static synchronized int serviceId(Object service) {
+    if (service == null) return -1;
+    Integer id = SERVICE_IDS.get(service);
+    if (id == null) {
+      id = ++nextService;
+      SERVICE_IDS.put(service, id);
+    }
+    return id;
+  }
+
+  public static void enterActor(DataNode dn, InetSocketAddress nn, Object service) {
     Actor actor = ACTORS.get(dn);
     CURRENT_ACTOR.set(actor);
     CURRENT_NN.set(nn);
+    CURRENT_SERVICE.set(service);
+    if (actor != null && service != null) {
+      synchronized (Hdfs31Probe.class) { SERVICE_ACTORS.put(service, actor); }
+    }
     if (actor == null || "unbound".equals(actor.dirs)) {
       emit("ACTOR_UNBOUND", ",\"reason\":\"unregistered_datanode_or_dirs\""
-          + actorFields(actor, dn) + ",\"namenodeEndpointRaw\":" + q(nn));
+          + actorFields(actor, dn) + ",\"namenodeEndpointRaw\":" + q(nn)
+          + ",\"serviceObjectId\":" + serviceId(service));
     } else {
       emit("ACTOR_ENTER", actorFields(actor, dn)
-          + ",\"namenodeEndpointRaw\":" + q(nn));
+          + ",\"namenodeEndpointRaw\":" + q(nn)
+          + ",\"serviceObjectId\":" + serviceId(service));
     }
   }
 
   public static void exitActor() {
     CURRENT_ACTOR.remove();
     CURRENT_NN.remove();
+    CURRENT_SERVICE.remove();
   }
 
   public static void rpcResponse(InetSocketAddress endpoint) throws IOException {
@@ -167,6 +189,7 @@ public final class Hdfs31Probe {
           + ",\"peerRole\":" + q(bound ? "NN0" : "unbound")
           + ",\"endpointRaw\":" + q(endpoint)
           + ",\"actorNamenodeRaw\":" + q(nn);
+      fields += ",\"serviceObjectId\":" + serviceId(CURRENT_SERVICE.get());
       emit("FAULT_POINT_OBSERVED", fields);
       if (bound && nextFault < FAULTS.size()) {
         String[] f = FAULTS.get(nextFault);
@@ -197,31 +220,65 @@ public final class Hdfs31Probe {
         + ",\"blockIdRaw\":" + (block == null ? -1 : block.getBlockId());
   }
 
+  private static synchronized boolean priorPoolOwnerMatches(Actor actor, String bpId) {
+    if (actor == null || bpId == null) return false;
+    for (Map.Entry<Object, String> item : SERVICE_BP.entrySet()) {
+      if (actor == SERVICE_ACTORS.get(item.getKey()) && bpId.equals(item.getValue())) return true;
+    }
+    return false;
+  }
+
   public static void transfer(DataNode dn, ExtendedBlock block) {
     emit("DIRECT_TRANSFER", ",\"caseId\":\"HDFS-31\"" + blockFields(dn, block));
   }
 
   public static void guard(Object service, DataNode dn, ExtendedBlock block) {
+    Actor actor = ACTORS.get(dn);
+    String bpId = block == null ? null : block.getBlockPoolId();
+    int serviceId = serviceId(service);
+    boolean ownerMatches;
+    synchronized (Hdfs31Probe.class) {
+      ownerMatches = service != null && actor != null
+          && actor == SERVICE_ACTORS.get(service) && bpId != null
+          && bpId.equals(SERVICE_BP.get(service));
+    }
     emit("DIRECT_TARGET_CHECK", ",\"caseId\":\"HDFS-31\"" + blockFields(dn, block)
         + ",\"siteId\":\"DataNode.getBPOSForBlock#L1832\""
         + ",\"servicePresent\":" + (service != null)
-        + ",\"serviceObjectHash\":" + (service == null ? -1 : System.identityHashCode(service)));
+        + ",\"serviceObjectId\":" + serviceId
+        + ",\"serviceObjectHash\":" + (service == null ? -1 : System.identityHashCode(service))
+        + ",\"serviceOwnerSameDnBp\":" + ownerMatches
+        + ",\"priorPoolOwnerSameDnBp\":" + priorPoolOwnerMatches(actor, bpId));
   }
 
   public static void targetThrow(Throwable error, DataNode dn, ExtendedBlock block) {
+    Actor actor = ACTORS.get(dn);
     emit("DIRECT_TARGET_THROW", ",\"caseId\":\"HDFS-31\"" + blockFields(dn, block)
         + ",\"siteId\":\"DataNode.getBPOSForBlock#L1835\""
         + ",\"exception\":" + q(error.getClass().getName())
-        + ",\"message\":" + q(error.getMessage()));
+        + ",\"message\":" + q(error.getMessage())
+        + ",\"priorPoolOwnerSameDnBp\":" + priorPoolOwnerMatches(
+            actor, block == null ? null : block.getBlockPoolId()));
   }
 
-  public static void poolAdd(Object manager, Object service) {
-    emit("POOL_ADD", ",\"managerObjectHash\":" + System.identityHashCode(manager)
-        + ",\"serviceObjectHash\":" + System.identityHashCode(service));
+  public static void poolAdd(DataNode dn, Object service, String bpId) {
+    Actor actor = ACTORS.get(dn);
+    synchronized (Hdfs31Probe.class) {
+      if (service != null && actor != null) {
+        serviceId(service);
+        SERVICE_ACTORS.put(service, actor);
+        SERVICE_BP.put(service, bpId);
+      }
+    }
+    emit("POOL_ADD", actorFields(actor, dn) + ",\"blockPoolIdRaw\":" + q(bpId)
+        + ",\"serviceObjectId\":" + serviceId(service)
+        + ",\"serviceObjectHash\":" + (service == null ? -1 : System.identityHashCode(service)));
   }
 
-  public static void poolRemove(Object manager, Object service) {
-    emit("POOL_REMOVE", ",\"managerObjectHash\":" + System.identityHashCode(manager)
-        + ",\"serviceObjectHash\":" + System.identityHashCode(service));
+  public static void poolRemove(DataNode dn, Object service, String bpId) {
+    Actor actor = ACTORS.get(dn);
+    emit("POOL_REMOVE", actorFields(actor, dn) + ",\"blockPoolIdRaw\":" + q(bpId)
+        + ",\"serviceObjectId\":" + serviceId(service)
+        + ",\"serviceObjectHash\":" + (service == null ? -1 : System.identityHashCode(service)));
   }
 }
