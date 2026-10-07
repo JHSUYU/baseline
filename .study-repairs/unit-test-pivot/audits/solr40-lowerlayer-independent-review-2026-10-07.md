@@ -1,41 +1,39 @@
-# SOLR-40 lower-layer retry control: independent review
+# SOLR-40 lower-layer alias-read control: independent review (2026-10-07)
 
-This is a read-only review of the five unchanged-original-JUnit runs in
-`cases/SOLR-10/actor-v2/evidence/lowlevel-single-retry-v10/`. It is a
-selector variation: each run first faults the physical `jetty:node1`
-collection-state `EXISTS_WATCH`, then injects **one** underlying
-`ConnectionLoss` into the same client's `/aliases.json` watch read. The
-first selector uses occurrence 10, whereas the prior trial 481 used 15;
-these are not identical replay plans. The audit file reports `issues=[]`
-and records each trace, JUnit, JaCoCo, manifest, and failed-run ZooKeeper
-transaction-log hash.
+Scope: read-only review of the five `lowlevel-single-retry-v10` runs on node1. No JUnit was started and no SOLR-10 case file was changed. Canonical evidence is under `node1:/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/lowlevel-single-retry-v10/`. I independently checked the local read-only copies of all five `events.tsv`, `junit.log`, and `manifest.json` against `control-audit.json`, checked all five remote JaCoCo SHA-256 values, and checked the two failed runs' original ZooKeeper transaction-log SHA-256 values and alias JSON at their recorded offsets. `control-audit.json` SHA-256 is `8a25ed89f97881d76f4a14afabd9ab5869315d4fdc2f675f920985d240982b13`; its `issues` list is empty. The original raw and scratch remain on node1.
 
-Runs 1–2 reached the target on the same reader with alias properties present;
-the underlying read retried successfully about 1,501 ms after the injected
-failure, and the original JUnit passed. Run 3 passed without reaching that
-same-reader target. Runs 4–5 reached the selected target with properties
-missing and raised its exception 184.302 and 188.611 ms after the injected
-failure. Both original JUnits failed with an `/update` 500. Neither run
-recorded a retry return before JUnit shutdown. Their ZooKeeper transaction
-logs show the alias creation persisted; the JUnit logs show CREATEALIAS
-status 0 before the update failure. The target exception is a same-client,
-same-manager cache read result, rather than direct propagation of the
-injected `ConnectionLoss` to the test thread.
+## Build and fault model
 
-The Solr 8.11.4 source explains the timing: `SolrZkClient.getData` delegates
-to the retry path; `ZkCmdExecutor` waits 1,500 ms before its first retry;
-`RoutedAliasUpdateProcessor.getAliasProps` reads the local alias cache during
-that interval. `RoutedAliasUpdateProcessor.wrap` turns the target's initial
-503 into a 500, so the cloud client does not classify it as a connection
-error to retry. The original test class and routed-processor class hashes
-were unchanged in the isolated control; only the SolrZkClient/probe classes
-were instrumented.
+The original Solr 8.11.4 source revision is `e27f44e3d78dfcec230c97e0a1240e3751daeff9`. On node1, direct class hashing confirmed the unchanged original `TimeRoutedAliasUpdateProcessorTest` class SHA-256 `288ade17cb538b6226d1a61b863569a2b7bace75a228e58d60f18d5d2fed5749` and unchanged `RoutedAliasUpdateProcessor` class SHA-256 `061349e41abd550e9931c83f7c486583a9aefef8b8d6fea6d6e7c4300593e63f`. The isolated `SolrZkClient` and probe classes are instrumented, with SHA-256 `0d5d882f5a07ca9ff6b16ac7e248ad37f1ad44aba4a003e881e53d183a468008` and `8f734dbfa3e04d835e3cf60f09b64693d5b7e4f2854041d8396627d03fca148d`. `build-receipt.json` SHA-256 is `0e57edfee68a08255d641bdb354b834645bab3ce266e71853e7aa6c66264bd93`; it records isolated `SolrZkClient.java` source SHA-256 `29fde1b856d5031e3ee351651494899845efdf4ad473cb16f507e6784fc4e8ac` and injected probe source SHA-256 `a7fe21ac629ade87a70b96998e8cbd6a6fe4182c153adf3821e47f015ba0393a`.
 
-**Classification:** reproducible transient stale-cache failure candidate,
-not yet a confirmed new production bug. The control does not establish the
-outcome after the 1,500 ms retry completes, nor does it exercise a real
-ZooKeeper disconnect and watch recovery. A minimal next control is a single
-underlying alias-read failure without the preceding collection-state fault,
-plus a version that lets the same reader run after retry completion. Preserve
-the current `novelty_pending` mark until these are source-reviewed and
-replayed.
+Every run applies **two** faults on one physical `jetty:node1` client and its bound `AliasesManager`: first a collection-state `EXISTS_WATCH` at `ZkStateReader$LazyCollectionRef#get:811`, occurrence 10; then one synthetic `ConnectionLossException` inside the underlying `keeper.getData("/aliases.json")` for `AliasesManager.process:2312`. The second hook runs inside the real `ZkCmdExecutor.retryOperation`, using one atomic failure and allowing subsequent real ZooKeeper reads. This is an explicit occurrence-10 variation of campaign trial 481's occurrence-15 first selector, not an exact replay of that plan. The isolated source is `node1:/users/ZhenyuLi/solr40-lowlevel-single-retry-v10/source/solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java:352-370` and the probe is `.../probe/FeedbackProbe.java:57-86`. `TARGET_CHECK.last_fault=F0` only names the campaign-plan fault; the independent lower-layer failure has its own event and precedes the target in rounds 4–5.
+
+## Raw outcome and identity audit
+
+| Run | First fault / underlying read failure / first same-reader SOLR-40 target (event sequence) | Time from underlying loss | Outcome |
+| --- | --- | ---: | --- |
+| 001 | 2526 / 2623 / 2640 | 452.797 ms | Properties present; another same-client `AliasesManager.update#getData` at 2636 precedes the target. Retry succeeds at 2689, about 1501.535 ms after loss; JUnit passes. |
+| 002 | 2485 / 2603 / 2621 | 488.022 ms | Properties present; another same-client `AliasesManager.update#getData` at 2617 precedes the target. Retry succeeds at 2675, about 1501.582 ms after loss; JUnit passes. |
+| 003 | 2560 / 2617 / none | — | No same-reader target after loss; retry succeeds at 2682, about 1501.612 ms after loss; JUnit passes. |
+| 004 | 2585 / 2716 / 2722, exception 2723 | **184.302 ms** | Same-reader properties missing; original JUnit fails on routed `/update` HTTP 500 before retry returns. |
+| 005 | 2579 / 2695 / 2705, exception 2706 | **188.611 ms** | Same-reader properties missing; original JUnit fails on routed `/update` HTTP 500 before retry returns. |
+
+In run 004, trace events 2709 (`SET_DATA /aliases.json`), 2714 (node1 watch read), 2716 (underlying loss), and 2722–2723 (target missing and exception) precede the JUnit shutdown; the client/manager pair is `862413447/1024090898` throughout. In run 005, the corresponding events are 2691, 2694, 2695, and 2705–2706, with client/manager `122143315/1291772370`. Each first fault also uses that same pair. Raw trace SHA-256 values are `69107eaa6c87d72dc6045ed6583481d430a42ab91ea62c917b72bb80ded8a66e` (004) and `00b6b6142d84445a6dbe08b5585fe005a8e48e6538adb39d2ea528d1c83acf2c` (005). Neither failed run records a retry success before JUnit termination. Because the first retry delay is 1500 ms, these are concurrent target reads **during** the retry interval, not evidence of a target failure after retry exhaustion.
+
+Runs 004 and 005 log `CREATEALIAS status=0` before the failing update (`junit.log:2235/2294` and `:2216/2275`). Their JUnit logs show the target `RoutedAliasUpdateProcessor.getAliasProps:134` cause chain, HTTP 500, `BaseCloudSolrClient` `commError=false`, and `SOLR103940_JUNIT_FAILURE` (`:2534` and `:2508`). The failure is the selected missing-properties guard propagating through the original request, not the injected `ConnectionLossException` propagating to the test thread or another JUnit assertion. The retained ZooKeeper txn logs contain `/solr/aliases.json` with `collection.myalias=myalias__TRA__2017-10-23` and `collection_metadata.myalias.router.name=time` at offsets 994393/990689; their verified SHA-256 values are `e6fc5ec942f45a0a98524ac0c0b2ad0fa421cdc19116553dff6d5a329d0b9779` and `ffc48f1faa0a80b0b301b9132eee5ba55da7392d3b911df21f464bd17d885199`. The log records and pre-failure `SET_DATA` support a persisted alias and stale node-local cache.
+
+## Original-source interpretation
+
+The original source files are under `.study-repairs/unit-test-pivot/source/solr-8.11.4/` at the revision above:
+
+- `solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java:346-351` sends retryable `getData` through `ZkCmdExecutor.retryOperation`. `ZkCmdExecutor.java:33,68-97,137-139` catches `ConnectionLossException`, waits 1500 ms for the first retry, and retries. `ZkStateReader.java:2310-2319` updates the alias manager only after the watched read returns; the catch-and-log for exhausted connection loss is later. An unrelated `AliasesManager.update#getData` refreshed the same local cache before target in runs 001–002, while no such same-client read appears between loss and target in runs 004–005.
+- `solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java:120-135` reads only the local alias properties at this guard. Empty properties throw `RoutedAlias.newAliasMustExistException` (`solr/core/src/java/org/apache/solr/cloud/api/collections/RoutedAlias.java:71-74`), which starts as `SERVICE_UNAVAILABLE`, but `wrap:122-123` catches and wraps it as `SERVER_ERROR` 500. `BaseCloudSolrClient.java:968-1011` does not retry this 500 (`commError=false` in the raw log). This explains why a temporary cache gap becomes a test-visible failure.
+- `solr/core/src/java/org/apache/solr/cloud/api/collections/CreateAliasCmd.java:75-87` acknowledges eventual alias propagation but says an initially created alias should be usable immediately, and sleeps 100 ms. `solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java:132-138` creates the routed alias and immediately adds its first document. Thus this is a plausible violated user-visible expectation, although the source does not promise that every request succeeds during a genuine ZooKeeper outage.
+
+SHA-256 for the original `SolrZkClient.java`, `ZkStateReader.java`, `ZkCmdExecutor.java`, `RoutedAliasUpdateProcessor.java`, `CreateAliasCmd.java`, and JUnit source are respectively `4a256a0fb563515451b5b733dbb4e320fceb9fa5dcc04912e4dd003d1a109c32`, `83e14eadfcc4896ff05f9ac77706fdb683e0c181caeee21802f8861f68ac373d`, `4b50e7d0cb1872829c3d29e3d51ac9a9f3d6571b31ce2861e59f007cc1c8c415`, `6ed4337435f68d00ba85d7b05eeb324cea9a14298c34cabd137756d682f24590`, `45eb9f2100e4e307b1994bfe5d0fbbd73178b129516e1f34c9fb49e3cb800b9b`, and `727cc38dd0fd0d42e641724b08d96b00e0e9d8ab492d23cbc572284824079d37`.
+
+## Related issue boundary and remaining controls
+
+On 2026-10-07, a bounded search of official ASF Jira and Apache Solr material checked [SOLR-12256](https://issues.apache.org/jira/browse/SOLR-12256) (alias update freshness), [SOLR-12258](https://issues.apache.org/jira/browse/SOLR-12258) (unresolved alias/collection retry at request routing), [SOLR-12413](https://issues.apache.org/jira/browse/SOLR-12413) (startup after manually recreating `/aliases.json`), and [SOLR-12028](https://issues.apache.org/jira/browse/SOLR-12028) (generic intermittent-test annotation). They are related, but none directly documents this post-create routed `/update` guard during a single watched-read retry. This is not an exhaustive duplicate search and does not establish novelty.
+
+**Assessment:** a reproducible, same-actor fault-induced stale-cache candidate in the isolated Solr 8.11.4 workload. The retry machinery handles the one-shot lower-level error in passing runs; in failing runs a concurrent request reaches the selected guard before that retry can refresh the cache, and the server returns a non-retried 500 for an alias persisted in ZooKeeper. The observations are stronger than a direct exception-injection artifact, but a confirmed new production bug is not yet justified. The minimal remaining controls are (1) a one-fault lower-layer `/aliases.json` read run without the preceding collection-state fault, (2) a same-reader request after the 1500 ms retry completes, with the test kept alive to observe cache repair and outcome, and (3) a real ZooKeeper disconnect/reconnect or wire-level failure to validate watch registration and retry behavior. Any novelty claim also needs a broader issue/current-release comparison. Preserve the occurrence-10 and occurrence-15 denominators separately.
