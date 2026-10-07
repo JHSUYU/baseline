@@ -106,7 +106,7 @@ def initialize(max_trials: int, max_faults: int) -> dict:
         'locks': locks(),
         'healthy_trace_sha256': {directory.name: sha(directory / 'events.jsonl')
                                  for directory in SEEDS},
-        'queue': [], 'seen_sequences': [], 'completed': [],
+        'queue': [], 'seen_sequences': [], 'completed': [], 'active': None,
         'covered_probes': sorted(set().union(
             *(production_probes(directory) for directory in SEEDS))),
         'observed_rpc_selectors': sorted(set().union(
@@ -137,7 +137,14 @@ def choose(state: dict) -> dict:
     marker_counts = Counter(row['last_fault_marker'] for row in rows)
     mode_counts = Counter(row['last_fault_mode'] for row in rows)
     point_counts = Counter(row['last_fault_point_id'] for row in rows)
-    candidates = state['queue']
+    queue = state['queue']
+    available_markers = {item['sequence'][-1]['point']['marker']
+                         for item in queue}
+    smallest_family = min(marker_counts[marker]
+                          for marker in available_markers)
+    candidates = [item for item in queue
+                  if marker_counts[item['sequence'][-1]['point']['marker']]
+                  == smallest_family]
     max_ordinal = max(item['sequence'][-1]['point']['hitOrdinal']
                       for item in candidates)
     ranked = []
@@ -158,7 +165,7 @@ def choose(state: dict) -> dict:
     rng = random.Random(360000 + len(rows) + 1)
     selected = rng.choices([row[1] for row in top],
                            weights=[row[0] for row in top], k=1)[0]
-    candidates.remove(selected)
+    queue.remove(selected)
     return selected
 
 
@@ -314,14 +321,18 @@ def main() -> None:
         atomic(state_file, state)
     else:
         state = initialize(args.max_trials, args.max_faults)
+    publish(state)
     while state['status'] == 'running':
         if len(state['completed']) >= args.max_trials:
             state['status'] = 'budget_complete'
             break
-        if not state['queue']:
+        if state['active'] is None and not state['queue']:
             state['status'] = 'queue_exhausted'
             break
-        chosen = choose(state)
+        if state['active'] is None:
+            state['active'] = choose(state)
+            atomic(state_file, state)
+        chosen = state['active']
         number = len(state['completed']) + 1
         sequence = chosen['sequence']
         directory = ROOT / 'trials' / f'{number:04d}-{chosen["id"]}'
@@ -331,7 +342,8 @@ def main() -> None:
         attempts = []
         for attempt in (1, 2):
             out = directory / f'attempt-{attempt:02d}'
-            run_junit(out, agent_path=AGENT, fault_plan=plan)
+            if not (out / 'run.json').is_file():
+                run_junit(out, agent_path=AGENT, fault_plan=plan)
             result, probes, selectors = analyze(out, sequence, state)
             result['attempt'] = attempt
             atomic(out / 'audit.json', result)
@@ -347,6 +359,7 @@ def main() -> None:
                        .read_text())['elapsed_seconds']
             for attempt in range(1, len(attempts) + 1)), 3)
         state['completed'].append(row)
+        state['active'] = None
         if result['strict_injection']:
             newly_observed = selectors - set(state['observed_rpc_selectors'])
             state['covered_probes'] = sorted(set(state['covered_probes']) | probes)
