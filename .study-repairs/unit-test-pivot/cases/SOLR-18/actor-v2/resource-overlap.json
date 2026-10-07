@@ -1,8 +1,21 @@
 {
   "campaign_boundary_utc": "2026-10-07T06:29:28.348751+00:00",
   "case_id": "SOLR-18",
+  "comparator_reviewed_at_utc": "2026-10-07T06:45:32.219954+00:00",
   "console_offload_receipt": "console-offload.json",
-  "interpretation": "Both runs were invalid independent of latency: only the first planned suite-phase fault applied, the original test body did not run (JUnit ran=0), and the selected version-1 guard was absent. No port bind error or selected assertion throw was observed. The timing overlap is recorded; causation of slowdown is not inferred.",
+  "interpretation": "Trials 082/083 and isolated comparator 084 are invalid because the original test body and selected guard did not run. Trial084 reproduced the ~88s suite-phase failure duration without HBASE32, so overlap alone does not explain the long duration. The comparator is not an exact replay of 082 or 083; no causal attribution is made. No port bind error or selected assertion throw was observed in 082/083.",
+  "isolated_comparator": {
+    "elapsed_seconds": 87.725,
+    "first_fault_selector": "SolrZkClient.getData:/clusterstate.json:SUITE@@1",
+    "hbase32_jvm_absent": true,
+    "junit_summary": "SOLR18_ORIGINAL_JUNIT ran=0 ignored=0 failures=4",
+    "original_junit_class_sha256": "7674e0e501483b11108f72129a2a68ff54ae5c6d35c4862d6546a132f439f402",
+    "run_id": "trial-084",
+    "same_first_fault_as": "trial-082",
+    "selected_target": false,
+    "strict_ordered_injection": true,
+    "test_started_count": 0
+  },
   "latency_reference": "median of SOLR-18 trials 001-077",
   "overlap": "HBASE32U s113 original JUnit on node0",
   "raw_mirror_receipt": "mirror-receipt.json",
