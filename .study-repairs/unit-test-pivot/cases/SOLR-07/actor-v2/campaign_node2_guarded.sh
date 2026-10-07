@@ -4,9 +4,9 @@ set -euo pipefail
 case_dir=/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-07/actor-v2
 cd "$case_dir"
 test -f calibration-receipt.json
-rm -f campaign-node2.exit
-exec > >(tee -a "$case_dir/campaign-node2.log") 2>&1
-trap 'printf "%s\n" "$?" > "$case_dir/campaign-node2.exit"' EXIT
+rm -f campaign-v3-node2.exit
+exec > >(tee -a "$case_dir/campaign-v3-node2.log") 2>&1
+trap 'printf "%s\n" "$?" > "$case_dir/campaign-v3-node2.exit"' EXIT
 
 while true; do
   running_java=$(pgrep -c java || true)
@@ -18,4 +18,4 @@ while true; do
   sleep 10
 done
 
-python3 campaign_v2.py
+python3 campaign_v3.py
