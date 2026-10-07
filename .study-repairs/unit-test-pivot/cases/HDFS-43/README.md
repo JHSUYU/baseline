@@ -19,3 +19,11 @@ The case-local ASM 9.6 overlay instruments original Hadoop classes; JaCoCo 0.8.1
 Source review: FSDirTruncateOp.truncate compares a second requested length with the length already being truncated while the last block is UNDER_RECOVERY. Equal lengths return an idempotent result; different lengths raise AlreadyBeingCreatedException. TestFileTruncate#testTruncateTwiceTogether deliberately requests a different length and expects that exception. A new post-fault length/state pair needs replay and source review.
 
 Evidence: [result](result.json), [trial ledger](trial-ledger.csv), [checkpoint](independent/evidence/campaign-state.json), [healthy manifest](independent/evidence/healthy/manifest.json), [equal-branch manifest](independent/evidence/equal-calibration/manifest.json), [ASM probe](independent/src/HdfsStorageProbe.java), [patcher](independent/src/PatchHdfsStorage.java).
+
+## Supplementary equal-branch phase
+
+The original `TestFileTruncate#testMultipleTruncate` reaches the equal-length idempotent branch four times in its healthy run and raises no selected exception. Its separate campaign completed 128 trials in 3396.968 attributed JUnit seconds: 119 exact ordered injections, 41 target-retaining trials, and 148 post-fault equal-branch checks. No target exception occurred; bug mark: `none`. This is supplementary evidence for the same HDFS-43 checklist entry.
+
+Production coverage gained 270 methods, 613 covered-branch counts, 1494 probes, and 1653 lines. Tested depths: `{'1': 89, '2': 7, '3': 11, '4': 21}`; target-retaining depths: `{'1': 34, '2': 3, '3': 3, '4': 1}`. The last-eight novelty at trial 80 extended the budget from 80/8 to 128/10; no completed trial was rerun. At trial 104, the selection queue was rebalanced toward target-retaining depth-two and depth-three parent sequences; pre/post statistics and the stopped checkpoint are in [selection audit](independent/equal_phase/evidence/choice-rebalance-audit.json).
+
+The main phase and supplementary phase used 6081.947 attributed JUnit seconds combined. The main phase's `elapsed_seconds` remains its own 2684.979 seconds. [Supplementary result](independent/equal_phase/equal-result.json), [per-trial ledger](independent/equal_phase/trial-ledger.csv), and [raw evidence audit](independent/equal_phase/evidence/final-raw-audit.json).

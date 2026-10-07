@@ -1,0 +1,651 @@
+{
+  "budget": {
+    "max_faults": 8,
+    "max_trials": 80
+  },
+  "bug_mark": "none",
+  "case_id": "HDFS-43",
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testMultipleTruncate",
+  "coverage": {
+    "branch_counts": 10427,
+    "lines": 40073,
+    "methods": 9153,
+    "probes": 33051
+  },
+  "coverage_gain": 119,
+  "elapsed_seconds": 270.126,
+  "evidence": "evidence/campaign-state.json",
+  "expected_guard_response_trials": 0,
+  "fault_trials": 14,
+  "fully_applied_trials": 14,
+  "healthy": {
+    "branch_count": 10308,
+    "elapsed_seconds": 21.281,
+    "io_points": 523,
+    "junit_exit": 0,
+    "target_checks": 4,
+    "target_exceptions": 0
+  },
+  "instrumentation_provenance": {
+    "causal_graph_or_closure": false,
+    "coverage": "jacoco_0_8_15_production_hdfs_ipc_classes",
+    "coverage_filter": "exclude_runtime_generated_MockitoMock_classes",
+    "graphchecker_prewoven": false,
+    "graphchecker_runtime_jar": false,
+    "io_family_normalization": "thread_object_hash_to_@object_for_feedback_only; exact_runtime_selector_unchanged",
+    "io_selection": "observed_original_junit_io_plus_production_coverage_feedback",
+    "junit": "original_hadoop_3_4_3_test_jar_and_native_fixture",
+    "region_skeleton": false,
+    "runtime_hooks": "case_local_offline_asm_9_6_overlay",
+    "static_io_map": false
+  },
+  "io_families": 5,
+  "methodology": "independent_coverage_io_original_junit_equal_branch_phase",
+  "own_mapped_cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether",
+  "phase": "equal_branch_supplementary",
+  "shared_run_case_ids": [
+    "HDFS-43"
+  ],
+  "status": "running",
+  "strict_injections": 14,
+  "target_after_fault": 6,
+  "target_code": "newLength == truncateLength for a block UNDER_RECOVERY",
+  "target_exception_after_fault": 0,
+  "target_function": "FSDirTruncateOp.truncate",
+  "target_guard_sites": [
+    "FSDirTruncateOp.truncate#L113-IFNE"
+  ],
+  "target_reached": true,
+  "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java",
+  "target_source_line": 117,
+  "trial_results": [
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 25,
+        "lines": 41,
+        "methods": 4,
+        "probes": 50
+      },
+      "coverage_total": {
+        "branch_counts": 8718,
+        "lines": 34914,
+        "methods": 8051,
+        "probes": 28713
+      },
+      "elapsed_seconds": 15.266,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/fda89d16f89a0bed/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/fda89d16f89a0bed/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 6,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/fda89d16f89a0bed/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8706,
+        "lines": 34907,
+        "methods": 8051,
+        "probes": 28701
+      },
+      "elapsed_seconds": 16.246,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/ee4972202dde85c3/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/ee4972202dde85c3/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 6,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/ee4972202dde85c3/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8711,
+        "lines": 34907,
+        "methods": 8051,
+        "probes": 28706
+      },
+      "elapsed_seconds": 15.369,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/875999086071991a/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/875999086071991a/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 6,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/875999086071991a/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9953,
+        "lines": 38757,
+        "methods": 8892,
+        "probes": 31919
+      },
+      "elapsed_seconds": 16.372,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0858cb8eb6f71f23/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0858cb8eb6f71f23/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 13,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0858cb8eb6f71f23/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9045,
+        "lines": 35828,
+        "methods": 8241,
+        "probes": 29505
+      },
+      "elapsed_seconds": 17.448,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/45794841ffff5258/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/45794841ffff5258/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 13,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/45794841ffff5258/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9961,
+        "lines": 38770,
+        "methods": 8895,
+        "probes": 31935
+      },
+      "elapsed_seconds": 15.771,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0787ecabb856f264/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0787ecabb856f264/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 13,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0787ecabb856f264/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10073,
+        "lines": 39027,
+        "methods": 8934,
+        "probes": 32165
+      },
+      "elapsed_seconds": 18.676,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/7fa3695eeb76554e/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/7fa3695eeb76554e/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 23,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/7fa3695eeb76554e/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9941,
+        "lines": 38748,
+        "methods": 8889,
+        "probes": 31905
+      },
+      "elapsed_seconds": 16.541,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/cb46da8682abe2e9/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/cb46da8682abe2e9/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 23,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/cb46da8682abe2e9/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9974,
+        "lines": 38768,
+        "methods": 8893,
+        "probes": 31942
+      },
+      "elapsed_seconds": 15.613,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/37ae6976de88690f/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/37ae6976de88690f/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 23,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/37ae6976de88690f/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 2,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10168,
+        "lines": 39325,
+        "methods": 8997,
+        "probes": 32400
+      },
+      "elapsed_seconds": 18.226,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/9a3e4c3792e30734/attempt-2/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/9a3e4c3792e30734/attempt-2/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 38,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/9a3e4c3792e30734/attempt-2/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 2,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9992,
+        "lines": 38839,
+        "methods": 8905,
+        "probes": 31989
+      },
+      "elapsed_seconds": 18.725,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/7f70ce4efa9edf2e/attempt-2/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/7f70ce4efa9edf2e/attempt-2/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 38,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/7f70ce4efa9edf2e/attempt-2/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10005,
+        "lines": 38848,
+        "methods": 8905,
+        "probes": 32006
+      },
+      "elapsed_seconds": 17.516,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0d1f271d1e13f120/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0d1f271d1e13f120/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 38,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "main/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "main"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/0d1f271d1e13f120/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 92,
+        "lines": 230,
+        "methods": 38,
+        "probes": 211
+      },
+      "coverage_total": {
+        "branch_counts": 10401,
+        "lines": 40038,
+        "methods": 9150,
+        "probes": 33006
+      },
+      "elapsed_seconds": 24.64,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/2f326b7ede1857ec/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/2f326b7ede1857ec/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 6,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 323,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/2f326b7ede1857ec/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 2,
+        "lines": 2,
+        "methods": 0,
+        "probes": 1
+      },
+      "coverage_total": {
+        "branch_counts": 10326,
+        "lines": 39842,
+        "methods": 9116,
+        "probes": 32828
+      },
+      "elapsed_seconds": 22.436,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/159913d60fa1bbc7/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/159913d60fa1bbc7/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 3,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 323,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/equal_phase/evidence/runs/159913d60fa1bbc7/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    }
+  ]
+}
