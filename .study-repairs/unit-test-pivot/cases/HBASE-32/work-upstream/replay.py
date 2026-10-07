@@ -20,6 +20,7 @@ JAVA = Path("/usr/lib/jvm/java-8-openjdk-amd64/bin/jcmd")
 BASE_AGENT = HERE.parent / "work/classes/HBase32Agent.class"
 UPSTREAM_AGENT = HERE / "classes/HBase32UpstreamAgent.class"
 HBASE_JAR = Path("/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar")
+LOCK_DIAG_AGENT = HERE / "diag-s203/agent.jar"
 
 
 def sha256(path: Path) -> str:
@@ -51,6 +52,11 @@ def main() -> None:
                         (HBASE_JAR, "hbase_server_jar_sha256")):
         if sha256(path) != spec[field]:
             raise RuntimeError(f"Replay binary differs at {path}")
+    if "diagnostic_agent_jar_sha256" in spec:
+        if sha256(LOCK_DIAG_AGENT) != spec["diagnostic_agent_jar_sha256"]:
+            raise RuntimeError("Trace-only diagnostic overlay differs")
+    if "replay_runner_sha256" in spec and sha256(Path(__file__)) != spec["replay_runner_sha256"]:
+        raise RuntimeError("Replay runner differs")
     source_log = HERE / "logs" / (spec["source_trial"] + ".log.gz")
     source_exec = HERE / "logs" / (spec["source_trial"] + ".exec")
     if (sha256(source_log) != spec["source_compressed_log_sha256"] or
@@ -73,6 +79,8 @@ def main() -> None:
         raise RuntimeError("Expected one mixed upstream/client RPC plan")
     env = dict(os.environ)
     env["HBASE32_UPSTREAM_TIMEOUT"] = str(spec["timeout_seconds"])
+    if "diagnostic_agent_jar_sha256" in spec:
+        env["HBASE32U_LOCK_DIAG"] = "1"
     with log.open("w") as output:
         child = subprocess.Popen(["bash", str(HERE / "run.sh"), "run", suffix,
                                   base_plan, upstream_plan], stdout=output,
@@ -81,7 +89,7 @@ def main() -> None:
         dumped: set[int] = set()
         while child.poll() is None:
             elapsed = time.monotonic() - started
-            for threshold in (200, 300, 500):
+            for threshold in (130, 200, 300, 500, 607):
                 if elapsed < threshold or threshold in dumped:
                     continue
                 dumped.add(threshold)
@@ -130,6 +138,9 @@ def main() -> None:
         "base_agent_class_sha256": sha256(BASE_AGENT),
         "upstream_agent_class_sha256": sha256(UPSTREAM_AGENT),
         "hbase_server_jar_sha256": sha256(HBASE_JAR),
+        "diagnostic_agent_jar_sha256": (
+            sha256(LOCK_DIAG_AGENT) if "diagnostic_agent_jar_sha256" in spec else None),
+        "fuzz_budget_admitted": False,
     }
     summary_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n")
     print(json.dumps(result, sort_keys=True), flush=True)

@@ -449,3 +449,9 @@ lock blocks the tracker. Classification remains
 `candidate_pending_lock_identity`, with `new_bug=false`. No diagnostic run
 contributed to the 51/80 supplemental effective count or its coverage/queue.
 The main 128/128 result and its ledger are unchanged.
+
+## Supplemental s272 exact timeout candidate (interim)
+
+The unchanged `TestRegionReplicaFailover#testLotsOfRegionReplicas` reached the exact B7 rethrow after both same-actor faults and timed out (exit 124, 403.94 s including shutdown). The 272-attempt supplemental checkpoint contains 68 true effective trials; s272 is excluded from coverage/I/O feedback and descendants. The original raw log, JaCoCo, four `Thread.print -l` dumps, checkpoint, runner and agent hashes were preserved on node0 and independently SHA-256 verified as 19 files on node1. See `work-upstream/evidence-s272-original-manifest.json` and `work-upstream/evidence-s272-original-remote-receipt.json`.
+
+Trace-only lock identity markers record RPC handler READ ACQUIRED on `ServerStateNode` identity `72dae815` for the aborted meta RS at event 605, followed by tracker WRITE BEFORE_LOCK on the **same node/server** at event 741. One reader remains active at the WRITE wait; no WRITE acquire appears before shutdown. Four native thread dumps show the tracker waiting for the server write lock, that RPC handler waiting for a region lock, and `PEWorker-14` holding the region lock during meta `HTable.put` retry. The first SCP appears only after timeout shutdown starts. The machine also hosted other test JVMs during the original run. See `work-upstream/evidence-s272-candidate-review.json`. An isolated same-plan 600 s replay and independent source/known-issue comparison are pending. Classification: `exact_timeout_candidate_pending_clean_replay`, `new_bug=false`.
