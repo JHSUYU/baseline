@@ -91,6 +91,18 @@ trial results, raw traces, manifests, selector plans, and the ledger verify
 that no completed trial, queued selector, or raw evidence changed. The
 strict-injection, actor, target, oracle, and coverage rules are identical.
 
+At trial 110, the independent raw auditor reported 110 attempted, 69 strict,
+65 effective, and zero errors. The remaining observed-I/O queue held 14
+two-fault and 8 three-fault truncate plans; the score preferred depth three,
+but several recent deep plans only partly applied. At this complete boundary,
+`campaign/migrate_shallow_first.py` preserved every completed trial, queued
+plan, seen selector, raw trace, manifest, result, plan, and ledger, then chose
+the minimum queued depth before applying the original coverage/I/O score and
+waiting age within that depth. The three-fault plans remain queued for later
+selection. The migration receipt records before/after checkpoint SHA-256,
+raw-artifact manifest SHA-256, and production coverage/I/O counts. No target,
+identity, strict injection, coverage admission, or bug oracle rule changed.
+
 ## Setup status
 
 The six released source files were copied into this case and match the clean
@@ -104,4 +116,7 @@ campaign runs from a checkpointed controller in node0 tmux
 node2 slot. At trial 40, the independent auditor reported 40 attempted, 25
 strict, 22 same-actor post-last-fault effective, and zero audit errors. No
 target outcome beyond the original expected exception was observed. The
-campaign remains in progress toward its effective-trial budget.
+campaign remains in progress toward its effective-trial budget. At the second
+selection migration, the independently audited effective count was 65/80;
+the previous 80 main and 128 supplementary trials without physical actor
+identity remain excluded.

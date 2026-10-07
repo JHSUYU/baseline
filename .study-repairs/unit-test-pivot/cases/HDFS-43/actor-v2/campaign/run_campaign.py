@@ -506,7 +506,11 @@ def choose(state: dict) -> dict:
     pool = queue
     selection_policy = "coverage_io_score"
     policy = state.get("selection_policy")
-    if policy and age >= policy["start_after_completed"] and (
+    if policy and policy.get("prefer_min_depth"):
+        minimum = min(len(item["sequence"]) for item in queue)
+        pool = [item for item in queue if len(item["sequence"]) == minimum]
+        selection_policy = "observed_io_shallow_first_then_coverage_io_score"
+    elif policy and age >= policy["start_after_completed"] and (
             (age - policy["start_after_completed"]) %
             policy["client_every_nth_selection"] == 0):
         client = [item for item in queue
