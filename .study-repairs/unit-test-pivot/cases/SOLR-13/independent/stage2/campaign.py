@@ -41,13 +41,28 @@ def runner_hashes() -> dict:
     return {name: sha256(HERE / name) for name in LOCKED}
 
 
+class TraceIncomplete(RuntimeError):
+    """The JVM ended without a complete, parseable trace and summary."""
+
+
 def events(path: Path) -> list[dict]:
     if path.is_file():
-        with path.open() as input_file:
-            return [json.loads(line) for line in input_file if line.strip()]
-    archived = Path(str(path) + '.gz')
-    with gzip.open(archived, 'rt') as input_file:
-        return [json.loads(line) for line in input_file if line.strip()]
+        data = path.read_bytes()
+    else:
+        archived = Path(str(path) + '.gz')
+        with gzip.open(archived, 'rb') as input_file:
+            data = input_file.read()
+    if not data or not data.endswith(b'\n'):
+        raise TraceIncomplete(f'missing complete final JSONL record: {path}')
+    rows = []
+    for line_number, line in enumerate(data.splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            rows.append(json.loads(line))
+        except (json.JSONDecodeError, UnicodeDecodeError) as failure:
+            raise TraceIncomplete(f'invalid JSONL record {line_number}: {path}') from failure
+    return rows
 
 
 def archive_trace(out: Path) -> None:
@@ -225,13 +240,14 @@ def initialize() -> dict:
 
 def select(state: dict) -> dict:
     queue = state['queue']
-    round_number = len(state['completed']) + 1
-    effective = sum(row['effective'] for row in state['completed'])
+    valid = [row for row in state['completed'] if not row.get('invalid_setup')]
+    round_number = len(valid) + 1
+    effective = sum(row['effective'] for row in valid)
     wants_multiple = effective >= 10 and round_number % 4 != 0
     choices = [row for row in queue if (len(row['sequence']) > 1) == wants_multiple]
     if not choices:
         choices = queue
-    family_counts = Counter(row['first_family'] for row in state['completed'])
+    family_counts = Counter(row['first_family'] for row in valid)
     scored = []
     for row in choices:
         sequence = row['sequence']
@@ -264,6 +280,8 @@ def analyze(out: Path, sequence: list[dict], state: dict) -> tuple[dict, set, se
     rows = events(out / 'events.jsonl')
     applied = [e for e in rows if e['event'] == 'IO_OBSERVED' and e['applied']]
     summaries = [e for e in rows if e['event'] == 'SUMMARY']
+    if len(summaries) != 1:
+        raise TraceIncomplete(f'expected one final SUMMARY record: {out}')
     strict = (len(applied) == len(sequence)
               and all(point_id(point(e)) == point_id(p)
                       for e, p in zip(applied, sequence))
@@ -334,25 +352,39 @@ def mutate(state: dict, parent: list[dict], out: Path, gain: int) -> None:
 def publish(state: dict) -> None:
     atomic(STATE, state)
     completed = state['completed']
-    effective = [row for row in completed if row['effective']]
+    valid = [row for row in completed if not row.get('invalid_setup')]
+    invalid = [row for row in completed if row.get('invalid_setup')]
+    effective = [row for row in valid if row['effective']]
     progress = {'case_id': 'SOLR-13', 'phase': 'overseer_alias_write',
                 'status': state['status'],
-                'budget': state['budget'], 'attempted_plans': len(completed),
+                'budget': state['budget'], 'attempted_plans': len(valid),
+                'invalid_setup_plans': len(invalid),
                 'jvm_attempts': sum(row['attempts'] for row in completed),
-                'strict_injections': sum(row['strict_injection'] for row in completed),
+                'valid_jvm_attempts': sum(row['attempts']
+                                          - row.get('excluded_jvm_attempts', 0)
+                                          for row in valid),
+                'invalid_setup_jvm_attempts': sum(row['attempts'] for row in invalid)
+                                              + sum(row.get('excluded_jvm_attempts', 0)
+                                                    for row in valid),
+                'strict_injections': sum(row['strict_injection'] for row in valid),
                 'effective_target_retaining_trials': len(effective),
                 'target_exception_candidates': sum(
                     row['effective'] and row['target_exception_after_last_fault'] > 0
-                    for row in completed),
-                'max_applied_faults': max((row['applied_faults'] for row in completed),
+                    for row in valid),
+                'max_applied_faults': max((row['applied_faults'] for row in valid),
                                           default=0),
                 'production_probe_gain': len(state['covered_probes'])
                                          - state['seed_probe_count'],
                 'io_family_gain': len(state['io_families'])
                                   - state['seed_io_family_count'],
-                'elapsed_seconds': round(sum(row['elapsed_seconds'] for row in completed), 3),
+                'elapsed_seconds': round(sum(row['elapsed_seconds']
+                                             - row.get('excluded_elapsed_seconds', 0)
+                                             for row in valid), 3),
+                'invalid_setup_elapsed_seconds': round(
+                    sum(row['elapsed_seconds'] for row in invalid)
+                    + sum(row.get('excluded_elapsed_seconds', 0) for row in valid), 3),
                 'queue_size': len(state['queue']),
-                'latest': completed[-1] if completed else None}
+                'latest': valid[-1] if valid else None}
     atomic(ROOT / 'progress.json', progress)
 
 
@@ -370,9 +402,10 @@ def campaign() -> None:
     else:
         state = initialize()
     while state['queue'] or state['active']:
-        effective = sum(row['effective'] for row in state['completed'])
+        valid = [row for row in state['completed'] if not row.get('invalid_setup')]
+        effective = sum(row['effective'] for row in valid)
         if effective >= state['budget']['max_effective']:
-            recent = [row for row in state['completed'] if row['effective']][-10:]
+            recent = [row for row in valid if row['effective']][-10:]
             novelty = any(row['new_production_probes'] or row['new_io_families']
                           for row in recent)
             if (state['budget']['max_effective'] == 80 and novelty):
@@ -383,7 +416,7 @@ def campaign() -> None:
                 state['status'] = 'budget_complete'
                 publish(state)
                 return
-        if len(state['completed']) >= state['budget']['max_attempts']:
+        if len(valid) >= state['budget']['max_attempts']:
             state['status'] = 'attempt_cap_exhausted'
             publish(state)
             return
@@ -400,18 +433,35 @@ def campaign() -> None:
         if not plan.is_file():
             write_plan(plan, active['sequence'])
         result = None
-        for attempt in range(1, 3):
+        for attempt in range(1, 4):
             out = trial / f'attempt-{attempt:02d}'
+            incomplete = out / 'trace_incomplete.json'
+            if incomplete.is_file():
+                archive_trace(out)
+                continue
             if not (out / 'run.json').is_file():
                 run(out, plan)
             active['attempts'] = max(active['attempts'], attempt)
             publish(state)
-            result, probes, families = analyze(out, active['sequence'], state)
+            try:
+                result, probes, families = analyze(out, active['sequence'], state)
+            except TraceIncomplete as failure:
+                raw = out / 'events.jsonl'
+                atomic(incomplete, {'reason': str(failure),
+                                    'raw_sha256': sha256(raw) if raw.is_file() else None,
+                                    'jvm_attempt': attempt,
+                                    'counted_as_completed_trial': False})
+                archive_trace(out)
+                continue
             atomic(out / 'audit.json', result)
             if result['strict_injection']:
                 break
-        assert result is not None
+        if result is None:
+            raise RuntimeError('three incomplete JVM traces; active plan is preserved: '
+                               + str(trial))
         result.update({'trial_number': number, 'attempts': active['attempts'],
+                       'excluded_jvm_attempts': active.get('excluded_jvm_attempts', 0),
+                       'excluded_elapsed_seconds': active.get('excluded_elapsed_seconds', 0),
                        'first_family': family(active['sequence'][0]),
                        'last_family': family(active['sequence'][-1]),
                        'fault_sequence': active['sequence'],

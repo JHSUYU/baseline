@@ -42,13 +42,28 @@ def runner_hashes() -> dict:
     return {name: sha256(HERE / name) for name in LOCKED}
 
 
+class TraceIncomplete(RuntimeError):
+    """The JVM ended without a complete, parseable trace and summary."""
+
+
 def events(path: Path) -> list[dict]:
     if path.is_file():
-        with path.open() as input_file:
-            return [json.loads(line) for line in input_file if line.strip()]
-    archived = Path(str(path) + '.gz')
-    with gzip.open(archived, 'rt') as input_file:
-        return [json.loads(line) for line in input_file if line.strip()]
+        data = path.read_bytes()
+    else:
+        archived = Path(str(path) + '.gz')
+        with gzip.open(archived, 'rb') as input_file:
+            data = input_file.read()
+    if not data or not data.endswith(b'\n'):
+        raise TraceIncomplete(f'missing complete final JSONL record: {path}')
+    rows = []
+    for line_number, line in enumerate(data.splitlines(), 1):
+        if not line.strip():
+            continue
+        try:
+            rows.append(json.loads(line))
+        except (json.JSONDecodeError, UnicodeDecodeError) as failure:
+            raise TraceIncomplete(f'invalid JSONL record {line_number}: {path}') from failure
+    return rows
 
 
 def archive_trace(out: Path) -> None:
@@ -235,6 +250,8 @@ def analyze(out: Path, sequence: list[dict], state: dict) -> tuple[dict, set, se
     rows = events(out / 'events.jsonl')
     applied = [e for e in rows if e['event'] == 'IO_OBSERVED' and e['applied']]
     summaries = [e for e in rows if e['event'] == 'SUMMARY']
+    if len(summaries) != 1:
+        raise TraceIncomplete(f'expected one final SUMMARY record: {out}')
     strict = (len(applied) == len(sequence)
               and all(point_id(point(e)) == point_id(p)
                       for e, p in zip(applied, sequence))
@@ -367,17 +384,32 @@ def campaign() -> None:
         if not plan.is_file():
             write_plan(plan, active['sequence'])
         result = None
-        for attempt in range(1, 3):
+        for attempt in range(1, 4):
             out = trial / f'attempt-{attempt:02d}'
+            incomplete = out / 'trace_incomplete.json'
+            if incomplete.is_file():
+                archive_trace(out)
+                continue
             if not (out / 'run.json').is_file():
                 run(out, plan)
             active['attempts'] = max(active['attempts'], attempt)
             publish(state)
-            result, probes, families = analyze(out, active['sequence'], state)
+            try:
+                result, probes, families = analyze(out, active['sequence'], state)
+            except TraceIncomplete as failure:
+                raw = out / 'events.jsonl'
+                atomic(incomplete, {'reason': str(failure),
+                                    'raw_sha256': sha256(raw) if raw.is_file() else None,
+                                    'jvm_attempt': attempt,
+                                    'counted_as_completed_trial': False})
+                archive_trace(out)
+                continue
             atomic(out / 'audit.json', result)
             if result['strict_injection']:
                 break
-        assert result is not None
+        if result is None:
+            raise RuntimeError('three incomplete JVM traces; active plan is preserved: '
+                               + str(trial))
         result.update({'trial_number': number, 'attempts': active['attempts'],
                        'first_family': family(active['sequence'][0]),
                        'last_family': family(active['sequence'][-1]),

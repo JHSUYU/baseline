@@ -32,6 +32,18 @@ public final class OriginalJUnit {
     System.out.println("SOLR13_ORIGINAL_JUNIT ran=" + result.getRunCount()
         + " ignored=" + result.getIgnoreCount()
         + " failures=" + result.getFailureCount());
+    // End the case-local trace before System.exit starts unrelated shutdown
+    // hooks. The original JUnit test and its cluster lifecycle have finished.
+    for (String probeName : new String[]{"research.solr13.Probe",
+        "research.solr13stage2.Probe"}) {
+      try {
+        Class.forName(probeName).getMethod("close").invoke(null);
+      } catch (ClassNotFoundException ignored) {
+        // The uninstrumented calibration has no probe agent.
+      } catch (ReflectiveOperationException failure) {
+        throw new IllegalStateException("Could not finish the case-local trace", failure);
+      }
+    }
     System.exit(result.getRunCount() == 1 && result.getIgnoreCount() == 0
         && result.wasSuccessful() ? 0 : 1);
   }

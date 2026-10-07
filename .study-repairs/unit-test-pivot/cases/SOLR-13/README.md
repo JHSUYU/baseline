@@ -77,3 +77,29 @@ the original JUnit passed, and production JaCoCo gained 12 probes. It is an
 effective trial, with no selected exception and no new-bug claim. Both
 campaigns preserve each JVM attempt and compress completed traces after
 decompressed-SHA256 verification.
+
+## Checkpoint recovery and excluded setup attempts
+
+Stage one's ninth plan first produced a partial JSONL tail and no final
+`SUMMARY`, although JUnit reported success. Its console showed a
+`ClosedChannelException` in the trace shutdown hook. That JVM attempt is
+archived with its raw SHA256 and marked incomplete; it did not consume an
+effective trial. The same plan ID was retried, with the exact fault and
+postfault target guard observed. The case-local JUnit launcher now closes
+the recorder before calling `System.exit`, after the original test finishes.
+The parser rejects truncated or missing-summary traces and retries instead
+of counting them. The atomic checkpoint migration retained all eight prior
+completed plans and the original ninth plan ID; the migration receipt and
+pre-migration state are in `independent/fuzz/evidence/campaign/`.
+
+On node1, a runner class refresh initially omitted its compiled anonymous
+JUnit listener class. Trials 9–25 then failed before the original test
+started. They remain in the node1 ledger and logs as `invalid_setup`, with
+zero fault and coverage credit; all 17 plans were requeued. The incomplete
+active trial 26 was preserved separately. A repaired no-fault run passed in
+42.7 seconds with five exact target guards, no selected exception, and all
+five ordered send/receive/alias-write/guard chains. Its evidence is in
+`independent/stage2/evidence/post-runner-refresh-healthy`. The stage-two
+checkpoint backup and migration receipt are in its campaign evidence.
+`result.json` keeps the legacy top-level counters scoped to stage one and
+records both phases and audited combined counts separately.
