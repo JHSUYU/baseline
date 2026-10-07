@@ -345,6 +345,34 @@ def done(state: dict) -> bool:
 def pick(state: dict) -> list[str]:
     queue = state["queue"]
     number = len(state["trials"]) + 1
+    # Once the other two checks are complete, spend alternate rounds on
+    # untested roots with a healthy-trace relation to SOLR-10's live target.
+    # Odd rounds retain the existing queue and multi-fault mutation order.
+    if (state.get("solr10_focus_v10") and number % 2 == 0 and
+            state["site_progress"]["SOLR-10"]["effective"] <
+            state["site_progress"]["SOLR-10"]["goal"]):
+        targets = state.get("seed_target_sites", {})
+        seen = set(state["seen_plans"])
+        candidates = [(index, plan[0]) for index, plan in enumerate(queue)
+                      if len(plan) == 1 and plan[0] not in seen and
+                      "SOLR-10" in targets.get(plan[0], [])]
+        if state.get("solr10_rank_v10b"):
+            def rank(selector: str) -> int:
+                if (selector.startswith("EXISTS_WATCH|/collections/myalias") and
+                        "/state.json|" in selector and
+                        "LazyCollectionRef#get:" in selector):
+                    return 0
+                if (selector.startswith("GET_CHILDREN_STAT|/collections/myalias") and
+                        "/state.json|" in selector):
+                    return 1
+                if selector.startswith("GET_DATA|/aliases.json|"):
+                    return 2
+                return 3
+            root = min(candidates, key=lambda entry: (rank(entry[1]), entry[0]))[0] if candidates else None
+        else:
+            root = candidates[0][0] if candidates else None
+        if root is not None:
+            return queue.pop(root)
     # The first V4 tranche showed that SOLR-39 retained its exact reader only
     # under single-fault plans. Keep exploring the mutated queue on alternate
     # rounds, while spending the other rounds on previously unseen roots whose
@@ -399,6 +427,105 @@ def pick(state: dict) -> list[str]:
         if root is not None:
             return queue.pop(root)
     return queue.pop(0)
+
+
+def migrate_solr10_focus(state: dict) -> None:
+    """Record the V10 picker change without changing the queue or trial ledger."""
+    if state.get("solr10_focus_v10"):
+        if not (CAMPAIGN / "solr10-focus-v10.json").exists():
+            raise RuntimeError("V10 picker checkpoint lacks its boundary receipt")
+        return
+    if (state.get("scheduler_version") != "solr39_handoff_roots_v9" or
+            state["inflight"] is not None):
+        raise RuntimeError("V10 picker requires a completed V9 trial boundary")
+    progress = state["site_progress"]
+    if (progress["SOLR-39"]["effective"] < progress["SOLR-39"]["goal"] or
+            progress["SOLR-40"]["effective"] < progress["SOLR-40"]["goal"] or
+            progress["SOLR-10"]["effective"] >= progress["SOLR-10"]["goal"]):
+        raise RuntimeError("V10 picker requires only SOLR-10 to remain open")
+    canonical = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ledger = {"trials": state["trials"], "seen_plans": state["seen_plans"]}
+    queue_sha = hashlib.sha256(canonical(state["queue"])).hexdigest()
+    ledger_sha = hashlib.sha256(canonical(ledger)).hexdigest()
+    targets = state.get("seed_target_sites", {})
+    seen = set(state["seen_plans"])
+    roots = [plan[0] for plan in state["queue"] if len(plan) == 1 and
+             plan[0] not in seen and "SOLR-10" in targets.get(plan[0], [])]
+    if not roots:
+        raise RuntimeError("No untested healthy SOLR-10 target-linked root")
+    before_sha = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    receipt = {
+        "checkpoint_sha256_before": before_sha,
+        "trials_before": len(state["trials"]),
+        "queue_sha256_before_and_after": queue_sha,
+        "ledger_sha256_before_and_after": ledger_sha,
+        "untried_solr10_linked_roots": len(roots),
+        "first_scheduled_root": roots[0],
+        "scheduler_sha256_before": "ca51bcd7c64fdf8220d14ce80c4a29ec82afaadbab6d85ba1d6dee793598ddce",
+        "scheduler_sha256_after": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "rule": "alternate untested healthy-trace SOLR-10 linked single faults with the existing multi-fault queue",
+    }
+    state["solr10_focus_v10"] = {"version": "solr10_target_roots_v10",
+                                 "trials_before": len(state["trials"]),
+                                 "receipt": str(CAMPAIGN / "solr10-focus-v10.json")}
+    if (hashlib.sha256(canonical(state["queue"])).hexdigest() != queue_sha or
+            hashlib.sha256(canonical({"trials": state["trials"],
+                                     "seen_plans": state["seen_plans"]})).hexdigest() != ledger_sha):
+        raise RuntimeError("V10 picker changed the queue or completed trial ledger")
+    atomic_json(STATE, state)
+    atomic_json(CAMPAIGN / "solr10-focus-v10.json", {
+        **receipt,
+        "checkpoint_sha256_after": hashlib.sha256(STATE.read_bytes()).hexdigest(),
+    })
+
+
+def migrate_solr10_rank_v10b(state: dict) -> None:
+    """Rank already queued target-linked roots using observed per-family yield."""
+    receipt_path = CAMPAIGN / "solr10-rank-v10b.json"
+    if state.get("solr10_rank_v10b"):
+        if not receipt_path.exists():
+            raise RuntimeError("V10b picker checkpoint lacks its boundary receipt")
+        return
+    if (not state.get("solr10_focus_v10") or state["inflight"] is not None or
+            len(state["trials"]) < 525):
+        raise RuntimeError("V10b picker requires the completed V10 pilot boundary")
+    canonical = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ledger = {"trials": state["trials"], "seen_plans": state["seen_plans"]}
+    ledger_sha = hashlib.sha256(canonical(ledger)).hexdigest()
+    queue_sha = hashlib.sha256(canonical(state["queue"])).hexdigest()
+    targets = state.get("seed_target_sites", {})
+    seen = set(state["seen_plans"])
+    roots = [plan[0] for plan in state["queue"] if len(plan) == 1 and
+             plan[0] not in seen and "SOLR-10" in targets.get(plan[0], [])]
+    lazy = [name for name in roots if name.startswith("EXISTS_WATCH|/collections/myalias")
+            and "/state.json|" in name and "LazyCollectionRef#get:" in name]
+    if not lazy:
+        raise RuntimeError("No untried target-linked LazyCollectionRef state roots")
+    before_sha = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    receipt = {
+        "checkpoint_sha256_before": before_sha,
+        "trials_before": len(state["trials"]),
+        "queue_sha256_before_and_after": queue_sha,
+        "ledger_sha256_before_and_after": ledger_sha,
+        "solr10_linked_roots": len(roots),
+        "lazy_state_roots_ranked_first": len(lazy),
+        "first_lazy_root": lazy[0],
+        "scheduler_sha256_before": "5a69c1d451a8de66586ab1aa18887a0eefc07dfe135a50ccb33426a72f52c06a",
+        "scheduler_sha256_after": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "rule": "use feedback to rank target-linked LazyCollectionRef state roots ahead of lower-yield I/O families; preserve all queued plans",
+    }
+    state["solr10_rank_v10b"] = {"version": "solr10_ranked_roots_v10b",
+                                   "trials_before": len(state["trials"]),
+                                   "receipt": str(receipt_path)}
+    if (hashlib.sha256(canonical(state["queue"])).hexdigest() != queue_sha or
+            hashlib.sha256(canonical({"trials": state["trials"],
+                                     "seen_plans": state["seen_plans"]})).hexdigest() != ledger_sha):
+        raise RuntimeError("V10b picker changed the queue or completed trial ledger")
+    atomic_json(STATE, state)
+    atomic_json(receipt_path, {
+        **receipt,
+        "checkpoint_sha256_after": hashlib.sha256(STATE.read_bytes()).hexdigest(),
+    })
 
 
 def migrate_root_balance(state: dict) -> None:
@@ -798,6 +925,16 @@ def run(max_new_trials: int | None = None) -> None:
         migrate_lazy_occurrences(state)
         migrate_lazy_retries(state)
         migrate_handoff_healthy_roots(state)
+    if (state.get("solr10_focus_v10") or
+            (state["site_progress"]["SOLR-39"]["effective"] >=
+             state["site_progress"]["SOLR-39"]["goal"] and
+             state["site_progress"]["SOLR-40"]["effective"] >=
+             state["site_progress"]["SOLR-40"]["goal"] and
+             state["site_progress"]["SOLR-10"]["effective"] <
+             state["site_progress"]["SOLR-10"]["goal"])):
+        migrate_solr10_focus(state)
+    if state.get("solr10_focus_v10") and len(state["trials"]) >= 525:
+        migrate_solr10_rank_v10b(state)
     starting_trials = len(state["trials"])
     reclaim_completed_scratch(state)
     update_stop_reasons(state)

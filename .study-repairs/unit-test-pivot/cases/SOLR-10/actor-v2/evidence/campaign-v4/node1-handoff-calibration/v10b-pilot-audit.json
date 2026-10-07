@@ -1,0 +1,92 @@
+{
+  "build_receipt_sha256": "1e939577aa0b848806b29dbda72f1086cab1266cffc229cae8d26912f813c084",
+  "checkpoint_sha256_after_pilot": "59ba4e8ed3e19d73f2cd8dd4de1d1c25db77f3baaf29af56b616bf8839c84eaf",
+  "disk_free_gib": 14.24,
+  "effective": {
+    "SOLR-10": 90,
+    "SOLR-39": 83,
+    "SOLR-40": 133
+  },
+  "inflight": null,
+  "migration_sha256": "8e958ce6268e714426ceeb3f163a6f334575ef1391adfb222726b351ee3a5352",
+  "original_runner_sha256": "7a1850ff1233aac53114cd340d2795bb9d8ba28e491534a759a64850b871e15d",
+  "rows": [
+    {
+      "elapsed_seconds": 33.392,
+      "fault_actors": [
+        [
+          "jetty:node3",
+          "127.0.0.1:46477_solr",
+          "1608523457",
+          "807791365"
+        ]
+      ],
+      "junit_exit": 0,
+      "plan": [
+        "EXISTS_WATCH|/collections/myalias__TRA__2017-10-25/state.json|12|caller=org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef#get:811|actor=jetty:node3"
+      ],
+      "sha256": {
+        "events.tsv": "5825e18e8fe4db05f10b652eb0641c0dca53febed2ee4b366504914b6abcb393",
+        "jacoco.exec": "7766e46796373388644af2734ab41558c21b408051fd00be45c7fc1dcc710439",
+        "junit.log": "9a0a208fc8dae4142613fa4face0c9a355c4afd48445fa8adf7ef4d17615128d",
+        "manifest.json": "7959eca350baf95f9a310f0938d260001bd7a071f5f9bc7b565e958631871281",
+        "trial.json": "6ecb278337820250d31a43e76f5bbe8b722425d3d53087ffcabd2a22b4fc981a"
+      },
+      "strict": true,
+      "target_after_fault": {
+        "SOLR-10": true,
+        "SOLR-39": false,
+        "SOLR-40": false
+      },
+      "target_exception": {
+        "SOLR-10": false,
+        "SOLR-39": false,
+        "SOLR-40": false
+      },
+      "trial": 526
+    },
+    {
+      "elapsed_seconds": 26.364,
+      "fault_actors": [
+        [
+          "jetty:node3",
+          "127.0.0.1:43989_solr",
+          "1733810135",
+          "1481511980"
+        ],
+        [
+          "alias-writer",
+          "127.0.0.1:40513_solr",
+          "323503574",
+          "1577969213"
+        ]
+      ],
+      "junit_exit": 1,
+      "plan": [
+        "EXISTS_WATCH|/collections/myalias__TRA__2017-10-25/state.json|12|caller=org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef#get:811|actor=jetty:node3",
+        "SET_DATA|/aliases.json|@1|caller=org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk:2259|actor=alias-writer|after=F0|seed_global=4"
+      ],
+      "sha256": {
+        "events.tsv": "9fbeede5119d7ccc89abf619b3f077662999a2838bca9486b63380dfe4929c9f",
+        "jacoco.exec": "bf11be3d35d8be346c94c06656ce2cc550e092f08fac6d407ca97176b690d89e",
+        "junit.log": "51cc1a370a33c19491907634ab5c19677be7c1a8fd132e350706f9bfd82a6df7",
+        "manifest.json": "f05b66351f12f8f4715665865abe6188cff054d0404d6a5b02fdf4bd218fc839",
+        "trial.json": "0efa1a811533ed83449831b8e4d47c676086f12fe914639a846d99b36a4fb049"
+      },
+      "strict": true,
+      "target_after_fault": {
+        "SOLR-10": false,
+        "SOLR-39": false,
+        "SOLR-40": false
+      },
+      "target_exception": {
+        "SOLR-10": false,
+        "SOLR-39": false,
+        "SOLR-40": false
+      },
+      "trial": 527
+    }
+  ],
+  "scheduler_sha256": "759e889de163f02225983b5f49071b874ed232d130e093669d53cf20becb467c",
+  "trials": 527
+}

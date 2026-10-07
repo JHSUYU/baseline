@@ -44,6 +44,9 @@ def completion_time(trials: list[dict], site: str, goal: int) -> float | None:
 
 
 def metrics(state: dict, site: str) -> dict:
+    picker_version = (state.get("solr10_rank_v10b", {}).get("version") or
+                      state.get("solr10_focus_v10", {}).get("version") or
+                      state.get("scheduler_version"))
     trials = state["trials"]
     eligible = [trial for trial in trials
                 if trial["strict"] and trial["target_after_fault"][site]]
@@ -69,7 +72,7 @@ def metrics(state: dict, site: str) -> dict:
     else:
         status = "fuzz_running"
     end_time = completion_time(trials, site, goal) if done else None
-    reason = (f"Actor-aware unchanged JUnit campaign ({state.get('scheduler_version')}): "
+    reason = (f"Actor-aware unchanged JUnit campaign ({picker_version}): "
               f"{len(trials)} shared attempts, "
               f"{strict} strict, {len(eligible)}/{goal} effective for this guard; "
               f"stop={progress['stop_reason']}.")
@@ -114,7 +117,7 @@ def metrics(state: dict, site: str) -> dict:
         "v7_checkpoint": str(REMOTE_STATE) + f" ({REMOTE_HOST}, active continuation)",
         "v7_root_expansion_receipt": str(CASE / "evidence/campaign-v4/lazy-root-expansion-v7.json")
                                     + f" ({REMOTE_HOST})",
-        "active_scheduler_version": state.get("scheduler_version"),
+        "active_scheduler_version": picker_version,
         "build_receipt_sha256": state["build_receipt_sha256"],
         "snapshot_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
