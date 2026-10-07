@@ -1548,6 +1548,8 @@
       "target_guard": null,
       "target_throw": null,
       "target_exception": "org.apache.hadoop.fs.PathIOException",
+      "linked_key_check": "BlockTokenSecretManager.retrieveDataEncryptionKey(): allKeys.get(keyId) must be non-null on each DataNode",
+      "failure_mechanism": "A stale client data-encryption key is rejected by DataNodes; the striped checksum caller exhausts its block-group attempts and throws PathIOException.",
       "proposed_cluster_test": "TestEncryptedTransfer.testFileChecksumWithInvalidEncryptionKey (XOR-2-1 striped adaptation)",
       "proposed_cluster_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java"
     },
@@ -1564,6 +1566,8 @@
       "target_guard": null,
       "target_throw": null,
       "target_exception": null,
+      "linked_failure_site": "Dispatcher.PendingMove.dispatch(): Balancer outbound saslClient.socketSend at Dispatcher.java:394",
+      "remote_rejection_site": "SaslDataTransferServer.getEncryptionKeyFromUserName() on the target DataNode, followed by INVALID_KEY SASL response",
       "proposed_cluster_test": "TestBalancerWithEncryptedTransfer.testEncryptedBalancer0",
       "proposed_cluster_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
       "remote_exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException at Balancer outbound SASL",
