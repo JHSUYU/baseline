@@ -207,6 +207,42 @@ def choose_pending(state: dict) -> dict:
     return job
 
 
+def prune_unreachable_suite_suffixes(state: dict) -> None:
+    """Skip suffix plans when two raw trials show the first fault aborts setup.
+
+    Require both a standalone and longer plan: in each, only that first fault
+    applied and the original test body never started. A later fault in a queued
+    suffix cannot run on a path that already ended during suite setup.
+    """
+    witnesses: dict[str, dict[str, str]] = {}
+    for item in state['trials']:
+        first = item['plan'][0]
+        if (':SUITE@@' not in first or item['test_started_count'] != 0
+                or item['applied'] != [first] or item['effective']):
+            continue
+        kind = 'standalone' if len(item['plan']) == 1 else 'suffix'
+        witnesses.setdefault(first, {})[kind] = item['run_id']
+    proven = {first: runs for first, runs in witnesses.items()
+              if {'standalone', 'suffix'} <= runs.keys()
+              and not any(item['effective'] for item in state['trials']
+                          if item['plan'][0] == first)}
+    if not proven:
+        return
+    kept = []
+    skipped = state.setdefault('pruned_plans', [])
+    for job in state['pending']:
+        first = job['plan'][0]
+        if len(job['plan']) > 1 and first in proven:
+            skipped.append({'plan': job['plan'], 'parent': job['parent'],
+                            'reason': 'suite_setup_ended_after_first_fault',
+                            'witnesses': proven[first]})
+        else:
+            kept.append(job)
+    if len(kept) != len(state['pending']):
+        state['pending'] = kept
+        atomic_json(STATE, state)
+
+
 def late_signal(state: dict) -> dict:
     valid = [item for item in state['trials'] if item['effective']]
     first: dict[str, int] = {}
@@ -345,7 +381,9 @@ def main() -> None:
             state['stop_reason'] = '{}_effective_trial_budget_complete'.format(state['budget'])
             atomic_json(STATE, state)
             break
-        if not state['pending']:
+        if state['inflight'] is None:
+            prune_unreachable_suite_suffixes(state)
+        if not state['pending'] and state['inflight'] is None:
             state['finished'] = True
             state['stop_reason'] = 'observed_io_frontier_exhausted'
             atomic_json(STATE, state)
