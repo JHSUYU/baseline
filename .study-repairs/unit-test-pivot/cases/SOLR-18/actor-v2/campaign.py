@@ -7,6 +7,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import signal
 
 from actor_audit import actor, audit, events, selected_check
@@ -18,6 +19,7 @@ STATE = HERE / 'campaign-state.json'
 LEDGER = HERE / 'trial-ledger.jsonl'
 CALIBRATION = HERE / 'calibration.json'
 STOP = False
+MIN_FREE_BYTES = int(2.2 * (1 << 30)) + 16 * (1 << 20)
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -291,6 +293,12 @@ def main() -> None:
         mirror_run(item['run_id'], prune_derived=True)
     assert not state['finished'] or state['effective'] >= state['budget']
     while not state['finished'] and not STOP:
+        free = shutil.disk_usage('/').free
+        if free <= MIN_FREE_BYTES:
+            state['pause_reason'] = 'node0_free_bytes_{}_below_2.2GiB_plus_16MiB_guard'.format(free)
+            atomic_json(STATE, state)
+            break
+        state.pop('pause_reason', None)
         if args.pilot_effective and state['effective'] >= args.pilot_effective:
             break
         if state['effective'] >= state['budget']:
