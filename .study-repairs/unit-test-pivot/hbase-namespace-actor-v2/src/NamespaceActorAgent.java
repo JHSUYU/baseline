@@ -1,7 +1,9 @@
 import java.lang.instrument.Instrumentation;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.Base64;
 import java.nio.charset.StandardCharsets;
 import net.bytebuddy.agent.builder.AgentBuilder;
@@ -20,6 +22,9 @@ import static net.bytebuddy.matcher.ElementMatchers.*;
 public final class NamespaceActorAgent {
   private static final Map<ZKWatcher, Abortable> OWNERS = new IdentityHashMap<>();
   private static final Map<ZKWatcher, Integer> MANAGERS = new IdentityHashMap<>();
+  private static final Map<ZKWatcher, Object> MANAGER_OBJECTS = new IdentityHashMap<>();
+  private static final Set<ZKWatcher> AMBIGUOUS_WATCHERS =
+      Collections.newSetFromMap(new IdentityHashMap<ZKWatcher, Boolean>());
   private static final Map<ZKWatcher, Map<String, Integer>> HITS = new IdentityHashMap<>();
   private static final String[] PLAN = System.getProperty("ns.actor.fault.plan", "").split(";");
   private static int nextManager;
@@ -47,7 +52,9 @@ public final class NamespaceActorAgent {
         .visit(Advice.to(ZkCreate.class).on(named("createWithParents").and(takesArguments(2))))
         .visit(Advice.to(ZkWrite.class).on(named("updateExistingNodeData").and(takesArguments(4))))
         .visit(Advice.to(ZkChildren.class).on(named("getChildDataAndWatchForNewChildren").and(takesArguments(2))))
-        .visit(Advice.to(ZkData.class).on(named("getDataAndWatch").and(takesArguments(2)))))
+        .visit(Advice.to(ZkData.class).on(named("getDataAndWatch").and(takesArguments(2))))
+        .visit(Advice.to(ZkExists.class).on(named("watchAndCheckExists").and(takesArguments(2))))
+        .visit(Advice.to(ZkDelete.class).on(named("deleteNode").and(takesArguments(2)))))
       .installOn(inst);
     new AgentBuilder.Default().with(AgentBuilder.Listener.StreamWriting.toSystemError().withErrorsOnly())
       .type(named("org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl"))
@@ -70,12 +77,19 @@ public final class NamespaceActorAgent {
 
   private static synchronized void manager(Object manager, ZKWatcher watcher) {
     Integer id = MANAGERS.get(watcher);
-    if (id == null) {
+    Object old = MANAGER_OBJECTS.get(watcher);
+    if (id == null || old != manager) {
       id = ++nextManager;
       MANAGERS.put(watcher, id);
+      MANAGER_OBJECTS.put(watcher, manager);
+      // The old instance could still issue I/O using this watcher. Without a
+      // per-call instance tag, attribution would be ambiguous after rotation.
+      if (old != null) AMBIGUOUS_WATCHERS.add(watcher);
     }
     System.err.println("NSACTOR MANAGER manager=" + id + " object="
-        + System.identityHashCode(manager) + " watcher=" + System.identityHashCode(watcher));
+        + System.identityHashCode(manager) + " watcher=" + System.identityHashCode(watcher)
+        + " replaced=" + (old != null && old != manager)
+        + " ambiguous=" + AMBIGUOUS_WATCHERS.contains(watcher));
   }
 
   private static final class Actor {
@@ -91,7 +105,7 @@ public final class NamespaceActorAgent {
 
   private static synchronized Actor actor(ZKWatcher watcher) {
     Abortable owner = OWNERS.get(watcher);
-    Integer manager = MANAGERS.get(watcher);
+    Integer manager = AMBIGUOUS_WATCHERS.contains(watcher) ? null : MANAGERS.get(watcher);
     if (owner instanceof HMaster) {
       HMaster master = (HMaster) owner;
       ServerName name = master.getServerName();
@@ -105,6 +119,22 @@ public final class NamespaceActorAgent {
           manager == null ? 0 : manager);
     }
     return new Actor("UNKNOWN", "unassigned", manager == null ? 0 : manager);
+  }
+
+  /** Require one raw active Master across all observed watchers at injection time. */
+  private static boolean uniqueActiveMaster(String raw) {
+    String seen = null;
+    for (Abortable owner : OWNERS.values()) {
+      if (!(owner instanceof HMaster)) continue;
+      HMaster master = (HMaster) owner;
+      if (!master.isActiveMaster()) continue;
+      ServerName name = master.getServerName();
+      if (name == null) return false;
+      String current = name.getServerName();
+      if (seen != null && !seen.equals(current)) return false;
+      seen = current;
+    }
+    return raw.equals(seen);
   }
 
   private static String namespaceSite() {
@@ -145,11 +175,17 @@ public final class NamespaceActorAgent {
     if (nextFault < PLAN.length && !PLAN[nextFault].isEmpty()) {
       String planned = PLAN[nextFault];
       int split = planned.lastIndexOf('~');
-      if (split > 0 && selector.equals(planned.substring(0, split))
-          && actor.role.equals("ACTIVE_MASTER") && actor.manager != 0
-          && !actor.raw.equals("unassigned")
-          && (boundActorRaw == null ||
-              (boundActorRaw.equals(actor.raw) && boundManager == actor.manager))) {
+      if (split > 0 && selector.equals(planned.substring(0, split))) {
+        if (!actor.role.equals("ACTIVE_MASTER") || actor.manager == 0
+            || actor.raw.equals("unassigned") || !uniqueActiveMaster(actor.raw)
+            || (boundActorRaw != null &&
+                (!boundActorRaw.equals(actor.raw) || boundManager != actor.manager))) {
+          System.err.println("NSACTOR FAULT_REJECTED seq=" + event
+              + " reason=actor_binding role=" + actor.role + " actor_raw=" + actor.raw
+              + " manager=" + actor.manager + " bound_actor_raw=" + boundActorRaw
+              + " bound_manager=" + boundManager);
+          return event;
+        }
         String kind = planned.substring(split + 1);
         KeeperException.Code code;
         if (kind.equals("CONNECTIONLOSS")) code = KeeperException.Code.CONNECTIONLOSS;
@@ -265,6 +301,28 @@ public final class NamespaceActorAgent {
     public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path)
         throws KeeperException {
       return ioStart("ZK_DATA_READ", watcher, path);
+    }
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(@Advice.Enter long event, @Advice.Thrown Throwable thrown) {
+      ioEnd(event, thrown);
+    }
+  }
+  public static final class ZkExists {
+    @Advice.OnMethodEnter
+    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path)
+        throws KeeperException {
+      return ioStart("ZK_EXISTS", watcher, path);
+    }
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(@Advice.Enter long event, @Advice.Thrown Throwable thrown) {
+      ioEnd(event, thrown);
+    }
+  }
+  public static final class ZkDelete {
+    @Advice.OnMethodEnter
+    public static long enter(@Advice.Argument(0) ZKWatcher watcher, @Advice.Argument(1) String path)
+        throws KeeperException {
+      return ioStart("ZK_DELETE", watcher, path);
     }
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Enter long event, @Advice.Thrown Throwable thrown) {

@@ -19,14 +19,22 @@ quota exception are already expected by their unchanged healthy JUnit tests;
 an observed throw alone is not a bug.
 
 The agent records the `Abortable` owner of each `ZKWatcher` at construction,
-and records a `ZKNamespaceManager` identity for the same watcher. At each
+and records a `ZKNamespaceManager` identity for the same watcher. A distinct
+replacement manager on the same watcher receives a fresh ID; the watcher is
+then marked ambiguous and no further fault/target on it can be admitted,
+because an old manager could still issue I/O through that watcher. At each
 namespace-related `ZKUtil` API attempt it logs the current active/standby
 master role or region-server role, the raw `ServerName`, the manager ID, the
 watcher identity, the operation, znode path, production call site, and the
 ordinal scoped to that watcher and point. It also logs whether the API
 returned or threw. At each of the three selected target methods it logs the
 same Master watcher, raw `ServerName`, and manager ID, plus the target
-argument and exception outcome. `TARGET_EXIT outcome` distinguishes
+argument and exception outcome. The six intercepted ZK families are
+`createWithParents`, `updateExistingNodeData`,
+`getChildDataAndWatchForNewChildren`, `getDataAndWatch`,
+`watchAndCheckExists`, and the two-argument `deleteNode`. The last two cover
+`ZKNamespaceManager.start` and `deleteNamespace` paths missed by the first
+pass. `TARGET_EXIT outcome` distinguishes
 HBASE-08's selected namespace-not-found throw, HBASE-21's selected region
 count quota throw, and HBASE-22's selected table-region quota throw from
 other exceptions in those methods. These are high-level ZooKeeper API attempts;
@@ -53,17 +61,70 @@ two-master test before enabling any fault. If the active Master changes, the
 new Master is a different actor and cannot satisfy this same-actor check.
 The default run is passive; a fresh V2 checkpoint can use the optional fault
 mode only after two original healthy seeds validate stable role selection.
+At injection time, the agent also requires one distinct raw active Master
+among all observed Master watchers. A matching selector with an ambiguous,
+unassigned, or changed actor produces `FAULT_REJECTED` and applies no fault.
 The old HBASE-08/21/22 coverage results remain historical and must not be
 imported into a new V2 denominator.
 
+## V2 controller and admission
+
+`controller.py init HBASE-08 SEED1 SEED2` (likewise HBASE-21/22) starts a
+fresh, case-specific checkpoint only after two independently completed,
+unchanged original JUnit healthy runs. It intersects **same-actor pretarget**
+I/O selectors across the seeds. If a selector maps to more than one
+Master/manager within a seed, initialization excludes it. The case-specific
+subjects are `TestNamespaceAuditor_np2` for HBASE-08,
+`TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1:4` for HBASE-21,
+and `TestNamespaceAuditor_np2:table2:5` for HBASE-22. Healthy JUnit must pass
+and reach the selected check; for HBASE-21 and HBASE-22, their selected quota
+throw is an expected healthy result.
+
+`controller.py run CASE` draws ordered fault plans from the observed I/O
+queue. A trial is effective only if every planned fault is applied in order
+at its exact selector and a selected target receipt **after the final fault**
+has the same raw active Master and manager ID. For a normal HBASE-21 or
+HBASE-22 target return, the run must also cover the released bytecode's
+selected predicate line (128 or 166); otherwise the guard is unproven and
+the trial is excluded. The HBASE-21 null-namespace early return is therefore
+not mistaken for selected-predicate execution. Wrong-actor, unmatched,
+target-lost, and guard-unproven trials keep their raw evidence and time but
+do not contribute coverage/I/O feedback. Per-trial JaCoCo output counts
+production methods and branches in four released classes; no graph or
+GraphChecker artifact is used.
+
+The default bound is **80 effective trials, at most eight ordered faults**.
+If any of the final eight effective trials first adds a production method,
+branch, or I/O family observed in at least two effective trials, the same
+checkpoint extends to **128 effective trials and at most ten faults**. The
+attempt cap is 320 (512 after extension), and natural queue exhaustion is
+recorded separately from budget completion. Completed run directories have
+immutable logs, JaCoCo data, plan, elapsed-time and exit receipts. The
+controller stores an atomic `inflight.json` before launch and an atomic
+checkpoint after ingestion. On resume it ingests an existing completed run
+instead of rerunning it; an interrupted run without an exit receipt requires
+manual process/raw-log audit before any retry. A new HBASE-08 selected
+exception pauses at `candidate_review_pending_source_and_replay`; HBASE-21/22
+quota signatures already present in healthy runs are recorded as expected
+signatures, not automatically called new bugs. These V2 counters start at
+zero and never import the older unbound runs.
+
 ## Offline checks
 
-- Java 8 `javac` compiled `src/NamespaceActorAgent.java` and
-  the smoke and original-JUnit launcher sources against the release
-  distribution; `bash -n run.sh` passed.
+- Java 8 `javac` compiled the agent, coverage reporter, smoke, and
+  original-JUnit launcher sources against the release distribution;
+  `bash -n run.sh` and `python3 -m py_compile controller.py` passed.
 - `NamespaceActorSmoke` loaded all five instrumented classes with the agent;
-  no ByteBuddy transform error appeared. It started no HBase or ZooKeeper
-  cluster.
+  no ByteBuddy transform error appeared. It also verified that a replacement
+  manager receives a new ID on the same synthetic watcher. It started no
+  HBase or ZooKeeper cluster.
+- Ten offline receipt tests passed, covering exact same-actor admission,
+  wrong Master, manager, and target subject rejection, target order, missing
+  fault, ambiguous healthy selector, postfault feedback actor filtering, and
+  HBASE-21 guard-line admission.
+  A historical HBASE-22 JaCoCo file produced
+  `NamespaceStateManager` branch line 166 with two covered outcomes; this
+  checks the reporter against released bytecode without claiming a V2 run.
 - ByteBuddy's class dump contains transformed `ZKWatcher`,
   `ZKNamespaceManager`, `ZKUtil`, `ClusterSchemaServiceImpl`, and
   `NamespaceStateManager`. `javap` confirmed constructor advice in the
@@ -71,8 +132,6 @@ imported into a new V2 denominator.
   agent's own type references cause it to load before the transformer is
   installed.
 
-The agent source SHA-256 is
-`90825ce295df4aae6fdc050dba544559402328f08e052a6fc900d32275b48dde`.
 `bash run.sh build` regenerates the small local agent JAR; its timestamped
 archive bytes can differ between builds, so each cluster seed should record
 the JAR's SHA-256 in that seed's manifest.
@@ -92,5 +151,8 @@ The prepared `bash run.sh healthy table SEED` selects the original
 `testTableOperations` workload for HBASE-08 and HBASE-22; `healthy restore
 SEED` selects the original `testRestoreSnapshotQuotaExceed` workload for
 HBASE-21. Each seed has a new scratch directory, 240-second bound, raw JUnit
-log, exit receipt, and JaCoCo file. These commands are **prepared only**;
-neither was run while the shared cluster slots were busy.
+log, exit receipt, and JaCoCo file. `bash run.sh trial KIND CASE-rNNN PLAN`
+uses the same isolated runner and adds an ordered plan. These commands are
+**prepared only**; no V2 cluster JUnit or injection was run while shared
+cluster slots were busy. Two healthy runs of `testTableOperations` and two
+of `testRestoreSnapshotQuotaExceed` are still needed before campaigns start.
