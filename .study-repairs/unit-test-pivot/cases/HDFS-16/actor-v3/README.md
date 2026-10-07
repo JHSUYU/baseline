@@ -90,3 +90,33 @@ branch units; no new I/O family. The pilot audit and migration receipt are
 `campaign/oracle-migration-target-only/receipt.json`. The full campaign
 resumed from this same five-trial checkpoint in node1 tmux
 `hdfs16_actor_v3_campaign` at 2026-10-07 11:11:39 UTC.
+
+## Terminal result
+
+The original-JUnit campaign ended naturally at 2026-10-07 14:03:43 UTC:
+92 attempted sequences, 92 exact ordered injections (257 matched/applied fault
+events), and 80 same-actor, same-block postfault target-retaining sequences.
+Twelve attempts lost the selected target and were excluded from the effective
+budget. All 85 JUnit workload failures contained the injected exception;
+there was no bind, port, out-of-memory, or selected target exception event.
+The longest original faulted JUnit was 32.172 seconds. The measured JUnit sum
+was 2,242.103 seconds; the elapsed wall time from the first healthy seed to
+the terminal trial was 11,216.122 seconds, including shared-node queueing.
+
+Independent raw replay of the gate and JaCoCo feedback passed for all 92
+trials. The gain over the union of the two healthy seeds was 386 production
+probes, 74 methods, and 195 branch units, with no new I/O family. The final
+eight effective trials added no coverage or I/O family, so the predeclared
+budget stopped at 80 effective trials and at most eight faults. In all 80
+effective trials the target ran through `BlockInfo.commitBlock` after the
+final fault; 55 also ran through `BlockManager.updateLastBlock`. The remaining
+25 had only the commit/cleanup caller after the final fault. This is target
+reachability under the specified gate, not evidence that an injected fault
+caused the target to execute. Source review identifies the selected check as
+a local under-construction invariant; no new bug is confirmed.
+
+The node0 snapshot under `final-evidence/` contains the independent audit,
+per-trial ledger, compressed terminal checkpoint, healthy receipt, and
+terminal SHA receipt. All 92 original trace, plan, JUnit, and JaCoCo files
+remain under this case path on node1. The tmux campaign exited at the
+terminal budget boundary.

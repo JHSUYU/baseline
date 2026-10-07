@@ -1,0 +1,118 @@
+{
+  "applied_fault_events": 129,
+  "baseline_max_faults_per_sequence": 8,
+  "baseline_trial_budget": 80,
+  "bug_mark": "none",
+  "case_id": "HDFS-16",
+  "check_code": "Preconditions.checkState(uc != null && !isComplete());",
+  "cluster_nodes": "1 NameNode, 2 DataNodes",
+  "cluster_test": "org.apache.hadoop.hdfs.TestClientProtocolForPipelineRecovery#testUpdatePipeLineAfterDNReg",
+  "cluster_type": "MiniDFSCluster",
+  "completed_at_utc": "2026-10-06T21:28:55.432489+00:00",
+  "coverage_gain": {
+    "BRANCH_UNIT": 50,
+    "METHOD": 18,
+    "PROBE": 156
+  },
+  "elapsed_seconds": 3068.56,
+  "evidence": {
+    "audit": "independent-coverage-io/audit.json",
+    "case_readme": "independent-coverage-io/README.md",
+    "checkpoint": "independent-coverage-io/campaign/checkpoint.json",
+    "coverage_archive": "independent-coverage-io/coverage-evidence.tar.gz",
+    "healthy_coverage": "independent-coverage-io/healthy/instrumented/coverage.tsv",
+    "healthy_probe": "independent-coverage-io/healthy/instrumented/manifest.json",
+    "healthy_trace": "independent-coverage-io/healthy/instrumented/trace/runtime_trace.jsonl",
+    "independent_original_junit": "independent-coverage-io/healthy/original/manifest.json",
+    "independent_source_provenance": "independent-coverage-io/source-provenance.json",
+    "priority_migration": "independent-coverage-io/campaign/priority-migration-v2.json",
+    "retention_policy": "independent-coverage-io/campaign/retention-policy-v3.json",
+    "trial_dir": "independent-coverage-io/campaign/trial-XX/",
+    "trial_ledger": "independent-coverage-io/campaign/trial-ledger.csv"
+  },
+  "fault_trials": 80,
+  "fully_applied_trials": 63,
+  "function": "BlockInfo.setGenerationStampAndVerifyReplicas(long)",
+  "healthy_guard_contexts": [
+    {
+      "allowed": true,
+      "blockId": 1073741825,
+      "caller": "BlockManager.updateLastBlock",
+      "currentGenerationStamp": 1001,
+      "ordinal": 1,
+      "proposedGenerationStamp": 1002
+    },
+    {
+      "allowed": true,
+      "blockId": 1073741825,
+      "caller": "BlockManager.updateLastBlock",
+      "currentGenerationStamp": 1002,
+      "ordinal": 2,
+      "proposedGenerationStamp": 1003
+    },
+    {
+      "allowed": true,
+      "blockId": 1073741825,
+      "caller": "BlockInfo.commitBlock",
+      "currentGenerationStamp": 1003,
+      "ordinal": 3,
+      "proposedGenerationStamp": 1003
+    }
+  ],
+  "healthy_observed_io_families": 14,
+  "healthy_observed_io_points": 53,
+  "healthy_probe_elapsed_seconds": 27.45,
+  "healthy_probe_exit": 0,
+  "healthy_production_coverage": {
+    "BRANCH_UNIT": 7549,
+    "METHOD": 7279,
+    "PROBE": 25356
+  },
+  "healthy_target_guard_count": 3,
+  "healthy_test_elapsed_seconds": 23.493,
+  "healthy_test_exit": 0,
+  "matched_fault_events": 129,
+  "max_requested_fault_depth": 4,
+  "methodology": "coverage_io_source_probes_no_graph",
+  "multi_fault_trials": 56,
+  "oracle_candidates": 0,
+  "post_fault_target_reach_trials": 40,
+  "requested_fault_events": 146,
+  "selection_line": 428,
+  "selection_policy_version": "retention_feedback_v3",
+  "site_semantics": "Local BlockInfo under-construction invariant reached from pipeline-recovery operations; no multi-hop ad hoc coordination failure established by these trials.",
+  "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
+  "status": "actor_identity_recheck_pending",
+  "stop_reason": "Current trial budget reached; no new production method/branch coverage or stable I/O family appeared in its final eight trials.",
+  "strict_injection_trials": 63,
+  "strict_injections": 63,
+  "system": "HDFS 3.4.3",
+  "target_after_fault": 40,
+  "target_exception_after_fault_trials": 0,
+  "target_exception_any_context_trials": 0,
+  "target_exception_type": "java.lang.IllegalStateException",
+  "target_reached": true,
+  "updated_at_utc": "2026-10-06T21:30:42.876700+00:00",
+  "workload_timeout_trials": 2,
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "fully_applied_trials": 63,
+      "strict_injections": 63,
+      "target_after_fault": 40,
+      "coverage_gain": {
+        "BRANCH_UNIT": 50,
+        "METHOD": 18,
+        "PROBE": 156
+      },
+      "elapsed_seconds": 3068.56
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
+}
