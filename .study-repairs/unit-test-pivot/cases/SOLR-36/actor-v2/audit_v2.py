@@ -13,6 +13,7 @@ import tarfile
 
 from fuzz_v2 import (AGENT, GUARDS, HERE, ROOT, SEEDS, runner_hashes)
 from run_healthy import source_provenance
+from coverage import covered_probes
 
 FIELDS = ('marker', 'siteId', 'sourceKey', 'actorKey', 'resource',
           'hitOrdinal', 'sessionGeneration')
@@ -32,6 +33,28 @@ def junit_gate(log: str) -> tuple[int, int, int] | None:
 
 def raw_point(event: dict) -> dict:
     return {field: event[field] for field in FIELDS}
+
+
+def eligible_io(event: dict) -> bool:
+    if event['event'] != 'IO_OBSERVED' or event.get('sessionEligible') is not True:
+        return False
+    if not event['actorKey'].startswith('JETTY/') or event['sessionGeneration'] <= 0:
+        return False
+    source, resource = event['sourceKey'], event['resource']
+    return ((source == 'SOLR/COLLECTION/collection1' and
+             resource.startswith('/collections/collection1')) or
+            (source.startswith('SOLR/REPLICA/collection1/shard1_') and
+             (resource.startswith('/collections/collection1') or
+              resource.startswith('/overseer/queue/')))) and not event['siteId'].startswith('UNRESOLVED:')
+
+
+def io_family(event: dict) -> str:
+    resource = re.sub(r'(/overseer/collection-queue-work/(?:qnr|qn)-)\d+$',
+                      r'\1{queue-sequence}', event['resource'])
+    resource = re.sub(r'(/leader_elect/[^/]+/election/)[^/]+$',
+                      r'\1{ephemeral-election-node}', resource)
+    return '|'.join((event['marker'], event['siteId'], event['sourceKey'],
+                     event['actorKey'], str(event['sessionGeneration']), resource))
 
 
 def raw_binding_check(events: list[dict]) -> dict:
@@ -185,6 +208,12 @@ def audit() -> tuple[dict, list[dict]]:
             state['target_actor_map'], 'healthy/fault target actor mismatch')
     require(state['seed_traces'] == [str(directory / 'events.jsonl') for directory in SEEDS],
             'checkpoint healthy trace paths mismatch')
+    covered = set().union(*(covered_probes(directory / 'jacoco.exec') for directory in SEEDS))
+    families = {io_family(event) for directory in SEEDS for event in load_events(directory)
+                if eligible_io(event)}
+    require(len(covered) == state['seed_probe_count'] and
+            len(families) == state['seed_io_family_count'],
+            'healthy coverage/I/O feedback mismatch')
     require(len(state['completed']) <= state['budget']['max_selected_plans'],
             'completed plans exceed selected cap')
     rows = []
@@ -218,6 +247,18 @@ def audit() -> tuple[dict, list[dict]]:
                 (final['strict_injection'] and all(
                     final['cases'][case_id]['post_fault_guard_count'] > 0
                     for case_id in GUARDS)), f'joint target feedback mismatch {number}')
+        final_dir = Path(final['attempt_dir'])
+        current_probes = (covered_probes(final_dir / 'jacoco.exec')
+                          if (final_dir / 'jacoco.exec').is_file()
+                          and (final_dir / 'jacoco.exec').stat().st_size else set())
+        current_families = {io_family(event) for event in load_events(final_dir)
+                            if eligible_io(event)}
+        require(ledger['new_production_probes'] == len(current_probes - covered) and
+                ledger['new_io_families'] == len(current_families - families),
+                f'coverage/I/O feedback mismatch {number}')
+        if ledger['target_preserved']:
+            covered.update(current_probes)
+            families.update(current_families)
         for case_id in GUARDS:
             case = final['cases'][case_id]
             require(ledger['target_guard_after_last_fault'][case_id] ==
@@ -243,6 +284,8 @@ def audit() -> tuple[dict, list[dict]]:
     require(all(counts[case_id] == sum(row['effective'] for row in rows
                                       if row['case_id'] == case_id) for case_id in GUARDS),
             'effective count mismatch')
+    require(covered == set(state['covered_probes']) and families == set(state['io_families']),
+            'terminal feedback union mismatch')
     return {
         'method': 'independent raw event, plan, original JUnit and checkpoint audit',
         'agent_sha256': sha(AGENT), 'source_provenance_sha256': sha(receipt),
