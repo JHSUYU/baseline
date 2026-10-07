@@ -24,6 +24,8 @@ STATE = HERE / "checkpoint.json"
 INTENT = HERE / "target-rpc-v3-intent.json"
 RECEIPT = HERE / "target-rpc-v3-receipt.json"
 PREDECESSOR_LOG = HERE / "focus28-v2.log"
+SAFE_STOP = HERE / "target-rpc-v3-quiesce-receipt.json"
+SAFE_BACKUP = HERE / "checkpoint.pre-target-rpc-v3.json"
 OLD_SOURCE_SHA = "80a9f8b365cb228d4c042fbca1a870b0c1d19437dae8c5c476e7f02e0ce74ac7"
 POLICY = "effective_trace_unseen_hdfs_rpc_then_ipc_singletons_four_rpc_one_file_v3"
 CASE = "HDFS-28"
@@ -70,17 +72,21 @@ def discover(state: dict) -> list[dict]:
         row["source_io_seq"], row["sequence"][0]["faultType"]))
 
 
-def migrate(state: dict, candidates: list[dict], *, preview: bool = False) -> tuple[dict, list[dict]]:
+def migrate(state: dict, candidates: list[dict], *, preview: bool = False,
+            early: bool = False) -> tuple[dict, list[dict]]:
     if (state.get("schema") != 2 or tuple(state.get("cases", ())) != C.CASES
             or state.get("test") != V2.SOURCE_TEST
             or state.get("focus28_scheduler", {}).get("policy") != V2.POLICY
             or state.get("target_rpc_v3")
             or len(C.effective(state)[CASE]) >= state["goals"][CASE]):
         raise RuntimeError("unexpected predecessor state or no HDFS28 deficit")
-    if state["attempt_cap"] != 320 or (not preview and (
+    if state["attempt_cap"] != 320 or (not preview and not early and (
             state.get("stop_reason") != "attempt_cap_inconclusive"
             or len(state["completed"]) != 320 or state["active"] is not None)):
         raise RuntimeError("predecessor has not naturally stopped at HDFS28 deficit")
+    if early and (state.get("stop_reason") is not None or state["active"] is None
+                  or len(state["completed"]) >= 320):
+        raise RuntimeError("early handoff requires a reserved unstarted trial")
     if not candidates:
         raise RuntimeError("no new pretarget actor-bound RPC selectors")
     next_state = json.loads(json.dumps(state))
@@ -100,10 +106,12 @@ def migrate(state: dict, candidates: list[dict], *, preview: bool = False) -> tu
         "new_ids": [row["id"] for row in inserted],
         "new_by_marker": dict(Counter(row["sequence"][0]["marker"]
                                       for row in inserted)),
-        "attempt_cap_reason": "HDFS28 remains below 80 effective; new exact owner/root pretarget RPC selectors were observed in prior effective original-JUnit traces",
+        "attempt_cap_reason": (
+            "original 320 cap retained at safe early boundary" if early else
+            "HDFS28 remains below 80 effective; new exact owner/root pretarget RPC selectors were observed in prior effective original-JUnit traces"),
         "prior_prefix_sha256": before,
     }
-    next_state["attempt_cap"] = 512
+    next_state["attempt_cap"] = 320 if early else 512
     next_state["stop_reason"] = None
     for key in ("completed", "coverage", "io_families", "active"):
         if key == "active":
@@ -150,9 +158,36 @@ def handoff() -> dict:
         return receipt
     old = STATE.read_bytes()
     state = json.loads(old)
-    if not PREDECESSOR_LOG.is_file() or not PREDECESSOR_LOG.read_text().rstrip().endswith(
-            "terminal attempt_cap_inconclusive"):
-        raise RuntimeError("predecessor has no natural terminal log")
+    if SAFE_STOP.exists():
+        safe = json.loads(SAFE_STOP.read_text())
+        directory = HERE / "runs" / ("trial-%04d" % (len(state["completed"]) + 1))
+        plan = directory / "fault-plan.tsv"
+        expected_plan = "".join("\t".join(str(row[key]) for key in
+                                                ("marker", "siteId", "sourceKey",
+                                                 "occurrenceAddress", "hitOrdinal", "faultType"))
+                                + "\t" + row["filePhase"] + "\n"
+                                for row in state["active"]["sequence"]) if state["active"] else ""
+        if (safe.get("source_sha256") != OLD_SOURCE_SHA
+                or safe.get("checkpoint_sha256") != successor.sha(old)
+                or not SAFE_BACKUP.is_file() or SAFE_BACKUP.read_bytes() != old
+                or safe.get("backup_sha256") != successor.sha(old)
+                or safe.get("completed") != len(state["completed"])
+                or safe.get("effective28") != len(C.effective(state)[CASE])
+                or safe.get("active_plan") != (state["active"]["id"] if state["active"] else None)
+                or safe.get("trial_directory") != str(directory)
+                or safe.get("junit_started") is not False
+                or not plan.is_file() or plan.read_text() != expected_plan
+                or safe.get("active_plan_sha256") != sha(plan)
+                or any((directory / name).exists() for name in
+                       ("driver.log", "junit.log", "runtime_trace.jsonl", "manifest.json", "jacoco.exec"))
+                or C.child_java_started(directory) or C.previous_runner_alive(directory)):
+            raise RuntimeError("safe-stop receipt is not an unstarted reserved JUnit")
+        boundary = "safe_unstarted_reserved_plan"
+    else:
+        if not PREDECESSOR_LOG.is_file() or not PREDECESSOR_LOG.read_text().rstrip().endswith(
+                "terminal attempt_cap_inconclusive"):
+            raise RuntimeError("predecessor has no natural terminal log")
+        boundary = "natural_attempt_cap"
     if audit_raw.main() != 0:
         raise RuntimeError("independent raw audit rejected old checkpoint")
     audit = json.loads((HERE / "raw-audit.json").read_text())
@@ -160,10 +195,13 @@ def handoff() -> dict:
             or audit["completed_attempts"] != len(state["completed"])
             or STATE.read_bytes() != old):
         raise RuntimeError("raw audit and old checkpoint differ")
-    changed, inserted = migrate(state, discover(state))
+    if SAFE_STOP.exists() and safe.get("raw_audit_sha256") != sha(HERE / "raw-audit.json"):
+        raise RuntimeError("safe-stop raw audit SHA changed")
+    changed, inserted = migrate(state, discover(state), early=SAFE_STOP.exists())
     new = successor.encoded(changed)
     receipt = {
         "schema": 1, "policy": POLICY,
+        "boundary": boundary,
         "old_source_sha256": OLD_SOURCE_SHA,
         "new_source_sha256": sha(Path(__file__)),
         "old_checkpoint_sha256": successor.sha(old),
@@ -171,7 +209,8 @@ def handoff() -> dict:
         "raw_audit_sha256": sha(HERE / "raw-audit.json"),
         "anchor_attempt": len(state["completed"]),
         "old_queue": len(state["queue"]), "old_seen": len(state["seen"]),
-        "new_selectors": inserted, "attempt_cap_before_after": [320, 512],
+        "new_selectors": inserted,
+        "attempt_cap_before_after": [320, changed["attempt_cap"]],
         "old_prefix_sha256": changed["target_rpc_v3"]["prior_prefix_sha256"],
     }
     if INTENT.exists():
@@ -196,7 +235,8 @@ def main() -> None:
     if args.preview:
         state = json.loads(STATE.read_text())
         found = discover(state)
-        migrated, inserted = migrate(state, found, preview=True)
+        migrated, inserted = migrate(state, found, preview=True,
+                                     early=len(state["completed"]) < 320)
         next_id = migrated["queue"][choose(migrated)]["id"]
         if migrated["completed"] != state["completed"] or migrated["active"] != state["active"]:
             raise RuntimeError("preview altered an old trial or reserved plan")
@@ -207,6 +247,7 @@ def main() -> None:
                                                          for row in found)),
                           "would_add": len(inserted), "first_new_id": found[0]["id"] if found else None,
                           "hypothetical_next_id_after_reserved": next_id,
+                          "hypothetical_attempt_cap": migrated["attempt_cap"],
                           "predecessor_source_matches": sha(HERE / "focus28_v2.py") == OLD_SOURCE_SHA},
                          sort_keys=True))
         return
