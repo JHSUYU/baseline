@@ -1,0 +1,53 @@
+{
+  "case": "HBASE-32",
+  "exec_sha256": "ffdb8dda253aec275b74b3a74de4e79b4ce9da109de41aec5aa68e24c0473d85",
+  "exit_code": "124",
+  "plan": [
+    "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMixvqQg~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+  ],
+  "raw_log_sha256": "f3ffd535d312d2ef797eb3af18b480f8951e6a81dbbb6890957ded7e98280d96",
+  "replay_required": "exact fresh data directory, unchanged original JUnit, 600s cap; record target raw actor, guard, child assignment/SCP, JUnit outcome",
+  "source_trial": "r075",
+  "trial": {
+    "aborted_region_servers": [
+      "ms1105.utah.cloudlab.us,46215,1791345358909"
+    ],
+    "applied_fault_events": 1,
+    "cleanup_region_server_aborts": [
+      "ms1105.utah.cloudlab.us,32821,1791345358284",
+      "ms1105.utah.cloudlab.us,37029,1791345359491"
+    ],
+    "coverage_admitted": true,
+    "disposition": "timeout_requires_review",
+    "effective": true,
+    "elapsed_seconds": 414.63,
+    "exact_b7_after_fault": true,
+    "id": "r075",
+    "invalid_cluster": false,
+    "junit": null,
+    "junit_exit": 124,
+    "log": "work-lots/logs/r075.log",
+    "new_production_branches_and_methods": 0,
+    "new_related_io_selectors": 14,
+    "observed_io_events": 184,
+    "plan": [
+      "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMixvqQg~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+    ],
+    "requested_exception_kind": "DO_NOT_RETRY_IOEXCEPTION",
+    "review_candidate": true,
+    "same_region_b7_events": 1,
+    "same_region_guard_events": 1,
+    "selection_kind_weights": {
+      "DO_NOT_RETRY_IOEXCEPTION": 0.7328904188919633,
+      "EOF_EXCEPTION": 0.09053793192201273,
+      "IOEXCEPTION": 0.08603371726401132,
+      "SOCKET_TIMEOUT": 0.09053793192201273
+    },
+    "selection_policy": "lots_v4_retention_io_coverage_weighted",
+    "shutdown_hook_line": 28986,
+    "strict": true,
+    "target_after_fault": true,
+    "timed_out": true
+  },
+  "workload": "TestRegionReplicaFailover#testLotsOfRegionReplicas"
+}
