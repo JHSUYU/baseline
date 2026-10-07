@@ -24,14 +24,14 @@ expiration race would be needed; this exact branch remains unproved for the
 existing test. This is an eligibility finding, not an impossibility claim
 about ZooKeeper in general.
 
-Raw local evidence (ignored scratch, no production source modifications):
-`.calibration/healthy08-jacoco.log` SHA-256
+Raw evidence (no production source modifications):
+`branch-calibration-evidence/healthy08-jacoco.log` SHA-256
 `8d77426c76bc51af80d6af13cb07e46dc6fca7f158797a44193039dcece1b1c9`;
-`.calibration/healthy08.exec` SHA-256
+`branch-calibration-evidence/healthy08.exec` SHA-256
 `e5c96c830fb8235c8cfabafbac7bb8df0888f20b8d3f5c9ed1fefc2a93a03d4e`.
 The copied POM only adds the JaCoCo Java agent to Surefire; original test
-and production source files are unchanged. `CoverageLines.java` in the same
-scratch reads the exec data against the compiled class.
+and production source files are unchanged. `CoverageLines.java` and
+`coverage-lines.txt` in the evidence directory document the line analysis.
 
 Checklist status is unchanged: `no_cluster_test` means no existing unmodified
 embedded-cluster test has demonstrated the selected branch, not no cluster

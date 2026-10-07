@@ -26,13 +26,15 @@ does not supply the required missing-local state at `setOwner`. A separate
 session closing race would be needed; target reach under the unchanged tests
 remains unproved.
 
-Raw local evidence is stored under `ZOOKEEPER-08/.calibration` to reuse one
-isolated source copy: `healthy09-jacoco.log` SHA-256
+Raw evidence is in this case's `branch-calibration-evidence` directory;
+the test reused one isolated source copy under `ZOOKEEPER-08/.calibration`:
+`healthy09-jacoco.log` SHA-256
 `4a19bd06d3d68029ce4665fe247a77c619d0f1a2f99aaf706cee63ee5bd8abf5`;
 `healthy09.exec` SHA-256
 `39aeed8a7d6e591e5224de260d55363add0463f55283b75bd890902121f2fbe1`.
 The copied POM only adds the JaCoCo Java agent to Surefire; original test
-and production source files are unchanged.
+and production source files are unchanged. `CoverageLines.java` in the
+ZOOKEEPER-08 evidence directory generated this case's `coverage-lines.txt`.
 
 Checklist status remains `no_cluster_test` until an existing unmodified
 embedded-cluster test demonstrates the selected branch.
