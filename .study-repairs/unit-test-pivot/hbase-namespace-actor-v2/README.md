@@ -59,7 +59,8 @@ imported into a new V2 denominator.
 ## Offline checks
 
 - Java 8 `javac` compiled `src/NamespaceActorAgent.java` and
-  `src/NamespaceActorSmoke.java` against the release distribution.
+  the smoke and original-JUnit launcher sources against the release
+  distribution; `bash -n run.sh` passed.
 - `NamespaceActorSmoke` loaded all five instrumented classes with the agent;
   no ByteBuddy transform error appeared. It started no HBase or ZooKeeper
   cluster.
@@ -84,3 +85,9 @@ agent output for each case. Verify actor and manager binding in at least two
 healthy repetitions, actual pre-target I/O families, source-specific target
 arguments, and unchanged JUnit pass. HBASE-22's selected predicate is at
 source lines 165–167; checklist line 172 belongs to its exception message.
+The prepared `bash run.sh healthy table SEED` selects the original
+`testTableOperations` workload for HBASE-08 and HBASE-22; `healthy restore
+SEED` selects the original `testRestoreSnapshotQuotaExceed` workload for
+HBASE-21. Each seed has a new scratch directory, 240-second bound, raw JUnit
+log, exit receipt, and JaCoCo file. These commands are **prepared only**;
+neither was run while the shared cluster slots were busy.
