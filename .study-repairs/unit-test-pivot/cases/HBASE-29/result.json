@@ -1,14 +1,104 @@
 {
   "case_id": "HBASE-29",
-  "status": "test_identified",
-  "cluster_test": "TestRegionReplicaReplicationEndpoint.testRegionReplicaReplicationWith2Replicas",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "status": "quality_complete",
+  "cluster_test": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
+  "target_reached": true,
+  "elapsed_seconds": 5725.41,
+  "fault_trials": 81,
+  "strict_injections": 80,
+  "target_after_fault": 80,
+  "coverage_gain": 13,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-29",
-  "source_audit_note": "Healthy replay batches have one encoded region; mixed-region IOException is not expected."
+  "evidence": [
+    "README.md",
+    "evidence/hbase29-graphfree-80.tar.gz",
+    "work/checkpoint.json",
+    "work/src/HBase29Agent.java",
+    "work/run.sh"
+  ],
+  "source_audit_note": "The actual predicate is line 2260; checklist line 2263 is in the exception text. The receiver compares every replay WAL entry encoded region against the first. A mixed-region request is a malformed RPC and is rejected before application. This is a protocol request-integrity guard, not a multi-hop control-plane state comparison. All target replica1 replay requests in healthy and effective trials had one encoded region; no mixed-region target exception occurred.",
+  "methodology": "graph_free_original_junit_replay_rpc_io_jacoco_feedback",
+  "current_campaign": {
+    "healthy_elapsed_seconds": 77.49,
+    "healthy_replay_calls": 110,
+    "healthy_entry_guard_passes": 1002,
+    "healthy_related_io_events": 110,
+    "healthy_coverage": {
+      "classes": {
+        "org/apache/hadoop/hbase/regionserver/RSRpcServices": {
+          "methods": 58,
+          "branches": 294,
+          "lines": 745
+        },
+        "org/apache/hadoop/hbase/wal/WALSplitUtil": {
+          "methods": 12,
+          "branches": 29,
+          "lines": 84
+        },
+        "org/apache/hadoop/hbase/replication/regionserver/RegionReplicaReplicationEndpoint": {
+          "methods": 9,
+          "branches": 9,
+          "lines": 56
+        },
+        "org/apache/hadoop/hbase/replication/regionserver/RegionReplicaReplicationEndpoint$RegionReplicaReplayCallable": {
+          "methods": 2,
+          "branches": 3,
+          "lines": 16
+        }
+      },
+      "methods": 81,
+      "branches": 335,
+      "lines": 901
+    },
+    "attempted_trials": 81,
+    "strict_trials": 80,
+    "effective_trials": 80,
+    "strict_post_fault_target_trials": 80,
+    "strict_post_fault_mixed_region_trials": 0,
+    "requested_fault_events": 184,
+    "applied_fault_events": 183,
+    "new_production_methods": 0,
+    "new_production_branches": 13,
+    "new_io_sites": 0,
+    "elapsed_seconds": 5725.41,
+    "queue_length": 24582,
+    "budget": {
+      "effective_trials": 80,
+      "max_attempts": 240,
+      "max_faults": 8
+    },
+    "checkpoint": "work/checkpoint.json",
+    "junit_passed_trials": 81,
+    "junit_failed_trials": 0,
+    "max_observed_fault_sequence_length": 5,
+    "late_novelty_in_final_16_effective_trials": false,
+    "budget_extended": false,
+    "actual_guard_source_line_coverage": {
+      "line": 2260,
+      "instructions": 6,
+      "normal_branches": 1,
+      "exception_line_2263_instructions": 0
+    },
+    "raw_log_audit": "81/81 plans, applied selectors, target-after outcomes, JUnit and elapsed values match checkpoint; every guard call ID maps to selected table replica1 and one encoded region within each run; JaCoCo union recomputed"
+  },
+  "system": "HBase 2.6.6",
+  "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+  "source_line": 2263,
+  "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay",
+  "fully_applied_trials": 80,
+  "candidate_signature_count": 0,
+  "check_classification": "rpc_payload_integrity_guard_static_candidate_false_positive",
+  "instrumentation_provenance": {
+    "method": "case_local_ByteBuddy_runtime_RPC_and_target_probe_plus_JaCoCo_0.8.15",
+    "graphchecker_runtime": false,
+    "prewoven_classes": false,
+    "static_skeleton_or_map": false,
+    "graph_or_closure_feedback": false,
+    "hbase_source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+    "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "hbase_server_tests_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+    "agent_source_sha256": "bcbf7dff30f586f3492bc208767b2db0a2f9f5ce599c01d043639dba7331b4dc",
+    "agent_jar_sha256": "f2fe93965a9dc7eccaaffe2481b8f15953b48d7c68dc6fec2f2202c610930a8b"
+  },
+  "evidence_archive_sha256": "685016ac5f79bcc3e863e0d43b3319fd6f659ce6ec4747ee97bdecf2471fd2a5"
 }

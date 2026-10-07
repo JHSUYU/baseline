@@ -41,3 +41,32 @@ atomically recorded after each run. `hbase29_fuzz` and
 `hbase29_supervisor` tmux sessions keep the campaign recoverable. Per-trial
 MiniHBaseCluster data is removed only after checkpointing to protect the
 limited root filesystem space.
+
+## Completed result
+
+The default budget finished with 81 distinct attempts, 80 strict and
+target-reaching trials, and one unmatched early plan. The plans requested
+184 RPC exceptions and applied 183. The maximum observed sequence contained
+five faults; the trials included six four-fault and four five-fault plans.
+The original JUnit passed on all 81 faulted runs. Healthy calibration plus
+all attempts took 5725.41 seconds. The admitted runs added 13 covered
+production branches and no new production method or stable I/O site.
+The final 16 admitted trials added no novelty, so the conditional extension
+to 128 trials did not apply.
+
+No mixed-region `NotServingRegionException` was observed. The actual
+predicate at source line 2260 remained on its normal branch (six JaCoCo
+instructions and one branch covered); the exception line 2263 remained
+uncovered. The selected check guards RPC payload integrity: it ensures that
+all entries within a replay request name the same encoded region. The
+injected RPC failures did not change request contents. This is a likely
+static-selection false positive for complex ad hoc coordination, though the
+runtime fault and coverage results remain valid.
+
+All 81 raw logs were re-parsed for ordered fault identity, target-after-fault,
+JUnit outcome, and elapsed time. Every observed guard call ID mapped to the
+selected table's replica 1, with one encoded region per run. The JaCoCo
+union was independently recomputed and the late-novelty gate rechecked.
+Complete logs, JaCoCo execution files, checkpoint, agent binary, and runner
+source are in `evidence/hbase29-graphfree-80.tar.gz` (SHA-256
+`685016ac5f79bcc3e863e0d43b3319fd6f659ce6ec4747ee97bdecf2471fd2a5`).
