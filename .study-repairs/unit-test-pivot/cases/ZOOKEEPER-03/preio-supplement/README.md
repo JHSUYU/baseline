@@ -77,3 +77,21 @@ classpath hashes did not change. The [migration receipt and old/new checkpoint
 snapshots](evidence/migration/zero-java-migration.json) are copied into this
 case and remain with the node1 raw runs; the completed-trial denominator is
 unchanged.
+
+## Terminal result
+
+The fixed queue ended at `queue_exhausted`: **63/63** previously untried plans
+were selected once, **62/63** fully matched and applied, and **8/63** retained
+the same raw-session/leader-owner `setOwner` target after the final fault. No
+selected target `SessionExpiredException` occurred. The 63 faulted original
+JUnit processes consumed **2,571.393 seconds** in aggregate; shared launch
+lock waiting and archival time are outside that per-JVM sum. The first
+480-selected/37-effective stage remains a separate historical denominator.
+
+The independent [terminal audit](evidence/audit-summary.json) and
+[per-sequence statistics](evidence/sequence-stats.json) were recomputed from
+the raw `FAULT_MATCHED`, `FAULT_APPLIED`, target and owner events. The
+[raw archive](evidence/zk03-preio-supplement-raw.tar.gz) has SHA-256
+`1f199b98262066ff7c15063dea71121a36a3f99f9792c568af61f46dabed7d3d`.
+Queue exhaustion covers these 63 checkpoint plans only; it does not prove that
+all possible I/O fault sequences or other original quorum tests were explored.

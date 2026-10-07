@@ -1,0 +1,236 @@
+{
+  "agent_sha256": "9e2ad5f3cdfd8ba45990a9802c351180d72afffac5320597714ab1208bd5f32f",
+  "case_id": "ZOOKEEPER-03",
+  "check": "SessionTrackerImpl#setOwner:329:missingOrClosing",
+  "fault_type": "IOException",
+  "jobs": [
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-001",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-001",
+      "parent_last_fault_sequence": 60,
+      "parent_new_io_sequence": 66,
+      "parent_target_sequence": 114,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@1",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@1"
+      ],
+      "priority": 10
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-002",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-001",
+      "parent_last_fault_sequence": 60,
+      "parent_new_io_sequence": 67,
+      "parent_target_sequence": 114,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@1",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@2"
+      ],
+      "priority": 10
+    },
+    {
+      "child_family": "initial:write",
+      "child_id": "recovery-child-003",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-001",
+      "parent_last_fault_sequence": 60,
+      "parent_new_io_sequence": 62,
+      "parent_target_sequence": 114,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@1",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:write@@1"
+      ],
+      "priority": 10
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-004",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-001",
+      "parent_last_fault_sequence": 60,
+      "parent_new_io_sequence": 75,
+      "parent_target_sequence": 114,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@1",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@3"
+      ],
+      "priority": 5
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-005",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-001",
+      "parent_last_fault_sequence": 60,
+      "parent_new_io_sequence": 81,
+      "parent_target_sequence": 114,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@1",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@5"
+      ],
+      "priority": 5
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-006",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-001",
+      "parent_last_fault_sequence": 60,
+      "parent_new_io_sequence": 87,
+      "parent_target_sequence": 114,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@1",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@7"
+      ],
+      "priority": 5
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-007",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-002",
+      "parent_last_fault_sequence": 61,
+      "parent_new_io_sequence": 67,
+      "parent_target_sequence": 115,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@2",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@1"
+      ],
+      "priority": 10
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-008",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-002",
+      "parent_last_fault_sequence": 61,
+      "parent_new_io_sequence": 68,
+      "parent_target_sequence": 115,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@2",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@2"
+      ],
+      "priority": 10
+    },
+    {
+      "child_family": "initial:write",
+      "child_id": "recovery-child-009",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-002",
+      "parent_last_fault_sequence": 61,
+      "parent_new_io_sequence": 63,
+      "parent_target_sequence": 115,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@2",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:write@@1"
+      ],
+      "priority": 10
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-010",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-002",
+      "parent_last_fault_sequence": 61,
+      "parent_new_io_sequence": 76,
+      "parent_target_sequence": 115,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@2",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@3"
+      ],
+      "priority": 5
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-011",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-002",
+      "parent_last_fault_sequence": 61,
+      "parent_new_io_sequence": 82,
+      "parent_target_sequence": 115,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@2",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@5"
+      ],
+      "priority": 5
+    },
+    {
+      "child_family": "initial:read",
+      "child_id": "recovery-child-012",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-002",
+      "parent_last_fault_sequence": 61,
+      "parent_new_io_sequence": 88,
+      "parent_target_sequence": 115,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:1:op:read@@2",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@client:initial:session:upgradedSession@@peer:1:channel:2:op:read@@7"
+      ],
+      "priority": 5
+    },
+    {
+      "child_family": "reconnected:write",
+      "child_id": "recovery-child-013",
+      "fault_relations": [
+        "same_session",
+        "same_session"
+      ],
+      "parent": "upgrade-pilot-010",
+      "parent_last_fault_sequence": 101,
+      "parent_new_io_sequence": 103,
+      "parent_target_sequence": 110,
+      "plan": [
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@client:reconnected:session:upgradedSession@@peer:2:channel:1:op:write@@1",
+        "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:119:java.nio.channels.SocketChannel#write(Ljava/nio/ByteBuffer;)I@@client:reconnected:session:upgradedSession@@peer:2:channel:2:op:write@@1"
+      ],
+      "priority": 12
+    }
+  ],
+  "max_trials": 13,
+  "original_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+  "original_junit": "org.apache.zookeeper.test.SessionUpgradeTest#testUpgradeWithEphemeralOnFollower",
+  "parent_pilot_archive_sha256": "815a5741d6b9e2b28d7d1ab0cd12564cb72de4dfab813e7a7746ba6d76148141",
+  "parent_pilot_manifest_sha256": "39b756a51991631b33103a936b881f5d655ca36a073b6169cbbbeacb4c1736ee",
+  "phase": "session-upgrade-recovery-children",
+  "session_tag": "upgradedSession"
+}
