@@ -22,18 +22,26 @@ the RPC response changed the guard's `bpos` value; `getDatanodeID` reads the
 local `datanode.getBPOfferService(bpid)` at lines 536–542.
 
 The live feedback marked the two request families as
-`stable_actor_io_gain`, because `campaign_v1.py` initializes
-`stable_actor_io_families` from the two healthy traces only (lines 198–205).
-Independent application of its `stable_io` function finds neither family in
-the healthy **target-path** sets. However, the earlier fault pilot `pilot-01`
-already observed the same `dn1`, same recovery root, same two stable families
-at seq 35/36, followed by the same HDFS-28 guard at seq 46. Thus trial 179
-repeats a target-path I/O behavior already present in the seed evidence. The
-pilot is correctly excluded from the effective trial denominator, but it
-must be included when deciding whether behavior is genuinely new across all
-prior evidence. Trial 179 alone does **not** justify the conditional
-128-effective extension. Its target-related method/branch coverage gain is
-also zero.
+`stable_actor_io_gain`. `campaign_v1.py` initializes
+`stable_actor_io_families` from the two healthy traces (lines 198–205), and
+the independent `audit_campaign.py` additionally includes only the pilot's
+I/O **after its own applied fault, on that fault's physical actor and root**.
+The healthy target-path sets contain neither family. The earlier `pilot-01`
+did observe the same `dn1` I/O families at seq 35/36 followed by a `dn1`
+guard at seq 46, but its applied fault at seq 12 was on **dn2**. Those `dn1`
+requests are therefore outside the pilot's same-fault-actor successor set.
+Independent application of `stable_io(pilot_events, pilot_last_fault)` finds
+no overlap with trial 179's two gained families. Trial 179 is the first
+observed **dn1 fault → dn1 I/O → later dn1 guard** path for these families.
+
+This is fault-conditioned, actor-bound I/O novelty on the target guard's
+control path under the predefined feedback rule. The request APIs themselves
+were already observed elsewhere, so it must not be described as a globally
+new I/O operation or as proof that the guard value changed. The trial's
+target-related method/branch coverage gain is zero. If this effective trial
+falls in the applicable last-eight window, its actor-bound postfault I/O
+feedback can justify the conditional 128-effective budget, subject to the
+separate ledgers and independent final audit.
 
 Evidence SHA-256:
 
