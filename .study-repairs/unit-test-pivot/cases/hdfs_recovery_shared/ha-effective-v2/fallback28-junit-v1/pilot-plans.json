@@ -1,0 +1,59 @@
+{
+  "fault_type": "IOException",
+  "healthy_validation_sha256": "bebbc9d78cbec857ed062d43a85441450fc0b032a9443e581aacbbca6dd4d3f2",
+  "plans": [
+    {
+      "eligible": [
+        "HDFS-28"
+      ],
+      "id": "ad2b315ff43a0d8cc6a0a7d4",
+      "output": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-effective-v2/fallback28-junit-v1/pilot-01",
+      "pilot": 1,
+      "plan_sha256": "20dd3c7b7b0338651bc60e2d96d343c793567bfcd054cda49c9ae0291eddaab1",
+      "seed": "healthy-a",
+      "seed_event_seq": 23,
+      "seed_trace_sha256": "966a0ba7151ce86c140277f8159d56b24376710849833d9ed14295e68ef9b99e",
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "filePhase": "",
+          "hitOrdinal": 1,
+          "marker": "FAULT:HDFS_RPC:INIT_REPLICA_RECOVERY",
+          "occurrenceAddress": "dn2/block:1073741826/attempt:1/rpc:initReplicaRecovery/site:<org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker: org.apache.hadoop.hdfs.server.protocol.ReplicaRecoveryInfo callInitReplicaRecovery(org.apache.hadoop.hdfs.server.protocol.InterDatanodeProtocol,org.apache.hadoop.hdfs.server.protocol.BlockRecoveryCommand$RecoveringBlock)>#L561",
+          "originSourceKey": "dn2",
+          "requestApi": "initReplicaRecovery",
+          "siteId": "<org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker: org.apache.hadoop.hdfs.server.protocol.ReplicaRecoveryInfo callInitReplicaRecovery(org.apache.hadoop.hdfs.server.protocol.InterDatanodeProtocol,org.apache.hadoop.hdfs.server.protocol.BlockRecoveryCommand$RecoveringBlock)>#L561",
+          "sourceKey": "dn2"
+        }
+      ]
+    },
+    {
+      "eligible": [
+        "HDFS-28"
+      ],
+      "id": "705a661100d2938211f182d0",
+      "output": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-effective-v2/fallback28-junit-v1/pilot-02",
+      "pilot": 2,
+      "plan_sha256": "eba485b57a5f639e52d281376c75524664a6ab09c65c9ca32f3722f51036cf5c",
+      "seed": "healthy-b",
+      "seed_event_seq": 26,
+      "seed_trace_sha256": "b6d1bf584f8cc3b6f25ee5d15df2540d478f79baced9a6e90f8463910b8838da",
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "filePhase": "",
+          "hitOrdinal": 1,
+          "marker": "FAULT:HADOOP_IPC:REQUEST",
+          "occurrenceAddress": "dn0/block:1073741826/attempt:1/rpc:initReplicaRecovery/site:<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#entry",
+          "originSourceKey": "dn0",
+          "requestApi": "initReplicaRecovery",
+          "siteId": "<org.apache.hadoop.ipc.Client$Connection: void sendRpcRequest(org.apache.hadoop.ipc.Client$Call)>#entry",
+          "sourceKey": "dn0"
+        }
+      ]
+    }
+  ],
+  "schema": 1,
+  "separate_denominator": true,
+  "test": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testLeaseRecoveryAfterFailover"
+}
