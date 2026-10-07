@@ -200,10 +200,16 @@ def evaluate(job, receipt):
         reason = 'postfault selected guard lacks raw-session owner/state receipt'
     effective = strict_receipt is not None
     last_fault = max((seq for seq, kind, _ in rows if kind == 'FAULT_APPLIED'), default=0)
+    # Only a throw on the proven postfault target actor/session can be a
+    # candidate. Raw throws from lost-target or another leader are retained
+    # in events.tsv but cannot affect this check's verdict or fuzz feedback.
+    selected_target = (strict_receipt['target_actor'] if effective else None)
+    selected_peer = owner['peer'] if owner else None
     throws = [fields for seq, kind, fields in rows
-              if kind == 'TARGET_THROW' and seq > last_fault and len(fields) >= 6
-              and fields[0] == CHECK and fields[1].startswith('peer:')
-              and fields[2] == 'leader' and fields[4] == 'movedSession']
+              if effective and kind == 'TARGET_THROW' and seq > last_fault
+              and len(fields) >= 6 and fields[0] == CHECK
+              and fields[1] == selected_target and fields[2] == 'leader'
+              and fields[3] == selected_peer and fields[4] == 'movedSession']
     cov_file = dest / 'coverage.tsv'
     coverage = set(cov_file.read_text().splitlines()) if cov_file.is_file() else set()
     observed = candidates(rows, last_fault) if effective else []
@@ -298,7 +304,6 @@ def recover(state):
 def should_extend(state):
     tail = [x for x in state['results'] if x['effective']][-8:]
     return len(tail) == 8 and any(x['new_coverage_lines'] or x['new_io_families']
-                                  or x['selected_target_throw_count']
                                   for x in tail)
 
 
