@@ -35,6 +35,8 @@ def main() -> None:
     parser.add_argument("--timeout", type=int, default=360)
     parser.add_argument("--min-free-gib", type=float, default=10)
     parser.add_argument("--gate-retry-seconds", type=float, default=30)
+    parser.add_argument("--stop-after-seed", choices=("healthy-a", "healthy-b"),
+                        help="return at a complete seed boundary for independent review")
     args = parser.parse_args()
     if args.timeout <= 0 or args.gate_retry_seconds <= 0 or args.min_free_gib <= 0:
         parser.error("timeout and resource bounds must be positive")
@@ -56,6 +58,10 @@ def main() -> None:
                     raise RuntimeError(f"existing {seed} does not pass the actor gate: {inspected['issues']}")
                 append(ledger, {"at_utc": now(), "seed": seed, "status": "existing_seed_verified",
                                 "manifest": inspected["manifest"], "trace_sha256": inspected["trace_sha256"]})
+                if args.stop_after_seed == seed:
+                    print(json.dumps({"status": "seed_boundary_pause", "seed": seed,
+                                      "existing": True}), flush=True)
+                    return
                 continue
             if out.exists() and any(out.iterdir()):
                 raise RuntimeError(f"{seed} has partial output; reconcile its JVM and raw files before resuming")
@@ -79,6 +85,12 @@ def main() -> None:
                             raise RuntimeError(f"{seed} failed the actor gate: {inspected['issues']}")
                         break
                 time.sleep(args.gate_retry_seconds)
+            if args.stop_after_seed == seed:
+                append(ledger, {"at_utc": now(), "seed": seed,
+                                "status": "seed_boundary_pause"})
+                print(json.dumps({"status": "seed_boundary_pause", "seed": seed,
+                                  "existing": False}), flush=True)
+                return
         audit = subprocess.run([sys.executable, str(run_original.HERE / "audit_healthy.py"),
                                 str(anchor)], capture_output=True, text=True)
         append(ledger, {"at_utc": now(), "status": "two_seed_audit",
