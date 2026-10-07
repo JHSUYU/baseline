@@ -16,6 +16,7 @@ from pathlib import Path
 import signal
 import time
 
+import audit_raw
 import campaign
 
 
@@ -75,13 +76,34 @@ def planned_contents(sequence: list[dict]) -> str:
                    for fault in sequence)
 
 
-def unstarted(state: dict) -> tuple[bool, Path, dict]:
+def trigger(state: dict, counts: dict) -> dict | None:
+    if (counts["HDFS-29"] >= campaign.BASE
+            and counts["HDFS-30"] >= campaign.BASE
+            and counts["HDFS-28"] < state["goals"]["HDFS-28"]):
+        return {"kind": "peer80_focus28", "effective": counts}
+    if len(state["completed"]) < 12:
+        return None
+    recent = state["completed"][-12:]
+    file_count = sum(row["sequence"][-1]["marker"].startswith("FAULT:HDFS_FILE:")
+                     for row in recent)
+    effective_any = sum(bool(row["exact_order_applied"] and
+                             any(row["post_fault_target_checks"].values()))
+                        for row in recent)
+    if file_count < 10 or effective_any > 2:
+        return None
+    return {"kind": "file_skew_low_yield", "window": 12,
+            "file_final_faults": file_count,
+            "effective_any": effective_any,
+            "last_trial_ids_sha256": sha("\n".join(row["id"] for row in recent).encode()),
+            "effective": counts}
+
+
+def unstarted(state: dict) -> tuple[bool, Path, dict, dict | None]:
     counts = {case: len(rows) for case, rows in campaign.effective(state).items()}
+    reason = trigger(state, counts)
     directory = HERE / "runs" / ("trial-%04d" % (len(state["completed"]) + 1))
     active = state.get("active")
-    ready = (active is not None and counts["HDFS-29"] >= 80
-             and counts["HDFS-30"] >= 80
-             and counts["HDFS-28"] < state["goals"]["HDFS-28"]
+    ready = (active is not None and reason is not None
              and campaign.stop_reason(state) is None
              and not any((directory / name).exists() for name in ABSENT)
              and not campaign.child_java_started(directory)
@@ -89,7 +111,7 @@ def unstarted(state: dict) -> tuple[bool, Path, dict]:
     if ready:
         plan = directory / "fault-plan.tsv"
         ready = plan.is_file() and plan.read_text() == planned_contents(active["sequence"])
-    return ready, directory, counts
+    return ready, directory, counts, reason
 
 
 def attempt(pid: int) -> dict | None:
@@ -105,7 +127,7 @@ def attempt(pid: int) -> dict | None:
         return None
     original = STATE.read_bytes()
     state = json.loads(original)
-    ready, directory, counts = unstarted(state)
+    ready, directory, counts, reason = unstarted(state)
     if not ready or "locks_lock_inode_wait" not in (proc / "wchan").read_text():
         return None
     os.kill(pid, signal.SIGSTOP)
@@ -121,10 +143,21 @@ def attempt(pid: int) -> dict | None:
         if (not observed_stopped or not old_controller(pid)
                 or "Threads:\t1" not in (proc / "status").read_text()):
             return None
-        again, same_directory, again_counts = unstarted(state)
+        again, same_directory, again_counts, again_reason = unstarted(state)
         if (not again or same_directory != directory or again_counts != counts
-                or STATE.read_bytes() != original):
+                or again_reason != reason or STATE.read_bytes() != original):
             return None
+        # Freeze makes the checkpoint and completed raw files stable.  Reject
+        # the early switch before signalling SIGKILL if any raw trial differs.
+        if audit_raw.main() != 0:
+            raise RuntimeError("independent raw audit rejected old checkpoint")
+        raw_audit = HERE / "raw-audit.json"
+        audited = json.loads(raw_audit.read_text())
+        if (audited["checkpoint_sha256"] != sha(original) or audited["errors"]
+                or audited["completed_attempts"] != len(state["completed"])):
+            raise RuntimeError("independent raw audit receipt disagrees with frozen checkpoint")
+        if STATE.read_bytes() != original:
+            raise RuntimeError("checkpoint changed during frozen raw audit")
         os.kill(pid, signal.SIGKILL)
         killed = True
         # SIGKILL releases the old controller's campaign flock.  No new
@@ -140,8 +173,8 @@ def attempt(pid: int) -> dict | None:
                 raise RuntimeError("old campaign lock did not release after SIGKILL")
             if STATE.read_bytes() != original:
                 raise RuntimeError("checkpoint changed after old controller stopped")
-            still, _, _ = unstarted(state)
-            if not still:
+            still, _, _, still_reason = unstarted(state)
+            if not still or still_reason != reason:
                 raise RuntimeError("reserved trial changed after old controller stopped")
             if BACKUP.exists() or RECEIPT.exists():
                 raise RuntimeError("early boundary backup or receipt already exists")
@@ -151,10 +184,12 @@ def attempt(pid: int) -> dict | None:
                 "stopped_controller_pid": pid, "created_at_utc": campaign.utc(),
                 "old_runner_sha256": sha((HERE / "campaign.py").read_bytes()),
                 "checkpoint_sha256": sha(original), "backup_sha256": sha(BACKUP.read_bytes()),
+                "active_plan_sha256": sha((directory / "fault-plan.tsv").read_bytes()),
+                "independent_raw_audit_sha256": sha(raw_audit.read_bytes()),
                 "completed": len(state["completed"]), "queue": len(state["queue"]),
                 "seen": len(state["seen"]), "active_plan": state["active"]["id"],
                 "unstarted_trial_directory": str(directory),
-                "effective": counts, "junit_started": False,
+                "effective": counts, "trigger": reason, "junit_started": False,
             }
             durable(RECEIPT, (json.dumps(receipt, sort_keys=True, indent=2) + "\n").encode())
             return receipt
@@ -180,7 +215,7 @@ def main() -> None:
             print(json.dumps(result, sort_keys=True), flush=True)
             return
         time.sleep(0.25)
-    raise TimeoutError("no early safe boundary with peer80 and unstarted JUnit")
+    raise TimeoutError("no eligible early trigger at an unstarted JUnit boundary")
 
 
 if __name__ == "__main__":

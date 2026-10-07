@@ -123,12 +123,35 @@ def verify_last_raw(state: dict) -> None:
         raise RuntimeError("last completed plan differs from checkpoint")
 
 
+def early_trigger(state: dict, counts: dict) -> dict | None:
+    """Recompute the early-switch reason without trusting the stop receipt."""
+    if (counts["HDFS-29"] >= campaign.BASE
+            and counts["HDFS-30"] >= campaign.BASE
+            and counts["HDFS-28"] < state["goals"]["HDFS-28"]):
+        return {"kind": "peer80_focus28", "effective": counts}
+    if len(state["completed"]) < 12:
+        return None
+    recent = state["completed"][-12:]
+    file_count = sum(row["sequence"][-1]["marker"].startswith("FAULT:HDFS_FILE:")
+                     for row in recent)
+    effective_any = sum(bool(row["exact_order_applied"] and
+                             any(row["post_fault_target_checks"].values()))
+                        for row in recent)
+    if file_count < 10 or effective_any > 2:
+        return None
+    return {"kind": "file_skew_low_yield", "window": 12,
+            "file_final_faults": file_count, "effective_any": effective_any,
+            "last_trial_ids_sha256": sha("\n".join(row["id"] for row in recent).encode()),
+            "effective": counts}
+
+
 def verify_boundary(state: dict, original: bytes, old_source_sha: str) -> str:
     if EARLY_RECEIPT.exists():
         receipt = json.loads(EARLY_RECEIPT.read_text())
         active = state.get("active")
         directory = HERE / "runs" / ("trial-%04d" % (len(state["completed"]) + 1))
         counts = {case: len(rows) for case, rows in campaign.effective(state).items()}
+        reason = early_trigger(state, counts)
         absent = ("driver.log", "junit.log", "runtime_trace.jsonl", "manifest.json")
         expected = {"schema": 1, "boundary": "unstarted_reserved_plan",
                     "old_runner_sha256": old_source_sha,
@@ -138,14 +161,12 @@ def verify_boundary(state: dict, original: bytes, old_source_sha: str) -> str:
                     "queue": len(state["queue"]), "seen": len(state["seen"]),
                     "active_plan": active["id"] if active else None,
                     "unstarted_trial_directory": str(directory),
-                    "effective": counts, "junit_started": False}
+                    "effective": counts, "trigger": reason, "junit_started": False}
         if any(receipt.get(key) != value for key, value in expected.items()):
             raise RuntimeError("early boundary receipt disagrees with checkpoint/source")
         if (active is None or not EARLY_BACKUP.is_file()
                 or EARLY_BACKUP.read_bytes() != original
-                or counts["HDFS-29"] < campaign.BASE
-                or counts["HDFS-30"] < campaign.BASE
-                or counts["HDFS-28"] >= state["goals"]["HDFS-28"]
+                or reason is None
                 or campaign.stop_reason(state) is not None
                 or any((directory / name).exists() for name in absent)
                 or campaign.child_java_started(directory)
@@ -159,6 +180,11 @@ def verify_boundary(state: dict, original: bytes, old_source_sha: str) -> str:
                                 for item in active["sequence"])
         if not plan.is_file() or plan.read_text() != expected_plan:
             raise RuntimeError("reserved plan differs from active checkpoint")
+        raw_audit = HERE / "raw-audit.json"
+        if (receipt.get("active_plan_sha256") != sha(plan.read_bytes())
+                or not raw_audit.is_file()
+                or receipt.get("independent_raw_audit_sha256") != sha(raw_audit.read_bytes())):
+            raise RuntimeError("early plan or pre-stop raw audit SHA mismatch")
         return "early_unstarted_reserved_plan"
     log = HERE / "full-campaign.log"
     last_line = log.read_bytes()[-8192:].splitlines()[-1].decode(errors="replace")

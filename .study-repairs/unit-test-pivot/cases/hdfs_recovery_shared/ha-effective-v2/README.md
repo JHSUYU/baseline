@@ -144,13 +144,17 @@ successor keeps the same shared `jvm-start.lock` and Java-process limit (no
 more than four JVMs before a start) and raises its disk-free requirement to
 10 GiB. Its own wall limit is 12 hours.
 
-An optional early handoff applies only when HDFS-29 and HDFS-30 have each
-reached 80 **effective** HA trials while HDFS-28 remains below its own goal.
+An optional early handoff applies when HDFS-29 and HDFS-30 have each reached
+80 **effective** HA trials while HDFS-28 remains below its own goal, or when
+the last 12 completed trials put the final fault on file I/O at least 10 times
+and yield at most 2 target-effective trials. This second trigger is a
+versioned response to the old selector's observed all-file, low-yield run.
 The old controller must be waiting on the shared start flock with one active
 plan reserved but no `driver.log`, `junit.log`, trace, manifest, Java child, or
 JUnit runner for that trial. `early_quiesce.py` rechecks these conditions
-after SIGSTOP, then stops only the old Python controller and stores a durable
-byte-for-byte checkpoint backup and receipt. Failed checks SIGCONT the old
+after SIGSTOP, independently audits all completed raw trials, then stops only
+the old Python controller and stores a durable byte-for-byte checkpoint backup
+and receipt with the active plan SHA. Failed checks SIGCONT the old
 controller and leave the campaign running. The successor verifies the backup,
 source SHA, active plan and raw audit under `campaign.lock`, then resumes that
 same reserved plan as the next trial. It preserves `completed`, `queue`,
