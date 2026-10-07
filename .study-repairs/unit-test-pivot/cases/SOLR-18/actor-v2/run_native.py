@@ -71,6 +71,7 @@ def run(run_id='healthy-instrumented', plan=(), timeout=300):
         'case_id': 'SOLR-18', 'run_id': run_id,
         'test': TEST_CLASS + '#' + TEST_METHOD,
         'original_junit': True, 'junit_exit': code,
+        'junit_class_sha256': sha(CLASSES / 'org/apache/solr/cloud/AliasIntegrationTest.class'),
         'elapsed_seconds': round(time.monotonic() - start, 3),
         'plan': list(plan), 'seed': 'D82A1912E3C1791F',
         'observed_io_scope': 'SolrZkClient_getData_setData_exists_all_paths_with_client_actor',

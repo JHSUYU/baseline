@@ -40,22 +40,19 @@ def selected_check(rows: list[tuple[int, str, str, list[str]]]):
                        and row[3][0] == manager), None)
     finished = next((row[0] for row in rows if row[1] == "TEST_FINISHED"
                      and row[0] > first[0]), None)
-    return next((row for row in rows if row[1] == "TARGET_EQUAL_CHECK"
+    # Select the guard itself: an assertion failure has TARGET_THROW but no
+    # TARGET_EQUAL_CHECK, and must remain visible to the fault campaign.
+    return next((row for row in rows if row[1] == "TARGET_GUARD"
                  and row[0] > first[0]
                  and (next_apply is None or row[0] < next_apply)
                  and (finished is None or row[0] < finished)
-                 and len(row[3]) >= 8 and row[3][0] == manager
+                 and len(row[3]) >= 7 and row[3][0] == manager
                  and row[3][3:6] == ["1", "1", "0"]
                  and actor(row[3]) == chosen_actor), None)
 
 
 def audit(path: Path, plan: list[str]) -> dict:
     rows = events(path)
-    target = selected_check(rows)
-    if target is None:
-        return {"selected_target": False, "effective": False,
-                "reason": "no selected test-body version-1 check with bound ZK client"}
-    target_actor = actor(target[3])
     applied = [row for row in rows if row[1] == "FAULT_APPLIED"]
     matched = [row for row in rows if row[1] == "FAULT_MATCHED"]
     actual = [row[3][0] + "@@" + row[3][1] for row in applied if len(row[3]) >= 4]
@@ -64,6 +61,18 @@ def audit(path: Path, plan: list[str]) -> dict:
                   and [row[3][0] + "@@" + row[3][1] for row in matched] == plan
                   and all(match[0] + 1 == injection[0]
                           for match, injection in zip(matched, applied)))
+    target = selected_check(rows)
+    if target is None:
+        return {"selected_target": False, "effective": False,
+                "strict_ordered_faults": strict,
+                "all_faults_on_target_client": False,
+                "target_after_final_fault": False,
+                "reason": "no selected test-body version-1 check with bound ZK client"}
+    target_actor = actor(target[3])
+    outcomes = [row for row in rows if row[1] in ("TARGET_EQUAL_CHECK", "TARGET_THROW")
+                and row[0] > target[0] and row[3][:6] == target[3][:6]
+                and actor(row[3]) == target_actor]
+    outcome = outcomes[0] if outcomes else None
     all_actor_bound = strict and all(actor(row[3]) == target_actor for row in applied)
     postfinal = bool(applied and target[0] > applied[-1][0])
     useful_io = [row[3][0] + "@@" + row[3][1] for row in rows
@@ -73,7 +82,9 @@ def audit(path: Path, plan: list[str]) -> dict:
         "selected_target": True,
         "selected_target_sequence": target[0],
         "target_actor": target_actor,
-        "target_json_equal": target[3][6] == "true",
+        "target_json_equal": (outcome[3][6] == "true" if outcome and
+                              outcome[1] == "TARGET_EQUAL_CHECK" else None),
+        "selected_target_outcome": outcome[1] if outcome else None,
         "strict_ordered_faults": strict,
         "all_faults_on_target_client": all_actor_bound,
         "target_after_final_fault": postfinal,
