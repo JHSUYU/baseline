@@ -49,6 +49,12 @@ def selector(fields):
     return '@@'.join(fields[:4])
 
 
+def complete_sync_response(selector_key):
+    return (selector_key.startswith(
+        'org.apache.zookeeper.server.NIOServerCnxn#handleWrite:299:packetSent()V@@')
+        and selector_key.endswith('@@3'))
+
+
 def feedback_family(fields):
     resource = fields[2]
     resource = re.sub(r'(?<=:channel:)\d+(?=:)', '*', resource)
@@ -135,7 +141,8 @@ def seed_queue():
     baseline_cov = set().union(*(
         set((ROOT / name / 'coverage.tsv').read_text().splitlines())
         for name in ('healthy-a', 'healthy-b')))
-    state = {'schema': 3, 'feedback_baseline': 'healthy_union_v2',
+    state = {'schema': 4, 'feedback_baseline': 'healthy_union_v2',
+             'scheduler_revision': 'tail_sync_v3',
              'status': 'running', 'budget_effective': INITIAL_BUDGET,
              'max_faults': INITIAL_MAX_FAULTS, 'max_attempts': MAX_ATTEMPTS,
              'next_trial': 1, 'pending': jobs, 'queued': [x['plan'] for x in jobs],
@@ -164,9 +171,14 @@ def enqueue(state, plan, relations, parent, score):
 
 
 def choose(state):
-    # Favor new coverage/I/O and recovery depth, with a small aging/random
-    # term so deeper sequences do not monopolize the queue.
+    # Reserve every tenth selection for healthy-root exploration. Otherwise
+    # prioritize descendants of demonstrated postfault target paths.
     rng = random.Random(state['next_trial'] * 76543)
+    if state['next_trial'] % 10 == 0:
+        healthy = [index for index, job in enumerate(state['pending'])
+                   if job['parent'] == 'healthy-a']
+        if healthy:
+            return state['pending'].pop(healthy[rng.randrange(len(healthy))])
     ranked = [(job['score'] + min(len(job['plan']), 6) * 0.5 +
                rng.random() * 2.0 + (len(state['pending']) - index) * 0.003,
                index) for index, job in enumerate(state['pending'])]
@@ -275,9 +287,10 @@ def record(state, job, receipt):
             for event in mutation[-8:] + mutation[:4]:
                 if event not in selected:
                     selected.append(event)
-            score = (8.0 if new_cov else 2.0) + min(len(new_cov), 20) * 0.3 + \
-                (5.0 if new_families else 0.0)
             for event in selected[:24]:
+                score = (24.0 if complete_sync_response(event['selector'])
+                         else 15.0) + min(len(new_cov), 20) * 0.3 + \
+                    (5.0 if new_families else 0.0)
                 enqueue(state, job['plan'] + [event['selector']],
                         job['relations'] + [event['relation']], job['run_id'], score)
     else:
@@ -303,6 +316,8 @@ def record(state, job, receipt):
 
 def recover(state):
     inflight = state['inflight'][:]
+    if len(inflight) > 1:
+        raise RuntimeError('single-worker checkpoint cannot recover multiple inflight trials')
     state['inflight'] = []
     for job in inflight:
         path = ROOT / job['run_id'] / 'run.json'
@@ -318,6 +333,10 @@ def recover(state):
             shutil.move(str(abandoned), str(retained))
         state['pending'].insert(0, {key: value for key, value in job.items()
                                     if key not in ('run_id', 'worker_slot')})
+        if job['run_id'] != 'trial-{:04d}'.format(state['next_trial'] - 1) or \
+                len(state['results']) != state['next_trial'] - 2:
+            raise RuntimeError('interrupted original JUnit is not the next trial ID')
+        state['next_trial'] -= 1
     save(state)
 
 
@@ -360,6 +379,8 @@ def main():
         state = json.loads(CHECKPOINT.read_text()) if CHECKPOINT.exists() else seed_queue()
         if state.get('feedback_baseline') != 'healthy_union_v2':
             raise RuntimeError('after-response checkpoint lacks two-healthy feedback baseline')
+        if state.get('scheduler_revision') != 'tail_sync_v3':
+            raise RuntimeError('checkpoint requires complete-sync scheduler migration')
         if state['status'] not in ('running', 'paused_at_trial_boundary'):
             print(json.dumps({'status': state['status'],
                               'effective_count': state['effective_count']}))

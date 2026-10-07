@@ -21,6 +21,8 @@ def audit(terminal=False):
         raise RuntimeError('inflight original JUnit trial remains')
     if state.get('feedback_baseline') != 'healthy_union_v2':
         raise RuntimeError('after-response feedback lacks both healthy seeds')
+    if state.get('scheduler_revision') != 'tail_sync_v3':
+        raise RuntimeError('fault queue did not use complete-sync scheduler')
     if len(state['results']) != state['next_trial'] - 1:
         raise RuntimeError('run IDs or checkpoint selected count differ')
     if state['effective_count'] != sum(item['effective'] for item in state['results']):
