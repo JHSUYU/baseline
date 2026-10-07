@@ -1,10 +1,62 @@
 {
+  "additional_healthy_smoke_seconds": 168.261,
+  "alternate_cluster_audit_evidence": "independent/alternate-test-audit.json",
+  "alternate_original_cluster_smokes": [
+    {
+      "complete_onCommit_windows": 209,
+      "directory_io": 113875,
+      "elapsed_seconds": 72.16,
+      "graphchecker_on_classpath": false,
+      "original_junit": "org.apache.solr.handler.TestStressThreadBackup#testReplicationHandler",
+      "original_junit_exit": 0,
+      "resolved_onCommit_windows": 208,
+      "run_evidence": "independent/supplemental/testReplicationHandler/run.json",
+      "same_core_cross_thread_io_in_window": 3,
+      "same_policy_target_checks_in_window": 0,
+      "same_writer_directory_io_in_window": 0,
+      "target_checks": 20,
+      "target_throws": 0,
+      "window_evidence": "independent/supplemental/testReplicationHandler/window-audit.json"
+    },
+    {
+      "complete_onCommit_windows": 203,
+      "directory_io": 104000,
+      "elapsed_seconds": 54.254,
+      "graphchecker_on_classpath": false,
+      "original_junit": "org.apache.solr.handler.TestStressThreadBackup#testCoreAdminHandler",
+      "original_junit_exit": 0,
+      "resolved_onCommit_windows": 202,
+      "run_evidence": "independent/supplemental/testCoreAdminHandler/run.json",
+      "same_core_cross_thread_io_in_window": 13,
+      "same_policy_target_checks_in_window": 0,
+      "same_writer_directory_io_in_window": 0,
+      "target_checks": 22,
+      "target_throws": 0,
+      "window_evidence": "independent/supplemental/testCoreAdminHandler/window-audit.json"
+    },
+    {
+      "complete_onCommit_windows": 17,
+      "directory_io": 886,
+      "elapsed_seconds": 41.847,
+      "graphchecker_on_classpath": false,
+      "original_junit": "org.apache.solr.core.snapshots.TestSolrCloudSnapshots#testSnapshots",
+      "original_junit_exit": 0,
+      "resolved_onCommit_windows": 9,
+      "run_evidence": "independent/supplemental/testSnapshots/run.json",
+      "same_core_cross_thread_io_in_window": 0,
+      "same_policy_target_checks_in_window": 0,
+      "same_writer_directory_io_in_window": 0,
+      "target_checks": 42,
+      "target_throws": 0,
+      "window_evidence": "independent/supplemental/testSnapshots/window-audit.json"
+    }
+  ],
   "bug_mark": "none",
   "case_id": "SOLR-22",
   "cluster_nodes": 2,
   "cluster_test": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
   "coverage_gain": 667,
-  "elapsed_seconds": 3066.941,
+  "elapsed_seconds": 3235.202,
   "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-22/SOLR-22.md",
   "fault_trials": 80,
   "healthy_native_seconds": 14.38,
@@ -315,6 +367,7 @@
     "trace_status": "finalized_and_compacted_exit_0"
   },
   "methodology": "coverage_io_independent_asm_jacoco",
+  "new_fault_trials_from_alternate_tests": 0,
   "oninit_healthy_audit": {
     "conclusion": "target_relevant_io_not_observed; no onInit fault trial generated",
     "methodology": "case_local_asm_original_cluster_junit_no_fault",
@@ -352,13 +405,14 @@
   },
   "oracle_note": "A target-method IllegalStateException needs the audited fatal guard path after an applied fault; ReplicationHandler.getFileList catches some such exceptions, so any candidate requires replay and downstream source review.",
   "post_fault_target_reach_trials": 53,
+  "prior_status_before_alternate_cluster_probe": "target_relevant_io_not_observed",
   "quality_complete": false,
-  "reason": "Independent 80-trial original-JUnit campaign found no exact target throw. Corrected same-writer onCommit audit found no target-relevant Directory I/O or same-policy target read inside its critical interval. Two additional original TestPullReplica cluster JUnit healthy smokes observed 34 complete onInit intervals, 7,837 overall Directory I/O calls and 242 exact target checks, but zero Directory I/O and zero same-policy target checks inside those onInit intervals. No extra fault trials were justified for that unobserved window; quality remains pending.",
+  "reason": "Original TestPullReplica#testAddDocs independent 80-trial Directory campaign reached the exact target but found no target-relevant onCommit I/O. Three more original embedded-cluster JUnits (two concurrent-backup stress methods and 4-Jetty snapshot test) all passed and reached the exact guard (20, 22, 42 checks), but across 209, 203, 17 complete onCommit windows had zero same-writer Directory I/O and zero same-policy target checks. Cross-thread backup reads (3 and 13) did not change deletion-policy state. Source review identifies the in-flight older-generation read as a hypothetical future caller and shows the default delegate has no Directory calls in this interval; no further fault trial has a defensible target-relevant selector under these workloads.",
   "residual_instrumentation_dependency": false,
-  "run_state": "completed; node2 tmux and mirror exited; frozen resumable final-state.json",
+  "run_state": "source_and_original_cluster_test_audit_complete; no alternate fault campaign started",
   "schema_version": 1,
   "seed_seconds": 35.633,
-  "status": "target_relevant_io_not_observed",
+  "status": "no_usable_cluster_test",
   "strict_injections": 70,
   "supplemental_original_cluster_healthy_smokes": [
     {
@@ -403,5 +457,5 @@
   },
   "target_source_file": "solr/core/src/java/org/apache/solr/core/IndexDeletionPolicyWrapper.java",
   "target_source_line": 177,
-  "updated_at": 1791330719.641594
+  "updated_at": 1791334260.5416753
 }

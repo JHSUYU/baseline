@@ -1,0 +1,47 @@
+{
+  "case_id": "SOLR-22",
+  "methodology": "same original JUnit, frozen independent ASM agent, original fault.properties",
+  "trial_63": {
+    "original_observation": "14 new Directory I/O families on replica_p6; strict fault and post-fault target reached",
+    "replay": "replays/trial63-01",
+    "replay_elapsed_seconds": 19.598,
+    "replay_junit_exit": 0,
+    "replay_planned_faults": 1,
+    "replay_applied_faults": 1,
+    "replay_strict": true,
+    "replay_post_fault_target_checks": 94,
+    "replay_replica_p6_io": 0,
+    "replay_exact_target_throws": 0,
+    "replay_trace_sha256": "3bda1313e7ca4d22975bac11bd457d83e0ebab56c9e39b3adcaedba3d8133eb9",
+    "replay_jacoco_sha256": "18ccc296eef9c1414c6706895248e0a47deadb2883bf91d334037fdb124f897f",
+    "assessment": "new replica_p6 I/O family did not recur under the same strictly applied fault"
+  },
+  "trial_71": {
+    "original_observation": "one new IndexFetcher production branch outcome in a strict post-fault-target trial",
+    "replays": [
+      {
+        "path": "replays/trial71-01",
+        "elapsed_seconds": 18.773,
+        "junit_exit": 0,
+        "planned_faults": 2,
+        "applied_faults": 0,
+        "strict": false,
+        "post_fault_target_checks": 0,
+        "IndexFetcher_branch_outcomes_over_prefix_60": 0,
+        "trace_sha256": "25d94a9fb0d27a9aa7aa6f0620d016d8ec5012ae5c9f823c384a09b4e1756798"
+      },
+      {
+        "path": "replays/trial71-02",
+        "elapsed_seconds": 48.723,
+        "junit_exit": 1,
+        "planned_faults": 2,
+        "applied_faults": 1,
+        "strict": false,
+        "post_fault_target_checks": 0,
+        "IndexFetcher_branch_outcomes_over_prefix_60": 2,
+        "trace_sha256": "ee3b7a2271a035d1efaebabdc006cd44c6d1ba1ed47ea01b90174fa01f27d146"
+      }
+    ],
+    "assessment": "new branch outcome has no reproduced strict post-fault-target trial; invalid replay coverage is not an expansion signal"
+  }
+}
