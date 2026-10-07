@@ -215,6 +215,14 @@ def choose(state: dict) -> dict:
                        if item['sequence'][-1]['fault_mode'] == preferred_mode]
     if mode_candidates:
         candidates = mode_candidates
+    # Reaching the selected range guard remains much more reproducible after
+    # one HTTP fault. Keep every fifth choice for multiple ordered faults;
+    # use the single-fault seeds in other rounds while they remain available.
+    want_multiple = (len(rows) + 1) % 5 == 0
+    depth_candidates = [item for item in candidates
+                        if (len(item['sequence']) > 1) == want_multiple]
+    if depth_candidates:
+        candidates = depth_candidates
     # The two child shards have distinct runtime replica identities. Keep
     # both in the tested HTTP sequence population even when one shard has
     # higher hit ordinals and would otherwise occupy every top-ranked slot.

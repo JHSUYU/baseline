@@ -42,3 +42,12 @@ prepared offline in `migrate_child_balance.py`. They remain **inactive on
 node2** until the current fuzzer reaches its natural selected-cap checkpoint;
 then the runner digest changes with a full old-state backup and no completed
 plan replay. This avoids interrupting an original JUnit attempt.
+
+At the later 39-plan checkpoint, stage-two single-fault plans were 7/7 strict
+and SOLR-37 target-retaining; two-fault plans were 5/7 strict and 3/7
+target-retaining, and the first three-fault plan was unmatched. The prepared
+scheduler therefore also prefers single-fault plans on four of five rounds
+and multiple ordered faults on the fifth, with fallback if that class is
+empty. These figures justify the selection policy only; they do not count
+unmatched trials as coverage or target checks. Node2 continues the pinned old
+scheduler until the selected-cap boundary described above.

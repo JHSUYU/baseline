@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Switch the HTTP scheduler only after its current selected cap finishes.
+"""Switch to child-balanced and depth-balanced HTTP selection at a checkpoint.
 
 The run_stages parent must be stopped while its fuzzer child exits normally at
 budget_complete. This migration changes only the pinned runner digest; it
@@ -85,7 +85,8 @@ def main() -> None:
         'next_plan_id': next_plan['id'],
         'next_plan_source': next_plan['sequence'][-1]['point']['sourceKey'],
         'next_plan_mode': next_plan['sequence'][-1]['fault_mode'],
-        'migration_scope': 'scheduler-only; completed/queue/coverage unchanged',
+        'migration_scope': ('scheduler-only child/source and depth preference; '
+                            'completed/queue/coverage unchanged'),
     }
     campaign.atomic(MIGRATION / 'migration.json', receipt)
     print(json.dumps(receipt, sort_keys=True))

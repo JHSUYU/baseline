@@ -20,6 +20,25 @@ def selected(ordinal: int, marker: str = 'FAULT:HTTP:parentForwardAdd') -> dict:
 
 
 class TimeoutStage2Test(unittest.TestCase):
+    def test_depth_schedule_keeps_both_single_and_ordered_faults(self) -> None:
+        first = selected(1)
+        second = selected(2)
+        queue = [
+            {'id': 'single', 'sequence': [fuzz_rpc.step(first, 'TIMEOUT')],
+             'parent_gain': 0, 'created_after': 0},
+            {'id': 'multiple', 'sequence': [fuzz_rpc.step(first, 'TIMEOUT'),
+                                            fuzz_rpc.step(second, 'TIMEOUT')],
+             'parent_gain': 0, 'created_after': 0},
+        ]
+        row = {'last_fault_sender': first['senderKey'],
+               'last_fault_source': first['sourceKey'],
+               'last_fault_marker': first['marker'],
+               'last_fault_mode': 'TIMEOUT',
+               'last_fault_point_id': fuzz_rpc.point_id(first)}
+        for completed, expected in ((5, 'single'), (4, 'multiple')):
+            state = {'completed': [row] * completed, 'queue': copy.deepcopy(queue)}
+            self.assertEqual(fuzz_rpc.choose(state)['id'], expected)
+
     def test_earlier_child_source_is_not_starved_by_high_ordinals(self) -> None:
         busy = selected(80)
         other = dict(selected(3),
