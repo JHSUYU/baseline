@@ -46,25 +46,23 @@ def selector(row) -> str:
 
 def candidates(rows, after=0) -> list[str]:
     target = selected_check(rows)
-    start = next((row[0] for row in rows if row[1] == 'TEST_STARTED'), None)
-    if target is None or start is None or target[0] <= after:
+    if target is None or target[0] <= after:
         return []
     target_actor = actor(target[3])
     return list(dict.fromkeys(selector(row) for row in rows
                if row[1] == 'IO' and len(row[3]) >= 3
-               and max(start, after) < row[0] < target[0]
+               and after < row[0] < target[0]
                and actor(row[3]) == target_actor))
 
 
 def candidate_rows(rows) -> list[tuple[int, str]]:
     target = selected_check(rows)
-    start = next((row[0] for row in rows if row[1] == 'TEST_STARTED'), None)
-    if target is None or start is None:
+    if target is None:
         return []
     target_actor = actor(target[3])
     return [(row[0], selector(row)) for row in rows
             if row[1] == 'IO' and len(row[3]) >= 3
-            and start < row[0] < target[0] and actor(row[3]) == target_actor]
+            and row[0] < target[0] and actor(row[3]) == target_actor]
 
 
 def sample_candidates(items: list[str]) -> list[str]:
@@ -122,7 +120,7 @@ def initial_state() -> dict:
              'effective': 0, 'attempts': 0, 'next_trial': 1,
              'pending': [], 'known_plans': [], 'trials': [],
              'inflight': None, 'finished': False, 'extension_applied': False,
-             'healthy_seed_selectors_after_test_start': seed,
+             'healthy_seed_selectors': seed,
              'original_junit_sha256': calibration['junit_class_sha256'],
              'baseline_probes': sorted(covered('healthy-v2-a', 'probes') |
                                        covered('healthy-v2-b', 'probes')),
@@ -212,7 +210,7 @@ def late_signal(state: dict) -> dict:
     first: dict[str, int] = {}
     observations: dict[str, int] = {}
     base_families = {item.rsplit('@@', 1)[0]
-                     for item in state['healthy_seed_selectors_after_test_start']}
+                     for item in state['healthy_seed_selectors']}
     prior_probes: set[str] = set()
     prior_methods: set[str] = set()
     new_probes, new_methods = [], []
@@ -283,10 +281,16 @@ def main() -> None:
     args = parser.parse_args()
     signal.signal(signal.SIGUSR1, stop_requested)
     state = json.loads(STATE.read_text()) if STATE.exists() else initial_state()
-    if state['schema_version'] < 3:
-        state['schema_version'] = 3
+    if state['schema_version'] < 4:
+        seed = candidates(events(RUN_ROOT / 'healthy-v2-a/events.tsv'))
+        seed += [item for item in candidates(events(RUN_ROOT / 'healthy-v2-b/events.tsv'))
+                 if item not in seed]
+        state['healthy_seed_selectors'] = seed
+        for value in seed:
+            queue(state, [value], 'healthy-v2')
         for item in state['trials']:
             expand_feedback(state, item)
+        state['schema_version'] = 4
         atomic_json(STATE, state)
     sync_ledger(state)
     for item in state['trials']:
