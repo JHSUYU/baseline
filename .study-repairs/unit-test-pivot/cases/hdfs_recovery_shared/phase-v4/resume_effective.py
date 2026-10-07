@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from datetime import datetime, timezone
 import fcntl
 import gzip
@@ -22,6 +23,7 @@ import campaign
 HERE = Path(__file__).resolve().parent
 RECEIPT = HERE / "effective-resume-receipt.json"
 BACKUP = HERE / "campaign-state.before-effective-resume.json.gz"
+PRIORITY_BACKUP = HERE / "campaign-state.before-effective-priority.json.gz"
 START_LOCK = HERE.parents[2] / "jvm-start.lock"
 OLD_SHA = "c990b52036d45f25a4370c611a2254fa3bdd580853a392226909ad04dd3a2b1b"
 BASE = 80
@@ -63,6 +65,24 @@ def initialize(state: dict) -> dict:
     if "effective_resume" in state:
         if not BACKUP.is_file():
             raise RuntimeError("resume checkpoint has no original backup")
+        policy = state["effective_resume"]
+        if "priority_version" not in policy:
+            if PRIORITY_BACKUP.exists():
+                with gzip.open(PRIORITY_BACKUP, "rb") as source:
+                    if hashlib.sha256(source.read()).hexdigest() != digest(campaign.STATE):
+                        raise RuntimeError("priority backup/checkpoint mismatch")
+            else:
+                with gzip.open(PRIORITY_BACKUP, "wb") as out:
+                    out.write(campaign.STATE.read_bytes())
+            policy["priority_version"] = "observed_pre_target_4_of_5"
+            policy["priority_changed_after"] = len(state["completed"])
+            policy["priority_old_checkpoint_sha256"] = digest(campaign.STATE)
+            policy["priority_active_plan_retained"] = (
+                state["active"]["id"] if state["active"] else None)
+            policy["pre_target_pending"] = sum(bool(item.get("pre_target"))
+                                                for item in state["queue"])
+            campaign.atomic_json(campaign.STATE, state)
+            snapshot(state)
         return state
     if (digest(campaign.STATE) != OLD_SHA or len(state["completed"]) != 128
             or state["active"] is not None or state["stop_reason"] != "budget"
@@ -79,6 +99,8 @@ def initialize(state: dict) -> dict:
         "goals": {case: BASE for case in campaign.CASES},
         "extension_decisions": {}, "attempt_cap": ATTEMPT_CAP,
         "last_completed": 128,
+        "priority_version": "observed_pre_target_4_of_5",
+        "priority_changed_after": 128,
     }
     state["budget"] = {"max_trials": ATTEMPT_CAP, "max_faults": 10,
                        "base_effective_per_case": BASE,
@@ -141,6 +163,25 @@ def java_count() -> int:
     return int(result.stdout.strip() or 0)
 
 
+def choose_effective(state: dict) -> int:
+    """Favor observed I/O preceding a later check; sample the full queue."""
+    if len(state["completed"]) % 5 == 4:
+        return campaign.choose(state)
+    eligible = [(i, item) for i, item in enumerate(state["queue"])
+                if item.get("pre_target")]
+    if not eligible:
+        return campaign.choose(state)
+    completed = state["completed"]
+    types = Counter(t["sequence"][-1]["faultType"] for t in completed)
+    families = Counter(campaign.family(t["sequence"][-1]) for t in completed)
+    roots = Counter(campaign.family(t["sequence"][0]) for t in completed)
+    return min(eligible, key=lambda pair: (
+        types[pair[1]["sequence"][-1]["faultType"]],
+        families[campaign.family(pair[1]["sequence"][-1])],
+        roots[campaign.family(pair[1]["sequence"][0])],
+        -pair[1]["priority"], pair[1]["created"]))[0]
+
+
 def trial_java_started(run: Path) -> bool:
     needle = str(run).encode()
     for entry in Path("/proc").iterdir():
@@ -157,7 +198,7 @@ def trial_java_started(run: Path) -> bool:
 
 def one_trial(state: dict) -> None:
     if state["active"] is None:
-        state["active"] = state["queue"].pop(campaign.choose(state))
+        state["active"] = state["queue"].pop(choose_effective(state))
         campaign.atomic_json(campaign.STATE, state)
     run = HERE / "runs" / ("trial-%03d" % (len(state["completed"]) + 1))
     with START_LOCK.open("a+") as startup:

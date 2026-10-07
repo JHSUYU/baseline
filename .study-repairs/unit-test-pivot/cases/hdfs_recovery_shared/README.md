@@ -232,6 +232,28 @@ supervisor checks host JVM count and disk before every JUnit and shares
 128 attempts as 128 effective trials or claim final quality before a new
 independent raw audit.
 
+The first ten resumed JUnits (trials 129–138) added no effective
+same-owner target visit. A read-only queue audit showed 195 remaining
+observed-I/O plans that precede HDFS-29/30 in their parent trace and none
+that precede HDFS-28 in the same recovery attempt. The unexecuted trial-139
+active selector was retained. The supervisor then changed only queue
+selection: four selections in five favor those 195 pre-target plans, while
+one still explores the full queue. The original 128 attempts and new
+129–138 trials were preserved under checkpoint SHA-256
+`277b02f34ce5061d739188f75a1ebd5da9296b4e51faa51ceab6d5e55c10b703`
+before the priority migration. HDFS-28 remains a separate target whose
+control-plane precursor or another original cluster test may be needed.
+
+The original `RecoveryProbe.targetThrow` serializer placed an extra quote
+after the numeric `blockId`, which would make a future selected throw
+unparseable. A one-line source-only correction was Java 8 compiled and
+verified by parsing a generated `TARGET_THROW` JSON row. Node1 retained the
+old source SHA-256
+`fe2d1922ef14a384686a31466be0cf84c45a34ad28396e494f09b7f59e1d5f96`
+as `phase-v4/RecoveryProbe.before-target-throw-json.java` before rebuilding
+the same fault selectors. No historical trace contained `TARGET_THROW`;
+new attempts retain their separate source/build provenance.
+
 ## Independent HA owner-test calibration
 
 The released `TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization`
