@@ -54,6 +54,17 @@ def candidates(rows, after=0) -> list[str]:
                and actor(row[3]) == target_actor))
 
 
+def candidate_rows(rows) -> list[tuple[int, str]]:
+    target = selected_check(rows)
+    start = next((row[0] for row in rows if row[1] == 'TEST_STARTED'), None)
+    if target is None or start is None:
+        return []
+    target_actor = actor(target[3])
+    return [(row[0], selector(row)) for row in rows
+            if row[1] == 'IO' and len(row[3]) >= 3
+            and start < row[0] < target[0] and actor(row[3]) == target_actor]
+
+
 def sample_candidates(items: list[str]) -> list[str]:
     # Favor distinct paths and threads while retaining writes and near-target I/O.
     result, families = [], set()
@@ -73,6 +84,21 @@ def queue(state: dict, plan: list[str], parent: str, score: int = 0) -> None:
     if key not in state['known_plans']:
         state['known_plans'].append(key)
         state['pending'].append({'plan': plan, 'parent': parent, 'score': score})
+
+
+def expand_feedback(state: dict, item: dict) -> None:
+    if not item['effective'] or len(item['plan']) >= state['max_faults']:
+        return
+    rows = events(RUN_ROOT / item['run_id'] / 'events.tsv')
+    applied_sequences = [row[0] for row in rows if row[1] == 'FAULT_APPLIED']
+    observed = candidate_rows(rows)
+    selected = set(sample_candidates([value for _, value in observed]))
+    for sequence, value in observed:
+        if value in item['plan'] or value not in selected:
+            continue
+        position = sum(fault < sequence for fault in applied_sequences)
+        plan = item['plan'][:position] + [value] + item['plan'][position:]
+        queue(state, plan, item['run_id'], item.get('new_campaign_coverage_score', 0))
 
 
 def initial_state() -> dict:
@@ -226,9 +252,8 @@ def record(state: dict, job: dict, meta: dict) -> dict:
     state['trials'].append(item)
     state['attempts'] += 1
     state['effective'] += int(item['effective'])
-    if item['effective'] and len(job['plan']) < state['max_faults']:
-        for selector_ in sample_candidates(item['candidate_pretarget_io']):
-            queue(state, job['plan'] + [selector_], job['run_id'], novelty)
+    if item['effective']:
+        expand_feedback(state, item)
     state['inflight'] = None
     atomic_json(STATE, state)
     sync_ledger(state)
@@ -256,6 +281,11 @@ def main() -> None:
     args = parser.parse_args()
     signal.signal(signal.SIGUSR1, stop_requested)
     state = json.loads(STATE.read_text()) if STATE.exists() else initial_state()
+    if state['schema_version'] < 3:
+        state['schema_version'] = 3
+        for item in state['trials']:
+            expand_feedback(state, item)
+        atomic_json(STATE, state)
     sync_ledger(state)
     for item in state['trials']:
         mirror_run(item['run_id'], prune_derived=True)
@@ -273,8 +303,7 @@ def main() -> None:
                     state['extension_applied'] = True
                     for item in state['trials']:
                         if item['effective'] and item['fault_count'] == 8:
-                            for selector_ in sample_candidates(item['candidate_pretarget_io']):
-                                queue(state, item['plan'] + [selector_], item['run_id'])
+                            expand_feedback(state, item)
                     atomic_json(STATE, state)
                     continue
             state['finished'] = True
