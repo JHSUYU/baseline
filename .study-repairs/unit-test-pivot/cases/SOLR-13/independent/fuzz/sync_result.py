@@ -7,13 +7,18 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PROGRESS = HERE / 'evidence/campaign/progress.json'
 STAGE2_PROGRESS = HERE.parent / 'stage2/evidence/campaign-node1-mirror/progress.json'
+STAGE2_AUDIT = STAGE2_PROGRESS.parent / 'final-audit.json'
 RESULT = HERE.parents[1] / 'result.json'
 
 
 def main() -> None:
     progress = json.loads(PROGRESS.read_text())
     result = json.loads(RESULT.read_text())
+    stage1_audit_path = PROGRESS.parent / 'final-audit.json'
+    stage1_audit = (json.loads(stage1_audit_path.read_text())
+                    if stage1_audit_path.is_file() else None)
     stage2 = json.loads(STAGE2_PROGRESS.read_text()) if STAGE2_PROGRESS.is_file() else None
+    stage2_audit = json.loads(STAGE2_AUDIT.read_text()) if STAGE2_AUDIT.is_file() else None
     if stage2 is not None:
         if stage2.get('case_id') != 'SOLR-13' or stage2.get('phase') != 'overseer_alias_write':
             raise ValueError('wrong node1 SOLR-13 phase mirror')
@@ -54,7 +59,7 @@ def main() -> None:
             'evidence': 'cases/SOLR-13/independent/fuzz/evidence/campaign/progress.json',
             'final_audit': ('cases/SOLR-13/independent/fuzz/evidence/campaign/'
                             'final-audit.json')
-                           if (PROGRESS.parent / 'final-audit.json').is_file() else None,
+                           if stage1_audit else None,
         },
     }
     if stage2 is not None:
@@ -75,7 +80,22 @@ def main() -> None:
                          'progress.json'),
             'progress_mirror': ('cases/SOLR-13/independent/stage2/evidence/'
                                 'campaign-node1-mirror/progress.json'),
+            'final_audit': ('cases/SOLR-13/independent/stage2/evidence/'
+                            'campaign-node1-mirror/final-audit.json')
+                           if stage2_audit else None,
         }
+        if stage2_audit:
+            stages['overseer_alias_write'].update({
+                'verified_archived_traces': stage2_audit['verified_archived_traces'],
+                'interrupted_uncredited_jvm_attempts': stage2_audit[
+                    'interrupted_uncredited_jvm_attempts'],
+                'jacoco_rechecked_effective_trials': stage2_audit[
+                    'jacoco_rechecked_effective_trials'],
+                'actor_correlated_applied_alias_writes': stage2_audit[
+                    'actor_correlated_applied_alias_writes'],
+                'cross_node_actor_correlated_alias_writes': stage2_audit[
+                    'cross_node_actor_correlated_alias_writes'],
+            })
         result['combined_totals'] = {
             'attempted_plans': sum(p['attempted_plans'] for p in stages.values()),
             'jvm_attempts': sum(p['jvm_attempts'] for p in stages.values()),
@@ -89,6 +109,13 @@ def main() -> None:
                 sum(p['elapsed_seconds'] for p in stages.values()), 3),
             'coverage_note': 'Phase probe gains overlap; no union count is claimed.',
         }
+        if stage1_audit and stage2_audit:
+            result['combined_totals']['verified_archived_jvm_attempts'] = (
+                stage1_audit['verified_archived_traces']
+                + stage2_audit['verified_archived_traces'])
+            result['combined_totals']['jvm_attempt_note'] = (
+                'One stage-two interrupted JVM attempt was archived but not '
+                'credited in the per-phase ledger JVM counter.')
     result['stages'] = stages
     tmp = RESULT.with_suffix('.json.tmp')
     tmp.write_text(json.dumps(result, indent=2, sort_keys=True) + '\n')

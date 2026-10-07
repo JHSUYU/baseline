@@ -6,7 +6,7 @@ After `ensureCollection` and a ZooKeeper alias refresh, it throws if the
 created collection is absent from the observed alias list. The mapped original
 cluster test is `TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation`.
 
-**Status: running graph-free fault campaign.** The original test
+**Status: both graph-free fault phases completed their budgets.** The original test
 class inherits `@AwaitsFix(SOLR-13696)` from
 `RoutedAliasUpdateProcessorTest.java:64`. With the default test-group setting,
 JUnit reported one test and zero failures but the listener recorded an
@@ -40,7 +40,7 @@ identities. The case-local ASM agent instruments original bytecode at runtime;
 it does not change the original JUnit or production source. No GraphChecker
 runtime JAR appears on the classpath.
 
-The campaign runs in node0 tmux `solr13_fuzz`. Its atomic checkpoint and
+The first campaign ran in node0 tmux `solr13_fuzz`. Its atomic checkpoint and
 progress are `independent/fuzz/evidence/campaign/state.json` and
 `progress.json`. Its budget is 80 strict, same-alias, postfault target-retaining
 trials with at most eight injected I/O exceptions per sequence. Recent
@@ -59,8 +59,8 @@ gained 50 probes, while the exact selected exception occurred zero times.
 All 81 JVM attempt traces, including the excluded partial ninth attempt,
 were decompressed and SHA256-verified against their archive receipts. The
 machine-readable audit is `independent/fuzz/evidence/campaign/final-audit.json`.
-The case remains overall `running` while the independent Overseer write
-phase continues.
+The independent Overseer write phase has also completed; its outcome appears
+below.
 
 ## Independent Overseer alias-write campaign
 
@@ -76,7 +76,7 @@ native ZooKeeper write, and the selected guard. The original JUnit and Solr
 source are unchanged. This phase has its own agent, JaCoCo probe set,
 checkpoint and 80-effective/max-eight budget, independent of stage one.
 
-It runs on node1 in tmux `solr13_stage2`, using only the SOLR-13 case path on
+It ran on node1 in tmux `solr13_stage2`, using only the SOLR-13 case path on
 that node. The atomic state and progress are in
 `independent/stage2/evidence/campaign/`. A trial counts only when the exact
 planned I/O identity applies, the Overseer handoff is correlated at runtime,
@@ -127,3 +127,38 @@ The SHA-backed migration preserved all 70 valid plans and 40 effective
 stage-two trials, archived the interrupted attempt 88, and recorded 217
 guarded versus 78 deferred queued plans in
 `independent/stage2/evidence/campaign/target_selector_migration.json`.
+
+## Audited outcome
+
+The Overseer write phase stopped at its fixed **80/80 effective,
+same-source, postfault target-retaining** budget. Its last ten effective
+trials added no production JaCoCo probes or I/O families, so the conditional
+128-trial extension did not apply. Of 110 valid attempted plans, 109 had all
+planned faults applied. The longest applied sequence had six exceptions.
+All 80 effective original JUnit runs passed; no selected
+`RoutedAlias.doSynchronous` exception occurred. Production JaCoCo gained 72
+probes and two target-related I/O families. The 17 setup-invalid plans and
+their 35 JVM attempts carry zero fault/coverage credit. One interrupted JVM
+attempt is archived but uncredited in the plan ledger.
+
+`independent/stage2/evidence/campaign-node1-mirror/final-audit.json` records
+the independent terminal audit. All 149 node1 compressed raw traces matched
+both compressed and decompressed SHA256 receipts. Re-reading all 80 effective
+`jacoco.exec` files reproduced each trial's production probe count and
+incremental gain. Their traces confirmed 283 applied alias writes with a
+matching client send, Overseer receive, same-node alias-write context, and
+native ZooKeeper write, followed by a same-source selected guard. Of these,
+209 writes crossed physical Solr nodes; 76 of 80 effective runs contained
+such a cross-node chain. The two independent phases together completed 160
+effective target-retaining trials, with **zero** selected exceptions. Their
+coverage probe gains overlap and are not added into a unique combined count.
+
+The source explains a common outcome of these injections: in
+`ZkStateReader.AliasesManager.applyModificationAndExportToZk`, a failed
+`/aliases.json` write throws or retries, while a successful write calls
+`setIfNewer`. `MaintainRoutedAliasCmd.remoteInvoke` propagates an Overseer
+error to `RoutedAlias.ensureCollection`, before the selected guard; on the
+successful path, `ensureCollection` also refreshes the alias view before
+`doSynchronous` checks membership. This is a source-based interpretation of
+the observed runs, not a proof that the selected branch is unreachable under
+other schedules or fault models. No new bug is claimed for SOLR-13.
