@@ -215,6 +215,16 @@ def choose(state: dict) -> dict:
                        if item['sequence'][-1]['fault_mode'] == preferred_mode]
     if mode_candidates:
         candidates = mode_candidates
+    # The two child shards have distinct runtime replica identities. Keep
+    # both in the tested HTTP sequence population even when one shard has
+    # higher hit ordinals and would otherwise occupy every top-ranked slot.
+    least_used_source = min(source_counts[(
+        item['sequence'][-1]['point']['senderKey'],
+        item['sequence'][-1]['point']['sourceKey'])] for item in candidates)
+    candidates = [item for item in candidates
+                  if source_counts[(item['sequence'][-1]['point']['senderKey'],
+                                    item['sequence'][-1]['point']['sourceKey'])]
+                  == least_used_source]
     max_ordinal = max(item['sequence'][-1]['point']['hitOrdinal']
                       for item in candidates)
     ranked = []

@@ -20,6 +20,27 @@ def selected(ordinal: int, marker: str = 'FAULT:HTTP:parentForwardAdd') -> dict:
 
 
 class TimeoutStage2Test(unittest.TestCase):
+    def test_earlier_child_source_is_not_starved_by_high_ordinals(self) -> None:
+        busy = selected(80)
+        other = dict(selected(3),
+                     sourceKey='SOLR/SUBSHARD/collection1/shard1_1/core_node12',
+                     resource='/update/Add/collection1/shard1_1/core_node12')
+        queue = [
+            {'id': 'busy', 'sequence': [fuzz_rpc.step(busy, 'TIMEOUT')],
+             'parent_gain': 0, 'created_after': 0},
+            {'id': 'other', 'sequence': [fuzz_rpc.step(other, 'TIMEOUT')],
+             'parent_gain': 0, 'created_after': 0},
+        ]
+        row = {'last_fault_sender': busy['senderKey'],
+               'last_fault_source': busy['sourceKey'],
+               'last_fault_marker': busy['marker'],
+               'last_fault_mode': 'TIMEOUT',
+               'last_fault_point_id': fuzz_rpc.point_id(busy)}
+        state = {'completed': [row] * 10, 'queue': queue}
+        chosen = fuzz_rpc.choose(state)
+        self.assertEqual(chosen['id'], 'other')
+        self.assertEqual([entry['id'] for entry in state['queue']], ['busy'])
+
     def test_fourth_selection_keeps_delay_exploration(self) -> None:
         point = selected(1)
         queue = [{'id': mode.lower(), 'sequence': [fuzz_rpc.step(point, mode)],

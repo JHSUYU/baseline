@@ -34,3 +34,11 @@ Earlier ZooKeeper runs and superseded HTTP calibrations remain in
 `historical_coarse_elapsed_seconds`; `total_including_legacy_elapsed_seconds`
 retains the cumulative research time. The current `fault_trials`, effective
 denominator, and coverage columns never include those legacy runs.
+
+The first ten post-pilot selections all chose the `shard1_0/core_node11`
+child even though the queue retained exact `shard1_1/core_node12` TIMEOUT
+selectors. A child-source-balanced scheduler and checkpoint migration are
+prepared offline in `migrate_child_balance.py`. They remain **inactive on
+node2** until the current fuzzer reaches its natural selected-cap checkpoint;
+then the runner digest changes with a full old-state backup and no completed
+plan replay. This avoids interrupting an original JUnit attempt.
