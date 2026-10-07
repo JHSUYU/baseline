@@ -28,6 +28,12 @@ actor, peer class, pool class, actor-local ordinal, and exception. Runtime
 gating also compares the raw NN endpoint and selected DN UUID within the
 same run. No ordinal or normalized actor alone proves an actor match.
 
+The `RPC_RESPONSE` marker is emitted on entry to `Client.getRpcResponse`,
+before that method waits for the reply. A matched exception can therefore
+occur while the NameNode is still processing the same request. A target event
+after the fault proves temporal, same-actor, same-block reachability under the
+stated gate; it does not by itself prove the fault caused that target event.
+
 Two fresh healthy original JUnit runs on node1 passed under the shared
 `jvm-start.lock`: 2026-10-07 10:56:47–10:57:20 UTC and
 10:58:23–10:58:57 UTC, with 29.556/30.414 seconds of JUnit execution.
