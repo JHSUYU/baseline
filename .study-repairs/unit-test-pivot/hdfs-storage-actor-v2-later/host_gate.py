@@ -18,7 +18,6 @@ import sys
 import run_original
 
 
-MIN_FREE_BYTES = 8 * 1024 ** 3
 MAX_RUNNING_JAVA_BEFORE_LAUNCH = 4
 
 
@@ -28,9 +27,13 @@ def main() -> None:
     parser.add_argument("--handoff", required=True,
                         help="Exact owner/session and UTC of explicit slot release")
     parser.add_argument("--expected-overlay-sha256", required=True)
+    parser.add_argument("--min-free-gib", type=float, default=8.0)
     args = parser.parse_args()
     if not args.handoff.strip():
         parser.error("an explicit slot handoff is required")
+    if args.min_free_gib < 8:
+        parser.error("minimum free space cannot be less than 8 GiB")
+    min_free_bytes = int(args.min_free_gib * 1024 ** 3)
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     java_lines = subprocess.check_output(["jps", "-l"], text=True).splitlines()
@@ -47,8 +50,8 @@ def main() -> None:
     issues = []
     if len(app_java) > MAX_RUNNING_JAVA_BEFORE_LAUNCH:
         issues.append("more than four existing Java processes")
-    if free_bytes < MIN_FREE_BYTES:
-        issues.append("less than 8 GiB free on the output filesystem")
+    if free_bytes < min_free_bytes:
+        issues.append(f"less than {args.min_free_gib:g} GiB free on the output filesystem")
     if digest != args.expected_overlay_sha256:
         issues.append("overlay digest differs from staged image")
     if missing:
@@ -60,7 +63,7 @@ def main() -> None:
         "existing_java": app_java,
         "existing_java_count": len(app_java),
         "free_bytes": free_bytes,
-        "required_free_bytes": MIN_FREE_BYTES,
+        "required_free_bytes": min_free_bytes,
         "tcp_listeners_count": len(listeners),
         "overlay_sha256": digest,
         "expected_overlay_sha256": args.expected_overlay_sha256,
