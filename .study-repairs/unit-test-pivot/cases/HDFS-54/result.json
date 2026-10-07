@@ -404,5 +404,31 @@
   },
   "evidence_archive": "evidence.tar.gz",
   "evidence_archive_sha256": "da29981257a99de235ae6e7644edad3164da0d0bc2ba061e7f35c59bc08f0800",
-  "evidence_archive_bytes": 3557276
+  "evidence_archive_bytes": 3557276,
+  "original_junit_supplement": {
+    "status": "strict_pilot_passed_full_budget_pending",
+    "workload": "org.apache.hadoop.hdfs.TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]",
+    "workload_unmodified": true,
+    "source_tag": "rel/release-3.4.3",
+    "test_jar_sha256": "08cb98dc77193afb196cb8b1f74108080c59bbcb3ae6430aca51bbfd004e9acb",
+    "cluster": "original MiniDFSCluster with 1 NameNode and 11 DataNodes",
+    "target_site": "FileChecksumHelper$StripedFileNonStripedChecksumComputer.checksumBlocks#L629",
+    "graph_used": false,
+    "healthy_seconds": 17.72,
+    "healthy_target_checks": 1,
+    "healthy_covered_production_probes": 28723,
+    "fault_pilot_seconds": 17.57,
+    "fault_pilot_requested": 1,
+    "fault_pilot_matched": 1,
+    "fault_pilot_applied": 1,
+    "fault_pilot_target_after_final_fault": 1,
+    "fault_pilot_covered_production_probes": 28727,
+    "fault_pilot_junit_failures": 0,
+    "campaign_effective": 1,
+    "campaign_effective_budget": 80,
+    "campaign_max_faults": 8,
+    "campaign_runtime_root": "node2:/users/ZhenyuLi/hdfs54-original-campaign/runs",
+    "receipt": "original-junit/pilot-receipt.json",
+    "interpretation": "The original test reaches the selected check with native checksum RPC faults. Its synthetic InvalidEncryptionKeyException does not establish an actual expired DataNode allKeys state; the adapted known-bug control remains separate."
+  }
 }
