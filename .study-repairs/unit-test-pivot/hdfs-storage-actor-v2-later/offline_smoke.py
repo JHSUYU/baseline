@@ -203,7 +203,8 @@ def check_throw_receipt() -> None:
         effective, _, issues = audit_checkpoint.check_trial(
             item, result, {"test": "original.JUnit#method",
                            "seeds": [{"instrumentation_digest_sha256": "offline-smoke"}],
-                           "healthy_target_throw_signatures_by_case": {"HDFS-37": healthy}})
+                           "healthy_target_throw_signatures_by_case": {"HDFS-37": healthy}},
+            run, set())
         assert effective["HDFS-37"] and not issues, issues
         before = {**check, "seq": 9}
         try:
