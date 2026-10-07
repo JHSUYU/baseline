@@ -235,9 +235,12 @@ def choose_pending(state: dict) -> dict:
         scored = [i for i, x in enumerate(pending) if x.get('score', 0) == best_score]
         suite = [i for i in scored if ':SUITE@@' in pending[i]['plan'][0]]
         test = [i for i in scored if i not in suite]
-        pool = suite if state.get('suite_gap', 0) >= 3 and suite else (test or suite)
+        # At the 267/36 checkpoint, suite prefixes retained the selected guard
+        # more often than the saturated deeper test prefixes. Alternate phases
+        # while preserving every queued observed-I/O plan.
+        pool = suite if state.get('suite_gap', 0) >= 1 and suite else (test or suite)
         phase = 'suite' if pool is suite else 'test'
-        prefer_deep = state.get(phase + '_depth_gap', 0) >= 3
+        prefer_deep = state.get(phase + '_depth_gap', 0) >= 5
         yields: dict[str, list[int]] = {}
         for trial in state['trials']:
             count = yields.setdefault(trial['plan'][0], [0, 0])
