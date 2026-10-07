@@ -14,6 +14,10 @@ if tmux has-session -t "$session" 2>/dev/null; then
   echo "HDFS-54 campaign already active: $session"
   exit 0
 fi
+if [[ -e "$runs/.node1-pilot-active" ]]; then
+  echo 'HDFS-54 node1 pilot owns the next queued plan; merge its checkpoint before node2 resumes' >&2
+  exit 5
+fi
 if tmux list-sessions -F '#S' 2>/dev/null | rg -q '^solr36_37'; then
   echo 'Solr 36/37 node2 session remains active; wait for explicit release' >&2
   exit 3

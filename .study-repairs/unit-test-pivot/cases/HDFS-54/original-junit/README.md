@@ -62,6 +62,35 @@ python3 campaign.py --runs /users/ZhenyuLi/hdfs54-original-campaign/runs \
   --effective-budget 80 --max-faults 8 --attempt-cap 320
 ```
 
+### Optional node1 one-trial handoff
+
+An offline copy of the same 20 MB campaign is staged at
+`/users/ZhenyuLi/hdfs54-original-campaign` on node1. Both copies had
+`campaign-state.json` SHA-256
+`8728827521d8d650325f9801add8d15ba32dd38e3b458860f0ce1029ed256cf8`
+when copied: effective 1, attempts 1, queue 31, `in_flight=null`. The
+unchanged Hadoop test JAR also has the same SHA-256 on both hosts. Scratch,
+ports, and run directories are local to each host; node1 had 32 GiB disk
+and 55 GiB available RAM at staging time.
+
+The node1 path is reserved for **one next queued trial** after SOLR-13 and
+the HDFS storage actor-V2 healthy calibration explicitly release their node1
+slots. Run `reserve_node1_pilot.py` from node0 at that handoff. It verifies
+both checkpoint copies and absence of either HDFS-54 tmux, creates a node2
+`runs/.node1-pilot-active` marker to block `resume_node2.sh`, then writes the
+node1 `runs/.node1-pilot-lease.json`. Any partial reservation fails closed;
+inspect both marker files before retrying.
+`resume_node1_pilot.sh` refuses to run without that lease, validates the
+unchanged 1/80 checkpoint and resource headroom, checks that SOLR-13 and
+actor-V2 tmux sessions have exited, and starts tmux
+`hdfs54_original_node1_pilot` with `campaign.py --once 1`. It consumes a
+queued plan as trial 2; the completed trial 1 is not rerun. HBase-17/32 may
+continue, so compare their timing with the pilot before any further HDFS-54
+node1 work. Node2's original checkpoint must remain unchanged until this
+pilot result is reviewed; if node2 becomes the campaign host, copy the
+updated node1 checkpoint and new trial directory back, verify no duplicate
+plan ID, then remove the node2 marker. Do not resume both copies at once.
+
 ## Interpretation limit
 
 The original JUnit enables block access tokens but does not set up an expired
