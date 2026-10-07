@@ -5,19 +5,15 @@ calibration of the **already known HDFS-17897**. It is not a new bug claim.
 HDFS-11 is the upstream DataNode key-map guard. HDFS-54 is the distinct
 client-side aggregate check whose false outcome fails the original operation.
 
-**Current checklist status: `running_original_junit_supplement`.** The
-unchanged released `TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]`
-had completed one healthy run (17.72 s) and three strictly matched I/O-fault
-trials (17.57 s, 21.065 s, and 17.233 s) at the 04:23:18 UTC snapshot:
-**3/80 effective**. The original test reached the exact line-629 target
-after the final fault in all three trials; all three JUnit runs passed. The
-union of their production JaCoCo probe tokens adds 163 distinct probes over
-the healthy seed. The measured original-JUnit runtime through trial 3 is
-**73.588 s**. The campaign is continuing in node2 tmux
-`hdfs54_original_80`; its live checkpoint and ledger supersede this snapshot.
-See
-[`original-junit/README.md`](original-junit/README.md) for the per-trial
-evidence and the guarded node1/node2 checkpoint handoff.
+**Current checklist status: `quality_complete`.** The unchanged released
+`TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]` campaign completed
+**80/80 effective trials**. Every planned fault sequence applied in order to
+runtime-identified DataNodes and reached the exact line-629 check afterward.
+The healthy and faulted original JUnits took **1333.37 s** combined; admitted
+production JaCoCo feedback added 1349 probe IDs over the healthy seed.
+The tmux/JVM exited after the terminal audit. See
+[`original-junit/README.md`](original-junit/README.md) for the complete
+per-trial evidence and guarded node1/node2 checkpoint handoff.
 
 The live original-JUnit campaign later reached line 629 with
 `completed=false` in trial 28, after planned `IOException` injections on all
@@ -32,7 +28,7 @@ and [`original-junit/trial28-source-review.md`](original-junit/trial28-source-re
 
 The separate XOR-2-1 workload below already reproduced the **known**
 HDFS-17897 mechanism. Its six mutants and 213.541 s are retained as an
-adapted control, excluded from the original-JUnit 3/80 snapshot. The bug mark
+adapted control, excluded from the 80-trial original-JUnit campaign. The bug mark
 `known_HDFS-17897_reproduced` refers to that adapted differential.
 
 ## Selected check and source review
