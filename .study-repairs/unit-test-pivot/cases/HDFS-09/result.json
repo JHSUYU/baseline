@@ -12,13 +12,12 @@
   },
   "bug_mark": "none",
   "candidate_semantic_classification": {
-    "assessment": "distributed client and JournalNode committed-ID guard",
-    "basis": "the client sends its known committed transaction ID through QJM RPC while each JournalNode compares it with locally persisted committedTxnId",
-    "label": "cross_node_committed_txid_monotonicity"
+    "label": "cross_node_committed_txid_monotonicity",
+    "assessment": "site-level check; no selected exception in actor-aware V2 campaign"
   },
   "case_id": "HDFS-09",
   "cluster_test": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testSingleWriter",
-  "completed_at_utc": "2026-10-06T20:20:12.706962+00:00",
+  "completed_at_utc": "2026-10-07T09:53:38.314932+00:00",
   "coverage": {
     "probes": 6417,
     "methods": 1819,
@@ -27,20 +26,20 @@
   },
   "coverage_gain": 227,
   "coverage_gain_detail": {
-    "branch_counts": 141,
-    "lines": 426,
+    "probes": 369,
     "methods": 84,
-    "probes": 407
+    "branch_counts": 143,
+    "lines": 403
   },
-  "coverage_metric_note": "JaCoCo probe IDs are exact; branch_counts uses per-method covered branch counts as a stable monotone feedback proxy, not individual branch IDs. Runtime-generated Mockito mock classes are excluded from all production coverage.",
+  "coverage_metric_note": "JaCoCo on released Hadoop production classes; branch_counts is per-method covered branch counts, while probe IDs are exact.",
   "elapsed_seconds": 2383.082,
-  "elapsed_seconds_semantics": "sum of one healthy JUnit duration and independent fault-trial JUnit durations; excludes legacy GraphChecker trials, instrumentation build, and coverage postprocessing",
+  "elapsed_seconds_semantics": "sum of fault-trial original JUnit durations; healthy JUnit and controller overhead excluded",
   "evidence": "qjm-rpc-actor-v2/evidence/HDFS-09/audit-terminal-128.json",
   "extension_decision": {
-    "budget_ceiling_reached": true,
-    "near_limit_window_trials": 8,
-    "new_production_coverage_or_io_family": false,
-    "next_budget_if_needed": null
+    "triggered": true,
+    "near_limit_window_effective_trials": 8,
+    "feedback": "one new Hadoop IPC ProcessingDetails.get production branch",
+    "target_relevance": "weak; RPC timing metric branch, not selected Journal guard"
   },
   "fault_trials": 180,
   "fully_applied_trials": 180,

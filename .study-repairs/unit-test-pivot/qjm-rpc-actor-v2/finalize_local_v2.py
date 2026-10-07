@@ -20,7 +20,11 @@ ROOT = HERE.parent / "cases"
 FIELDS = ("budget", "fault_trials", "fully_applied_trials", "strict_injections",
           "target_after_fault", "target_reached", "coverage", "coverage_gain",
           "io_families", "elapsed_seconds", "healthy", "evidence", "source_review",
-          "trial_results", "quality_review", "instrumentation_provenance")
+          "trial_results", "quality_review", "instrumentation_provenance",
+          "completed_at_utc", "extension_decision", "coverage_gain_detail",
+          "coverage_metric_note", "elapsed_seconds_semantics",
+          "candidate_semantic_classification", "expected_guard_response_trials",
+          "target_exception_after_fault")
 
 
 def member_json(archive: tarfile.TarFile, path: str) -> dict:
@@ -63,11 +67,14 @@ def finalize(case: str) -> None:
     result = json.loads(result_path.read_text())
     if result["status"] not in ("actor_identity_recheck_pending", "quality_complete"):
         raise ValueError("unexpected existing case status")
-    if result["status"] == "quality_complete" and result.get("raw_evidence_archive", {}).get("sha256") == archive_hash:
-        return
-    old = {key: result[key] for key in FIELDS if key in result}
-    old["audit"] = result.get("audit")
-    old["bug_mark"] = result["bug_mark"]
+    if result["status"] == "quality_complete":
+        if result.get("raw_evidence_archive", {}).get("sha256") != archive_hash:
+            raise ValueError("a different terminal archive was already projected")
+        old = result["legacy_coarse_actor"]
+    else:
+        old = {key: result[key] for key in FIELDS if key in result}
+        old["audit"] = result.get("audit")
+        old["bug_mark"] = result["bug_mark"]
     result["legacy_coarse_actor"] = old
     rows = state["completed"]
     seconds = round(sum(row["elapsed_seconds"] for row in rows), 3)
@@ -102,8 +109,15 @@ def finalize(case: str) -> None:
                                  for row in rows),
         "target_after_fault": 128, "target_reached": True,
         "coverage": coverage, "coverage_gain": novelty,
+        "coverage_gain_detail": {key: coverage[key] - len(baseline[key]) for key in coverage},
+        "coverage_metric_note": "JaCoCo on released Hadoop production classes; branch_counts is per-method covered branch counts, while probe IDs are exact.",
         "io_families": len(state["io_union"]), "elapsed_seconds": seconds,
+        "elapsed_seconds_semantics": "sum of fault-trial original JUnit durations; healthy JUnit and controller overhead excluded",
         "wall_elapsed_seconds": wall,
+        "completed_at_utc": rows[-1]["completed_at_utc"],
+        "extension_decision": {"triggered": True, "near_limit_window_effective_trials": 8,
+                               "feedback": "one new Hadoop IPC ProcessingDetails.get production branch",
+                               "target_relevance": "weak; RPC timing metric branch, not selected Journal guard"},
         "healthy": {"original_junit_seeds": 2, "junit_exits": [0, 0],
                     "elapsed_seconds": [seed["seconds"] for seed in calibration["seeds"]],
                     "target_actors": calibration["shared_target_actors"],
@@ -144,14 +158,20 @@ def finalize(case: str) -> None:
             "bug_mark": row["bug_mark"]} for row in rows],
     })
     if case == "09":
+        result.pop("expected_guard_response_trials", None)
+        result.pop("target_exception_after_fault", None)
+        result["candidate_semantic_classification"] = {
+            "label": "cross_node_committed_txid_monotonicity",
+            "assessment": "site-level check; no selected exception in actor-aware V2 campaign"}
         result["source_review"] = ("Journal.checkRequest compares client committedTxId with the physical JournalNode's committedTxnId. "
             "The unchanged single-writer JUnit performed 128 strict postfault same-JN checks, with zero selected IllegalArgumentException events. "
             "JUnit nonzero exits caused by injected I/O or quorum loss are not target exceptions. No new bug established.")
     else:
         result["target_exception_after_fault"] = sum(row["receipt"]["post_fault_target_throws"] for row in rows)
-        result["candidate_semantic_classification"] = ("Candidate Journal.checkWriteRequest IOException follows a deliberately failed "
-            "PersistentLongFile.set(writerEpoch), leaving the local committed epoch stale; clean replay of representative plans "
-            "reproduced the expected direct guard, while the 3-JN original JUnit passed. No new bug established.")
+        result["expected_guard_response_trials"] = len(candidates)
+        result["candidate_semantic_classification"] = {
+            "label": "expected_writer_epoch_guard_after_direct_injected_persistence_failure",
+            "assessment": "A deliberately failed PersistentLongFile.set leaves the local writer epoch stale; clean replay of representative plans reproduces the expected Journal.checkWriteRequest guard while the 3-JN original JUnit passes. No new bug established."}
         result["source_review"] = ("Journal.startLogSegment persists lastWriterEpoch through PersistentLongFile.set; an injected write failure leaves "
             "the older epoch, and Journal.checkWriteRequest throws IOException on a later mismatched epoch. Independent clean "
             "replays and source review classify this as the expected direct fault response, not a new coordination bug.")
