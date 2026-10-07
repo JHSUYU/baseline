@@ -115,9 +115,13 @@ The raw trace SHA-256 is
 `d0aa02c76244884181fd321723f80fdb48a955f5fe14c82ac37e031c95163485`.
 This is additional evidence for the same selected cache-miss candidate,
 not evidence of a distinct bug; the three-fault plan has not been separately
-replayed. The running campaign checkpoint is on node2 at
-`evidence/campaign-v4/state.json`; completed V4 trials and their measured
-times are recorded there.
+replayed. Node2's campaign checkpoint is frozen after trial 189. The
+single-writer continuation runs on node1 from the verified migration receipt,
+using `evidence/campaign-v4/state.json` there. The node1 V7 amendment adds
+52 healthy-trace-backed `LazyCollectionRef#get` occurrences for SOLR-39;
+it leaves the SOLR-40 target oracle and earlier plans unchanged. The
+boundary, source hashes, raw pilot runs, and actor-drift classification are
+recorded in `evidence/campaign-v4/node1-handoff-calibration/v7-pilot-audit.json`.
 
 ## Isolated cache-refresh control
 
