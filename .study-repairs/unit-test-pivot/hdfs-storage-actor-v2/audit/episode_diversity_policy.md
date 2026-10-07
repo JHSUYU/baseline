@@ -36,3 +36,25 @@ effective same-actor trials, and popped exactly one queue item. Python
 bytecode compilation also passed. Runtime handoff still requires a complete
 original JUnit manifest boundary; after switching, audit the first resumed
 plan, actor/endpoint/target receipt, and absence of duplicate attempt IDs.
+
+## Live handoff and first diversity result
+
+The [handoff receipt](episode_diversity_handoff.json) captures the pre-switch
+checkpoint SHA, both controller SHAs, calibrated overlay SHA, and durable
+manifest SHA. The old controller stopped at 06:37:37 UTC, after original
+JUnit `f42acfa234e9d257e03d` exited with a complete manifest. The new
+wrapper resumed it from that one `attempt-1` artifact and incremented the
+completed sequence count from 97 to 98 without starting that JUnit again.
+Its first newly executed plan `1cc5984f29eaebef0bb2` passed the original
+JUnit in 73.713 seconds, injected the exact ordered faults, and reached the
+same HDFS-34 actor afterward. The independent raw checkpoint audit passed.
+
+At the first fourth-selection boundary (completed count 100), the policy
+chose `32d0d57a268c694f5583`, a one-fault bound NN0 RPC plan on HDFS-34
+startup episode 7. Episode 7 had zero previous effective HDFS-34 trials.
+The original JUnit ran 2026-10-07 06:40:17.962–06:41:00.235 UTC in
+42.273 seconds, exited 0, injected its fault exactly, and then reached the
+HDFS-34 target on the same actor. The audit at 101 completed plans found
+zero identity/ordering/coverage issues and zero novel target-exception
+signatures. This adds one distinct target startup episode without altering
+the 80/8 per-case budget or any completed trial.
