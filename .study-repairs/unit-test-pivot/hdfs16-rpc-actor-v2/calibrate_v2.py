@@ -95,7 +95,8 @@ def inspect(name: str) -> dict:
                   row.get("api", "").endswith(":durable")):
                 observed.append(row)
         elif (event == "TARGET_GUARD" and row.get("site") == SITE and
-              row.get("caller") == "BlockManager.updateLastBlock"):
+              row.get("caller") in ("BlockManager.updateLastBlock",
+                                    "BlockInfo.commitBlock")):
             if not row.get("allowed"):
                 raise ValueError(f"{name}: healthy original target guard failed")
             guards.append(row)

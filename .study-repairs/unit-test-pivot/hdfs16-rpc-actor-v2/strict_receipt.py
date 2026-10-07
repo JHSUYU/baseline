@@ -14,8 +14,10 @@ def audit(events: list[dict], plan: list[list[str]], context: dict) -> dict:
     matched: list[dict] = []
     applied: list[dict] = []
     errors: list[str] = []
-    if context != {"caller": "BlockManager.updateLastBlock",
-                   "block_role": "original_test_file_block"}:
+    if (context.get("caller") not in
+            {"BlockManager.updateLastBlock", "BlockInfo.commitBlock"} or
+            context.get("block_role") != "original_test_file_block" or
+            set(context) != {"caller", "block_role"}):
         errors.append("selected target is not the original single-file update-pipeline phase")
     for event in events:
         kind = event.get("event")

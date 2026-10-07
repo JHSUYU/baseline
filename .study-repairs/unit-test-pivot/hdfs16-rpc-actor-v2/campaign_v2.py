@@ -60,7 +60,8 @@ def relevant(row: dict) -> bool:
 def next_context(trace: list[dict], after: int) -> dict | None:
     guards = [row for row in trace if row.get("event") == "TARGET_GUARD"
               and row.get("site") == SITE and row.get("seq", -1) > after
-              and row.get("caller") == "BlockManager.updateLastBlock"]
+              and row.get("caller") in ("BlockManager.updateLastBlock",
+                                        "BlockInfo.commitBlock")]
     return context(min(guards, key=lambda row: row["seq"])) if guards else None
 
 

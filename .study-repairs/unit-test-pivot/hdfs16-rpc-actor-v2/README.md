@@ -43,8 +43,9 @@ stamp, and guard outcome; `TARGET_EXCEPTION` keeps the same context.
 `strict_receipt.py` requires each ordered fault to have an active same-thread
 DN binding, a registered NN port, and the selected original-test guard
 **after the last fault**. The original JUnit creates a single file and fresh
-block IDs/stamps each run, so the queue stores its stable
-`BlockManager.updateLastBlock` phase, not numeric IDs from a healthy seed.
+block IDs/stamps each run, so the queue stores the stable original-test
+`BlockManager.updateLastBlock` or `BlockInfo.commitBlock` call phase, not
+numeric IDs from a healthy seed.
 Each trial receipt records its concrete postfault block/caller/stamp triples;
 a target exception must match one such triple on the same thread. A target
 exception remains a candidate until source review and a clean same-plan
