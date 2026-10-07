@@ -26,6 +26,11 @@ BASE_EFFECTIVE = 80
 EXTENDED_EFFECTIVE = 128
 BASE_FAULTS = 8
 EXTENDED_FAULTS = 10
+# The locked migration finished two ordinary-depth pilot plans at count 86.
+# Moving the existing 1-in-10 RPC sampling phase to this complete boundary
+# exposes an under-sampled startup episode immediately without raising the
+# long-run exploration fraction or changing any saved fault plan.
+EPISODE_EXPLORATION_PHASE = 86
 
 
 def write_json(path: Path, data: dict) -> None:
@@ -226,7 +231,8 @@ def pick(state: dict) -> dict | None:
                                     "FILE:" in entry["sequence"][-1]["marker"]) else 0
             return (entry["score"] + 300 * deficit - file_penalty,
                     len(entry["sequence"]), -i)
-        if n % 10 == 9:  # preserve the old 10% bound-RPC exploration slot
+        if (n - EPISODE_EXPLORATION_PHASE) % 10 == 0:
+            # Preserve one bound-RPC exploration slot per ten plans.
             rpc = [i for i, entry in enumerate(state["queue"])
                    if "RPC:" in entry["sequence"][-1]["marker"]]
             # A deep queue can otherwise spend nearly all effective trials on

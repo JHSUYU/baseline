@@ -26,6 +26,15 @@ calibrated HDFS-26 episode 15 and HDFS-37 episodes 3/13/21, which the deep
 queue had largely starved. The queue, actor identity, fault cap, coverage
 feedback, and effective denominators are unchanged.
 
+The first two locked-launch pilot plans ended at checkpoint count 86, with
+strict exact faults, original JUnit pass, and same-actor postfault target in
+both. Their episode was still the old depth-dominated 11/5. At that complete
+boundary, the one-in-ten slot was phase-shifted to count 86, 96, 106, and so
+on; the fraction is unchanged. The preceding campaign script SHA-256 is
+`f5d242ab29f5e88c08ee3562352cf42340f092e2bffa411c537d6aed691d2b27`.
+The migration checkpoint count 86 has SHA-256
+`bc3830ea2870c737f0aaf7796170fe1796c92d0b199f966bc7347590ad890a20`.
+
 `run_one_locked.py` holds the node-local `jvm-start.lock` across the Java/disk
 gate and one original JUnit. `guarded_locked_campaign.py` accepts the exact
 legacy checkpoint SHA once, requires the complete boundary, and publishes a
