@@ -99,3 +99,5 @@ and its resumable controller is
 `independent-coverage-io/campaign/run_campaign.py`. Exact target identity
 and oracle must be defined again for each different check; HDFS-08's
 negative result does not transfer to another site.
+The workspace-local static-weave builders, closure scheduler, and its old
+`case.json` were removed; the historical manifests and trial records remain.

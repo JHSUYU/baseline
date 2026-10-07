@@ -79,3 +79,5 @@ The earlier 24 graph-based trials remain excluded.
 The old graph-based execution script has been removed. The current case
 runner and resumable controller are `independent/run_original.py` and
 `independent/campaign.py`; the historical result and raw evidence remain.
+The workspace-local graph builders and closure-based trial controllers have
+also been removed.
