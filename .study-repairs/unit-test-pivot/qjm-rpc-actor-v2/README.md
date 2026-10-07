@@ -79,7 +79,10 @@ new effective denominator starts at zero.
 selected plan from its complete immutable manifest; an interrupted run without
 one retains its raw directory and receives a new attempt ID. It checks
 `jvm.pid` before rescheduling, so a surviving JVM cannot overlap its retry.
-Place `campaign-v2/PAUSE` to stop at the next JUnit boundary. The controller
+Place `campaign-v2/PAUSE` to stop at the next JUnit boundary. Before each new
+JUnit, the controller requires fewer than five existing Java processes and at
+least 8 GiB free disk by default; `--wait-for-resources` keeps the tmux worker
+at its checkpoint until these conditions return. The controller
 selects observed actor-bound RPC/file I/O preceding the exact target, applies
 faults in order, and mutates from newly observed I/O in effective trials. It
 prioritizes new production method/branch and I/O-family feedback. A trial is
@@ -88,9 +91,12 @@ effective only when every planned fault applies and the selected
 throw remains a candidate, pending source review and clean replay.
 
 The initial budget is 80 effective trials, at most eight faults per sequence,
-with a 160-attempt cap. If any of the last eight effective trials adds method,
+with a 320-attempt cap. If any of the last eight effective trials adds method,
 branch, or I/O-family coverage, the same checkpoint extends to 128 effective,
-at most ten faults and a 256-attempt cap. Queue exhaustion and attempt cap are
+at most ten faults and a 512-attempt cap. The HDFS-07 pilot was first created
+under the former 160/256 caps; `migrate_budget_v2.py` changed only its attempt
+cap at the audited 3/3 checkpoint, with before/after SHA receipt, preserving
+the three completed trials. Queue exhaustion and attempt cap are
 explicit terminal statuses, not 80/128 completion. `audit_campaign_v2.py`
 recomputes exact actor/target and coverage/I/O receipts from raw artifacts and
 reports checkpoint or SHA mismatches.

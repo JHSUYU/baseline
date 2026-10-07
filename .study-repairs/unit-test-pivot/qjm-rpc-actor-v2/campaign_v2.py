@@ -9,8 +9,10 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
+import time
 
 from build_offline import HERE
 from strict_receipt import RPC, SITES, actor, audit
@@ -130,7 +132,7 @@ def initialize(case: str, root: Path, checkpoint: Path) -> dict:
         raise RuntimeError("two V2 original JUnit healthy seeds not calibrated")
     state = {"case": f"HDFS-{case}", "version": 2, "status": "running",
              "started_at_utc": utc(), "legacy_trials_imported": 0,
-             "budget": {"effective": 80, "max_faults": 8, "attempt_cap": 160,
+             "budget": {"effective": 80, "max_faults": 8, "attempt_cap": 320,
                         "extension_effective": 128, "extension_max_faults": 10},
              "queue": [], "current": None, "completed": [], "seen": [],
              "coverage_union": {key: [] for key in
@@ -260,7 +262,7 @@ def finish(state: dict, item: dict, root: Path, checkpoint: Path,
     if len(accepted) >= 80 and state["budget"]["effective"] == 80:
         if any(r["new_coverage_method_branch"] or r["new_io_families"]
                for r in accepted[-8:]):
-            state["budget"].update(effective=128, max_faults=10, attempt_cap=256)
+            state["budget"].update(effective=128, max_faults=10, attempt_cap=512)
         else:
             state["status"] = "budget_complete_80"
     if len(accepted) >= state["budget"]["effective"]:
@@ -317,9 +319,13 @@ def main() -> None:
     parser.add_argument("--init", action="store_true")
     parser.add_argument("--once", type=int, default=0,
                         help="at most N selected plans; N=0 starts no JUnit")
+    parser.add_argument("--max-existing-jvms", type=int, default=4)
+    parser.add_argument("--min-disk-gib", type=int, default=8)
+    parser.add_argument("--wait-for-resources", action="store_true",
+                        help="stay in tmux and retry resource gate at a JUnit boundary")
     args = parser.parse_args()
-    if args.once < 0:
-        parser.error("--once must be nonnegative")
+    if args.once < 0 or args.max_existing_jvms < 0 or args.min_disk_gib < 0:
+        parser.error("run and resource limits must be nonnegative")
     root = HERE / "evidence" / f"HDFS-{args.case}"
     checkpoint = root / "campaign-v2/checkpoint.json"
     lock_path = root / "campaign-v2/lock"
@@ -333,12 +339,27 @@ def main() -> None:
                 "effective": sum(r["effective"] for r in state["completed"]),
                 "queued": len(state["queue"])}))
             return
-        for _ in range(args.once):
+        selected = 0
+        while selected < args.once:
             if (root / "campaign-v2/PAUSE").exists():
                 break
+            java = subprocess.run(["pgrep", "-x", "java"], capture_output=True,
+                                  text=True, check=False)
+            active_jvms = len(java.stdout.splitlines())
+            free_gib = shutil.disk_usage(root).free / (1024 ** 3)
+            if (active_jvms > args.max_existing_jvms or
+                    free_gib < args.min_disk_gib):
+                print(json.dumps({"status": "resource_guard_wait",
+                    "active_jvms": active_jvms, "free_gib": round(free_gib, 2)}),
+                    flush=True)
+                if not args.wait_for_resources:
+                    break
+                time.sleep(15)
+                continue
             row = step(state, root, checkpoint, args.case)
             if row is None:
                 break
+            selected += 1
             print(json.dumps({"run": row["run"], "effective": row["effective"],
                               "seconds": row["elapsed_seconds"],
                               "candidate": row["candidate"],
