@@ -19,6 +19,17 @@ See
 [`original-junit/README.md`](original-junit/README.md) for the per-trial
 evidence and the guarded node1/node2 checkpoint handoff.
 
+The live original-JUnit campaign later reached line 629 with
+`completed=false` in trial 28, after planned `IOException` injections on all
+nine located DataNodes of one striped block group. Source review classifies
+that observation as the expected all-DN failure path; an identical-plan clean
+replay is pending. It is **not** counted as a new bug or as the stale-key
+HDFS-17897 reproduction. To make this nine-DN branch reachable, the
+case-specific fault cap increased from 8 to 10 after 22 effective trials,
+without resetting the 80-trial budget or replaying a completed run. See
+[`original-junit/max10-boundary-receipt.json`](original-junit/max10-boundary-receipt.json)
+and [`original-junit/trial28-source-review.md`](original-junit/trial28-source-review.md).
+
 The separate XOR-2-1 workload below already reproduced the **known**
 HDFS-17897 mechanism. Its six mutants and 213.541 s are retained as an
 adapted control, excluded from the original-JUnit 3/80 snapshot. The bug mark

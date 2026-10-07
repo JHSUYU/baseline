@@ -108,14 +108,32 @@ def score(candidate, state):
     novelty = parent.get("coverage_gain", {}) if parent else {}
     n = len(candidate["faults"])
     last = candidate["faults"][-1]
-    new_io = (last["dnRole"], last["site"]) not in set(
-        map(tuple, state["global_io_sites"]))
-    # Short runs and coverage gain help throughput. Waiting prevents starvation.
-    return (1000 * new_io + 25 * novelty.get("probes", 0)
-            + 50 * novelty.get("methods", 0)
-            + 2 * novelty.get("branch_counts", 0)
-            + 40 * min(n, 6) - 20 * max(0, n - 6)
-            + 20 * (len(state["attempts"]) - candidate["added_round"])
+    applied_families = [fault for row in state["attempts"]
+                        if row.get("strict_ordered")
+                        and row.get("applied") == row.get("requested")
+                        for fault in row["faults"]]
+    prior_roles = {fault["dnRole"] for fault in applied_families}
+    prior_role_sites = {(fault["dnRole"], fault["site"])
+                        for fault in applied_families}
+    prior_role_site_types = {(fault["dnRole"], fault["site"], fault["type"])
+                             for fault in applied_families}
+    role_site = (last["dnRole"], last["site"])
+    family = (*role_site, last["type"])
+    distinct_roles = len({fault["dnRole"] for fault in candidate["faults"]})
+    wait_rounds = len(state["attempts"]) - candidate["added_round"]
+    # The original RS-6+3 checksum may need all nine located DNs to fail.
+    # Favor new actor/site families and deep sequences, while capping one
+    # parent's coverage windfall so its many sibling exception variants do
+    # not consume the whole budget. Bounded wait credit retains exploration.
+    return (900 * (last["dnRole"] not in prior_roles)
+            + 700 * (role_site not in prior_role_sites)
+            + 120 * (family not in prior_role_site_types)
+            + 20 * min(novelty.get("probes", 0), 30)
+            + 40 * min(novelty.get("methods", 0), 10)
+            + 2 * min(novelty.get("branch_counts", 0), 40)
+            + 140 * min(n, 9) - 180 * max(0, n - 9)
+            + 160 * distinct_roles + 1500 * (n >= 9)
+            + min(400, 10 * wait_rounds)
             - (parent.get("seconds", 0) / 10 if parent else 0))
 
 

@@ -450,11 +450,26 @@
     "campaign_queue_pending": 60,
     "progress_snapshot_utc": "2026-10-07T04:23:18Z",
     "campaign_effective_budget": 80,
-    "campaign_max_faults": 8,
+    "campaign_max_faults": 10,
+    "campaign_initial_max_faults": 8,
+    "case_specific_cap_change": "After 22 effective original-JUnit trials, max faults increased from 8 to 10 within the same 80-effective budget. Source has nine located DNs; all-nine failure at line 629 requires at least nine single-I/O faults. Trial 23 was reconciled once at a complete JUnit boundary without resetting state.",
+    "cap_change_receipt": "original-junit/max10-boundary-receipt.json",
     "campaign_runtime_root": "node2:/users/ZhenyuLi/hdfs54-original-campaign/runs (live tmux hdfs54_original_80; resumed at trial 3 after verified 2/80 handoff)",
     "receipt": "original-junit/pilot-receipt.json",
     "node1_second_trial_receipt": "original-junit/node1-trial2-receipt.json",
     "node2_handoff_receipt": "original-junit/node2-handoff-receipt.json",
+    "target_false_candidate": {
+      "trial": 28,
+      "plan_id": "e080d9f78ce80f65",
+      "requested_matched_applied": "9/9/9",
+      "target_after_final_fault": true,
+      "target_completed": false,
+      "original_junit_failed": true,
+      "review": "source_expected_all_nine_data_nodes_faulted; clean_replay_pending",
+      "not_counted_as_new_bug": true,
+      "not_counted_as_known_hdfs17897_reproduction": true,
+      "source_review": "original-junit/trial28-source-review.md"
+    },
     "interpretation": "The original test reaches the selected check with native checksum RPC faults. Its synthetic InvalidEncryptionKeyException does not establish an actual expired DataNode allKeys state; the adapted known-bug control remains separate."
   }
 }

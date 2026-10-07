@@ -162,6 +162,18 @@ def run(output, plan, timeout, keep_scratch):
                 "coverage": coverage, "trace": str(trace), "junit_log": str(log)}
     (output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     print(json.dumps(manifest))
+    # A controller can request a checkpoint boundary while the fuzzing loop is
+    # already running. Stop only after JUnit, trace, JaCoCo and manifest are
+    # complete; the parent can then resume this in-flight result without
+    # repeating the original JUnit. This file is case-local and opt-in.
+    pause_marker = output.parent / ".pause-after-junit"
+    if pause_marker.exists():
+        ready = output.parent / ".pause-ready"
+        ready.write_text(json.dumps({"run": str(output),
+                                     "manifest_sha256": digest(output / "manifest.json")}) + "\n")
+        while pause_marker.exists():
+            time.sleep(0.1)
+        ready.unlink(missing_ok=True)
 
 
 def main():

@@ -56,9 +56,19 @@ time. Every run gets a fresh JUnit MiniDFSCluster. `campaign-state.json` is
 written atomically, `trial-ledger.csv` records time and outcome, and individual
 trial directories retain trace, log, JaCoCo execution data, coverage tokens,
 plan, and manifest. The campaign can resume without repeating completed
-plans. Initial budget: 80 effective trials and at most 8 faults per plan;
-conditional extension: 128 effective and at most 10 faults. An attempt cap
-keeps repeated nondeterministic misses bounded.
+plans. The initial budget was 80 effective trials with at most 8 faults per
+plan. After 22 effective trials, a case-specific source requirement raised
+the cap to **10 faults within that same 80-effective budget**. The original
+default RS-6+3 block group has nine located DNs; line 629 can become false
+only after all nine checksum attempts fail. The old max-8 cap cannot reach
+that state through one I/O fault per DN. Trial 23's already completed raw
+JUnit was reconciled once at a post-JUnit checkpoint boundary; no effective
+counter or plan was reset. The updated scorer prioritizes untested DN role ×
+I/O site × exception families, distinct roles and depth up to nine, while
+retaining production coverage and bounded waiting credit. See
+[`max10-boundary-receipt.json`](max10-boundary-receipt.json). The separate
+128-effective extension remains conditional on feedback. An attempt cap
+keeps nondeterministic misses bounded.
 
 After the node2 owner explicitly releases its JVM slot, reconcile the node1
 2/80 checkpoint and trial-2 evidence onto node2, verify both trial IDs and
@@ -72,7 +82,7 @@ The direct command, for inspection, is:
 ```bash
 cd /users/ZhenyuLi/hdfs54-original-campaign
 python3 campaign.py --runs /users/ZhenyuLi/hdfs54-original-campaign/runs \
-  --effective-budget 80 --max-faults 8 --attempt-cap 320
+  --effective-budget 80 --max-faults 10 --attempt-cap 320
 ```
 
 ### Optional node1 one-trial handoff
@@ -142,6 +152,14 @@ postfault target `completed=true`; it added one production JaCoCo probe.
 See [`node2-handoff-receipt.json`](node2-handoff-receipt.json). The campaign
 continues under tmux, and its node2 `campaign-state.json` and
 `trial-ledger.csv` are the live source of progress.
+
+Trial 28 (`e080d9f78ce80f65`) applied nine `IOException` faults on nine
+distinct located DNs for the same block group, then observed exact line 629
+`completed=false` and original JUnit failure. The raw trace and released
+source show the expected outcome when **all** checksum sources fail. It is a
+separate target-false candidate observation, not evidence of the stale-key
+mechanism or a new bug. Its clean identical-plan replay is queued after the
+live campaign. See [`trial28-source-review.md`](trial28-source-review.md).
 
 ## Interpretation limit
 

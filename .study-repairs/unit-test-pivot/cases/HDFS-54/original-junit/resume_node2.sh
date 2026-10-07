@@ -48,5 +48,5 @@ print('Resuming HDFS-54:', state['effective'], 'effective,',
 PY
 
 tmux new-session -d -s "$session" \
-  "cd '$here' && nice -n 10 python3 campaign.py --runs '$runs' --effective-budget 80 --max-faults 8 --attempt-cap 320 >> '$here/campaign.log' 2>&1"
+  "cd '$here' && nice -n 10 python3 campaign.py --runs '$runs' --effective-budget 80 --max-faults 10 --attempt-cap 320 >> '$here/campaign.log' 2>&1"
 echo "Started node2 tmux session $session"

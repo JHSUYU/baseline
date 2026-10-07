@@ -1,0 +1,65 @@
+{
+  "case_id": "HDFS-54",
+  "source_reason": "Released TestFileChecksum uses default RS-6+3; FileChecksumHelper.java:651-672 tries each of nine located DataNodes and returns false only if no tryDatanode completes. Eight single-I/O faults cannot fail all nine roles in one block group.",
+  "source_files": [
+    "hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileChecksum.java:63-66,104-112",
+    "hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/StripedFileTestUtil.java:581-583",
+    "hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/protocol/SystemErasureCodingPolicies.java:46-49,78-81",
+    "hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java:627-632,651-672"
+  ],
+  "original_budget": {"effective": 80, "max_faults": 8, "attempt_cap": 320},
+  "case_specific_budget_after_boundary": {"effective": 80, "max_faults": 10, "attempt_cap": 320},
+  "preserved_pre_boundary_state": {
+    "effective": 22,
+    "attempts": 22,
+    "max_faults": 8,
+    "in_flight_plan_id": "ede0952d50a9aa99",
+    "in_flight_run": "node2:/users/ZhenyuLi/hdfs54-original-campaign/runs/trial-0023-ede0952d50a9aa99-r0",
+    "in_flight_manifest_sha256": "75322c4efd31ffd17189021c93ec5f1049417294926a822b33744bfc82551ce9",
+    "checkpoint_sha256": null,
+    "checkpoint_hash_note": "The pre-migration JSON SHA was not captured before the atomic checkpoint write; effective/attempt/plan identity and complete raw manifest were verified before stopping the controller."
+  },
+  "boundary_method": "Case-local run_original.py held after the original JUnit JVM, trace, JaCoCo and manifest completed. Only the waiting HDFS campaign parent was terminated; the pause marker was then cleared. The existing in_flight manifest was summarized on resume without re-running trial 23.",
+  "post_boundary_files_sha256": {
+    "campaign.py": "f8f4b7d3c8ae686ce40d551c72d7b78d0f401045ad80fa3727bc0d6d8cf87f89",
+    "resume_node2.sh": "4ccaa8ecf0aba00d3635715ce75b9e2c03eec18a4ae9039b04bb5d70459ef8c",
+    "run_original.py": "b68eaf6009cba00c3b6de82cb630077a16827006fcdb707715417cf996b87338"
+  },
+  "trial23_reconciled_once": {
+    "plan_id": "ede0952d50a9aa99",
+    "count_in_attempts": 1,
+    "requested_faults": 4,
+    "matched_faults": 4,
+    "applied_faults": 4,
+    "fault_data_node_roles": [0, 1, 2, 3],
+    "fault_data_node_uuids": [
+      "d512e469-4e02-4fe1-95a6-140f04c6bdc7",
+      "56d004e2-f5f2-4a24-880b-300fe2ebfb73",
+      "7e653bb8-9bc5-449c-876f-e0292d9af0ce",
+      "b54dc028-e52a-4205-b530-6d7973e378d7"
+    ],
+    "target_site": "FileChecksumHelper$StripedFileNonStripedChecksumComputer.checksumBlocks#L629",
+    "target_trace_seq": 24,
+    "target_after_final_fault": true,
+    "target_completed": true,
+    "junit_exit": 0,
+    "junit_failures": 0,
+    "elapsed_seconds": 18.856,
+    "raw_sha256": {
+      "manifest.json": "75322c4efd31ffd17189021c93ec5f1049417294926a822b33744bfc82551ce9",
+      "runtime_trace.jsonl": "781974efad948f3e085bf2775f66cbf18d8542279c9f1cc5e23a9563d295239f",
+      "jacoco.exec": "fa6a872927a015e4abd2311de7d9582836aa38599a7edd397c5fdebba1c01316",
+      "junit.log": "eb27aca140995dfd08b7cd02d63feeb4436bb262a6fd36b88853439fd94becc3"
+    }
+  },
+  "verified_post_resume_snapshot": {
+    "effective": 24,
+    "attempts": 24,
+    "max_faults": 10,
+    "effective_budget": 80,
+    "in_flight_plan_id": "0880c534bbaf6ca0",
+    "checkpoint_sha256": "14f7b6d67708838aee76c7f6967bc44d9014892c99fbf02259e54d4ef6652e28"
+  },
+  "scoring_change": "Prioritize untested DataNode role × I/O site × exception families, distinct roles, and depth up to nine; cap a parent's coverage windfall, retain coverage feedback and bounded waiting credit.",
+  "bug_classification": "No target-false outcome at migration; the adapted HDFS-17897 known-bug control remains separate."
+}
