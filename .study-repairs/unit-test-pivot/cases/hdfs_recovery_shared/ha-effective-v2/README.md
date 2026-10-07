@@ -130,7 +130,11 @@ handoff if the independent audit finds any inconsistency.
 The handoff retains the complete `completed`, `queue`, and `seen` lists. It
 records a five-slot scheduler with four RPC slots and one file-I/O slot,
 considering only queued sequences relevant to unfinished target checks when
-available. It preserves the original per-case 80/128 effective goals and
+available. Once HDFS-29 and HDFS-30 have each reached 80 effective trials,
+it prioritizes a queued plan eligible for HDFS-28 within the selected RPC
+or file lane while HDFS-28 is still below its own goal. This keeps a file
+exploration slot and does not add any old-phase attempts to the denominators.
+It preserves the original per-case 80/128 effective goals and
 fault-depth rules. If the old controller stopped at its 320-attempt cap, it
 extends the existing conditional ceiling to 512 cumulative attempts. A
 candidate target exception, a met effective budget, an active trial, an

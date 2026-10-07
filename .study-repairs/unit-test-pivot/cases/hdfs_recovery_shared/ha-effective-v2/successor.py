@@ -28,7 +28,7 @@ HERE = Path(__file__).resolve().parent
 STATE = HERE / "checkpoint.json"
 INTENT = HERE / "successor-handoff-intent.json"
 RECEIPT = HERE / "successor-handoff-receipt.json"
-POLICY = "four_rpc_one_file_target_eligible"
+POLICY = "four_rpc_one_file_target_eligible_focus28_after_peer80"
 MIN_FREE_BYTES = 10 * 1024**3
 
 
@@ -64,12 +64,15 @@ def lane(point: dict) -> str:
 
 
 def choose(state: dict) -> int:
-    """Choose four RPC slots and one file slot per five successor attempts."""
+    """Choose four RPC slots and one file slot, favoring HDFS-28 after peer 80s."""
     completed = state["completed"]
     queue = state["queue"]
     counts = campaign.effective(state)
     deficit = {case for case in campaign.CASES
                if len(counts[case]) < state["goals"][case]}
+    focus_28 = (len(counts["HDFS-29"]) >= campaign.BASE
+                and len(counts["HDFS-30"]) >= campaign.BASE
+                and "HDFS-28" in deficit)
     relevant = [i for i, item in enumerate(queue)
                 if deficit.intersection(item["eligible"])]
     pool = relevant if relevant else list(range(len(queue)))
@@ -86,6 +89,7 @@ def choose(state: dict) -> int:
     types = Counter(t["sequence"][-1]["faultType"] for t in completed)
     families = Counter(campaign.family(t["sequence"][-1]) for t in completed)
     return max(pool, key=lambda i: (
+        int(focus_28 and "HDFS-28" in queue[i]["eligible"]),
         len(deficit.intersection(queue[i]["eligible"])),
         -types[queue[i]["sequence"][-1]["faultType"]],
         -families[campaign.family(queue[i]["sequence"][-1])],
