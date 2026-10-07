@@ -34,6 +34,8 @@ BASE_ATTEMPTS, BASE_VALID_PER_SITE, BASE_FAULTS = 720, 80, 8
 EXTENDED_ATTEMPTS, EXTENDED_VALID_PER_SITE, EXTENDED_FAULTS = 1152, 128, 10
 V4_SCHEDULER_SHA256 = "0ad2cc385e4839af4be8ebadc72eac24262b95f2cc083c1eb7469f62e8f79742"
 V7_SCHEDULER_SHA256 = "15b4a3a5d6351163b15bd10aa9184edc059ca86efee545a134642661cc933a68"
+V8_SCHEDULER_SHA256 = "a3cb548fec2807323df258dbd1f649162ec177d86c44738aa91048decb5a6b8e"
+HANDOFF_HEALTHY = "campaign-v4/node1-handoff-calibration/actor"
 
 
 def relevant(key: tuple[str, str, str, str]) -> bool:
@@ -169,11 +171,12 @@ def seed_target_sites(traces: list[list[dict]]) -> dict[str, list[str]]:
     return {plan: sorted(sites) for plan, sites in site_map.items() if sites}
 
 
-def untested_lazy_roots(state: dict, traces: list[list[dict]]) -> dict[str, list[dict]]:
+def untested_lazy_roots(state: dict, traces: list[list[dict]],
+                        names: tuple[str, ...] = HEALTHY) -> dict[str, list[dict]]:
     """Find real healthy I/O occurrences that precede SOLR-39 on one live reader."""
     known = set(state["seen_plans"]) | {";".join(plan) for plan in state["queue"]}
     observed = defaultdict(list)
-    for name, trace in zip(HEALTHY, traces):
+    for name, trace in zip(names, traces):
         targets = [event for event in trace if event["kind"] == "TARGET_CHECK" and
                    len(event["parts"]) > 1 and event["parts"][1] == "SOLR-39"]
         counts = Counter()
@@ -348,7 +351,7 @@ def pick(state: dict) -> list[str]:
     # healthy actor/target trace establishes the same-client relation.
     if (state.get("scheduler_version") in
             ("solr39_root_balance_v5", "solr39_lazy_occurrence_v7",
-             "solr39_lazy_retry_v8") and
+             "solr39_lazy_retry_v8", "solr39_handoff_roots_v9") and
             state["site_progress"]["SOLR-39"]["effective"] <
             state["site_progress"]["SOLR-39"]["goal"] and number % 2 == 0):
         targeted = state.get("seed_target_sites", {})
@@ -375,7 +378,8 @@ def pick(state: dict) -> list[str]:
             # V8 exhausts distinct healthy roots before bounded replays of
             # exact selectors whose fault succeeded but missed this reader.
             replay = (int(selector in seen)
-                      if state.get("scheduler_version") == "solr39_lazy_retry_v8" else 0)
+                      if state.get("scheduler_version") in
+                      ("solr39_lazy_retry_v8", "solr39_handoff_roots_v9") else 0)
             candidates.append((family, replay, ordinal, index))
         if candidates:
             return queue.pop(min(candidates)[3])
@@ -401,7 +405,8 @@ def migrate_root_balance(state: dict) -> None:
     """Document the actor-retaining scheduler change without recounting trials."""
     if state.get("scheduler_version") in ("solr39_root_balance_v5",
                                           "solr39_lazy_occurrence_v7",
-                                          "solr39_lazy_retry_v8"):
+                                          "solr39_lazy_retry_v8",
+                                          "solr39_handoff_roots_v9"):
         return
     if state["inflight"] is not None:
         return  # Finish the already selected plan before changing selection.
@@ -429,7 +434,8 @@ def migrate_reader_schedule(state: dict) -> None:
     """Annotate a stopped pilot checkpoint without replaying any old trial."""
     if state.get("scheduler_version") in ("balanced_watch_reads_v4", "solr39_root_balance_v5",
                                           "solr39_lazy_occurrence_v7",
-                                          "solr39_lazy_retry_v8"):
+                                          "solr39_lazy_retry_v8",
+                                          "solr39_handoff_roots_v9"):
         return
     if state["inflight"] is not None:
         raise RuntimeError("Scheduler migration requires a completed-trial boundary")
@@ -484,7 +490,8 @@ def migrate_reader_retries(state: dict) -> None:
 def migrate_lazy_occurrences(state: dict) -> None:
     """Add untried healthy same-reader watch occurrences; retain the V5 queue."""
     if state.get("scheduler_version") in ("solr39_lazy_occurrence_v7",
-                                          "solr39_lazy_retry_v8"):
+                                          "solr39_lazy_retry_v8",
+                                          "solr39_handoff_roots_v9"):
         return
     if state.get("scheduler_version") != "solr39_root_balance_v5" or state["inflight"] is not None:
         raise RuntimeError("Lazy occurrence migration requires a stopped V5 trial boundary")
@@ -540,7 +547,8 @@ def target_linked_lazy_root(plan: list[str], state: dict) -> bool:
 def migrate_lazy_retries(state: dict) -> None:
     """Backfill bounded replays only for exactly injected, ineffective roots."""
     receipt_path = CAMPAIGN / "lazy-retry-migration-v8.json"
-    if state.get("scheduler_version") == "solr39_lazy_retry_v8":
+    if state.get("scheduler_version") in ("solr39_lazy_retry_v8",
+                                          "solr39_handoff_roots_v9"):
         if not receipt_path.exists():
             raise RuntimeError("V8 checkpoint lacks immutable migration receipt")
         return
@@ -619,7 +627,8 @@ def migrate_lazy_retries(state: dict) -> None:
 
 def schedule_lazy_retry(state: dict, trial: dict) -> bool:
     """Retry an exact root only when SOLR-39 missed this live reader."""
-    if (state.get("scheduler_version") != "solr39_lazy_retry_v8" or
+    if (state.get("scheduler_version") not in
+            ("solr39_lazy_retry_v8", "solr39_handoff_roots_v9") or
             state["site_progress"]["SOLR-39"]["effective"] >=
             state["site_progress"]["SOLR-39"]["goal"] or
             not target_linked_lazy_root(trial["plan"], state) or
@@ -635,6 +644,75 @@ def schedule_lazy_retry(state: dict, trial: dict) -> bool:
     counts[selector] = counts.get(selector, 0) + 1
     state["queue"].append(list(trial["plan"]))
     return True
+
+
+def migrate_handoff_healthy_roots(state: dict) -> None:
+    """Append only new same-reader roots from the existing original no-fault JUnit."""
+    receipt_path = CAMPAIGN / "handoff-healthy-roots-v9.json"
+    if state.get("scheduler_version") == "solr39_handoff_roots_v9":
+        if not receipt_path.exists():
+            raise RuntimeError("V9 checkpoint lacks immutable migration receipt")
+        return
+    if (state.get("scheduler_version") != "solr39_lazy_retry_v8" or
+            state["inflight"] is not None):
+        raise RuntimeError("Handoff healthy root migration requires a stopped V8 trial boundary")
+    source = EVIDENCE / HANDOFF_HEALTHY
+    manifest = json.loads((source / "manifest.json").read_text())
+    baseline = json.loads((EVIDENCE / HEALTHY[0] / "manifest.json").read_text())
+    build_sha = hashlib.sha256((CASE / "build-receipt.json").read_bytes()).hexdigest()
+    identity_fields = ("build_receipt_sha256", "source_commit",
+                       "original_test_class_sha256", "actor_probe_class_sha256")
+    if (any(manifest.get(key) != baseline.get(key) for key in identity_fields) or
+            manifest.get("build_receipt_sha256") != build_sha or
+            manifest.get("original_classes") is not False or
+            manifest.get("faults") != "" or manifest.get("exit_code") != 0):
+        raise RuntimeError("Handoff no-fault JUnit differs from the campaign binary")
+    trace = events(source / "events.tsv")
+    before_queue = list(state["queue"])
+    ledger = {"trials": state["trials"], "seen_plans": state["seen_plans"]}
+    canonical = lambda value: json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    ledger_sha = hashlib.sha256(canonical(ledger)).hexdigest()
+    before_state_sha = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    roots = untested_lazy_roots(state, [trace], names=(HANDOFF_HEALTHY,))
+    if not roots:
+        raise RuntimeError("No untested same-reader handoff healthy roots")
+    target_sites = seed_target_sites([trace])
+    for selector_name in roots:
+        if "SOLR-39" not in target_sites.get(selector_name, []):
+            raise RuntimeError("Root lost its verified same-reader SOLR-39 target")
+        sites = set(state["seed_target_sites"].get(selector_name, []))
+        state["seed_target_sites"][selector_name] = sorted(sites | set(target_sites[selector_name]))
+        state["queue"].append([selector_name])
+    if (state["queue"][:len(before_queue)] != before_queue or
+            hashlib.sha256(canonical({"trials": state["trials"],
+                                      "seen_plans": state["seen_plans"]})).hexdigest() != ledger_sha):
+        raise RuntimeError("V9 migration changed the old queue prefix or trial ledger")
+    state["scheduler_version"] = "solr39_handoff_roots_v9"
+    receipt = {
+        "trials_before": len(state["trials"]),
+        "effective_before": {site: state["site_progress"][site]["effective"] for site in CASES},
+        "state_sha256_before": before_state_sha,
+        "ledger_sha256_before_and_after": ledger_sha,
+        "queue_sha256_before": hashlib.sha256(canonical(before_queue)).hexdigest(),
+        "queue_sha256_after": hashlib.sha256(canonical(state["queue"])).hexdigest(),
+        "queue_length_before": len(before_queue),
+        "queue_length_after": len(state["queue"]),
+        "queue_prefix_preserved": True,
+        "source_trace": str((source / "events.tsv").relative_to(CASE)),
+        "source_trace_sha256": hashlib.sha256((source / "events.tsv").read_bytes()).hexdigest(),
+        "source_manifest_sha256": hashlib.sha256((source / "manifest.json").read_bytes()).hexdigest(),
+        "source_binary_identity": {key: manifest[key] for key in identity_fields},
+        "source_faults": manifest["faults"],
+        "source_exit_code": manifest["exit_code"],
+        "old_scheduler_sha256": V8_SCHEDULER_SHA256,
+        "new_scheduler_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "new_root_count": len(roots), "new_roots": roots,
+    }
+    state["handoff_healthy_root_expansion"] = {key: value for key, value in receipt.items()
+                                                if key != "new_roots"}
+    atomic_json(STATE, state)
+    receipt["state_sha256_after"] = hashlib.sha256(STATE.read_bytes()).hexdigest()
+    atomic_json(receipt_path, receipt)
 
 
 def schedule_reader_retry(state: dict, trial: dict) -> bool:
@@ -719,6 +797,7 @@ def run(max_new_trials: int | None = None) -> None:
             (CAMPAIGN / "node1-handoff-calibration/handoff-calibration.json").exists()):
         migrate_lazy_occurrences(state)
         migrate_lazy_retries(state)
+        migrate_handoff_healthy_roots(state)
     starting_trials = len(state["trials"])
     reclaim_completed_scratch(state)
     update_stop_reasons(state)

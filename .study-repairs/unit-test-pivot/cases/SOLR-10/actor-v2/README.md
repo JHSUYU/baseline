@@ -260,3 +260,33 @@ queued for one final bounded retry. Neither pilot trial counted as effective.
 The full continuation runs in node1 tmux `solr103940_v8_full` and stops at
 each check's effective budget or a recorded queue/attempt limit. The
 per-check result records and 104-row checklist report current counts.
+
+## V9 existing healthy calibration roots, 2026-10-07
+
+The node1 migration gate had already run the unchanged original JUnit once
+without faults using the same Solr 8.11.4 source, test class, build, and
+actor hook as V8. Its actor trace was not among the two V7 seed traces.
+Rechecking every I/O occurrence against a later SOLR-39 target on the same
+live client and alias manager found 33 untried `LazyCollectionRef#get`
+`/state.json` selectors. V9 adds only these healthy-observed single-fault
+roots and their verified target-site metadata. It preserves the prior queue
+prefix, all completed trials, seen-plan ledger, budget, original JUnit,
+fault hook, runtime identity gate, and target oracle. The existing V8 bounded
+retry rule remains active for these roots.
+
+The V8 full run finished trial 419 before a temporary gate intercepted the
+unstarted trial 420. The V9 receipt
+`evidence/campaign-v4/handoff-healthy-roots-v9.json` records state SHA-256
+`8bccc72886d1599b0c8b8ad27e3ca20fa6fb69e1e52580e98770f7dc876fa6f3`
+before and `217b584e80385859d1611900e2bf5bf54cf462db69f2ae00ffdac89cb4787bcd`
+after migration, the unchanged completed/seen ledger SHA-256
+`63ea3b353d29df35202d3f065d44b0713600c9ad557c6a8e6881a6b7514bafa3`,
+and queue length 928 to 961 with its first 928 entries preserved. Its
+healthy source trace SHA-256 is
+`fa1bed9b41c35457d8a2e7afdddc6ae91284d8fc6525423ab8e2dae25635c9c0`.
+Each new root includes the source I/O and later target sequence numbers and
+the matching live actor identity. The separate two-trial pilot audit at
+`evidence/campaign-v4/node1-handoff-calibration/v9-pilot-audit.json`
+recomputed strict injection and target gates from raw traces. Both faults
+injected exactly, neither took a target exception, and the full continuation
+runs from trial 421 in node1 tmux `solr103940_v9_full`.
