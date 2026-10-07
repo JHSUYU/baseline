@@ -78,7 +78,11 @@ its described endpoint and mechanism differ from the post-create routed
 `/update` guard in this trial. [SOLR-13059](https://issues.apache.org/jira/browse/SOLR-13059)
 tracks a separate `testSliceRouting` failure to see a newly created
 collection. These issues do not directly document the one-shot alias watch
-read loss reproduced here. This is a scoped duplicate check, not proof of
+read loss reproduced here. [SOLR-12413](https://issues.apache.org/jira/browse/SOLR-12413)
+concerns ignoring a manually recreated `/aliases.json` at startup because
+its ZK version equals the initial local version; this trial uses the
+Collections API and loses a runtime watch read after alias creation. This is
+a scoped duplicate check, not proof of
 novelty. The injected exception is a one-shot
 application-level `ConnectionLossException`; a production ZooKeeper
 disconnection, later client reconnect, or other watch registrations might

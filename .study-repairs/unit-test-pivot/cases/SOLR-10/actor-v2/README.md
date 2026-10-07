@@ -290,3 +290,38 @@ the matching live actor identity. The separate two-trial pilot audit at
 recomputed strict injection and target gates from raw traces. Both faults
 injected exactly, neither took a target exception, and the full continuation
 runs from trial 421 in node1 tmux `solr103940_v9_full`.
+
+## Final actor V2 campaign, 2026-10-07
+
+V10b completed **757 shared original-JUnit fault trials** on node1. It kept
+the V9 queue and completed ledger, alternating target-linked healthy roots
+with the existing fault-sequence queue and ranking roots by observed
+coverage/target yield. The selected test class, actor hook, target oracle,
+and `probe/run.py` remained byte-identical. The campaign stopped naturally
+with `inflight=null` when all three check-specific goals were met:
+
+| Check | Exact target guard | Strict same-reader effective / goal | Target exceptions | Time to goal |
+| --- | --- | ---: | ---: | ---: |
+| SOLR-10 | `MaintainRoutedAliasCmd.call:116` | 128 / 128 | 0 | 22,836.556 s |
+| SOLR-39 | `RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections:246` | 87 / 80 | 0 | 15,182.720 s |
+| SOLR-40 | `RoutedAliasUpdateProcessor.getAliasProps:132` | 154 / 128 | 5 strict reproductions of one candidate | 15,182.720 s |
+
+The overall campaign had 481 strictly injected sequences. The independent
+`probe/audit.py` recount of all 757 raw traces, manifests, original JUnit
+logs, and JaCoCo files found **zero discrepancies**. The immutable per-file
+SHA list is `evidence/campaign-v4/audit.json` (SHA-256
+`b4bb1a9ea035b96d99bd8355967fe86528934d14e4d4f6c789d90a8f11b4a954`);
+the terminal state SHA-256 is
+`d410ad2a64d185c8b042f741178c8bfddfb4225cb1a0d2529af2588dd502dc55`.
+`evidence/campaign-v4/terminal-receipt.json` binds those files to the
+released source commit, unchanged JUnit class, production class bytes,
+actor probe, scheduler, and runner. Full raw trials remain on node1 under
+`evidence/campaign-v4`; the node0 copy retains the terminal checkpoint and
+audit. The case results and 104-row checklist give each check its own
+completion time and outcome.
+
+SOLR-40's five strict exceptions are the **same reproduced fault-induced
+alias-cache candidate**, not five bugs and not a confirmed new bug.
+`CANDIDATE-SOLR-40.md` records independent original-JUnit replays, persisted
+ZooKeeper alias metadata, source comparison, duplicate review, and the
+application-entry versus lower-level retry limitation.
