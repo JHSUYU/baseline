@@ -74,6 +74,8 @@ def finalize(case):
         "status": "quality_complete" if row["status"] == "budget_complete_pending_audit"
                   else "quality_complete_limited_by_" + stop_reason,
         "source_revision": row["source_revision"], "source_file": row["source_file"],
+        "source_path": row["source_file"], "source_line": row["target_guard_line"],
+        "function": row["target_function"],
         "target_function": row["target_function"],
         "target_guard_line": row["target_guard_line"],
         "cluster_test": row["original_junit"], "target_reached": True,
