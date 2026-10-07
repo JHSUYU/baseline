@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import time
 
@@ -62,7 +63,7 @@ def main():
         dumped = set()
         while child.poll() is None:
             elapsed = time.monotonic() - started
-            for threshold in (300, 500):
+            for threshold in (200, 300, 500):
                 if elapsed < threshold or threshold in dumped:
                     continue
                 dumped.add(threshold)
@@ -70,7 +71,7 @@ def main():
                 if pid:
                     dump = HERE / "logs" / (suffix + f".thread-dump-{threshold}s.txt")
                     with dump.open("w") as stream:
-                        subprocess.run([str(JAVA), pid, "Thread.print"], stdout=stream,
+                        subprocess.run([str(JAVA), pid, "Thread.print", "-l"], stdout=stream,
                                        stderr=subprocess.STDOUT, check=False)
             time.sleep(1)
     exit_path.write_text(str(child.returncode) + "\n")
@@ -80,6 +81,19 @@ def main():
     cutoff = trace["shutdown_hook_line"]
     pre_shutdown_aborts = sorted({event["server"] for event in trace["rs_aborts"]
                                   if cutoff is None or event["line"] < cutoff})
+    lines = log.read_text(errors="replace").splitlines()
+    create_pid = next((match.group(1) for line in lines
+                       if (match := re.search(
+                           r"CreateTableProcedure: pid=(\d+).*"
+                           r"CreateTableProcedure table=testLotsOfRegionRepli2 "
+                           r"execute state=CREATE_TABLE_PRE_OPERATION", line))), None)
+    completed_children = 0 if create_pid is None else sum(
+        bool(re.search(r"Finished pid=\d+, ppid=" + re.escape(create_pid)
+                       + r", state=SUCCESS; TransitRegionStateProcedure "
+                       + r"table=testLotsOfRegionRepli2", line)) for line in lines)
+    first_scp = next(({"line": index + 1, "message": line}
+                      for index, line in enumerate(lines)
+                      if "Scheduled ServerCrashProcedure" in line), None)
     result = {"source_trial": spec["source_trial"], "plan": spec["plan"],
               "timeout_seconds": spec["timeout_seconds"],
               "junit": trace["junit"], "exit": child.returncode,
@@ -90,6 +104,9 @@ def main():
               "all_aborted_region_servers": sorted({event["server"]
                                                       for event in trace["rs_aborts"]}),
               "shutdown_hook_line": cutoff,
+              "create_table_procedure_id": create_pid,
+              "create_table_child_success_count": completed_children,
+              "first_scheduled_server_crash_procedure": first_scp,
               "log_sha256": sha256(log),
               "exec_sha256": sha256(exec_path) if exec_path.exists() else None,
               "agent_class_sha256": sha256(AGENT_CLASS),
