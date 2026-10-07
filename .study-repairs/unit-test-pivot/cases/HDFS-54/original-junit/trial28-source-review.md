@@ -1,6 +1,6 @@
 # HDFS-54 original-JUnit trial 28: nine-DN all-I/O-fault observation
 
-**Classification: expected all-DN fault-model failure; clean replay pending.**
+**Classification: reproduced expected all-DN fault-model failure.**
 The selected check fired, but this trial does not establish the stale
 encryption-key mechanism in known HDFS-17897 and is not a new bug claim.
 
@@ -49,16 +49,33 @@ encryption key, DataNodes throw real `InvalidEncryptionKeyException`, and the
 striped path fails to clear that cache and retry. This trial has only planned
 generic `IOException` injections and no observed stale DataNode `allKeys`
 lookup. The separate adapted control has the actual key-expiry and fixed
-differential evidence. Until a clean identical-plan replay finishes, this
-trial stays an observation with source-based expected classification.
+differential evidence. The clean replay below confirms this source-based
+classification.
 
-## Replay plan
+## Clean original-JUnit replay
 
-After the live HDFS-54 campaign releases its node2 JVM slot, rerun this
-exact nine-entry TSV plan under a fresh original `MiniDFSCluster`, with a
-separate output directory and unchanged test JAR. Verify 9/9 ordered matches,
-the same nine distinct DN roles for one block group, exact postfault
-line-629 false, and the same `PathIOException`. Preserve the raw replay
-manifest, trace, JUnit log, JaCoCo and elapsed time. A mismatch changes the
-classification to nondeterministic pending further review; it cannot be
-silently counted as reproduction.
+The live fuzz controller was held **after** finishing trial 38's original
+JUnit, JaCoCo and manifest; its JVM had exited. A separate output directory
+`node2:/users/ZhenyuLi/hdfs54-replays/trial28-clean-01` then ran the
+identical nine-entry `e080d9f78ce80f65.tsv` plan under a fresh, unchanged
+11-DN `MiniDFSCluster`. The plan file SHA-256 is
+`33756640f8dd1baf3cf0fc3f405229e9546e09f8c73b848a72dd4dfc19308484`.
+No fault was injected by the fuzz controller during this replay.
+
+The replay applied all nine faults in order, again on distinct fresh DN UUIDs
+for roles 0 through 8, the same file, block group and block ID. After nine
+line-669 catches, line 629 was false at trace sequence 39. The original
+JUnit reported the same `Fail to get block checksum` failure (one run, one
+failure, exit 1) in **15.160 s**. The raw replay manifest retains production
+JaCoCo coverage: 29,440 probes, 8,266 methods and 9,307 branch-count tokens.
+
+| Replay raw file | SHA-256 |
+|---|---|
+| `manifest.json` | `4fd3e6efe7248b69f3fe93037fec92b0563590fdd4c4dd0b5576dc331c082556` |
+| `runtime_trace.jsonl` | `7470dd440d339b0fb8fae526b753a1a77d461197f69e1e00fdbc213237719aaa` |
+| `jacoco.exec` | `6c14e6549baaa2871bf3334f0e266ed852e851d7f5a37d369a5fc583ff4b8a6d` |
+| `junit.log` | `987e0f3448f5f0557fae6aac07793c1f4a3a623356426fd0b17ff864f1aa61b4` |
+
+After replay, the pause marker was removed. The live campaign summarized its
+own already completed trial 38 once and continued from trial 39. The replay
+therefore does not enter the fuzz budget's attempt/effective counters.

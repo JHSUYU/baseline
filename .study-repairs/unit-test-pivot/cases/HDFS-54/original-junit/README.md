@@ -156,10 +156,11 @@ continues under tmux, and its node2 `campaign-state.json` and
 Trial 28 (`e080d9f78ce80f65`) applied nine `IOException` faults on nine
 distinct located DNs for the same block group, then observed exact line 629
 `completed=false` and original JUnit failure. The raw trace and released
-source show the expected outcome when **all** checksum sources fail. It is a
-separate target-false candidate observation, not evidence of the stale-key
-mechanism or a new bug. Its clean identical-plan replay is queued after the
-live campaign. See [`trial28-source-review.md`](trial28-source-review.md).
+source show the expected outcome when **all** checksum sources fail. A fresh
+unchanged-JUnit replay of the identical plan again applied 9/9 faults and
+reached the same false branch and `PathIOException`. This is a separate
+target-false observation, not evidence of the stale-key mechanism or a new
+bug. See [`trial28-source-review.md`](trial28-source-review.md).
 
 ## Interpretation limit
 

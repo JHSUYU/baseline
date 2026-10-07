@@ -22,8 +22,8 @@ evidence and the guarded node1/node2 checkpoint handoff.
 The live original-JUnit campaign later reached line 629 with
 `completed=false` in trial 28, after planned `IOException` injections on all
 nine located DataNodes of one striped block group. Source review classifies
-that observation as the expected all-DN failure path; an identical-plan clean
-replay is pending. It is **not** counted as a new bug or as the stale-key
+that observation as the expected all-DN failure path, and an identical-plan
+fresh original-JUnit replay reproduced it. It is **not** counted as a new bug or as the stale-key
 HDFS-17897 reproduction. To make this nine-DN branch reachable, the
 case-specific fault cap increased from 8 to 10 after 22 effective trials,
 without resetting the 80-trial budget or replaying a completed run. See
