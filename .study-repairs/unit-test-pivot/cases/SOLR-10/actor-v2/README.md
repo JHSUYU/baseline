@@ -153,8 +153,13 @@ fresh runs of each strict alias-watch read that was followed by SOLR-39 on a
 different reader. These repeats sample nondeterministic request placement;
 the other-reader checks remain ineligible for the effective count. The
 migration receipt records the exact prior checkpoint SHA and trial numbers in
-`evidence/campaign-v4/reader-retry-migration.json`. The campaign continues in
-the isolated node2 tmux session `solr103940_v4_role_retry`.
+`evidence/campaign-v4/reader-retry-migration.json`. At the 32-trial boundary,
+raw auditing found 23 strict injections and effective counts of 5, 1, and 5
+for SOLR-10, SOLR-39, and SOLR-40, with zero audit discrepancies. A SOLR-40
+target-exception candidate was independently reproduced in three of ten
+fresh exact-plan replays; see `CANDIDATE-SOLR-40.md` and the per-run receipts.
+The full budget continues from that checkpoint in isolated node2 tmux session
+`solr103940_v4_full`.
 
 ## Historical node2 healthy calibration, 2026-10-06
 
