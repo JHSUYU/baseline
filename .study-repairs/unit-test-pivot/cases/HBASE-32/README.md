@@ -323,3 +323,6 @@ verified byte-for-byte by SHA-256 before their node0 copies were removed.
 The pre-transfer manifest, node1 verification, and post-transfer receipts
 are in `work-upstream/relocate-s081-s106-logs-*.json`. The local JaCoCo and
 exit receipts, plus both s078 and s101 candidate raw logs, remain on node0.
+Eight completed healthy, pilot, and meta-observation logs were archived the
+same way; `work-upstream/relocate-calibration-*.json` records the byte counts
+and hashes. Their JaCoCo files remain local.
