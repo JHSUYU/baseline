@@ -157,9 +157,11 @@ last fault, and passed the unchanged `testTableOperations` JUnit with the
 healthy expected table quota outcome. The two-round pilot temporarily capped
 attempts at 59; its complete 59/44 checkpoint restored the 320-attempt cap
 without replay. The pre/post checkpoint and SHA receipts, unstarted inflight,
-and raw pilot receipt are in `evidence/HBASE-22/`. The remaining full JaCoCo
-re-audit is deferred until the node0 JVM slot is free; the controller's
-admission already required selected-branch coverage for both pilot trials.
+and raw pilot receipt are in `evidence/HBASE-22/`. Before resuming r060, the
+independent audit rechecked all 59 raw trials and their per-trial JaCoCo
+selected-branch results with zero errors. A separate cumulative JaCoCo pass
+matched the checkpoint's 60 covered production methods and 50 branch keys
+across its 46 exec files. These audits did not rerun an original JUnit.
 
 The default bound is **80 effective trials, at most eight ordered faults**.
 If any of the final eight effective trials first adds a production method,
