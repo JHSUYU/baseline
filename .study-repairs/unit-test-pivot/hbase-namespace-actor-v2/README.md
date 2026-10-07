@@ -1,10 +1,12 @@
-# HBase namespace actor identity, offline V2 preparation
+# HBase namespace actor identity, V2 original-JUnit campaign
 
 This standalone passive Java agent is a reusable identity layer for
 HBASE-08, HBASE-21, and HBASE-22. It targets the unchanged HBase 2.6.6
 production JAR and the original two-master `TestNamespaceAuditor` methods.
-It has not run a cluster JUnit, injected a fault, or contributed a V2 trial
-to any of the three case counters.
+The isolated node1 staging directory has run two unchanged table and two
+unchanged restore JUnit healthy seeds. HBASE-08 has begun V2 fault trials;
+HBASE-21 and HBASE-22 have independent zero-trial checkpoints. Current
+counts and stop reasons are in each case's atomic `campaigns/CASE/result.json`.
 
 ## Source relationship
 
@@ -55,7 +57,8 @@ all later faults must be on the **same raw Master and manager**. The agent
 throws the selected `KeeperException` at the `ZKUtil` method entry and logs
 each application; an unmatched step cannot be counted as applied. This
 models a high-level API failure, which can bypass retries inside that API.
-No fault plan has been exercised yet.
+The agent JAR used by the node1 healthy seeds and fault trials has SHA-256
+`f6ac63c8ad2e07499f99f93e1b04f9cf53c5f849274b98828277b3fc159b8601`.
 
 The cross-run plan selector uses the observed role, I/O family, path,
 call site, and per-watcher ordinal. A candidate is target-retaining only if
@@ -100,6 +103,18 @@ do not contribute coverage/I/O feedback. Per-trial JaCoCo output counts
 production methods and branches in four released classes; no graph or
 GraphChecker artifact is used.
 
+The queue retains every distinct observed selector, ordinal, fault kind, and
+ordered prefix. Its current priority favors actual healthy I/O closer in
+event order to the selected guard on the **same Master/manager**; every eighth
+attempt uses the original I/O novelty priority for broader exploration.
+Fresh I/O observed after an effective fault receives a separate recovery
+priority. This changes only the order, not admission or the pending plan set.
+HBASE-08 started with the original priority. After four completed attempted
+trials, a safe checkpoint migration added this ordering and ingested the
+already completed fifth raw run without replay. Case-local
+`migration-before.json`, `migration-after.json`, and immutable checkpoint
+copies record the old/new controller, queue, seen, and agent SHA-256 values.
+
 The default bound is **80 effective trials, at most eight ordered faults**.
 If any of the final eight effective trials first adds a production method,
 branch, or I/O family observed in at least two effective trials, the same
@@ -131,11 +146,12 @@ zero and never import the older unbound runs.
   Advice/helper package boundary at execution time. It also verified that a
   replacement manager receives a new ID and fail-closed watcher status.
   It started no HBase or ZooKeeper cluster.
-- Thirteen offline controller tests passed, covering exact same-actor admission,
+- Fifteen offline controller tests passed, covering exact same-actor admission,
   wrong Master, manager, and target subject rejection, target order, missing
   fault, ambiguous healthy selector, postfault feedback actor filtering, and
   target entry before fault followed by guard after fault, HBASE-21 guard-line
-  admission, normal-outcome exception accounting, and a zero-based V2 result
+  admission, normal-outcome exception accounting, healthy guard distance and
+  near-target priority without dropping pending plans, and a zero-based V2 result
   row that excludes historical trial counts.
   A historical HBASE-22 JaCoCo file produced
   `NamespaceStateManager` branch line 166 with two covered outcomes; this
@@ -158,17 +174,19 @@ The local JUnit Platform launcher is bundled under this directory with
 SHA-256 `0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564`;
 the runner does not depend on another case's working directory.
 
-Before running a cluster seed, capture a fresh scratch directory and Java
-agent output for each case. Verify actor and manager binding in at least two
-healthy repetitions, actual pre-target I/O families, source-specific target
-arguments, and unchanged JUnit pass. HBASE-22's selected predicate is at
+Each cluster seed captures a fresh scratch directory and Java agent output.
+The two table seeds both passed the unchanged JUnit, reached HBASE-08 ten times
+and HBASE-22 once per run, and showed 18 stable same-actor pretarget selectors
+from five related ZK families. The two restore seeds both passed, reached
+HBASE-21 once per run, and showed 21 stable same-actor pretarget selectors.
+HBASE-21/22 quota exceptions occurred in the healthy JUnit and are expected.
+HBASE-22's selected predicate is at
 source lines 165–167; checklist line 172 belongs to its exception message.
-The prepared `bash run.sh healthy table SEED` selects the original
+`bash run.sh healthy table SEED` selects the original
 `testTableOperations` workload for HBASE-08 and HBASE-22; `healthy restore
 SEED` selects the original `testRestoreSnapshotQuotaExceed` workload for
 HBASE-21. Each seed has a new scratch directory, 240-second bound, raw JUnit
 log, exit receipt, and JaCoCo file. `bash run.sh trial KIND CASE-rNNN PLAN`
 uses the same isolated runner and adds an ordered plan. These commands are
-**prepared only**; no V2 cluster JUnit or injection was run while shared
-cluster slots were busy. Two healthy runs of `testTableOperations` and two
-of `testRestoreSnapshotQuotaExceed` are still needed before campaigns start.
+run in separate node1 scratch directories under a sequential MiniCluster
+slot. New V2 counts never include the older unbound HBASE-08/21/22 runs.
