@@ -52,11 +52,16 @@ state. The earlier 128 graph-free fault trials had coarse actor identities and
 remain historical evidence only; they do not make the V2 check quality
 complete.
 
-**Decision pending runtime evidence.** The current source analysis cannot
-justify `source_excluded`: two concrete override paths remain. A V2 adapter
-should bind the sender's CoreAdmin create request to the receiving
-`CoreContainer` and exact core, record both the standard and `property.*`
-values, and observe any external properties file read before this guard. The
-healthy trace's nine receiving guards lack that join. If an injection removes
-the entire RPC or aborts descriptor construction, record `lost_target`
-instead of treating an unrelated JUnit failure as this check's outcome.
+**Screening decision and completed follow-up.** Source analysis could not
+justify `source_excluded`: two concrete override paths remained. The later
+actor-qualified V3 adapter bound each CoreAdmin CREATE sender to the
+receiving `CoreContainer` and exact core, recorded the standard and
+`property.*` values, and observed the external-properties-file check before
+the guard. Its two original JUnit healthy seeds passed; its bounded campaign
+completed 134 attempts and 80 strict, same-core postfault guard trials.
+Across 897 raw target events, the standard value was present, the override
+was absent, and no external properties file was read. The selected missing
+name exception occurred zero times. The campaign therefore closed as
+`quality_complete`, `bug_mark=none` within this workload and I/O scope.
+The final raw and source audit is
+[`independent/actor_v2/evidence/v3-final-review.md`](independent/actor_v2/evidence/v3-final-review.md).
