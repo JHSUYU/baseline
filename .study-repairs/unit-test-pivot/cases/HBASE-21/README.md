@@ -97,3 +97,35 @@ After the main ZooKeeper I/O campaign, `work/manifest/calibrate.py` runs a
 separate healthy seed and up to two exact `DistributedFileSystem.open` faults
 for the snapshot's `data.manifest`. Its ledger stays under `work/manifest/` and
 never consumes the main campaign's 80 effective trials.
+
+## Completed result
+
+The unchanged original JUnit healthy run passed in 49.76 seconds and reached
+the exact quota check. The main campaign stopped at its authorized 128
+effective trials after 144 attempts, with 143 strict injections. All 128
+target-retaining fault trials threw the same quota exception the original
+JUnit expects, and all passed. No unexpected target exception or new bug was
+confirmed. Production JaCoCo feedback added two methods and 12 branches;
+runtime feedback added one stable I/O site and 23 exact selectors. The main
+trial runtimes sum to 10,378.26 seconds, and the case wall time through the
+manifest supplement is 11,547.28 seconds. `work/trial_ledger.json` records
+each attempt's UTC completion time, exact fault plan, duration, injection,
+target and coverage outcomes. The resume checkpoint is available locally as
+`work/checkpoint.json` and in the committed `work/checkpoint.json.gz` archive.
+
+The separate manifest healthy run passed in 50.16 seconds. Its trace found
+two `DistributedFileSystem.open` calls for the **completed snapshot's**
+`snapshot_testRestoreSnapshotQuotaExceed/data.manifest` before the quota
+guard. Both exact IOException trials matched and applied, took 46.26 and
+47.71 seconds, and lost the target check. The original JUnit failed because
+the restore exception now contained the injected IOException instead of the
+quota exception it expects. HBase logged a successful rollback. The source
+path is `SnapshotManifest.readDataManifest` line 588 through
+`SnapshotManifest.open` to `RestoreSnapshotProcedure.prepareRestore`; the
+manifest read precedes the namespace quota call. These two target-loss runs
+are separate boundary evidence, not effective trials or new bugs. The first
+calibration attempt on a temporary snapshot-creation manifest was stopped
+before completion once the formal restore path was identified and is not
+counted. `work/manifest/result.json` contains the two completed trials;
+`work/manifest/evidence_logs.tar.gz` preserves their original logs and the
+healthy trace.

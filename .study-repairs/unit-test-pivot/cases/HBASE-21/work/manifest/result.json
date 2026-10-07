@@ -1,0 +1,118 @@
+{
+  "case_id": "HBASE-21",
+  "phase": "manifest_dfs_open_supplement",
+  "methodology": "case_local_runtime_dfs_open_no_graph",
+  "original_junit": "TestNamespaceAuditor.testRestoreSnapshotQuotaExceed",
+  "main_campaign_budget_counted": false,
+  "healthy": {
+    "log": "logs/healthy.log",
+    "exit_code": 0,
+    "elapsed_seconds": 50.16,
+    "io_events": [
+      {
+        "line": 1549,
+        "seq": 1,
+        "selector": "DFS_OPEN~.tmp/snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~1"
+      },
+      {
+        "line": 2025,
+        "seq": 2,
+        "selector": "DFS_OPEN~.tmp/hbase-failsafe-snapshot_testRestoreSnapshotQuotaExceed-1791337823474/data.manifest~SnapshotManifest.readDataManifest:588~1"
+      },
+      {
+        "line": 2047,
+        "seq": 3,
+        "selector": "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~1"
+      },
+      {
+        "line": 2050,
+        "seq": 4,
+        "selector": "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~2"
+      },
+      {
+        "line": 2068,
+        "seq": 5,
+        "selector": "DFS_OPEN~hbase-failsafe-snapshot_testRestoreSnapshotQuotaExceed-1791337823474/data.manifest~SnapshotManifest.readDataManifest:588~1"
+      },
+      {
+        "line": 2071,
+        "seq": 6,
+        "selector": "DFS_OPEN~hbase-failsafe-snapshot_testRestoreSnapshotQuotaExceed-1791337823474/data.manifest~SnapshotManifest.readDataManifest:588~2"
+      },
+      {
+        "line": 2085,
+        "seq": 7,
+        "selector": "DFS_OPEN~hbase-failsafe-snapshot_testRestoreSnapshotQuotaExceed-1791337823474/data.manifest~SnapshotManifest.readDataManifest:588~3"
+      }
+    ],
+    "matched": 0,
+    "applied": 0,
+    "last_applied_line": null,
+    "guard_lines": [
+      2054,
+      2055
+    ],
+    "target_exits": [
+      {
+        "line": 2056,
+        "region_quota": true,
+        "text": "HBASE21 TARGET_EXIT call=1 table=TestNamespaceAuditor_testRestoreSnapshotQuotaExceed:table1 regions=4 exception=org.apache.hadoop.hbase.quotas.QuotaExceededException outcome=region_quota guard_hits=2 total=1 prior_table=1 max=3"
+      }
+    ],
+    "junit": {
+      "found": 1,
+      "succeeded": 1,
+      "failed": 0
+    }
+  },
+  "healthy_reused_from_first_calibration": true,
+  "abandoned_calibration_trial": {
+    "id": "m001",
+    "log": "logs/m001.preempted_tmp_snapshot.log",
+    "reason": "The initial picker selected a temporary snapshot-creation manifest before the restore manifest. Stopped before completion; not counted as a fault trial."
+  },
+  "fault_trials": [
+    {
+      "id": "m003",
+      "selector": "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~1",
+      "strict": true,
+      "matched": 1,
+      "applied": 1,
+      "target_after_fault": false,
+      "expected_target_exception_after_fault": false,
+      "junit": {
+        "found": 1,
+        "succeeded": 0,
+        "failed": 1
+      },
+      "junit_exit": 1,
+      "elapsed_seconds": 46.26,
+      "log": "logs/m003.log",
+      "disposition": "target_lost_excluded"
+    },
+    {
+      "id": "m004",
+      "selector": "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~2",
+      "strict": true,
+      "matched": 1,
+      "applied": 1,
+      "target_after_fault": false,
+      "expected_target_exception_after_fault": false,
+      "junit": {
+        "found": 1,
+        "succeeded": 0,
+        "failed": 1
+      },
+      "junit_exit": 1,
+      "elapsed_seconds": 47.71,
+      "log": "logs/m004.log",
+      "disposition": "target_lost_excluded"
+    }
+  ],
+  "status": "calibration_complete_pending_source_review",
+  "candidate_selectors": [
+    "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~1",
+    "DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/data.manifest~SnapshotManifest.readDataManifest:588~2"
+  ],
+  "total_elapsed_seconds": 144.13
+}
