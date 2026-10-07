@@ -51,6 +51,22 @@ Only then start a bounded role-aware fault phase with a separate checkpoint,
 fresh effective count, and per-run raw/JUnit/JaCoCo/lock trace. Never merge it
 into the s272 exact replay count or the earlier 128+68 effective trials.
 
+`role_pilot.py` is the isolated controller for that gate. Its `preflight`
+command verifies the frozen plan, original HBase JAR, three agent JARs,
+runner, auditor, and disk headroom without starting a cluster. After node0
+is explicitly released, run `python3 role_pilot.py healthy --lease-ready`
+in persistent tmux. The healthy run uses **empty fault plans** and a 360-second
+cap. It must pass the original JUnit and show one same-run meta host,
+replica-2 Master report, target invocation, and flush RPC for the same raw
+region before `fault` is allowed. `python3 role_pilot.py fault --lease-ready`
+runs one 600-second fault trial per invocation, with at most three distinct
+fresh-fixture attempts. Each invocation writes an atomic in-flight checkpoint,
+raw log, JaCoCo, exit, receipt, and fault-run `Thread.print -l` dumps; an
+interrupted run requires manual evidence settlement and is never silently
+rerun. Fault trials are diagnostic repeats of one new role-aware plan, so
+their count is separate from the fuzz effective denominator. A timeout
+remains a candidate until independently reviewed.
+
 Limitations: the passive meta location hook observes successful writes made
 in this MiniCluster JVM. It must be compared with the source system's
 pre-fault meta `OPEN` log and any later role changes in each trial. An F1 on

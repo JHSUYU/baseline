@@ -32,8 +32,17 @@ case "${1:?build or run}" in
     ;;
   run)
     suffix="${2:?suffix}"
-    base_plan="${3:?role-bound RPC plan}"
-    upstream_plan="${4:?role-bound MASTER plan}"
+    base_plan="${3-}"
+    upstream_plan="${4-}"
+    if [[ "$suffix" == healthy-* ]]; then
+      [[ -z "$base_plan" && -z "$upstream_plan" ]] || {
+        echo "Healthy calibration requires empty fault plans" >&2; exit 2;
+      }
+    else
+      [[ -n "$base_plan" && -n "$upstream_plan" ]] || {
+        echo "Fault trial requires both role-bound plans" >&2; exit 2;
+      }
+    fi
     data_dir="$role_dir/data-$suffix"
     [[ ! -e "$data_dir" && ! -e "$role_dir/logs/$suffix.exec" ]] || {
       echo "Role run output exists; refusing overwrite" >&2; exit 2;

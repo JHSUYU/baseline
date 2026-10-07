@@ -17378,7 +17378,7 @@
       "source_line": 911,
       "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
       "status": "quality_complete",
-      "stop_reason": "Near trial 64, six strict faults exhausted the original test's six RPC attempts and added one production retry branch, so the authorized 128 ceiling was opened. The additional distinct five-fault order r066 added no production coverage or new I/O family. The observed meta table-state Get door has been exercised with 1\u20136 faults and all four legal exception families; seven or eight requests cannot match under the original retry limit. Further queued orders reuse the same door and retry paths, so the effective candidate queue was exhausted before the 128 ceiling.",
+      "stop_reason": "Near trial 64, six strict faults exhausted the original test's six RPC attempts and added one production retry branch, so the authorized 128 ceiling was opened. The additional distinct five-fault order r066 added no production coverage or new I/O family. The observed meta table-state Get door has been exercised with 1–6 faults and all four legal exception families; seven or eight requests cannot match under the original retry limit. Further queued orders reuse the same door and retry paths, so the effective candidate queue was exhausted before the 128 ceiling.",
       "strict_injections": 65,
       "system": "HBase 2.6.6",
       "target_after_fault": 61,
@@ -206143,7 +206143,7 @@
       "check_code": "assert regionNode.isInState(State.ABNORMALLY_CLOSED);",
       "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer.test",
       "coverage_gain": 27,
-      "coverage_note": "V2 fixed production JaCoCo scope: two-seed union 228 methods/334 branches/1115 lines; final union 229/361/1187. Stable I/O sites 11\u219217 with ordinal excluded from site identity. Last 20 trials added no production coverage or stable I/O site.",
+      "coverage_note": "V2 fixed production JaCoCo scope: two-seed union 228 methods/334 branches/1115 lines; final union 229/361/1187. Stable I/O sites 11→17 with ordinal excluded from site identity. Last 20 trials added no production coverage or stable I/O site.",
       "current_campaign": {
         "actor_audit": "independent/trial_actor_audit_v2.json",
         "actor_identity_errors": [],
@@ -206622,7 +206622,7 @@
       },
       "selection_group": "original_102",
       "site_id": "<org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure: org.apache.hadoop.hbase.procedure2.StateMachineProcedure$Flow confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)>#u38",
-      "source_audit_note": "Released HBase 2.6.6 TransitRegionStateProcedure.confirmClosed B5 line379 reached on unchanged TestReportRegionStateTransitionFromDeadServer.test. 80 post-final-fault B5 trials had no false assertion outcome, target exception, or subsequent JUnit failure. r001/r013/r049/r057/r085 META_PUT IOException caused direct RegionStateStore persist failure\u2192HMaster.abort before target; r066/r079/r101 B5 preceded the final fault. See independent/v2_source_review.md.",
+      "source_audit_note": "Released HBase 2.6.6 TransitRegionStateProcedure.confirmClosed B5 line379 reached on unchanged TestReportRegionStateTransitionFromDeadServer.test. 80 post-final-fault B5 trials had no false assertion outcome, target exception, or subsequent JUnit failure. r001/r013/r049/r057/r085 META_PUT IOException caused direct RegionStateStore persist failure→HMaster.abort before target; r066/r079/r101 B5 preceded the final fault. See independent/v2_source_review.md.",
       "source_line": 379,
       "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
       "status": "quality_complete",
@@ -253166,7 +253166,8 @@
         "work-role/synthetic-role-trace-smoke.log",
         "work-role/synthetic-role-trace-negative.log",
         "work-role/synthetic-role-audit-positive.json",
-        "work-role/synthetic-role-audit-negative.json"
+        "work-role/synthetic-role-audit-negative.json",
+        "work-role/role_pilot.py"
       ],
       "fault_trials": 185,
       "fully_applied_trials": 182,
@@ -253385,7 +253386,9 @@
           "work-role/smoke.log",
           "work-role/audit_role_run.py",
           "work-role/synthetic-role-audit-positive.json",
-          "work-role/synthetic-role-audit-negative.json"
+          "work-role/synthetic-role-audit-negative.json",
+          "work-role/role_pilot.py",
+          "work-role/run.sh"
         ],
         "last_reviewed_trial": "s272",
         "last_reviewed_utc": "2026-10-07T12:15:15.589419+00:00",
@@ -253410,13 +253413,20 @@
           "effective_trials": 0,
           "fuzz_budget_admitted": false,
           "java8_build_smoke": true,
-          "next_gate": "unchanged fault-free original JUnit healthy calibration in isolated slot; then bounded new-plan fault phase with separate checkpoint",
+          "next_gate": "node0 explicit slot release, then unchanged fault-free original JUnit; only a passing same-actor meta-host calibration admits up to 3 role-bound fault diagnostics",
           "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
           "plan_sha256": "c201789d264c40d45184802b75839c0a1baaa3020649715cadcef3a82e2a1740",
           "runtime_identity_smoke_negative_rejected": true,
           "runtime_identity_smoke_positive": true,
           "spec": "work-role/role-plan.json",
-          "state": "offline_ready_pending_healthy_junit"
+          "state": "offline_controller_ready_pending_node0_lease",
+          "pilot_controller": "work-role/role_pilot.py",
+          "pilot_controller_sha256": "ad6cbd3123c7b64a955394da818c4e572822ae381dcc043c33e16462905e32b5",
+          "runner_sha256": "f24c4e1b9488a0cd824fafb797794d726495b5f83c6d8ac753deb1a9b8ee3bd3",
+          "independent_checkpoint": "work-role/role-pilot-checkpoint.json",
+          "healthy_timeout_seconds": 360,
+          "fault_timeout_seconds": 600,
+          "fault_attempt_cap": 3
         },
         "s272": {
           "all_replays_children_success": 600,

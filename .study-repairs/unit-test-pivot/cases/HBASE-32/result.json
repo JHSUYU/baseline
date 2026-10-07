@@ -355,7 +355,9 @@
       "work-role/smoke.log",
       "work-role/audit_role_run.py",
       "work-role/synthetic-role-audit-positive.json",
-      "work-role/synthetic-role-audit-negative.json"
+      "work-role/synthetic-role-audit-negative.json",
+      "work-role/role_pilot.py",
+      "work-role/run.sh"
     ],
     "last_reviewed_trial": "s272",
     "last_reviewed_utc": "2026-10-07T12:15:15.589419+00:00",
@@ -380,13 +382,20 @@
       "effective_trials": 0,
       "fuzz_budget_admitted": false,
       "java8_build_smoke": true,
-      "next_gate": "unchanged fault-free original JUnit healthy calibration in isolated slot; then bounded new-plan fault phase with separate checkpoint",
+      "next_gate": "node0 explicit slot release, then unchanged fault-free original JUnit; only a passing same-actor meta-host calibration admits up to 3 role-bound fault diagnostics",
       "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
       "plan_sha256": "c201789d264c40d45184802b75839c0a1baaa3020649715cadcef3a82e2a1740",
       "runtime_identity_smoke_negative_rejected": true,
       "runtime_identity_smoke_positive": true,
       "spec": "work-role/role-plan.json",
-      "state": "offline_ready_pending_healthy_junit"
+      "state": "offline_controller_ready_pending_node0_lease",
+      "pilot_controller": "work-role/role_pilot.py",
+      "pilot_controller_sha256": "ad6cbd3123c7b64a955394da818c4e572822ae381dcc043c33e16462905e32b5",
+      "runner_sha256": "f24c4e1b9488a0cd824fafb797794d726495b5f83c6d8ac753deb1a9b8ee3bd3",
+      "independent_checkpoint": "work-role/role-pilot-checkpoint.json",
+      "healthy_timeout_seconds": 360,
+      "fault_timeout_seconds": 600,
+      "fault_attempt_cap": 3
     },
     "s272": {
       "all_replays_children_success": 600,
