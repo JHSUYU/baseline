@@ -427,3 +427,25 @@ raw manifest SHA is `eb199ab13fecc1ac8522b7c7a7c8d4b593b8679ce977643aba3b7d5e420
 Both diagnostic raw sets were independently verified on node1. They are
 excluded from the fuzz attempt and effective counters. Direct proof of the
 meta-hosting reader/writer identity chain remains pending.
+
+Three additional fresh-fixture runs used the same plan and unchanged original
+JUnit. Repeat 2 selected the `hbase:meta` host and applied both faults to the
+same replica-7 actor; B7 occurred, then the test passed in 89.90 seconds with
+600/600 table-2 children complete. For that server node, all 90 READ lock
+acquisitions had matching releases before the tracker requested WRITE; WRITE
+was acquired immediately and SCP was scheduled. Repeats 3 and 4 selected
+non-meta servers and also passed (58.06 and 60.29 seconds). Their exact faults,
+B7, lock events, JaCoCo, and raw logs were independently SHA-checked on node1.
+The five control manifests and separate budgets are recorded in
+`work-upstream/diag-s203/evidence-diagnostic-rollup.json`.
+
+The independent source and lock review is
+`../../audits/hbase32-s203-independent-lock-review-2026-10-07.md`. Original
+s203 and its clean replay still establish a reproducible timeout under their
+observed schedule. The trace-only controls did not reproduce it, including
+the same-meta-host repeat. The original dumps cannot prove that the blocked
+report handler holds a READ lock on the *same* `ServerStateNode` whose WRITE
+lock blocks the tracker. Classification remains
+`candidate_pending_lock_identity`, with `new_bug=false`. No diagnostic run
+contributed to the 51/80 supplemental effective count or its coverage/queue.
+The main 128/128 result and its ledger are unchanged.

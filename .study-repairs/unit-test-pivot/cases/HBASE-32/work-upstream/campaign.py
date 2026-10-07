@@ -931,6 +931,13 @@ def main():
         print("HBASE32U checkpoint", trial_id, trial["disposition"],
               "effective", sum(t["effective"] for t in state["trials"]),
               "queue", len(state["queue"]), flush=True)
+        if (trial["review_candidate"] and trial["exit"] == 124
+                and trial["strict"] and trial["exact_b7"]
+                and not trial["invalid_actor"] and not trial["invalid_cluster"]):
+            PAUSE_AFTER_CHECKPOINT.write_text(
+                "new exact postfault B7 timeout candidate at " + trial_id + "\n")
+            print("HBASE32U paused for exact timeout review", trial_id, flush=True)
+            return
     status = ("effective_budget_reached" if
               sum(t["effective"] for t in state["trials"]) >= state["effective_budget"] else
               "attempt_cap_reached" if len(state["trials"]) >= state["attempt_cap"] else

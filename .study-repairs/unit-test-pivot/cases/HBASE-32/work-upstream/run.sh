@@ -32,12 +32,19 @@ case "${1:?build or run}" in
     rm -rf -- "$data_dir"
     mkdir -p "$data_dir/tmp" "$upstream_dir/logs"
     export HBASE_HOME="$hbase_dist"
+    extra_agents=()
+    if [[ "${HBASE32U_LOCK_DIAG:-0}" == 1 ]]; then
+      lock_diag_jar="$upstream_dir/diag-s203/agent.jar"
+      [[ -s "$lock_diag_jar" ]] || { echo "Missing lock diagnostic agent" >&2; exit 2; }
+      extra_agents+=("-javaagent:$lock_diag_jar")
+    fi
     exec /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout \
       "${HBASE32_UPSTREAM_TIMEOUT:-360}s" \
       "$java_bin" -Xmx4g \
       -javaagent:"$jacoco_agent=destfile=$upstream_dir/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler:org.apache.hadoop.hbase.client.FlushRegionCallable:org.apache.hadoop.hbase.MetaTableAccessor:org.apache.hadoop.hbase.client.ConnectionImplementation:org.apache.hadoop.hbase.client.ScannerCallable:org.apache.hadoop.hbase.client.ClientServiceCallable:org.apache.hadoop.hbase.regionserver.HRegionServer:org.apache.hadoop.hbase.regionserver.RSRpcServices:org.apache.hadoop.hbase.regionserver.wal.WALUtil" \
       -javaagent:"$base_dir/agent.jar" \
       -javaagent:"$upstream_dir/agent.jar" \
+      "${extra_agents[@]}" \
       -Dhbase32.fault.plan="$base_plan" \
       -Dhbase32.upstream.fault.plan="$upstream_plan" \
       -Djava.io.tmpdir="$data_dir/tmp" \

@@ -1,5 +1,5 @@
 {
-  "bug_mark": "none",
+  "bug_mark": "candidate_review",
   "case_id": "HBASE-32",
   "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
   "coverage_gain": 7,
@@ -153,7 +153,7 @@
   "supplemental_stage": {
     "attempt_cap": 384,
     "attempted_trials": 203,
-    "candidate_classification": "reproduced_exact_timeout_candidate",
+    "candidate_classification": "candidate_pending_lock_identity",
     "candidate_feedback_admitted": false,
     "candidate_original_elapsed_seconds": 405.83,
     "candidate_original_manifest_sha256": "5cb4fb05eb9f887780bb8dc3aa479dc6246afb9de15863387d787745096bfe68",
@@ -167,6 +167,128 @@
     "checkpoint": "work-upstream/supplemental-checkpoint.json",
     "diagnostic_overlay": {
       "agent_jar_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
+      "bounded_control_rollup": "work-upstream/diag-s203/evidence-diagnostic-rollup.json",
+      "controls": [
+        {
+          "elapsed_seconds": 59.97,
+          "exit": 0,
+          "faults_fully_applied": false,
+          "files_verified_on_node1": 10,
+          "junit": {
+            "failed": 0,
+            "found": 1,
+            "succeeded": 1
+          },
+          "manifest": "work-upstream/diag-s203/evidence-diag-healthy-manifest.json",
+          "manifest_sha256": "25adb109adf8e5aae5dd8825e41d8a5446f7e65d67f6996176c1e41cb791bd0f",
+          "name": "healthy",
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/upstream-s203-diagnostic/healthy",
+          "remote_receipt": "work-upstream/diag-s203/evidence-diag-healthy-remote-receipt.json",
+          "same_actor_b7": 0,
+          "selected_server_carried_meta": null,
+          "summary": "work-upstream/diag-s203/logs/diag-healthy-s203.summary.json"
+        },
+        {
+          "elapsed_seconds": 57.89,
+          "exit": 0,
+          "faults_fully_applied": true,
+          "files_verified_on_node1": 10,
+          "junit": {
+            "failed": 0,
+            "found": 1,
+            "succeeded": 1
+          },
+          "manifest": "work-upstream/diag-s203/evidence-diag-fault-manifest.json",
+          "manifest_sha256": "eb199ab13fecc1ac8522b7c7a7c8d4b593b8679ce977643aba3b7d5e420d1bb3",
+          "name": "fault_1",
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/upstream-s203-diagnostic/fault-1",
+          "remote_receipt": "work-upstream/diag-s203/evidence-diag-fault-remote-receipt.json",
+          "same_actor_b7": 1,
+          "selected_server_carried_meta": false,
+          "summary": "work-upstream/diag-s203/logs/diag-fault-s203.summary.json"
+        },
+        {
+          "elapsed_seconds": 89.9,
+          "exit": 0,
+          "faults_fully_applied": true,
+          "files_verified_on_node1": 10,
+          "junit": {
+            "failed": 0,
+            "found": 1,
+            "succeeded": 1
+          },
+          "lock_analysis": "work-upstream/diag-s203/logs/diag-fault-2-s203.lock-analysis.json",
+          "manifest": "work-upstream/diag-s203/evidence-repeat2-manifest.json",
+          "manifest_sha256": "ff2c9cd3bdc2dfe0754afce976fcc164b81d7d75487db6f3fd0b48bc48370753",
+          "name": "repeat_2",
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/upstream-s203-diagnostic/repeat-2",
+          "remote_receipt": "work-upstream/diag-s203/evidence-repeat2-remote-receipt.json",
+          "same_actor_b7": 1,
+          "selected_server_carried_meta": true,
+          "summary": "work-upstream/diag-s203/logs/diag-fault-2-s203.summary.json",
+          "tracker_write_waits": [
+            {
+              "active_readers": 0,
+              "event_seq": 727,
+              "node_identity": "31abb990"
+            }
+          ]
+        },
+        {
+          "elapsed_seconds": 58.06,
+          "exit": 0,
+          "faults_fully_applied": true,
+          "files_verified_on_node1": 11,
+          "junit": {
+            "failed": 0,
+            "found": 1,
+            "succeeded": 1
+          },
+          "lock_analysis": "work-upstream/diag-s203/logs/diag-fault-3-s203.lock-analysis.json",
+          "manifest": "work-upstream/diag-s203/evidence-repeat3-manifest.json",
+          "manifest_sha256": "25654db89ddc549486ce86925d5ddf66f9793b87a276ec641b7213314b078e3e",
+          "name": "repeat_3",
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/upstream-s203-diagnostic/repeat-3",
+          "remote_receipt": "work-upstream/diag-s203/evidence-repeat3-remote-receipt.json",
+          "same_actor_b7": 1,
+          "selected_server_carried_meta": false,
+          "summary": "work-upstream/diag-s203/logs/diag-fault-3-s203.summary.json",
+          "tracker_write_waits": [
+            {
+              "active_readers": 0,
+              "event_seq": 1276,
+              "node_identity": "7d73c54f"
+            }
+          ]
+        },
+        {
+          "elapsed_seconds": 60.29,
+          "exit": 0,
+          "faults_fully_applied": true,
+          "files_verified_on_node1": 11,
+          "junit": {
+            "failed": 0,
+            "found": 1,
+            "succeeded": 1
+          },
+          "lock_analysis": "work-upstream/diag-s203/logs/diag-fault-4-s203.lock-analysis.json",
+          "manifest": "work-upstream/diag-s203/evidence-repeat4-manifest.json",
+          "manifest_sha256": "393c943b61aeb62a4525174ab2f0e491494932c68e2728231ae5ebf13d0f2cee",
+          "name": "repeat_4",
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/upstream-s203-diagnostic/repeat-4",
+          "remote_receipt": "work-upstream/diag-s203/evidence-repeat4-remote-receipt.json",
+          "same_actor_b7": 1,
+          "selected_server_carried_meta": false,
+          "summary": "work-upstream/diag-s203/logs/diag-fault-4-s203.summary.json",
+          "tracker_write_waits": [
+            {
+              "active_readers": 0,
+              "event_seq": 1290,
+              "node_identity": "431c9674"
+            }
+          ]
+        }
+      ],
       "fault_1": {
         "aborted_server_carrying_meta": false,
         "classification": "non_meta_role_conditional_negative_control",
@@ -187,7 +309,8 @@
         "read_lock_acquired_markers": 1208,
         "unknown_server_markers": 0
       },
-      "overlay_spec_sha256": "699489a609080baac9107ded779b7aec87474f290bfc325f727ae31a7b8fd6a7"
+      "overlay_spec_sha256": "699489a609080baac9107ded779b7aec87474f290bfc325f727ae31a7b8fd6a7",
+      "source_review": ".study-repairs/unit-test-pivot/audits/hbase32-s203-independent-lock-review-2026-10-07.md"
     },
     "effective_budget": 80,
     "effective_trials": 51,
@@ -198,14 +321,17 @@
       "work-upstream/evidence-s203-replay-manifest.json",
       "work-upstream/evidence-s203-replay-remote-receipt.json",
       "work-upstream/diag-s203/evidence-diag-healthy-manifest.json",
-      "work-upstream/diag-s203/evidence-diag-fault-manifest.json"
+      "work-upstream/diag-s203/evidence-diag-fault-manifest.json",
+      "work-upstream/diag-s203/evidence-diagnostic-rollup.json",
+      ".study-repairs/unit-test-pivot/audits/hbase32-s203-independent-lock-review-2026-10-07.md",
+      "work-upstream/evidence-s203-resume-preflight.json"
     ],
     "max_faults": 8,
     "new_bug": false,
-    "novelty": "unconfirmed_pending_exact_release_lock_owner_source_audit",
+    "novelty": "unconfirmed_lock_identity_and_recovery_causality",
     "pending_candidate": "s203",
     "phase": "independent_upstream_and_terminal_rpc",
-    "state": "paused_candidate_review"
+    "state": "paused_after_bounded_diagnostic"
   },
   "target_after_fault": 128,
   "target_reached": true
