@@ -113,3 +113,43 @@ the original JUnit's 60-second annotation timed out (`exit=1`, 63.406s
 including startup/shutdown). Because no fault was injected and no selected
 postfault target was observed, pilot 03 is neither effective nor a bug
 candidate. All three remain outside the new 80/128 effective-trial budget.
+
+## Natural-boundary successor
+
+`successor.py` is prepared for the running node1 campaign. Do not copy it to
+node1 or launch it while `hdfs_ha_effective_full` is running. At the old
+controller's natural complete boundary (12-hour wall cap or attempt cap),
+first confirm that its tmux command has exited, the last trial has a full
+manifest and trace, and `checkpoint.json` has `active: null`. The successor
+also takes `campaign.lock` nonblocking; it refuses to touch the checkpoint
+while the old controller holds that lock. It verifies the old `campaign.py`
+SHA-256, the last completed trial's plan, manifest, and raw trace SHA-256.
+
+The handoff retains the complete `completed`, `queue`, and `seen` lists. It
+records a five-slot scheduler with four RPC slots and one file-I/O slot,
+considering only queued sequences relevant to unfinished target checks when
+available. It preserves the original per-case 80/128 effective goals and
+fault-depth rules. If the old controller stopped at its 320-attempt cap, it
+extends the existing conditional ceiling to 512 cumulative attempts. A
+candidate target exception, a met effective budget, an active trial, an
+empty queue, or an already exhausted 512-attempt cap blocks handoff. The
+successor keeps the same shared `jvm-start.lock` and Java-process limit (no
+more than four JVMs before a start) and raises its disk-free requirement to
+10 GiB. Its own wall limit is 12 hours.
+
+After copying only `successor.py` to the matching node1 directory, use the
+old source hash as a guard:
+
+```sh
+python3 successor.py --preview --expected-old-sha256 824df96b2fbbcfeb2d29d444443a837f414d183f90e28fdf2789c8a07a40b93b
+python3 -u successor.py --run --wall-seconds 43200 --expected-old-sha256 824df96b2fbbcfeb2d29d444443a837f414d183f90e28fdf2789c8a07a40b93b
+```
+
+Run the second command in its own persistent tmux session. The successor
+holds `campaign.lock` continuously from verification through later trials.
+It writes an atomic `successor-handoff-intent.json` before replacing the
+checkpoint and an atomic `successor-handoff-receipt.json` afterward. These
+record old/new checkpoint and source hashes, preserved list counts, scheduler
+policy, and the final old trial's raw trace hash. Repeating the command
+after interruption resumes the recorded checkpoint, including any active
+trial, without redoing completed trial directories.
