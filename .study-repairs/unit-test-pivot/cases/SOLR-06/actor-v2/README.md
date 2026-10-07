@@ -1,4 +1,4 @@
-# SOLR-06 actor-aware V2 preparation
+# SOLR-06 actor-aware V2 campaign
 
 This is a separate successor to the historical `independent/` 80-trial run.
 Those coarse trials remain evidence but count as **zero V2 effective trials**.
@@ -63,6 +63,21 @@ Each trial persists its fault plan, raw trace, JaCoCo data, original JUnit
 log, elapsed time, target result, and atomic checkpoint. A target assertion
 would be a candidate requiring source and replay review before a bug mark.
 
-**Current state:** original JUnit and agent build, offline ASM smoke, and
-wrong-actor/target checks pass. Fresh healthy cluster JUnits and V2 injection
-have not started because the shared JVM/disk slot has not been assigned.
+**Current state (2026-10-07 UTC):** two fresh assertion-enabled original JUnit
+seeds passed. The bounded pilot completed 23 distinct selected trials, including
+13 exact ordered injections and five runs in which the same physical
+controller/PULL core/leader target executed after the final fault. There was
+no selected `AssertionError`. The independent recount has zero issues; see
+`pilot-audit-receipt.json` and its SHA-linked
+`pilot-state-5-effective-23-selected.json`. The 23 fault runs took 936.847 s
+and added 63 JaCoCo production probes and 19 actor-bound I/O families over the
+healthy seeds. Long or target-lost runs did not contribute to coverage or
+descendant generation.
+
+At the completed pilot boundary, the checkpoint was promoted to the formal
+80-effective/8-fault budget without repeating trials 1–23. Node2 tmux session
+`solr06_actor_v2_full` resumes at trial 24. The live atomic checkpoint is
+`campaign/state.json` on node2; the pilot checkpoint and audit are mirrored
+here. A separate selected-attempt cap of 320 prevents endless unmatched
+runs. The 128-effective/10-fault extension is decided only at 80 effective
+trials from the last eight runs' coverage or actor-bound I/O novelty.
