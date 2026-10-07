@@ -76,3 +76,24 @@ tmux new-session -d -s solr05_receiver_v4 \
 Do not start a second campaign if the first tmux session or its Python PID is
 still live. A resumed inflight trial starts in fresh scratch; completed rows
 are never rerun.
+
+## Final result
+
+The campaign reached its extended budget on 2026-10-07: 182 unique attempted
+sequences, 145 fully applied sequences, and 128 sequences whose final fault
+was followed by the same replica's selected guard. Seventeen fully applied
+sequences lost that guard and were excluded from effective coverage feedback.
+The longest fully applied sequence had seven faults. The cumulative feedback
+over the two healthy calibrations gained 210 production coverage units, 21
+methods, 79 covered branch counts, and one relevant I/O family. Trial time
+summed to 5,052.027 seconds; the four initial calibrations took another
+61.478 seconds.
+
+There were zero selected-guard exception candidates, so this stage makes no
+new-bug claim. The independent audit in
+`evidence/campaign-v4/independent-raw-audit.json` reconstructed all 182
+attempts from original traces and JaCoCo files with zero errors. The node2
+mirror verification compared 930 completed raw artifact files by SHA-256 with
+zero mismatches. Checkpoint snapshots before the three observed-trace queue
+expansions are retained; they added 15, 13, and four previously untried
+selectors. No completed trial was rerun or imported from the old stages.
