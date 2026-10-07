@@ -58,7 +58,7 @@ def family(row: tuple[int, str, list[str]]) -> str:
 
 def first_target(rows: list[tuple[int, str, list[str]]], after: int = 0):
     # The first occurrence is the test's direct root.replaceChild spy setup.
-    # The selected rollback check is the later /dir1/foo occurrence.
+    # The selected check is the later /dir1/foo snapshot-rename preparation.
     return next((row for row in rows if row[1] == "TARGET_GUARD" and row[0] > after
                  and row[2][0] == "/dir1" and row[2][1] == "foo"), None)
 
@@ -74,7 +74,7 @@ def initial() -> dict:
     manifest = json.loads((HEALTHY / "manifest.json").read_text())
     rows = events(HEALTHY / "runtime_trace.tsv")
     assert manifest["returncode"] == 0, "Original JUnit healthy run must pass"
-    assert first_target(rows) is not None, "Exact rollback replaceChild guard was not reached"
+    assert first_target(rows) is not None, "Exact snapshot-rename replaceChild guard was not reached"
     assert not any(row[1] == "TARGET_FALSE" and row[2][:2] == ["/dir1", "foo"]
                    for row in rows), "Healthy selected guard unexpectedly failed"
     io = available_io(rows)
@@ -145,15 +145,17 @@ def enqueue(state: dict, plan: list[str], priority: int) -> None:
 def pick_job(state: dict) -> int:
     outcomes = {}
     for trial in state["completed"]:
-        depth = trial["fault_count"]
-        tested, retained = outcomes.get(depth, (0, 0))
-        outcomes[depth] = (tested + 1, retained + bool(
+        # A failed two-fault suffix only says something about its exact
+        # parent prefix. Other first-fault contexts may preserve the target.
+        prefix = tuple(trial["plan"][:-1])
+        tested, retained = outcomes.get(prefix, (0, 0))
+        outcomes[prefix] = (tested + 1, retained + bool(
             trial["exact_order_applied"] and trial["target_after_fault"]))
 
     def rank(index: int) -> tuple[int, int]:
         job = state["queue"][index]
         depth = len(job["plan"])
-        tested, retained = outcomes.get(depth, (0, 0))
+        tested, retained = outcomes.get(tuple(job["plan"][:-1]), (0, 0))
         priority = job["priority"]
         if depth > 1 and tested >= 6 and retained == 0:
             priority = min(priority, 1)
@@ -210,7 +212,8 @@ def main() -> None:
     state["budget"] = {"max_trials": args.max_trials, "max_faults": args.max_faults}
     state.setdefault("started_at", time.time())
     # All three exceptions at the immediately preceding main read (#16)
-    # retained the rollback guard; ordinals 10-15 repeatedly lost it.
+    # retained the selected rename-preparation guard; ordinals 10-15
+    # repeatedly lost it.
     # Explore other observed thread roles before more of that prefix.
     for job in state["queue"]:
         last = job["plan"][-1].split("|")
