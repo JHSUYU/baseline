@@ -1,27 +1,39 @@
 # HDFS-11: encrypted transfer key lookup
 
-**Actor V2 recheck running on node1.** Two fresh original Hadoop
-3.4.3 JUnit seeds of
-`TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]` passed.
-The isolated [V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual
-SASL receiver and key manager to the same DataNode startup episode and block
-pool. Its [115-attempt raw audit](actor-v2-segment-115-attempts.json) verifies 115
-fully ordered fault sequences, 60 strict same-actor target-retaining sequences,
-and zero selected `InvalidEncryptionKeyException` throws. The other 55
-sequences lose the target after an injected-I/O checksum or block-read failure;
-they are recorded but not effective. The audit hashes each original JUnit
-manifest, raw trace, fault plan, result, and JaCoCo file. It reports 243 added
-probes, 28 methods, and 125 branch-count buckets relative to healthy seed A,
-and no new I/O family beyond the two healthy seeds' union. The already
-finished in-flight JUnit manifest from the
+**Actor V2 recheck complete on node1.** Two fresh original Hadoop 3.4.3 JUnit
+seeds of `TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]`
+passed. The isolated [V2 follow-up](../../hdfs-key-actor-v2/README.md) binds
+the SASL receiver and key manager to the same concrete DataNode startup
+episode and block pool. The [terminal raw audit](actor-v2-final-137-attempts.json)
+checks 137 distinct original-JUnit trials, each of which matched and applied
+all planned faults in order: 404 fault events total. Eighty trials reached the
+selected `allKeys.get(keyId)` null guard after the final fault on that same
+actor, and all 80 original JUnits passed. The other 57 trials failed their
+original JUnit after an injected-I/O checksum or block-read failure and lost
+the target; none counts as effective. No selected
+`InvalidEncryptionKeyException` occurred. The audit hashes every JUnit
+manifest, raw trace, fault plan, result, and JaCoCo file. Relative to healthy
+seed A, the tested sequences added 252 probes, 30 methods, and 128 branch-count
+buckets, with no new I/O family beyond the two healthy seeds' union.
+
+The [terminal verification](actor-v2-terminal-verification.json) independently
+recounts every exact plan and original-JUnit exit: one single-fault, 18
+two-fault, 105 three-fault, and 13 four-fault plans. Every combination of the
+three observed SASL read sites (`readMagic`, `readSecret`, `readOptions`) and
+three exception types (`IOException`, `EOFException`, `SocketTimeoutException`)
+was exercised and had a target-retaining run. The final eight effective trials
+added no production coverage or I/O family. The planned 80-effective/eight-fault
+budget therefore ended without the conditional 128/ten extension; 1,321
+untested sequences remain queued only for any explicitly larger future budget.
+Measured active JUnit time was 4,145.497 seconds. Node1's tmux
+`hdfs11_key_v2_fuzz` exited naturally at the durable checkpoint.
+
+The previously finished in-flight JUnit manifest from the
 [coexistence pause](../../hdfs-key-actor-v2/evidence/HDFS-11/coexistence-pause.json)
-was consumed without starting another JVM, moving the durable node1 checkpoint
-from 53/28 to 54/29. The
-[supervisor](../../hdfs-key-actor-v2/run_hdfs11_budget_gate.py) now continues in
-tmux `hdfs11_key_v2_fuzz` only when its startup gate sees fewer than five Java
-processes. A selected target exception sets a durable review latch before any
-later plan can start. The budget remains 80 effective sequences with up to
-eight faults, conditionally extending to 128/ten for recent new coverage or I/O.
+was consumed without starting another JVM, moving the checkpoint from 53/28
+to 54/29. The [supervisor](../../hdfs-key-actor-v2/run_hdfs11_budget_gate.py)
+enforced the five-Java startup gate and stopped at the first candidate or
+unexpected JUnit outcome.
 At attempt 87, four exact SASL `readMagic` exceptions exhausted the original
 test's only DataNode and caused a `BlockMissingException` before a later target
 check. Its [source and raw-event review](actor-v2-trial87-review.json) classifies
@@ -30,11 +42,20 @@ At the complete 100-attempt boundary, 13 exactly injected four-fault plans had
 all lost the target, while 36 of 68 three-fault plans retained it. The
 [depth-priority migration](actor-v2-scheduler-depth-v4-migration.json) preserved
 the checkpoint byte for byte, every queued sequence, and all measured coverage.
-It ranks the poorly retaining depth below shallower plans while still sampling
-penalized plans every twelfth selection. The existing tmux session resumed
-from attempt 100; the 80-effective budget and eight-fault limit remain intact.
-In the next 15 completed attempts, 14 three-fault plans retained the exact
-same-actor target, bringing the independently audited total to 60 effective.
+It ranked the poorly retaining depth below shallower plans while still
+sampling penalized plans every twelfth selection. The same tmux checkpoint
+resumed from attempt 100; 34 of the next 37 attempts retained the target.
+Neither the 80-effective budget nor eight-fault limit changed.
+
+The Hadoop 3.4.3 source performs `key = allKeys.get(keyId)` at line 551 under
+the manager lock, checks `key == null` at line 552, and throws the selected
+`InvalidEncryptionKeyException` at line 553. Selection line 555 is the last
+line of that exception message. The normal-read JUnit does not deliberately
+expire this key; the separate expired-key JUnit below expects one rejection
+and successful refresh as part of its own test. The V2 result establishes
+that these SASL read faults did not cause the selected null-key branch on the
+same DataNode in this workload. It does not claim a measured NameNode-to-DataNode
+key-update edge or behavior outside the original test.
 
 ## Historical campaigns
 

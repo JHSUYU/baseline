@@ -11,16 +11,16 @@
       "valid_target_retaining": 29
     },
     "java_slot_wait_enabled": true,
-    "last_audited_attempted": 115,
-    "last_audited_effective": 60,
-    "last_audited_full_fault_sequences": 115,
-    "last_audited_segment": "actor-v2-segment-115-attempts.json",
-    "last_audited_segment_sha256": "f30ce468528316d790e0f4e91b20caae3cbafe3c37660fe7c867892100acaa16",
-    "last_audited_target_lost_or_unmatched": 55,
-    "local_mirror_note": "Node1 campaign-state.json is authoritative; the local mirror is a snapshot. Resume in tmux hdfs11_key_v2_fuzz only after the coexistence audit.",
+    "last_audited_attempted": 137,
+    "last_audited_effective": 80,
+    "last_audited_full_fault_sequences": 137,
+    "last_audited_segment": "actor-v2-final-137-attempts.json",
+    "last_audited_segment_sha256": "5b8e0dc77fb96d943e13417296c13ba82cf6f1db7723dd60dc99523d849de519",
+    "last_audited_target_lost_or_unmatched": 57,
+    "local_mirror_note": "Node1 campaign-state.json is the authoritative terminal checkpoint; tmux hdfs11_key_v2_fuzz exited naturally. Do not replay completed sequences.",
     "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/campaign-state.json",
     "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
-    "phase": "formal_budget_running_in_tmux",
+    "phase": "complete",
     "recheck_started_utc": "2026-10-07",
     "resume_checkpoint_sha256_before_run": "083eef51a25e1384511a00d7c3a184c0caf666cb8ea4d7c3d8e3e543db7f951f",
     "scheduler_family_v3_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/scheduler-migration/family-v3-receipt.json",
@@ -34,7 +34,21 @@
     "trial87_target_loss_review_sha256": "06ca143bc4c4d2fa83a5ee47adfa768747376cc6007791876324983328a42a00",
     "v2_fault_results_not_in_legacy_counts": true,
     "scheduler_depth_v4_receipt": "actor-v2-scheduler-depth-v4-migration.json",
-    "scheduler_runner_sha256": "2d8694ba9e4a5ca14dddfcbf73fc77cac094da3650269742d8191f6b1c13f040"
+    "scheduler_runner_sha256": "2d8694ba9e4a5ca14dddfcbf73fc77cac094da3650269742d8191f6b1c13f040",
+    "terminal_verification": "actor-v2-terminal-verification.json",
+    "terminal_verification_sha256": "889a7706ea8af2ebe5dff2d5b2b50299cbd4a555b2abb274fa93d02bff8c8cf5",
+    "terminal_checkpoint_sha256": "874c8a2f254b2b85b3cbdcd3be4f34b83dd2bc03fa6a18643921e905eadd095a",
+    "terminal_tmux_exited": true,
+    "last_eight_effective_gain": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
   },
   "bug_mark": "none",
   "case_id": "HDFS-11",
@@ -42,11 +56,11 @@
   "cluster_nodes": "MiniDFSCluster, one NameNode and one DataNode (builder defaults)",
   "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]",
   "coverage_gain": {
-    "branch_counts": 125,
-    "methods": 28,
-    "probes": 243
+    "branch_counts": 128,
+    "methods": 30,
+    "probes": 252
   },
-  "elapsed_seconds": 3395.701,
+  "elapsed_seconds": 4145.497,
   "expired_key_supplement": {
     "audit": "independent/expiry/audit-result.json",
     "elapsed_seconds": 3584.545,
@@ -56,10 +70,12 @@
     "strict_injections": 121,
     "target_after_fault": 46,
     "trial_ledger": "expiry-trial-ledger.csv",
-    "unexpected_target_exception_candidates": 0
+    "unexpected_target_exception_candidates": 0,
+    "historical_coarse_actor": true,
+    "excluded_from_actor_v2_budget": true
   },
-  "fault_trials": 115,
-  "fully_applied_trials": 115,
+  "fault_trials": 137,
+  "fully_applied_trials": 137,
   "function": "retrieveDataEncryptionKey(int, byte[])",
   "historical_campaign_summary": {
     "cluster_test": [
@@ -169,7 +185,9 @@
     ],
     "healthy": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-11/independent/healthy-instrumented-03",
     "strict_target_trials": 37,
-    "target_exception_candidates": 0
+    "target_exception_candidates": 0,
+    "historical": true,
+    "excluded_from_actor_v2_budget": true
   },
   "legacy_coarse_actor": {
     "counts_are_historical": true,
@@ -192,7 +210,7 @@
   },
   "methodology": "coverage_io_case_local_asm_jacoco_two_original_junits",
   "new_io_family_count": 0,
-  "reason": "Archived 208-trial graph-free campaign is historical because its hard-coded DataNode source and global site ordinal cannot prove same runtime actor across two MiniDFSCluster incarnations. V2 two-seed actor calibration passed and the separate node1 fault campaign is running; old counts remain unchanged.",
+  "reason": "Actor V2 two-seed calibration and 137 original-JUnit trials completed on node1. All 404 selected SASL read faults were matched/applied in order, 80 postfault checks retained the exact same DataNode/block-pool target, no selected target exception occurred, and the final eight effective trials supplied no extension feedback. Historical coarse-actor trials remain separate.",
   "resolved_check_line": 552,
   "resolved_lookup_line": 551,
   "resolved_throw_source_line": 553,
@@ -200,11 +218,20 @@
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_line": 552,
   "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
-  "source_review": "The original normal-read TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0] reaches the allKeys null guard; none of the 60 V2 strict same-actor target-retaining fault sequences threw the selected InvalidEncryptionKeyException. The separate expired-key JUnit deliberately expects one such exception and is historical until actor V2 rechecked.",
-  "status": "actor_v2_running",
-  "strict_injections": 115,
+  "source_review": "Hadoop 3.4.3 BlockTokenSecretManager.retrieveDataEncryptionKey executes allKeys.get(keyId) under the manager lock at line 551, checks key==null at 552, and throws the selected InvalidEncryptionKeyException at 553. Selection line 555 is message continuation. The unchanged normal-read JUnit does not intentionally expire the key. All 80 V2 exact same-DataNode/block-pool target-retaining trials had a present key and original JUnit exit 0; the 57 injected-I/O JUnit failures lost the target and are excluded. The separate expired-key JUnit deliberately expects one rejection and refresh; its 128 old coarse-actor trials remain historical. No producer key-update edge is inferred from these SASL-read trials.",
+  "status": "quality_complete",
+  "strict_injections": 137,
   "system": "HDFS 3.4.3",
-  "target_after_fault": 60,
+  "target_after_fault": 80,
   "target_exception_after_fault_trials": 0,
-  "target_reached": true
+  "target_reached": true,
+  "applied_fault_events": 404,
+  "matched_fault_events": 404,
+  "requested_fault_events": 404,
+  "max_requested_fault_depth": 4,
+  "multi_fault_trials": 136,
+  "oracle_candidates": 0,
+  "stop_reason": "80 effective same-actor target-retaining trials reached; final eight effective had no new production coverage or I/O family, so conditional 128 extension did not apply.",
+  "completed_at_utc": "2026-10-07T10:43:37.308797+00:00",
+  "updated_at_utc": "2026-10-07T10:45:41.863609+00:00"
 }
