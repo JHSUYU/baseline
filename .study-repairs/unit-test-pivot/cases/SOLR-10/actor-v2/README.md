@@ -161,6 +161,31 @@ fresh exact-plan replays; see `CANDIDATE-SOLR-40.md` and the per-run receipts.
 The full budget continues from that checkpoint in isolated node2 tmux session
 `solr103940_v4_full`.
 
+## V5 scheduling within the same V4 campaign
+
+At the completed trial-102 checkpoint, SOLR-39 had only four effective trials.
+The audited V4 queue still contained 183 untested single-fault roots whose
+healthy trace connected their I/O to SOLR-39. The scheduler now spends every
+other round on one of those roots, starting with `LazyCollectionRef#get`
+collection-state watch reads; intervening rounds retain the existing
+coverage-guided mutation queue. This is a queue-selection change only: the
+original JUnit, production hook bytecode, runtime identity gate, fault model,
+per-check goals, and already completed plans are unchanged.
+
+The in-flight trial 102 was rerun from its clean scratch after restarting
+tmux, completed once in the ledger, and then the migration wrote a new atomic
+checkpoint. `evidence/campaign-v4/root-balance-migration.json` records the old
+and new scheduler source SHA-256, checkpoint SHA-256 before and after, and the
+102 completed/seen plans. The first priority root, trial 104, was strictly
+injected and had a verified healthy-trace link to SOLR-39/40, but its live
+post-fault check reached only SOLR-10; it therefore does not count for
+SOLR-39/40. Its selector, actual target relation, original JUnit/hook hashes,
+and raw trace SHA-256 are in `root-balance-first-trial.json` beside the
+migration receipt. In the next four priority-root rounds through trial 110,
+two reached SOLR-39 on the same live client and alias manager. The full
+campaign continues in `solr103940_v4_full`; the latest effective counts are
+in the checkpoint and the synchronized per-check result records.
+
 ## Historical node2 healthy calibration, 2026-10-06
 
 Four bounded healthy invocations ran in persistent tmux session
