@@ -50,6 +50,7 @@ def main():
            "first_trial": receipt["first_trial"], "last_trial": receipt["last_trial"],
            "attempts": len(trials), "strict": sum(t["strict_exact_actor"] for t in trials),
            "effective": sum(t["ledger_effective"] for t in trials),
+           "max_ordered_faults": max(t["planned_faults"] for t in trials),
            "target_exceptions": sum(t["ledger_target_exception"] for t in trials),
            "junit_failures": sum(t["junit_exit"] != 0 for t in trials),
            "elapsed_seconds": round(sum(t["elapsed_seconds"] for t in trials), 3),
@@ -62,7 +63,8 @@ def main():
     print(json.dumps({key: out[key] for key in ("attempts", "strict", "effective",
                                                 "target_exceptions", "junit_failures",
                                                 "target_actor_lineage_issues",
-                                                "strict_identity_issues", "elapsed_seconds")}))
+                                                "strict_identity_issues", "max_ordered_faults",
+                                                "elapsed_seconds")}))
 
 
 if __name__ == "__main__":

@@ -29,7 +29,7 @@ Its machine-readable receipt is `v3-campaign-r009-r040-audit.json`.
 | Total JUnit elapsed time | 729.789 s |
 | New production probe IDs reported to the scheduler | 68 |
 | New normalized stable I/O families reported to the scheduler | 9 |
-| Maximum ordered fault depth in this batch | 4 |
+| Maximum ordered fault depth in this batch | 8 |
 | Auditor strict identity or target actor-lineage issues | 0 |
 
 The eight failed original JUnits are r013, r014, r015, r019, r032, r036,
