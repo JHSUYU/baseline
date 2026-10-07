@@ -197,11 +197,18 @@ def choose_pending(state: dict) -> dict:
     if shallow is not None and state['shallow_gap'] >= 2:
         index = shallow
     else:
-        index = max(range(len(pending)), key=lambda i:
-                    (pending[i].get('score', 0), len(pending[i]['plan']),
+        best_score = max(x.get('score', 0) for x in pending)
+        scored = [i for i, x in enumerate(pending) if x.get('score', 0) == best_score]
+        suite = [i for i in scored if ':SUITE@@' in pending[i]['plan'][0]]
+        test = [i for i in scored if i not in suite]
+        pool = suite if state.get('suite_gap', 0) >= 3 and suite else (test or suite)
+        index = max(pool, key=lambda i:
+                    (len(pending[i]['plan']),
                      int('/aliases.json' in pending[i]['plan'][-1]), -i))
     job = pending.pop(index)
     state['shallow_gap'] = 0 if len(job['plan']) == 1 else state['shallow_gap'] + 1
+    state['suite_gap'] = (0 if ':SUITE@@' in job['plan'][0]
+                          else state.get('suite_gap', 0) + 1)
     job['run_id'] = 'trial-{:03d}'.format(state['next_trial'])
     state['next_trial'] += 1
     return job
