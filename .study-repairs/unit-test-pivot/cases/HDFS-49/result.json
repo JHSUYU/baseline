@@ -1,6 +1,6 @@
 {
   "case_id": "HDFS-49",
-  "status": "no_cluster_test",
+  "status": "no_usable_cluster_test",
   "cluster_test": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestSnapshot#testSnapshot",
   "target_reached": false,
   "elapsed_seconds": 0,
@@ -13,6 +13,10 @@
   "target_source_line": 188,
   "target_function": "DirectorySnapshottableFeature.addSnapshot",
   "target_code": "if (n + 1 > snapshotQuota) throw new SnapshotException(...)",
-  "source_review": "The mapped TestSnapshot#testSnapshot repeatedly creates unique snapshots under the default quota, and does not lower that quota. A scan of original Hadoop 3.4.3 HDFS test sources finds no setSnapshotQuota call and no snapshot-quota-exceeded exception test. TestSnapshot#testAllowAndDisallowSnapshot confirms root quota 0 after disallow but does not create a snapshot then. No original embedded-cluster JUnit was found that exercises the selected quota-exceeded arm; no fault trial is claimed.",
-  "evidence": "HDFS-TEST-MAP.json#HDFS-49; Hadoop 3.4.3 DirectorySnapshottableFeature.java:184-191; TestSnapshot.java:238-275,420-458; source test-tree search for setSnapshotQuota and quota-exceeded assertions."
+  "source_review": "Original MiniDFSCluster JUnit TestSnapshot#testSnapshot reaches the addSnapshot quota guard on its false arm: 20 iterations create two unique snapshots each under quota 65536, at most 20 per directory. SnapshotTestHelper.createSnapshot also calls allowSnapshot before every creation, restoring the default quota. No original HDFS test sets a small positive snapshotQuota or expects the selected 'snapshot quota is' exception. TestSnapshotCommands#testMaxSnapshotLimit instead reaches SnapshotManager's distinct per-directory limit of 3 after the selected guard. Root has quota 0 before allowSnapshot and after disallowSnapshot, but TestSnapshot#testAllowAndDisallowSnapshot does not create a root snapshot in that state. Under unchanged workload and I/O-exception-only faults, no source-supported route changes the quota or adds ~65536 snapshots before this guard; no trial is claimed. This is a source-based feasibility assessment, not a runtime target trace.",
+  "source_inferred_guard_reached": true,
+  "healthy_selected_exception_source_inferred": false,
+  "runtime_target_hit_verified": false,
+  "case_outcome": "original_cluster_junit_reaches_guard_but_cannot_establish_selected_quota_state",
+  "evidence": "cases/HDFS-49/README.md; HDFS-TEST-MAP.json#HDFS-49; Hadoop 3.4.3 DirectorySnapshottableFeature.java:62,181-192; TestSnapshot.java:91,120-123,163-184,236-271,420-458; SnapshotTestHelper.java:333-341; SnapshotManager.java:252-257,294-304,448-479; TestSnapshotCommands.java:49-54,118-134."
 }
