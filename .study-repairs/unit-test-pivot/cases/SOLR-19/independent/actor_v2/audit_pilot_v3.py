@@ -98,6 +98,17 @@ def audit_trial(trial, manifest, events):
                                "caller": caller, "ordinal": int(ordinal)})
     target_core = trial["target_core"]
     guards = [e for e in events if e["phase"] == "TARGET_GUARD" and e["core"] == target_core]
+    guard_lineage = []
+    for guard in guards:
+        preceding = [e for e in events if e["phase"] in ("SEND_CREATE_COLLECTION", "SEND_ADD_REPLICA")
+                     and e["core"] == target_core and e["seq"] < guard["seq"]]
+        sender = preceding[-1] if preceding else None
+        same_node = bool(sender and sender["actor"] == guard["actor"])
+        guard_lineage.append({"guard_seq": guard["seq"], "sender_seq": sender["seq"] if sender else None,
+                              "sender_node": sender["actor"] if sender else None,
+                              "guard_node": guard["actor"], "same_node": same_node})
+        if not same_node:
+            issues.append("target_guard_actor_does_not_match_create_sender")
     last_fault = applied[-1]["seq"] if applied else None
     after = [e for e in guards if last_fault is not None and e["seq"] > last_fault]
     if len(applied) != len(planned) and trial["strict_exact_actor"]:
@@ -116,6 +127,7 @@ def audit_trial(trial, manifest, events):
             "same_core_guards_before_fault": [e["seq"] for e in guards if last_fault is not None and e["seq"] < last_fault],
             "same_core_guards_after_fault": [{"seq": e["seq"], "actor_node": e["actor"],
                                                "branch": e["detail"]} for e in after],
+            "target_guard_sender_lineage": guard_lineage,
             "junit_exit": manifest["exit_code"], "elapsed_seconds": manifest["elapsed_seconds"],
             "ledger_effective": trial["effective"], "ledger_target_exception": trial["target_exception"],
             "issues": issues}

@@ -82,6 +82,7 @@ operation, path, caller, ordinal, and synchronized IO→match→apply events.
 It found no identity discrepancy in the five strict trials. In r005/r007,
 the target n3 owner was the dynamically resolved `JETTY_3` in those runs;
 in r008 the CREATE producer was `JETTY_3`. Its archived receipt also records
+the exact CREATE sender node matching the target guard node in every run, and
 that r003/r004 target n3 preceded the fault, so they count as attempts only.
 r006 was unmatched and also counts only as an attempt. All six runs recorded
 nine exact nonthrowing guard events and zero external-properties file opens.

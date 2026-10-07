@@ -138,7 +138,9 @@ def relevant_sites(rows: list[dict], after_seq: int = 0) -> list[dict]:
     emitted = set()
     for core, target_seq in ((core, seq) for core, seqs in guards.items() for seq in seqs):
         sender = latest_sender(senders, core, target_seq)
-        if sender is None:
+        target = next(row for row in rows if row["phase"] == "TARGET_GUARD" and
+                      row["core"] == core and int(row["seq"]) == target_seq)
+        if sender is None or target["actor"] != sender["actor"]:
             continue
         start = max(int(sender["seq"]), after_seq)
         owner = roles.get(sender["actor"])
@@ -298,10 +300,16 @@ def finish_attempt(state: dict) -> None:
     strict, applied, issues = exact_applied(rows, plan["steps"])
     last_seq = int(applied[-1]["seq"]) if applied else -1
     core = plan["steps"][-1]["core"]
-    after = [r for r in rows if r["phase"] == "TARGET_GUARD" and r["core"] == core
-             and int(r["seq"]) > last_seq] if last_seq >= 0 else []
+    raw_after = [r for r in rows if r["phase"] == "TARGET_GUARD" and r["core"] == core
+                 and int(r["seq"]) > last_seq] if last_seq >= 0 else []
+    senders = send_by_core(rows)
+    after = [r for r in raw_after if
+             (sender := latest_sender(senders, core, int(r["seq"]))) is not None and
+             r["actor"] == sender["actor"]]
     target_after = bool(after)
-    target_exception = strict and any(r["detail"] == "missing" for r in after)
+    # Keep any exact target exception as a candidate for source review even if
+    # its actor join is unexpected; only joined targets count toward the budget.
+    target_exception = strict and any(r["detail"] == "missing" for r in raw_after)
     effective = strict and target_after
     covered = coverage_probes_v3.covered(output / "jacoco.exec") if effective else set()
     old_probes = set(state["seen_probes"])
@@ -318,6 +326,8 @@ def finish_attempt(state: dict) -> None:
               "faults_applied": len(applied), "strict_exact_actor": strict,
               "identity_issues": issues, "target_core": core,
               "target_after_last_fault": target_after, "target_exception": target_exception,
+              "same_core_guard_after_fault_count": len(raw_after),
+              "target_actor_lineage_mismatches": len(raw_after) - len(after),
               "effective": effective, "new_production_probes": len(new_probes),
               "new_stable_io_families": len(new_io), "observed_io_sites": len(sites),
               "evidence": str(output.relative_to(HERE))}
