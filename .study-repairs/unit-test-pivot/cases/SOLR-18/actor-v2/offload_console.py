@@ -10,7 +10,7 @@ import re
 import subprocess
 import sys
 
-from mirror import DEST, HOST, RECEIPT, ROOT, SSH, digest
+from mirror import DEST, HOST, NODE2_LOCAL, RECEIPT, ROOT, SSH, digest
 
 HERE = Path(__file__).resolve().parent
 STATE = HERE / 'campaign-state.json'
@@ -23,6 +23,8 @@ def eligible(item: dict) -> bool:
 
 
 def offload(item: dict) -> bool:
+    if NODE2_LOCAL:
+        return False
     if not eligible(item):
         return False
     run_id = item['run_id']

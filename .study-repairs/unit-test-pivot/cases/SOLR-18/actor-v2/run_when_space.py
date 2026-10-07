@@ -10,9 +10,16 @@ import subprocess
 import sys
 import time
 
+from mirror import NODE2_LOCAL
+
 HERE = Path(__file__).resolve().parent
 STATE = HERE / 'campaign-state.json'
-RESUME_FREE_BYTES = int(2.25 * (1 << 30))
+RESUME_FREE_BYTES = int((10.25 if NODE2_LOCAL else 2.25) * (1 << 30))
+
+
+def java_processes() -> int:
+    output = subprocess.check_output(['ps', '-eo', 'comm='], text=True)
+    return sum(name.strip() == 'java' for name in output.splitlines())
 
 
 def stamp() -> str:
@@ -35,7 +42,12 @@ def main() -> int:
             continue
         free = shutil.disk_usage('/').free
         if free < RESUME_FREE_BYTES:
-            print(stamp(), 'waiting for 2.25 GiB node0 free; current', free, flush=True)
+            print(stamp(), 'waiting for', '10.25 GiB node2' if NODE2_LOCAL
+                  else '2.25 GiB node0', 'free; current', free, flush=True)
+            time.sleep(20)
+            continue
+        if NODE2_LOCAL and java_processes() >= 5:
+            print(stamp(), 'waiting for node2 fifth Java slot', flush=True)
             time.sleep(20)
             continue
         print(stamp(), 'resuming at', state['effective'], 'effective /',

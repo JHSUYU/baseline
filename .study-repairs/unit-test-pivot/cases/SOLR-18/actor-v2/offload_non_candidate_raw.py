@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 import subprocess
 
-from mirror import DEST, HOST, RECEIPT, ROOT, SSH, digest
+from mirror import DEST, HOST, NODE2_LOCAL, RECEIPT, ROOT, SSH, digest
 from offload_console import eligible
 
 HERE = Path(__file__).resolve().parent
@@ -19,6 +19,8 @@ NAMES = ('events.tsv', 'jacoco.exec')
 
 
 def offload(item: dict) -> bool:
+    if NODE2_LOCAL:
+        return False
     if not eligible(item):
         return False
     run_id = item['run_id']

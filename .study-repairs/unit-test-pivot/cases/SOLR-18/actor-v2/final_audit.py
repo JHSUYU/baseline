@@ -12,7 +12,7 @@ import tempfile
 
 from actor_audit import audit
 from build import CLASSES, HERE
-from mirror import DEST, HOST, SSH
+from mirror import DEST, HOST, NODE2_LOCAL, SSH
 from run_native import RUN_ROOT
 
 STATE = HERE / 'campaign-state.json'
@@ -33,6 +33,10 @@ def sha(path: Path) -> str:
 
 
 def remote_hashes() -> dict[tuple[str, str], str]:
+    if NODE2_LOCAL:
+        return {(directory.name, path.name): sha(path)
+                for directory in RUN_ROOT.iterdir() if directory.is_dir()
+                for path in directory.iterdir() if path.is_file()}
     command = "find '" + DEST + "' -mindepth 2 -maxdepth 2 -type f -exec sha256sum -- {} +"
     output = subprocess.run(SSH + [HOST, command], capture_output=True,
                             text=True, check=True).stdout
@@ -61,6 +65,17 @@ def audit_all() -> dict:
         assert seed['junit_exit'] == 0 and seed['junit_summary_present']
         assert seed['test_started_count'] == 1 and seed['assumption_failure_count'] == 0
         assert not seed['classpath_has_graphchecker_or_skeleton_jar']
+    if NODE2_LOCAL:
+        migration = json.loads((HERE / 'node2-migration-calibration.json').read_text())
+        assert migration['original_junit_exit'] == 0
+        assert migration['original_junit_summary_present']
+        assert migration['test_started_count'] == 1
+        assert migration['selected_target_guard']
+        assert migration['selected_target_outcome'] == 'TARGET_EQUAL_CHECK'
+        assert migration['junit_class_sha256'] == junit_sha
+        assert not migration['classpath_has_graphchecker_or_skeleton_jar']
+        for name, expected in migration['sha256'].items():
+            assert sha(RUN_ROOT / 'node2-migration-clean' / name) == expected
     assert len(state['trials']) == state['attempts']
     assert len({item['run_id'] for item in state['trials']}) == state['attempts']
     by_id = {item['run_id']: item for item in state['trials']}
@@ -121,9 +136,13 @@ def audit_all() -> dict:
         assert metadata['junit_exit'] == item['junit_exit']
         assert metadata['elapsed_seconds'] == item['elapsed_seconds']
         assert run_id in mirror['runs']
-        digests = mirror['runs'][run_id]['sha256']
-        assert mirror['runs'][run_id]['rsync_checksum_dry_run_exit'] == 0
-        assert mirror['runs'][run_id]['rsync_checksum_dry_run_output'] == ''
+        mirror_entry = mirror['runs'][run_id]
+        digests = mirror_entry['sha256']
+        if mirror_entry.get('archive_status') == 'pending_node0_pull':
+            assert NODE2_LOCAL and mirror_entry['raw_retained_on_node2']
+        else:
+            assert mirror_entry['rsync_checksum_dry_run_exit'] == 0
+            assert mirror_entry['rsync_checksum_dry_run_output'] == ''
         for name, expected in digests.items():
             assert remote[(run_id, name)] == expected, (run_id, name, 'node2')
         for name in RAW_NAMES:
@@ -204,8 +223,15 @@ def audit_all() -> dict:
         'original_junit_class_sha256': junit_sha,
         'raw_mirror_source': mirror['source_root'],
         'raw_mirror_destination': mirror['destination_root'],
-        'raw_mirror_verified_runs': len(state['trials']),
+        'raw_mirror_verified_runs': sum(
+            mirror['runs'][x['run_id']].get('archive_status') != 'pending_node0_pull'
+            for x in state['trials']),
+        'raw_archive_pending_node0_pull_runs': [x['run_id'] for x in state['trials']
+            if mirror['runs'][x['run_id']].get('archive_status') == 'pending_node0_pull'],
         'raw_mirror_remote_sha_reverified_files': sum(
+            len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']
+            if mirror['runs'][x['run_id']].get('archive_status') != 'pending_node0_pull'),
+        'raw_primary_sha_reverified_files': sum(
             len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']),
         'noncandidate_consoles_offloaded_to_node2': len(offloaded),
         'noncandidate_event_jacoco_pairs_offloaded_to_node2': len(raw_offloaded),

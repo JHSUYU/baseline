@@ -9,10 +9,11 @@ import os
 from pathlib import Path
 import shutil
 import signal
+import subprocess
 
 from actor_audit import actor, audit, events, selected_check
 from build import CLASSES, HERE
-from mirror import mirror_run
+from mirror import NODE2_LOCAL, mirror_run
 from offload_console import offload
 from offload_non_candidate_raw import offload as offload_non_candidate_raw
 from run_native import RUN_ROOT, run
@@ -21,7 +22,13 @@ STATE = HERE / 'campaign-state.json'
 LEDGER = HERE / 'trial-ledger.jsonl'
 CALIBRATION = HERE / 'calibration.json'
 STOP = False
-MIN_FREE_BYTES = int(2.2 * (1 << 30)) + 16 * (1 << 20)
+MIN_FREE_BYTES = (10 * (1 << 30) if NODE2_LOCAL
+                  else int(2.2 * (1 << 30)) + 16 * (1 << 20))
+
+
+def java_processes() -> int:
+    output = subprocess.check_output(['ps', '-eo', 'comm='], text=True)
+    return sum(name.strip() == 'java' for name in output.splitlines())
 
 
 def atomic_json(path: Path, value: dict) -> None:
@@ -442,7 +449,13 @@ def main() -> None:
                 break
         free = shutil.disk_usage('/').free
         if free <= MIN_FREE_BYTES:
-            state['pause_reason'] = 'node0_free_bytes_{}_below_2.2GiB_plus_16MiB_guard'.format(free)
+            state['pause_reason'] = ('node2_free_bytes_{}_below_10GiB_guard'.format(free)
+                                     if NODE2_LOCAL else
+                                     'node0_free_bytes_{}_below_2.2GiB_plus_16MiB_guard'.format(free))
+            atomic_json(STATE, state)
+            break
+        if NODE2_LOCAL and java_processes() >= 5:
+            state['pause_reason'] = 'node2_java_process_count_at_least_5'
             atomic_json(STATE, state)
             break
         state.pop('pause_reason', None)

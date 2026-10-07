@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import re
 import shutil
+import socket
 import subprocess
 import sys
 
@@ -20,6 +21,7 @@ KEY = Path('/users/ZhenyuLi/.ssh/id_ed25519_nodes')
 RECEIPT = HERE / 'mirror-receipt.json'
 SSH = ['ssh', '-i', str(KEY), '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes',
        '-o', 'ConnectTimeout=5']
+NODE2_LOCAL = socket.gethostname().split('.')[0] == 'node2'
 
 
 def digest(path: Path) -> str:
@@ -42,6 +44,23 @@ def mirror_run(run_id: str, prune_derived: bool = False) -> None:
     path = ROOT / run_id
     if not (path / 'run.json').exists():
         raise FileNotFoundError(path / 'run.json')
+    if NODE2_LOCAL:
+        # Node2 is the primary raw store until node0 pulls a verified archive.
+        # Keep all raw trace/coverage/JUnit logs locally; prune only derived text.
+        if prune_derived and run_id.startswith('trial-'):
+            for name in ('covered_probes.txt', 'covered_methods.txt', 'covered_lines.txt'):
+                (path / name).unlink(missing_ok=True)
+            shutil.rmtree(path / 'scratch', ignore_errors=True)
+        files = {p.name: digest(p) for p in sorted(path.iterdir()) if p.is_file()}
+        receipt['runs'][run_id] = {
+            'verified_at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'source_node': 'node2', 'source': str(path),
+            'archive_status': 'pending_node0_pull',
+            'raw_retained_on_node2': True, 'sha256': files}
+        temp = RECEIPT.with_suffix('.json.tmp')
+        temp.write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
+        os.replace(temp, RECEIPT)
+        return
     destination = DEST + '/' + run_id
     files = {p.name: digest(p) for p in sorted(path.iterdir()) if p.is_file()}
     transport = 'ssh -i ' + str(KEY) + ' -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=5'
