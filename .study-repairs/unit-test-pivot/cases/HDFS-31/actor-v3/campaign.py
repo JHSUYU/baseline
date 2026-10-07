@@ -111,7 +111,9 @@ def same_target(row: dict, applied: list[dict], last_seq: int) -> bool:
     first = applied[0]
     if (row["seq"] <= last_seq or row.get("actorKey") != first.get("actorKey")
             or row.get("dnObjectId") != first.get("dnObjectId")
-            or not row.get("dnUuidRaw") or not row.get("blockPoolIdRaw")):
+            or not row.get("dnUuidRaw")
+            or row.get("dnUuidRaw") != first.get("dnUuidRaw")
+            or not row.get("blockPoolIdRaw")):
         return False
     if row["event"] == "DIRECT_TARGET_CHECK" and row.get("servicePresent"):
         return (row.get("serviceObjectId") == first.get("serviceObjectId")
