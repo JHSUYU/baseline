@@ -51,3 +51,29 @@ attempt, including unmatched and target-lost attempts, is recorded. A target
 exception is a candidate that requires replay and source review before any
 new-bug claim. Completed raw traces are checksum-verified and compressed to
 bound node0 disk usage.
+
+## Independent Overseer alias-write campaign
+
+The case-local `independent/stage2` agent adds runtime observations at
+`MaintainRoutedAliasCmd.remoteInvoke`, `MaintainRoutedAliasCmd.call`, and
+`addCollectionToAlias`. It tags the actual `AliasesManager` ZooKeeper
+`setData("/aliases.json")` operation with the alias name and newly created
+collection carried across the Overseer queue. Two original, instrumented
+four-node JUnit healthy runs passed; each produced five selected guards and
+the same five exact alias-write identities before those guards. For each
+identity, the trace orders RPC send, Overseer receive, alias-write context,
+native ZooKeeper write, and the selected guard. The original JUnit and Solr
+source are unchanged. This phase has its own agent, JaCoCo probe set,
+checkpoint and 80-effective/max-eight budget, independent of stage one.
+
+It runs on node1 in tmux `solr13_stage2`, using only the SOLR-13 case path on
+that node. The atomic state and progress are in
+`independent/stage2/evidence/campaign/`. A trial counts only when the exact
+planned I/O identity applies, the Overseer handoff is correlated at runtime,
+and the same alias/collection reaches the guard after the final fault. The
+first trial injected at `AliasesManager.applyModificationAndExportToZk`'s
+native `/aliases.json` write; the same source reached the guard afterwards,
+the original JUnit passed, and production JaCoCo gained 12 probes. It is an
+effective trial, with no selected exception and no new-bug claim. Both
+campaigns preserve each JVM attempt and compress completed traces after
+decompressed-SHA256 verification.
