@@ -55,6 +55,9 @@ public final class Smoke {
     Object controller = new Object();
     Object client = new Object();
     Probe.bind(controller, client, "127.0.0.1:12345_solr", "/tmp/test/node1");
+    if (!Probe.smokeSameClient(controller, client) ||
+        Probe.smokeSameClient(controller, new Object()))
+      throw new AssertionError("wrong SolrZkClient matched target controller");
     boolean rejected = false;
     try {
       Probe.bind(new Object(), new Object(), "127.0.0.1:54321_solr", "/tmp/test/node1");

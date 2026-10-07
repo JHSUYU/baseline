@@ -50,8 +50,15 @@ def relevant(row: dict) -> bool:
             and not re.search(r'/election/[^/]+$', row['resource']))
 
 
-def write_plan(path: Path, sequence: list[dict]) -> None:
-    content = ['count=' + str(len(sequence))]
+def client_id(row: dict) -> str | None:
+    return detail(row['detail']).get('clientIdentity')
+
+
+def write_plan(path: Path, target: list[str], sequence: list[dict]) -> None:
+    if not target[0].startswith('JETTY/') or any(item['actorKey'] != target[0]
+                                                     for item in sequence):
+        raise RuntimeError('fault sequence is not on the target actor')
+    content = ['count=' + str(len(sequence)), 'targetActor=' + target[0]]
     for index, item in enumerate(sequence, 1):
         content.extend(f'step.{index}.{field}={item[field]}' for field in FIELDS)
     path.write_text('\n'.join(content) + '\n')
@@ -81,10 +88,16 @@ def seed_candidates(first: list[dict], second: list[dict], common: set[tuple]) -
             continue
         cutoff_a = min(row['seq'] for row in a_guards)
         cutoff_b = min(row['seq'] for row in b_guards)
+        clients_a = {client_id(row) for row in a_guards}
+        clients_b = {client_id(row) for row in b_guards}
         second_points = {identity(point(row)) for row in second
-                         if relevant(row) and row['seq'] < cutoff_b}
+                         if relevant(row) and row['seq'] < cutoff_b
+                         and row['actorKey'] == target[0]
+                         and client_id(row) in clients_b}
         matching = [point(row) for row in first
                     if relevant(row) and row['seq'] < cutoff_a
+                    and row['actorKey'] == target[0]
+                    and client_id(row) in clients_a
                     and identity(point(row)) in second_points]
         # Favor I/O nearest the target check; retain a few earlier paths for breadth.
         chosen = list(reversed(matching[-20:])) + matching[:8]
@@ -147,6 +160,8 @@ def choose(state: dict) -> dict:
 
 
 def enqueue(state: dict, target: list[str], sequence: list[dict], gain: int) -> None:
+    if any(item['actorKey'] != target[0] for item in sequence):
+        raise RuntimeError('cross-actor fault sequence rejected')
     digest = identity((target, sequence))
     if digest in state['seen'] or any(identity((row['target'], row['sequence'])) == digest
                                        for row in state['queue']):
@@ -217,6 +232,8 @@ def analyze(directory: Path, target: list[str], sequence: list[dict],
     last = applied[-1]['seq'] if applied else -1
     guards = [row for row in trace if selected(row) and
               target_signature(row) == tuple(target) and row['seq'] > last]
+    guards = [row for row in guards if all(client_id(item) == client_id(row)
+              and item['actorKey'] == row['actorKey'] for item in applied)]
     throws = [row for row in trace if row['event'] == 'TARGET_THROW'
               and target_signature(row) == tuple(target) and row['seq'] > last]
     effective = strict and bool(guards)
@@ -246,12 +263,15 @@ def mutate(state: dict, target: list[str], sequence: list[dict],
     applied = [row for row in trace if row['event'] == 'IO_APPLIED']
     last = applied[-1]
     later = [row for row in trace if selected(row) and
-             target_signature(row) == tuple(target) and row['seq'] > last['seq']]
+             target_signature(row) == tuple(target) and row['seq'] > last['seq']
+             and client_id(row) == client_id(last)]
     if not later:
         return
     finish = min(row['seq'] for row in later)
     choices = [point(row) for row in trace if relevant(row)
-               and last['seq'] < row['seq'] < finish]
+               and last['seq'] < row['seq'] < finish
+               and row['actorKey'] == target[0]
+               and client_id(row) == client_id(last)]
     gain = result['new_coverage'] + result['new_families']
     for item in choices[:6 if gain else 3]:
         enqueue(state, target, sequence + [item], gain)
@@ -272,7 +292,7 @@ def campaign() -> None:
         directory = ROOT / f'trial-{number:03d}'
         directory.mkdir(parents=True, exist_ok=True)
         plan = directory / 'fault.properties'
-        write_plan(plan, sequence)
+        write_plan(plan, target, sequence)
         run(directory, plan)
         state['selected_count'] = number
         result, probes, families, trace = analyze(directory, target, sequence, state)

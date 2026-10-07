@@ -38,7 +38,10 @@ def verify_build() -> dict:
     return receipt
 
 
-def run(output: Path, plan: Path | None = None, timeout: int = 300) -> int:
+def run(output: Path, plan: Path | None = None, timeout: int = 300,
+        instrumented: bool = True) -> int:
+    if plan is not None and not instrumented:
+        raise ValueError('a fault plan requires the actor agent')
     receipt = verify_build()
     output = output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -58,14 +61,17 @@ def run(output: Path, plan: Path | None = None, timeout: int = 300) -> int:
         '-Dsolr.directoryFactory=org.apache.solr.core.MockDirectoryFactory',
         '-Djdk.map.althashing.threshold=0',
         '-Djava.security.egd=file:/dev/./urandom',
-        '-Dsolr07v2.trace=' + str(output / 'events.jsonl'),
-        '-javaagent:' + str(AGENT),
-        '-javaagent:' + str(HERE.parent / 'independent/lib/jacoco-agent.jar')
-        + '=destfile=' + str(output / 'jacoco.exec')
-        + ',append=false,dumponexit=true,includes=org.apache.solr.*',
         '-cp', classpath(), 'baseline.solr07.RunSingleJUnit',
         'org.apache.solr.cloud.AddReplicaTest', 'testAddMultipleReplicas',
     ]
+    if instrumented:
+        command[command.index('-cp'):command.index('-cp')] = [
+            '-Dsolr07v2.trace=' + str(output / 'events.jsonl'),
+            '-javaagent:' + str(AGENT),
+            '-javaagent:' + str(HERE.parent / 'independent/lib/jacoco-agent.jar')
+            + '=destfile=' + str(output / 'jacoco.exec')
+            + ',append=false,dumponexit=true,includes=org.apache.solr.*',
+        ]
     if plan is not None:
         command.insert(command.index('-cp'), '-Dsolr07v2.plan=' + str(plan.resolve()))
     started = time.monotonic()
@@ -81,7 +87,8 @@ def run(output: Path, plan: Path | None = None, timeout: int = 300) -> int:
     metadata = {
         'test': receipt['test'], 'assertions_enabled': True,
         'source_revision': receipt['source_revision'],
-        'agent_sha256': receipt['agent_sha256'],
+        'agent_sha256': receipt['agent_sha256'] if instrumented else None,
+        'instrumented': instrumented,
         'exit_code': exit_code, 'elapsed_seconds': round(time.monotonic() - started, 3),
         'plan': str(plan.resolve()) if plan else None,
     }
@@ -97,5 +104,7 @@ if __name__ == '__main__':
     parser.add_argument('output', type=Path)
     parser.add_argument('--plan', type=Path)
     parser.add_argument('--timeout', type=int, default=300)
+    parser.add_argument('--clean', action='store_true')
     args = parser.parse_args()
-    raise SystemExit(run(args.output, args.plan, args.timeout))
+    raise SystemExit(run(args.output, args.plan, args.timeout,
+                         instrumented=not args.clean))

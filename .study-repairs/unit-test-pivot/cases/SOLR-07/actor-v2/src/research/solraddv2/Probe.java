@@ -74,6 +74,8 @@ public final class Probe {
         try (InputStream input = Files.newInputStream(Paths.get(plan))) { PLAN.load(input); }
         steps = Integer.parseInt(PLAN.getProperty("count", "0"));
         if (steps < 1 || steps > 10) throw new IllegalArgumentException("fault count must be 1..10");
+        if (!PLAN.getProperty("targetActor", "").matches("JETTY/node[1-3]"))
+          throw new IllegalArgumentException("physical target actor required");
         for (int step = 1; step <= steps; step++)
           for (String key : new String[]{"actorKey", "sourceKey", "operation", "siteId",
               "resource", "hitOrdinal", "kind"})
@@ -196,6 +198,7 @@ public final class Probe {
                                  String site, String path, int ordinal) {
     if (!actor.startsWith("JETTY/") || !source.startsWith("SOLR/COLLECTION/")
         || site.startsWith("UNBOUND:")) return false;
+    if (!actor.equals(PLAN.getProperty("targetActor"))) return false;
     if (nextStep > steps) return false;
     String prefix = "step." + nextStep + ".";
     return actor.equals(PLAN.getProperty(prefix + "actorKey"))
@@ -211,6 +214,7 @@ public final class Probe {
     String source = "SOLR/COLLECTION/" + COLLECTION;
     String site = "org.apache.solr.cloud.ZkController#getLeader:1";
     PLAN.setProperty("step.1.actorKey", "JETTY/node2");
+    PLAN.setProperty("targetActor", "JETTY/node2");
     PLAN.setProperty("step.1.sourceKey", source);
     PLAN.setProperty("step.1.operation", "GET_DATA");
     PLAN.setProperty("step.1.siteId", site);
@@ -219,6 +223,11 @@ public final class Probe {
     PLAN.setProperty("step.1.kind", "CONNECTION_LOSS");
     steps = 1; nextStep = 1;
     return matches(actor, source, "GET_DATA", site, path, 1);
+  }
+
+  static boolean smokeSameClient(Object controller, Object client) {
+    Binding binding = CONTROLLERS.get(controller);
+    return binding != null && CLIENTS.get(client) == binding;
   }
 
   public static synchronized void io(Object client, String path, String api)
