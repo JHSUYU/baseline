@@ -54,3 +54,16 @@ family, not evidence of a live-core coordination failure or a confirmed new
 bug. Trial 48 has not yet had an exact same-plan replay. The
 [six-file raw archive](evidence/trial048-raw.tar.gz) has SHA-256
 `8cd8623e9241bb79fe6c71a5b31c1bed6ff9ea6c76ab05e6b414513d96a588a9`.
+
+## Trial 64: fourth fault, same teardown family
+
+V4 trial 64 added a fourth same-client `EXISTS_WATCH` fault (ordinal 20) to
+trial 48's three-fault prefix. Raw `IO_APPLIED` events 423, 434, 517, and
+521 precede the exact selected throw at event 525. The unchanged JUnit ended
+at 97,719 ms; the target Jetty began `CoreContainer.shutdown` at 97,833 ms,
+the selected core logged `CLOSING` at 97,849 ms, and its request thread
+continued later. The original JUnit failed after a roughly 90-second create
+collection timeout. The target throw is again after test teardown began, so
+it remains in the same candidate family and is not a confirmed new bug. The
+[raw six-file archive](evidence/trial064-raw.tar.gz) has SHA-256
+`ca80a8f12172e3f1b8ac24acc6cd5a301f365c580c38a61e67df59abde17d54b`.
