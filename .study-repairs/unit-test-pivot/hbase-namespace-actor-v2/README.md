@@ -163,6 +163,18 @@ selected-branch results with zero errors. A separate cumulative JaCoCo pass
 matched the checkpoint's 60 covered production methods and 50 branch keys
 across its 46 exec files. These audits did not rerun an original JUnit.
 
+HBASE-22 also has a case-local disk watchdog in tmux. It checks free space
+every five seconds and, below 4 GiB, creates the runner's pre-JVM `PAUSE`
+file. The current JUnit can finish and checkpoint, while the next selected
+plan waits without a run directory or JVM. The shared JVM start gate still
+requires at least 3 GiB before launch. At the completed r080 checkpoint,
+the raw logs, plans, JaCoCo files, healthy seeds, and checkpoint were archived
+without removing local originals. Each entry was rehashed from the archive;
+the 4.6 MB archive and receipt were copied to node1, whose archive SHA matched
+the local SHA. See `evidence/HBASE-22/checkpoint-snapshot-r080.*` and
+`node1-snapshot-r080-verification.json`. This is an interim no-loss backup;
+the final case archive will cover every completed trial.
+
 The default bound is **80 effective trials, at most eight ordered faults**.
 If any of the final eight effective trials first adds a production method,
 branch, or I/O family observed in at least two effective trials, the same
