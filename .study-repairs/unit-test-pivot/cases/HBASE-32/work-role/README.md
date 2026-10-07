@@ -63,7 +63,12 @@ runs one 600-second fault trial per invocation, with at most three distinct
 fresh-fixture attempts. Each invocation writes an atomic in-flight checkpoint,
 raw log, JaCoCo, exit, receipt, and fault-run `Thread.print -l` dumps; an
 interrupted run requires manual evidence settlement and is never silently
-rerun. Fault trials are diagnostic repeats of one new role-aware plan, so
+rerun. `python3 role_pilot.py recover` settles a finished orphan from its
+terminal log or records it as an interrupted attempt; it never starts a JVM.
+After each settled run, `python3 archive_role_pilot.py <suffix>` mirrors the
+raw log, JaCoCo, receipt, thread dumps, frozen plan, and agents to node1 and
+verifies every archived file SHA on the remote side. Fault trials are
+diagnostic repeats of one new role-aware plan, so
 their count is separate from the fuzz effective denominator. A timeout
 remains a candidate until independently reviewed.
 
