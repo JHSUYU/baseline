@@ -23,6 +23,7 @@ def main() -> int:
     parser.add_argument("--timeout", type=int, default=180)
     parser.add_argument("--source-root", type=Path)
     parser.add_argument("--coverage", action="store_true")
+    parser.add_argument("--faults", default="", help="Ordered OP|PATH|CALLER|ACTOR|ORDINAL selectors")
     args = parser.parse_args()
     source = args.source_root or (LOCAL_SOURCE if LOCAL_SOURCE.exists() else REMOTE_SOURCE)
     if not (source / "solr/core/src/test/org/apache/solr/cloud/AddReplicaTest.java").exists():
@@ -48,6 +49,7 @@ def main() -> int:
         "-Dsolr.directoryFactory=org.apache.solr.core.MockDirectoryFactory",
         "-Djdk.map.althashing.threshold=0", "-Djava.security.egd=file:/dev/./urandom",
         "-Dsolr19v2.trace=" + str(output / "actor-events.tsv"),
+        "-Dsolr19v2.faults=" + args.faults,
     ]
     if args.coverage:
         command.append("-javaagent:" + str(CASE / "lib/jacoco-agent.jar")
@@ -66,11 +68,12 @@ def main() -> int:
             exit_code = 124
             log.write("\nSOLR19_V2_JUNIT_TIMEOUT\n")
     manifest = {
-        "case_id": "SOLR-19", "phase": "actor_v2_healthy",
+        "case_id": "SOLR-19", "phase": "actor_v2_fault" if args.faults else "actor_v2_healthy",
         "original_junit": "AddReplicaTest.testAddMultipleReplicas",
         "original_source_commit": "e27f44e", "exit_code": exit_code,
         "elapsed_seconds": round(time.time() - started, 3),
         "coverage_enabled": args.coverage, "source_root": str(source),
+        "faults": args.faults,
         "trace": str(output / "actor-events.tsv"),
         "junit_log": str(output / "junit.log"),
     }

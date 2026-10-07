@@ -2,6 +2,8 @@
 """Compile independent source-level observation hooks; leave Solr sources untouched."""
 
 from pathlib import Path
+import hashlib
+import json
 import subprocess
 
 
@@ -26,6 +28,9 @@ def patched(relative: str, replacements: list[tuple[str, str]]) -> Path:
 
 
 def main() -> None:
+    commit = subprocess.check_output(["git", "-C", str(SOURCE), "rev-parse", "HEAD"], text=True).strip()
+    if not commit.startswith("e27f44e"):
+        raise RuntimeError(f"Unexpected Solr source revision: {commit}")
     java = "solr/core/src/java/org/apache/solr/"
     sources = [HERE / "ActorProbe.java"]
     sources.append(patched(java + "cloud/api/collections/CreateCollectionCmd.java", [
@@ -97,6 +102,24 @@ def main() -> None:
     command = ["/usr/lib/jvm/java-8-openjdk-amd64/bin/javac", "-cp", cp,
                "-d", str(CLASSES)] + [str(source) for source in sources]
     subprocess.run(command, check=True)
+    def sha(path: Path) -> str:
+        return hashlib.sha256(path.read_bytes()).hexdigest()
+    receipt = {
+        "solr_source_commit": commit,
+        "probe_sha256": sha(HERE / "ActorProbe.java"),
+        "source_overlays": [
+            {"path": str(path.relative_to(GENERATED)),
+             "original_sha256": sha(SOURCE / path.relative_to(GENERATED)),
+             "overlay_sha256": sha(path)}
+            for path in sources[1:]
+        ],
+        "compiled_class_sha256": {
+            str(path.relative_to(CLASSES)): sha(path)
+            for path in sorted(CLASSES.rglob("*.class"))
+            if path.name not in {"CoverageSummary.class", "SmokeV2.class"}
+        },
+    }
+    (HERE / "build-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")
     print("compiled", len(sources) - 1, "source overlays into", CLASSES)
 
 

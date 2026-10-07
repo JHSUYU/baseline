@@ -73,6 +73,8 @@ def audit(seed: Path):
                 issues.append("descriptor_guard_value_mismatch")
             if target["detail"] != "present":
                 issues.append("guard_throwing")
+            if phases.get("RECEIVE_CREATE") and target["actor"] != phases["RECEIVE_CREATE"][0]["actor"]:
+                issues.append("target_actor_differs_from_receiver")
         if phases.get("EXTRA_PROPERTIES_FILE"):
             if phases["EXTRA_PROPERTIES_FILE"][0]["detail"] != "false":
                 issues.append("external_properties_file_exists")
@@ -83,7 +85,8 @@ def audit(seed: Path):
         results.append({
             "core": core,
             "sender_phase": send[0]["phase"] if send else None,
-            "producer_role": send[0]["detail"].rsplit("|sourceRole=", 1)[-1] if send else None,
+            "producer_role": (send[0]["detail"].rsplit("|sourceRole=", 1)[1]
+                              if send and "|sourceRole=" in send[0]["detail"] else None),
             "sender_actor": send[0]["actor"] if send else None,
             "receiver_actor": phases["RECEIVE_CREATE"][0]["actor"] if phases.get("RECEIVE_CREATE") else None,
             "standard_core_node": send[0]["standard"] if send else None,
@@ -105,7 +108,10 @@ def audit(seed: Path):
         if result["sender_role"] is None or result["receiver_role"] is None:
             result["issues"].append("create_actor_lacks_zk_client_binding")
             issue_count += 1
-        if result["producer_role"] == "UNBOUND":
+        if result["sender_role"] != result["receiver_role"]:
+            result["issues"].append("sender_receiver_role_mismatch")
+            issue_count += 1
+        if result["producer_role"] is None or result["producer_role"] == "UNBOUND":
             result["issues"].append("producer_actor_lacks_zk_client_binding")
             issue_count += 1
     return {"seed": str(seed), "elapsed_seconds": manifest["elapsed_seconds"],

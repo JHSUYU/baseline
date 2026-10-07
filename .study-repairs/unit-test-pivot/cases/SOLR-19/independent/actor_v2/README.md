@@ -37,12 +37,24 @@ workload, or hand-written test replaces the original JUnit.
 
 The request already carries a unique core name, so the adapter joins the
 sender and receiver using that existing field and the real node name. It does
-not add a communication header. Instrumentation is observational; this stage
-has not injected faults. The future fault sequence budget is 80 effective
+not add a communication header. With an empty `--faults` argument the hooks
+only observe. Fault mode accepts ordered
+`OP|PATH|CALLER|ACTOR|ORDINAL` selectors and throws a
+`KeeperException.ConnectionLossException` at the precisely matched I/O.
+`ACTOR` may be a calibrated `JETTY_n`, `OWNER_OF_CORE:<coreName>`, or
+`PRODUCER_OF_CORE:<coreName>`; the latter two resolve against a preceding
+CREATE sender event in the same run. Every matched/applied event is traced.
+No fault has been injected in this V3 stage yet. The future fault sequence
+budget is 80 effective
 target-retaining trials with at most eight ordered faults, and an optional
 128/max10 extension only if late new production coverage or stable I/O sites
 justify it. A strict match without a later execution of the same target is
 an attempt, not an effective trial.
+
+`smoke_v2.py` exercises all three actor selector forms in a small JVM without
+starting Solr. It verifies one exact match and one applied
+`ConnectionLossException` per form after a wrong-actor event was ignored.
+The original JUnit remains the sole workload for healthy and faulted trials.
 
 ## Calibration state
 
@@ -55,6 +67,15 @@ all nine cores with zero issues; 1,044 and 1,127 ZooKeeper events were
 recorded, with 70 callsites each. These three runs are intermediate
 calibration only and supply **zero fault trials**. Their events and JaCoCo
 files are retained under `evidence/`.
+
+A preliminary comparison of the two generic-client seeds finds 101 exact
+operation/path/caller identities on `/collections/testAddMultipleReplicas`,
+`/collections`, `/overseer`, and `/live_nodes` in both runs (117 in their
+union). This is an offline candidate inventory, not actor-qualified evidence.
+It includes collection `state.json` read/write, replica terms and leader
+records, Overseer task queues, and live-node reads. The V3 gate must qualify
+these sites with the bound producer or receiver actor before they enter a
+fault queue.
 
 The current adapter additionally binds each ZooKeeper client to its Jetty
 actor and records actual file opens. Its two homogeneous final healthy seeds
