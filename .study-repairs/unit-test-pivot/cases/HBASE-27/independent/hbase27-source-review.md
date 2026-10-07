@@ -2,8 +2,8 @@
 
 Scope: read-only review of released HBase 2.6.6 production source, the
 unchanged `TestClusterBootOrder.testBootRegionServerFirst` source, and the
-first node1 pilot log. No new JVM was run for this review. The pilot's final
-JUnit result and clean replay are pending the case owner.
+first node1 pilot log. No new JVM was run for this review. The pilot ended at
+the 360-second cap; a clean replay remains pending the case owner.
 
 ## Exact observed chain
 
@@ -60,8 +60,17 @@ topology and the injected failure. Such an outcome does not establish a new
 bug unless a separate source/replay argument shows that this fault should
 have been tolerated by the original workload.
 
-The first pilot's completed JUnit outcome, its timeout or exit code, JaCoCo
-feedback, and a clean replay of the exact fault plan remain to be added by the
-case owner. Until then, classify the exact target IOException as an observed
+The pilot's original thread dump at
+`node1:cases/HBASE-27/independent/logs/zk-master-rs-pilot.thread_dump.txt`
+places the JUnit execution thread at
+`TestClusterBootOrder.waitForClusterOnline:90 → testBootRegionServerFirst:106`.
+The contemporaneous Master log repeats `No servers available; cannot place 1
+unassigned regions.` This locates the stall at the one-RS workload's online
+wait rather than a second, independently evidenced target failure.
+
+The first pilot exited with timeout code 124 after 361.69 seconds, without
+completing the original JUnit. Its JaCoCo feedback and a clean replay of the
+exact fault plan remain to be evaluated by the case owner. Until then,
+classify the exact target IOException as an observed
 candidate with a source-supported expected shutdown explanation, **not a new
 bug**. Do not mark the full fuzz budget complete from this one pilot.
