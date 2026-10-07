@@ -62,6 +62,8 @@ def publish(state):
            "healthy_stable_selectors": len(state["healthy_stable_selectors"]),
            "healthy_io_families": state["healthy_io_families"],
            "healthy_expected_outcomes": state["healthy_expected_outcomes"],
+           "priority_policy": state.get("priority_policy", "original_io_novelty_v1"),
+           "priority_migrated_after_attempt": state.get("priority_migrated_after_attempt"),
            "attempted_trials": len(trials), "effective_trials": state["effective"],
            "strict_trials": sum(x["strict"] for x in trials),
            "strict_postfault_target_trials": sum(x["effective"] for x in trials),
@@ -238,6 +240,26 @@ def stable_seed_io(case, traces):
     return sorted(set.intersection(*per_seed))
 
 
+def selector_distances(case, traces, stable):
+    """Healthy event distance from an exact same-actor I/O to a selected guard."""
+    wanted = set(stable)
+    distances = {}
+    for trace in traces:
+        markers = [marker for target in chosen_targets(case, trace)
+                   for marker in guard_markers(case, target, trace)]
+        for event in trace["IO_ATTEMPT"]:
+            selector = event.get("selector")
+            if selector not in wanted:
+                continue
+            for marker in markers:
+                if event["seq"] < marker["event_seq"] and same_actor(event, marker):
+                    distance = marker["event_seq"] - event["seq"]
+                    distances[selector] = min(distance, distances.get(selector, distance))
+    if set(distances) != wanted:
+        raise RuntimeError("Stable seed selector missing same-actor guard distance")
+    return distances
+
+
 def io_family(selector):
     return selector.split("~", 2)[1]
 
@@ -307,6 +329,8 @@ def init(case, seeds):
              "healthy_selected_target_counts": [len(chosen_targets(case, x)) for x in traces],
              "healthy_elapsed_seconds": sum(x["elapsed_seconds"] or 0 for x in traces),
              "healthy_stable_selectors": stable,
+             "selector_distance": selector_distances(case, traces, stable),
+             "priority_policy": "healthy_guard_distance_with_periodic_exploration_v1",
              "healthy_io_families": sorted({io_family(x) for x in stable}),
              "healthy_expected_outcomes": sorted({x["outcome"] for t in traces
                                                    for x in chosen_targets(case, t)}),
@@ -333,7 +357,17 @@ def priority(entry, state):
 
 
 def next_trial(state):
-    state["queue"].sort(key=lambda x: (-priority(x, state), ";".join(x["plan"])))
+    # Every eighth attempt uses the original CrashFuzz-style priority so
+    # startup and other distant candidates remain explorable. All queued
+    # plans remain intact; only their test order changes.
+    explore = len(state["trials"]) % 8 == 7
+    distances = state.get("selector_distance", {})
+    def ranked(entry):
+        selector = entry["plan"][-1].rsplit("~", 1)[0]
+        distance = distances.get(selector)
+        proximity = 0 if explore else (40 if distance is None else 3 * max(0, 26 - distance))
+        return (-priority(entry, state) - proximity, ";".join(entry["plan"]))
+    state["queue"].sort(key=ranked)
     return state["queue"][0]
 
 
@@ -412,6 +446,14 @@ def campaign(case):
     if not checkpoint.is_file():
         raise RuntimeError("First run: controller.py init CASE SEED1 SEED2")
     state = json.loads(checkpoint.read_text())
+    if "selector_distance" not in state:
+        traces = [load_run(state["kind"], seed, "healthy")[0]
+                  for seed in state["healthy_seeds"]]
+        state["selector_distance"] = selector_distances(
+            case, traces, state["healthy_stable_selectors"])
+        state["priority_policy"] = "healthy_guard_distance_with_periodic_exploration_v1"
+        state["priority_migrated_after_attempt"] = len(state["trials"])
+        atomic_json(checkpoint, state)
     inflight_path = checkpoint.with_name("inflight.json")
     publish(state)
     if state["status"] == "candidate_review_pending_source_and_replay":

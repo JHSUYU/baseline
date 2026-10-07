@@ -148,6 +148,19 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(controller.exception_review("selected_namespace_not_found", expected),
                          "candidate_needs_source_and_replay")
 
+    def test_healthy_same_actor_guard_distance(self):
+        trace = controller.parse("\n".join((IO, guard(seq=3, event_seq=5), target(seq=3))))
+        self.assertEqual(controller.selector_distances("HBASE-08", [trace], [SELECTOR]),
+                         {SELECTOR: 4})
+
+    def test_near_guard_priority_retains_distant_plan(self):
+        distant = "ACTIVE_MASTER~ZK_CHILDREN_READ~L2hiYXNl~start:20~1"
+        state = {"queue": [{"plan": [distant + "~CONNECTIONLOSS"], "score": 0},
+                           {"plan": [STEP], "score": 0}],
+                 "trials": [], "selector_distance": {distant: 23, SELECTOR: 2}}
+        self.assertEqual(controller.next_trial(state)["plan"], [STEP])
+        self.assertEqual(len(state["queue"]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
