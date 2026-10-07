@@ -1,0 +1,7 @@
+# HBASE-32 main campaign r058 timeout replay
+
+Node1 original `TestRegionReplicaFailover.testLotsOfRegionReplicas` trial r058 applied one exact `DO_NOT_RETRY_IOEXCEPTION` at the client `FlushRegionCallable.call:81` for replica 1. The same raw primary/replica/target invocation evaluated the B7 guard and rethrew. Only one RegionServer aborted before the test's 360-second timeout. The JUnit did not finish before that timeout, so r058 was preserved as a candidate.
+
+On node0, the identical plan ran in a new MiniHBaseCluster data directory with a 600-second cap. The same original agent class SHA-256 (`edb7757522361622087f3a5be2f7efded71281da4ff27bcf62d82b235de1bdbd`) and HBase server JAR SHA-256 (`27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696`) were checked before launch. The plan file SHA-256 is `440ec580d97999f26e258ee380b8c5d4111e3d62db2610f7240d89c03aceb25d`.
+
+The replay fully applied the fault, reached the same raw actor's guard and B7 rethrow once each, aborted one RegionServer, promptly scheduled its ServerCrashProcedure, completed all 600 target-table create children, and passed the original JUnit 1/1 in 68.07 seconds. The replay trace/JaCoCo/receipt/plan are in `replay-r058-raw.tar.gz` (SHA-256 `5d32721d2fa59771209c3b928da651cbb89928d313c1b5dcd72444a2af190c9c`). r058 is an **unreproduced scheduling-sensitive timeout candidate**, not a confirmed new bug. Its original node1 timeout remains in the main campaign raw evidence.

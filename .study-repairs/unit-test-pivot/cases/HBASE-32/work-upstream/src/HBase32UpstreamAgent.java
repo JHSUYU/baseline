@@ -1,10 +1,13 @@
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.io.EOFException;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.ProtectionDomain;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.hadoop.hbase.DoNotRetryIOException;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.RegionInfo;
 import org.apache.hadoop.hbase.client.RegionReplicaUtil;
@@ -14,6 +17,7 @@ import org.apache.hadoop.hbase.ipc.RpcServer;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.RegionServerServices.RegionStateTransitionContext;
 import org.apache.hadoop.hbase.shaded.protobuf.generated.WALProtos.FlushDescriptor;
+import org.apache.hbase.thirdparty.com.google.protobuf.ServiceException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.ClassWriter;
@@ -40,6 +44,9 @@ public final class HBase32UpstreamAgent {
   private static final ThreadLocal<Context> current = new ThreadLocal<>();
   private static final ThreadLocal<MarkerContext> marker = new ThreadLocal<>();
   private static final ThreadLocal<String> serverFlushActor = new ThreadLocal<>();
+  private static final String[] faultPlan =
+    System.getProperty("hbase32.upstream.fault.plan", "").split(";");
+  private static int nextFault;
   private static long sequence;
 
   private static final class Context {
@@ -97,6 +104,29 @@ public final class HBase32UpstreamAgent {
     byte[] prefix = new byte[comma < 0 ? bytes.length : comma];
     System.arraycopy(bytes, 0, prefix, 0, prefix.length);
     return raw(prefix);
+  }
+
+  private static IOException faultException(String kind, String selector) {
+    String message = "HBASE32U_INJECTED " + selector;
+    if (kind.equals("DO_NOT_RETRY_IOEXCEPTION")) return new DoNotRetryIOException(message);
+    if (kind.equals("EOF_EXCEPTION")) return new EOFException(message);
+    if (kind.equals("SOCKET_TIMEOUT")) return new java.net.SocketTimeoutException(message);
+    return new IOException(message);
+  }
+
+  private static boolean matchesNextFault(String selector) {
+    if (nextFault >= faultPlan.length || faultPlan[nextFault].isEmpty()) return false;
+    int last = faultPlan[nextFault].lastIndexOf('~');
+    return last > 0 && faultPlan[nextFault].substring(0, last).equals(selector);
+  }
+
+  private static String applyFault(String selector, String detail) {
+    int step = ++nextFault;
+    String planned = faultPlan[step - 1];
+    String kind = planned.substring(planned.lastIndexOf('~') + 1);
+    System.err.println("HBASE32U FAULT_APPLIED seq=" + (++sequence)
+      + " step=" + step + " selector=" + selector + " kind=" + kind + " " + detail);
+    return kind;
   }
 
   private static boolean inTarget() {
@@ -216,7 +246,8 @@ public final class HBase32UpstreamAgent {
   }
 
   public static synchronized void beforeMasterReport(Object server,
-                                                     RegionStateTransitionContext context) {
+                                                     RegionStateTransitionContext context)
+    throws ServiceException {
     if (!context.getCode().name().equals("OPENED")) return;
     RegionInfo[] regions = context.getHris();
     long[] procIds = context.getProcIds();
@@ -241,6 +272,14 @@ public final class HBase32UpstreamAgent {
         + " replica=" + info.getReplicaId()
         + " server=" + serverName + " proc_id=" + procIds[i]
         + " attempt=" + attempt);
+      String selector = "MASTER_OPENED_RPC~" + stable(info.getRegionName())
+        + "~replica-" + info.getReplicaId() + "~attempt-" + attempt;
+      if (matchesNextFault(selector)) {
+        String kind = applyFault(selector, "raw_primary_region=" + primary
+          + " raw_secondary_region=" + secondary + " server=" + serverName
+          + " proc_id=" + procIds[i]);
+        throw new ServiceException(faultException(kind, selector));
+      }
     }
   }
 
@@ -254,10 +293,15 @@ public final class HBase32UpstreamAgent {
             "org.apache.hadoop.hbase.regionserver.RSRpcServices")
           && frame.getMethodName().equals("flushRegion")) fromFlushRpc = true;
     }
-    String key = raw(info.getRegionName()) + "~" + descriptor.getAction().name();
+    String tag = fromFlushRpc ? serverFlushActor.get() : null;
+    // An ordinal shared by all replicas of one primary changes with RPC
+    // scheduling. Count inside the exact secondary actor instead.
+    String logicalActor = tag == null || tag.lastIndexOf('|') < 0
+      ? raw(info.getRegionName()) : tag.substring(0, tag.lastIndexOf('|'));
+    String key = logicalActor
+      + "~" + descriptor.getAction().name();
     int ordinal = markerAttempts.getOrDefault(key, 0) + 1;
     markerAttempts.put(key, ordinal);
-    String tag = fromFlushRpc ? serverFlushActor.get() : null;
     MarkerContext ctx = new MarkerContext(++sequence, info, descriptor, sync, fromFlushRpc,
                                           ordinal, tag == null ? "unknown" : tag);
     marker.set(ctx);
@@ -279,7 +323,7 @@ public final class HBase32UpstreamAgent {
     return false;
   }
 
-  public static synchronized void walCall(String step) {
+  public static synchronized void walCall(String step) throws IOException {
     MarkerContext ctx = marker.get();
     if (ctx == null || !inFlushMarker()) return;
     System.err.println("HBASE32U WAL_" + step + " seq=" + (++sequence)
@@ -289,6 +333,19 @@ public final class HBase32UpstreamAgent {
       + " marker_ordinal=" + ctx.ordinal
       + " actor_tag=" + ctx.actorTag
       + " actor_thread=" + Thread.currentThread().getName().replace(' ', '_'));
+    if (!step.endsWith("_START") || !ctx.fromFlushRpc
+        || !ctx.action.equals("CANNOT_FLUSH") || ctx.actorTag.equals("unknown")) return;
+    String[] actor = ctx.actorTag.split("\\|");
+    if (actor.length != 4 || !actor[0].equals(ctx.region)) return;
+    String selector = "WAL_" + step + "~" + ctx.stableRegion
+      + "~replica-" + actor[1] + "~target-" + actor[2]
+      + "~marker-" + ctx.ordinal;
+    if (matchesNextFault(selector)) {
+      String kind = applyFault(selector, "raw_primary_region=" + ctx.region
+        + " actor_tag=" + ctx.actorTag + " action=" + ctx.action
+        + " sync=" + ctx.sync + " marker_seq=" + ctx.id);
+      throw faultException(kind, selector);
+    }
   }
 
   private static final class Probes implements ClassFileTransformer {

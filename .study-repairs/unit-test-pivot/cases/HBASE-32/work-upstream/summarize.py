@@ -9,7 +9,8 @@ import sys
 from pathlib import Path
 
 
-KINDS = ("TARGET", "META_STATE_GET_ATTEMPT", "META_STATE_GET_RPC",
+KINDS = ("TARGET", "CLIENT_FLUSH_TAG", "SERVER_FLUSH_TAG",
+         "META_STATE_GET_ATTEMPT", "META_STATE_GET_RPC",
          "META_SCAN_NEXT_ATTEMPT", "META_SCAN_RPC", "MASTER_OPENED_RPC",
          "WAL_FLUSH_ATTEMPT", "WAL_APPEND_START",
          "WAL_APPEND_COMPLETE", "WAL_SYNC_START", "WAL_SYNC_COMPLETE")
@@ -58,7 +59,8 @@ def summarize(path: Path) -> dict:
     for kind, records in events.items():
         region_key = "scan_start" if kind == "META_SCAN_RPC" else "raw_primary_region"
         subset[kind] = [e for e in records
-                        if table_of(e.get(region_key, "")) == table]
+                        if table_of(e.get(region_key, e.get("actor_tag", "").split("|", 1)[0]))
+                        == table]
     same_target_meta_gets = []
     for event in subset["META_STATE_GET_RPC"]:
         if any(guard["line"] < event["line"]
@@ -74,6 +76,19 @@ def summarize(path: Path) -> dict:
         e["seq"] in append_done and (e.get("sync") != "true" or e["seq"] in sync_done)
         for e in subset["WAL_FLUSH_ATTEMPT"]
     )
+    client_tags = {e["actor_tag"] for e in subset["CLIENT_FLUSH_TAG"]}
+    server_tags = {e["actor_tag"] for e in subset["SERVER_FLUSH_TAG"]}
+    target_keys = {(e["raw_primary_region"], e["replica"], e["target_ordinal"])
+                   for e in subset["TARGET"]}
+    tagged_markers = []
+    for event in subset["WAL_FLUSH_ATTEMPT"]:
+        parts = event.get("actor_tag", "").split("|")
+        if len(parts) != 4:
+            continue
+        if (event["actor_tag"] in client_tags and event["actor_tag"] in server_tags
+                and parts[0] == event["raw_primary_region"]
+                and tuple(parts[:3]) in target_keys):
+            tagged_markers.append(event)
 
     return {
         "source_log": str(path),
@@ -89,6 +104,7 @@ def summarize(path: Path) -> dict:
         "table2_wal_actions": dict(collections.Counter(
             e.get("action") for e in subset["WAL_FLUSH_ATTEMPT"])),
         "table2_wal_markers_append_and_required_sync_completed": marker_complete,
+        "table2_wal_markers_with_exact_client_server_target_tag": len(tagged_markers),
         "table2_scan_rpc_operations": dict(collections.Counter(
             e.get("operation") for e in subset["META_SCAN_RPC"])),
         "table2_scan_rpc_linkage": dict(collections.Counter(

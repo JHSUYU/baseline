@@ -1,0 +1,14 @@
+# HBASE-32 independent upstream I/O campaign
+
+The workload is the unchanged HBase 2.6.6 `TestRegionReplicaFailover#testLotsOfRegionReplicas` MiniCluster JUnit. This phase is separate from `../work-lots/`, which injects at the client flush RPC. `HBase32UpstreamAgent` records the selected B7 target, real Master OPENED report RPC calls, real primary WAL append/sync calls, and their raw region/secondary actor identities. It also passively records meta lookup calls. The queue admits only Master OPENED and WAL append/sync events tied to a target actor. It never injects the unlinked asynchronous meta scan or the table-state Get that occurs after the selected exception guard.
+
+`healthy4.log` and `healthy4.exec` are the immutable fault-free seed. The fresh seed has 540 target-linked Master OPENED, 341 exact-actor WAL append, and 341 exact-actor WAL sync selectors. `campaign.py` stores atomic `supplemental-checkpoint.json`, `supplemental-inflight.json`, and `supplemental-result.json`; each trial has an exit receipt, compressed full trace, and separate JaCoCo `.exec`. On restart it resumes the inflight plan and does not replay a trial with a completed receipt. The controller is run in node0 tmux `hbase32-upstream-fuzz`:
+
+```sh
+cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream
+tmux attach -t hbase32-upstream-fuzz
+```
+
+The initial budget is 80 effective trials, 240 attempted trials, and at most eight faults per sequence. Only novelty in the last eight effective trials extends it to 128 effective, 384 attempted, and at most ten faults. Each tenth selection prefers a legal deeper fault sequence. Seeds without postfault target progress, or sequences aborting all three RegionServers, are not mutated. JaCoCo and I/O novelty enter feedback only for fully applied sequences retaining the same raw target actor. The effective denominator is stricter: the same raw region, replica, and target invocation must evaluate the B7 error guard after the final fault. A Master report retry that merely enters the target method, or a WAL error that merely causes a same-actor retry, can generate children but does not count as a B7-effective trial.
+
+`../evidence/upstream-passive-findings.md` records the original-JUnit calibrations, exact actor matching, exclusions, and separate diagnostic pilots. A target B7 throw or an expected server abort is an observation, not by itself a new bug. JUnit failure and timeout trials remain candidates until exact clean replay and source review.

@@ -184,3 +184,31 @@ I/O, recovery, coverage, and waiting-time priority scores still apply. The
 main controller runs in node1 tmux `hbase32-lots-fuzz`; node0 tmux
 `hbase32-result-mirror` copies only this case's atomic `result.json` every
 30 seconds and atomically refreshes the 104-row checklist when it changes.
+
+## Independent upstream I/O phase
+
+Source and passive MiniCluster calibration found two additional target-related
+I/O families: RegionServer-to-Master OPENED reports before a secondary enters
+the target, and primary WAL append/sync calls reached by its flush RPC. The
+unchanged `testLotsOfRegionReplicas` JUnit passed four isolated healthy runs.
+The final seed ties 540 Master reports and 341 append plus 341 sync events to
+exact runtime identities; asynchronous metadata scans without a secondary
+actor stay out of the fault queue. See `evidence/upstream-passive-findings.md`
+for the raw log archives, actor-tag validation, and scope limits.
+
+`work-upstream/campaign.py` runs separately in node0 tmux
+`hbase32-upstream-fuzz`. It has its own healthy seed, queue, atomic checkpoint,
+nine-class JaCoCo union, and 80-effective/8-fault initial budget. A same-actor
+Master retry or WAL retry can be a seed, but only a complete fault sequence
+followed by that actor's B7 guard evaluation enters its effective denominator.
+The exact Master pilot and one WAL append pilot passed the original JUnit;
+neither reached B7. A prior WAL pilot did not inject because a global marker
+ordinal changed under concurrency. The agent now counts markers within the
+exact secondary actor. This phase is distinct from the client flush-RPC
+campaign summarized above.
+
+Main trial r058, a one-fault exact B7 timeout on node1, passed an identical
+clean 600-second replay on node0 in 68.07 seconds with all 600 assignment
+children complete. It remains an unreproduced timeout candidate, not a
+confirmed new bug; `evidence/r058-replay-findings.md` has the raw archive and
+checksums.
