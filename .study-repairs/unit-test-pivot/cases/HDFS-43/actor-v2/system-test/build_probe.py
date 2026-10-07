@@ -69,7 +69,8 @@ def main() -> None:
         """  private Writable getRpcResponse(final Call call, final Connection connection,
       final long timeout, final TimeUnit unit) throws IOException {
     Probe.rpcResponse(call.id, clientId,
-        String.valueOf(connection.getRemoteAddress()));
+        String.valueOf(connection.getRemoteAddress()),
+        connection.getRemoteAddress().getPort());
     synchronized (call) {""")
     truncate_rpc = override(
         "org/apache/hadoop/hdfs/protocolPB/ClientNamenodeProtocolTranslatorPB.java",
@@ -119,6 +120,7 @@ def main() -> None:
         raise RuntimeError("expected one original MiniDFSCluster fixture")
     test = test.replace(setup, """        .waitSafeMode(true)
         .build();
+    Probe.registerNameNode(cluster.getNameNodePort());
     Probe.registerDatanodes(cluster.getDataNodes());
     fs = cluster.getFileSystem();""", 1)
     owner_start = test.index("  public void testTruncateTwiceTogether()")

@@ -99,6 +99,15 @@ def roles(rows: list[dict]) -> dict[str, str]:
             if row.get("event") == "DN_ROLE_MAP"}
 
 
+def nn_port(rows: list[dict]) -> int:
+    endpoints = [row for row in rows if row.get("event") == "NN_ENDPOINT_MAP"
+                 and row.get("endpoint") == "nn0"]
+    if len(endpoints) != 1:
+        return -1
+    port = endpoints[0].get("remotePort")
+    return port if isinstance(port, int) and port > 0 else -1
+
+
 def guard(row: dict) -> bool:
     return (row.get("event") == "TARGET_GUARD" and row.get("site") == SITE
             and row.get("path") == PATH and
@@ -173,8 +182,10 @@ def initial_state() -> dict:
     rows = events(SEED / "trace/runtime_trace.jsonl")
     targets = [row for row in rows if guard(row)]
     mapping = roles(rows)
+    port = nn_port(rows)
     if (manifest["test"] != TEST or manifest["exit"] != 0 or len(targets) != 1
             or targets[0].get("equal") is not False or
+            port <= 0 or
             set(mapping) != {"dn0", "dn1", "dn2"} or
             len(set(mapping.values())) != 3):
         raise RuntimeError("healthy original JUnit or actor calibration failed")
@@ -187,11 +198,14 @@ def initial_state() -> dict:
         raise RuntimeError("healthy target exception is not the original expected one")
     if not any(row.get("event") == "IO_OBSERVED" and
                row.get("api") == "truncate" and
+               row.get("endpoint") == "nn0" and
+               row.get("remotePort") == port and
                row.get("requestedLength") == target["requestedLength"] and
                row.get("rpcKey") == target["rpcKey"]
                for row in rows):
         raise RuntimeError("client truncate RPC and server guard have no shared request key")
-    points = [row for row in rows if io_eligible(row, target, mapping)]
+    points = [row for row in rows if io_eligible(row, target, mapping)
+              and row.get("remotePort") == port]
     if not points:
         raise RuntimeError("healthy target has no actor-resolved I/O")
     source_digest = digest((CASE / "system-test/build-probe.json").read_bytes())
@@ -320,16 +334,18 @@ def analyze(number: int, item: dict, out: Path, manifest: dict,
             family_union: set[str]) -> dict:
     rows = events(out / "trace/runtime_trace.jsonl")
     mapping = roles(rows)
+    port = nn_port(rows)
     selected = item["sequence"]
     matched = [row for row in rows if row.get("event") == "FAULT_MATCHED"]
     applied = [row for row in rows if row.get("event") == "FAULT_APPLIED"]
     requested = [tuple(p[k] for k in SELECTOR) for p in selected]
     actual = [tuple(p.get(k) for k in SELECTOR) for p in applied]
     mapped = set(mapping) == {"dn0", "dn1", "dn2"} and len(set(mapping.values())) == 3
-    physical = all(p.get("sourceRole") == "client" and not p.get("sourceUuid")
+    physical = port > 0 and all(p.get("remotePort") == port and
+                   (p.get("sourceRole") == "client" and not p.get("sourceUuid")
                    if p.get("api") == "truncate" else
                    p.get("sourceRole") in mapping and
-                   p.get("sourceUuid") == mapping[p["sourceRole"]]
+                   p.get("sourceUuid") == mapping[p["sourceRole"]])
                    for p in applied)
     strict = (requested == actual and len(matched) == len(requested)
               and mapped and physical)
@@ -372,6 +388,8 @@ def analyze(number: int, item: dict, out: Path, manifest: dict,
               "sequence": selected, "requested_faults": len(selected),
               "matched_faults": len(matched), "applied_faults": len(applied),
               "strict_injection": strict, "role_map_confirmed": mapped,
+              "name_node_port": port,
+              "name_node_port_confirmed": port > 0,
               "physical_source_confirmed": physical,
               "last_applied_seq": after,
               "target_after_fault_same_actor": valid,

@@ -33,12 +33,13 @@ def main() -> None:
                     "OfflineProbeSmoke"], check=True)
     rows = [json.loads(line) for line in trace.read_text().splitlines()]
     assert [r["seq"] for r in rows] == list(range(1, len(rows) + 1))
-    assert [r["event"] for r in rows] == ["TEST_PHASE", "IO_OBSERVED",
+    assert [r["event"] for r in rows] == ["NN_ENDPOINT_MAP", "TEST_PHASE", "IO_OBSERVED",
         "FAULT_MATCHED", "FAULT_APPLIED", "TARGET_GUARD"]
-    assert rows[3]["rpcKey"] == "010203:7"
-    assert rows[3]["path"] == rows[4]["path"]
-    assert rows[4]["blockId"] == 1073741825
-    assert rows[4]["phase"] == "secondTruncate"
+    assert rows[4]["rpcKey"] == "010203:7"
+    assert rows[4]["remotePort"] == rows[0]["remotePort"] == 12345
+    assert rows[4]["path"] == rows[5]["path"]
+    assert rows[5]["blockId"] == 1073741825
+    assert rows[5]["phase"] == "secondTruncate"
     export_coverage(out / "jacoco.exec", out / "coverage.tsv")
     exported = (out / "coverage.tsv").read_text().splitlines()
     assert exported and all(line.split("\t", 1)[1].startswith((
@@ -46,9 +47,11 @@ def main() -> None:
         for line in exported)
     assert not any("TestFileTruncate" in line or "hdfs43actor" in line
                    for line in exported)
-    print(json.dumps({"status": "passed", "synthetic_only": True,
-                      "events": [r["event"] for r in rows],
-                      "production_coverage_ids": len(exported)}))
+    report = {"status": "passed", "synthetic_only": True,
+              "events": [r["event"] for r in rows],
+              "production_coverage_ids": len(exported)}
+    (out / "report.json").write_text(json.dumps(report) + "\n")
+    print(json.dumps(report))
 
 
 if __name__ == "__main__":

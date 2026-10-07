@@ -24,7 +24,9 @@ exception gate:
 
 - `Client.getRpcResponse` after request send records client ID, call ID,
   destination, and a semantic context supplied by the truncate or DataNode
-  block-report translator.
+  block-report translator. The fixture records the actual NameNode RPC port;
+  only I/O whose physical destination port matches it can receive the `nn0`
+  selector and qualify as a strict fault.
 - The fixture maps `MiniDFSCluster.getDataNodes()` indices to physical UUIDs.
   A block-report selector includes the DN role, UUID in the event, and block ID.
 - `FSDirTruncateOp.truncate` records path, last block ID, truncate block ID,

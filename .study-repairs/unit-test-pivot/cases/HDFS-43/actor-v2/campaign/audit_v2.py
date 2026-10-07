@@ -53,6 +53,15 @@ def role_map(rows: list[dict]) -> dict[str, str]:
             if r.get("event") == "DN_ROLE_MAP"}
 
 
+def nn_port(rows: list[dict]) -> int:
+    endpoints = [r for r in rows if r.get("event") == "NN_ENDPOINT_MAP"
+                 and r.get("endpoint") == "nn0"]
+    if len(endpoints) != 1:
+        return -1
+    port = endpoints[0].get("remotePort")
+    return port if isinstance(port, int) and port > 0 else -1
+
+
 def guard(r: dict, block: int) -> bool:
     return (r.get("event") == "TARGET_GUARD" and r.get("site") == SITE
             and r.get("path") == FILE and r.get("blockId") == block
@@ -114,10 +123,14 @@ def run(limit: int = 0) -> dict:
     require(healthy_manifest.get("test") == TEST and healthy_manifest.get("exit") == 0
             and len(healthy_target) == 1, "original healthy target differs", problems)
     mapping = role_map(healthy_trace)
+    healthy_port = nn_port(healthy_trace)
     require(set(mapping) == {"dn0", "dn1", "dn2"} and
             len(set(mapping.values())) == 3, "healthy DN role map differs", problems)
+    require(healthy_port > 0, "healthy NN physical endpoint missing", problems)
     if healthy_target:
         require(any(r.get("event") == "IO_OBSERVED" and r.get("api") == "truncate"
+                    and r.get("endpoint") == "nn0"
+                    and r.get("remotePort") == healthy_port
                     and r.get("requestedLength") == healthy_target[0]["requestedLength"]
                     and r.get("rpcKey") == healthy_target[0]["rpcKey"]
                     for r in healthy_trace), "healthy client/server RPC key differs", problems)
@@ -144,6 +157,7 @@ def run(limit: int = 0) -> dict:
                 f"{label}: raw JaCoCo exec missing", problems)
         rows = trace(out / "trace/runtime_trace.jsonl")
         mapping = role_map(rows)
+        port = nn_port(rows)
         mapped = set(mapping) == {"dn0", "dn1", "dn2"} and len(set(mapping.values())) == 3
         matched = [r for r in rows if r.get("event") == "FAULT_MATCHED"]
         applied = [r for r in rows if r.get("event") == "FAULT_APPLIED"]
@@ -159,10 +173,11 @@ def run(limit: int = 0) -> dict:
         selectors_match = ([tuple(p.get(k) for k in SELECTOR) for p in applied] ==
                            [tuple(p[k] for k in SELECTOR) for p in row["sequence"]]
                            and len(matched) == len(row["sequence"]))
-        physical = all((p.get("sourceRole") == "client" and not p.get("sourceUuid"))
+        physical = port > 0 and all(p.get("remotePort") == port and
+                       ((p.get("sourceRole") == "client" and not p.get("sourceUuid"))
                        if p.get("api") == "truncate" else
                        (p.get("sourceRole") in mapping and
-                        p.get("sourceUuid") == mapping[p["sourceRole"]])
+                        p.get("sourceUuid") == mapping[p["sourceRole"]]))
                        for p in applied)
         strict = mapped and physical and selectors_match
         last = max((p["seq"] for p in applied), default=-1)
@@ -187,6 +202,7 @@ def run(limit: int = 0) -> dict:
         new_family = {family_id(r) for r in observed} - family_union if valid else set()
         expected_fields = {
             "strict_injection": strict, "role_map_confirmed": mapped,
+            "name_node_port": port, "name_node_port_confirmed": port > 0,
             "physical_source_confirmed": physical, "last_applied_seq": last,
             "target_after_fault_same_actor": valid,
             "post_fault_target_guard": target,

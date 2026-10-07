@@ -70,6 +70,7 @@ public final class Probe {
   private static final ThreadLocal<Context> CONTEXT = new ThreadLocal<Context>();
   private static final ThreadLocal<String> LAST_TARGET = new ThreadLocal<String>();
   private static volatile String phase = "setup";
+  private static volatile int nameNodePort = -1;
   private static BufferedWriter writer;
   private static long sequence;
   private static int nextFault;
@@ -148,6 +149,15 @@ public final class Probe {
     }
   }
 
+  public static synchronized void registerNameNode(int port) {
+    if (port <= 0 || nameNodePort > 0) {
+      throw new IllegalStateException("Invalid or duplicate NameNode port: " + port);
+    }
+    nameNodePort = port;
+    emit("NN_ENDPOINT_MAP", ",\"endpoint\":" + q("nn0")
+        + ",\"remotePort\":" + port);
+  }
+
   public static synchronized void markPhase(String value) {
     phase = value;
     emit("TEST_PHASE", ",\"phase\":" + q(value));
@@ -168,7 +178,7 @@ public final class Probe {
 
   /** Called after Hadoop has sent an RPC, immediately before waiting for its reply. */
   public static synchronized void rpcResponse(int callId, byte[] clientId,
-      String remote) throws IOException {
+      String remote, int remotePort) throws IOException {
     Context context = CONTEXT.get();
     if (context == null) {
       return;
@@ -179,7 +189,8 @@ public final class Probe {
       role = "unregistered";
     }
     String marker = "RPC_RESPONSE_WAIT";
-    String endpoint = "nn0";
+    String endpoint = remotePort == nameNodePort && nameNodePort > 0
+        ? "nn0" : "other:" + remotePort;
     String key = marker + "\t" + context.api + "\t" + endpoint + "\t" + role
         + "\t" + context.path + "\t" + context.blockId + "\t"
         + context.requestedLength;
@@ -194,7 +205,8 @@ public final class Probe {
         + ",\"requestedLength\":" + context.requestedLength
         + ",\"ordinal\":" + ordinal + ",\"phase\":" + q(phase)
         + ",\"rpcKey\":" + q(hex(clientId) + ":" + callId)
-        + ",\"remote\":" + q(remote);
+        + ",\"remote\":" + q(remote)
+        + ",\"remotePort\":" + remotePort;
     emit("IO_OBSERVED", fields);
     if (nextFault >= FAULTS.size()) {
       return;
