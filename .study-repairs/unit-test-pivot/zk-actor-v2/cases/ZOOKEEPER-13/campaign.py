@@ -172,7 +172,7 @@ def session_receipt(rows, target_sequence):
         return None
     sessions = [fields for _, kind, fields in rows
                 if kind == 'SESSION_BIND' and len(fields) >= 3
-                and fields[1:] == ['initialGlobalClient', 'initialGlobalSession']]
+                and fields[1:3] == ['initialGlobalClient', 'initialGlobalSession']]
     if len(sessions) != 1:
         return None
     raw = sessions[0][0]
