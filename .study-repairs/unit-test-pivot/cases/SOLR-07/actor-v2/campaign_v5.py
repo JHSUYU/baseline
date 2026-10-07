@@ -105,7 +105,7 @@ def no_v4_process() -> None:
         if len(fields) != 2 or not fields[0].isdigit() or int(fields[0]) == own_pid:
             continue
         command = fields[1]
-        if re.search(r'(^|/)campaign_v4\.py(?:\s|$)', command):
+        if re.search(r'(^|[\s/])campaign_v4\.py(?:\s|$)', command):
             raise RuntimeError(f'V4 process is still running: pid {fields[0]}')
         if ('baseline.solr07.RunSingleJUnit' in command and
                 'org.apache.solr.cloud.AddReplicaTest' in command and

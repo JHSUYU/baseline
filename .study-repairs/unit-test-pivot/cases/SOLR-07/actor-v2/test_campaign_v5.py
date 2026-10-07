@@ -456,6 +456,16 @@ class BackfillTests(unittest.TestCase):
 
 
 class HandoffTests(unittest.TestCase):
+    def test_running_bare_v4_script_or_target_junit_blocks_handoff(self) -> None:
+        for listing, expected in (
+                ('999999 python3 campaign_v4.py\n', 'V4 process'),
+                ('999999 /usr/bin/java -cp x baseline.solr07.RunSingleJUnit '
+                 'org.apache.solr.cloud.AddReplicaTest testAddMultipleReplicas\n',
+                 'SOLR-07 JUnit')):
+            with patch.object(v5.subprocess, 'check_output', return_value=listing):
+                with self.assertRaisesRegex(RuntimeError, expected):
+                    v5.no_v4_process()
+
     def test_freeze_and_raw_manifest_gate_without_junit(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             home = Path(temporary)
