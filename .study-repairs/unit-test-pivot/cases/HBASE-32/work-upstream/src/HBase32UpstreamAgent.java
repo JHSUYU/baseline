@@ -1,5 +1,6 @@
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
+import java.nio.charset.StandardCharsets;
 import java.security.ProtectionDomain;
 import java.util.Base64;
 import java.util.HashMap;
@@ -7,8 +8,10 @@ import java.util.Map;
 import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.RegionInfo;
 import org.apache.hadoop.hbase.client.RegionReplicaUtil;
+import org.apache.hadoop.hbase.ipc.HBaseRpcController;
+import org.apache.hadoop.hbase.ipc.RpcCall;
+import org.apache.hadoop.hbase.ipc.RpcServer;
 import org.apache.hadoop.hbase.regionserver.HRegion;
-import org.apache.hadoop.hbase.regionserver.HRegionServer;
 import org.apache.hadoop.hbase.regionserver.RegionServerServices.RegionStateTransitionContext;
 import org.apache.hadoop.hbase.shaded.protobuf.generated.WALProtos.FlushDescriptor;
 import org.objectweb.asm.ClassReader;
@@ -21,18 +24,22 @@ import org.objectweb.asm.Opcodes;
 public final class HBase32UpstreamAgent {
   private static final String HANDLER =
     "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler";
+  private static final String CALLABLE = "org/apache/hadoop/hbase/client/FlushRegionCallable";
   private static final String META = "org/apache/hadoop/hbase/MetaTableAccessor";
   private static final String CONN = "org/apache/hadoop/hbase/client/ConnectionImplementation";
   private static final String SCANNER = "org/apache/hadoop/hbase/client/ScannerCallable";
   private static final String CLIENT_GET =
     "org/apache/hadoop/hbase/client/ClientServiceCallable";
   private static final String RS = "org/apache/hadoop/hbase/regionserver/HRegionServer";
+  private static final String RS_RPC = "org/apache/hadoop/hbase/regionserver/RSRpcServices";
   private static final String WAL = "org/apache/hadoop/hbase/regionserver/wal/WALUtil";
+  private static final String TRACE_ATTRIBUTE = "hbase32.target";
   private static final Map<String, Integer> targetHits = new HashMap<>();
   private static final Map<String, Integer> reportAttempts = new HashMap<>();
   private static final Map<String, Integer> markerAttempts = new HashMap<>();
   private static final ThreadLocal<Context> current = new ThreadLocal<>();
   private static final ThreadLocal<MarkerContext> marker = new ThreadLocal<>();
+  private static final ThreadLocal<String> serverFlushActor = new ThreadLocal<>();
   private static long sequence;
 
   private static final class Context {
@@ -43,6 +50,7 @@ public final class HBase32UpstreamAgent {
     int metaGetRpcs;
     int metaScans;
     int metaScanRpcs;
+    int flushRpcs;
     boolean inCatch;
 
     Context(String primary, int replica, int ordinal) {
@@ -60,9 +68,10 @@ public final class HBase32UpstreamAgent {
     final boolean sync;
     final boolean fromFlushRpc;
     final int ordinal;
+    final String actorTag;
 
     MarkerContext(long id, RegionInfo info, FlushDescriptor descriptor, boolean sync,
-                  boolean fromFlushRpc, int ordinal) {
+                  boolean fromFlushRpc, int ordinal, String actorTag) {
       this.id = id;
       this.region = raw(info.getRegionName());
       this.stableRegion = stable(info.getRegionName());
@@ -70,6 +79,7 @@ public final class HBase32UpstreamAgent {
       this.sync = sync;
       this.fromFlushRpc = fromFlushRpc;
       this.ordinal = ordinal;
+      this.actorTag = actorTag;
     }
   }
 
@@ -116,6 +126,38 @@ public final class HBase32UpstreamAgent {
     if (ctx != null && inTarget()) ctx.inCatch = true;
   }
 
+  public static synchronized void markClientFlush(HBaseRpcController controller,
+                                                   byte[] regionName) {
+    Context ctx = current.get();
+    if (ctx == null || !inTarget() || !ctx.primary.equals(raw(regionName))) return;
+    int rpcOrdinal = ++ctx.flushRpcs;
+    String tag = ctx.primary + "|" + ctx.replica + "|" + ctx.ordinal + "|" + rpcOrdinal;
+    Map<String, byte[]> attributes = new HashMap<>(controller.getRequestAttributes());
+    attributes.put(TRACE_ATTRIBUTE, tag.getBytes(StandardCharsets.UTF_8));
+    controller.setRequestAttributes(attributes);
+    System.err.println("HBASE32U CLIENT_FLUSH_TAG seq=" + (++sequence)
+      + " raw_primary_region=" + ctx.primary + " replica=" + ctx.replica
+      + " target_ordinal=" + ctx.ordinal + " rpc_ordinal=" + rpcOrdinal
+      + " actor_tag=" + tag);
+  }
+
+  public static synchronized void serverFlushEnter() {
+    serverFlushActor.remove();
+    RpcCall call = RpcServer.getCurrentCall().orElse(null);
+    if (call == null) return;
+    byte[] encoded = call.getRequestAttribute(TRACE_ATTRIBUTE);
+    if (encoded == null) return;
+    String tag = new String(encoded, StandardCharsets.UTF_8);
+    serverFlushActor.set(tag);
+    System.err.println("HBASE32U SERVER_FLUSH_TAG seq=" + (++sequence)
+      + " actor_tag=" + tag + " actor_thread="
+      + Thread.currentThread().getName().replace(' ', '_'));
+  }
+
+  public static void serverFlushExit() {
+    serverFlushActor.remove();
+  }
+
   private static String phase(Context ctx) {
     return ctx.inCatch ? "after_rpc_exception" : "before_catch";
   }
@@ -157,24 +199,23 @@ public final class HBase32UpstreamAgent {
       + " phase=" + phase(ctx));
   }
 
-  public static synchronized void beforeMetaScanRpc(String operation) {
+  public static synchronized void beforeMetaScanRpc(TableName scannedTable, byte[] scanStart,
+                                                     String operation) {
     Context ctx = current.get();
-    if (ctx == null || !inTarget()) return;
-    boolean inMetaLookup = false;
-    for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
-      if (frame.getClassName().equals(
-            "org.apache.hadoop.hbase.client.ConnectionImplementation")
-          && frame.getMethodName().equals("locateRegionInMeta")) inMetaLookup = true;
-    }
-    if (!inMetaLookup) return;
-    int ordinal = ++ctx.metaScanRpcs;
+    if (!TableName.META_TABLE_NAME.equals(scannedTable)) return;
+    boolean linkedTargetThread = ctx != null && inTarget();
+    int ordinal = linkedTargetThread ? ++ctx.metaScanRpcs : 0;
     System.err.println("HBASE32U META_SCAN_RPC seq=" + (++sequence)
-      + " raw_primary_region=" + ctx.primary + " replica=" + ctx.replica
-      + " target_ordinal=" + ctx.ordinal + " rpc_ordinal=" + ordinal
-      + " phase=" + phase(ctx) + " operation=" + operation);
+      + " scan_start=" + raw(scanStart)
+      + " raw_primary_region=" + (linkedTargetThread ? ctx.primary : "unknown")
+      + " replica=" + (linkedTargetThread ? ctx.replica : "unknown")
+      + " target_ordinal=" + (linkedTargetThread ? ctx.ordinal : "unknown")
+      + " rpc_ordinal=" + ordinal
+      + " phase=" + (linkedTargetThread ? phase(ctx) : "unlinked_thread")
+      + " operation=" + operation);
   }
 
-  public static synchronized void beforeMasterReport(HRegionServer server,
+  public static synchronized void beforeMasterReport(Object server,
                                                      RegionStateTransitionContext context) {
     if (!context.getCode().name().equals("OPENED")) return;
     RegionInfo[] regions = context.getHris();
@@ -184,7 +225,13 @@ public final class HBase32UpstreamAgent {
       if (!info.getTable().getNameAsString().startsWith("testLotsOfRegionRepli")) continue;
       String primary = raw(RegionReplicaUtil.getRegionInfoForDefaultReplica(info).getRegionName());
       String secondary = raw(info.getRegionName());
-      String key = server.getServerName() + "~" + secondary;
+      String serverName;
+      try {
+        serverName = String.valueOf(server.getClass().getMethod("getServerName").invoke(server));
+      } catch (ReflectiveOperationException error) {
+        serverName = "unknown";
+      }
+      String key = serverName + "~" + secondary;
       int attempt = reportAttempts.getOrDefault(key, 0) + 1;
       reportAttempts.put(key, attempt);
       System.err.println("HBASE32U MASTER_OPENED_RPC seq=" + (++sequence)
@@ -192,7 +239,7 @@ public final class HBase32UpstreamAgent {
         + " raw_secondary_region=" + secondary
         + " stable_region=" + stable(info.getRegionName())
         + " replica=" + info.getReplicaId()
-        + " server=" + server.getServerName() + " proc_id=" + procIds[i]
+        + " server=" + serverName + " proc_id=" + procIds[i]
         + " attempt=" + attempt);
     }
   }
@@ -210,8 +257,9 @@ public final class HBase32UpstreamAgent {
     String key = raw(info.getRegionName()) + "~" + descriptor.getAction().name();
     int ordinal = markerAttempts.getOrDefault(key, 0) + 1;
     markerAttempts.put(key, ordinal);
+    String tag = fromFlushRpc ? serverFlushActor.get() : null;
     MarkerContext ctx = new MarkerContext(++sequence, info, descriptor, sync, fromFlushRpc,
-                                          ordinal);
+                                          ordinal, tag == null ? "unknown" : tag);
     marker.set(ctx);
     System.err.println("HBASE32U WAL_FLUSH_ATTEMPT seq=" + ctx.id
       + " raw_primary_region=" + ctx.region
@@ -219,6 +267,7 @@ public final class HBase32UpstreamAgent {
       + " replica=" + info.getReplicaId() + " action=" + ctx.action
       + " sync=" + ctx.sync + " from_flush_rpc=" + ctx.fromFlushRpc
       + " marker_ordinal=" + ctx.ordinal
+      + " actor_tag=" + ctx.actorTag
       + " actor_thread=" + Thread.currentThread().getName().replace(' ', '_'));
   }
 
@@ -238,6 +287,7 @@ public final class HBase32UpstreamAgent {
       + " stable_region=" + ctx.stableRegion + " action=" + ctx.action
       + " sync=" + ctx.sync + " from_flush_rpc=" + ctx.fromFlushRpc
       + " marker_ordinal=" + ctx.ordinal
+      + " actor_tag=" + ctx.actorTag
       + " actor_thread=" + Thread.currentThread().getName().replace(' ', '_'));
   }
 
@@ -245,10 +295,12 @@ public final class HBase32UpstreamAgent {
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> redefining,
                             ProtectionDomain domain, byte[] original) {
-      if (!HANDLER.equals(className) && !META.equals(className)
+      if (!HANDLER.equals(className) && !CALLABLE.equals(className)
+          && !META.equals(className)
           && !CONN.equals(className) && !SCANNER.equals(className)
           && !CLIENT_GET.equals(className)
-          && !RS.equals(className) && !WAL.equals(className)) return null;
+          && !RS.equals(className) && !RS_RPC.equals(className)
+          && !WAL.equals(className)) return null;
       try {
         ClassReader reader = new ClassReader(original);
         ClassWriter writer = new ClassWriter(reader, ClassWriter.COMPUTE_MAXS);
@@ -278,6 +330,23 @@ public final class HBase32UpstreamAgent {
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
                       "targetCatch", "()V", false);
                   }
+                }
+              };
+            }
+            if (CALLABLE.equals(className) && method.equals("call")) {
+              return new MethodVisitor(Opcodes.ASM9, delegate) {
+                @Override
+                public void visitMethodInsn(int opcode, String owner, String invoked,
+                                            String desc, boolean isInterface) {
+                  if (invoked.equals("flushRegion") && desc.contains("FlushRegionRequest")) {
+                    super.visitVarInsn(Opcodes.ALOAD, 1);
+                    super.visitVarInsn(Opcodes.ALOAD, 0);
+                    super.visitFieldInsn(Opcodes.GETFIELD, CALLABLE, "regionName", "[B");
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
+                      "markClientFlush", "(Lorg/apache/hadoop/hbase/ipc/HBaseRpcController;[B)V",
+                      false);
+                  }
+                  super.visitMethodInsn(opcode, owner, invoked, desc, isInterface);
                 }
               };
             }
@@ -323,9 +392,18 @@ public final class HBase32UpstreamAgent {
                     String operation = method.equals("openScanner") ? "OPEN"
                       : method.equals("next") ? "NEXT"
                       : method.equals("close") ? "CLOSE" : "UNKNOWN";
+                    super.visitVarInsn(Opcodes.ALOAD, 0);
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, SCANNER, "getTableName",
+                      "()Lorg/apache/hadoop/hbase/TableName;", false);
+                    super.visitVarInsn(Opcodes.ALOAD, 0);
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL, SCANNER, "getScan",
+                      "()Lorg/apache/hadoop/hbase/client/Scan;", false);
+                    super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
+                      "org/apache/hadoop/hbase/client/Scan", "getStartRow", "()[B", false);
                     super.visitLdcInsn(operation);
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
-                      "beforeMetaScanRpc", "(Ljava/lang/String;)V", false);
+                      "beforeMetaScanRpc", "(Lorg/apache/hadoop/hbase/TableName;[BLjava/lang/String;)V",
+                      false);
                   }
                   super.visitMethodInsn(opcode, owner, invoked, desc, isInterface);
                 }
@@ -356,10 +434,29 @@ public final class HBase32UpstreamAgent {
                     super.visitVarInsn(Opcodes.ALOAD, 1);
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
                       "beforeMasterReport",
-                      "(Lorg/apache/hadoop/hbase/regionserver/HRegionServer;Lorg/apache/hadoop/hbase/regionserver/RegionServerServices$RegionStateTransitionContext;)V",
+                      "(Ljava/lang/Object;Lorg/apache/hadoop/hbase/regionserver/RegionServerServices$RegionStateTransitionContext;)V",
                       false);
                   }
                   super.visitMethodInsn(opcode, owner, invoked, desc, isInterface);
+                }
+              };
+            }
+            if (RS_RPC.equals(className) && method.equals("flushRegion")) {
+              return new MethodVisitor(Opcodes.ASM9, delegate) {
+                @Override
+                public void visitCode() {
+                  super.visitCode();
+                  super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
+                    "serverFlushEnter", "()V", false);
+                }
+
+                @Override
+                public void visitInsn(int opcode) {
+                  if (opcode == Opcodes.ARETURN || opcode == Opcodes.ATHROW) {
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
+                      "serverFlushExit", "()V", false);
+                  }
+                  super.visitInsn(opcode);
                 }
               };
             }

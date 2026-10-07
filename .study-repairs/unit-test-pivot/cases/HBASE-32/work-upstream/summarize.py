@@ -54,9 +54,11 @@ def summarize(path: Path) -> dict:
                          "failed": int(match[3])}
 
     table = "testLotsOfRegionRepli2"
-    subset = {kind: [e for e in records
-                     if table_of(e["raw_primary_region"]) == table]
-              for kind, records in events.items()}
+    subset = {}
+    for kind, records in events.items():
+        region_key = "scan_start" if kind == "META_SCAN_RPC" else "raw_primary_region"
+        subset[kind] = [e for e in records
+                        if table_of(e.get(region_key, "")) == table]
     same_target_meta_gets = []
     for event in subset["META_STATE_GET_RPC"]:
         if any(guard["line"] < event["line"]
@@ -89,6 +91,8 @@ def summarize(path: Path) -> dict:
         "table2_wal_markers_append_and_required_sync_completed": marker_complete,
         "table2_scan_rpc_operations": dict(collections.Counter(
             e.get("operation") for e in subset["META_SCAN_RPC"])),
+        "table2_scan_rpc_linkage": dict(collections.Counter(
+            e.get("phase") for e in subset["META_SCAN_RPC"])),
         "table2_state_get_rpc_phases": dict(collections.Counter(
             e.get("phase") for e in subset["META_STATE_GET_RPC"])),
         "table2_meta_gets_after_same_target_guard": len(same_target_meta_gets),
