@@ -1,15 +1,126 @@
 {
-  "case_id": "HDFS-40",
-  "status": "mapped_pending_smoke",
-  "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testAppendTwice",
+  "actor_v2_campaign": {
+    "attempts": 128,
+    "checkpoint": "independent-coverage-io/actor-v2/campaign/checkpoint.json",
+    "strict": 123,
+    "target_after_fault": 122
+  },
   "alternate_cluster_test": "org.apache.hadoop.hdfs.TestFileAppendRestart#testAppendWithPipelineRecovery",
-  "source_review": "The originally proposed one-DataNode test's second append is rejected by lease recovery before this replication guard. The alternate original test runs four DataNodes, stops one during append, and verifies data after NameNode restart; exact guard coverage still requires runtime confirmation.",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "alternate_cluster_tests": [
+    "org.apache.hadoop.hdfs.TestFileAppendRestart#testAppendWithPipelineRecovery",
+    "org.apache.hadoop.hdfs.TestFileAppend4#testUpdateNeededReplicationsForAppendedFile"
+  ],
+  "budget": {
+    "actor_v2_attempts": 128,
+    "max_attempts_actor_aware": 80,
+    "max_attempts_including_pilot": 93,
+    "max_attempts_total": 80,
+    "max_faults": 8,
+    "semantic_pilot_attempts": 13
+  },
   "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/HDFS-TEST-MAP.json: source-only Hadoop 3.4.3 MiniDFSCluster/JUnit mapping; no runtime target or injection evidence."
+  "case_id": "HDFS-40",
+  "check_code": "if (lastBlock.isComplete() && !blockManager.isSufficientlyReplicated(lastBlock)) throw new IOException(...)",
+  "cluster_nodes": "1 NameNode, 3 DataNodes",
+  "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testFailedAppendBlockRejection",
+  "cluster_type": "MiniDFSCluster",
+  "completed_at_utc": "2026-10-07T01:59:10.455280+00:00",
+  "coverage_gain": {
+    "BRANCH_UNIT": 627,
+    "METHOD": 275,
+    "PROBE": 1442
+  },
+  "elapsed_seconds": 3821.452,
+  "evidence": {
+    "actor_budget_migration": "independent-coverage-io/actor-v2/campaign/actor-budget-migration.json",
+    "actor_checkpoint": "independent-coverage-io/actor-v2/campaign/checkpoint.json",
+    "actor_only_result_counters": "independent-coverage-io/actor-v2/campaign/actor-only-result-counters.json",
+    "actor_queue_prune": "independent-coverage-io/actor-v2/campaign/client-send-prune.json",
+    "actor_seed": "independent-coverage-io/actor-v2/healthy/actor-seed",
+    "actor_trial_dir": "independent-coverage-io/actor-v2/campaign/trial-NNN",
+    "actor_trial_ledger": "independent-coverage-io/actor-v2/campaign/trial-ledger.csv",
+    "checkpoint": "independent-coverage-io/campaign/checkpoint.json",
+    "expected_fatal_control": "independent-coverage-io/healthy/append4-expected-fatal",
+    "extension_decision": "independent-coverage-io/actor-v2/campaign/extension-decision-080.json",
+    "final_audit": "independent-coverage-io/actor-v2/campaign/audit_final.json",
+    "seed": "independent-coverage-io/healthy/campaign-seed",
+    "source_provenance": "independent-coverage-io/actor-v2/source-provenance.json",
+    "trial_dir": "independent-coverage-io/campaign/trial-NNN",
+    "trial_ledger": "independent-coverage-io/campaign/trial-ledger.csv"
+  },
+  "expected_fatal_control": {
+    "excluded_from_bug_oracle": true,
+    "healthy_target_exception_expected": true,
+    "manifest": "independent-coverage-io/healthy/append4-expected-fatal/manifest.json",
+    "test": "org.apache.hadoop.hdfs.TestFileAppend4#testAppendInsufficientLocations"
+  },
+  "extension_budget": {
+    "max_attempts_actor_aware": 128,
+    "max_attempts_including_pilot": 141,
+    "max_attempts_total": 128,
+    "max_faults": 10
+  },
+  "fault_sequence_depth": {
+    "max_planned": 10,
+    "max_requested": 7,
+    "max_strictly_applied": 7,
+    "strict_trials_by_fault_count": {
+      "1": 24,
+      "2": 18,
+      "3": 15,
+      "4": 33,
+      "5": 22,
+      "6": 8,
+      "7": 3
+    }
+  },
+  "fault_trial_elapsed_seconds": 3802.927,
+  "fault_trials": 128,
+  "final_audit": {
+    "audited_trials": 128,
+    "errors": [],
+    "integrity_passed": true,
+    "non_target_junit_failures_excluded": 22,
+    "physical_identity_strict": 123,
+    "same_file_block_target_after_last_fault": 122,
+    "sha256": "af7056c1dc9acd2801b6c3a3a42fcf5435ab5612822ef2fd1448b5f8d17d0d01",
+    "target_exception_candidates": 0
+  },
+  "fully_applied_trials": 123,
+  "function": "FSDirAppendOp.appendFile",
+  "healthy_calibration_elapsed_seconds": 18.525,
+  "healthy_target_checks": 3,
+  "healthy_target_fatal": false,
+  "io_injection_scope": "post-dn0-stop semantic RPC send and response-wait with MiniDFSCluster-indexed source DN",
+  "junit_non_target_failure_trials": 22,
+  "lost_target_trials": 1,
+  "methodology": "original_embedded_cluster_junit_case_local_actor_source_probes_jacoco_coverage_io",
+  "quality_scope": "Bounded original-JUnit actor-aware campaign; quality_complete means the exact check was reached and the 128-attempt budget was audited, not that all possible fault sequences were exhausted.",
+  "semantic_single_fault_pilot": {
+    "attempts": 13,
+    "checkpoint": "independent-coverage-io/campaign/checkpoint.json",
+    "elapsed_seconds": 556.375,
+    "healthy_seconds": 179.81,
+    "source_dn_not_recorded": true,
+    "strict": 13,
+    "target_after_fault": 13,
+    "trial_seconds": 376.565
+  },
+  "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+  "source_line": 136,
+  "source_review": "Exact original MiniDFSCluster runtime calibration reached the healthy guard in TestFileAppend, TestFileAppendRestart, and TestFileAppend4. TestFileAppend4#testAppendInsufficientLocations already expects and catches the target IOException without injected fault; this positive control is excluded from the new-bug oracle.",
+  "status": "quality_complete",
+  "stop_reason": "attempt_budget_reached",
+  "strict_injections": 123,
+  "strict_physical_identity_trials": 123,
+  "target_after_fault": 122,
+  "target_after_fault_physical_identity_trials": 122,
+  "target_exception_after_fault_trials": 0,
+  "target_reached": true,
+  "target_retaining_junit_non_target_failure_trials": 21,
+  "target_retaining_junit_pass_trials": 101,
+  "total_elapsed_seconds_all_phases": 4377.827,
+  "trial_count_scope": "top-level counters and elapsed_seconds are actor-v2 only; 13 semantic pilot trials and their elapsed time are nested; all-phase elapsed is separate",
+  "unmatched_or_partial_trials": 5,
+  "updated_at_utc": "2026-10-07T01:59:10.785791+00:00"
 }
