@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import argparse
 import json
+from pathlib import Path
 
 import campaign_v2 as v2
 from build_v2 import sha
@@ -11,6 +13,10 @@ from calibrate_v2 import rows, selected, target_signature
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output', type=Path,
+                        default=v2.HERE / 'handoff-v3-audit.json')
+    args = parser.parse_args()
     state = json.loads(v2.STATE.read_text())
     errors = []
     coverage = set(state['baseline_coverage'])
@@ -76,7 +82,7 @@ def main() -> None:
         'effective': effective_count, 'exact_target_throws': target_throws,
         'errors': errors,
     }
-    v2.atomic(v2.HERE / 'handoff-v3-audit.json', output)
+    v2.atomic(args.output, output)
     print(json.dumps(output, sort_keys=True))
     if errors:
         raise SystemExit(1)

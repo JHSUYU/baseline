@@ -11,3 +11,21 @@ Before fuzzing, run `python3 build_v2.py` and `python3 smoke_v2.py`. The build c
 An effective trial requires every planned fault to match the exact runtime identity and the same chosen target guard to execute after the last fault. The target exception is separately recorded as a candidate observation; source review and replay are needed before calling it a new bug. Faulted runs that remove the target are ineffective. The present injector covers six ZK APIs under this collection only; it does not cover all RPC, file, crash, or reboot behaviors.
 
 Two new instrumented original cluster JUnits on node2 passed, each with all three Jetty roles bound and nine eligible target checks; their common physical actor/core/leader signatures are in [calibration-receipt.json](calibration-receipt.json). The V2 queue completed 16 fault trials, with 6 exact ordered injections, 3 same-actor postfault target checks, and zero selected throws. The independent [raw audit](handoff-v3-audit.json) found no errors and links the immutable [handoff checkpoint](handoff-v3-state-16-selected.json) by SHA-256. A coverage-rich deep branch repeatedly lost the target while 55 fresh one-fault roots remained queued. The V3 scheduler now selects a fresh observed actor-bound root on every other trial and otherwise retains the V2 scoring; it does not alter the probe, workload, oracle, budget, or completed trials. Node2 tmux `solr07_actor_v3_campaign` resumes the same atomic state at `campaign/state.json`. [Guarded calibration](calibrate_node2_guarded.sh), [campaign launcher](campaign_node2_guarded.sh), [V3 selector](campaign_v3.py), and [handoff auditor](audit_v2_checkpoint.py) record the transition. Generated classes, JARs, traces, and checkpoints are local artifacts; the V2 implementation is the source and scripts in this directory.
+
+The next audited handoff preserved all 39 V2/V3 attempts: 25 exact ordered
+injections, six postfault same-actor target checks, and one selected throw.
+The [39-trial raw audit](handoff-v4-audit.json) has zero errors and SHA-binds
+the [checkpoint](handoff-v4-state-39-selected.json). The selected throw in
+trial 38 is [source-reviewed here](trial038-review.md); it followed test
+teardown timing and is not a confirmed new bug. Five clean same-plan diagnostic
+replays failed to match both ordinals and do not enter the fuzz denominator.
+
+The [V4 scheduler](campaign_v4.py) adds all 34 actor-bound I/O roots that were
+seen in both healthy JUnits but omitted by V2's `last 20 + first eight` seed
+cut. It gives three of every four selections to one-fault roots, retaining
+the V2 feedback choice for the fourth. This leaves the original JUnit, agent,
+fault model, target identity, coverage computation, 80/128-effective budget,
+and existing queue/seen state intact. Node2 tmux
+`solr07_actor_v4_campaign` runs the [shared-lock guarded launcher](campaign_v4_node2_guarded.sh)
+against the same atomic checkpoint. It must not count the older coarse-actor
+campaign or the five diagnostic replays as V4 trials.
