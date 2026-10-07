@@ -1,0 +1,9 @@
+# SOLR-18 actor-aware continuation
+
+This continuation uses the unchanged Solr 8.11.4 `AliasIntegrationTest#testProperties` embedded cluster workload. The previously recorded 80 effective trials live under `../independent/` and are retained only as `legacy_coarse_actor` evidence; they do not contribute to this campaign's effective count.
+
+The selected source check is `ZkStateReader.AliasesManager.setIfNewer` at line 2347: when the new alias data has the same ZooKeeper version as the cached value, the two JSON encodings must agree. The selected dynamic occurrence is the first version-1 equality check on the manager first modified from the original test body, before its next modification. Other callbacks, teardown work, and other managers are not the selected target.
+
+`PatchSolr18` overlays the released `AliasesManager` and `SolrZkClient` bytecode only. The V2 probe now records the `SolrZkClient` object on each observed I/O operation and resolves the target manager's enclosing `ZkStateReader` to its client object. An unresolved reflection result is `UNBOUND` and cannot satisfy the actor gate. The direct-client effective rule requires every planned fault to apply in order on the same runtime client and the selected target to execute after the final fault. An upstream `/aliases.json` write on a different client requires a separate version/payload relation; this continuation does not yet count one as direct-client evidence. JaCoCo remains production-code coverage feedback.
+
+Offline checks completed: clean 8.11.4 source and unchanged JUnit compile; exact ASM patch counts for both classes; synthetic same-client/wrong-client audit (only the same-client trial qualifies). `build.json` and `instrumentation.json` record the source and bytecode hashes. A fresh original and actor-aware healthy JUnit calibration is still required before fault trials. The new run root is `/users/ZhenyuLi/solr18-actor-v2-runs`, separate from the previous campaign.
