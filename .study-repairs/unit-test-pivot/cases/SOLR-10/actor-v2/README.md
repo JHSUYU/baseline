@@ -186,6 +186,22 @@ two reached SOLR-39 on the same live client and alias manager. The full
 campaign continues in `solr103940_v4_full`; the latest effective counts are
 in the checkpoint and the synchronized per-check result records.
 
+A bounded V6 scheduling pilot tested whether healthy same-reader I/O near
+SOLR-10 could improve its effective yield. It gave one in four rounds to an
+untested SOLR-10 root, while retaining the SOLR-39 even-round preference and
+multi-fault mutation. The four priority roots in trials 133, 137, 141, and
+145 all selected an Overseer leader read on a physical Jetty node that did
+not perform that read in the fresh run. None applied a fault, so none counted
+as effective. The other trial types added three effective trials per check
+over trials 130–145. At the completed trial-145 boundary, the scheduler was
+returned to V5 without changing the original JUnit, actor hook, completed
+trials, or seen plans. The V6 source, its first-trial role-drift audit,
+V5-to-V6 migration hashes, and V6-to-V5 reversion hashes are retained as
+`evidence/campaign-v4/{scheduler-v6.py,target-root-first-trial.json,target-root-migration.json,target-root-reversion.json}`.
+The active source is again the SHA-256 `749089fd1b442d27c72dd721567ccdd492d89ebae3a370b8a1cf8664f77f3582`
+V5 scheduler. This pilot shows that a close healthy I/O-to-guard distance alone
+cannot replace live actor matching when the Overseer role moves.
+
 ## Historical node2 healthy calibration, 2026-10-06
 
 Four bounded healthy invocations ran in persistent tmux session
