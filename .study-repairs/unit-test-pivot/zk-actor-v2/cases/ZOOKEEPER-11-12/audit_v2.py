@@ -3,6 +3,7 @@
 
 import argparse
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 
@@ -13,7 +14,8 @@ from campaign_v2 import (STATE, atomic, audit_actors, candidates, selected_targe
 
 
 def audit(terminal=False):
-    state = json.loads(STATE.read_text())
+    checkpoint = STATE.read_bytes()
+    state = json.loads(checkpoint)
     verify_state(state)
     if terminal and (state['inflight'] is not None or state['status'] not in
                      ('complete', 'selected_cap', 'queue_exhausted')):
@@ -50,13 +52,18 @@ def audit(terminal=False):
                               'elapsed_seconds': receipt['elapsed_seconds']})
     cumulative_coverage = set(healthy_coverage)
     initial_families = set()
+    healthy_case_families = {}
     for case in CHECKS:
         seed_b_selectors = {item['selector'] for item in
                             candidates(seed_traces[1], case, peer)}
-        initial_families.update(item['family'] for item in
-                                candidates(seed_traces[0], case, peer)
-                                if item['selector'] in seed_b_selectors)
+        healthy_case_families[case] = {
+            item['family'] for item in candidates(seed_traces[0], case, peer)
+            if item['selector'] in seed_b_selectors}
+        initial_families.update(healthy_case_families[case])
     cumulative_families = set(initial_families)
+    case_coverage = {case: set(healthy_coverage) for case in CHECKS}
+    case_families = {case: set(families) for case, families in
+                     healthy_case_families.items()}
     audited = []
     for result in state['results']:
         run_id = result['run_id']
@@ -93,6 +100,11 @@ def audit(terminal=False):
         effective_any = any(v['effective'] for v in result['case_results'].values())
         if effective_any:
             current = set((folder / 'coverage.tsv').read_text().splitlines())
+            for case, case_result in result['case_results'].items():
+                if case_result['effective']:
+                    case_coverage[case].update(current)
+                    case_families[case].update(
+                        point['family'] for point in candidates(trace, case, peer, last))
             gain = len(current - cumulative_coverage)
             if gain != result['new_coverage_lines']:
                 raise RuntimeError(run_id + ' coverage feedback changed')
@@ -145,8 +157,14 @@ def audit(terminal=False):
             raise RuntimeError(case + ' extension lacks final-eight novelty')
         cases[case] = {
             'effective': len(effective),
+            'selected_plan_attempts': sum(row['case'] == case for row in audited),
+            'strict_but_target_lost': sum(row['exact'] and
+                                          not row['cases'][case]['effective']
+                                          for row in audited),
             'effective_target': budget['effective_target'],
             'max_faults': budget['max_faults'],
+            'max_fault_depth_selected': max((row['fault_depth'] for row in audited
+                                             if row['case'] == case), default=0),
             'extension_decided': budget['extension_decided'],
             'final_eight_effective_novelty': novelty if len(recent) == 8 else None,
             'extension_novelty_at_eighty': extension_novelty if len(effective) >= 80 else None,
@@ -156,6 +174,11 @@ def audit(terminal=False):
                                                for row in audited),
             'postfault_guard_events': sum(row['cases'][case]['postfault_guards']
                                          for row in audited),
+            'effective_junit_nonzero': sum(row['junit_exit'] != 0 for row in effective),
+            'observed_coverage_gain': len(case_coverage[case] - healthy_coverage),
+            'observed_io_family_gain': len(case_families[case] -
+                                           healthy_case_families[case]),
+            'healthy_io_families': len(healthy_case_families[case]),
             'effective_trial_seconds': round(sum(row['elapsed_seconds'] for row in effective), 3),
         }
     return {
@@ -168,7 +191,7 @@ def audit(terminal=False):
         'agent_sha256': state['agent_sha256'],
         'script_hashes': state['script_hashes'],
         'calibration_sha256': state['calibration_sha256'],
-        'checkpoint_sha256_at_audit': sha(STATE),
+        'checkpoint_sha256_at_audit': hashlib.sha256(checkpoint).hexdigest(),
         'healthy': seed_receipts,
         'healthy_elapsed_seconds': round(healthy_seconds, 3),
         'trial_elapsed_seconds': round(sum(row['elapsed_seconds'] for row in audited), 3),
