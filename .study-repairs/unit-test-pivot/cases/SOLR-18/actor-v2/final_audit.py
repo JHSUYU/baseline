@@ -141,7 +141,8 @@ def audit_all() -> dict:
         mirror_entry = mirror['runs'][run_id]
         digests = mirror_entry['sha256']
         if mirror_entry.get('archive_status') == 'pending_node0_pull':
-            assert NODE2_LOCAL and mirror_entry['raw_retained_on_node2']
+            assert mirror_entry['raw_retained_on_node2']
+            assert NODE2_LOCAL or run_id in pulled
             if run_id in pulled:
                 archived = pulled[run_id]
                 assert archived['sha256'] == digests
@@ -244,7 +245,8 @@ def audit_all() -> dict:
             if x['run_id'] in pulled),
         'raw_mirror_remote_sha_reverified_files': sum(
             len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']
-            if mirror['runs'][x['run_id']].get('archive_status') != 'pending_node0_pull'),
+            if not NODE2_LOCAL or
+            mirror['runs'][x['run_id']].get('archive_status') != 'pending_node0_pull'),
         'raw_primary_sha_reverified_files': sum(
             len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']),
         'noncandidate_consoles_offloaded_to_node2': len(offloaded),
