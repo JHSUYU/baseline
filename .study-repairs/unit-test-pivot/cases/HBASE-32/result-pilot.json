@@ -1,0 +1,77 @@
+{
+  "bug_mark": "none",
+  "case_id": "HBASE-32",
+  "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testSecondaryRegionKill",
+  "coverage_gain": 7,
+  "current_campaign": {
+    "applied_fault_events": 35,
+    "attempted_trials": 24,
+    "budget": {
+      "effective_trials": 80,
+      "max_attempts": 24,
+      "max_faults": 8,
+      "planned_max_attempts": 240
+    },
+    "checkpoint": "work/checkpoint.json",
+    "coverage_admitted_trials": 3,
+    "effective_trials": 3,
+    "exact_b7_trials": 4,
+    "healthy_coverage": {
+      "branches": 13,
+      "classes": {
+        "org/apache/hadoop/hbase/client/FlushRegionCallable": {
+          "branches": 1,
+          "lines": 15,
+          "methods": 5
+        },
+        "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler": {
+          "branches": 12,
+          "lines": 37,
+          "methods": 5
+        }
+      },
+      "lines": 52,
+      "methods": 10,
+      "target": {
+        "branches": 0,
+        "instructions": 0,
+        "line": 136
+      }
+    },
+    "healthy_elapsed_seconds": 55.35,
+    "healthy_exact_guard_evaluations": 0,
+    "healthy_related_io_events": 3,
+    "healthy_target_invocations": 3,
+    "invalid_cluster_exhaustion_trials": 1,
+    "new_production_branches": 7,
+    "new_production_methods": 1,
+    "queue_length": 25,
+    "requested_fault_events": 36,
+    "stop_reason": "larger_original_cluster_junit_has_542_stable_target_linked_rpc_identities",
+    "strict_trials": 23,
+    "target_line_136_coverage": {
+      "branches": 0,
+      "instructions": 2,
+      "line": 136
+    }
+  },
+  "elapsed_seconds": 1679.6600000000003,
+  "evidence": [
+    "README.md",
+    "work/checkpoint.json",
+    "work/logs/actor-healthy.log",
+    "work/src/HBase32Agent.java",
+    "work/src/CoverageReport.java",
+    "work/run.sh",
+    "evidence/hbase32-pilot-raw.tar.gz",
+    "result-pilot.json"
+  ],
+  "fault_trials": 24,
+  "fully_applied_trials": 23,
+  "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
+  "source_audit_note": "Test kills a secondary RS and waits for replica recovery; primary flush IOException is not expected.",
+  "status": "pilot_pivoted_to_many_regions",
+  "strict_injections": 23,
+  "target_after_fault": 3,
+  "target_reached": true
+}

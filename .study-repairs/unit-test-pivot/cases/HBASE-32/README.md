@@ -44,22 +44,82 @@ table-missing response while the table still existed; this violates the
 response's state precondition, so the calibration is excluded from the main
 fault queue and is not a bug claim.
 
-The resumable coverage-guided campaign is implemented in `work/campaign.py`.
-It uses the original JUnit, case-local ASM probes, JaCoCo production coverage,
-exact ordered fault plans, and atomic per-trial checkpoints. It searches up to
-80 effective target-guard trials, 240 attempts, and eight injected faults per
-plan. Every fault trial is tied to the same concrete region as the post-fault
-guard; unmatched plans do not count. The campaign remains active on node1 in
-tmux session `hbase32-fuzz`, and `result.json` reflects the last synchronized
-checkpoint. Raw trial logs and JaCoCo exec files remain under node1's isolated
-`work/logs/` until archived.
+The first resumable coverage-guided pilot used `work/campaign.py` with the
+original `testSecondaryRegionKill` JUnit. It used case-local ASM probes,
+JaCoCo production coverage, exact ordered fault plans, and atomic per-trial
+checkpoints. It completed 24 distinct attempts: 23 fully applied, three
+retained the target after the last fault, and one exhausted all three region
+servers. `result-pilot.json`, `work/checkpoint.json`, and
+`evidence/hbase32-pilot-raw.tar.gz` preserve this pilot independently. Its
+short 24-attempt cap was used only to settle the final inflight trial before
+switching workloads; it was not the case's final fuzz budget.
 
 The second campaign plan injected two no-retry exceptions during successive
 recoveries. The original JUnit had already aborted RS
 `ms1105.utah.cloudlab.us,37551,1791336903029`; the two target B7 outcomes
 caused `handleException` to abort the other two distinct RSs
 (`...,33921,1791336902566` and `...,34251,1791336903366`). The master then
-reported no region server available. This sequence exhausts all three RSs and
-is invalid under the workload's recovery precondition. It is preserved for
-independent replay, excluded from the effective denominator and bug candidates,
+reported no region server available. The original attempt reached the 360s
+timeout (370.96s including shutdown). An independent replay applied both
+faults, reached both target B7 outcomes, aborted three *different* RSs, again
+reported no region server available, and exited by timeout (371.07s). The
+second run's RS IDs differed because it had a fresh cluster. This sequence
+exhausts all three RSs and is invalid under the workload's recovery
+precondition. It is excluded from the effective denominator and bug candidates,
 and not expanded in the queue. Its fault and target-hit counts remain visible.
+`evidence/r002_invalid_replay.json` records both runs' source-derived symptom
+and artifact hashes.
+
+Trials r003–r005 injected retryable faults but lost the chosen exception guard
+after the last fault. Their attempts, JUnit results, and JaCoCo files remain
+archived, but their coverage does not guide later mutation and they do not
+count in the effective target-check budget. An atomic checkpoint migration
+removed their descendants and coverage data without rerunning these trials;
+`evidence/target_loss_migration.json` records the before/after counts and
+independent ancestry assertions.
+
+## Reachability audit and workload pivot
+
+At 11 pilot attempts, only two trials retained the target after the last fault.
+The probe's healthy trace has three distinct flush-RPC identities: replica 1
+at target invocations 1 and 2, and replica 2 at invocation 1. It does not
+record broader RPC or file I/O; the campaign cannot claim coverage of such
+sites. The first B7 trial's branch novelty was promoting its two-fault
+descendants ahead of untried single-fault identities. The priority score now
+favors novel single-fault identities and replica/invocation diversity, with
+bounded coverage and aging rewards for legal depth. This ordering was applied
+after r014's complete raw log and exit status were written. The controller
+resumed from the inflight marker, settled r014 without rerunning it, and chose
+the previously untried replica-2/target-1 RPC for r015. Matching and effective
+trial accounting require the same complete raw primary region identity at the
+fault and the later target guard.
+
+I evaluated other unchanged methods of the same cluster test class. Two
+fault-free runs of `testSecondaryRegionKillWhilePrimaryIsAcceptingWrites`
+passed in 64.51 and 63.82 seconds. Despite concurrent puts and an admin
+flush, the current probe saw only three common stable flush-RPC identities and
+three target invocations, so it did not materially expand the fault space.
+Two fault-free runs of `testLotsOfRegionReplicas` passed in 60.13 and 60.24
+seconds (about 2 GiB peak RSS each). This method creates 60 additional
+regions with ten replicas. Both runs entered the target 542 times, across 61
+stable table/start-key region identities. They observed 555 and 560
+flush-RPC selectors, with 543 selectors common across runs; the extra
+selectors came from nondeterministic RPC retries. Every observed flush RPC
+matched the active target's full raw primary region in its own run. The probe
+still does not intercept the workload's broader file I/O or other RPC families.
+
+The separate main campaign now runs the unchanged
+`TestRegionReplicaFailover.testLotsOfRegionReplicas` method in node1 tmux
+`hbase32-lots-fuzz`. `work-lots/campaign.py` has its own healthy seed,
+JaCoCo union, queue, checkpoint, and trial logs. The full budget is 80
+effective trials, 240 attempts, and at most eight injected events per plan.
+The initial healthy trace generated 2,220 distinct one-fault plans. An
+effective trial requires every planned exception to be applied and the last
+fault to reach the same *full raw primary region, replica ID, and target
+invocation ordinal* at the source exception guard. Trials that lose the
+target or exhaust the three-server cluster keep their raw evidence but do not
+contribute coverage novelty or descendants. The first faulted trial applied
+one `DoNotRetryIOException` to a selector present in the healthy seed,
+reached that exact actor's guard and B7 rethrow, and passed JUnit in 57.01
+seconds after the expected server abort. `result.json` and the 104-row
+checklist reflect the latest synchronized main-campaign checkpoint.

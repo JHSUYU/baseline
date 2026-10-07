@@ -1,0 +1,494 @@
+{
+  "coverage_execs": [
+    "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work/logs/actor-healthy.exec",
+    "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work/logs/r001.exec",
+    "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work/logs/r003.exec",
+    "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work/logs/r004.exec"
+  ],
+  "coverage_union": {
+    "branches": 20,
+    "classes": {
+      "org/apache/hadoop/hbase/client/FlushRegionCallable": {
+        "branches": 1,
+        "lines": 15,
+        "methods": 5
+      },
+      "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler": {
+        "branches": 19,
+        "lines": 49,
+        "methods": 6
+      }
+    },
+    "lines": 64,
+    "methods": 11,
+    "target": {
+      "branches": 0,
+      "instructions": 2,
+      "line": 136
+    }
+  },
+  "healthy": {
+    "applied": [],
+    "b7": [],
+    "elapsed_seconds": 55.35,
+    "guards": [],
+    "io": [
+      {
+        "context_match": "true",
+        "line": 1646,
+        "raw_primary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTMuZmE1MjFkNDYyOWJjNzVlYmJiYzNjNTA4Zjc3MDBlYzku",
+        "selector": "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81",
+        "seq": "3"
+      },
+      {
+        "context_match": "true",
+        "line": 1656,
+        "raw_primary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTMuZmE1MjFkNDYyOWJjNzVlYmJiYzNjNTA4Zjc3MDBlYzku",
+        "selector": "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81",
+        "seq": "4"
+      },
+      {
+        "context_match": "true",
+        "line": 1936,
+        "raw_primary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTMuZmE1MjFkNDYyOWJjNzVlYmJiYzNjNTA4Zjc3MDBlYzku",
+        "selector": "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81",
+        "seq": "6"
+      }
+    ],
+    "junit": {
+      "failed": 0,
+      "found": 1,
+      "succeeded": 1
+    },
+    "target_enters": [
+      {
+        "line": 1629,
+        "method": "RegionReplicaFlushHandler.triggerFlushInPrimaryRegion",
+        "raw_primary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTMuZmE1MjFkNDYyOWJjNzVlYmJiYzNjNTA4Zjc3MDBlYzku",
+        "raw_secondary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTNfMDAwMS4wN2FhOTRiOTRkMzNkYTEyYWI5Y2UzOGMwOTc3YTJjYy4",
+        "replica_id": "1",
+        "seq": "1",
+        "target_ordinal": "1"
+      },
+      {
+        "line": 1630,
+        "method": "RegionReplicaFlushHandler.triggerFlushInPrimaryRegion",
+        "raw_primary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTMuZmE1MjFkNDYyOWJjNzVlYmJiYzNjNTA4Zjc3MDBlYzku",
+        "raw_secondary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTNfMDAwMi4zZmI5NDJjMzUxMWU4MDZkNzkxMTU2ZjM5M2IzMWRlMC4",
+        "replica_id": "2",
+        "seq": "2",
+        "target_ordinal": "1"
+      },
+      {
+        "line": 1931,
+        "method": "RegionReplicaFlushHandler.triggerFlushInPrimaryRegion",
+        "raw_primary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTMuZmE1MjFkNDYyOWJjNzVlYmJiYzNjNTA4Zjc3MDBlYzku",
+        "raw_secondary_region": "dGVzdFNlY29uZGFyeVJlZ2lvbkssLDE3OTEzMzY0MDY2NTNfMDAwMS4wN2FhOTRiOTRkMzNkYTEyYWI5Y2UzOGMwOTc3YTJjYy4",
+        "replica_id": "1",
+        "seq": "5",
+        "target_ordinal": "2"
+      }
+    ]
+  },
+  "healthy_coverage": {
+    "branches": 13,
+    "classes": {
+      "org/apache/hadoop/hbase/client/FlushRegionCallable": {
+        "branches": 1,
+        "lines": 15,
+        "methods": 5
+      },
+      "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler": {
+        "branches": 12,
+        "lines": 37,
+        "methods": 5
+      }
+    },
+    "lines": 52,
+    "methods": 10,
+    "target": {
+      "branches": 0,
+      "instructions": 0,
+      "line": 136
+    }
+  },
+  "queue": [
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 8,
+      "parent_seconds": 58.66,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 3
+    },
+    {
+      "novelty": 8,
+      "parent_seconds": 58.66,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 3
+    },
+    {
+      "novelty": 8,
+      "parent_seconds": 58.66,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "wait": 3
+    },
+    {
+      "novelty": 8,
+      "parent_seconds": 58.66,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 3
+    },
+    {
+      "novelty": 8,
+      "parent_seconds": 58.66,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 3
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 55.35,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 4
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 56.67,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "wait": 1
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 56.67,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 1
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 56.67,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 1
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 56.67,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "wait": 1
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 56.67,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-2~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 1
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 56.67,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-2~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 1
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 51.54,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+      ],
+      "wait": 0
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 51.54,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~IOEXCEPTION"
+      ],
+      "wait": 0
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 51.54,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~SOCKET_TIMEOUT"
+      ],
+      "wait": 0
+    },
+    {
+      "novelty": 0,
+      "parent_seconds": 51.54,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "wait": 0
+    }
+  ],
+  "seen_plans": [
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~TABLE_NOT_FOUND",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-2~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-2~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~TABLE_NOT_FOUND",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-2~FlushRegionCallable.call:81~TABLE_NOT_FOUND",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION;RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-2~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~TABLE_NOT_FOUND",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~SOCKET_TIMEOUT",
+    "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-2~target-1~rpc-1~FlushRegionCallable.call:81~TABLE_NOT_FOUND"
+  ],
+  "trials": [
+    {
+      "applied_fault_events": 1,
+      "disposition": "expected_b7_abort",
+      "effective": true,
+      "elapsed_seconds": 58.66,
+      "exact_b7_after_fault": true,
+      "id": "r001",
+      "junit": {
+        "failed": 0,
+        "found": 1,
+        "succeeded": 1
+      },
+      "junit_exit": 0,
+      "log": "work/logs/r001.log",
+      "new_production_branches_and_methods": 8,
+      "observed_io_events": 6,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+      ],
+      "review_candidate": false,
+      "same_region_b7_events": 1,
+      "same_region_guard_events": 1,
+      "strict": true,
+      "target_after_fault": true
+    },
+    {
+      "aborted_region_servers": [
+        "ms1105.utah.cloudlab.us,33921,1791336902566",
+        "ms1105.utah.cloudlab.us,34251,1791336903366",
+        "ms1105.utah.cloudlab.us,37551,1791336903029"
+      ],
+      "applied_fault_events": 2,
+      "disposition": "invalid_all_region_servers_aborted",
+      "effective": false,
+      "elapsed_seconds": 370.96,
+      "exact_b7_after_fault": true,
+      "id": "r002",
+      "invalid_cluster": true,
+      "junit": null,
+      "junit_exit": 124,
+      "log": "work/logs/r002.log",
+      "new_production_branches_and_methods": 0,
+      "observed_io_events": 6,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+      ],
+      "review_candidate": false,
+      "same_region_b7_events": 1,
+      "same_region_guard_events": 1,
+      "strict": true,
+      "target_after_fault": true
+    },
+    {
+      "aborted_region_servers": [
+        "ms1105.utah.cloudlab.us,39997,1791337301284",
+        "ms1105.utah.cloudlab.us,46611,1791337300315"
+      ],
+      "applied_fault_events": 2,
+      "coverage_admitted": true,
+      "disposition": "target_lost",
+      "effective": false,
+      "elapsed_seconds": 56.67,
+      "exact_b7_after_fault": false,
+      "id": "r003",
+      "invalid_cluster": false,
+      "junit": {
+        "failed": 0,
+        "found": 1,
+        "succeeded": 1
+      },
+      "junit_exit": 0,
+      "log": "work/logs/r003.log",
+      "new_production_branches_and_methods": 0,
+      "observed_io_events": 7,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION",
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-3~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "review_candidate": false,
+      "same_region_b7_events": 0,
+      "same_region_guard_events": 0,
+      "strict": true,
+      "target_after_fault": false
+    },
+    {
+      "aborted_region_servers": [
+        "ms1105.utah.cloudlab.us,41945,1791337381411"
+      ],
+      "applied_fault_events": 1,
+      "coverage_admitted": true,
+      "disposition": "target_lost",
+      "effective": false,
+      "elapsed_seconds": 51.54,
+      "exact_b7_after_fault": false,
+      "id": "r004",
+      "invalid_cluster": false,
+      "junit": {
+        "failed": 0,
+        "found": 1,
+        "succeeded": 1
+      },
+      "junit_exit": 0,
+      "log": "work/logs/r004.log",
+      "new_production_branches_and_methods": 0,
+      "observed_io_events": 7,
+      "plan": [
+        "RPC_FLUSH_REGION~dGVzdFNlY29uZGFyeVJlZ2lvbkss~replica-1~target-2~rpc-1~FlushRegionCallable.call:81~EOF_EXCEPTION"
+      ],
+      "review_candidate": false,
+      "same_region_b7_events": 0,
+      "same_region_guard_events": 0,
+      "strict": true,
+      "target_after_fault": false
+    }
+  ]
+}

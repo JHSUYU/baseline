@@ -10,6 +10,7 @@ from pathlib import Path
 import random
 import re
 import subprocess
+from datetime import datetime, timezone
 
 
 HERE = Path(__file__).resolve().parent
@@ -129,17 +130,25 @@ def enqueue(state: dict, prefix: list[str], trace: dict, after: int, novelty: in
     state["seen_plans"] = sorted(seen)
 
 
-def priority(entry: dict, tried: Counter) -> float:
+def priority(entry: dict, tried: Counter, b7_prefixes: list[list[str]]) -> float:
     final = entry["plan"][-1]
     selector, kind = final.rsplit("~", 1)
     replica1 = "~replica-1~" in selector
     recovery = "~target-2~" in selector or "~target-3~" in selector
-    # Prefer a previously unseen fault identity, a recovery invocation, and
-    # previously productive prefixes. Aging avoids trapping the search locally.
-    return (20 * (not tried[final]) + 12 * replica1 + 15 * recovery
-            + 5 * len(entry["plan"]) + 4 * entry["novelty"]
-            + min(entry["wait"] // 8, 15)
+    prior_abort = any(len(entry["plan"]) > len(prefix)
+                      and entry["plan"][:len(prefix)] == prefix
+                      for prefix in b7_prefixes)
+    # With this original test, a B7 throw aborts an RS and a second throw
+    # can exhaust the three-RS cluster. Exercise all distinct, healthy-trace
+    # single-fault identities before spending heavily on recovery descendants.
+    # Keep a bounded coverage reward and aging so legal depth is still tried.
+    return (25 * (not tried[final]) + 12 * replica1 + 10 * (not replica1)
+            + (8 if recovery else 0)
+            + (55 if len(entry["plan"]) == 1 else -10)
+            + min(2 * entry["novelty"], 12)
+            + min(entry["wait"] // 5, 20)
             - min(entry["parent_seconds"] / 20, 12)
+            - (25 if prior_abort else 0)
             + (6 if kind == "DO_NOT_RETRY_IOEXCEPTION" else 0))
 
 
@@ -147,15 +156,24 @@ def prune_queue(state: dict) -> None:
     """Exclude semantic-invalid faults and known cluster-exhausting prefixes."""
     invalid = [trial["plan"] for trial in state["trials"]
                if trial.get("invalid_cluster")]
+    target_lost = [trial["plan"] for trial in state["trials"]
+                   if trial.get("strict") and not trial.get("target_after_fault")]
     b7 = [trial["plan"] for trial in state["trials"]
           if trial.get("exact_b7_after_fault") and not trial.get("invalid_cluster")]
+    inflight = json.loads(INFLIGHT.read_text()) if INFLIGHT.exists() else None
     retained = []
     for entry in state["queue"]:
         plan = entry["plan"]
+        if inflight and plan == inflight["plan"]:
+            retained.append(entry)
+            continue
         if any(step.endswith("~TABLE_NOT_FOUND") for step in plan):
             continue
         if any(len(plan) > len(prefix) and plan[:len(prefix)] == prefix
                for prefix in invalid):
+            continue
+        if any(len(plan) > len(prefix) and plan[:len(prefix)] == prefix
+               for prefix in target_lost):
             continue
         # The original JUnit has already deliberately aborted one of three
         # RSs. A second immediate no-retry throw after a first B7 abort would
@@ -202,6 +220,8 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
             "exact_b7_trials": sum(trial["exact_b7_after_fault"] for trial in strict),
             "invalid_cluster_exhaustion_trials": sum(trial.get("invalid_cluster", False)
                                                      for trial in trials),
+            "coverage_admitted_trials": sum(trial["effective"]
+                                            for trial in trials),
             "requested_fault_events": sum(len(trial["plan"]) for trial in trials),
             "applied_fault_events": sum(trial["applied_fault_events"] for trial in trials),
             "new_production_branches": state["coverage_union"]["branches"]
@@ -221,6 +241,38 @@ def publish(state: dict, status: str = "running_coverage_io_campaign") -> None:
 def main() -> None:
     if CHECKPOINT.exists():
         state = json.loads(CHECKPOINT.read_text())
+        if not state.get("target_loss_migration_applied"):
+            # Earlier controller revisions admitted a strict retry even when
+            # its final fault did not reach the chosen exception guard. Keep
+            # the raw attempt but remove its coverage and queue descendants.
+            old_queue = len(state["queue"])
+            old_execs = len(state["coverage_execs"])
+            state["coverage_execs"] = [str(HERE / "logs" / "actor-healthy.exec")]
+            for trial in state["trials"]:
+                trial["coverage_admitted"] = bool(trial["effective"])
+                if trial["effective"]:
+                    state["coverage_execs"].append(str(HERE / "logs" / (trial["id"] + ".exec")))
+                else:
+                    trial["new_production_branches_and_methods"] = 0
+            state["coverage_union"] = coverage([Path(path) for path in state["coverage_execs"]])
+            prune_queue(state)
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "reason": "exclude final-fault target-lost coverage and descendants",
+                "target_lost_ids": [trial["id"] for trial in state["trials"]
+                                    if trial["strict"] and not trial["target_after_fault"]],
+                "queue_before": old_queue, "queue_after": len(state["queue"]),
+                "coverage_execs_before": old_execs,
+                "coverage_execs_after": len(state["coverage_execs"]),
+            })
+            state["target_loss_migration_applied"] = True
+        # A controller can stop after writing the inflight marker but before
+        # committing that trial. Keep it accountably in the queue on restart.
+        pending = json.loads(INFLIGHT.read_text()) if INFLIGHT.exists() else None
+        if pending and not any(entry["plan"] == pending["plan"]
+                               for entry in state["queue"]):
+            state["queue"].insert(0, {"plan": pending["plan"],
+                                      "parent_seconds": 60, "novelty": 0, "wait": 0})
     else:
         healthy = parse_log(HERE / "logs" / "actor-healthy.log")
         if (healthy["junit"] != {"found": 1, "succeeded": 1, "failed": 0}
@@ -251,7 +303,9 @@ def main() -> None:
         else:
             INFLIGHT.unlink(missing_ok=True)
             tried = Counter(trial["plan"][-1] for trial in state["trials"])
-            state["queue"].sort(key=lambda item: (-priority(item, tried),
+            b7_prefixes = [trial["plan"] for trial in state["trials"]
+                           if trial.get("exact_b7_after_fault")]
+            state["queue"].sort(key=lambda item: (-priority(item, tried, b7_prefixes),
                                                    item["parent_seconds"],
                                                    ";".join(item["plan"])))
             entry = state["queue"].pop(0)
@@ -271,7 +325,9 @@ def main() -> None:
         aborted_servers = sorted({abort["server"] for abort in trace["rs_aborts"]})
         invalid_cluster = strict and len(aborted_servers) >= 3
         exec_file = HERE / "logs" / (trial_id + ".exec")
-        effective = strict and bool(guards) and exec_file.exists() and not invalid_cluster
+        coverage_present = exec_file.is_file() and exec_file.stat().st_size > 0
+        effective = strict and bool(guards) and coverage_present and not invalid_cluster
+        coverage_admitted = effective
         old_coverage = state["coverage_union"]
         new_coverage = old_coverage
         if effective:
@@ -290,6 +346,7 @@ def main() -> None:
                 "same_region_b7_events": len(b7),
                 "aborted_region_servers": aborted_servers,
                 "invalid_cluster": bool(invalid_cluster),
+                "coverage_admitted": bool(coverage_admitted),
                 "effective": effective, "review_candidate": bool(unexpected),
                 "junit": trace["junit"], "junit_exit": int(exit_file.read_text().strip()),
                 "elapsed_seconds": trace["elapsed_seconds"],
@@ -301,7 +358,7 @@ def main() -> None:
                                 "target_lost" if not guards else
                                 "expected_b7_abort" if b7 else "guard_return_or_other")}
         state["trials"].append(item)
-        if strict and not invalid_cluster:
+        if effective:
             enqueue(state, entry["plan"], trace, trace["applied"][-1]["line"],
                     novelty, trace["elapsed_seconds"] or 60)
         prune_queue(state)

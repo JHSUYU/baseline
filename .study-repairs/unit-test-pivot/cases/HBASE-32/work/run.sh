@@ -2,6 +2,7 @@
 set -euo pipefail
 
 work_dir=/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work
+run_root=${HBASE32_RUN_ROOT:-$work_dir}
 hbase_dist=/users/ZhenyuLi/.baseline-deps/hbase-2.6.6
 hadoop_dist=/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0
 asm_jar=/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/9.6/asm-9.6.jar
@@ -22,19 +23,19 @@ case "${1:?build or run}" in
   run)
     suffix="${2:?suffix}"
     plan="${3:-}"
-    data_dir="$work_dir/data-$suffix"
+    data_dir="$run_root/data-$suffix"
     rm -rf -- "$data_dir"
-    mkdir -p "$data_dir/tmp" "$work_dir/logs"
+    mkdir -p "$data_dir/tmp" "$run_root/logs"
     export HBASE_HOME="$hbase_dist"
-    exec /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout 360s \
+    exec /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout "${HBASE32_RUN_TIMEOUT:-360}s" \
       "$java_bin" -Xmx4g \
-      -javaagent:"$jacoco_agent=destfile=$work_dir/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler:org.apache.hadoop.hbase.client.FlushRegionCallable" \
+      -javaagent:"$jacoco_agent=destfile=$run_root/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler:org.apache.hadoop.hbase.client.FlushRegionCallable" \
       -javaagent:"$work_dir/agent.jar" \
       -Dhbase32.fault.plan="$plan" \
       -Djava.io.tmpdir="$data_dir/tmp" \
       -Dtest.build.data.basedirectory="$data_dir" \
       -cp "$classpath" NativeJUnit \
-      org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover testSecondaryRegionKill
+      org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover "${HBASE32_TEST_METHOD:-testSecondaryRegionKill}"
     ;;
   coverage)
     exec "$java_bin" -cp "$coverage_cp" CoverageReport "${2:?comma separated exec files}" \
