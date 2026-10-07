@@ -5,6 +5,8 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import shlex
+import subprocess
 
 from calibrate import HERE, FIRST, ROOT, sha, stamp
 from fault_audit import check
@@ -29,6 +31,16 @@ def recount() -> dict:
     issues: list[str] = []
     cases = []
     raw_lines = []
+    offloaded = {}
+    for path in sorted(HERE.glob('derived-offload-*.json')):
+        receipt = json.loads(path.read_text())
+        assert receipt['status'] in ('verified_before_local_offload', 'complete')
+        lines = [item['sha256'] + '  ' + item['path'] for item in receipt['files']]
+        assert hashlib.sha256(('\n'.join(lines) + '\n').encode()).hexdigest() == receipt['per_file_sha256_manifest_sha256']
+        for item in receipt['files']:
+            assert item['path'] not in offloaded
+            offloaded[item['path']] = item['sha256']
+    remote_needed = {}
     target_throws = 0
     for number, row in enumerate(state['trials'], 1):
         run_id = f'trial-{number:03d}'
@@ -54,7 +66,13 @@ def recount() -> dict:
             assert manifest['test_started_count'] == console.count('SOLR18_TEST_STARTED ')
             assert manifest['assumption_failure_count'] == console.count('SOLR18_ASSUMPTION_FAILURE ')
             for name, expected in manifest['raw_file_sha256'].items():
-                assert sha(out / name) == expected, name
+                path = out / name
+                if path.is_file():
+                    assert sha(path) == expected, name
+                else:
+                    relative = run_id + '/' + name
+                    assert name.startswith('covered_') and offloaded.get(relative) == expected, name
+                    remote_needed[relative] = expected
             audit = check(out / 'events.tsv', row['plan'])
             assert audit == manifest['fault_audit'] == row['fault_audit']
             effective = bool(audit['effective'] and manifest['test_started_count'] == 1
@@ -76,8 +94,22 @@ def recount() -> dict:
             for path in sorted(out.rglob('*')):
                 if path.is_file():
                     raw_lines.append(f'{run_id}/{path.relative_to(out)}\t{sha(path)}\n')
+            for relative, expected in remote_needed.items():
+                if relative.startswith(run_id + '/'):
+                    raw_lines.append(f'{relative}\t{expected}\n')
         except (AssertionError, KeyError, ValueError) as error:
             issues.append(f'{run_id}: {error!r}')
+    if remote_needed:
+        names = sorted(remote_needed)
+        command = ('cd ' + shlex.quote(str(ROOT)) + ' && sha256sum '
+                   + ' '.join(shlex.quote(name) for name in names))
+        ssh = ['ssh', '-i', '/users/ZhenyuLi/.ssh/id_ed25519_nodes',
+               '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes',
+               '-o', 'ConnectTimeout=5', 'ZhenyuLi@node2', command]
+        result = subprocess.run(ssh, text=True, capture_output=True)
+        expected = [remote_needed[name] + '  ' + name for name in names]
+        if result.returncode or result.stdout.splitlines() != expected:
+            issues.append('offloaded derived coverage differs from node2 SHA archive')
     return {'case_id': 'SOLR-18', 'phase': 'alternate_original_junit_full',
             'audited_at_utc': stamp(), 'checkpoint_sha256': sha(state_path),
             'closed_attempts': state['attempts'], 'strict_effective': state['effective'],
@@ -87,7 +119,7 @@ def recount() -> dict:
             'feedback_policy_sha256': state.get('feedback_policy_sha256'),
             'promoted_observed_roots': state.get('promoted_observed_roots', []),
             'raw_file_count': len(raw_lines),
-            'raw_sha256_manifest_sha256': hashlib.sha256(''.join(raw_lines).encode()).hexdigest(),
+            'raw_sha256_manifest_sha256': hashlib.sha256(''.join(sorted(raw_lines)).encode()).hexdigest(),
             'cases': cases, 'issues': issues}
 
 
