@@ -21,7 +21,10 @@ def rows(path):
         cells = line.split('\t')
         if len(cells) < 4:
             raise ValueError('short event: ' + line)
-        result.append((int(cells[0]), cells[1], cells[2:-1]))
+        # Preserve the emitting thread. Raw receiver evidence and the bound I/O
+        # are consecutive on that thread, but other quorum peers may log between
+        # them in the global sequence.
+        result.append((int(cells[0]), cells[1], cells[2:]))
     return result
 
 
@@ -31,6 +34,50 @@ def selector(fields):
 
 def io_events(trace):
     return [(seq, fields) for seq, kind, fields in trace if kind == 'IO']
+
+
+def raw_io_errors(trace, peers):
+    """Join each bound I/O to the actual File receiver on its emitting thread."""
+    errors = []
+    pending = {}
+    for _, kind, fields in trace:
+        thread = fields[-1]
+        if kind in ('FILE_RAW', 'ATOMIC_FILE_RAW', 'TEST_FILE_RAW'):
+            pending[thread] = (kind, fields)
+            continue
+        if kind == 'UNBOUND_IO':
+            pending.pop(thread, None)
+            continue
+        if kind != 'IO':
+            continue
+        if len(fields) < 8:
+            errors.append('short bound I/O')
+            continue
+        site, actor, resource, _, local = fields[:5]
+        if local not in peers or actor != 'peer:' + local or not resource.startswith('file:'):
+            errors.append('I/O actor differs from actual peer/file owner')
+            continue
+        receipt = pending.pop(thread, None)
+        if receipt is None:
+            errors.append('bound I/O has no same-thread raw File receiver evidence')
+            continue
+        raw_kind, raw = receipt
+        if raw_kind == 'FILE_RAW':
+            raw_file = raw[2]
+            if raw[1] != local or raw[3] != actor:
+                errors.append('peer receiver and raw file disagree')
+        elif raw_kind == 'ATOMIC_FILE_RAW':
+            raw_file = raw[1]
+            if raw[3] != actor or raw[2] != raw_file + '.tmp':
+                errors.append('atomic origFile/tmpFile pair or owner disagrees')
+        else:
+            raw_file = raw[0]
+            if raw[1] != local or raw[2] != actor:
+                errors.append('test file and firstServer owner disagree')
+        if Path(raw_file).resolve().parent != Path(peers[local]).resolve() or \
+                Path(raw_file).name != resource.split(':', 2)[1]:
+            errors.append('raw file path differs from selected actor/resource')
+    return errors
 
 
 def guard_events(trace, check, after=0, peer=None):
@@ -71,35 +118,8 @@ def audit_seed(run_id):
     io = io_events(trace)
     families = set()
     stable_selectors = set()
-    for seq, fields in io:
-        if len(fields) < 7:
-            errors.append('short bound I/O')
-            continue
-        site, actor, resource, ordinal, local = fields[:5]
-        if local not in peers or actor != 'peer:' + local or not resource.startswith('file:'):
-            errors.append('I/O actor differs from actual peer/file owner')
-            continue
-        filename = resource.split(':', 2)[1]
-        previous = next(((k, f) for s, k, f in reversed(trace) if s == seq - 1), None)
-        if previous is None or previous[0] not in ('FILE_RAW', 'ATOMIC_FILE_RAW', 'TEST_FILE_RAW'):
-            errors.append('bound I/O has no adjacent raw File receiver evidence')
-            continue
-        kind, raw = previous
-        if kind == 'FILE_RAW':
-            raw_file = raw[2]
-            if raw[1] != local or raw[3] != actor:
-                errors.append('peer receiver and raw file disagree')
-        elif kind == 'ATOMIC_FILE_RAW':
-            raw_file = raw[1]
-            if raw[3] != actor or raw[2] != raw_file + '.tmp':
-                errors.append('atomic origFile/tmpFile pair or owner disagrees')
-        else:
-            raw_file = raw[0]
-            if raw[1] != local or raw[2] != actor:
-                errors.append('test file and firstServer owner disagree')
-        if str(Path(raw_file).resolve().parent) != str(Path(peers[local]).resolve()) or \
-                Path(raw_file).name != filename:
-            errors.append('raw file path differs from selected actor/resource')
+    errors.extend(raw_io_errors(trace, peers))
+    for _, fields in io:
         families.add('@@'.join(fields[:3]))
         stable_selectors.add(selector(fields))
     counts = {}

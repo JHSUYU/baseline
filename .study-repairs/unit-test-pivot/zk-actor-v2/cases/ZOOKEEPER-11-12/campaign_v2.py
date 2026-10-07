@@ -11,7 +11,7 @@ import shutil
 
 from build_adapter import sha
 from calibrate_v2 import (CASE, CHECKS, ROOT, SEEDS, calibrate, guard_events,
-                          io_events, locked_hashes, rows, selector)
+                          io_events, locked_hashes, raw_io_errors, rows, selector)
 from run_v2 import AGENT, run, verify_build
 
 STATE = ROOT / 'zk1112-v2-state.json'
@@ -140,25 +140,9 @@ def audit_actors(trace):
             if sid in peers and peers[sid] != path:
                 raise RuntimeError('fault run rebound peer SID to another snapshot directory')
             peers[sid] = path
-    for seq, fields in io_events(trace):
-        if len(fields) < 7:
-            raise RuntimeError('short bound I/O')
-        actor, resource, local = fields[1], fields[2], fields[4]
-        if local not in peers or actor != 'peer:' + local or not resource.startswith('file:'):
-            raise RuntimeError('bound I/O actor differs from QuorumPeer file owner')
-        previous = next(((k, f) for s, k, f in reversed(trace) if s == seq - 1), None)
-        if previous is None or previous[0] not in ('FILE_RAW', 'ATOMIC_FILE_RAW', 'TEST_FILE_RAW'):
-            raise RuntimeError('I/O lacks adjacent raw File receiver')
-        kind, raw = previous
-        path = raw[2] if kind == 'FILE_RAW' else raw[1] if kind == 'ATOMIC_FILE_RAW' else raw[0]
-        raw_owner = raw[3] if kind != 'TEST_FILE_RAW' else raw[2]
-        if raw_owner != actor or Path(path).resolve().parent != Path(peers[local]).resolve() or \
-                Path(path).name != resource.split(':', 2)[1]:
-            raise RuntimeError('raw File owner/name disagrees with bound I/O selector')
-        if kind == 'FILE_RAW' and raw[1] != local:
-            raise RuntimeError('peer receiver differs from file owner')
-        if kind == 'ATOMIC_FILE_RAW' and raw[2] != path + '.tmp':
-            raise RuntimeError('atomic origFile/tmpFile pair changed')
+    errors = raw_io_errors(trace, peers)
+    if errors:
+        raise RuntimeError('raw actor/file audit failed: ' + '; '.join(sorted(set(errors))))
     return {'bound_peers': sorted(peers), 'bound_io': len(io_events(trace))}
 
 
@@ -168,11 +152,22 @@ def strict_plan(trace, plan):
     if [selector(f) for _, f in matched] != plan or \
             [selector(f) for _, f in applied] != plan:
         return False, 'ordered fault plan did not fully apply'
+    relevant = {}
+    for seq, kind, fields in trace:
+        if kind in ('IO', 'FAULT_MATCHED', 'FAULT_APPLIED'):
+            relevant.setdefault(fields[-1], []).append((seq, kind, fields))
     for (ms, mf), (as_, af) in zip(matched, applied):
-        if as_ != ms + 1 or selector(mf) != selector(af) or \
-                not any(k == 'IO' and s == ms - 1 and selector(f) == selector(mf)
-                        for s, k, f in trace):
-            return False, 'fault lacked preceding exact observed I/O'
+        if selector(mf) != selector(af) or mf[-1] != af[-1]:
+            return False, 'matched/applied actor thread or selector differed'
+        thread_events = relevant[mf[-1]]
+        position = next((i for i, (seq, _, _) in enumerate(thread_events) if seq == ms), -1)
+        if position < 1 or position + 1 >= len(thread_events):
+            return False, 'fault lacked same-thread I/O and applied receipt'
+        before = thread_events[position - 1]
+        after = thread_events[position + 1]
+        if before[1] != 'IO' or selector(before[2]) != selector(mf) or \
+                after[0] != as_ or after[1] != 'FAULT_APPLIED':
+            return False, 'fault lacked preceding exact same-thread observed I/O'
     return True, ''
 
 
@@ -300,14 +295,16 @@ def finished(state):
                for item in state['budgets'].values())
 
 
-def campaign(slot, slots):
+def campaign(slot, slots, max_new_trials=None):
     ROOT.mkdir(parents=True, exist_ok=True)
     with LOCK.open('w') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         state = json.loads(STATE.read_text()) if STATE.is_file() else initialize()
         verify_state(state)
         recover(state)
-        while not finished(state) and state['selected_count'] < state['max_selected']:
+        first_selected = state['selected_count']
+        while not finished(state) and state['selected_count'] < state['max_selected'] and \
+                (max_new_trials is None or state['selected_count'] - first_selected < max_new_trials):
             job = choose(state)
             if job is None:
                 break
@@ -318,7 +315,9 @@ def campaign(slot, slots):
             receipt = run(run_id, job['plan'], slot, slots)
             record(state, job, run_id, receipt)
         state['status'] = 'complete' if finished(state) else 'selected_cap' \
-            if state['selected_count'] >= state['max_selected'] else 'queue_exhausted'
+            if state['selected_count'] >= state['max_selected'] else 'paused_at_trial_boundary' \
+            if max_new_trials is not None and state['selected_count'] - first_selected >= max_new_trials \
+            else 'queue_exhausted'
         atomic(STATE, state)
         print(json.dumps({'status': state['status'], 'selected': state['selected_count'],
                           'budgets': state['budgets']}, sort_keys=True), flush=True)
@@ -329,7 +328,11 @@ def main():
     parser.add_argument('--run', action='store_true')
     parser.add_argument('--worker-id', type=int)
     parser.add_argument('--worker-count', type=int, default=16)
+    parser.add_argument('--max-new-trials', type=int,
+                        help='pause after this many newly selected trials, preserving the queue')
     args = parser.parse_args()
+    if args.max_new_trials is not None and args.max_new_trials < 1:
+        parser.error('--max-new-trials must be positive')
     verify_build()
     if not args.run:
         print(json.dumps({'status': 'prepared_only', 'junit_executed': False,
@@ -338,7 +341,7 @@ def main():
         return
     if args.worker_id is None:
         parser.error('--run requires assigned --worker-id')
-    campaign(args.worker_id, args.worker_count)
+    campaign(args.worker_id, args.worker_count, args.max_new_trials)
 
 
 if __name__ == '__main__':

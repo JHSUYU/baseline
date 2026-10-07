@@ -32,6 +32,17 @@ def main():
             raise AssertionError(case + ' accepted a sibling target guard')
     if audit['bound_io'] != 4:
         raise AssertionError('raw file-owner audit missed a bound I/O')
+    # Three peers can emit between the selected I/O and its controller receipt.
+    # Validate the same-thread order, rather than global adjacent sequence IDs.
+    selected = [site, 'peer:0', 'file:currentEpoch:op:read', '1', '0', '', '', 'peer0-thread']
+    sibling = [site, 'peer:1', 'file:currentEpoch:op:read', '1', '1', '', '', 'peer1-thread']
+    interleaved = [(1, 'IO', selected), (2, 'IO', sibling),
+                   (3, 'FAULT_MATCHED', selected), (4, 'FAULT_APPLIED', selected)]
+    if strict_plan(interleaved, plan) != (True, ''):
+        raise AssertionError('interleaved peer broke exact same-thread fault receipt')
+    wrong_thread = interleaved[:-1] + [(4, 'FAULT_APPLIED', selected[:-1] + ['peer1-thread'])]
+    if strict_plan(wrong_thread, plan)[0]:
+        raise AssertionError('wrong-thread applied receipt was accepted')
     print('ZK1112_V2_OFFLINE_CAMPAIGN_OK wrong_peer_wrong_file_target_fail_closed')
 
 
