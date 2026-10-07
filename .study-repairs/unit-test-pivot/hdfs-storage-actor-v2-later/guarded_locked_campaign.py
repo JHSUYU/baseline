@@ -8,6 +8,7 @@ import fcntl
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import time
@@ -36,11 +37,14 @@ def main() -> None:
     parser.add_argument("--max-hours", type=float, default=8)
     parser.add_argument("--timeout", type=int, default=360)
     parser.add_argument("--min-free-gib", type=float, default=10)
+    parser.add_argument("--gate-retry-seconds", type=float, default=30)
     args = parser.parse_args()
     if args.max_attempts > 600 or args.max_attempts < 1:
         parser.error("attempt cap must be 1..600")
     if args.max_hours <= 0:
         parser.error("time cap must be positive")
+    if args.gate_retry_seconds <= 0:
+        parser.error("gate retry interval must be positive")
     anchor = args.output.resolve()
     state_path = anchor / "campaign-state.json"
     receipt = json.loads((anchor / "healthy_receipt.json").read_text())
@@ -97,6 +101,40 @@ def main() -> None:
             after = json.loads(state_path.read_text())
             count = len(after["completion_order"])
             one_receipt = anchor / f"locked-plan-{completed + 1:04d}.json"
+            if one_receipt.exists():
+                gate_result = json.loads(one_receipt.read_text())
+                if (gate_result.get("status") == "resource_gate_pause"
+                        and count == completed and after["in_flight"] is None):
+                    # The locked launcher rejected this attempt before any
+                    # JUnit or campaign mutation. Keep every failed gate's
+                    # raw receipt even though the next retry reuses its plan
+                    # number, then wait at this complete checkpoint boundary.
+                    gate_archive = anchor / "gate-pauses"
+                    gate_archive.mkdir(exist_ok=True)
+                    receipt_copy = gate_archive / (
+                        f"locked-plan-{completed + 1:04d}-{time.time_ns()}.json")
+                    shutil.copy2(one_receipt, receipt_copy)
+                    raw_gate = Path(gate_result["gate"])
+                    raw_copy = receipt_copy.with_name(receipt_copy.stem + "-raw.json")
+                    if raw_gate.is_file():
+                        shutil.copy2(raw_gate, raw_copy)
+                    for saved in (receipt_copy, raw_copy):
+                        if saved.is_file():
+                            with saved.open("rb") as stream:
+                                os.fsync(stream.fileno())
+                    directory_fd = os.open(gate_archive, os.O_RDONLY)
+                    try:
+                        os.fsync(directory_fd)
+                    finally:
+                        os.close(directory_fd)
+                    append(ledger, {"at_utc": stamp(), "status": "resource_gate_wait",
+                                    "completed": completed, "effective": after["effective_by_case"],
+                                    "reason": gate_result.get("gate_stdout", ""),
+                                    "receipt": str(receipt_copy),
+                                    "raw_gate": str(raw_copy) if raw_gate.is_file() else None,
+                                    "retry_seconds": args.gate_retry_seconds})
+                    time.sleep(args.gate_retry_seconds)
+                    continue
             if child.returncode or count != completed + 1 or not one_receipt.exists():
                 append(ledger, {"at_utc": stamp(), "status": "locked_plan_pause",
                                 "completed_before": completed, "completed_after": count,
