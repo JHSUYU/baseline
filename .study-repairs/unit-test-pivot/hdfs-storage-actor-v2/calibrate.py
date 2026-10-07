@@ -69,6 +69,12 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
     issues = []
     if manifest["returncode"] != 0:
         issues.append("original JUnit did not pass")
+    coverage_file = seed / "jacoco.exec"
+    branch_file = seed / "covered_branch_counts.txt"
+    if not coverage_file.is_file() or coverage_file.stat().st_size == 0:
+        issues.append("JaCoCo execution data missing")
+    if not branch_file.is_file() or branch_file.stat().st_size == 0:
+        issues.append("production branch coverage missing")
     if not actors or not entries:
         issues.append("no DataNode registration or BPServiceActor adoption")
     if not rpc:
@@ -93,6 +99,9 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
         "finished_at_utc": manifest.get("finished_at_utc"),
         "instrumentation_digest_sha256": manifest.get("instrumentation_digest_sha256"),
         "junit_exit": manifest["returncode"],
+        "jacoco_bytes": coverage_file.stat().st_size if coverage_file.is_file() else 0,
+        "covered_branch_entries": len(branch_file.read_text().splitlines())
+        if branch_file.is_file() else 0,
         "actors_registered": len(actors), "actor_entries": len(entries),
         "bound_rpc": len(rpc), "bound_file_io": len(file_io),
         "targets": {case: len(events) for case, events in by_case.items()},

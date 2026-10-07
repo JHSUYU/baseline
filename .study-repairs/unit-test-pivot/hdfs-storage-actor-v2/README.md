@@ -77,7 +77,8 @@ and `healthy_receipt.json`. The receipt fails if either JUnit fails, an exact
 target is unbound, an actual RPC endpoint is not classified, a case has no
 stable same-actor upstream I/O selector, or the two healthy seeds disagree on
 target actor identities. It also requires the same overlay digest in both
-manifests. The same commands apply to `upgrade` and `rollback`
+manifests, plus nonempty JaCoCo execution and production branch coverage.
+The same commands apply to `upgrade` and `rollback`
 with isolated output directories.
 
 The constructor-hook `startup` calibration on node1 passed on 2026-10-07:
@@ -115,6 +116,13 @@ audited before more mutation trials. The first such startup trial is recorded
 in `audit/startup_first_effective.json`: one actor-bound RPC `IOException`,
 original JUnit pass, and HDFS-22/23/25/35 exact checks afterward on that
 actor. HDFS-34 did not have a same-actor target after that fault.
+
+For HDFS-34, the two healthy seeds place its `DataStorage.doTransition`
+namespace guard in startup episodes 3–8 on `dfs/data1`, each immediately
+preceded by an actor-bound `NN0` RPC and a VERSION read on the same volume.
+The first effective RPC sequences targeted episode 1, whose later checks are
+different sites. The case-specific source family and both raw seed mappings
+are recorded in `audit/hdfs34_upstream_family.json`.
 
 Each case has a base goal of **80 effective same-actor post-target trials**,
 with up to **8 faults** per sequence. If any of its last eight effective trials
