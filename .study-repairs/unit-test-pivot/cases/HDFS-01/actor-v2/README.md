@@ -95,3 +95,6 @@ manifests, trace events and JaCoCo files, including 904 raw read-to-location
 joins. It records the final checkpoint SHA and duration breakdown. The raw
 trial directories remain on node1 under `campaign-v3/trials/`; the checkpoint
 retains 1,476 untested plans for any future, separately authorized budget.
+`raw-evidence-sha256-v3.txt` hashes the 1,140 top-level raw trial files on
+node1 (manifest, plan, trace, coverage and logs); its own SHA-256 is
+`ff98a8330b9cd304068d54036a3dae1082091d45020b03a95242f1558a7f24ee`.
