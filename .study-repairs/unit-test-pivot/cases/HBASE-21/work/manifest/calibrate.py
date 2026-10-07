@@ -63,11 +63,20 @@ def parse(path, exit_code):
 
 def main():
     subprocess.run(['bash', str(RUN), 'build'], check=True)
-    healthy = run('healthy')
+    previous = json.loads(RESULT.read_text()) if RESULT.exists() else {}
+    healthy = previous.get('healthy')
+    if not healthy or not (HERE / healthy['log']).exists():
+        healthy = run('healthy')
     result = {'case_id': 'HBASE-21', 'phase': 'manifest_dfs_open_supplement',
               'methodology': 'case_local_runtime_dfs_open_no_graph',
               'original_junit': 'TestNamespaceAuditor.testRestoreSnapshotQuotaExceed',
               'main_campaign_budget_counted': False, 'healthy': healthy,
+              'healthy_reused_from_first_calibration': bool(previous.get('healthy')),
+              'abandoned_calibration_trial': {
+                  'id': 'm001', 'log': 'logs/m001.preempted_tmp_snapshot.log',
+                  'reason': 'The initial picker selected a temporary snapshot-creation '
+                            'manifest before the restore manifest. Stopped before '
+                            'completion; not counted as a fault trial.'},
               'fault_trials': [], 'status': 'running'}
     atomic_json(RESULT, result)
     first_guard = min(healthy['guard_lines'], default=None)
@@ -78,14 +87,17 @@ def main():
         return
     selectors = list(dict.fromkeys(event['selector'] for event in healthy['io_events']
                                    if event['line'] < first_guard
-                                   and '/data.manifest~' in event['selector']))
+                                   and event['selector'].startswith(
+                                       'DFS_OPEN~snapshot_testRestoreSnapshotQuotaExceed/'
+                                       'data.manifest~')))
     result['candidate_selectors'] = selectors
+    atomic_json(RESULT, result)
     if not selectors:
         result['status'] = 'manifest_open_not_observed_before_target'
         atomic_json(RESULT, result)
         return
     for number, selector in enumerate(selectors[:MAX_FAULT_TRIALS], 1):
-        name = 'm%03d' % number
+        name = 'm%03d' % (number + 2)
         trace = run(name, selector + '~IOEXCEPTION')
         last_fault = trace['last_applied_line']
         strict = trace['matched'] == 1 and trace['applied'] == 1
