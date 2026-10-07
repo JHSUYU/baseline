@@ -17,7 +17,7 @@
     "test": "original SplitShardTest#doTest"
   },
   "case_id": "SOLR-14",
-  "case_outcome": "target_branch_not_observed",
+  "case_outcome": "target_relevant_workload_gap",
   "cluster_nodes": 1,
   "cluster_test": "org.apache.solr.cloud.SplitShardTest#doTest",
   "coverage_audit_prefix49": {
@@ -56,8 +56,9 @@
   },
   "coverage_gain": 36,
   "coverage_gain_scope": "original-release production branch outcomes, v1+native core campaigns; multi-node chaos separately audited",
+  "elapsed_scope": "Main and supplemental historical runs plus one 35.575 s shared remap healthy smoke; per-case time includes shared invocations and must not be summed across SOLR-14/16.",
   "elapsed_seconds": 4428.992,
-  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-14/independent/SOLR-14-16.md",
+  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-14/README.md",
   "exact_guard_line": 165,
   "fault_model_limit": "ASM throws at SolrZkClient method entry, before retryOnConnLoss calls ZkCmdExecutor.retryOperation around keeper.*; models application-level API exception, not one lower-level transient ZooKeeper failure.",
   "fault_trials": 163,
@@ -348,12 +349,14 @@
     "healthy_audit": "SOLR-14/independent/remap/remap-audit.json",
     "junit_passed": true,
     "legacy_fault_trials_retained": 163,
+    "new_fault_trials": 0,
     "selected_target_throw_hits": 0,
     "solr14_first_guard_hits": 2,
     "solr15_16_outer_guard_hits": 1,
     "solr16_final_guard_hits": 0,
-    "status": "target_relevant_leader_transition_not_observed",
+    "status": "no_usable_cluster_test",
     "target_branch_reached": false,
+    "terminal_reason": "target_relevant_workload_gap",
     "test": "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitAfterFailedSplit"
   },
   "physical_node_recorded_separately": "direct live-node exists: actual node name; generic async ZK: empty/unavailable, selector uses exact logical path/site/ordinal",
@@ -522,14 +525,14 @@
     ]
   },
   "quality_complete": false,
-  "reason": "The first live-node guard was reached in original embedded-cluster JUnit runs, but no strict post-fault run made its null branch true.",
+  "reason": "Exact first live-node guard reached in original cluster JUnits and 20 strict post-fault trials, but no audited workload creates the required early parent-loss state.",
   "shared_campaign_id": "SOLR-14-15-16-original-split-tests",
   "shared_invocation": "SOLR-14/15/16:SplitShardTest#doTest:healthy-04+healthy-05",
   "source_identity": "SOLR/SPLIT/splitshardtest-collection/shard1/PARENT_LEADER",
   "source_window_limit": "In unchanged ShardSplitTest#testSplitWithChaosMonkey, the monkey stops the parent leader only after child shard replicas exist, whereas SplitShardCmd reads the parent live znode for SOLR-14 before child creation. The native exception faults did not supply an earlier parent-stop event; first-read-null remains an uncovered workload/fault-window gap.",
-  "status": "first_guard_reached_fatal_null_branch_not_observed",
+  "status": "no_usable_cluster_test",
   "strict_injections": 162,
-  "supplemental_elapsed_seconds": 1142.55,
+  "supplemental_elapsed_seconds": 1178.125,
   "supplemental_fault_trials": 7,
   "supplemental_native_chaos_fault_trials": {
     "classification": "no_selected_throw",
@@ -686,9 +689,12 @@
   "target_reached": true,
   "target_source_file": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
   "target_source_line": 167,
+  "terminal_reason": "No audited original JUnit loses the selected parent leader between getLeaderRetry and the first live-node exists; the exact first guard is reachable but its null branch is not exercised.",
+  "terminal_scope": "Audited unchanged original embedded-cluster JUnit tests under independent ASM/JaCoCo and exception-only observed-ZK-I/O fault injection; not a bug-free claim.",
   "total_distinct_fault_trials_all_workloads": 170,
-  "total_measured_execution_seconds": 5571.542,
+  "total_elapsed_seconds": 5607.117,
+  "total_measured_execution_seconds": 5607.117,
   "total_strict_fault_trials_all_workloads": 169,
   "trial_accounting": "The same SplitShardTest and ShardSplitTest trials test all three checks; counts and elapsed time are shared across these rows.",
-  "updated_at": 1791327804.56196
+  "updated_at": 1791335234.375205
 }
