@@ -3,6 +3,7 @@
 from __future__ import annotations
 import hashlib
 import json
+from collections import Counter
 from pathlib import Path
 import sys
 
@@ -81,6 +82,19 @@ def family(event: dict) -> str:
     return "|".join(event.get(key, "") for key in ("marker", "api", "actor", "service"))
 
 
+def trace_ordinal_errors(events: list[dict]) -> list[str]:
+    seen: Counter[tuple[str, ...]] = Counter()
+    errors = []
+    for event in events:
+        if event.get("event") != "IO_OBSERVED":
+            continue
+        key = tuple(event.get(k, "") for k in ("marker", "api", "actor", "service"))
+        seen[key] += 1
+        if event.get("ordinal") != str(seen[key]):
+            errors.append(f"I/O ordinal mismatch at seq {event.get('seq')}")
+    return errors
+
+
 def main() -> int:
     state_file = HERE / "checkpoint.json"
     state = json.loads(state_file.read_text())
@@ -113,6 +127,8 @@ def main() -> int:
             errors.append("healthy target signature mismatch " + suffix)
         if [e.get("seq") for e in events] != list(range(1, len(events) + 1)):
             errors.append("healthy trace gap " + suffix)
+        errors.extend("healthy " + suffix + " " + message
+                      for message in trace_ordinal_errors(events))
         for metric in METRICS:
             if not (directory / ("covered_" + metric + ".txt")).is_file():
                 errors.append("healthy missing " + metric + " feedback " + suffix)
@@ -146,6 +162,8 @@ def main() -> int:
             errors.append(f"trial {number} missing raw: {error}"); continue
         if [e.get("seq") for e in events] != list(range(1, len(events) + 1)):
             errors.append(f"trial {number} trace gap")
+        errors.extend(f"trial {number} {message}"
+                      for message in trace_ordinal_errors(events))
         expected = ["\t".join(p[key] for key in
                     ("marker", "api", "actor", "service", "ordinal", "exception"))
                     for p in trial["sequence"]]
@@ -164,7 +182,9 @@ def main() -> int:
                           and all(a.get(k) == m.get(k) == p[k] for k in
                                   ("marker", "api", "actor", "service", "ordinal"))
                           and a.get("exception") == m.get("exception") == p["exception"]
-                          and a.get("rawBpid") == bpid and physical(prior, events, bpid))
+                          and a.get("rawBpid") == bpid and physical(prior, events, bpid)
+                          and all(a.get(k) == m.get(k) == prior.get(k) for k in
+                                  ("uuid", "rawBpid", "rawEndpoint", "datasetId", "blockId")))
                 if i:
                     exact &= applied[i - 1]["seq"] < m["seq"]
         strict += bool(exact)
