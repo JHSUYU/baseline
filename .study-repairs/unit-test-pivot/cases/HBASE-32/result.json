@@ -156,7 +156,12 @@
     "work-role-v3/logs/role-f002.lock-audit.json",
     "work-role-v3/logs/role-f003.lock-audit.json",
     "work-role-v3/logs/role-f003.receipt.json",
-    "work-role-v3/role-f003.archive-manifest.json"
+    "work-role-v3/role-f003.archive-manifest.json",
+    "work-upstream/evidence-terminal-offload-s201-s271.json",
+    "work-upstream/evidence-segment-s201-s202-manifest.json",
+    "work-upstream/evidence-segment-s201-s202-remote-receipt.json",
+    "work-upstream/evidence-segment-s204-s271-manifest.json",
+    "work-upstream/evidence-segment-s204-s271-remote-receipt.json"
   ],
   "fault_trials": 185,
   "fully_applied_trials": 182,
@@ -723,7 +728,19 @@
     "source_reviews": [
       ".study-repairs/unit-test-pivot/audits/hbase32-role-f001-independent-review-2026-10-07.md",
       ".study-repairs/unit-test-pivot/audits/hbase32-role-f002-novelty-review-2026-10-07.md",
-      "work-role-v3/role-f003-owner-audit.md"
+      "work-role-v3/role-f003-owner-audit.md",
+      ".study-repairs/unit-test-pivot/audits/hbase32-role-v3-three-run-independent-review-2026-10-07.md"
     ]
+  },
+  "terminal_raw_offload": {
+    "receipt": "work-upstream/evidence-terminal-offload-s201-s271.json",
+    "non_candidate_logs_offloaded": 70,
+    "bytes_released": 68908708,
+    "checkpoint_sha256_unchanged": "65dde52af32347a64ad8afadd001ff2b9370e6879c2882cfd11e5cf1e4f8ee17",
+    "node1_segments": [
+      "s201-s202",
+      "s204-s271"
+    ],
+    "restore": "Use the segment remote archive and SHA manifest named in the receipt; restore only logs and keep trial checkpoint/exec/exit locally."
   }
 }

@@ -573,3 +573,30 @@ three-fault cap. Any future work must start a new diagnostic stage or, if
 explicitly expanding supplemental fuzz after candidate review, recover from
 the supplemental checkpoint without importing V3 attempts or repeating old
 plans.
+
+The independent three-run review is
+`audits/hbase32-role-v3-three-run-independent-review-2026-10-07.md`. It
+confirmed both bounded positive waits and the same-role passing control,
+and retains `new_bug=false`.
+
+### Terminal raw offload and recovery
+
+After terminal review, compressed logs from 70 non-candidate supplemental
+trials (`s201-s202` and `s204-s271`) were copied with each trial's JaCoCo and
+exit receipt to node1. An independent pass rehashed all 210 archive members
+and extracted two sample members per segment before removing only the 70
+duplicate `.log.gz` files on node0. JaCoCo, exit receipts, checkpoint, and
+the `s203` and `s272` candidate records remain locally. The exact paths,
+sizes, SHA-256 values, archive locations, and disk readings are in
+`work-upstream/evidence-terminal-offload-s201-s271.json`; segment manifests
+and remote receipts are named `evidence-segment-s201-s202-*` and
+`evidence-segment-s204-s271-*` in that directory. This released 68,908,708
+bytes without changing the supplemental checkpoint.
+
+To restore an offloaded log, copy the corresponding `*.tar.gz` from the
+receipt's `remote_archive` on node1 to a temporary directory, verify its
+`archive_sha256`, extract the `logs/*.log.gz` member there, compare its SHA
+with `files_offloaded`, then copy that member back to `work-upstream/logs/`.
+Do not treat missing local compressed logs as missing trials: each trial's
+identity, result, duration, and feedback remain in the checkpoint and
+original JaCoCo and exit receipts stay in place.
