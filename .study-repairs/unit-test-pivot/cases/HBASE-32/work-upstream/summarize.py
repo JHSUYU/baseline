@@ -66,6 +66,13 @@ def summarize(path: Path) -> dict:
                for guard in guards):
             same_target_meta_gets.append(event)
 
+    append_done = {e["marker_seq"] for e in subset["WAL_APPEND_COMPLETE"]}
+    sync_done = {e["marker_seq"] for e in subset["WAL_SYNC_COMPLETE"]}
+    marker_complete = sum(
+        e["seq"] in append_done and (e.get("sync") != "true" or e["seq"] in sync_done)
+        for e in subset["WAL_FLUSH_ATTEMPT"]
+    )
+
     return {
         "source_log": str(path),
         "probe_woven_classes": sorted(woven),
@@ -79,6 +86,11 @@ def summarize(path: Path) -> dict:
                                               for e in subset["WAL_FLUSH_ATTEMPT"]),
         "table2_wal_actions": dict(collections.Counter(
             e.get("action") for e in subset["WAL_FLUSH_ATTEMPT"])),
+        "table2_wal_markers_append_and_required_sync_completed": marker_complete,
+        "table2_scan_rpc_operations": dict(collections.Counter(
+            e.get("operation") for e in subset["META_SCAN_RPC"])),
+        "table2_state_get_rpc_phases": dict(collections.Counter(
+            e.get("phase") for e in subset["META_STATE_GET_RPC"])),
         "table2_meta_gets_after_same_target_guard": len(same_target_meta_gets),
         "examples": {kind: records[:3] for kind, records in subset.items()},
     }
