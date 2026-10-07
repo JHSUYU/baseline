@@ -16,8 +16,9 @@ PARENT = HERE.parent / 'independent'
 sys.path.insert(0, str(PARENT))
 from audit_campaign_coverage import totals  # noqa: E402
 sys.path.insert(0, str(HERE))
-from fuzz_v2 import (AGENT, CORE, GUARD, SEEDS, TARGET, THROW, family, guard_events,
-                     load_events, point, point_id, relevant, validate_actor_trace)
+from fuzz_v2 import (AGENT, CORE, GUARD, SEEDS, TARGET, TEST_CLASS, TEST_METHOD,
+                     THROW, family, guard_events, junit_gate, load_events,
+                     point, point_id, relevant, validate_actor_trace)
 
 
 ROOT = HERE / 'campaign'
@@ -33,6 +34,17 @@ def recount(state: dict, allow_running: bool) -> dict:
         raise RuntimeError('campaign has an in-flight original JUnit')
     if state['agent_sha256'] != digest(AGENT):
         raise RuntimeError('campaign actor agent differs from the recorded build')
+    build = json.loads((HERE / 'junit-build.json').read_text())
+    original_test = TEST_CLASS + '#' + TEST_METHOD
+    for directory in SEEDS:
+        metadata = json.loads((directory / 'run.json').read_text())
+        if (metadata['test'] != original_test
+                or metadata['original_source_revision'] != build['source_revision']
+                or metadata['agent_sha256'] != state['agent_sha256']
+                or metadata['classpath_contains_graphchecker']
+                or metadata['exit_code'] != 0
+                or junit_gate((directory / 'console.log').read_text()) != (1, 0, 0)):
+            raise RuntimeError(f'{directory}: healthy original JUnit provenance differs')
     healthy = [directory / 'jacoco.exec' for directory in SEEDS]
     healthy_families = {family(point(event)) for directory in SEEDS
                         for event in load_events(directory)
@@ -44,6 +56,26 @@ def recount(state: dict, allow_running: bool) -> dict:
         if trial['trial_number'] != number:
             raise RuntimeError('completed plan order changed')
         path = Path(trial['trace'])
+        trial_dir = path.parent.parent
+        run_times = []
+        for attempt in range(1, trial['attempts'] + 1):
+            attempt_dir = trial_dir / f'attempt-{attempt:02d}'
+            metadata = json.loads((attempt_dir / 'run.json').read_text())
+            if (metadata['test'] != original_test
+                    or metadata['original_source_revision'] != build['source_revision']
+                    or metadata['agent_sha256'] != state['agent_sha256']
+                    or metadata['classpath_contains_graphchecker']):
+                raise RuntimeError(f'trial {number} attempt {attempt}: JUnit provenance differs')
+            run_times.append(metadata['elapsed_seconds'])
+        if abs(sum(run_times) - trial['elapsed_seconds']) > 0.01:
+            raise RuntimeError(f'trial {number}: elapsed time omits an attempted JUnit')
+        last_run = json.loads((path.parent / 'run.json').read_text())
+        expected_gate = (tuple(trial['junit_gate'])
+                         if trial['junit_gate'] is not None else None)
+        if (last_run['exit_code'] != trial['junit_exit']
+                or junit_gate((path.parent / 'console.log').read_text())
+                != expected_gate):
+            raise RuntimeError(f'trial {number}: original JUnit outcome differs')
         events = load_events(path.parent)
         actor = validate_actor_trace(events)
         applied = [event for event in events if event['event'] == 'IO_OBSERVED'
