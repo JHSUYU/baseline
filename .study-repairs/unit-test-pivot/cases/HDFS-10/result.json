@@ -68,7 +68,7 @@
   },
   "methodology": "independent_coverage_io_original_junit",
   "source_review": "Journal.checkWriteRequest at line 517 compares the request epoch with the JournalNode-local lastWriterEpoch. A failed last-writer-epoch file write leaves that node at epoch 0 while the client sends epoch 1; the resulting IOException is the intended guard response. Two independent smoke replays confirmed the exact 1-versus-0 transition; see README.md.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "strict_injections": 80,
   "system": "Hadoop HDFS 3.4.3",
   "target_after_fault": 66,
@@ -4052,5 +4052,22 @@
       "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-10/independent/evidence/runs/462adfa438579516/attempt-1/runtime_trace.jsonl",
       "valid_for_feedback": true
     }
-  ]
+  ],
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "fully_applied_trials": 80,
+      "strict_injections": 80,
+      "target_after_fault": 66,
+      "coverage_gain": 119,
+      "elapsed_seconds": 1330.213
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

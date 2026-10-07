@@ -120,7 +120,7 @@
   "source_line": 131,
   "source_review": "Original TestFileAppend#testMultipleAppends closes a file repeatedly with one COMMITTED block permitted. The exact selected guard was observed 10 times in a successful healthy JUnit. Its single RetriableException is an expected retry before the block becomes COMPLETE; a target exception alone is not a novel bug.",
   "source_snapshot_audited_against_release_jar_members": 6,
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "stop_reason": "Extended 128-effective-trial budget reached.",
   "strict_injection_trials": 171,
   "strict_injections": 171,
@@ -151,5 +151,26 @@
   "updated_at_utc": "2026-10-07T01:11:30.624458+00:00",
   "validated_new_bug_candidates": 0,
   "version": "3.4.3",
-  "workload_timeout_trials": 0
+  "workload_timeout_trials": 0,
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 205,
+      "fully_applied_trials": 171,
+      "strict_injections": 171,
+      "target_after_fault": 128,
+      "coverage_gain": {
+        "BRANCH_UNIT": 599,
+        "METHOD": 373,
+        "PROBE": 1565
+      },
+      "elapsed_seconds": 5748.106
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

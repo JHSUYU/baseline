@@ -67,7 +67,7 @@
   "selection_line": 926,
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
   "source_review": "Journal.acceptRecovery rejects a shorter replacement only when the old range contains an already-committed transaction that the proposed range omits. The original test writes transaction 5 to only one JournalNode, then verifies recovery to transaction 4; the selected JN2 epoch-3 guard was reached after fault injection without throwing. JUnit failures caused by injected I/O/quorum loss are recorded separately from target throws.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "strict_injections": 80,
   "system": "HDFS 3.4.3",
   "target_after_fault": 53,
@@ -3918,5 +3918,22 @@
       "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-07/independent/evidence/runs/395fde0d9578ba1d/attempt-1/runtime_trace.jsonl",
       "valid_for_feedback": true
     }
-  ]
+  ],
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "fully_applied_trials": 80,
+      "strict_injections": 80,
+      "target_after_fault": 53,
+      "coverage_gain": 21,
+      "elapsed_seconds": 1049.957
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

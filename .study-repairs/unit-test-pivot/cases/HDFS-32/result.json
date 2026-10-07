@@ -114,7 +114,7 @@
     "target_reached_after_fault": false
   },
   "selected_target_throw_after_fault_trials": 47,
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "stop_reason": "80_trial_budget_complete_no_late_new_production_or_stable_io",
   "strict_injections": 74,
   "target_after_fault": 47,
@@ -126,5 +126,22 @@
     "selected_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
     "source_review_file": "hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
     "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java"
+  },
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "fully_applied_trials": 74,
+      "strict_injections": 74,
+      "target_after_fault": 47,
+      "coverage_gain": 750,
+      "elapsed_seconds": 3206.874
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
   }
 }

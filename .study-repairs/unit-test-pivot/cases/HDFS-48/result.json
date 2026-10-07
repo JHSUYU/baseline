@@ -17,7 +17,7 @@
   "methodology": "original_cluster_junit_case_local_asm_jacoco_graph_free",
   "selected_target_throws": 0,
   "source_review": "The original TestRenameWithSnapshots#testRenameUndo_1 starts MiniDFSCluster, creates two directories and a snapshot, then explicitly calls root.replaceChild(dir2, mockDir2, inodeMap). The selected second invocation has parent /dir1 and child foo: RenameOperation's constructor calls replaceChild4ReferenceWithName to prepare the snapshot source before the spy forces destination insertion to fail and rollback begins (FSDirRenameOp.java:672-680; INodeDirectory.java:381-398). Thus the selected check is during rename preparation, not the later rollback. Its old child should be the current child or nested reference target. Fault trials inject observed IPC response-read exceptions before this selected check; results are bounded to this path.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "stop_reason": "effective_budget_exhausted",
   "strict_injections": 179,
   "target_after_fault": 128,
@@ -27,5 +27,22 @@
   "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
   "target_source_line": 356,
   "trial_ledger": "independent/trial-ledger.csv",
-  "failure_audit": "Among 183 trials, 57 original JUnit methods failed: 51 lost the selected target after fault, and 6 reached it without throwing its IllegalStateException. The selected check threw in none of the 128 exact target-retaining trials. The JUnit failures alone are not evidence of the selected coordination bug; trial 001, for example, reports the injected IPC response failure directly."
+  "failure_audit": "Among 183 trials, 57 original JUnit methods failed: 51 lost the selected target after fault, and 6 reached it without throwing its IllegalStateException. The selected check threw in none of the 128 exact target-retaining trials. The JUnit failures alone are not evidence of the selected coordination bug; trial 001, for example, reports the injected IPC response failure directly.",
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 183,
+      "fully_applied_trials": 179,
+      "strict_injections": 179,
+      "target_after_fault": 128,
+      "coverage_gain": 2069,
+      "elapsed_seconds": 4357.59
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

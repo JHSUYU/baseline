@@ -58,7 +58,7 @@
   },
   "io_families": 3,
   "source_review": "DFSInputStream.fetchBlockAt line 518 validates the NameNode getBlockLocations response against the client stream's cached file metadata. The unchanged TestPread test restarts DataNodes but does not concurrently truncate/delete the file; see README.md for the bounded semantic assessment.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "strict_injections": 128,
   "target_after_fault": 98,
   "target_reached": true,
@@ -7549,5 +7549,22 @@
       "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-01/evidence/runs/8d54637fb17027ed/attempt-1/runtime_trace.jsonl",
       "valid_for_feedback": true
     }
-  ]
+  ],
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 128,
+      "fully_applied_trials": 128,
+      "strict_injections": 128,
+      "target_after_fault": 98,
+      "coverage_gain": 186,
+      "elapsed_seconds": 2501.794
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

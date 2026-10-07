@@ -109,7 +109,7 @@
     "HDFS-43"
   ],
   "source_review": "FSDirTruncateOp.truncate compares a second requested length with the length already being truncated while the last block is UNDER_RECOVERY. Equal lengths return an idempotent result; different lengths raise AlreadyBeingCreatedException. TestFileTruncate#testTruncateTwiceTogether deliberately requests a different length and expects that exception. A new post-fault length/state pair needs replay and source review.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "strict_injections": 78,
   "supplementary_equal_branch": {
     "bug_mark": "none",
@@ -4551,5 +4551,22 @@
       "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/ee67c1bff2a0b904/attempt-1/runtime_trace.jsonl",
       "valid_for_feedback": false
     }
-  ]
+  ],
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "fully_applied_trials": 78,
+      "strict_injections": 78,
+      "target_after_fault": 49,
+      "coverage_gain": 175,
+      "elapsed_seconds": 2684.979
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

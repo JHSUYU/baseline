@@ -76,10 +76,27 @@
   },
   "selected_target_throw_after_fault_trials": 0,
   "source_review": "DataNode.java:1832 BlockPoolManager.get result feeds null guard at 1833; explicit IOException at 1834-1835. Original test calls dn0.transferBlock once and healthy runtime shows the same DataNode, block pool and block ID immediately reach the guard with service present.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "stop_reason": "80_trial_budget_complete_no_late_new_production_or_stable_io",
   "strict_injections": 61,
   "target_after_fault": 41,
   "target_reached": true,
-  "target_retaining_junit_nonzero_trials": 0
+  "target_retaining_junit_nonzero_trials": 0,
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "fully_applied_trials": 61,
+      "strict_injections": 61,
+      "target_after_fault": 41,
+      "coverage_gain": 451,
+      "elapsed_seconds": 2501.317
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

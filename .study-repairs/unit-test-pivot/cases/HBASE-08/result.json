@@ -1,6 +1,6 @@
 {
   "case_id": "HBASE-08",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
   "target_reached": true,
   "fault_trials": 80,
@@ -183,5 +183,21 @@
   },
   "healthy_target_checks": 12,
   "healthy_fatal_target_checks": 0,
-  "comparison_scope": "Only the current 80-trial ByteBuddy + JaCoCo campaign is counted in top-level fields and the 102-site checklist."
+  "comparison_scope": "Only the current 80-trial ByteBuddy + JaCoCo campaign is counted in top-level fields and the 102-site checklist.",
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "strict_injections": 80,
+      "target_after_fault": 65,
+      "coverage_gain": 10,
+      "elapsed_seconds": 4205.04
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

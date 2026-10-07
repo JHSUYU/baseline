@@ -82,7 +82,7 @@
   "selection_policy_version": "retention_feedback_v3",
   "site_semantics": "Local BlockInfo under-construction invariant reached from pipeline-recovery operations; no multi-hop ad hoc coordination failure established by these trials.",
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "stop_reason": "Current trial budget reached; no new production method/branch coverage or stable I/O family appeared in its final eight trials.",
   "strict_injection_trials": 63,
   "strict_injections": 63,
@@ -93,5 +93,26 @@
   "target_exception_type": "java.lang.IllegalStateException",
   "target_reached": true,
   "updated_at_utc": "2026-10-06T21:30:42.876700+00:00",
-  "workload_timeout_trials": 2
+  "workload_timeout_trials": 2,
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 80,
+      "fully_applied_trials": 63,
+      "strict_injections": 63,
+      "target_after_fault": 40,
+      "coverage_gain": {
+        "BRANCH_UNIT": 50,
+        "METHOD": 18,
+        "PROBE": 156
+      },
+      "elapsed_seconds": 3068.56
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

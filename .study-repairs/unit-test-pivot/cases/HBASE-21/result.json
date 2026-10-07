@@ -1,6 +1,6 @@
 {
   "case_id": "HBASE-21",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "methodology": "coverage_io_no_graph",
   "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor.testRestoreSnapshotQuotaExceed",
   "target_reached": true,
@@ -172,5 +172,21 @@
     "manifest_boundary": "Two strict actual restore-manifest DFS.open IOException trials lost the target before the quota guard; test failures are excluded and do not prove a new bug.",
     "instrumentation_provenance": "Case-local runtime ByteBuddy target/ZK I/O probe, case-local DFS.open ByteBuddy supplement and JaCoCo coverage on original release JAR/test JAR; no GraphChecker skeleton, static map, graph or closure."
   },
-  "quality_completion_note": "Original embedded two-master JUnit healthy seed and 128 distinct strict fault sequences retaining exact B3 were completed. A separate two-selector real manifest-file I/O calibration documented the target-loss boundary. Per-trial UTC time, identity, target/JUnit and production coverage are in work/trial_ledger.json; full checkpoint remains in work/checkpoint.json."
+  "quality_completion_note": "Original embedded two-master JUnit healthy seed and 128 distinct strict fault sequences retaining exact B3 were completed. A separate two-selector real manifest-file I/O calibration documented the target-loss boundary. Per-trial UTC time, identity, target/JUnit and production coverage are in work/trial_ledger.json; full checkpoint remains in work/checkpoint.json.",
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 144,
+      "strict_injections": 143,
+      "target_after_fault": 128,
+      "coverage_gain": 12,
+      "elapsed_seconds": 11547.28
+    },
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "bug_mark_unchanged": "none"
+  }
 }

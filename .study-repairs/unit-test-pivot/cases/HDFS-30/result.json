@@ -93,11 +93,31 @@
     "target_exception_candidates": 0
   },
   "methodology": "original_junit_case_local_asm_jacoco_graph_free",
-  "status": "quality_complete",
+  "status": "budget_recheck_pending",
   "strict_injections": 74,
   "target_after_fault": 41,
   "target_exception_after_fault_trials": 0,
   "target_reached": true,
   "total_elapsed_seconds": 4868.851,
-  "trial_count_scope": "128 V4 recovery trials + 24 HA heartbeat trials; older 13-trial RPC pilot excluded"
+  "trial_count_scope": "128 V4 recovery trials + 24 HA heartbeat trials; older 13-trial RPC pilot excluded",
+  "quality_review": {
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "prior_status": "quality_complete",
+    "issue": "Historical trial cap was reached with fewer than 80 same-owner postfault target-retaining effective trials and an untested feasible queue; resume without repeating completed trials.",
+    "historical_counters_not_current_quality_effective": true,
+    "historical_counters": {
+      "fault_trials": 152,
+      "fully_applied_trials": 74,
+      "strict_injections": 74,
+      "target_after_fault": 41,
+      "coverage_gain": {
+        "ha_supplement_probes": 22,
+        "main_v4_probes": 288
+      },
+      "elapsed_seconds": 4689.058
+    },
+    "required_action": "Resume the original actor-aware checkpoint toward 80 effective target-retaining trials or document a justified early stop.",
+    "bug_mark_unchanged": "none"
+  }
 }
