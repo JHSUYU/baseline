@@ -35,6 +35,9 @@ from pathlib import Path
 state = json.loads(Path(sys.argv[1]).read_text())
 assert state['test'] == ('org.apache.hadoop.hdfs.TestFileChecksum#'
                          'testStripedAndReplicatedFileChecksum2[0]')
+assert state['effective'] >= 2, 'node1 trial 2 must be reconciled before resume'
+assert [row['id'] for row in state['attempts'][:2]] == [
+    '01f09073125e7810', '09a99b3dfe331261']
 assert state['effective'] == sum(row['result'] == 'effective'
                                   for row in state['attempts'])
 assert not set(row['id'] for row in state['attempts']) & set(

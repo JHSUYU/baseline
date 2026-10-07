@@ -106,6 +106,43 @@ checkpoint remains unchanged behind `runs/.node1-pilot-active`. Reconcile
 trial 2 and its updated checkpoint before clearing that marker. Never resume
 both copies at once.
 
+### Guarded node1-to-node2 handoff
+
+From node0, `handoff_node1_trial2.py` compares both checkpoint hashes, the
+ordered trial IDs, queue and lease. A read-only invocation prints the state.
+Its `--stage-only` mode copies node1 trial 2, its two-fault plan, the ledger,
+and the updated checkpoint into node2 `runs/.node1-trial2-handoff/`, checks
+the raw trace/manifest/JaCoCo/log hashes, and leaves node2's **1/80** active
+checkpoint and pause marker untouched. This stage was completed while the
+HBASE-32 owner used node2 for an independent replay.
+
+Once that owner explicitly releases the node2 JVM slot, run:
+
+```bash
+python3 .study-repairs/unit-test-pivot/cases/HDFS-54/original-junit/handoff_node1_trial2.py --apply --owner-released
+ssh -i ~/.ssh/id_ed25519_nodes -o IdentitiesOnly=yes ZhenyuLi@node2 \
+  'bash /users/ZhenyuLi/hdfs54-original-campaign/resume_node2.sh'
+```
+
+`--apply` refuses an occupied JVM slot, verifies the staged artifacts again,
+installs trial 2 and the 2/80 checkpoint, and removes the pause marker last.
+The updated node2 launcher also refuses any checkpoint without both original
+trial IDs in order, so a manual marker removal cannot replay trial 2. Check
+the resulting tmux `hdfs54_original_80` and ledger after launch. Keep the
+known-bug adapted control separate from this original-JUnit budget.
+
+The HBASE-32 owner explicitly released node2 before `--apply`. The handoff
+verified both checkpoint hashes and the staged raw-file hashes, installed
+the 2/80 state, cleared the node2 pause marker, and retired the completed
+node1 one-trial lease. The guarded launcher started persistent tmux
+`hdfs54_original_80` from **trial 3**. Its first plan
+`2e22b789974f74ab` finished in 17.233 seconds with three ordered faults
+on three distinct DataNode UUIDs, unchanged JUnit pass, and the exact
+postfault target `completed=true`; it added one production JaCoCo probe.
+See [`node2-handoff-receipt.json`](node2-handoff-receipt.json). The campaign
+continues under tmux, and its node2 `campaign-state.json` and
+`trial-ledger.csv` are the live source of progress.
+
 ## Interpretation limit
 
 The original JUnit enables block access tokens but does not set up an expired
