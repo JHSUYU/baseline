@@ -117,6 +117,12 @@ in `audit/startup_first_effective.json`: one actor-bound RPC `IOException`,
 original JUnit pass, and HDFS-22/23/25/35 exact checks afterward on that
 actor. HDFS-34 did not have a same-actor target after that fault.
 
+Subsequent sequence selection adds a per-case progress term to its coverage and
+fault-depth score, and penalizes file I/O families that have repeatedly
+removed the target. This brings HDFS-34's own episode 3–8 RPC seeds forward
+without attributing another actor's later check to it. Every tenth selection
+samples the oldest queued bound RPC for exploration.
+
 For HDFS-34, the two healthy seeds place its `DataStorage.doTransition`
 namespace guard in startup episodes 3–8 on `dfs/data1`, each immediately
 preceded by an actor-bound `NN0` RPC and a VERSION read on the same volume.

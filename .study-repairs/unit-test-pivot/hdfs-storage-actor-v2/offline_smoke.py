@@ -117,6 +117,14 @@ def check_identity() -> None:
                 "effective_by_case": {"HDFS-22": 0},
                 "budget": {"goal_by_case": {"HDFS-22": 80}}}
     assert campaign.pick(adaptive)["id"] == rpc_entry["id"]
+    deep = {**rpc_entry, "id": "deep-episode-one", "score": 1250,
+            "cases": ["HDFS-22"]}
+    hdfs34 = {**rpc_entry, "id": "hdfs34-episode-three", "score": 998,
+              "cases": ["HDFS-34"]}
+    balanced = {**adaptive, "queue": [deep, hdfs34], "in_flight": None,
+                "effective_by_case": {"HDFS-22": 3, "HDFS-34": 0},
+                "budget": {"goal_by_case": {"HDFS-22": 80, "HDFS-34": 80}}}
+    assert campaign.pick(balanced)["id"] == hdfs34["id"]
     print("Actor, storage volume, peer, order, and post-target checks passed")
 
 

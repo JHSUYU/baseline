@@ -183,17 +183,26 @@ def pick(state: dict) -> dict | None:
             and not any(result["valid_for_feedback"]
                         for result in entry["result"]["by_case"].values())
             for entry in state["completed"].values())
-        # File VERSION-read faults that abort startup give no target feedback.
-        # After three such outcomes, first seek a bound NameNode RPC seed.
-        rpc = [i for i, entry in enumerate(state["queue"])
-               if "RPC:" in entry["sequence"][-1]["marker"]]
-        if target_lost_file >= 3 and not any(state["effective_by_case"].values()) and rpc:
-            index = max(rpc, key=lambda i: (state["queue"][i]["score"], -i))
-        elif n % 5 == 4:  # waiting-round fairness
-            index = 0
+        # Repeated VERSION-read faults killed startup before its exact check.
+        # Keep their evidence and queue entries, but favor bound RPC and cases
+        # whose postfault target has had fewer effective trials so far.
+        progress = state["effective_by_case"]
+        frontier = max(progress.values(), default=0)
+        def priority(i: int) -> tuple[int, int, int]:
+            entry = state["queue"][i]
+            pending = [c for c in entry["cases"]
+                       if progress.get(c, 0) < state["budget"]["goal_by_case"].get(c, 80)]
+            deficit = frontier - min((progress.get(c, 0) for c in pending), default=frontier)
+            file_penalty = 1000 if (target_lost_file >= 3 and
+                                    "FILE:" in entry["sequence"][-1]["marker"]) else 0
+            return (entry["score"] + 300 * deficit - file_penalty,
+                    len(entry["sequence"]), -i)
+        if n % 10 == 9:  # occasionally sample the oldest pending bound RPC
+            rpc = [i for i, entry in enumerate(state["queue"])
+                   if "RPC:" in entry["sequence"][-1]["marker"]]
+            index = rpc[0] if rpc else 0
         else:
-            index = max(range(len(state["queue"])), key=lambda i:
-                        (state["queue"][i]["score"], len(state["queue"][i]["sequence"]), -i))
+            index = max(range(len(state["queue"])), key=priority)
         item = state["queue"].pop(index)
         if item["id"] in state["completed"]:
             continue
