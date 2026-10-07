@@ -123,6 +123,18 @@ def launch_http() -> None:
                + " >> http-fuzz.log 2>&1")
     remote("tmux new-session -d -s " + shlex.quote(HTTP_SESSION)
            + " " + shlex.quote(command))
+    for _ in range(30):
+        if not remote_session(HTTP_SESSION):
+            raise RuntimeError("HTTP tmux exited before its checkpoint appeared")
+        ready = remote("test -s " + shlex.quote(str(RPC / "campaign" / "progress.json"))
+                       + " && test -s "
+                       + shlex.quote(str(RPC / "campaign" / "stage-status.json")),
+                       check=False)
+        if ready.returncode == 0:
+            break
+        time.sleep(1)
+    else:
+        raise RuntimeError("HTTP tmux did not publish its initial checkpoint")
     subprocess.run(("tmux", "new-session", "-d", "-s", MIRROR_SESSION,
                     "cd " + shlex.quote(str(RPC))
                     + " && python3 mirror.py >> http-mirror.log 2>&1"), check=True)
