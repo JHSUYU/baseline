@@ -13,6 +13,7 @@ SOURCE = Path('/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4')
 DIST = Path('/users/ZhenyuLi/.baseline-deps/solr-8.11.4')
 JAVA = Path('/usr/lib/jvm/java-8-openjdk-amd64/bin')
 CLASSES = HERE / 'classes'
+CLEAN_CLASSES = HERE / 'clean-classes'
 ASM = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/9.6/asm-9.6.jar')
 ASM_TREE = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm-tree/9.6/asm-tree-9.6.jar')
 ASM_COMMONS = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm-commons/9.6/asm-commons-9.6.jar')
@@ -33,8 +34,23 @@ def classpath() -> str:
     return ':'.join(entries)
 
 
+def clean_classpath() -> str:
+    entries = classpath().split(':')
+    entries[1] = str(CLEAN_CLASSES)
+    return ':'.join(entries)
+
+
 def main() -> None:
     CLASSES.mkdir(parents=True, exist_ok=True)
+    CLEAN_CLASSES.mkdir(parents=True, exist_ok=True)
+    clean = subprocess.run([str(JAVA / 'javac'), '-source', '8', '-target', '8',
+                            '-cp', clean_classpath(), '-d', str(CLEAN_CLASSES),
+                            str(HERE / 'src/OriginalJUnit.java'),
+                            str(HERE / 'src/Solr18Probe.java'),
+                            *map(str, TEST_SOURCES)],
+                           text=True, capture_output=True, check=False)
+    if clean.returncode:
+        raise RuntimeError(clean.stderr)
     cp = classpath()
     sources = [HERE / 'src/OriginalJUnit.java', HERE / 'src/Solr18Probe.java',
                HERE / 'src/PatchSolr18.java', HERE / 'src/CoverageSolr18.java', *TEST_SOURCES]
@@ -57,6 +73,10 @@ def main() -> None:
                                       and 'graphchecker' in Path(entry).name.lower()],
         'source_resource_path': str(SOURCE / 'solr/core/src/test-files'),
         'classpath_entries': len(cp.split(':')),
+        'clean_junit_class_sha256': hashlib.sha256((CLEAN_CLASSES /
+            'org/apache/solr/cloud/AliasIntegrationTest.class').read_bytes()).hexdigest(),
+        'actor_junit_class_sha256': hashlib.sha256((CLASSES /
+            'org/apache/solr/cloud/AliasIntegrationTest.class').read_bytes()).hexdigest(),
         'solr_core_jar_sha256': hashlib.sha256(
             (DIST / 'dist/solr-core-8.11.4.jar').read_bytes()).hexdigest(),
     }
