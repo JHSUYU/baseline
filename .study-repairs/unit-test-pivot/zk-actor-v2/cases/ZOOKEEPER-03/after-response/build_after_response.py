@@ -11,6 +11,7 @@ import xml.etree.ElementTree as ET
 AFTER = Path(__file__).resolve().parent
 CASE = AFTER.parent
 V2 = CASE.parents[1]
+REVISION = '9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae'
 SOURCE = Path(os.environ.get('ZK03_SOURCE', '/users/ZhenyuLi/zk03-independent-unit'))
 SERVER = SOURCE / 'zookeeper-server/target/classes'
 TEST = SOURCE / 'zookeeper-server/target/test-classes'
@@ -30,7 +31,7 @@ def digest(path):
 
 def main():
     actual = subprocess.check_output(['git', '-C', str(SOURCE), 'rev-parse', 'HEAD'], text=True).strip()
-    if actual != '9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae':
+    if actual != REVISION:
         raise RuntimeError('original source revision changed')
     BUILD.mkdir(parents=True, exist_ok=True)
     classes = BUILD / 'classes'
