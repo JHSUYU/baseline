@@ -1563,9 +1563,11 @@
       "check_code": "if (encryptionKey == null || encryptionKey.expiryDate < timer.now()) {\n  encryptionKey = blockTokenSecretManager.generateDataEncryptionKey();\n}",
       "target_guard": null,
       "target_throw": null,
-      "target_exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException at Balancer outbound SASL",
+      "target_exception": null,
       "proposed_cluster_test": "TestBalancerWithEncryptedTransfer.testEncryptedBalancer0",
-      "proposed_cluster_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java"
+      "proposed_cluster_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+      "remote_exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException at Balancer outbound SASL",
+      "operation_oracle": "Original encrypted Balancer JUnit block moves and exit status; confirm post-fault KeyManager guard reuses the cached key"
     }
   ],
   "additional_selection_source": "HDFS-17897 striped checksum and HDFS-17899 Balancer stale-key checks in Hadoop 3.4.3",
