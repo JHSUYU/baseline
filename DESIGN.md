@@ -19,6 +19,12 @@ the required target state, record `no_usable_cluster_test` with the attempted
 test and the exact gap. Tests that fail before the check or expect its
 exception require source review before they can support a bug claim.
 
+The two added HDFS known-issue checks are reported separately from the
+original 102. HDFS-54 uses a documented erasure-coded-file adaptation of an
+existing MiniDFSCluster JUnit to reproduce HDFS-17897; its result is a known
+bug control, not an unchanged-original-test campaign. HDFS-55 has an
+unchanged original JUnit campaign and a separate adapted fix comparison.
+
 The counted baseline uses I/O identity and code coverage feedback. It does
 not construct a causal graph, load GraphChecker runtime classes, or use Docker
 clusters. Earlier experiments using those components do not count as trials
