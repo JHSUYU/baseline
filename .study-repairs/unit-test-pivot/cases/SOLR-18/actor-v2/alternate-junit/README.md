@@ -98,3 +98,17 @@ allocated bytes released. Local traces, JaCoCo, run receipts, plans, console,
 healthy controls and any candidate raw remain. `full_audit.py` verifies
 offloaded files against node2 on every recount; its logical raw manifest SHA
 was identical before and after offload. Trial 135 retains its original ID.
+
+The full stage ended at 150 original JUnit attempts and 80 strict effective
+trials, with no inflight run. Its last eight effective trials added no new
+production method or stable relevant I/O family, so the conditional 128/10
+extension was not taken. All 80 effective original JUnits passed, and all 86
+selected equal-version JSON checks were true; the selected assertion did not
+throw. Effective trials added 186 production probes, 10 methods and 186 lines
+over healthy controls. The independent [full audit](full-audit.json) checked
+1,240 logical raw files and every offloaded coverage SHA with zero issues.
+Fifteen block receipts cover the node2 per-file SHA mirror through trial 150;
+a final checksum dry run found no difference among files retained on node0.
+The [terminal receipt](terminal-receipt.json) records the source and JUnit
+hashes, actor/guard counts, coverage, elapsed time, and remaining 1,348
+untried plans. No new bug was confirmed.
