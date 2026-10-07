@@ -74,12 +74,22 @@ actors or resolved RPC peers are absent, the exact target site/journal is
 absent, or raw JaCoCo/feedback hashes are missing. It requires stable actors
 and I/O families across two seeds. Historical trials are never imported; the
 new effective denominator starts at zero.
-The HDFS-07 three-plan pilot raw archive and independent receipt are under
-`evidence/HDFS-07/pilot3-raw.tar.gz` and `pilot3-audit.json`. The two original
-healthy JUnit seeds for each of HDFS-09/10 are preserved in their separate
-`evidence/HDFS-09/healthy-raw.tar.gz` and
-`evidence/HDFS-10/healthy-raw.tar.gz` archives. These latter cases have no V2
-fault trials yet.
+The HDFS-07 campaign reached 128 effective actor-aware trials; its independent
+terminal audit and complete raw archive are under `evidence/HDFS-07/`.
+The two original healthy JUnit seeds for HDFS-09/10 are preserved in their
+separate `evidence/HDFS-09/healthy-raw.tar.gz` and
+`evidence/HDFS-10/healthy-raw.tar.gz` archives. Each case also has one strict
+actor-aware pilot under `pilot1-raw.tar.gz` with `pilot1-audit.json`. Both
+pilots apply a `Client.getRpcResponse` IOException on physical
+`journalnode-0`; their exact case-specific target executes afterward on
+`journalnode-0/test-journal`. HDFS-09's original JUnit passed in 10.928 s;
+HDFS-10's passed in 10.746 s. Both independent audits passed with no target
+throw, and each fresh denominator is 1/80 before its continuation.
+Archive SHA-256 values are
+`dac19e734b6c0e9a826cfce6dd14eff689c27ff2260ccd9828e848da84271e93`
+for HDFS-09 and
+`38b3f5c1c7de91f5b68f30cdc20c9755adbe6756e49448b0f6ba43e692ea95d9`
+for HDFS-10. The full raw runs and atomic checkpoints remain on node1.
 
 `campaign_v2.py` uses a process lock and atomic checkpoints. It resumes a
 selected plan from its complete immutable manifest; an interrupted run without
@@ -129,6 +139,6 @@ overlay could share a healthy seed only after separately proving both target
 sites and actor gates; fault trial denominators must still be audited per
 target. HDFS-07 uses a different upstream method and requires its own runs.
 
-This work is an offline implementation and bytecode validation. No new
-actor-aware HDFS-07/09/10 JUnit or fuzz trial has run, so none of their
-`actor_identity_recheck_pending` results is complete yet.
+HDFS-07 is complete under its new actor-aware denominator. HDFS-09/10 are
+running from separate audited checkpoints; neither imports historical
+coarse-actor trials, and neither pilot alone completes the budget.
