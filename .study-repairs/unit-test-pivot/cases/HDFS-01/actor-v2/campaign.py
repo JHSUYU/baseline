@@ -8,6 +8,7 @@ its own healthy seeds, bytecode SHA, fault selectors and effective denominator.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -190,17 +191,30 @@ def initialize() -> dict:
 def choose(state: dict) -> dict:
     queue = state["queue"]
     attempt = len(state["completed"])
+    # A fault that repeatedly removes the selected check is poor feedback for
+    # this target. Keep it in the queue, but let new and target-retaining I/O
+    # families run first. One root in sixteen still explores every family.
+    attempts_by_marker = Counter(row["plan"][-1]["marker"]
+                                 for row in state["completed"])
+    effective_by_marker = Counter(row["plan"][-1]["marker"]
+                                  for row in state["completed"] if row["effective"])
+    target_losing = {marker for marker, count in attempts_by_marker.items()
+                     if count >= 5 and effective_by_marker[marker] == 0}
     # Every fourth attempt exercises an untested healthy root; the other
     # rounds use coverage/I/O reward, actor novelty, depth and waiting time.
     roots = [(i, item) for i, item in enumerate(queue) if len(item["plan"]) == 1]
     if roots and attempt % 4 == 0:
-        index = min(roots, key=lambda pair: pair[1]["queued_at_attempt"])[0]
+        preferred = [(i, item) for i, item in roots
+                     if item["plan"][-1]["marker"] not in target_losing]
+        candidates = roots if attempt % 16 == 0 or not preferred else preferred
+        index = min(candidates, key=lambda pair: pair[1]["queued_at_attempt"])[0]
     else:
         def score(item: dict) -> tuple[int, int, int]:
             point = item["plan"][-1]
             return (point_score(point) + min(item["parent_gain"], 80)
                     + min(len(item["plan"]), 6) * 4
-                    + min(attempt - item["queued_at_attempt"], 30),
+                    + min(attempt - item["queued_at_attempt"], 30)
+                    - (100 if point["marker"] in target_losing else 0),
                     -item["queued_at_attempt"], -len(item["plan"]))
         index = max(range(len(queue)), key=lambda i: score(queue[i]))
     return queue.pop(index)
