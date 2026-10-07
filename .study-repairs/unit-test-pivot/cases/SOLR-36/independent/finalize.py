@@ -58,6 +58,10 @@ def main() -> None:
         reports[case_id] = report
         result_path = HERE.parent.parent / case_id / 'result.json'
         result = json.loads(result_path.read_text())
+        unreviewed = [number for number in
+                      report['strict_exact_target_throw_trial_numbers']
+                      if result.get(f'candidate_{number:04d}_review', {}).get(
+                          'classification') != 'not_new_bug_protective_retry']
         result.update(
             campaign_final_audit=report,
             logical_identity_audit=report['logical_identity_audit'],
@@ -73,8 +77,8 @@ def main() -> None:
                                  'frozen scheduler; audited methods and branches use '
                                  'only same-logical-child postfault trials.'),
             status=('target_exception_candidate_source_review'
-                    if report['strict_exact_target_throw_trials'] else
-                    'campaign_budget_complete_source_audit_pending'),
+                    if unreviewed else 'pending_http_stage'),
+            unreviewed_exact_target_throw_trial_numbers=unreviewed,
             evidence=f'.study-repairs/unit-test-pivot/cases/SOLR-36/independent/{name}',
             updated_at=time.time())
         atomic(result_path, result)

@@ -1,0 +1,126 @@
+{
+  "budget": {
+    "max_faults": 8,
+    "max_trials": 80
+  },
+  "case_id": "SOLR-36",
+  "elapsed_seconds": 8509.388,
+  "fault_trials": 80,
+  "first_fault_families": {
+    "FAULT:ZK_NATIVE:create|org.apache.solr.cloud.ZkDistributedQueue.offer#L328->SolrZkClient.lambda$create$9(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/String;|SOLR/REPLICA/collection1/shard1_0/core_node11|/overseer/queue/qn-": 16,
+    "FAULT:ZK_NATIVE:create|org.apache.solr.cloud.ZkDistributedQueue.offer#L328->SolrZkClient.lambda$create$9(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/String;|SOLR/REPLICA/collection1/shard1_0/core_node13|/overseer/queue/qn-": 1,
+    "FAULT:ZK_NATIVE:create|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L267->SolrZkClient.lambda$create$9(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/String;|SOLR/COLLECTION/collection1|/collections/collection1/state.json": 1,
+    "FAULT:ZK_NATIVE:delete|org.apache.solr.client.solrj.impl.ZkDistribStateManager.removeData#L141->SolrZkClient.lambda$delete$1(Ljava/lang/String;I)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1/shard1-splitting": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/collection1|/collections/collection1": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/collection1|/collections/collection1": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/REPLICA/collection1/shard1_0/core_node13|/collections/collection1": 2,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/REPLICA/collection1/shard1_1/core_node12|/collections/collection1": 2,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ShardLeaderElectionContextBase.<init>#L82->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/collection1|/collections/collection1/leaders/shard1": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard1": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard1_0": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard1_1": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard2": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/REPLICA/collection1/shard1_0/core_node13|/collections/collection1/terms/shard1_0": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L258->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/collection1|/collections/collection1/state.json": 1,
+    "FAULT:ZK_NATIVE:exists|org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef.get#L811->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/collection1|/collections/collection1/state.json": 1,
+    "FAULT:ZK_NATIVE:getChildren|org.apache.solr.client.solrj.impl.ZkDistribStateManager.listData#L70->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/collection1|/collections/collection1/shard1-splitting": 1,
+    "FAULT:ZK_NATIVE:getChildren|org.apache.solr.common.cloud.ZkStateReader$StateWatcher.refreshAndWatchChildren#L1405->SolrZkClient.lambda$getChildren$5(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)Ljava/util/List;|SOLR/COLLECTION/collection1|/collections/collection1/state.json": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/collection1|/collections/collection1/counter": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkController.getLeaderProps#L1495->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/collection1|/collections/collection1/leaders/shard1/leader": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkController.getLeaderProps#L1495->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/REPLICA/collection1/shard1_0/core_node13|/collections/collection1/leaders/shard1_0/leader": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkController.getLeaderProps#L1495->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/REPLICA/collection1/shard1_1/core_node12|/collections/collection1/leaders/shard1_1/leader": 2,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard1": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard1_0": 1,
+    "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/REPLICA/collection1/shard1_0/core_node11|/collections/collection1/terms/shard1_0": 15,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.client.solrj.impl.ZkDistribStateManager.makePath#L115->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1": 1,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.client.solrj.impl.ZkDistribStateManager.makePath#L115->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1/shard1-splitting": 1,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1/leader_elect/shard2/election": 1,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/REPLICA/collection1/shard1_1/core_node12|/collections/collection1/leader_elect": 1,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1": 1,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1/terms": 1,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard1": 1,
+    "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard2": 1,
+    "FAULT:ZK_NATIVE:setData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/collection1|/collections/collection1/counter": 1,
+    "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/collection1|/collections/collection1/terms/shard2": 1,
+    "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/REPLICA/collection1/shard1_0/core_node11|/collections/collection1/terms/shard1_0": 13
+  },
+  "io_family_gain": 0,
+  "latest": {
+    "applied_faults": 4,
+    "attempts": 1,
+    "elapsed_seconds": 102.504,
+    "exact_target_throw_after_last_fault": {
+      "SOLR-36": 0,
+      "SOLR-37": 0
+    },
+    "exact_target_throw_count": {
+      "SOLR-36": 0,
+      "SOLR-37": 0
+    },
+    "fault_sequence": [
+      {
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:setData",
+        "resource": "/collections/collection1/terms/shard1_0",
+        "siteId": "org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;",
+        "sourceKey": "SOLR/REPLICA/collection1/shard1_0/core_node11"
+      },
+      {
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:makePath",
+        "resource": "/collections/collection1/leaders/shard1_0",
+        "siteId": "org.apache.solr.cloud.ShardLeaderElectionContextBase.<init>#L82->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;",
+        "sourceKey": "SOLR/REPLICA/collection1/shard1_0/core_node11"
+      },
+      {
+        "hitOrdinal": 2,
+        "marker": "FAULT:ZK_NATIVE:makePath",
+        "resource": "/collections/collection1/leaders/shard1_0",
+        "siteId": "org.apache.solr.cloud.ShardLeaderElectionContextBase.<init>#L82->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;",
+        "sourceKey": "SOLR/REPLICA/collection1/shard1_0/core_node11"
+      },
+      {
+        "hitOrdinal": 1,
+        "marker": "FAULT:ZK_NATIVE:makePath",
+        "resource": "/collections/collection1/leader_elect/shard1_0",
+        "siteId": "org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;",
+        "sourceKey": "SOLR/REPLICA/collection1/shard1_0/core_node11"
+      }
+    ],
+    "first_family": "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/REPLICA/collection1/shard1_0/core_node11|/collections/collection1/terms/shard1_0",
+    "io_observed_count": 6649,
+    "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/campaign/trials/0080-77c7ab5a3566724e1bd3/attempt-01/jacoco.exec",
+    "junit_exit": 0,
+    "junit_gate": [
+      1,
+      0,
+      0
+    ],
+    "last_family": "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/REPLICA/collection1/shard1_0/core_node11|/collections/collection1/leader_elect/shard1_0",
+    "new_io_families": 0,
+    "new_production_probes": 0,
+    "planned_faults": 4,
+    "production_probes_covered": 41253,
+    "status": "checked",
+    "strict_injection": true,
+    "target_guard_after_last_fault": {
+      "SOLR-36": 92,
+      "SOLR-37": 92
+    },
+    "target_guard_count": {
+      "SOLR-36": 92,
+      "SOLR-37": 92
+    },
+    "target_preserved": true,
+    "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/campaign/trials/0080-77c7ab5a3566724e1bd3/attempt-01/events.jsonl",
+    "trial_number": 80
+  },
+  "methodology": "coverage_io_independent_asm_jacoco",
+  "post_fault_target_reach_trials": 80,
+  "production_probe_gain": 555,
+  "status": "budget_complete",
+  "strict_injections": 80,
+  "target_exception_after_fault_trials": 2,
+  "target_preserved_trials": 80,
+  "total_attempts": 84
+}

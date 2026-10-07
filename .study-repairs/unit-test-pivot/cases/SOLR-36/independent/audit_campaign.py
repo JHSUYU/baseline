@@ -89,6 +89,10 @@ def main() -> None:
                 row['strict_injection']
                 and row['exact_target_throw_after_last_fault'][case_id] > 0
                 for row in state['completed']),
+            'strict_exact_target_throw_trial_numbers': [
+                row['trial_number'] for row in state['completed']
+                if row['strict_injection']
+                and row['exact_target_throw_after_last_fault'][case_id] > 0],
             'fault_depths': dict(Counter(str(row['planned_faults'])
                                          for row in state['completed'])),
             'junit_gate_counts': dict(Counter(str(row['junit_gate'])
