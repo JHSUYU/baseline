@@ -242,20 +242,27 @@ def choose_pending(state: dict) -> dict:
         phase = 'suite' if pool is suite else 'test'
         prefer_deep = state.get(phase + '_depth_gap', 0) >= 5
         yields: dict[str, list[int]] = {}
+        depth_yields: dict[tuple[str, int], list[int]] = {}
         for trial in state['trials']:
-            count = yields.setdefault(trial['plan'][0], [0, 0])
-            count[0] += int(trial['effective'])
-            count[1] += 1
-        def priority(i: int) -> tuple[int, float, int, int, int]:
+            prefix = trial['plan'][0]
+            for count in (yields.setdefault(prefix, [0, 0]),
+                          depth_yields.setdefault((prefix, len(trial['plan'])), [0, 0])):
+                count[0] += int(trial['effective'])
+                count[1] += 1
+        def priority(i: int) -> tuple[int, float, float, int, int, int]:
             job = pending[i]
-            successes, attempts = yields.get(job['plan'][0], [0, 0])
-            # Smoothed observed eligibility keeps unseen prefixes in play.
-            yield_score = (successes + 1) / (attempts + 2)
+            prefix = job['plan'][0]
+            successes, attempts = yields.get(prefix, [0, 0])
+            # Two prefix-equivalent observations smooth sparse depth data.
+            prefix_yield = (successes + 1) / (attempts + 2)
+            depth_successes, depth_attempts = depth_yields.get(
+                (prefix, len(job['plan'])), [0, 0])
+            depth_yield = (depth_successes + 2 * prefix_yield) / (depth_attempts + 2)
             # Across 42 target-retaining applied callback faults at the
             # 350/41 checkpoint, none used the selected manager's client.
             # Keep those plans queued, but try other same-actor candidates first.
             callback_plan = any('zkCallback-' in selector for selector in job['plan'])
-            return (-int(callback_plan), yield_score,
+            return (-int(callback_plan), depth_yield, prefix_yield,
                     (1 if prefer_deep else -1) * len(job['plan']),
                     int('/aliases.json:TEST' in job['plan'][-1]), -i)
         index = max(pool, key=lambda i:
