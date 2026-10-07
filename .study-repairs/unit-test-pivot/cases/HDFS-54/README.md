@@ -7,17 +7,18 @@ client-side aggregate check whose false outcome fails the original operation.
 
 **Current checklist status: `running_original_junit_supplement`.** The
 unchanged released `TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]`
-has completed one healthy run (17.72 s) and one strictly matched I/O-fault
-trial (17.57 s): **1/80 effective**, with 31 queued plans. The original test
-reaches the exact line-629 target after the fault; production JaCoCo coverage
-gains four probes over its healthy seed. The original-JUnit runtime
-count is **35.29 s** so far. Its full budget has not been completed. See
-[`original-junit/README.md`](original-junit/README.md) and the node2
-checkpoint for the per-trial evidence.
+has completed one healthy run (17.72 s) and two strictly matched I/O-fault
+trials (17.57 s and 21.065 s): **2/80 effective**, with 46 queued plans. The
+original test reaches the exact line-629 target after the final fault in both
+trials; both JUnit runs pass. The union of their production JaCoCo probe tokens
+adds 162 distinct probes over the healthy seed. The original-JUnit runtime
+count is **56.355 s** so far. Its full budget has not been completed. See
+[`original-junit/README.md`](original-junit/README.md) for the per-trial
+evidence and the guarded node1/node2 checkpoint handoff.
 
 The separate XOR-2-1 workload below already reproduced the **known**
 HDFS-17897 mechanism. Its six mutants and 213.541 s are retained as an
-adapted control, excluded from the original-JUnit 1/80 count. The bug mark
+adapted control, excluded from the original-JUnit 2/80 count. The bug mark
 `known_HDFS-17897_reproduced` refers to that adapted differential.
 
 ## Selected check and source review

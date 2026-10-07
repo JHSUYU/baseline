@@ -31,8 +31,19 @@ RPC on DN role 1, and the same file's line-629 target check with
 `completed=true` after the fault. It covered 28,727 production probes, four
 more than the healthy seed. The raw directory is
 `/users/ZhenyuLi/hdfs54-original-campaign/runs/trial-0001-01f09073125e7810-r0`.
-The checkpoint reports 1 effective trial and 31 queued mutations. Full
-budget execution remains pending the shared node2 JVM slot.
+The first checkpoint reported 1 effective trial and 31 queued mutations.
+After its node1 handoff, a second strict trial finished in 21.065 seconds:
+two ordered `CONNECT_L686` `IOException` faults matched and applied on
+distinct DataNode roles 0 and 1 for the same block group. The production
+catch at line 669 followed each injection. Role 2 served the request, and
+the same file's line-629 target evaluated `completed=true` after the second
+fault. The unchanged JUnit passed. It covered 28,883 probes, with 156 probe
+tokens new to the prior global coverage set. The healthy and two fault runs
+together cover 28,885 distinct production probes, 162 more than the healthy
+seed. The node1 checkpoint now reports **2/80 effective**, 2 attempts, 46
+queued plans, and no in-flight plan. See
+[`node1-trial2-receipt.json`](node1-trial2-receipt.json). Full budget execution
+remains pending a safe node slot. The node2 copy remains paused at 1/80.
 
 ## Campaign
 
@@ -49,12 +60,14 @@ plans. Initial budget: 80 effective trials and at most 8 faults per plan;
 conditional extension: 128 effective and at most 10 faults. An attempt cap
 keeps repeated nondeterministic misses bounded.
 
-After the node2 owner explicitly releases its JVM slot, resume the preserved
-checkpoint with `bash /users/ZhenyuLi/hdfs54-original-campaign/resume_node2.sh`.
-The launcher refuses to overlap an active Solr 36/37 tmux session or any
-other JVM, checks queue identity, and starts `hdfs54_original_80` in tmux at
-lower CPU priority. The campaign reads the existing 1/80 checkpoint and does
-not repeat completed plans. The direct command, for inspection, is:
+After the node2 owner explicitly releases its JVM slot, reconcile the node1
+2/80 checkpoint and trial-2 evidence onto node2, verify both trial IDs and
+the 46-plan queue, and then clear the node2 pause marker. Only then use
+`bash /users/ZhenyuLi/hdfs54-original-campaign/resume_node2.sh`. The
+launcher refuses an active Solr 36/37 session or another JVM and starts
+`hdfs54_original_80` in tmux at lower CPU priority. The campaign must read
+the reconciled 2/80 checkpoint and avoid repeating either completed plan.
+The direct command, for inspection, is:
 
 ```bash
 cd /users/ZhenyuLi/hdfs54-original-campaign
@@ -73,23 +86,25 @@ unchanged Hadoop test JAR also has the same SHA-256 on both hosts. Scratch,
 ports, and run directories are local to each host; node1 had 32 GiB disk
 and 55 GiB available RAM at staging time.
 
-The node1 path is reserved for **one next queued trial** after SOLR-13 and
-the HDFS storage actor-V2 healthy calibration explicitly release their node1
-slots. Run `reserve_node1_pilot.py` from node0 at that handoff. It verifies
-both checkpoint copies and absence of either HDFS-54 tmux, creates a node2
+The node1 path was reserved for **one next queued trial** after SOLR-13
+released its node1 slot and HDFS storage actor-V2 paused calibration. Running
+`reserve_node1_pilot.py` from node0 verified both checkpoint copies and
+absence of either HDFS-54 tmux, created a node2
 `runs/.node1-pilot-active` marker to block `resume_node2.sh`, then writes the
 node1 `runs/.node1-pilot-lease.json`. Any partial reservation fails closed;
 inspect both marker files before retrying.
-`resume_node1_pilot.sh` refuses to run without that lease, validates the
-unchanged 1/80 checkpoint and resource headroom, checks that SOLR-13 and
-actor-V2 tmux sessions have exited, and starts tmux
-`hdfs54_original_node1_pilot` with `campaign.py --once 1`. It consumes a
-queued plan as trial 2; the completed trial 1 is not rerun. HBase-17/32 may
-continue, so compare their timing with the pilot before any further HDFS-54
-node1 work. Node2's original checkpoint must remain unchanged until this
-pilot result is reviewed; if node2 becomes the campaign host, copy the
-updated node1 checkpoint and new trial directory back, verify no duplicate
-plan ID, then remove the node2 marker. Do not resume both copies at once.
+`resume_node1_pilot.sh` refused to run without that lease, validated the
+unchanged 1/80 checkpoint and resource headroom, checked that SOLR-13 and
+actor-V2 tmux sessions had exited, and started tmux
+`hdfs54_original_node1_pilot` with `campaign.py --once 1`. It consumed the
+next queued plan as trial 2; completed trial 1 was not rerun. The pilot ran
+04:11:58–04:12:43 UTC. Its own measured JUnit duration was 21.065 seconds.
+HBase-17's overlapping original JUnit r055 passed in 55.65 seconds with
+postfault target, within its prior 49–57 second band. Node1 HDFS-54 tmux/JVM
+exited, and the node1 slot returned to actor-V2 calibration. Node2's original
+checkpoint remains unchanged behind `runs/.node1-pilot-active`. Reconcile
+trial 2 and its updated checkpoint before clearing that marker. Never resume
+both copies at once.
 
 ## Interpretation limit
 
