@@ -136,12 +136,20 @@ def initial_queue(receipt: dict, seed_trace: list[dict], cases: tuple[str, ...])
 def load_state(anchor: Path, group: str, receipt: dict, max_attempts: int) -> dict:
     state_path = anchor / "campaign-state.json"
     _, cases = GROUPS[group]
+    receipt_hash = hashlib.sha256((anchor / "healthy_receipt.json").read_bytes()).hexdigest()
+    instrumentation_hash = receipt["seeds"][0]["instrumentation_digest_sha256"]
     if state_path.is_file():
         state = json.loads(state_path.read_text())
         if state["group"] != group or state["schema"] != "hdfs-storage-actor-v2-campaign-1":
             raise RuntimeError("checkpoint identity/schema mismatch")
-        if set(state["completion_order"]) != set(state["completed"]):
+        if len(state["completion_order"]) != len(set(state["completion_order"])) or (
+                set(state["completion_order"]) != set(state["completed"])):
             raise RuntimeError("checkpoint completion set mismatch")
+        if state["healthy_receipt_sha256"] != receipt_hash:
+            raise RuntimeError("healthy calibration receipt changed while resuming")
+        if state.get("instrumentation_digest_sha256", instrumentation_hash) != instrumentation_hash:
+            raise RuntimeError("instrumentation changed while resuming")
+        state["instrumentation_digest_sha256"] = instrumentation_hash
         if max_attempts < state["budget"]["max_attempts"]:
             raise RuntimeError("attempt cap cannot be reduced on resume")
         state["budget"]["max_attempts"] = max_attempts
@@ -152,7 +160,8 @@ def load_state(anchor: Path, group: str, receipt: dict, max_attempts: int) -> di
     state = {
         "schema": "hdfs-storage-actor-v2-campaign-1", "group": group,
         "case_ids": list(cases), "healthy_receipt": str(anchor / "healthy_receipt.json"),
-        "healthy_receipt_sha256": hashlib.sha256((anchor / "healthy_receipt.json").read_bytes()).hexdigest(),
+        "healthy_receipt_sha256": receipt_hash,
+        "instrumentation_digest_sha256": instrumentation_hash,
         "budget": {"base_effective": BASE_EFFECTIVE, "extended_effective": EXTENDED_EFFECTIVE,
                    "base_faults": BASE_FAULTS, "extended_faults": EXTENDED_FAULTS,
                    "max_attempts": max_attempts,
@@ -217,6 +226,8 @@ def pick(state: dict) -> dict | None:
 def summarize_attempt(anchor: Path, item: dict, run: Path, cases: tuple[str, ...],
                       state: dict) -> dict:
     manifest = json.loads((run / "manifest.json").read_text())
+    if manifest.get("instrumentation_digest_sha256") != state["instrumentation_digest_sha256"]:
+        raise RuntimeError("trial instrumentation differs from calibrated healthy seeds: " + str(run))
     trace = rows(run / "runtime_trace.jsonl")
     exact, applied = exact_applied(item["sequence"], trace)
     covered = {k: coverage(run, k) for k in COVERAGE}
