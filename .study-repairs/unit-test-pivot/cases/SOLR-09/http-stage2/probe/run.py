@@ -19,7 +19,7 @@ JAVA = "/usr/lib/jvm/java-8-openjdk-amd64/bin/java"
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("output", type=Path)
-    parser.add_argument("--faults", default="", help="Semicolon-delimited OP|path-part|ordinal selectors")
+    parser.add_argument("--faults", default="", help="Semicolon-delimited exact operation|resource|ordinal|caller selectors")
     parser.add_argument("--coverage", action="store_true")
     parser.add_argument("--original", action="store_true", help="Use unchanged production classes")
     parser.add_argument("--timeout", type=int, default=180)
@@ -66,7 +66,7 @@ def main() -> int:
             exit_code = proc.returncode
         except subprocess.TimeoutExpired:
             exit_code = 124
-            log.write("\nSOLR07_JUNIT_TIMEOUT\n")
+            log.write("\nSOLR09_HTTP_JUNIT_TIMEOUT\n")
     result = {"case_id": "SOLR-09", "test": "DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup",
               "exit_code": exit_code, "elapsed_seconds": time.time() - started,
               "faults": args.faults, "coverage_enabled": args.coverage,
