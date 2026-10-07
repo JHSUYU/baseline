@@ -1,6 +1,41 @@
-> **Actor identity recheck pending.** Earlier fault trials, coverage, and elapsed time are preserved under `legacy_coarse_actor` in `result.json` and in the original raw evidence. Their selectors did not establish the same runtime actor across runs. An actor-aware V2 campaign is required before this check counts as quality complete. [Independent audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
+> **Actor-aware V2 complete.** The unchanged original cluster JUnit and a receiver/destination-aware agent established the selected client, provider, actual Jetty endpoint, and target outcome in two healthy runs and 80 effective fault trials. Earlier path/ordinal results remain under `legacy_coarse_actor` and do not count toward this V2 budget. [Prior identity audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
 
 # SOLR-01: HTTP alias fallback guard
+
+## Actor-aware V2 result
+
+Two original `CloudHttp2SolrClientTest.testAliasHandling` healthy runs passed
+with the same frozen agent SHA `bc52bf53...`; each observed 15 bound
+`LISTALIASES` I/O points and 36 selected target checks. The V2 campaign then
+completed **80/80 effective trials**, with all 80 ordered fault plans applied
+exactly and the same client/provider target check retained after the final
+fault. It applied 193 faults in total, at most three per sequence, and used
+**1,286.095 seconds of faulted JUnit time**. The two healthy JUnits used
+29.421 seconds; the separate clean replay used 14.309 seconds. The last eight
+effective trials added no production coverage or stable I/O family, so the
+predeclared 128/max10 extension did not activate.
+
+JaCoCo recorded **9 newly covered production methods and 60 branches** over
+the two healthy seeds. The selected `getAliases` method rose from 7 to 9
+covered branches. Offline coverage analysis used bytecode reconstructed with
+the frozen agent transformer and had zero unmatched production classes. The
+[raw audit](actor-v2/campaign/raw-audit.json) independently reconciled every
+saved plan, actor-bound injection, post-fault target event, JUnit receipt, and
+JaCoCo file with **zero discrepancies**. The [coverage summary](actor-v2/campaign/coverage-summary.json)
+and [candidate review](actor-v2/campaign/candidate-review.json) preserve the
+per-trial evidence and source classification.
+
+The selected exception occurred in 45 effective trials. In every one, the
+same provider call faulted **all three live Jetty endpoints** before the
+selected check. Solr 8.11.4 explicitly raises this `RuntimeException` at
+`BaseHttpClusterStateProvider.java:267` after exhausting that loop. A
+[non-budget clean replay](actor-v2/replay-trial-004/replay-summary.json) of
+trial 4 applied all three actor-exact faults again and reached the same throw
+in the original JUnit. There were no other JUnit failures. This check is
+**quality complete with no confirmed new bug** in the tested I/O scope.
+The complete V2 raw, JaCoCo, JUnit, plan and checkpoint bundle is preserved on
+node1; the [archive receipt](actor-v2/archive-receipt.json) records matching
+local/remote SHA-256 values and the per-file manifest.
 
 **Historical graph-free run: actor identity recheck pending.** The unchanged `CloudHttp2SolrClientTest.testAliasHandling` passed without instrumentation in 20.895 seconds and with case-local instrumentation in 25.942 seconds. The healthy trace reached the selected `getAliases` outcome 36 times and observed 15 actual `LISTALIASES` HTTP calls, yielding 30 initial request-failure selectors across two exception families. The method records the HTTP operation/resource, production callsite, alias-fetch invocation and attempt ordinal, plus the actual endpoint URL. Complete ordered injection and a later selected check were required for feedback; JaCoCo production coverage and stable I/O identities guided mutation. These measurements remain historical until the runtime actor relation is verified.
 

@@ -28,7 +28,21 @@ def atomic(path: Path, obj: object) -> None:
 
 
 def point(row: dict, kind: str) -> dict:
-    return {**{name: row[name] for name in FIELDS[:-1]}, 'kind': kind}
+    item = {name: row[name] for name in FIELDS[:-1]}
+    if row['destinationKey'].startswith('JETTY/node'):
+        item['destinationKey'] = 'JETTY/attempt' + str(row['attemptOrdinal'])
+    return {**item, 'kind': kind}
+
+
+def plan_matches_io(item: dict, row: dict) -> bool:
+    for field in FIELDS[:-1]:
+        if field == 'destinationKey' and item[field].startswith('JETTY/attempt'):
+            if (item[field] != 'JETTY/attempt' + str(row['attemptOrdinal']) or
+                    not row[field].startswith('JETTY/node')):
+                return False
+        elif row[field] != item[field]:
+            return False
+    return True
 
 
 def identity(item: dict) -> str:
@@ -63,12 +77,16 @@ def target_after(rows: list[dict], applied: list[dict]) -> tuple[bool, bool]:
     if not applied:
         return False, False
     last = applied[-1]
+    provider = detail(last['detail']).get('providerIdentity')
+    client = detail(last['detail']).get('clientIdentity')
     checks = [row for row in rows if row['event'] == 'TARGET_CHECK'
               and row['seq'] > last['seq'] and row['actorKey'] == ACTOR
-              and row['callOrdinal'] == last['callOrdinal']]
+              and row['callOrdinal'] == last['callOrdinal']
+              and detail(row['detail']).get('providerIdentity') == provider
+              and detail(row['detail']).get('clientIdentity') == client]
     throws = [row for row in rows if row['event'] == 'TARGET_THROW'
-              and row['seq'] > last['seq'] and row['actorKey'] == ACTOR
-              and row['callOrdinal'] == last['callOrdinal']]
+              and row['actorKey'] == ACTOR and
+              any(row['seq'] == check['seq'] + 1 for check in checks)]
     return bool(checks), bool(throws)
 
 
@@ -76,16 +94,24 @@ def strict(rows: list[dict], sequence: list[dict]) -> bool:
     applied = [row for row in rows if row['event'] == 'IO_APPLIED']
     if len(applied) != len(sequence):
         return False
+    providers = {detail(row['detail']).get('providerIdentity') for row in applied}
+    clients = {detail(row['detail']).get('clientIdentity') for row in applied}
+    threads = {row['threadId'] for row in applied}
+    calls = {row['callOrdinal'] for row in applied}
+    if (len(providers) != 1 or None in providers or len(clients) != 1 or
+            None in clients or len(threads) != 1 or len(calls) != 1):
+        return False
+    if len({detail(row['detail']).get('nodeName') for row in applied}) != len(applied):
+        return False
     for index, (row, item) in enumerate(zip(applied, sequence), 1):
-        if any(row[field] != item[field] for field in FIELDS[:-1]):
+        if not plan_matches_io(item, row):
             return False
         metadata = detail(row['detail'])
         if metadata.get('planStep') != str(index) or metadata.get('kind') != item['kind']:
             return False
         previous = [e for e in rows if e['event'] == 'IO_OBSERVED'
                     and e['seq'] + 1 == row['seq']]
-        if len(previous) != 1 or any(previous[0][field] != item[field]
-                                     for field in FIELDS[:-1]):
+        if len(previous) != 1 or not plan_matches_io(item, previous[0]):
             return False
     summaries = [row for row in rows if row['event'] == 'SUMMARY']
     return len(summaries) == 1 and summaries[0]['detail'] == (
@@ -178,9 +204,11 @@ def mutate(state: dict, sequence: list[dict], rows: list[dict], trial: dict) -> 
         return
     applied = [row for row in rows if row['event'] == 'IO_APPLIED']
     last = applied[-1]
+    provider = detail(last['detail']).get('providerIdentity')
     later = [row for row in rows if row['event'] == 'TARGET_CHECK'
              and row['seq'] > last['seq'] and row['actorKey'] == ACTOR
-             and row['callOrdinal'] == last['callOrdinal']]
+             and row['callOrdinal'] == last['callOrdinal']
+             and detail(row['detail']).get('providerIdentity') == provider]
     if not later:
         return
     target_seq = min(row['seq'] for row in later)
@@ -188,6 +216,7 @@ def mutate(state: dict, sequence: list[dict], rows: list[dict], trial: dict) -> 
                and last['seq'] < row['seq'] < target_seq
                and row['actorKey'] == ACTOR
                and row['callOrdinal'] == last['callOrdinal']
+               and detail(row['detail']).get('providerIdentity') == provider
                and row['destinationKey'].startswith('JETTY/')]
     gain = trial['new_coverage'] + trial['new_families']
     for row in choices[:4 if gain else 2]:
@@ -240,13 +269,25 @@ def audit_trial(rows: list[dict]) -> dict:
             if provider in clients and clients[provider] != client:
                 raise RuntimeError('provider changed client in fault run')
             clients[provider] = client
+    active: dict[int, str] = {}
     for row in rows:
-        if row['event'] not in ('IO_OBSERVED', 'IO_APPLIED', 'TARGET_CHECK',
-                                'REQUEST_ENTER'):
+        if row['event'] not in ('TARGET_ENTER', 'IO_OBSERVED', 'IO_APPLIED',
+                                'TARGET_CHECK', 'REQUEST_ENTER'):
             continue
         fields = detail(row['detail'])
-        if row['actorKey'] == ACTOR and clients.get(fields.get('providerIdentity')) != fields.get('clientIdentity'):
-            raise RuntimeError('V2 actor contradicts raw CloudHttp2SolrClient receiver')
+        provider = fields.get('providerIdentity')
+        if row['actorKey'] == ACTOR and provider not in clients:
+            raise RuntimeError('V2 actor contradicts selected provider binding')
+        if row['actorKey'] == ACTOR and row['event'] != 'TARGET_ENTER' and (
+                clients[provider] != fields.get('clientIdentity')):
+            raise RuntimeError('V2 actor contradicts selected client identity')
+        if row['event'] == 'TARGET_ENTER' and row['actorKey'] == ACTOR:
+            active[row['threadId']] = provider
+        elif row['event'] in ('IO_OBSERVED', 'TARGET_CHECK') and row['actorKey'] == ACTOR:
+            if active.get(row['threadId']) != provider:
+                raise RuntimeError('selected alias IO/check outside bound provider call')
+            if row['event'] == 'TARGET_CHECK':
+                active.pop(row['threadId'], None)
         if row['event'].startswith('IO_'):
             if row['applied'] and (row['actorKey'] != ACTOR or
                                    not row['destinationKey'].startswith('JETTY/')):
@@ -254,7 +295,9 @@ def audit_trial(rows: list[dict]) -> dict:
             node = fields.get('nodeName')
             if row['destinationKey'].startswith('JETTY/') and bindings.get(node) != row['destinationKey']:
                 raise RuntimeError('V2 destination contradicts raw Jetty node')
-    return {'bound_nodes': len(bindings), 'selected_clients': len(clients)}
+    return {'bound_nodes': len(bindings), 'selected_clients': len(clients),
+            'selected_provider_enters': sum(row['event'] == 'TARGET_ENTER' and
+                                            row['actorKey'] == ACTOR for row in rows)}
 
 
 def run_campaign() -> None:

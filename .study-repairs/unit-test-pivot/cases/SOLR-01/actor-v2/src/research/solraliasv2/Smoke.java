@@ -39,6 +39,10 @@ public final class Smoke {
         Probe.smokeMatch("UNBOUND:HTTP_PROVIDER", "JETTY/node2", "IO_EXCEPTION") ||
         Probe.smokeMatch(actor, "JETTY/node2", "SOLR_SERVER_EXCEPTION"))
       throw new AssertionError("wrong actor, destination, or kind consumed fault");
+    if (!Probe.smokeMatch(actor, "JETTY/node1", "IO_EXCEPTION", "JETTY/attempt2") ||
+        Probe.smokeMatch(actor, "UNBOUND:NODE", "IO_EXCEPTION", "JETTY/attempt2") ||
+        Probe.smokeMatch(actor, "JETTY/node1", "IO_EXCEPTION", "JETTY/attempt1"))
+      throw new AssertionError("relative attempt selector accepted a wrong identity");
     Probe.bindNode("127.0.0.1:12345_solr", "/tmp/cluster/node2");
     if (!"JETTY/node2".equals(Probe.smokeDestination("127.0.0.1:12345_solr",
         "http://127.0.0.1:12345/solr")))

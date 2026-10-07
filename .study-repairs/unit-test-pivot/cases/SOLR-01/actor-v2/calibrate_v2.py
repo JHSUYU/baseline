@@ -11,7 +11,9 @@ import re
 from build_v2 import HERE, sha
 from run_v2 import AGENT, run, verify_build
 
-SEEDS = (HERE / 'healthy-01', HERE / 'healthy-02')
+# Retain previous JUnit runs as raw diagnostics. The relative-attempt matcher
+# changes agent bytecode, so these two new runs calibrate its exact build.
+SEEDS = (HERE / 'healthy-07', HERE / 'healthy-08')
 ACTOR = 'CLIENT/CloudHttp2SolrClientTest.httpBasedCloudSolrClient'
 SITE = 'BaseHttpClusterStateProvider.getAliases:247'
 RESOURCE = '/admin/collections?action=LISTALIASES'
@@ -52,16 +54,36 @@ def audit(rows: list[dict]) -> dict:
         raise RuntimeError('selected HTTP client/provider is not unique')
     selected_requests = [row for row in rows if row['event'] == 'REQUEST_ENTER'
                          and row['actorKey'] == ACTOR]
-    if not selected_requests:
-        raise RuntimeError('actual CloudHttp2SolrClient request receiver was not observed')
     for row in selected_requests:
         fields = detail(row['detail'])
         if clients.get(fields.get('providerIdentity')) != fields.get('clientIdentity'):
             raise RuntimeError('request receiver contradicts selected client/provider')
     io = [row for row in rows if row['event'] == 'IO_OBSERVED']
+    entries = [row for row in rows if row['event'] == 'TARGET_ENTER']
     checks = [row for row in rows if row['event'] == 'TARGET_CHECK']
-    if not io or not checks:
-        raise RuntimeError('healthy alias IO or target check absent')
+    if not io or not entries or not checks or len(entries) != len(checks):
+        raise RuntimeError('healthy alias provider call, IO, or target check absent')
+    active: dict[int, str] = {}
+    for row in rows:
+        if row['event'] not in ('TARGET_ENTER', 'IO_OBSERVED', 'TARGET_CHECK'):
+            continue
+        fields = detail(row['detail'])
+        provider = fields.get('providerIdentity')
+        if row['actorKey'] != ACTOR or provider not in clients:
+            raise RuntimeError('alias operation came from another provider')
+        thread = row['threadId']
+        if row['event'] == 'TARGET_ENTER':
+            if thread in active:
+                raise RuntimeError('overlapping alias provider calls on one thread')
+            active[thread] = provider
+        elif active.get(thread) != provider:
+            raise RuntimeError('alias IO/check not inside the bound provider call')
+        elif row['event'] == 'TARGET_CHECK':
+            if fields.get('clientIdentity') != clients[provider]:
+                raise RuntimeError('target check contradicts selected client binding')
+            del active[thread]
+    if active:
+        raise RuntimeError('healthy alias provider call lacked a target check')
     for row in io:
         fields = detail(row['detail'])
         if (row['actorKey'] != ACTOR or row['siteId'] != SITE or
@@ -71,10 +93,6 @@ def audit(rows: list[dict]) -> dict:
             raise RuntimeError('alias IO contradicts selected provider or destination role')
         if row['applied']:
             raise RuntimeError('healthy seed applied a fault')
-    for row in checks:
-        fields = detail(row['detail'])
-        if row['actorKey'] != ACTOR or fields.get('providerIdentity') not in clients:
-            raise RuntimeError('target check came from another provider')
     if any(row['event'] == 'TARGET_THROW' for row in rows):
         raise RuntimeError('healthy target unexpectedly threw')
     summary = [row for row in rows if row['event'] == 'SUMMARY']
@@ -82,7 +100,7 @@ def audit(rows: list[dict]) -> dict:
         raise RuntimeError('healthy trace incomplete')
     return {'nodes': bindings, 'client_provider': clients,
             'selected_request_count': len(selected_requests), 'io_count': len(io),
-            'check_count': len(checks)}
+            'provider_enter_count': len(entries), 'check_count': len(checks)}
 
 
 def locked_hashes() -> dict[str, str]:

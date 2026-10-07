@@ -12,10 +12,17 @@ three-Jetty cluster. The selected production check is
 The Java agent changes bytecode in memory; it does not edit the test or Solr
 source files. At `getRandomClient()` return, it records the actual
 `CloudHttp2SolrClient` object and its `Http2ClusterStateProvider` object.
-`BaseCloudSolrClient.request` records the actual request receiver. The
-`getAliases` entry, `LISTALIASES` I/O point, and selected outcome record the
-provider object identity. Injection requires that this provider is the exact
-one bound to the selected test client.
+The selected `getAliases` entry, `LISTALIASES` I/O point, and selected outcome
+record the provider object identity. Injection requires that this provider is
+the exact one bound to the selected test client. The optional
+`BaseCloudSolrClient.request` entry hook produced no event in these original
+healthy runs, so it is not used as an actor proof. Source review shows the
+test calls the selected client, whose alias resolution passes through
+`BaseCloudSolrClient.resolveAliases` and
+`BaseHttpClusterStateProvider.resolveAlias` to this `getAliases` call. The
+runtime proof is the selected client/provider object binding at
+`getRandomClient`, the concrete provider on each `getAliases` entry and
+check, and each I/O inside that same active provider call.
 
 `JettySolrRunner.getNodeName()` records the live-node name and its
 `getSolrHome()` basename (`node1`, `node2`, or `node3`). The I/O hook receives
@@ -23,9 +30,15 @@ the loop's actual node name and computed base URL. It verifies that the URL
 corresponds to that node name and maps it to a unique `JETTY/nodeN` role.
 Unbound or ambiguous clients, node names, roles, and endpoint URLs cannot
 consume a fault. Raw client/provider identities, node names, URLs, and Solr
-homes remain in each trace for independent review. Fault selectors include
-the stable client actor, destination role, production callsite/resource,
-getAliases I/O-call ordinal, attempt ordinal, and exception kind.
+homes remain in each trace for independent review. The two fresh healthy
+clusters placed the first request on different physical Jetty roles, so the
+cross-run selector names the **attempt-relative role** (`JETTY/attempt1`,
+`JETTY/attempt2`, etc.). In each actual run the hook resolves this role only
+after verifying the unique concrete `JETTY/nodeN`, live `nodeName`, and
+computed base URL. Trial audit requires all ordered faults to belong to the
+same client/provider, thread, and `getAliases` invocation, and to distinct
+physical nodes. The selector also includes the production callsite/resource,
+call ordinal, attempt ordinal, and exception kind.
 
 The actual HTTP request can still succeed or fail normally when no fault is
 selected. An injected exception at this callsite exercises the production
@@ -60,6 +73,40 @@ selected. Each selected trial has raw events, JaCoCo data, JUnit log, fault
 plan, timing, and an atomic checkpoint; restart continues at the next
 uncompleted sequence.
 
-**Current state:** offline build and smoke passed. Healthy JUnit calibration
-and V2 fault trials have not started while the shared Solr cluster JVM and
-disk slot remain occupied.
+**Completed state:** final agent `bc52bf53...` passed offline wrong-actor,
+wrong-endpoint, ambiguous-node, wrong-fault-kind, and relative-attempt smoke.
+The unchanged JUnit passed on healthy-07/08 in 14.560/14.861 seconds.
+Each trace has one selected client/provider binding, all three Jetty bindings,
+36 provider entries/checks, and 15 `LISTALIASES` I/O points. Their independent
+trace and JaCoCo hashes are in `calibration-receipt.json`; earlier healthy
+runs remain diagnostic evidence, including a rejected retransformation
+experiment that failed JVM verification and never entered the fuzz budget.
+The healthy intersection supplied 30 attempt-relative root plans. The
+resumable campaign finished 80 strict, post-final-target effective trials
+and exited its tmux session naturally; its checkpoint retains 20 unselected
+frontier plans. The last eight effective trials added no new production
+coverage or stable I/O family, so the conditional extension did not apply.
+The result mirror exited after its final atomic update.
+
+The independent `audit_v2.py` recomputes injection and target outcomes from
+each saved plan and raw event stream. `review_v2.py` compares selected throws
+with the original source's all-endpoints-failed fallback and the live-node
+snapshot from the same invocation. `coverage_v2.py` reports production method
+and branch coverage from the two final healthy JaCoCo files plus effective
+trials. For offline JaCoCo analysis it recreates the target and Jetty class
+bytecode using the frozen agent transformer. JaCoCo's class ID for
+`BaseCloudSolrClient` matches its original Solr JAR bytecode, and the healthy
+runs emitted no `REQUEST_ENTER`; the class was evidently loaded before that
+transformer registered. The analysis therefore uses its original bytecode. This
+combination yields zero unmatched production classes and counts the selected
+`getAliases` branch, whereas analysis against only the original target JAR
+would omit it. These post-run scripts do not alter the active campaign or
+its locked runner sources.
+
+Final raw audit: 80/80 strict and effective, zero discrepancies. JaCoCo
+production coverage gained 9 methods and 60 branches, including two branches
+in the selected `getAliases` method. All 45 selected throws followed injected
+failures at all three live endpoints of the same provider invocation. A
+separate clean replay of trial 4 reapplied all three faults and reproduced
+the original JUnit exception. Original source at line 267 defines this as
+the all-endpoints-failed fallback; no new bug is confirmed here.

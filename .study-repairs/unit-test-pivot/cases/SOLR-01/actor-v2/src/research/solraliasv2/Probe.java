@@ -200,8 +200,16 @@ public final class Probe {
     int step = nextStep;
     if (step > steps) return false;
     String prefix = "step." + step + ".";
+    String selectedDestination = PLAN.getProperty(prefix + "destinationKey");
+    // The liveNodes iteration order changes between fresh JUnit clusters.
+    // Resolve an attempt-relative selector to a concrete, independently
+    // bound Jetty node in this run; destination() has already checked that
+    // node's actual name and HTTP base URL against the unique Jetty role.
+    boolean destinationMatches = destination.equals(selectedDestination)
+        || ("JETTY/attempt".concat(Integer.toString(call.attempt))
+            .equals(selectedDestination) && destination.startsWith("JETTY/node"));
     return actor.equals(PLAN.getProperty(prefix + "actorKey"))
-        && destination.equals(PLAN.getProperty(prefix + "destinationKey"))
+        && destinationMatches
         && SITE.equals(PLAN.getProperty(prefix + "siteId"))
         && RESOURCE.equals(PLAN.getProperty(prefix + "resource"))
         && Integer.toString(call.ordinal).equals(PLAN.getProperty(prefix + "callOrdinal"))
@@ -210,8 +218,13 @@ public final class Probe {
   }
 
   static boolean smokeMatch(String actor, String destination, String kind) {
+    return smokeMatch(actor, destination, kind, "JETTY/node2");
+  }
+
+  static boolean smokeMatch(String actor, String destination, String kind,
+                            String selectedDestination) {
     PLAN.setProperty("step.1.actorKey", ACTOR);
-    PLAN.setProperty("step.1.destinationKey", "JETTY/node2");
+    PLAN.setProperty("step.1.destinationKey", selectedDestination);
     PLAN.setProperty("step.1.siteId", SITE);
     PLAN.setProperty("step.1.resource", RESOURCE);
     PLAN.setProperty("step.1.callOrdinal", "1");
