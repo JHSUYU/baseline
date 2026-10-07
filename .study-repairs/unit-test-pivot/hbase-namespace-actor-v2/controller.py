@@ -242,6 +242,12 @@ def io_family(selector):
     return selector.split("~", 2)[1]
 
 
+def exception_review(outcome, healthy_outcomes):
+    if outcome in (None, "normal"):
+        return "none"
+    return "healthy_expected" if outcome in healthy_outcomes else "candidate_needs_source_and_replay"
+
+
 def pretarget_io(case, trace, last_fault):
     bound = next((x for x in trace["FAULT_APPLIED"] if x["seq"] == last_fault), None)
     markers = [marker for target in chosen_targets(case, trace)
@@ -260,14 +266,16 @@ def pretarget_io(case, trace, last_fault):
 
 
 def enqueue(state, prefix, selectors, parent_novelty):
+    seen = set(state["seen"])
     for selector in selectors:
         for kind in KINDS:
             plan = prefix + [selector + "~" + kind]
             key = ";".join(plan)
-            if key in state["seen"] or len(plan) > state["max_faults"]:
+            if key in seen or len(plan) > state["max_faults"]:
                 continue
-            state["seen"].append(key)
+            seen.add(key)
             state["queue"].append({"plan": plan, "score": parent_novelty * 4 + len(plan) * 3})
+    state["seen"] = sorted(seen)
 
 
 def init(case, seeds):
@@ -391,10 +399,8 @@ def ingest(state, entry, trial_id):
         item["disposition"] = ("unmatched_or_wrong_actor" if not receipt["strict"]
                                else "target_lost_or_guard_unproven")
     # A selected HBASE-21/22 quota throw is already expected in healthy JUnit.
-    item["target_exception_review"] = ("healthy_expected" if receipt["target_outcome"] in
-                                        state["healthy_expected_outcomes"] else
-                                        "candidate_needs_source_and_replay" if receipt["target_outcome"]
-                                        and receipt["target_outcome"] != "normal" else "none")
+    item["target_exception_review"] = exception_review(
+        receipt["target_outcome"], state["healthy_expected_outcomes"])
     state["trials"].append(item)
     state["queue"].remove(entry)
     maybe_expand(state)

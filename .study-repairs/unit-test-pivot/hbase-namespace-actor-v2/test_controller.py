@@ -140,6 +140,14 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(row["target_function"], "getNamespace(String)")
         self.assertEqual(row["total_elapsed_seconds"], 2.5)
 
+    def test_healthy_normal_is_not_counted_as_expected_exception(self):
+        expected = ["normal", "selected_region_count_quota"]
+        self.assertEqual(controller.exception_review("normal", expected), "none")
+        self.assertEqual(controller.exception_review("selected_region_count_quota", expected),
+                         "healthy_expected")
+        self.assertEqual(controller.exception_review("selected_namespace_not_found", expected),
+                         "candidate_needs_source_and_replay")
+
 
 if __name__ == "__main__":
     unittest.main()

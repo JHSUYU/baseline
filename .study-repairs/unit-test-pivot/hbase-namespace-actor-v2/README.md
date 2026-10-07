@@ -131,12 +131,12 @@ zero and never import the older unbound runs.
   Advice/helper package boundary at execution time. It also verified that a
   replacement manager receives a new ID and fail-closed watcher status.
   It started no HBase or ZooKeeper cluster.
-- Twelve offline controller tests passed, covering exact same-actor admission,
+- Thirteen offline controller tests passed, covering exact same-actor admission,
   wrong Master, manager, and target subject rejection, target order, missing
   fault, ambiguous healthy selector, postfault feedback actor filtering, and
   target entry before fault followed by guard after fault, HBASE-21 guard-line
-  admission, and a zero-based V2 result row that excludes
-  historical trial counts.
+  admission, normal-outcome exception accounting, and a zero-based V2 result
+  row that excludes historical trial counts.
   A historical HBASE-22 JaCoCo file produced
   `NamespaceStateManager` branch line 166 with two covered outcomes; this
   checks the reporter against released bytecode without claiming a V2 run.
