@@ -38,6 +38,7 @@ observes the empty local properties map; it does not inspect the full cache.
 | Campaign trial 18 | yes | yes | present | 19.766 s | `evidence/campaign-v4/trial-018/` |
 | Campaign trial 36, physical `jetty:node4` reader | yes | yes | present | 18.867 s | `evidence/campaign-v4/trial-036/` |
 | Campaign trial 163, three ordered faults on `jetty:node2` | yes | yes | present | 20.221 s | `evidence/campaign-v4/trial-163/` |
+| Campaign trial 271, collection-state read then alias watch read on `jetty:node3` | yes | yes | present | 20.791 s | `evidence/candidate-solr40-v7/trial-271/` |
 | Fresh replay 5 | yes | yes | present | 17.872 s | `evidence/candidate-solr40-v4/replay-005/` |
 | Fresh replay 7 | yes | yes | present | 17.721 s | `evidence/candidate-solr40-v4/replay-007/` |
 | Fresh replay 8 | yes | yes | present | 18.326 s | `evidence/candidate-solr40-v4/replay-008/` |
@@ -122,6 +123,22 @@ using `evidence/campaign-v4/state.json` there. The node1 V7 amendment adds
 it leaves the SOLR-40 target oracle and earlier plans unchanged. The
 boundary, source hashes, raw pilot runs, and actor-drift classification are
 recorded in `evidence/campaign-v4/node1-handoff-calibration/v7-pilot-audit.json`.
+
+Trial 271 is another instance of the same cache-miss mechanism. Both planned
+faults were applied in order to one live `jetty:node3` client and manager:
+first the collection-state `EXISTS_WATCH`, then the alias watch callback's
+`GET_DATA /aliases.json`. The later SOLR-40 target on that same reader saw
+empty properties, and the unchanged JUnit received the routed-alias 500.
+`CREATEALIAS` returned status 0; the retained ZooKeeper transaction log on
+node1 contains `collection.myalias` and `router.name=time` (log SHA-256
+`b4265e1a2512b27b54810d56a9a44d2f7e3bde53351fa2ada58c7bfe5ca3d01b`).
+The two-fault selector has not been separately replayed. Its source-level
+interpretation follows the single-fault replays and controls below; it does
+not establish a distinct or newly reported issue. The
+`evidence/candidate-solr40-v7/trial-271-review.json` receipt records exact
+trace, JUnit, JaCoCo, source, and transaction-log hashes. The raw trace,
+JUnit log and JaCoCo file are mirrored on node0; the original ZooKeeper log
+remains on node1.
 
 ## Isolated cache-refresh control
 

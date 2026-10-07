@@ -1,0 +1,40 @@
+{
+  "actor_probe_class_sha256": "8146a455d16ca8c3702e7180d388fb60a9a428ae0c49045b876e54ca529c8947",
+  "build_receipt_sha256": "1e939577aa0b848806b29dbda72f1086cab1266cffc229cae8d26912f813c084",
+  "createalias_status0_line": "15107 INFO  (qtp1604460149-216) [n:127.0.0.1:39819_solr     ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/collections params={router.interval=%2B1DAY&router.start=2017-10-23T00:00:00Z&create-collection.collection.configName=test&create-collection.maxShardsPerNode=2&router.field=timestamp_dt&name=myalias&router.name=time&create-collection.numShards=1&create-collection.nrtReplicas=1&action=CREATEALIAS&wt=javabin&version=2} status=0 QTime=172",
+  "faults_applied": 2,
+  "junit_exit": 1,
+  "limit": "The two-fault plan has not been independently replayed; prior single-fault cache-miss replays and isolated controls cover the mechanism, not this exact sequence.",
+  "original_test_class_sha256": "288ade17cb538b6226d1a61b863569a2b7bace75a228e58d60f18d5d2fed5749",
+  "plan": [
+    "EXISTS_WATCH|/collections/myalias__TRA__2017-10-23/state.json|8|caller=org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef#get:811|actor=jetty:node3",
+    "GET_DATA|/aliases.json|@1|caller=org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process:2312|actor=jetty:node3|after=F0|seed_global=1"
+  ],
+  "raw_sha256": {
+    "events.tsv": "1bbe30deef5e6cbcdb410b1c7453693e30898b6ce61db93814c00505e9d76a56",
+    "jacoco.exec": "aaca5066874a9c71b77030dd38782e070ccea2dca8432fbfcab73fe5f686cf03",
+    "junit.log": "220efa4b9015a907413846ec779f85859d0bfd6f82ba5a53ab3f556cbf0ad018",
+    "manifest.json": "84a8c739a8a4005b36b3b52cdf6aadc0429bff3e7b2306715d28a69f2908dbc4",
+    "trial.json": "c843081c4148566e9a28dc76bf9fcd12f98909cf3cdfad844428e11f584b2d7a"
+  },
+  "recorded_utc": "2026-10-07T08:41:41.086007+00:00",
+  "same_live_client_manager": [
+    "same_live_client_manager"
+  ],
+  "source_version": "Solr 8.11.4 e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "status": "same_mechanism_candidate_novelty_pending",
+  "strict": true,
+  "target_exception": true,
+  "trial": 271,
+  "update_500_line": "16092 INFO  (TEST-TimeRoutedAliasUpdateProcessorTest.test-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.s.i.BaseCloudSolrClient Request to collection [myalias] failed due to (500) org.apache.solr.client.solrj.impl.HttpSolrClient$RemoteSolrException: Error from server at https://127.0.0.1:45185/solr/myalias__TRA__2017-10-23_shard2_replica_n6: Routed alias has invalid properties: org.apache.solr.common.SolrException: Routed alias myalias appears to have been removed during request processing., retry=0 maxRetries=5 commError=false errorCode=500 ",
+  "zk_alias_persisted": true,
+  "zk_alias_txn_records": [
+    {
+      "collection": "myalias__TRA__2017-10-23",
+      "log": "solr.update.processor.TimeRoutedAliasUpdateProcessorTest_F0993D5343E20BA4-001/tempDir-001/zookeeper/server1/data/version-2/log.1",
+      "log_sha256": "b4265e1a2512b27b54810d56a9a44d2f7e3bde53351fa2ada58c7bfe5ca3d01b",
+      "offset": 758214,
+      "router_name": "time"
+    }
+  ]
+}
