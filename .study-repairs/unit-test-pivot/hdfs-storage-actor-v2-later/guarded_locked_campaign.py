@@ -27,6 +27,28 @@ def append(path: Path, item: dict) -> None:
         os.fsync(stream.fileno())
 
 
+def archive_gate_pause(anchor: Path, receipt: Path, gate_result: dict) -> tuple[Path, Path | None]:
+    """Move a failed pre-JUnit receipt away before retrying its plan number."""
+    gate_archive = anchor / "gate-pauses"
+    gate_archive.mkdir(exist_ok=True)
+    receipt_copy = gate_archive / f"{receipt.stem}-{time.time_ns()}.json"
+    raw_gate = Path(gate_result["gate"])
+    raw_copy = receipt_copy.with_name(receipt_copy.stem + "-raw.json")
+    if raw_gate.is_file():
+        shutil.copy2(raw_gate, raw_copy)
+    receipt.replace(receipt_copy)
+    for saved in (receipt_copy, raw_copy):
+        if saved.is_file():
+            with saved.open("rb") as stream:
+                os.fsync(stream.fileno())
+    directory_fd = os.open(gate_archive, os.O_RDONLY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+    return receipt_copy, raw_copy if raw_copy.is_file() else None
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--group", choices=campaign.GROUPS, required=True)
@@ -88,6 +110,18 @@ def main() -> None:
                 append(ledger, {"at_utc": stamp(), "status": "missing_prior_receipt_pause",
                                 "completed": completed})
                 break
+            one_receipt = anchor / f"locked-plan-{completed + 1:04d}.json"
+            if one_receipt.exists():
+                stale = json.loads(one_receipt.read_text())
+                if (stale.get("status") != "resource_gate_pause"
+                        or stale.get("old_completed") != completed):
+                    append(ledger, {"at_utc": stamp(), "status": "unexpected_existing_receipt_pause",
+                                    "completed": completed, "receipt": str(one_receipt)})
+                    break
+                saved, raw = archive_gate_pause(anchor, one_receipt, stale)
+                append(ledger, {"at_utc": stamp(), "status": "resource_gate_receipt_recovered",
+                                "completed": completed, "reason": stale.get("gate_stdout", ""),
+                                "receipt": str(saved), "raw_gate": str(raw) if raw else None})
             command = [sys.executable, str(campaign.HERE / "run_one_locked.py"),
                        "--group", args.group, "--output", str(anchor),
                        "--handoff", args.handoff,
@@ -100,7 +134,6 @@ def main() -> None:
                                        stderr=subprocess.STDOUT, check=False)
             after = json.loads(state_path.read_text())
             count = len(after["completion_order"])
-            one_receipt = anchor / f"locked-plan-{completed + 1:04d}.json"
             if one_receipt.exists():
                 gate_result = json.loads(one_receipt.read_text())
                 if (gate_result.get("status") == "resource_gate_pause"
@@ -109,29 +142,12 @@ def main() -> None:
                     # JUnit or campaign mutation. Keep every failed gate's
                     # raw receipt even though the next retry reuses its plan
                     # number, then wait at this complete checkpoint boundary.
-                    gate_archive = anchor / "gate-pauses"
-                    gate_archive.mkdir(exist_ok=True)
-                    receipt_copy = gate_archive / (
-                        f"locked-plan-{completed + 1:04d}-{time.time_ns()}.json")
-                    shutil.copy2(one_receipt, receipt_copy)
-                    raw_gate = Path(gate_result["gate"])
-                    raw_copy = receipt_copy.with_name(receipt_copy.stem + "-raw.json")
-                    if raw_gate.is_file():
-                        shutil.copy2(raw_gate, raw_copy)
-                    for saved in (receipt_copy, raw_copy):
-                        if saved.is_file():
-                            with saved.open("rb") as stream:
-                                os.fsync(stream.fileno())
-                    directory_fd = os.open(gate_archive, os.O_RDONLY)
-                    try:
-                        os.fsync(directory_fd)
-                    finally:
-                        os.close(directory_fd)
+                    receipt_copy, raw_copy = archive_gate_pause(anchor, one_receipt, gate_result)
                     append(ledger, {"at_utc": stamp(), "status": "resource_gate_wait",
                                     "completed": completed, "effective": after["effective_by_case"],
                                     "reason": gate_result.get("gate_stdout", ""),
                                     "receipt": str(receipt_copy),
-                                    "raw_gate": str(raw_copy) if raw_gate.is_file() else None,
+                                    "raw_gate": str(raw_copy) if raw_copy else None,
                                     "retry_seconds": args.gate_retry_seconds})
                     time.sleep(args.gate_retry_seconds)
                     continue
