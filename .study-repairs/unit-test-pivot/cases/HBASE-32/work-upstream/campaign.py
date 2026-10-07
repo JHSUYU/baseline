@@ -64,6 +64,54 @@ def read_lines(path):
         yield from enumerate(source, 1)
 
 
+def active_trial(trial_id):
+    marker = ("data-" + trial_id).encode()
+    runner = trial_id.encode()
+    for proc in Path("/proc").iterdir():
+        if not proc.name.isdigit():
+            continue
+        try:
+            args = (proc / "cmdline").read_bytes().split(b"\0")
+        except (OSError, PermissionError):
+            continue
+        if marker in b" ".join(args):
+            return True
+        if any(b"trial_runner.py" in arg for arg in args) and runner in args:
+            return True
+    return False
+
+
+def recover_inflight(trial_id, log, receipt):
+    """Settle a finished orphan once; preserve a genuinely incomplete attempt."""
+    if receipt.exists() or not log.exists() or active_trial(trial_id):
+        return
+    tail = log.read_text(errors="replace")[-4000:]
+    elapsed = re.search(r"ELAPSED_SECONDS=([\d.]+)", tail)
+    failed = re.search(r"HBASE32 JUNIT found=\d+ succeeded=\d+ failed=(\d+)", tail)
+    nonzero = re.search(r"Command exited with non-zero status (\d+)", tail)
+    if elapsed and (nonzero or failed):
+        code = int(nonzero[1]) if nonzero else (1 if int(failed[1]) else 0)
+        temp = receipt.with_suffix(".exit.tmp")
+        with temp.open("w") as output:
+            output.write(str(code) + "\n")
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temp, receipt)
+        atomic_json(HERE / "logs" / (trial_id + ".recovered.json"),
+                    {"trial": trial_id, "exit_inferred_from_terminal_log": code,
+                     "raw_log_sha256": sha256(log)})
+        return
+    suffix = ".interrupted-" + str(int(time.time()))
+    archived = log.with_name(trial_id + suffix + ".log")
+    log.rename(archived)
+    exec_file = HERE / "logs" / (trial_id + ".exec")
+    if exec_file.exists():
+        exec_file.rename(HERE / "logs" / (trial_id + suffix + ".exec"))
+    atomic_json(HERE / "logs" / (trial_id + suffix + ".json"),
+                {"trial": trial_id, "reason": "no terminal receipt or live process",
+                 "raw_log_sha256": sha256(archived)})
+
+
 def parse_log(path):
     trace = {key: [] for key in ("TARGET", "CLIENT_FLUSH_TAG", "SERVER_FLUSH_TAG",
              "MASTER_OPENED_RPC", "WAL_APPEND_START", "WAL_SYNC_START",
@@ -377,6 +425,7 @@ def main():
         compressed = HERE / "logs" / (trial_id + ".log.gz")
         receipt = HERE / "logs" / (trial_id + ".exit")
         if not receipt.exists():
+            recover_inflight(trial_id, log, receipt)
             if not log.exists():
                 runner = subprocess.Popen(["python3", str(HERE / "trial_runner.py"),
                                            trial_id, ";".join(entry["plan"])])
@@ -385,6 +434,11 @@ def main():
             while not receipt.exists():
                 if runner is not None and runner.poll() is not None:
                     raise RuntimeError("Trial runner exited without receipt: " + trial_id)
+                if runner is None:
+                    recover_inflight(trial_id, log, receipt)
+                    if not log.exists() and not receipt.exists():
+                        runner = subprocess.Popen(["python3", str(HERE / "trial_runner.py"),
+                                                   trial_id, ";".join(entry["plan"])])
                 time.sleep(2)
         path = log if log.exists() else compressed
         if not path.exists():
@@ -445,6 +499,8 @@ def main():
                 raise RuntimeError("Compressed trace missing: " + trial_id)
             trial["compressed_log_sha256"] = sha256(compressed)
             log.unlink()
+        elif compressed.exists():
+            trial["compressed_log_sha256"] = sha256(compressed)
         state["trials"].append(trial)
         state["queue"] = [item for item in state["queue"]
                           if item["plan"] != entry["plan"]]
