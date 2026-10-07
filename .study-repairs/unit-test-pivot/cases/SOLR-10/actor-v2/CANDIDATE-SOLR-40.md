@@ -299,3 +299,118 @@ missing-properties guard and return 500. The passing runs show that timing
 and prior cache state matter. This models a synthetic one-call ZooKeeper
 read failure, not a measured production network disconnection. The
 fault-induced observation is reproducible; novelty remains unconfirmed.
+
+## F0-only and post-retry timing controls
+
+An independent five-run negative control kept the **unchanged original JUnit**
+and V4 actor hook and injected only the same occurrence-10 collection-state
+`EXISTS_WATCH` fault (`F0`). All five runs strictly applied it; four reached
+the SOLR-40 guard on the same physical node, client, and alias manager. All
+observed properties were present, all five JUnit runs passed, and no target
+exception occurred. This bounded control does not prove that `F0` alone can
+never expose the failure, but it narrows attribution of the prior two-fault
+observations. Raw files and identities are in `evidence/first-fault-only-v10/`.
+
+The lower-layer five-run control above could not observe cache state after
+retry in its two failing runs: the original JUnit aborts on the 500 before
+the 1500 ms retry delay ends. To test that timing distinction, a separate,
+clearly labelled **timing control** retained the original JUnit byte for byte
+but added a bounded gate immediately *before* `getAliasProps` reads the local
+cache. If the selected reader's one underlying alias read has failed, the
+gate waits up to four seconds for that same client's real
+`ZkCmdExecutor.retryOperation` to return successfully and then waits 100 ms
+for `AliasesManager.process` to apply the data. It changes target timing by
+design and is not a replay of the original production request schedule.
+
+The clean V11b build hashes the probe, `SolrZkClient`, target processor, and
+original JUnit class before every continuation. In five fresh runs, the same
+`F0` and one underlying `/aliases.json` read failure applied on the same live
+reader, and genuine retry succeeded. Four runs reached the same-reader
+SOLR-40 check **after** retry success; every one observed present properties
+and passed the original JUnit. The fifth had no subsequent same-reader target
+check and passed. Thus, with this gate, the observed missing-properties
+condition did **not** persist after the successful read and cache refresh.
+It does not exclude a longer-lived failure after genuine retry exhaustion or
+a different network/watch sequence. The full raw recount on node0 and node1
+agreed at `evidence/control-audit-v11b.json` SHA-256
+`d15f65762c7ce53c072ac88f1cab4d6fe059619e29c1e36bfbb300dfd0ac317f`.
+
+The initial V11 continuation had a control-build error: recompiling its
+probe removed the timing method while leaving the target class that invoked
+it. Runs 2–5 failed with `NoSuchMethodError`; they are preserved under
+`evidence/delayed-retry-v11/` with `INVALID-BUILD-REENTRY.json` and are
+excluded from every SOLR-40 bug and timing count. V11b uses a separate clean
+build and output directory.
+
+Source review explains the boundary. `ZkCmdExecutor.retryOperation` catches
+`ConnectionLossException` and sleeps 1500 ms before its next attempt;
+`AliasesManager.process` sets the aliases cache only after `getData` returns.
+`RoutedAliasUpdateProcessor.getAliasProps` reads that cache immediately and
+throws when the selected alias has no properties. Its wrapper converts the
+underlying `RoutedAlias.newAliasMustExistException` (503) to a 500 response;
+the original JUnit update does not retry that request. Therefore the
+two 184/189 ms failures in the unmodified-timing lower-layer control fit a
+transient stale-cache window **during** retry. Neither these synthetic
+one-call failures nor the delayed control demonstrate a permanent lost watch
+after retry exhaustion or a real network disconnection. They strengthen the
+reproduced candidate but leave novelty pending; `new_bug=false` remains.
+
+## Alias-read-only control and terminal classification
+
+The final isolated control removed `F0` entirely: the original JUnit and
+`RoutedAliasUpdateProcessor` classes remained byte-identical, and there was
+no V4 plan fault. A probe changed only the lower ZooKeeper call, throwing
+**one** synthetic `ConnectionLossException` before `keeper.getData` on the
+physical `jetty:node2` `AliasesManager` watch read of `/aliases.json`. The
+original `ZkCmdExecutor.retryOperation` then ran. We chose node2 from both
+fresh V4 healthy traces, where its alias watch read preceded a SOLR-40 check
+on the same live client and manager. An exploratory node1 run did not reach a
+postfault target on that reader and is preserved separately under
+`evidence/alias-read-only-v12/`; it contributes no outcome claim.
+
+Five node2 runs were completed with separate scratch directories and the
+original JUnit. All five had exactly one underlying alias read failure and
+zero plan faults. Trial 3 reached the same-reader SOLR-40 `missing` guard
+**202 ms** after the underlying read failure, before the 1500 ms retry delay
+ended; the target exception and original JUnit 500 followed. `CREATEALIAS`
+returned `status=0` at 15031 ms, before the failing `/update` at 15130 ms;
+the retained ZooKeeper transaction log contains `collection.myalias` and
+`collection_metadata.myalias.router.name=time`. Trial 4 reached that reader's
+guard after the fault with present properties and passed. The other three
+had no postfault same-reader SOLR-40 check, and all passed. The five raw runs
+were recounted on node0 and node1 with zero discrepancies; their shared
+`evidence/alias-read-only-v12b/control-audit.json` SHA-256 is
+`f25b01e821503789c6cf0d19aa04bcd25705306b3fab091d414fcee802ff6610`.
+
+Three fresh exact-build replays used the same physical node2 selection, the
+same isolated class SHA values, no `F0`, and a newly started original JUnit
+cluster each time. Replay 1 again reached the same-reader `missing` guard
+and original JUnit 500 before retry; alias creation returned success and its
+ZooKeeper transaction log retained the routed metadata. Replay 2 reached
+the same-reader guard with present properties and passed. Replay 3 had no
+postfault same-reader check and passed. Its independent raw audit SHA-256 is
+`8d6eab1cd85980ee62777b231f5d6b0cba2566527007a1df1708c26e099a11e3`.
+The exact source and class hashes, trace, JUnit log, JaCoCo file, and retained
+ZooKeeper transaction logs are in
+`evidence/alias-read-only-v12b{,-replay}/`.
+
+This source path supports a **reproduced, fault-induced transient stale-cache
+failure candidate** even without the collection-state fault. The relevant
+chain is `CreateAliasCmd.call:77-87` (initial creation expected to work after
+its 100 ms propagation delay), `ZkCmdExecutor.retryOperation:68-96` (read
+retry delayed 1500 ms), `AliasesManager.process:2302-2322` (cache update
+only after that read returns), and `RoutedAliasUpdateProcessor.getAliasProps:
+129-135` (checks local cached properties without refresh). The latter's
+underlying 503 is caught by `RoutedAliasUpdateProcessor.wrap:119-124` and
+returned as 500. `BaseCloudSolrClient:968-1005` retries communication errors
+and selected 503 route errors, but not this 500; the failing original JUnit
+log records `retry=0 ... commError=false errorCode=500`.
+
+The timing gate showed present properties in four post-retry checks, whereas
+both alias-read-only failures ended the JUnit before retry completed. Thus,
+the evidence establishes an externally visible failed update in the
+synthetic one-call fault model, but **does not establish a permanent lost
+watch, post-retry failure, or an unreported issue in current Solr**. The
+closed ASF issues compared above do not exactly describe this path, but that
+limited duplicate search is not a novelty proof. We stop the bounded control
+campaign here with `reproduced_candidate_novelty_pending`, `new_bug=false`.
