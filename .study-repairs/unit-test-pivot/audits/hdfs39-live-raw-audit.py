@@ -109,6 +109,7 @@ def inspect(root: Path) -> dict:
             manifest = read_json(run / "manifest.json")
             trace_path = run / "trace/runtime_trace.jsonl"
             jacoco = run / "jacoco.exec"
+            junit_log = run / "logs/runtime.log"
             if (manifest["test"] != TEST or manifest["exit"] != row["junit_exit"] or
                     manifest["elapsed_seconds"] != row["elapsed_seconds"] or
                     manifest.get("overlay_test_sha256") != healthy_class_sha or
@@ -116,6 +117,13 @@ def inspect(root: Path) -> dict:
                     manifest["trace_sha256"] != sha(trace_path) or
                     manifest["jacoco_sha256"] != sha(jacoco)):
                 raise ValueError("original JUnit manifest/hash mismatch")
+            if not junit_log.is_file() or junit_log.stat().st_size == 0:
+                raise ValueError("missing original JUnit log")
+            if jacoco.stat().st_size == 0 and (
+                    manifest["exit"] != 124 or (run / "coverage.tsv").stat().st_size != 0):
+                raise ValueError("empty JaCoCo exec without timeout/empty coverage")
+            if manifest["exit"] == 0 and "ORIGINAL_JUNIT_PASS testMultipleAppends" not in junit_log.read_text():
+                raise ValueError("passing original JUnit has no pass marker")
             trace = [json.loads(line) for line in trace_path.read_text().splitlines() if line]
             peer = None
             bp = None
@@ -215,7 +223,10 @@ def inspect(root: Path) -> dict:
                            for e in trace if relevant(e, path, block)}
             new_io = observed_io - io_union if independent_effective else set()
             if (set(row["new_coverage_ids"]) != gain or
-                    set(row["new_io_family_ids"]) != new_io):
+                    set(row["new_io_family_ids"]) != new_io or
+                    row["new_coverage_method_branch"] !=
+                    sum(value.startswith(("METHOD\t", "BRANCH_UNIT\t")) for value in gain) or
+                    row["new_io_families"] != len(new_io)):
                 raise ValueError("recomputed JaCoCo or I/O feedback differs")
             if independent_effective:
                 coverage_union.update(current)
@@ -228,8 +239,26 @@ def inspect(root: Path) -> dict:
         errors.append("checkpoint production JaCoCo union differs from raw")
     if set(state["io_union"]) != io_union:
         errors.append("checkpoint actor-aware I/O union differs from raw")
+    effective_rows = [row for row in completed if row["effective"]]
+    extension_trigger = None
+    if len(effective_rows) >= 80:
+        extension_trigger = any(row["new_coverage_method_branch"] or row["new_io_families"]
+                                for row in effective_rows[72:80])
+        expected_goal = 128 if extension_trigger else 80
+        if state["budget"]["effective"] != expected_goal:
+            errors.append("checkpoint conditional 80-to-128 extension differs from raw")
+    elif state["budget"]["effective"] != 80:
+        errors.append("checkpoint extended before 80 effective trials")
+    if state["status"].startswith("budget_complete_"):
+        if (state["current"] is not None or
+                len(effective_rows) != state["budget"]["effective"] or
+                state["status"] != f"budget_complete_{len(effective_rows)}"):
+            errors.append("terminal budget status/count/current mismatch")
     return {"case": "HDFS-39", "completed_snapshot": len(completed),
             "current_at_snapshot": state["current"] and state["current"].get("run_id"),
+            "campaign_status": state["status"],
+            "effective_goal": state["budget"]["effective"],
+            "extension_triggered_from_raw_first_80": extension_trigger,
             "recomputed_fully_applied": fully_applied,
             "recomputed_effective": audited_effective,
             "recomputed_coverage_ids": len(coverage_union),
