@@ -600,3 +600,26 @@ with `files_offloaded`, then copy that member back to `work-upstream/logs/`.
 Do not treat missing local compressed logs as missing trials: each trial's
 identity, result, duration, and feedback remain in the checkpoint and
 original JaCoCo and exit receipts stay in place.
+
+On node1, the 177 main-stage trials with original JUnit exit 0 and no
+timeout/review candidate held 2,287,021,148 bytes of plain `.log` files.
+Their exact names, per-file SHA-256 values and eight excluded candidate IDs
+are in `work-lots/evidence-main-pass-log-offload-manifest.json`. A low-priority
+stream created a compressed archive **only on node2** at
+`/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/main-pass-logs-terminal/main-pass-logs.tar.zst`.
+Its SHA-256 is
+`5d0273b5612720df114b4da705e6614c2086d056ad8997ded6e2b734924c0c0b`.
+The node2 verifier hashed all 177 tar members and actually extracted and
+rehash-checked `r001.log` and `r185.log`. Only after this check were the 177
+node1 source logs removed. The node1 checkpoint SHA stayed
+`f3f75d5b5d19cfe17ec3be42300feaa2402c23968e6ebbb28e5d0f28e5156115`;
+the eight timeout/candidate logs, `actor-healthy.log`, all `.exec` and `.exit`
+files, and receipts remain on node1. The remote verification and node1
+deletion receipts are `work-lots/evidence-main-pass-log-offload-remote-receipt.json`
+and `work-lots/evidence-main-pass-log-offload-node1-receipt.json`.
+
+For recovery, copy that node2 archive to a temporary location, compare its
+SHA-256 with the receipt, and run `zstd -dc ARCHIVE | tar -xOf -
+logs/rNNN.log > TEMP_LOG`. Compare `TEMP_LOG` with the corresponding entry in
+the manifest, then move it to the node1 `work-lots/logs/rNNN.log` path. No
+original JUnit rerun is needed.

@@ -161,7 +161,10 @@
     "work-upstream/evidence-segment-s201-s202-manifest.json",
     "work-upstream/evidence-segment-s201-s202-remote-receipt.json",
     "work-upstream/evidence-segment-s204-s271-manifest.json",
-    "work-upstream/evidence-segment-s204-s271-remote-receipt.json"
+    "work-upstream/evidence-segment-s204-s271-remote-receipt.json",
+    "work-lots/evidence-main-pass-log-offload-manifest.json",
+    "work-lots/evidence-main-pass-log-offload-remote-receipt.json",
+    "work-lots/evidence-main-pass-log-offload-node1-receipt.json"
   ],
   "fault_trials": 185,
   "fully_applied_trials": 182,
@@ -742,5 +745,30 @@
       "s204-s271"
     ],
     "restore": "Use the segment remote archive and SHA manifest named in the receipt; restore only logs and keep trial checkpoint/exec/exit locally."
+  },
+  "terminal_main_node1_log_offload": {
+    "manifest": "work-lots/evidence-main-pass-log-offload-manifest.json",
+    "remote_verification": "work-lots/evidence-main-pass-log-offload-remote-receipt.json",
+    "node1_offload_receipt": "work-lots/evidence-main-pass-log-offload-node1-receipt.json",
+    "node2_archive": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/main-pass-logs-terminal/main-pass-logs.tar.zst",
+    "archive_sha256": "5d0273b5612720df114b4da705e6614c2086d056ad8997ded6e2b734924c0c0b",
+    "files_offloaded": 177,
+    "bytes_recoverable": 2287021148,
+    "checkpoint_sha256_unchanged": "f3f75d5b5d19cfe17ec3be42300feaa2402c23968e6ebbb28e5d0f28e5156115",
+    "candidate_trials_retained": [
+      "r003",
+      "r011",
+      "r058",
+      "r066",
+      "r075",
+      "r123",
+      "r136",
+      "r159"
+    ],
+    "healthy_and_jacoco_exit_retained": true,
+    "restored_samples": [
+      "logs/r001.log",
+      "logs/r185.log"
+    ]
   }
 }
