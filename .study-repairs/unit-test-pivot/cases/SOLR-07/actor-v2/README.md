@@ -48,3 +48,5 @@ exact target throws, and zero discrepancies. Its
 All three throws belong to the source-reviewed test-teardown family; no new
 bug is confirmed. The campaign remains live and the 80-effective base budget
 has not yet been reached.
+
+The [150-trial independent raw audit](live-v4-audit-150.json) recomputes 108 exact injections, 33 effective trials, and the same three shutdown-phase target throws with zero errors. The [immutable checkpoint](live-v4-state-150.json) has SHA-256 `39f061495e1207484e0a5230998a919ef290148ff5866af4345a4c7dc7598b4b`. Cumulative feedback is 477 new production JaCoCo probe IDs and 19 new actor-bound I/O identities; the 150 trial JUnits took 6,514.776 seconds. V4 remains live on node2.
