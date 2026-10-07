@@ -47,3 +47,26 @@ An offline simulation from the frozen checkpoint selected depth-one bound RPC
 plans at the next three positions and sampled a depth-five RPC at position 12;
 it also reached actor episodes 10, 4, and 15 by position 15. Compile and raw
 checkpoint audit passed before resumption.
+
+## Resume and locked resource gate
+
+The first resumed launcher reached the shared start lock at 10:27:47 UTC but
+found five existing Java processes, so it produced `resource_gate_pause` for
+plan 8 without running a JUnit or changing the checkpoint. We then changed
+only `guarded_locked_campaign.py` to keep its tmux alive, archive each gate
+receipt and raw `launch_gate.json`, and retry every 30 seconds at the same
+complete checkpoint. The original failed receipt is preserved under
+`gate-pauses/locked-plan-0008-initial*.json`. The corrected supervisor is
+tracked by commits `1ddf0a64dd87f193307c7f3384948e506dc6b5a5` and
+`20a3b70e0b0db689fb2bf2fd158d33290a756eac`; no target instrumentation,
+fault plan, prior result, or original JUnit changed.
+
+At 10:31:52 UTC, the locked gate observed four existing Java processes and
+16,861,323,264 free bytes, then launched the next original JUnit. Plan 8
+`0953bb12dc6202dc410b` used one exact episode-10/DN1/NN0 RPC fault. It
+passed in 49.395 seconds, with two same-actor postfault HDFS-24 checks.
+One selected `IOException` matched the exact healthy signature
+`episode=10/dn=1/dirs=dfs/data1`, `upgrade=false`, `dfs/data1` in **both**
+healthy seeds; the independent audit reported eight strict, seven effective,
+zero issues and zero novel target signatures. The supervisor continued from
+plan 9; no old plan was repeated.
