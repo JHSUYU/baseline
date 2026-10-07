@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Archive only completed layout V2 trials, verify a second host, then prune exports.
+"""Archive completed storage V2 trials, verify a second host, then prune exports.
 
 The archive contains every regular file of the selected run directories.  Neither
 an in-flight directory nor a campaign checkpoint is changed by this program.
@@ -50,7 +50,7 @@ def archive_path(anchor: Path, manifest: dict) -> Path:
     return anchor / "archives" / manifest["archive_name"]
 
 
-def prepare(anchor: Path, start: int, count: int) -> Path:
+def prepare(anchor: Path, start: int, count: int, label: str = "layout") -> Path:
     state_path = anchor / "campaign-state.json"
     state = json.loads(state_path.read_text())
     if start < 1 or count < 1:
@@ -63,7 +63,9 @@ def prepare(anchor: Path, start: int, count: int) -> Path:
         raise RuntimeError("checkpoint completed IDs are inconsistent")
     if any(i == (state.get("in_flight") or {}).get("id") for i in ids):
         raise RuntimeError("in-flight trial appears in archive selection")
-    prefix = f"layout-{first:04d}-{last:04d}"
+    if not label or not all(c.isalnum() or c in "-_" for c in label):
+        raise RuntimeError("unsafe archive label")
+    prefix = f"{label}-{first:04d}-{last:04d}"
     directory = anchor / "archives"
     directory.mkdir(exist_ok=True)
     manifest_path = directory / f"{prefix}.manifest.json"
@@ -234,11 +236,12 @@ def main() -> None:
     parser.add_argument("--manifest", type=Path)
     parser.add_argument("--remote-receipt", type=Path)
     parser.add_argument("--restore", action="store_true")
+    parser.add_argument("--label", default="layout")
     args = parser.parse_args()
     if args.action == "prepare":
         if args.count is None:
             parser.error("prepare requires --count")
-        path = prepare(args.anchor, args.start, args.count)
+        path = prepare(args.anchor, args.start, args.count, args.label)
     elif args.action == "verify":
         if args.manifest is None:
             parser.error("verify requires --manifest")
