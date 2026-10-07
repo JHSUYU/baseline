@@ -313,6 +313,22 @@ original checkpoint are in `work-lots/evidence-reviewed-timeouts-*`. The
 main controller resumed at r178 to fill the remaining five valid trials,
 without repeating any prior plan.
 
+The main phase ended at r185 with 185 distinct attempted plans, 182 strictly
+applied plans, and 128 valid target-retaining plans. All 128 valid plans ran
+the unchanged JUnit successfully. The terminal audit re-read every plan,
+raw log, exit receipt, and JaCoCo file, recomputed the accepted I/O selector
+union (3,237 selectors) and production coverage (20 branches, 11 methods,
+61 lines across the two instrumented production classes), and matched both
+unions to the checkpoint. The target B7 line 136 had two covered
+instructions. All eight timeout candidates are reviewed and excluded from
+the valid denominator and feedback; none is a confirmed new bug. The
+machine-readable receipt is `work-lots/evidence-main-terminal-audit.json`.
+The largest executed plan had two faults, despite the configured maximum of
+ten; the configured maximum is not evidence of deeper coverage. The
+separately counted upstream supplemental phase remains paused at 113
+attempts and 26 valid plans while node0 is allocated to another original
+JUnit campaign.
+
 In the independent upstream phase, s078 applied a Master OPENED report
 exception and then a client flush RPC exception to the same raw region and
 replica-1 actor. The selected B7 rethrow occurred after both faults, but the

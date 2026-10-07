@@ -2,10 +2,10 @@
   "bug_mark": "none",
   "case_id": "HBASE-32",
   "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
-  "coverage_gain": 6,
+  "coverage_gain": 7,
   "current_campaign": {
-    "applied_fault_events": 133,
-    "attempted_trials": 123,
+    "applied_fault_events": 200,
+    "attempted_trials": 185,
     "budget": {
       "effective_trials": 128,
       "max_attempts": 384,
@@ -13,43 +13,43 @@
     },
     "checkpoint": "work-lots/checkpoint.json",
     "child_selector_cap": 24,
-    "coverage_admitted_trials": 88,
+    "coverage_admitted_trials": 128,
     "depth_cadence": 10,
-    "effective_trials": 88,
-    "exact_b7_trials": 89,
+    "effective_trials": 128,
+    "exact_b7_trials": 136,
     "exception_kind_feedback": {
       "DO_NOT_RETRY_IOEXCEPTION": {
-        "admitted_new_io_selectors": 1784,
-        "admitted_production_novelty": 0,
-        "attempts": 73,
-        "effective": 70
+        "admitted_new_io_selectors": 2111,
+        "admitted_production_novelty": 1,
+        "attempts": 121,
+        "effective": 112
       },
       "EOF_EXCEPTION": {
         "admitted_new_io_selectors": 0,
         "admitted_production_novelty": 0,
-        "attempts": 11,
+        "attempts": 15,
         "effective": 0
       },
       "IOEXCEPTION": {
         "admitted_new_io_selectors": 0,
         "admitted_production_novelty": 0,
-        "attempts": 11,
+        "attempts": 16,
         "effective": 0
       },
       "SOCKET_TIMEOUT": {
         "admitted_new_io_selectors": 0,
         "admitted_production_novelty": 0,
-        "attempts": 10,
+        "attempts": 15,
         "effective": 0
       }
     },
     "exception_kind_weights": {
-      "DO_NOT_RETRY_IOEXCEPTION": 0.7557905930719669,
-      "EOF_EXCEPTION": 0.08047951400612836,
-      "IOEXCEPTION": 0.08047951400612836,
-      "SOCKET_TIMEOUT": 0.0832503789157764
+      "DO_NOT_RETRY_IOEXCEPTION": 0.7781242774586998,
+      "EOF_EXCEPTION": 0.07443774566404207,
+      "IOEXCEPTION": 0.07300023121321607,
+      "SOCKET_TIMEOUT": 0.07443774566404207
     },
-    "global_related_io_selector_union_size": 2911,
+    "global_related_io_selector_union_size": 3237,
     "healthy_coverage": {
       "branches": 13,
       "classes": {
@@ -77,13 +77,13 @@
     "healthy_related_io_events": 555,
     "healthy_target_invocations": 542,
     "invalid_cluster_exhaustion_trials": 0,
-    "last_8_effective_global_io_novelty": 91,
-    "new_production_branches": 6,
+    "last_8_effective_global_io_novelty": 67,
+    "new_production_branches": 7,
     "new_production_methods": 1,
     "pending_review_candidates": 0,
-    "queue_length": 14205,
-    "requested_fault_events": 135,
-    "review_candidates": 6,
+    "queue_length": 18391,
+    "requested_fault_events": 203,
+    "review_candidates": 8,
     "reviewed_candidate_dispositions": {
       "r003": {
         "classification": "unreproduced_timeout_candidate",
@@ -114,18 +114,28 @@
         "classification": "unreproduced_timeout_candidate",
         "evidence": "evidence/r123-replay-verdict.json",
         "reason": "exact 600-second isolated replay passed original JUnit in 79.72 seconds with 600 of 600 child assignments"
+      },
+      "r136": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r136-replay-verdict.json",
+        "reason": "exact isolated 600-second replay passed original JUnit in 57.25 seconds with 600 of 600 child assignments"
+      },
+      "r159": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r159-replay-verdict.json",
+        "reason": "exact isolated 600-second replay passed original JUnit in 56.59 seconds with 600 of 600 child assignments"
       }
     },
     "rng_seed": 32,
     "selection_policy": "lots_v5_global_io_novelty",
-    "strict_trials": 121,
+    "strict_trials": 182,
     "target_line_136_coverage": {
       "branches": 0,
       "instructions": 2,
       "line": 136
     }
   },
-  "elapsed_seconds": 10114.71,
+  "elapsed_seconds": 14645.670000000011,
   "evidence": [
     "README.md",
     "work-lots/checkpoint.json",
@@ -134,12 +144,12 @@
     "work/src/CoverageReport.java",
     "work/run.sh"
   ],
-  "fault_trials": 123,
-  "fully_applied_trials": 121,
+  "fault_trials": 185,
+  "fully_applied_trials": 182,
   "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
   "source_audit_note": "Fresh original testLotsOfRegionReplicas campaign; previous testSecondaryRegionKill evidence is retained in result-pilot.json.",
-  "status": "paused_before_r124_for_node1_solr09",
-  "strict_injections": 121,
-  "target_after_fault": 88,
+  "status": "campaign_budget_reached",
+  "strict_injections": 182,
+  "target_after_fault": 128,
   "target_reached": true
 }
