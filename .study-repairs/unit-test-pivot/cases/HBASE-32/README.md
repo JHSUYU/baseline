@@ -460,6 +460,22 @@ Trace-only lock identity markers record RPC handler READ ACQUIRED on `ServerStat
 
 Six unchanged original JUnit reruns used the frozen two-fault plan with the same agent and release JAR hashes. Every rerun injected both faults into the same raw primary region, reached B7, passed JUnit and completed 600/600 child assignments. Replays 4 and 6 selected the current `hbase:meta` hosting RS; both had zero outstanding report READ holders when the tracker requested WRITE, acquired WRITE immediately, and scheduled SCP. The original s272 had one outstanding READ on that same ServerStateNode and remained stalled until timeout shutdown. This is a scheduling-sensitive recovery wait candidate; B7 itself is the expected rethrow of our injected DNR exception. The first replay briefly overlapped a read-only HBASE-22 `CoverageNamespace` JaCoCo helper at startup; replays 2–6 had no known additional node0 JVM. See `work-upstream/evidence-s272-six-replay-audit.json` and the SHA-verified node1 archives for every run. No replay entered fuzz coverage/queue/effective counters; supplemental remains 68/80 effective and `new_bug=false`. A distinct role-aware plan is being designed offline and will not be reported as an exact s272 replay.
 
-### Distinct meta-host role-aware variation (offline only)
+### Distinct meta-host role-aware variation
 
-A separate `work-role/` Java 8 ASM branch binds F1 to the latest successfully written `hbase:meta` `OPEN` full ServerName at the real master-report RPC. It saves complete primary/secondary region identities; F2 is the first target-ordinal-1 client flush RPC for exactly that actor. Its plan SHA and release/agent/runner hashes are in `work-role/role-plan.json`. Build, bytecode-callsite and selector smokes passed, including an auditor negative mismatch control. It has **not** run the original MiniCluster JUnit yet. Its counters start at zero, and it is not an s272 exact replay. The first runtime gate is a fault-free original JUnit in an isolated slot; only after a passing identity calibration can a separately checkpointed bounded fault phase start.
+`work-role/` is the first plan and remains immutable. Its original no-fault
+`testLotsOfRegionReplicas` JUnit passed in 58.36 s and reached 542 targets,
+but its fixed stable-region replica-2 master report came from a different RS
+than the current meta host. The strict identity gate rejected that plan; the
+raw log/JaCoCo/receipt were SHA-verified on node1. It is a calibration
+attempt, not a fuzz-effective trial or an s272 exact replay.
+
+`work-role-v2/` is a separate dynamic role plan. F1 selects an actually
+observed table2 replica-2 OPENED RPC on the successful pre-fault meta host;
+F2 selects the target-ordinal-1 flush RPC for the same raw primary and
+secondary region. The log also keeps actual stable region, full ServerName,
+and lock identities. Java 8 build, bytecode callsite, selector and auditor
+positive/negative smokes passed. This branch requires two independent
+passing no-fault original JUnits before up to three fault diagnostics.
+Its own checkpoint starts from zero and never imports the fixed-region
+calibration or supplemental 68 effective trials. A new timeout remains a
+candidate until raw lock-chain/source review and original same-plan replay.
