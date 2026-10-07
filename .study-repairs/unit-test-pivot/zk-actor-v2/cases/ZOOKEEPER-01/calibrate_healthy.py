@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import time
 import xml.etree.ElementTree as ET
@@ -26,6 +27,7 @@ RUNNER = Path('/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOO
 TEST_CLASS = 'org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest'
 TEST_METHOD = 'testCloseSessionWhileUpgradeOnLeader'
 TEST_CLASS_FILE = SOURCE / 'zookeeper-server/target/test-classes/org/apache/zookeeper/server/quorum/SessionUpgradeQuorumTest.class'
+MIN_FREE_BYTES = 2 * 1024 ** 3
 
 
 def sha(path):
@@ -57,6 +59,29 @@ def command(run_id, slot, slots):
     return cmd, cp
 
 
+def preflight(slot, slots):
+    free = shutil.disk_usage(ROOT.parent).free
+    if free < MIN_FREE_BYTES:
+        raise RuntimeError('disk under 2 GiB headroom before cluster JVM: ' + str(free))
+    span = (32767 - 11221) // slots
+    low = 11221 + (slot - 1) * span
+    high = low + span - 1
+    listeners = subprocess.check_output(['ss', '-H', '-ltn'], text=True)
+    occupied = []
+    for line in listeners.splitlines():
+        address = line.split()[3]
+        try:
+            port = int(address.rsplit(':', 1)[1])
+        except (IndexError, ValueError):
+            continue
+        if low <= port <= high:
+            occupied.append(port)
+    if occupied:
+        raise RuntimeError('reserved ZooKeeper port slot occupied: '
+                           + str((low, high, occupied)))
+    return {'free_bytes': free, 'port_range': [low, high]}
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--run', action='store_true', help='start two cluster JUnit runs')
@@ -76,6 +101,7 @@ def main():
     prepared = []
     for run_id in ('healthy-a', 'healthy-b'):
         if args.run:
+            check = preflight(args.worker_id, args.worker_count)
             dest = ROOT / run_id
             if dest.exists():
                 raise SystemExit(str(dest) + ' already exists; refusing to overwrite evidence')
@@ -87,6 +113,8 @@ def main():
                          'runner_sha256': sha(RUNNER), 'classpath_sha256': hashlib.sha256(cp.encode()).hexdigest(),
                          'original_test': TEST_CLASS + '#' + TEST_METHOD,
                          'output_directory': str(ROOT / run_id), 'command': cmd})
+        if args.run:
+            prepared[-1]['preflight'] = check
         if not args.run:
             continue
         started = time.monotonic()
@@ -106,7 +134,9 @@ def main():
         os.replace(temp, dest / 'run.json')
         print(json.dumps(receipt, sort_keys=True), flush=True)
         if code != 0:
-            break
+            raise SystemExit(code)
+        if shutil.disk_usage(ROOT.parent).free < MIN_FREE_BYTES:
+            raise SystemExit('disk under 2 GiB after healthy run; stopping calibration')
     if not args.run:
         print(json.dumps({'status': 'prepared_only', 'junit_executed': False,
                           'runs': prepared}, indent=2))

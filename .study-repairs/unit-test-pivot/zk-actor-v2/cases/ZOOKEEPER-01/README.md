@@ -42,7 +42,8 @@ commands without running them. Once a ZooKeeper port slot and JVM resources
 are reserved, run e.g. `python3 calibrate_healthy.py --run --worker-id 1
 --worker-count 1`; the two outputs go only to
 `/users/ZhenyuLi/zk01-actor-v2-runs/healthy-{a,b}` and existing outputs are
-never overwritten. `python3 audit_calibration.py` then requires both original
+never overwritten. Before each JVM the script requires a free PortAssignment
+slot and at least 2 GiB disk headroom. `python3 audit_calibration.py` then requires both original
 JUnit executions to pass, three peer/port joins, separate client and raw
 session tags, bound I/O to the selected leader, the selected guard on the
 leader's `creatorCloser` session, nonempty coverage, and stable actor/resource
