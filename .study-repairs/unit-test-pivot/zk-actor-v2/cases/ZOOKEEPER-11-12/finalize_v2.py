@@ -13,6 +13,8 @@ BASE = CASE.parents[2]
 AUDIT = CASE / 'evidence' / 'campaign-audit.json'
 TABLE = CASE / 'evidence' / 'trial-summary.csv'
 ARCHIVE = CASE / 'evidence' / 'raw-runs.tar.gz'
+BUILD_RECEIPT = CASE / 'evidence' / 'build-receipt.json'
+CALIBRATION = CASE / 'evidence' / 'calibration-receipt.json'
 RUN_ROOT = '/users/ZhenyuLi/zk1112-actor-v2-runs'
 TEST = ('org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest'
         '.testReadCurrentEpochFromAcceptedEpochTmpFile')
@@ -71,6 +73,14 @@ def main():
         raise RuntimeError('selected target throw requires source review and replay first')
     if not ARCHIVE.is_file():
         raise RuntimeError('raw original-JUnit archive not present')
+    if not BUILD_RECEIPT.is_file() or not CALIBRATION.is_file() or \
+            sha(CALIBRATION) != audit['calibration_sha256']:
+        raise RuntimeError('offline build or healthy calibration receipt absent/changed')
+    build = json.loads(BUILD_RECEIPT.read_text())
+    if build['agent_sha256'] != audit['agent_sha256'] or \
+            build['source_commit'] != audit['original_source_commit'] or \
+            build['junit_executed']:
+        raise RuntimeError('offline build disagrees with original JUnit audit')
     table(audit)
     case_summaries = {}
     for case_id in ('ZOOKEEPER-11', 'ZOOKEEPER-12'):
@@ -107,6 +117,15 @@ def main():
             'original_source_commit': audit['original_source_commit'],
             'methodology': 'original_cluster_junit_actor_file_v2_asm_line_feedback',
             'graphchecker_or_skeleton_runtime_dependency': False,
+            'limitations': [
+                'The fault model covers bound epoch-file reads, writes, temporary-file '
+                'open, and rename; AtomicFileOutputStream.close FileDescriptor.sync '
+                'and socket or ZooKeeper API I/O have no separate injection hook.',
+                'ASM line feedback covers instrumented QuorumPeer and '
+                'AtomicFileOutputStream methods, not the entire production codebase.',
+                'Results apply to the original selected embedded-cluster JUnit and '
+                'source-specific target exception, not every workload or fault type.',
+            ],
             'actor_identity': ('actual QuorumPeer.myid and normalized epoch File '
                                'from receiver; firstServer peer0 target after final fault'),
             'fault_model': 'ordered java.io.IOException at bound epoch file I/O',
@@ -156,6 +175,10 @@ def main():
             'new_methodology_run_root': RUN_ROOT,
             'v2_campaign_audit': '../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/campaign-audit.json',
             'v2_campaign_audit_sha256': sha(AUDIT),
+            'v2_build_receipt': '../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/build-receipt.json',
+            'v2_build_receipt_sha256': sha(BUILD_RECEIPT),
+            'v2_calibration_receipt': '../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/calibration-receipt.json',
+            'v2_calibration_receipt_sha256': sha(CALIBRATION),
             'v2_trial_table': '../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/trial-summary.csv',
             'v2_trial_table_sha256': sha(TABLE),
             'v2_raw_archive': '../../zk-actor-v2/cases/ZOOKEEPER-11-12/evidence/raw-runs.tar.gz',
