@@ -1,8 +1,48 @@
-# HDFS-07: independent original-JUnit campaign complete
+# HDFS-07: endpoint-aware original-JUnit campaign complete
+
+## Current actor-aware result
+
+The current graph-free baseline uses the unchanged Hadoop 3.4.3
+`TestQuorumJournalManager#testRecoverAfterIncompleteRecovery` in a fresh
+three-JournalNode embedded cluster per run. The QJM V2 overlay maps each
+`Client.getRpcResponse` connection's actual remote port to a physical
+JournalNode and binds file I/O to that JournalNode's `test-journal` storage.
+The target is the original `Journal.acceptRecovery` assertion at line 926.
+Two original JUnit healthy seeds passed in 12.976 and 14.521 seconds with
+stable actor-aware I/O and target identities. The [V2 design and runner](../../qjm-rpc-actor-v2/README.md)
+document the no-graph hooks, exact ordered fault gate, JaCoCo feedback, and
+resumable checkpoint.
+
+The V2 campaign completed **220 attempted fault sequences, all fully applied;
+128 also executed the same physical JournalNode/`test-journal` target after
+the final fault**. The initial 80-effective/max-8/320-attempt budget extended
+to 128-effective/max-10/512-attempt because effective trial 111 added Hadoop
+RPC `Client.stop`/`Connection.interruptConnectingThread` production method and
+branch coverage. The deepest executed sequence had three faults. There were
+62 one-fault, 42 two-fault, and 24 three-fault effective sequences. The
+original JUnit ran for 2757.980 seconds in aggregate; the controller's wall
+time was 3058.696 seconds. The selected assertion true branch and
+`AssertionError` were observed **zero** times. JUnit failures from the
+injected I/O or lost quorum remain distinct observations and are not marked
+as coordination bugs.
+
+The [independent terminal audit](../../qjm-rpc-actor-v2/evidence/HDFS-07/audit-terminal-128.json)
+recomputed every plan, actor/target receipt, original JUnit exit, raw trace
+and JaCoCo SHA, and coverage/I/O feedback (pass; zero errors). The
+[220-row ledger](qjm-v2-trial-ledger.csv) records faults, physical target
+actor, exact postfault target count, time, coverage gain, and result. The
+[raw archive](../../qjm-rpc-actor-v2/evidence/HDFS-07/final-raw-128.tar.gz)
+contains the two healthy and 220 fault-trial manifests, traces, original JUnit
+logs, plans, JaCoCo, controller checkpoint, and audit. Its SHA-256 is
+`b0ac20218c450e5faa718d35af632314f96210c9c6f20d6c1b8fe486a947c2f6`.
+The node1 tmux/JUnit exited naturally after the 128-effective terminal
+checkpoint. No V2 trial imports the earlier 80 coarse actor trials.
+
+## Historical coarse actor campaign
 
 The earlier 24 fault trials used a static-analysis/region-woven recorder. Those trials are preserved in [legacy-graph-result.json](legacy-graph-result.json) and excluded from the current graph-independent campaign. The original cluster JUnit and target check must be recorded with case-local I/O/coverage probes before new trials count.
 
-The independent campaign now runs the unchanged Hadoop 3.4.3 three-JournalNode
+The earlier coarse actor campaign ran the unchanged Hadoop 3.4.3 three-JournalNode
 `TestQuorumJournalManager#testRecoverAfterIncompleteRecovery` in a fresh
 temporary directory per trial. It uses a case-local ASM overlay on the
 original Hadoop classes and JaCoCo for production coverage; neither the
@@ -23,7 +63,7 @@ journalnode-2 target check still ran. The original JUnit failed because the
 injected I/O error broke recovery; that failure alone is not a selected
 coordination-check bug.
 
-The resumable campaign is in tmux `hdfs07-independent`, with an 80-trial,
+The earlier resumable campaign ran in tmux `hdfs07-independent`, with an 80-trial,
 eight-fault initial budget. Each round records its exact ordered injections,
 target identity after the final fault, target `AssertionError`, JaCoCo gain,
 elapsed time, and original JUnit status under `independent/evidence/`. The
@@ -76,8 +116,8 @@ healthy and faulted trace/manifest/log/JaCoCo records without temporary
 JournalNode scratch data; its checksum is in
 [independent-archive-manifest.json](independent-archive-manifest.json).
 The earlier 24 graph-based trials remain excluded.
-The old graph-based execution script has been removed. The current case
-runner and resumable controller are `independent/run_original.py` and
-`independent/campaign.py`; the historical result and raw evidence remain.
+The old graph-based execution script has been removed. The coarse actor
+runner and resumable controller were `independent/run_original.py` and
+`independent/campaign.py`; their historical result and raw evidence remain.
 The workspace-local graph builders and closure-based trial controllers have
 also been removed.
