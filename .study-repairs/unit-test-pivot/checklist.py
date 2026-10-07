@@ -282,7 +282,9 @@ def main() -> None:
     else:
         atomic_write_text(
             HERE / "checklist102.json",
-            json.dumps({"schema_version": 1, "rows": items},
+            json.dumps({"schema_version": 2, "original_selection_count": 102,
+                        "added_known_issue_count": 2, "count": len(items),
+                        "rows": items},
                        ensure_ascii=False, indent=2) + "\n")
         atomic_write_text(HERE / "checklist102.md", markdown(items))
         print(f"rendered {len(items)} rows")
