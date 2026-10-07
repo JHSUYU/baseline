@@ -114,4 +114,14 @@ valid B7 trials. No completed plan was rerun. See
 `evidence-v10-same-actor-migration.json` for before/after hashes and counts;
 `evidence-v10-pre-checkpoint.json.gz` contains the exact old checkpoint.
 
+Version 11 changes selection weights only. In s126–s146, nine two-fault
+trials yielded five B7-effective results, while seven trials with five to
+seven faults yielded one. Outside every tenth mandatory deep-selection
+round, each fault above depth three subtracts ten priority points. Coverage,
+I/O novelty, waiting age, and exception-kind feedback remain in the score.
+The s146 checkpoint migrated with exactly the same 146 attempted plans,
+34 effective trials, 5,270 queued plans, 8,200 seen IDs, and unchanged
+coverage/I/O unions. See `evidence-v11-depth-priority-migration.json` and
+the exact `evidence-v11-pre-checkpoint.json.gz` backup.
+
 `../evidence/upstream-passive-findings.md` records the original-JUnit calibrations, exact actor matching, exclusions, and separate diagnostic pilots. A target B7 throw or an expected server abort is an observation, not by itself a new bug. JUnit failure and timeout trials remain candidates until exact clean replay and source review.

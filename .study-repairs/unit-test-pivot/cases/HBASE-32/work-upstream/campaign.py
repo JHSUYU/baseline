@@ -46,7 +46,7 @@ def choose_kind(state):
                        for trial in state["trials"]
                        if trial.get("selection_policy") in
                        ("upstream_v7_retention", "upstream_v9_master_parent_replenish",
-                        "upstream_v10_same_raw_actor"))
+                        "upstream_v10_same_raw_actor", "upstream_v11_depth_retention"))
     slot = sum(selected.values()) + 1
     return max(KINDS, key=lambda kind: slot * KIND_SHARE[kind] - selected[kind])
 
@@ -412,6 +412,10 @@ def priority(entry, tried, family_counts, tried_fault=None, prefix_failures=None
             - 12 * min(prefix_failures[tuple(entry["plan"][:-1])], 2)
             - 12 * min(terminal_misses[selector], 2)
             - 30 * entry.get("unmatched_retries", 0)
+            # Deep combinations remain mandatory every tenth selection, but
+            # otherwise their low observed B7 retention should not displace
+            # short, actor-matched terminal RPC sequences.
+            - 10 * max(len(entry["plan"]) - 3, 0)
             - min(entry["parent_seconds"] / 20, 12))
 
 
@@ -695,8 +699,8 @@ def main():
             state["selection_policy"] = "upstream_v9_master_parent_replenish"
             state["version"] = 9
             publish(state)
-        if state.get("version", 1) < 10:
-            raise RuntimeError("Run same-actor v10 checkpoint migration before fuzzing")
+        if state.get("version", 1) < 11:
+            raise RuntimeError("Run v11 checkpoint migration before fuzzing")
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -711,8 +715,8 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 10, "rng_seed": RNG_SEED,
-                 "selection_policy": "upstream_v10_same_raw_actor",
+        state = {"version": 11, "rng_seed": RNG_SEED,
+                 "selection_policy": "upstream_v11_depth_retention",
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
