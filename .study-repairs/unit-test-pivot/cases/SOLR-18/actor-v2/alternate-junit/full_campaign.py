@@ -28,8 +28,8 @@ FEEDBACK_POLICY = ('Same target ZKCLIENT and pretarget IO, exact selector seen i
                    'at least two distinct effective full trials; deduplicate '
                    'normalized operation/path/thread family; promote at most 24 '
                    'new roots; add at most 16 ordered children per effective trial.')
-SCHEDULER_POLICY = ('At each complete checkpoint, reserve two of five attempt '
-                    'slots for singleton plans, two for ordered pairs, and one '
+SCHEDULER_POLICY = ('At each complete checkpoint, reserve four of ten attempt '
+                    'slots for singleton plans, five for ordered pairs, and one '
                     'for depth three or greater; empty depth fallbacks are '
                     '1->2->3, 2->1->3, or 3->2->1 respectively. '
                     'Within a depth, retain score and age priority.')
@@ -219,8 +219,8 @@ def select(state: dict) -> dict:
         age = state['attempts'] - item['queued_after_attempt']
         return (item['score'] + min(age // 12, 12), -len(item['plan']),
                 '|||'.join(item['plan']))
-    slot = state['attempts'] % 5
-    preferred = (1, 1, 2, 2, 3)[slot]
+    slot = state['attempts'] % 10
+    preferred = (1, 1, 2, 2, 2, 1, 1, 2, 2, 3)[slot]
     levels = (1, 2, 3) if preferred == 1 else ((2, 1, 3) if preferred == 2 else (3, 2, 1))
     candidates = []
     for level in levels:
@@ -250,6 +250,42 @@ def upgrade_scheduler(state: dict) -> None:
                                              for item in state['pending'])
                              for depth in range(1, state['max_faults'] + 1)},
         'trial_ids': [row['run_id'] for row in state['trials']]}
+    save(state)
+
+
+def upgrade_scheduler_v2(state: dict) -> None:
+    if state.get('scheduler_migration_v2'):
+        return
+    import hashlib
+    assert state['inflight'] is None and state['attempts'] >= 101
+    prior = '01ea4a580c4e45787e23e2b1cd92d43d6ef279e44103e9be22382a55b3a70193'
+    assert state['scheduler_policy_sha256'] == prior
+    assert state['attempts'] == len(state['trials'])
+    pending_bytes = json.dumps(state['pending'], sort_keys=True,
+                               separators=(',', ':')).encode()
+    seen_bytes = json.dumps(state['seen'], sort_keys=True,
+                            separators=(',', ':')).encode()
+    recent = state['trials'][-30:]
+    state['scheduler_migration_v2'] = {
+        'at_utc': stamp(), 'prior_controller_sha256':
+        'dd83b8fb2a71a0ebdf0fbeb94fd489d314f7e99b34f8b78f8e584d69ef1ea0d7',
+        'new_controller_sha256': sha(Path(__file__)),
+        'prior_policy_sha256': prior,
+        'prior_checkpoint_sha256': sha(STATE), 'prior_ledger_sha256': sha(LEDGER),
+        'pending_sha256': hashlib.sha256(pending_bytes).hexdigest(),
+        'seen_sha256': hashlib.sha256(seen_bytes).hexdigest(),
+        'closed_attempts': state['attempts'], 'closed_effective': state['effective'],
+        'pending_by_depth': {str(depth): sum(len(item['plan']) == depth
+                                             for item in state['pending'])
+                             for depth in range(1, state['max_faults'] + 1)},
+        'last_30_by_depth': {str(depth): {
+            'attempts': sum(len(row['plan']) == depth for row in recent),
+            'effective': sum(bool(row['effective']) for row in recent
+                             if len(row['plan']) == depth),
+            'new_production_methods': sum(len(row['new_production_methods_vs_campaign'])
+                                          for row in recent if len(row['plan']) == depth)}
+            for depth in range(1, state['max_faults'] + 1)}}
+    state['scheduler_policy_sha256'] = hashlib.sha256(SCHEDULER_POLICY.encode()).hexdigest()
     save(state)
 
 
@@ -385,6 +421,7 @@ def main() -> None:
         if state['inflight'] is None:
             upgrade_feedback(state)
             upgrade_scheduler(state)
+            upgrade_scheduler_v2(state)
         if args.init_only:
             print(json.dumps({'status': 'initialized', 'pending': len(state['pending']),
                               'attempts': state['attempts'], 'effective': state['effective']}), flush=True)

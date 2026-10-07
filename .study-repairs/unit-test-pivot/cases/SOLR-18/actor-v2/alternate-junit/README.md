@@ -77,3 +77,12 @@ three or greater. `full-state.json.scheduler_migration` records the complete
 checkpoint, preserved queue depths and before/after controller SHA-256;
 `scheduler_policy_sha256` is included in later ledger rows. This only changes
 the order of untried plans.
+
+At the trial 101 complete checkpoint, the previous 30 trials showed strict
+retention of 5/12 for singletons, 6/12 for pairs, and 0/6 for triples; triples
+also added no production method in that window. The controller therefore
+reserved four of ten future attempts for singletons, five for pairs, and one
+for depth three or greater. `scheduler_migration_v2` records the independent
+trial 101 audit boundary, previous checkpoint/ledger SHA-256, exact pending
+and seen queue SHA-256, yield by depth, and old/new controller and policy
+hashes. No completed outcome, queued plan, seen ID, or fault budget changed.
