@@ -43,6 +43,17 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def instrumentation_digest():
+    digest = hashlib.sha256()
+    for path in sorted(OVERLAY.rglob('*.class')):
+        digest.update(path.relative_to(OVERLAY).as_posix().encode())
+        digest.update(path.read_bytes())
+    for path in sorted((BUILD / 'classes').glob('Hdfs31Probe*.class')):
+        digest.update(path.name.encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
+
+
 def filter_production_probes(path):
     """Exclude original JUnit/test-helper classes from JaCoCo probe feedback."""
     production = set()
@@ -128,12 +139,14 @@ def run(run_id='healthy-01', plan=None, timeout=360):
         except subprocess.TimeoutExpired:
             code = 124
     manifest = {'case_id': 'HDFS-31', 'run_id': run_id, 'junit_exit': code,
+                'returncode': code,
                 'started_at_utc': started_at_utc,
                 'finished_at_utc': datetime.now(timezone.utc).isoformat(),
                 'elapsed_seconds': round(time.monotonic() - start, 3),
                 'test': CLASS + '#' + METHOD, 'original_source_commit': '9d50c6884666e794e45102260a4017bb31802e1b',
                 'original_test_jar_sha256': sha(TESTS), 'original_hdfs_jar_sha256': sha(HDFS), 'original_common_jar_sha256': sha(COMMON),
                 'overlay_class_sha256': {name: sha(OVERLAY / (name + '.class')) for name in PATCHED},
+                'instrumentation_digest_sha256': instrumentation_digest(),
                 'classpath_sha256': hashlib.sha256(cp.encode()).hexdigest(),
                 'trace': str(out / 'runtime_trace.jsonl'),
                 'classpath_has_graphchecker_or_skeleton': False,
@@ -146,9 +159,9 @@ def run(run_id='healthy-01', plan=None, timeout=360):
                             str(CLIENT), str(COMMON)], stdout=stream, check=True)
         manifest['covered_probes'] = filter_production_probes(out / 'covered_probes.txt')
         manifest['production_probe_filter'] = 'exact_class_membership_in_original_hdfs_client_common_jars'
-    temp = out / 'run.json.tmp'
+    temp = out / 'manifest.json.tmp'
     temp.write_text(json.dumps(manifest, indent=2, sort_keys=True) + '\n')
-    os.replace(temp, out / 'run.json')
+    os.replace(temp, out / 'manifest.json')
     print(json.dumps(manifest))
     return manifest
 
