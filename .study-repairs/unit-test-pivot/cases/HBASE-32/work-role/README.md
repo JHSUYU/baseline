@@ -44,19 +44,22 @@ copy with a different F1 server is rejected; these are parser smokes, not
 cluster evidence. Their receipts are
 `synthetic-role-audit-{positive,negative}.json`.
 
-Before fault injection, run one unchanged, **fault-free** original JUnit with
+Before fault injection, run two independent unchanged, **fault-free** original JUnit calibrations with
 these agents in an isolated slot and verify `META_LOCATION`/`PROBE_WOVEN`
-events, test pass, exact target invocations, and the full F1/F2 actor receipt.
+events, test pass, exact target invocations, and the full F1/F2 actor path in
+both. At most three healthy attempts are allowed to obtain the two passes.
 Only then start a bounded role-aware fault phase with a separate checkpoint,
 fresh effective count, and per-run raw/JUnit/JaCoCo/lock trace. Never merge it
 into the s272 exact replay count or the earlier 128+68 effective trials.
 
 `role_pilot.py` is the isolated controller for that gate. Its `preflight`
 command verifies the frozen plan, original HBase JAR, three agent JARs,
-runner, auditor, and disk headroom without starting a cluster. After node0
+runner, auditor, and disk headroom without starting a cluster. The hard disk
+gate is 3 GiB; below 4 GiB a new JUnit pauses for explicit space review.
+After node0
 is explicitly released, run `python3 role_pilot.py healthy --lease-ready`
-in persistent tmux. The healthy run uses **empty fault plans** and a 360-second
-cap. It must pass the original JUnit and show one same-run meta host,
+twice in persistent tmux. Each healthy run uses **empty fault plans** and a 360-second
+cap. Both must pass the original JUnit and show one same-run meta host,
 replica-2 Master report, target invocation, and flush RPC for the same raw
 region before `fault` is allowed. `python3 role_pilot.py fault --lease-ready`
 runs one 600-second fault trial per invocation, with at most three distinct

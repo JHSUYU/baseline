@@ -30,9 +30,12 @@ UPSTREAM_AGENT = HERE / "upstream-agent.jar"
 LOCK_AGENT = HERE.parent / "work-upstream/diag-s203/agent.jar"
 HBASE_JAR = Path("/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar")
 HBASE_TEST_JAR = Path("/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar")
+HBASE_SOURCE = Path("/users/ZhenyuLi/hbase")
 NATIVE_JUNIT = HERE.parent / "work/classes/NativeJUnit.class"
 JCMD = Path("/usr/lib/jvm/java-8-openjdk-amd64/bin/jcmd")
 FAULT_LIMIT = 3
+HEALTHY_PASSES_REQUIRED = 2
+SOFT_DISK_REVIEW_BYTES = 4 * 1024**3
 
 
 def now() -> str:
@@ -75,6 +78,17 @@ def spec_preflight() -> dict:
     for path, key in required.items():
         if digest(path) != spec[key]:
             raise RuntimeError(f"Frozen input mismatch: {path}")
+    source_files = {"base": HERE / "src/HBase32RoleBaseAgent.java",
+                    "upstream": HERE / "src/HBase32RoleUpstreamAgent.java",
+                    "smoke": HERE / "src/RoleSelectorSmoke.java"}
+    for label, path in source_files.items():
+        if digest(path) != spec["source_sha256"][label]:
+            raise RuntimeError(f"Frozen agent source mismatch: {path}")
+    source_commit = subprocess.check_output(
+        ["git", "-C", str(HBASE_SOURCE), "rev-parse", "--verify",
+         "rel/2.6.6^{commit}"], text=True).strip()
+    if source_commit != spec["source_commit"]:
+        raise RuntimeError("Original HBase rel/2.6.6 source commit differs")
     if digest(HERE / "audit_role_run.py") != spec["runtime_identity_auditor_sha256"]:
         raise RuntimeError("Role identity auditor differs from frozen spec")
     if digest(Path(__file__)) != spec["pilot_controller_sha256"]:
@@ -96,7 +110,7 @@ def java_pid(exec_path: Path) -> str | None:
     return None
 
 
-def native_junit_pids() -> list[str]:
+def other_java_pids() -> list[str]:
     found = []
     for proc in Path("/proc").iterdir():
         if not proc.name.isdigit():
@@ -105,9 +119,15 @@ def native_junit_pids() -> list[str]:
             args = (proc / "cmdline").read_bytes()
         except (OSError, PermissionError):
             continue
-        if b"NativeJUnit" in args or b"TestRegionReplicaFailover" in args:
+        if args.split(b"\0", 1)[0].endswith(b"/java"):
             found.append(proc.name)
     return found
+
+
+def tcp_listeners() -> str:
+    result = subprocess.run(["ss", "-H", "-lntp"], capture_output=True,
+                            text=True, check=True)
+    return result.stdout
 
 
 def healthy_audit(log: Path, exit_code: int, spec: dict) -> dict:
@@ -188,8 +208,14 @@ def main() -> None:
         raise RuntimeError("Explicit node0 JUnit lease confirmation required")
     if args.action != "recover" and free < spec["resource_guard_bytes"]:
         raise RuntimeError(f"Disk guard: {free} < {spec['resource_guard_bytes']}")
-    if native_junit_pids():
-        raise RuntimeError(f"Other cluster JUnit present: {native_junit_pids()}")
+    if (args.action != "recover" and free < SOFT_DISK_REVIEW_BYTES
+            and os.environ.get("HBASE32_ROLE_SPACE_REVIEWED") != "1"):
+        raise RuntimeError(f"Conservative 4 GiB space review required: free={free}")
+    if other_java_pids():
+        raise RuntimeError(f"Other node0 Java process present: {other_java_pids()}")
+    ports_before = tcp_listeners()
+    if re.search(r'users:\(\("java",', ports_before):
+        raise RuntimeError("Java TCP listener present before isolated JUnit")
     if CHECKPOINT.exists():
         state = json.loads(CHECKPOINT.read_text())
         if state["plan_sha256"] != spec["plan_sha256"]:
@@ -264,8 +290,10 @@ def main() -> None:
     data_dir = HERE / ("data-" + suffix)
     if any(path.exists() for path in (log, exec_file, exit_file, receipt, data_dir)):
         raise RuntimeError("Existing run evidence; refusing overwrite")
+    (logs / (suffix + ".ports-before.txt")).write_text(ports_before)
     state["in_flight"] = {"suffix": suffix, "action": args.action,
-                          "started_utc": now(), "preflight_free_bytes": free}
+                          "started_utc": now(), "preflight_free_bytes": free,
+                          "ports_before_sha256": digest(logs / (suffix + ".ports-before.txt"))}
     atomic_json(CHECKPOINT, state)
     env = dict(os.environ, HBASE32_ROLE_TIMEOUT=str(timeout))
     with log.open("w") as output:
@@ -289,6 +317,7 @@ def main() -> None:
                                            stdout=stream, stderr=subprocess.STDOUT,
                                            check=False)
             time.sleep(1)
+    (logs / (suffix + ".ports-after.txt")).write_text(tcp_listeners())
     finish(state, spec, suffix, args.action, child.returncode, recovered=False)
 
 
@@ -329,6 +358,10 @@ def finish(state: dict, spec: dict, suffix: str, action: str,
                    "raw_log_sha256": digest(log),
                    "jacoco_sha256": digest(exec_file) if exec_file.exists() else None,
                    "preflight_free_bytes": state["in_flight"]["preflight_free_bytes"],
+                   "ports_before_sha256": state["in_flight"].get("ports_before_sha256"),
+                   "ports_after_sha256": (digest(logs / (suffix + ".ports-after.txt"))
+                                          if (logs / (suffix + ".ports-after.txt")).exists()
+                                          else None),
                    "postflight_free_bytes": shutil.disk_usage(HERE).free,
                    "fuzz_budget_admitted": False,
                    "s272_exact_replay": False,
@@ -353,8 +386,12 @@ def admit_receipt(state: dict, result: dict) -> None:
         raise RuntimeError("Receipt would duplicate a settled run")
     if result["action"] == "healthy":
         state["healthy_attempts"].append(result)
-        if result["healthy_gate_passed"]:
-            state["healthy"] = result
+        passed = [trial for trial in state["healthy_attempts"]
+                  if trial["healthy_gate_passed"]]
+        if len(passed) >= HEALTHY_PASSES_REQUIRED:
+            state["healthy"] = {"healthy_gate_passed": True,
+                                "passed_runs": [trial["suffix"] for trial in passed],
+                                "passed_count": len(passed)}
     else:
         state["fault_trials"].append(result)
     state["in_flight"] = None

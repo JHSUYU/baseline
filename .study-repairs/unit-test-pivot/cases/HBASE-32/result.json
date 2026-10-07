@@ -383,7 +383,7 @@
       "effective_trials": 0,
       "fuzz_budget_admitted": false,
       "java8_build_smoke": true,
-      "next_gate": "node0 explicit slot release, then unchanged fault-free original JUnit; only a passing same-actor meta-host calibration admits up to 3 role-bound fault diagnostics",
+      "next_gate": "two independent unchanged fault-free original JUnit passes in released node0 slot; then up to 3 distinct role-aware fault diagnostics",
       "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
       "plan_sha256": "c201789d264c40d45184802b75839c0a1baaa3020649715cadcef3a82e2a1740",
       "runtime_identity_smoke_negative_rejected": true,
@@ -391,7 +391,7 @@
       "spec": "work-role/role-plan.json",
       "state": "offline_controller_ready_pending_node0_lease",
       "pilot_controller": "work-role/role_pilot.py",
-      "pilot_controller_sha256": "8b405761fe590dcce3d5ecb37daf8ef03424c8cca3f7944a289b7e768607b6e4",
+      "pilot_controller_sha256": "598a1311913293fc1e64f4866efd2ac1341b53e1cf00540586a5251cb8d3378c",
       "runner_sha256": "f24c4e1b9488a0cd824fafb797794d726495b5f83c6d8ac753deb1a9b8ee3bd3",
       "independent_checkpoint": "work-role/role-pilot-checkpoint.json",
       "healthy_timeout_seconds": 360,
@@ -399,7 +399,10 @@
       "fault_attempt_cap": 3,
       "archiver": "work-role/archive_role_pilot.py",
       "archiver_sha256": "f65ec9014d16ea4ce52629bb70b45289a4e6d67036fa6132fd84de3612afcad5",
-      "resume_policy": "settle durable finished in-flight receipt or classify interrupted attempt; never rerun an old suffix"
+      "resume_policy": "settle durable finished in-flight receipt or classify interrupted attempt; never rerun an old suffix",
+      "healthy_passes_required": 2,
+      "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+      "conservative_space_review_bytes": 4294967296
     },
     "s272": {
       "all_replays_children_success": 600,
