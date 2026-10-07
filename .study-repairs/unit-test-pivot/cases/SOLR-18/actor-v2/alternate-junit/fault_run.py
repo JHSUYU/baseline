@@ -5,14 +5,17 @@ from __future__ import annotations
 import fcntl
 import hashlib
 import json
+import os
 from pathlib import Path
 import shutil
+import socket
 import subprocess
 import time
 
 from calibrate import (HERE, FIRST, ROOT, LOCK, JAVA, SOURCE, TEST_CLASS,
                        alternate_classpath, command, compile_probe,
-                       resource_gate, sha, stamp, validate_frozen, atomic_json)
+                       resource_gate as node2_resource_gate, sha, stamp,
+                       validate_frozen, atomic_json)
 from fault_audit import check
 
 JACOCO_CORE = Path('/users/ZhenyuLi/.m2/repository/org/jacoco/org.jacoco.core/0.8.15/org.jacoco.core-0.8.15.jar')
@@ -23,6 +26,25 @@ DIST = Path('/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist')
 SOLRJ = DIST / 'solr-solrj-8.11.4.jar'
 CORE = DIST / 'solr-core-8.11.4.jar'
 METHOD = 'testDeleteAliasWithExistingCollectionName'
+
+
+def resource_gate() -> dict:
+    if socket.gethostname().split('.')[0] != 'node0':
+        return node2_resource_gate()
+    ROOT.mkdir(parents=True, exist_ok=True)
+    stat = os.statvfs(ROOT)
+    free = stat.f_bavail * stat.f_frsize
+    output = subprocess.run(['jps', '-lm'], text=True, capture_output=True,
+                            check=True).stdout
+    business = [line for line in output.splitlines() if 'sun.tools.jps.Jps' not in line]
+    minimum = 3 * 1024**3
+    receipt = {'checked_at_utc': stamp(), 'host': 'node0',
+               'free_bytes': free, 'min_start_bytes': minimum,
+               'min_continue_bytes': minimum, 'max_other_jvms': 4,
+               'business_jvms': business}
+    assert free >= minimum and len(business) <= 4, receipt
+    assert not any('research.solr18.OriginalJUnit' in row for row in business), receipt
+    return receipt
 
 
 def covered(path: Path, kind: str) -> set[str]:

@@ -45,3 +45,26 @@ Five distinct singleton plans are recorded in the healthy audit.
 `pilot-state.json` checkpoint. Every trial preserves the unchanged original
 JUnit result, ordered injection events, selected guard identity, JaCoCo data,
 and production coverage feedback. No pilot result enters the first campaign.
+
+The five-trial pilot closed at 3 strict effective trials. `pilot-audit.json`
+independently recounts every raw receipt and SHA-256. The raw/derived pilot
+directories were mirrored from node2 to node0 with `rsync -acn` reporting no
+differences; `migration-receipt.json` records the dependency, capacity and
+mirror checks. The full stage starts a fresh denominator at zero and excludes
+all five pilot plans and the old campaign's known plans. Its controller is
+`full_campaign.py --continuous`, with atomic `full-state.json` and
+`full-ledger.jsonl`; every full trial keeps its original JUnit, ordered fault,
+target identity, raw SHA-256 and coverage receipts under the node0 raw root.
+Node0 requires at least 3 GiB free and at most four other JVMs at each trial
+start. The initial budget is 80 strict effective trials, at most eight ordered
+faults and 320 attempts. The bounded 128/10/512 extension requires new
+production coverage or a newly stable relevant I/O family in the last eight
+effective trials. Exhaustion below the effective budget remains inconclusive.
+
+At the two-trial complete checkpoint, feedback was upgraded to include new
+same-client pretarget I/O selectors observed in at least two distinct
+effective full trials. It retains at most 24 normalized families, adds at most
+16 ordered child plans per effective trial, and excludes previously tested
+plans. The policy SHA-256 and migration receipt live in `full-state.json`;
+subsequent ledger rows include the policy and controller hashes. This feedback
+never changes prior trial outcomes or either earlier denominator.
