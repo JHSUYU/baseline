@@ -23,7 +23,7 @@ from calibrate_healthy import (AGENT, MIN_FREE_BYTES, REPORT, ROOT, RUNNER,
                                TEST_CLASS_FILE, classpath, sha, verify_build)
 from run_trial import run
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 from receipt_validator import ReceiptError, parse_events, validate_rows
 
 HERE = Path(__file__).resolve().parent
