@@ -13,6 +13,8 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 from datetime import datetime, timezone
+import fcntl
+from functools import wraps
 import hashlib
 import json
 import os
@@ -32,14 +34,16 @@ V5_FILE = v2.HERE / 'campaign_v5.py'
 RAW_FILES = ('events.jsonl', 'run.json', 'trial.json', 'fault.properties',
              'junit.log', 'jacoco.exec')
 PASS_MARKER = re.compile(r'(?m)^SOLR05_JUNIT_RESULT run=1 failures=0 ignored=0\s*$')
+BACKFILL_POLICY = 'omitted_passing_parent_io_v5'
+MAX_BACKFILL_PLANS = 512
 
 
 def digest_bytes(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
-def checked_snapshot(state: dict) -> None:
-    """Require a naturally ended V4 budget, with no ambiguous next trial."""
+def checked_snapshot(state: dict, *, require_no_next: bool = True) -> None:
+    """Require a naturally ended V4 campaign, with no ambiguous next trial."""
     if state.get('case_id') != 'SOLR-07' or not state.get('stopped'):
         raise RuntimeError('V4 has not reached a durable stopped checkpoint')
     if state.get('scheduler_v5'):
@@ -80,11 +84,16 @@ def checked_snapshot(state: dict) -> None:
     elif state.get('stop_reason') == 'selected_trial_cap':
         if selected_count < budget['max_selected']:
             raise RuntimeError('selected cap stop has an incomplete denominator')
+    elif state.get('stop_reason') == 'queue_exhausted':
+        if state['queue'] or effective >= budget['effective_trials'] or \
+                selected_count >= budget['max_selected']:
+            raise RuntimeError('queue exhaustion disagrees with the V4 budget or queue')
     else:
-        raise RuntimeError('V5 requires V4 to reach its trial or effective budget cap')
-    next_dir = v2.ROOT / f'trial-{selected_count + 1:03d}'
-    if next_dir.exists():
-        raise RuntimeError(f'unaccounted in-flight trial directory: {next_dir}')
+        raise RuntimeError('V5 requires a natural V4 campaign stop')
+    if require_no_next:
+        next_dir = v2.ROOT / f'trial-{selected_count + 1:03d}'
+        if next_dir.exists():
+            raise RuntimeError(f'unaccounted in-flight trial directory: {next_dir}')
 
 
 def no_v4_process() -> None:
@@ -98,6 +107,10 @@ def no_v4_process() -> None:
         command = fields[1]
         if re.search(r'(^|/)campaign_v4\.py(?:\s|$)', command):
             raise RuntimeError(f'V4 process is still running: pid {fields[0]}')
+        if ('baseline.solr07.RunSingleJUnit' in command and
+                'org.apache.solr.cloud.AddReplicaTest' in command and
+                'testAddMultipleReplicas' in command):
+            raise RuntimeError(f'SOLR-07 JUnit is still running: pid {fields[0]}')
 
 
 def immutable_json(path: Path, content: object) -> None:
@@ -108,6 +121,20 @@ def immutable_json(path: Path, content: object) -> None:
         output.flush()
         os.fsync(output.fileno())
     path.chmod(0o444)
+
+
+def exclusive_v5(function):
+    """Hold a lifetime controller lock so two V5 runners cannot reuse a trial."""
+    @wraps(function)
+    def locked(*args, **kwargs):
+        HANDOFF.mkdir(parents=True, exist_ok=True)
+        with (HANDOFF / 'controller.lock').open('a+b') as lock:
+            try:
+                fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as error:
+                raise RuntimeError('another V5 controller already owns the checkpoint') from error
+            return function(*args, **kwargs)
+    return locked
 
 
 def freeze() -> dict:
@@ -132,6 +159,7 @@ def freeze() -> dict:
             artifacts[str(number)][name] = sha(file)
     if v2.STATE.read_bytes() != raw:
         raise RuntimeError('V4 checkpoint changed while freezing evidence')
+    no_v4_process()
     HANDOFF.mkdir(parents=True, exist_ok=True)
     with snapshot.open('xb') as output:
         output.write(raw)
@@ -154,7 +182,9 @@ def validate_handoff(snapshot: Path, manifest_path: Path, audit_path: Path,
         if artifact.stat().st_mode & 0o222:
             raise RuntimeError(f'handoff artifact has not been sealed read-only: {artifact}')
     frozen = json.loads(snapshot.read_text())
-    checked_snapshot(frozen)
+    # After activation, the frozen next number is a completed V5 trial. The
+    # live next-number gate in continue_campaign owns overwrite protection.
+    checked_snapshot(frozen, require_no_next='scheduler_v5' not in state)
     frozen_sha = sha(snapshot)
     manifest = json.loads(manifest_path.read_text())
     audit = json.loads(audit_path.read_text())
@@ -219,13 +249,17 @@ def parent_verdict(result: dict, directory: Path) -> dict:
             return {'eligible': False, 'reason': 'no_applied_fault'}
         last = applied[-1]
         client = v2.client_id(last)
+        if not client or any(v2.client_id(row) != client or
+                             row['actorKey'] != result['target'][0]
+                             for row in applied):
+            return {'eligible': False, 'reason': 'faults_not_on_one_target_client'}
         live_guards = [row for row in trace if selected(row)
                        and target_signature(row) == tuple(result['target'])
                        and row['seq'] > last['seq']
                        and row['actorKey'] == last['actorKey']
                        and v2.client_id(row) == client
                        and detail(row['detail']).get('corePresent') == 'true']
-        if not client or not live_guards:
+        if not live_guards:
             return {'eligible': False, 'reason': 'no_same_client_live_core_guard'}
         direct = any(row['threadId'] == last['threadId'] for row in live_guards)
         return {'eligible': True, 'reason': 'passing_core_present_proxy',
@@ -279,6 +313,96 @@ def paired_post_fault_throws(trace: list[dict], result: dict) -> list[dict]:
 
 def parent_key(target: list[str], sequence: list[dict]) -> str:
     return v2.identity((target, sequence))
+
+
+def backfill_candidates(state: dict, manifest: dict, *, max_faults: int,
+                        limit: int, known_state: dict | None = None,
+                        inventory: dict | None = None) -> list[dict]:
+    """Recover V2-omitted post-fault I/O plans from frozen passing parents.
+
+    V2 enqueues only the first three post-fault I/O points from a zero-gain
+    parent, or the first six from a parent with novelty. This scans only the
+    remaining points before that parent's first same-client target guard,
+    which must itself report a present core.
+    Raw files must still match the manifest pinned by the independent audit.
+    """
+    if limit <= 0:
+        return []
+    limit = min(limit, MAX_BACKFILL_PLANS)
+    accounted = state if known_state is None else known_state
+    known = set(accounted['seen'])
+    known.update(parent_key(row['target'], row['sequence'])
+                 for row in accounted['queue'])
+    groups: list[list[dict]] = []
+    for result in state['trials']:
+        sequence = result['sequence']
+        if len(sequence) >= max_faults or not (
+                result['exact_injection'] and result['effective'] and
+                result['target_after_fault'] and result['junit_exit'] == 0 and
+                not result['target_exception']):
+            continue
+        directory = v2.ROOT / f'trial-{result["number"]:03d}'
+        pinned = manifest['artifacts'].get(str(result['number']), {})
+        names = ('events.jsonl', 'run.json', 'junit.log')
+        for name in names:
+            if pinned.get(name) != sha(directory / name):
+                raise RuntimeError(f'frozen parent raw changed: {directory / name}')
+        if not parent_verdict(result, directory)['eligible']:
+            continue
+        trace = rows(directory)
+        applied = [row for row in trace if row['event'] == 'IO_APPLIED']
+        last = applied[-1]
+        client = v2.client_id(last)
+        guards = [row for row in trace if selected(row)
+                  and target_signature(row) == tuple(result['target'])
+                  and row['seq'] > last['seq']
+                  and row['actorKey'] == last['actorKey']
+                  and v2.client_id(row) == client]
+        if not guards:
+            continue  # parent_verdict is the authority; retain a safe fallback
+        finish = min(row['seq'] for row in guards)
+        first_guard = next(row for row in guards if row['seq'] == finish)
+        if detail(first_guard['detail']).get('corePresent') != 'true':
+            continue
+        choices = [v2.point(row) for row in trace if v2.relevant(row)
+                   and last['seq'] < row['seq'] < finish
+                   and row['actorKey'] == result['target'][0]
+                   and v2.client_id(row) == client]
+        # A parent at V4's depth cap generated no children at all. A larger
+        # explicit V5 depth permits its entire post-fault window to be tried.
+        first_selected = (0 if len(sequence) >= state['budget']['max_faults'] else
+                          6 if result['new_coverage'] + result['new_families'] else 3)
+        group = []
+        for item in choices[first_selected:]:
+            child_sequence = sequence + [item]
+            key = parent_key(result['target'], child_sequence)
+            if key in known:
+                continue
+            known.add(key)
+            group.append({'target': result['target'], 'sequence': child_sequence,
+                          'parent_gain': result['new_coverage'] + result['new_families'],
+                          'wait': 0, 'origin': BACKFILL_POLICY,
+                          'backfill_parent_trial': result['number']})
+        for name in names:
+            if pinned.get(name) != sha(directory / name):
+                raise RuntimeError(f'frozen parent raw changed: {directory / name}')
+        if group:
+            groups.append(group)
+    if inventory is not None:
+        inventory['available'] = sum(len(group) for group in groups)
+        inventory['productive_parents'] = len(groups)
+    # Round robin prevents the cap from being consumed by one prolific parent.
+    selected_plans = []
+    while groups and len(selected_plans) < limit:
+        next_groups = []
+        for group in groups:
+            selected_plans.append(group.pop(0))
+            if group:
+                next_groups.append(group)
+            if len(selected_plans) == limit:
+                break
+        groups = next_groups
+    return selected_plans
 
 
 def classify_queued_parents(state: dict) -> tuple[dict, dict]:
@@ -345,25 +469,123 @@ def choose(state: dict) -> dict:
     return queue.pop(min(candidates, key=rank))
 
 
+def refill_exhausted() -> bool:
+    """Use still-untried frozen parents after a complete V5 queue stop."""
+    raw = v2.STATE.read_bytes()
+    state = json.loads(raw)
+    if (not state.get('scheduler_v5') or not state.get('stopped') or
+            state.get('stop_reason') != 'queue_exhausted' or state['queue']):
+        raise RuntimeError('V5 refill requires a complete queue-exhausted checkpoint')
+    if (v2.ROOT / f'trial-{state["selected_count"] + 1:03d}').exists():
+        raise RuntimeError('unaccounted in-flight V5 trial; reconcile before refilling')
+    metadata = state['scheduler_v5']
+    snapshot = Path(metadata['frozen_checkpoint'])
+    manifest_path = Path(metadata['raw_manifest'])
+    audit_path = Path(metadata['raw_audit'])
+    validate_handoff(snapshot, manifest_path, audit_path, state)
+    frozen = json.loads(snapshot.read_text())
+    manifest = json.loads(manifest_path.read_text())
+    remaining = state['budget']['max_selected'] - state['selected_count']
+    if remaining <= 0 or state['effective_count'] >= state['budget']['effective_trials']:
+        raise RuntimeError('V5 queue exhaustion disagrees with its active budget')
+    inventory = {}
+    additions = backfill_candidates(
+        frozen, manifest, max_faults=state['budget']['max_faults'],
+        limit=min(metadata['backfill']['cap'], remaining),
+        known_state=state, inventory=inventory)
+    no_v4_process()
+    if v2.STATE.read_bytes() != raw:
+        raise RuntimeError('V5 checkpoint changed while refilling the queue')
+    if not additions:
+        state['stop_reason'] = 'plan_exhausted'
+        state['plan_exhaustion'] = ('no distinct omitted I/O plan remains in the '
+                                    'frozen passing-parent inventory')
+        v2.atomic(v2.STATE, state)
+        return False
+    metadata['backfill']['refills'].append({
+        'after_selected': state['selected_count'],
+        'available': inventory['available'], 'added': len(additions),
+        'identities_sha256': digest_bytes(('\n'.join(
+            parent_key(row['target'], row['sequence'])
+            for row in additions) + '\n').encode()),
+    })
+    state['queue'].extend(additions)
+    state.pop('stopped', None)
+    state.pop('stop_reason', None)
+    state.pop('effective_count', None)
+    v2.atomic(v2.STATE, state)
+    print(json.dumps({'v5_refill_after_selected': state['selected_count'],
+                      'available': inventory['available'],
+                      'added': len(additions)}, sort_keys=True), flush=True)
+    return True
+
+
+def run_v5_campaign() -> None:
+    """Run the unchanged V2 loop, refilling only at complete queue stops."""
+    v2.choose = choose
+    while True:
+        state = json.loads(v2.STATE.read_text())
+        if state.get('stopped'):
+            if state.get('stop_reason') != 'queue_exhausted':
+                return
+            if not refill_exhausted():
+                return
+        v2.campaign()
+        after = json.loads(v2.STATE.read_text())
+        if not after.get('stopped') or after.get('stop_reason') != 'queue_exhausted':
+            return
+
+
+@exclusive_v5
 def activate(snapshot: Path, manifest: Path, audit: Path, effective_budget: int,
-             max_selected: int, max_faults: int, *, run_campaign: bool = True) -> dict:
+             max_selected: int, max_faults: int, *,
+             backfill_cap: int = MAX_BACKFILL_PLANS,
+             run_campaign: bool = True) -> dict:
     no_v4_process()
     state = json.loads(v2.STATE.read_text())
     checked_snapshot(state)
     v2.verify_state(state)
     evidence = validate_handoff(snapshot, manifest, audit, state)
-    if not state['queue']:
-        raise RuntimeError('V4 checkpoint has no pending fault sequence for V5')
     if (effective_budget <= state['effective_count'] or
             max_selected <= state['selected_count'] or
             max_faults < state['budget']['max_faults'] or max_faults > 10):
         raise RuntimeError('V5 budgets must extend the checkpoint without reducing fault depth')
+    if not 1 <= backfill_cap <= MAX_BACKFILL_PLANS:
+        raise RuntimeError(f'V5 backfill cap must be 1..{MAX_BACKFILL_PLANS}')
+    additions = []
+    inventory = {}
+    backfill_limit = min(backfill_cap, max_selected - state['selected_count'])
+    if not state['queue']:
+        additions = backfill_candidates(
+            state, json.loads(manifest.read_text()),
+            max_faults=max_faults, limit=backfill_limit, inventory=inventory)
+        if not additions:
+            raise RuntimeError('plan-exhausted: no distinct omitted I/O plan from '
+                               'a passing, effective, same-client parent')
+        # Candidate extraction rereads raw traces. Check every pinned file and
+        # the V4 checkpoint again before committing the new queue.
+        validate_handoff(snapshot, manifest, audit, state)
+    no_v4_process()
+    if v2.STATE.read_bytes() != snapshot.read_bytes():
+        raise RuntimeError('live V4 state changed before V5 activation')
     state['scheduler_v5'] = {
         'policy': POLICY, 'sha256': sha(V5_FILE),
         'v4_sha256': sha(V4_FILE), 'frozen_checkpoint': str(snapshot.resolve()),
         'raw_manifest': str(manifest.resolve()), 'raw_audit': str(audit.resolve()),
         'handoff': evidence, 'activated_utc': datetime.now(timezone.utc).isoformat(),
         'parent_verdicts': {},
+        'backfill': {'policy': BACKFILL_POLICY if additions else 'none',
+                     'cap': backfill_cap,
+                     'limit': backfill_limit if additions else 0,
+                     'added': len(additions),
+                     'available_at_handoff': inventory.get('available', 0),
+                     'productive_parents': inventory.get('productive_parents', 0),
+                     'refills': [],
+                     'identities_sha256': digest_bytes(('\n'.join(
+                         parent_key(row['target'], row['sequence'])
+                         for row in additions) + '\n').encode()) if additions else None,
+                     'parent_trials': sorted({row['backfill_parent_trial']
+                                              for row in additions})},
         'rule': 'four productive descendants and one root per five selections; '
                 'balance first-fault family and immediate parent',
         'stage_limit': 'passing JUnit plus corePresent=true is a proxy, not a '
@@ -373,16 +595,17 @@ def activate(snapshot: Path, manifest: Path, audit: Path, effective_budget: int,
                        'max_selected': max_selected, 'max_faults': max_faults}
     state['extension_decided'] = True  # explicit V5 budget supersedes V2 auto-extension
     state['extension_reason'] = 'audited V5 handoff with explicit budget'
+    state['queue'].extend(additions)
     state.pop('stopped', None)
     state.pop('stop_reason', None)
     state.pop('effective_count', None)
     v2.atomic(v2.STATE, state)
     if run_campaign:
-        v2.choose = choose
-        v2.campaign()
+        run_v5_campaign()
     return state
 
 
+@exclusive_v5
 def continue_campaign() -> None:
     no_v4_process()
     state = json.loads(v2.STATE.read_text())
@@ -404,12 +627,35 @@ def continue_campaign() -> None:
         raise RuntimeError('V5 handoff evidence changed after activation')
     if state['selected_count'] != len(state['trials']) or len(state['seen']) != len(state['trials']):
         raise RuntimeError('V5 checkpoint trial count mismatch')
+    identities = [parent_key(row['target'], row['sequence']) for row in state['trials']]
+    queue_ids = [parent_key(row['target'], row['sequence']) for row in state['queue']]
+    if (state['seen'] != identities or len(set(queue_ids)) != len(queue_ids) or
+            set(queue_ids) & set(identities)):
+        raise RuntimeError('V5 checkpoint has duplicate or mismatched plan identities')
+    frozen_count = reviewed['selected']
+    for number in range(frozen_count + 1, state['selected_count'] + 1):
+        directory = v2.ROOT / f'trial-{number:03d}'
+        if any(not (directory / name).is_file() for name in RAW_FILES):
+            raise RuntimeError(f'completed V5 trial lacks raw evidence: {directory}')
+        saved = state['trials'][number - 1]
+        if (json.loads((directory / 'trial.json').read_text()) != saved or
+                json.loads((directory / 'run.json').read_text()).get('exit_code') !=
+                saved['junit_exit']):
+            raise RuntimeError(f'completed V5 trial receipt differs: {directory}')
+        plan = dict(line.split('=', 1) for line in
+                    (directory / 'fault.properties').read_text().splitlines()
+                    if '=' in line)
+        if (plan.get('count') != str(len(saved['sequence'])) or
+                plan.get('targetActor') != saved['target'][0] or
+                any(plan.get(f'step.{index}.{field}') != str(step[field])
+                    for index, step in enumerate(saved['sequence'], 1)
+                    for field in v2.FIELDS)):
+            raise RuntimeError(f'completed V5 trial fault plan differs: {directory}')
     if (v2.ROOT / f'trial-{state["selected_count"] + 1:03d}').exists():
         raise RuntimeError('unaccounted in-flight V5 trial; reconcile before resuming')
-    if state.get('stopped'):
+    if state.get('stopped') and state.get('stop_reason') != 'queue_exhausted':
         raise RuntimeError('V5 already reached its configured stop; do not rerun')
-    v2.choose = choose
-    v2.campaign()
+    run_v5_campaign()
 
 
 def main() -> None:
@@ -423,13 +669,16 @@ def main() -> None:
     start.add_argument('--effective-budget', type=int, required=True)
     start.add_argument('--max-selected', type=int, required=True)
     start.add_argument('--max-faults', type=int, required=True)
+    start.add_argument('--backfill-cap', type=int, default=MAX_BACKFILL_PLANS,
+                       help=f'per-fill cap, 1..{MAX_BACKFILL_PLANS}')
     sub.add_parser('continue', help='resume an already activated V5 checkpoint')
     args = parser.parse_args()
     if args.action == 'freeze':
         print(json.dumps(freeze(), indent=2, sort_keys=True))
     elif args.action == 'activate':
         activate(args.snapshot, args.manifest, args.audit,
-                 args.effective_budget, args.max_selected, args.max_faults)
+                 args.effective_budget, args.max_selected, args.max_faults,
+                 backfill_cap=args.backfill_cap)
     else:
         continue_campaign()
 
