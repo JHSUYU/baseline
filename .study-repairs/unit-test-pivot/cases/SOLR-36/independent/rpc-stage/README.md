@@ -51,3 +51,16 @@ and multiple ordered faults on the fifth, with fallback if that class is
 empty. These figures justify the selection policy only; they do not count
 unmatched trials as coverage or target checks. Node2 continues the pinned old
 scheduler until the selected-cap boundary described above.
+
+For disconnect-safe handoff, node2 `run_stages.py` parent PID 2474850 is
+`SIGSTOP`-held while the original-JUnit fuzzer child PID 2577060 continues to
+its selected-80 natural boundary. A separately namespaced tmux watcher
+`solr36_37_child_balance_handoff` runs `handoff_child_balance.py`. It checks
+the stopped parent, exited child, exact 80-plan complete state, and pinned
+old/new runner hashes before installing the prepared scheduler and running
+its migration/tests. Only then does it `SIGCONT` the parent. A target exception,
+failed check, or process discrepancy leaves the parent stopped for review;
+raw trials and the prior checkpoint remain intact. The prepared new runner is
+at `campaign/prepared-child-balance/fuzz_rpc.py`; the active node2 runner
+remains the old SHA until that boundary. Logs are under the prepared directory,
+and the outcome receipt is `campaign/migrations/0003-child-source-balance/`.
