@@ -1,5 +1,5 @@
 {
-  "bug_mark": "candidate_review",
+  "bug_mark": "reproduced_candidate_novelty_pending",
   "case_id": "HBASE-32",
   "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
   "coverage_gain": 7,
@@ -135,25 +135,39 @@
       "line": 136
     }
   },
-  "elapsed_seconds": 14645.670000000011,
+  "elapsed_seconds": 34934.14,
   "evidence": [
     "README.md",
     "work-lots/checkpoint.json",
     "work-lots/logs/actor-healthy.log",
     "work/src/HBase32Agent.java",
     "work/src/CoverageReport.java",
-    "work/run.sh"
+    "work/run.sh",
+    "work-role-v3/role-v3-rollup.json",
+    "work-role-v3/role-pilot-checkpoint.json",
+    "work-role-v3/role-f001-owner-audit.md",
+    "work-role-v3/role-f002-owner-audit.md",
+    "work-role-v3/role-f003-owner-audit.md",
+    "work-role-v3/role-f001.remote-verified.json",
+    "work-role-v3/role-f002.remote-verified.json",
+    "work-role-v3/role-f003.remote-verified.json",
+    "work-role-v3/terminal-audit.json",
+    "work-role-v3/logs/role-f001.lock-audit.json",
+    "work-role-v3/logs/role-f002.lock-audit.json",
+    "work-role-v3/logs/role-f003.lock-audit.json",
+    "work-role-v3/logs/role-f003.receipt.json",
+    "work-role-v3/role-f003.archive-manifest.json"
   ],
   "fault_trials": 185,
   "fully_applied_trials": 182,
   "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
-  "source_audit_note": "Main 185/128 effective phase complete. Independent supplemental 272 attempts/68 effective paused after s272 exact timeout candidate. Original had same ServerStateNode READ held while tracker waited WRITE and SCP was scheduled only after timeout shutdown; six exact 600s replays (two meta-host) passed original JUnit, with no outstanding READ in meta-host controls. Candidate is scheduling-sensitive; no confirmed new bug. s203 remains separately unconfirmed. A distinct meta-host role-aware plan is offline-built and selector-smoke-validated; no role-stage MiniCluster JUnit or fault trial has run, and its count is zero.",
-  "status": "campaign_budget_reached",
+  "source_audit_note": "Main original-JUnit fuzz complete at 185 attempts/128 effective. Supplemental paused at 272/68 after s272 precise timeout candidate. Distinct V3 role-aware diagnostic: 2 healthy passes, 2 strict 600s same-server-node pre-SCP recovery-wait timeouts on separate fixtures, 1 strict same-role JUnit pass with zero active READ holders and prompt SCP. B7 is expected DNR rethrow. The bounded timeouts do not prove permanent deadlock; HBASE-24526 overlaps the meta-update progress symptom but documents post-SCP scheduling. Novelty unconfirmed; new_bug=false. Measured main+supplemental+V3 JUnit subtotal 34934.14s; see per-phase time accounting and SHA-verified evidence.",
+  "status": "quality_complete",
   "strict_injections": 182,
   "supplemental_stage": {
     "attempt_cap": 384,
     "attempted_trials": 272,
-    "candidate_classification": "candidate_pending_lock_identity",
+    "candidate_classification": "scheduling_sensitive_recovery_wait_candidate_novelty_pending",
     "candidate_feedback_admitted": false,
     "candidate_original_elapsed_seconds": 405.83,
     "candidate_original_manifest_sha256": "5cb4fb05eb9f887780bb8dc3aa479dc6246afb9de15863387d787745096bfe68",
@@ -314,7 +328,7 @@
     },
     "effective_budget": 80,
     "effective_trials": 68,
-    "elapsed_seconds": 18478.87,
+    "elapsed_seconds": 18792.59,
     "evidence": [
       "work-upstream/evidence-s203-candidate-receipt.json",
       "work-upstream/evidence-s203-original-manifest.json",
@@ -487,7 +501,7 @@
       "strict": true,
       "thread_dump_count": 4
     },
-    "state": "paused_after_bounded_s272_review",
+    "state": "paused_after_precise_candidate_and_completed_role_diagnostics",
     "role_aware_variation_v2": {
       "state": "replica2_not_meta_host_in_first_healthy",
       "classification": "distinct_dynamic_meta_host_role_plan_not_s272_exact_replay_or_fixed_region_v1",
@@ -524,7 +538,7 @@
       "first_plan_not_imported_into_v3": true
     },
     "role_aware_variation_v3": {
-      "state": "two_strict_role_positive_timeout_candidates_one_bounded_replay_remaining",
+      "state": "bounded_diagnostic_complete_two_reproduced_600s_waits_one_same_role_negative_control",
       "classification": "distinct_runtime_meta_host_and_actual_secondary_replica_not_s272_exact_replay_or_v1_v2",
       "spec": "work-role-v3/role-plan.json",
       "plan_sha256": "e3e52e9a77b03c047a25fca1d26b405985a9f7c5f931923981a2fbc07f97e1d0",
@@ -535,7 +549,7 @@
       "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
       "healthy_passes_required": 2,
       "healthy_attempts": 2,
-      "fault_attempts": 2,
+      "fault_attempts": 3,
       "fault_attempt_cap": 3,
       "fuzz_budget_admitted": false,
       "s272_exact_replay": false,
@@ -630,10 +644,86 @@
           "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/role-f002",
           "lock_audit": "work-role-v3/logs/role-f002.lock-audit.json",
           "source_audit": "work-role-v3/role-f002-owner-audit.md"
+        },
+        {
+          "suffix": "role-f003",
+          "started_utc": "2026-10-07T13:59:40.114207+00:00",
+          "finished_utc": "2026-10-07T14:01:10.600362+00:00",
+          "elapsed_seconds": 89.83,
+          "exit_code": 0,
+          "original_junit": {
+            "failed": 0,
+            "found": 1,
+            "succeeded": 1
+          },
+          "identity_valid": true,
+          "strict_fault_plan": true,
+          "faults_applied": 2,
+          "same_actor_b7": 1,
+          "replica_id": "3",
+          "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMix3BD8sMTc5MTM4MTYwOTQ0NC5lZjkxZDdiMGRkYjBhYzljNTE4M2FmN2NkYzM4OTY4NS4",
+          "raw_secondary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMix3BD8sMTc5MTM4MTYwOTQ0NF8wMDAzLjIxZTAzMTMyYWNlMzBjYzUzNDRhODY5N2I3OWE1YTVlLg",
+          "raw_log_sha256": "687d36bfe059d2da01d34e947bd1622b8da8afcbc14913f65821080f9428ee7c",
+          "jacoco_sha256": "0abfe0d732d04a1ca733eebc6d1a8a2320847f0f664d9a8ae2cbf3b75c79cda1",
+          "archive_sha256": "b995c0188677e3ffb7f22ec950ae246e543ee2ccfcf125d5380f610554b1af90",
+          "manifest_sha256": "39b044b13574304955329f896dbb94830d10eb3ba25fe224152b140e0cca7c7d",
+          "files_verified_on_node1": 13,
+          "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/role-f003",
+          "active_readers_at_tracker_write": 0,
+          "tracker_write_acquired_before_shutdown": true,
+          "carrying_meta_scp_prompt": true,
+          "new_bug": false
         }
+      ],
+      "same_role_negative_controls": 1,
+      "original_junit_seconds": 1495.88,
+      "rollup": "work-role-v3/role-v3-rollup.json",
+      "independent_source_reviews": [
+        "../../audits/hbase32-role-f001-independent-review-2026-10-07.md",
+        "../../audits/hbase32-role-f002-novelty-review-2026-10-07.md"
       ]
     }
   },
   "target_after_fault": 128,
-  "target_reached": true
+  "target_reached": true,
+  "new_bug": false,
+  "time_accounting": {
+    "main_measured_trial_seconds_including_healthy": 14645.67,
+    "supplemental_measured_trial_seconds": 18792.59,
+    "v3_measured_trial_seconds": 1495.88,
+    "measured_subtotal_seconds": 34934.14,
+    "source": "sum of per-trial checkpoint elapsed_seconds, plus main healthy elapsed_seconds, plus V3 per-run receipts",
+    "excludes": "V1/V2 calibrations and isolated replay/diagnostic JUnits; their own receipts retain time"
+  },
+  "completion": {
+    "main": {
+      "attempts": 185,
+      "effective": 128,
+      "checkpoint": "work-lots/checkpoint.json"
+    },
+    "supplemental": {
+      "attempts": 272,
+      "effective": 68,
+      "target_effective": 80,
+      "stopped_for_precise_candidate": "s272",
+      "checkpoint": "work-upstream/supplemental-checkpoint.json"
+    },
+    "role_v3": {
+      "healthy_passes": 2,
+      "fault_diagnostics": 3,
+      "positive_600s_timeout_candidates": 2,
+      "same_role_passing_controls": 1,
+      "effective_imported": 0,
+      "checkpoint": "work-role-v3/role-pilot-checkpoint.json",
+      "rollup": "work-role-v3/role-v3-rollup.json"
+    },
+    "new_bug": false,
+    "novelty": "pending",
+    "resume_rule": "Main terminal; supplemental resumes from its saved checkpoint after candidate review; V3 in_flight null and fault cap reached. Never import V3 trials or replay completed plans.",
+    "source_reviews": [
+      ".study-repairs/unit-test-pivot/audits/hbase32-role-f001-independent-review-2026-10-07.md",
+      ".study-repairs/unit-test-pivot/audits/hbase32-role-f002-novelty-review-2026-10-07.md",
+      "work-role-v3/role-f003-owner-audit.md"
+    ]
+  }
 }

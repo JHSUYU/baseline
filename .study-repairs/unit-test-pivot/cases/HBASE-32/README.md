@@ -514,5 +514,62 @@ out at the original JUnit cap (643.45 s including shutdown). Five dumps and
 the lock trace show two active READ holders on the expired meta server node;
 the first carrying-meta SCP was scheduled only after shutdown released them.
 Its raw evidence is SHA-verified on node1. See
-`work-role-v3/role-f002-owner-audit.md`. One bounded V3 semantic replay
-remains; both runs remain candidates and contribute to neither fuzz budget.
+`work-role-v3/role-f002-owner-audit.md`. Both runs remain candidates and
+contribute to neither fuzz budget.
+
+### V3 terminal role-aware comparison and case result
+
+V3 `role-f003`, the last bounded semantic replay, hit the actual meta-hosting
+RS and strictly applied both faults to one raw primary/secondary region and
+replica 3. B7 occurred after the second fault. The original JUnit passed 1/1
+in 89.83 s, and all 600 table2 child assignments completed. When the tracker
+requested WRITE, there was no active transition-report READ holder on that
+same `ServerStateNode`; WRITE was acquired immediately and carrying-meta SCP
+was scheduled. See `work-role-v3/role-f003-owner-audit.md` and the raw trace.
+This same-role negative control shows that meta placement and the two source
+selectors alone do not force the long wait seen in `role-f001/f002`.
+
+The frozen V3 diagnostic therefore contains two strict role-conditioned
+600 s original-JUnit noncompletion runs and one strict same-role passing
+control, following two passing no-fault calibrations. Across these five JUnit
+runs the measured runner time is 1,495.88 s. Every raw log, JaCoCo file,
+thread dump where applicable, and receipt is retained; each per-run archive
+and manifest were independently SHA-256 matched to the node1 copy. The
+machine-readable list and hashes are in `work-role-v3/role-v3-rollup.json`.
+V3 contributes zero effective fuzz trials to either main or supplemental
+checkpoints. The original main stage completed 185 attempts / 128 true
+effective trials in 14,645.67 s, including its 60.13 s healthy calibration;
+supplemental reached 272 attempts / 68 effective trials in 18,792.59 s and
+stopped at the precise s272 candidate. The supplemental duration is the sum
+of all 272 checkpoint trial receipts and corrects an earlier stale result
+field. The measured subtotal for these three phases is **34,934.14 s**; it excludes
+earlier isolated replays and V1/V2 calibrations, whose timings remain in
+their own receipts.
+
+The source-backed wait in `role-f001/f002` is: transition handler holds a
+READ on the expired meta host's `ServerStateNode` while awaiting a region
+lock; a procedure worker holds that region lock while synchronous
+`RegionStateStore.updateRegionLocation` retries a meta `HTable.put` to the
+failed host; the tracker needs WRITE on the same server node before it can
+submit SCP. Dumps and lock identities sustain this chain until test timeout
+shutdown. The B7 rethrow itself is expected for the injected
+`DoNotRetryIOException`. A 600 s timeout does not prove an infinite deadlock:
+the meta RPC retries may eventually terminate. HBASE-24526 describes a
+related meta update progress problem after a meta assignment subprocedure is
+already scheduled, whereas these traces stop before SCP submission.
+HBASE-21508 and HBASE-29259 also have partial mechanism overlap; the latter
+issue's primary failure differs. Independent source reviews are in
+`audits/hbase32-role-f001-independent-review-2026-10-07.md` and
+`audits/hbase32-role-f002-novelty-review-2026-10-07.md`. The case is
+`quality_complete` as a **reproduced candidate with novelty pending**,
+`new_bug=false`. There is no confirmed new HBase bug in this checklist row.
+
+Resume points are immutable and separated: main
+`work-lots/checkpoint.json` is terminal at 128 effective; supplemental
+`work-upstream/supplemental-checkpoint.json` preserves s272 as an excluded
+candidate with 68 effective. V3 `work-role-v3/role-pilot-checkpoint.json`
+has two healthy and three fault diagnostics, `in_flight=null`, and is at its
+three-fault cap. Any future work must start a new diagnostic stage or, if
+explicitly expanding supplemental fuzz after candidate review, recover from
+the supplemental checkpoint without importing V3 attempts or repeating old
+plans.

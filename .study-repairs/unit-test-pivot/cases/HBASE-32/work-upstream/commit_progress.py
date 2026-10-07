@@ -36,11 +36,20 @@ def main():
         data = json.loads(git("show", previous + ":" + str(CHECKLIST.relative_to(repo))))
         row = next(item for item in data["rows"] if item["case_id"] == "HBASE-32")
         if row["status"] != result["status"]:
-            raise RuntimeError("HBASE-32 status changed in HEAD")
+            if not (row["status"] == "campaign_budget_reached" and
+                    result["status"] == "quality_complete"):
+                raise RuntimeError("HBASE-32 status changed in HEAD")
+        row["status"] = result["status"]
         row["bug_mark"] = result["bug_mark"]
+        row["new_bug"] = result["new_bug"]
+        row["elapsed_seconds"] = result["elapsed_seconds"]
+        row["time_accounting"] = result["time_accounting"]
+        row["completion"] = result["completion"]
+        row["source_audit_note"] = result["source_audit_note"]
         row["supplemental_stage"] = result["supplemental_stage"]
         row["evidence"] = list(dict.fromkeys(
-            row.get("evidence", []) + [str(path.relative_to(CASE)) for path in evidence]))
+            row.get("evidence", []) + result["evidence"] +
+            [str(path.relative_to(CASE)) for path in evidence]))
         CHECKLIST.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n")
         MARKDOWN.write_text(checklist.markdown(data["rows"]))
         descriptor, index = tempfile.mkstemp(prefix="hbase32-private-index-")
@@ -54,7 +63,7 @@ def main():
                 env=env)
             tree = git("write-tree", env=env)
             commit = git("commit-tree", tree, "-p", previous, "-m",
-                         "Update HBASE-32 supplemental progress", env=env)
+                         "Classify HBASE-32 role diagnostics and complete quality review", env=env)
             update = subprocess.run(
                 ["git", "update-ref", "refs/heads/main", commit, previous],
                 text=True, capture_output=True)
