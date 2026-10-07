@@ -1,5 +1,12 @@
 # ZOOKEEPER-02 actor V2 adapter
 
+The current actor-aware result is [quality complete](../../../cases/ZOOKEEPER-02/result.json):
+20/20 effective complete client-write trials plus 60/65 effective complete
+server `sync` response trials, for 80/85 distinct attempts. The former
+pre-I/O run stopped at 113/0 and is excluded. The two-stage [raw audit](after-response/campaign-audit.json)
+and [per-trial table](after-response/trial-summary.csv) pin the separate
+agent SHAs, actor/owner receipts, elapsed time and non-target JUnit outcomes.
+
 This case uses original ZooKeeper 3.8.7
 `org.apache.zookeeper.test.QuorumTest#testSessionMoved`, source commit
 `9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae`. The old actor-free

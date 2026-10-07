@@ -1,8 +1,22 @@
 # ZOOKEEPER-02: session owner mismatch
 
-> **Actor identity recheck pending.** The earlier I/O fault selector used a global call-site ordinal and did not bind the peer/client/socket or file owner. Its raw trials, coverage, and elapsed time are preserved as historical selector-level evidence in `result.json`, but are excluded from the current actor-matched budget. See [independent audit](../../audits/zookeeper-terminal-actor-identity-2026-10-07.md).
+**Current result: quality complete, no selected target exception.** The unchanged ZooKeeper 3.8.7 `QuorumTest.testSessionMoved` ran in a fresh five-peer in-process cluster for every trial. The selected source check is `SessionTrackerImpl.checkSession(long,Object)` at `zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java:322-323`: the `session.owner != owner` branch throws `SessionMovedException`. The actor-aware ASM adapter binds actual peer SID, client handle, socket destination, one raw moved session, the leader receiving the check, and the prior/request owner objects. An unbound or different actor cannot satisfy the fault plan or target-retention gate.
 
-**Historical independent replay: actor identity recheck pending.** The independent recorder replay below completed
+| Stage | Attempts | Effective target-retaining plans | Max fault depth | Original JUnit non-target failures | Selected throws |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Prior pre-I/O socket exceptions, excluded | 113 | 0 | 1 | 113 | 0 |
+| Client request after complete `SocketChannel.write` | 20 | 20 | 1 | 20 `ConnectionLoss` | 0 |
+| Server after complete `sync` response (`packetSent`) | 65 | 60 | 6 | 0 | 0 |
+
+The first counted stage records the actual bytes written, remaining `Packet.bb` bytes and opcode. It injects only after `written > 0`, `remaining == 0`, and a `setData` or `sync` request. All 20 distinct client selectors retained the same-session target after the fault, although the original test then failed with `ConnectionLoss`; these failures are workload outcomes, not bug marks. The second counted stage injects after the original server `handleWrite` has consumed the response buffers and called `packetSent()`. Its third response per moved connection is the `sync` response; a fault there lets the original test advance through later handles. Five of its 65 plans were not fully applied and did not consume the effective denominator. Sixty fully applied sequences retained the same raw-session owner check after their final fault and passed the original JUnit.
+
+Together the two counted stages reached **80 effective / 85 attempts**, with 8 new case-local ASM production source lines and 20 target-related I/O families observed. The four healthy JVMs and 85 fault JVMs took **367.874 seconds in aggregate** with two workers during fuzzing. The final eight effective trials added no source-line coverage, bound I/O family or selected throw, so the conditional 128-effective/10-fault extension did not run. No `SessionMovedException` reached the selected throw under an injected fault, and `bug_mark` is `none`. The original pre-I/O checkpoint remains paused at 113/0 and contributes nothing to this denominator. The older coarse-selector 80 trials and GraphChecker-derived 128 trials also remain historical only.
+
+The [raw two-stage audit](../../zk-actor-v2/cases/ZOOKEEPER-02/after-response/campaign-audit.json) rechecks each fault's exact actor/ordinal, complete-I/O receipt, raw session, leader and owner-object identity, and postfault target order. The [85-row trial table](../../zk-actor-v2/cases/ZOOKEEPER-02/after-response/trial-summary.csv) records every plan, elapsed time, result, coverage and raw artifact SHA. Completed JUnit logs are compressed with a per-trial SHA manifest; event and coverage TSV files remain under the stage run roots in [result.json](result.json). Both stage checkpoints are resumable. The two campaign tmux workers and all ZK02 cluster JVMs exited before finalization.
+
+## Historical evidence
+
+The earlier independent recorder replay below completed
 80 fault trials, but its selectors did not prove the required peer/client identity across runs. The 128 trials using GraphChecker-prewoven classes and a
 precomputed static region skeleton remain historical evidence in
 [`legacy-graph-result.json`](legacy-graph-result.json) and
