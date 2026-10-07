@@ -44,3 +44,21 @@ so the target exception is the expected guard response to that fault. The
 unchanged JUnit still succeeds with its three-JournalNode quorum. This
 equivalence family is source-excluded as a new coordination bug, while its
 target exceptions remain recorded as candidate observations for audit.
+
+## Terminal 128-effective review
+
+The final actor-aware run finished with 220 attempted sequences and 128
+effective same-JournalNode postfault checks. The independent
+`audit-terminal-128.json` recomputed all 220 plans, raw traces, actor receipts,
+JaCoCo hashes and feedback; it passed with zero errors. It found 26 selected
+target IOException events in 26 effective trials. In **each** of the 26
+sequences, the final injected fault was `PersistentLongFile.set` with
+`IOException` or `FileNotFoundException` on exactly the physical JournalNode
+that subsequently threw from `Journal.checkWriteRequest`. The 26 trials are
+listed in `audit-terminal-128.json` under `candidate_runs` and in the case's
+220-row `qjm-v2-trial-ledger.csv`. No target throw arose from an RPC-only fault
+or a different JournalNode. Thus the source-based direct guard classification
+above covers the full candidate set, while the clean replays specifically
+check one example of each injected exception class. The JUnit result and
+target exception are separate fields; candidate events remain visible in the
+ledger with a final case-level `bug_mark=none` after this review.

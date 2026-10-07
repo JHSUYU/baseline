@@ -12,7 +12,7 @@ The [terminal raw audit](../../qjm-rpc-actor-v2/evidence/HDFS-09/audit-terminal-
 
 # HDFS-09: committed transaction ID monotonicity
 
-**Current 102-check status: quality complete, no confirmed new bug.** The
+**Historical 102-check status: quality complete under the earlier recorder, no confirmed new bug.** The
 independent campaign completed **128/128** precisely applied fault sequences;
 **113** retained the exact guard after the last fault, and **zero** triggered
 its `IllegalArgumentException`. The deepest executed sequence had six faults

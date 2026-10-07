@@ -1,6 +1,18 @@
+# HDFS-10: endpoint-aware original-JUnit campaign complete
+
+## Current endpoint-aware V2 result
+
+The unchanged Hadoop 3.4.3 `TestQuorumJournalManager#testSingleWriter` ran in a fresh three-JournalNode embedded cluster per trial. Two healthy seeds passed in 10.310 and 13.302 seconds. The graph-free ASM hook binds the client RPC's actual remote endpoint and each file write to a physical JournalNode/`test-journal`; the strict receipt requires that same actor to execute the chosen check after the final fault.
+
+The new campaign attempted **220** sequences, 220 with all planned faults applied, and **128 effective** postfault same-actor checks. Original JUnit execution totaled 2832.065s (wall 3816.754s). The initial 80-effective/max-8 budget extended to 128/max-10 after one new production Hadoop IPC `ProcessingDetails.get` branch in the last eight effective trials; this feedback is an RPC timing branch and only weakly related to QJM recovery. The deepest tested sequence had 5 faults. The selected target exception appeared 26 times. HDFS-10 throws were source reviewed and representative plans replayed from clean fixtures; they are the expected local guard after an injected writer-epoch persistence failure. No new bug is established. JUnit nonzero exits alone are not target exceptions.
+
+The [terminal raw audit](../../qjm-rpc-actor-v2/evidence/HDFS-10/audit-terminal-128.json) passes with zero errors; the [per-trial ledger](qjm-v2-trial-ledger.csv) records time, exact faults, actor, postfault target, coverage and candidate status. The [source and replay review](../../qjm-rpc-actor-v2/evidence/HDFS-10/target-oracle-review.md) classifies all 26 same-actor target throws. The [raw archive](../../qjm-rpc-actor-v2/evidence/HDFS-10/final-raw-128.tar.gz) has SHA-256 `2189255ccd70cfba13870053837c53cc69cbf8851141f9579a003139a10d3853`. Earlier coarse actor trials remain under `legacy_coarse_actor` in `result.json` and do not enter the new denominator.
+
+## Historical coarse actor campaign
+
 # HDFS-10: writer epoch check in `Journal.checkWriteRequest`
 
-**Current 102-check status: quality_complete (independent recorder).** The 48
+**Historical 102-check status: quality_complete (earlier recorder).** The 48
 trials below remain historical evidence in `legacy-graph-result.json`. Their
 exact I/O selectors contain GraphChecker `REGION.*` identities from prewoven
 classes, including trials later run in discovery mode. They do not count as
