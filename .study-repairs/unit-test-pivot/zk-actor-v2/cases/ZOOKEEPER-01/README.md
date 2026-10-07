@@ -32,24 +32,32 @@ event and cannot match an injection plan.
 ## Current evidence
 
 `python3 build_adapter.py` compiles an agent outside the repository, analyzes
-all rewritten methods' ASM stack frames offline, and checks the actual
-test/production class rewrites. The isolated smoke calls the same bridge
+all rewritten methods' ASM stack frames, and loads the rewritten classes in
+a separate JVM with `-Xverify:all`. The isolated smoke calls the same bridge
 entrypoints with two clients at one static site: only the selected actor
-matches; an unknown actor is excluded. This does not run JUnit or a cluster.
+matches; an unknown actor is excluded.
 
-`python3 calibrate_healthy.py` prepares two fresh healthy original-JUnit
-commands without running them. Once a ZooKeeper port slot and JVM resources
-are reserved, run e.g. `python3 calibrate_healthy.py --run --worker-id 1
---worker-count 1`; the two outputs go only to
+`python3 calibrate_healthy.py` prepares two healthy original-JUnit
+commands without running them. With an assigned port slot, run e.g.
+`python3 calibrate_healthy.py --run --worker-id 15 --worker-count 16`;
+the two outputs go only to
 `/users/ZhenyuLi/zk01-actor-v2-runs/healthy-{a,b}` and existing outputs are
 never overwritten. Before each JVM the script requires a free PortAssignment
-slot and at least 2 GiB disk headroom. `python3 audit_calibration.py` then requires both original
+slot and at least 2 GiB disk headroom. `python3 audit_calibration.py` requires both original
 JUnit executions to pass, three peer/port joins, separate client and raw
 session tags, bound I/O to the selected leader, the selected guard on the
 leader's `creatorCloser` session, nonempty coverage, and stable actor/resource
-families across the fresh runs. It currently reports `pending` because no
-cluster JUnit was run during this preparation.
+families across the fresh runs. The two repaired original-JUnit calibrations
+passed in 4.978 and 4.227 seconds; the first attempted calibration failed
+bytecode verification and is retained separately under `failed-seeds/`.
 
-Fault trials and a `quality_complete` determination require those two
-calibrations and their binding audit. The old actor-free receipts do not
-become V2 evidence by relabeling their selectors.
+`campaign.py` resumes an independent 80-effective/max8 campaign in worker
+slots 15 and 16. Only complete ordered fault matches with a bound relation
+to the selected leader and a later target guard count toward the 80. Trial
+scratch is removed after each original cluster JUnit; raw events, coverage,
+logs and receipts remain under the V2 run root. A late coverage or I/O gain
+in the last eight effective trials extends the budget to 128/max10. The
+checkpoint can be resumed after interruption, and disk below 2 GiB pauses
+new trials. A selected target throw is marked for source review, never
+automatically labeled a new bug. The old actor-free receipts do not become
+V2 evidence by relabeling their selectors.
