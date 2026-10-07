@@ -52,6 +52,9 @@ def main() -> None:
             'production_probe_gain': progress['production_probe_gain'],
             'elapsed_seconds': progress['elapsed_seconds'],
             'evidence': 'cases/SOLR-13/independent/fuzz/evidence/campaign/progress.json',
+            'final_audit': ('cases/SOLR-13/independent/fuzz/evidence/campaign/'
+                            'final-audit.json')
+                           if (PROGRESS.parent / 'final-audit.json').is_file() else None,
         },
     }
     if stage2 is not None:

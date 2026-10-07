@@ -52,6 +52,16 @@ exception is a candidate that requires replay and source review before any
 new-bug claim. Completed raw traces are checksum-verified and compressed to
 bound node0 disk usage.
 
+Stage one completed its fixed budget: **80/80 strict, same-source,
+postfault target-retaining trials**. All 80 original JUnit runs passed; the
+longest applied sequence contained six I/O exceptions. Production JaCoCo
+gained 50 probes, while the exact selected exception occurred zero times.
+All 81 JVM attempt traces, including the excluded partial ninth attempt,
+were decompressed and SHA256-verified against their archive receipts. The
+machine-readable audit is `independent/fuzz/evidence/campaign/final-audit.json`.
+The case remains overall `running` while the independent Overseer write
+phase continues.
+
 ## Independent Overseer alias-write campaign
 
 The case-local `independent/stage2` agent adds runtime observations at
