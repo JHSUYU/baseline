@@ -38,10 +38,17 @@ def source_provenance() -> dict:
         raise RuntimeError('original Solr tracked source is dirty')
     paths = [SOURCE / name for name in SOURCE_FILES]
     jar = SOLR_DIST / 'dist/solr-core-8.11.4.jar'
+    class_files = {
+        'ShardSplitTest.class': HERE.parent / 'independent/classes/org/apache/solr/cloud/api/collections/ShardSplitTest.class',
+        'OriginalJUnit.class': HERE.parent / 'independent/classes/research/solrsubshard/OriginalJUnit.class',
+    }
     return {'revision': revision,
             'source_sha256': {name: hashlib.sha256(path.read_bytes()).hexdigest()
                               for name, path in zip(SOURCE_FILES, paths)},
-            'original_core_jar_sha256': hashlib.sha256(jar.read_bytes()).hexdigest()}
+            'original_core_jar_sha256': hashlib.sha256(jar.read_bytes()).hexdigest(),
+            'original_junit_class_sha256': {
+                name: hashlib.sha256(path.read_bytes()).hexdigest()
+                for name, path in class_files.items()}}
 
 
 def main() -> None:

@@ -37,7 +37,8 @@ the same logical role; a different physical node cannot satisfy its selector.
 Do not run the two healthy cluster calibrations until a node slot is
 explicitly released. `run_healthy.py` checks clean tracked source at original
 Solr revision `e27f44e3d78dfcec230c97e0a1240e3751daeff9` and records the
-JUnit, target, ZK source and original Solr core JAR hashes before either JVM.
+JUnit, target, ZK source, compiled original JUnit classes and original Solr
+core JAR hashes before either JVM.
 The build and smoke tests are safe offline and passed on node0.
 
 ```sh
