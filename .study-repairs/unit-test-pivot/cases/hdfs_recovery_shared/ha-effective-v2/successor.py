@@ -20,6 +20,7 @@ import shutil
 import sys
 import time
 
+import audit_raw
 import campaign
 
 
@@ -194,6 +195,13 @@ def handoff(expected_old_sha: str) -> dict:
     state = json.loads(original)
     verify_last_raw(state)
     verify_natural_boundary(state)
+    if audit_raw.main() != 0:
+        raise RuntimeError("independent raw audit rejected old checkpoint")
+    raw_audit = HERE / "raw-audit.json"
+    audit = json.loads(raw_audit.read_text())
+    if (audit["checkpoint_sha256"] != sha(original) or audit["errors"] or
+            audit["completed_attempts"] != len(state["completed"])):
+        raise RuntimeError("independent raw audit receipt differs from old checkpoint")
     changed = migrated(state)
     new_bytes = encoded(changed)
     receipt = {"schema": 1, "policy": POLICY,
@@ -210,6 +218,7 @@ def handoff(expected_old_sha: str) -> dict:
                "old_attempt_cap": state["attempt_cap"],
                "new_attempt_cap": changed["attempt_cap"],
                "completed_prefix_sha256": sha(encoded(state["completed"])),
+               "independent_raw_audit_sha256": sha(raw_audit.read_bytes()),
                "last_trial_trace_sha256": state["completed"][-1]["raw_trace_sha256"]}
     if intent is not None:
         if {k: v for k, v in receipt.items() if k != "created_at_utc"} != {

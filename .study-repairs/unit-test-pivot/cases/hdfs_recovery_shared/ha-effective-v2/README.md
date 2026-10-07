@@ -124,6 +124,8 @@ manifest and trace, and `checkpoint.json` has `active: null`. The successor
 also takes `campaign.lock` nonblocking; it refuses to touch the checkpoint
 while the old controller holds that lock. It verifies the old `campaign.py`
 SHA-256, the last completed trial's plan, manifest, and raw trace SHA-256.
+It then runs `audit_raw.py` against every completed trial and refuses the
+handoff if the independent audit finds any inconsistency.
 
 The handoff retains the complete `completed`, `queue`, and `seen` lists. It
 records a five-slot scheduler with four RPC slots and one file-I/O slot,
@@ -150,6 +152,7 @@ holds `campaign.lock` continuously from verification through later trials.
 It writes an atomic `successor-handoff-intent.json` before replacing the
 checkpoint and an atomic `successor-handoff-receipt.json` afterward. These
 record old/new checkpoint and source hashes, preserved list counts, scheduler
-policy, and the final old trial's raw trace hash. Repeating the command
+policy, the independent audit hash, and the final old trial's raw trace
+hash. Repeating the command
 after interruption resumes the recorded checkpoint, including any active
 trial, without redoing completed trial directories.
