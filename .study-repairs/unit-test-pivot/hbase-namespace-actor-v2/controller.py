@@ -34,6 +34,45 @@ def atomic_json(path, value):
     os.replace(tmp, path)
 
 
+def publish(state):
+    """Atomic case-local table row; historical case counters are excluded."""
+    trials = state["trials"]
+    branches = state["covered_branches"]
+    baseline = state["baseline_branches"]
+    row = {"case_id": state["case"],
+           "methodology": "graph_free_original_junit_actor_bound_zk_io_jacoco_v2",
+           "status": state["status"],
+           "healthy_seeds": state["healthy_seeds"],
+           "healthy_selected_target_counts": state["healthy_selected_target_counts"],
+           "healthy_stable_selectors": len(state["healthy_stable_selectors"]),
+           "healthy_io_families": state["healthy_io_families"],
+           "healthy_expected_outcomes": state["healthy_expected_outcomes"],
+           "attempted_trials": len(trials), "effective_trials": state["effective"],
+           "strict_trials": sum(x["strict"] for x in trials),
+           "strict_postfault_target_trials": sum(x["effective"] for x in trials),
+           "requested_faults": sum(x["requested_faults"] for x in trials),
+           "applied_faults": sum(x["applied_count"] for x in trials),
+           "target_exception_candidates": sum(x["target_exception_review"] ==
+                                               "candidate_needs_source_and_replay" for x in trials),
+           "healthy_expected_target_exception_trials": sum(x["target_exception_review"] ==
+                                                          "healthy_expected" for x in trials),
+           "new_production_methods": len(set(state["covered_methods"])
+                                         - set(state["baseline_methods"])),
+           "new_production_branches": sum(max(0, count - baseline.get(key, 0))
+                                          for key, count in branches.items()),
+           "new_stable_io_families": sorted(
+               family for family, count in state["io_family_counts"].items()
+               if count >= 2 and family not in state["healthy_io_families"]),
+           "healthy_elapsed_seconds": state["healthy_elapsed_seconds"],
+           "fault_elapsed_seconds": sum(x["elapsed_seconds"] or 0 for x in trials),
+           "budget": {"effective_trials": state["max_effective"],
+                      "max_faults": state["max_faults"],
+                      "max_attempts": state["max_attempts"]},
+           "checkpoint": str((HERE / "campaigns" / state["case"] / "checkpoint.json")
+                             .relative_to(HERE))}
+    atomic_json(HERE / "campaigns" / state["case"] / "result.json", row)
+
+
 def parse(log):
     events = {"IO_ATTEMPT": [], "IO_END": [], "FAULT_APPLIED": [],
               "FAULT_REJECTED": [], "TARGET_EXIT": [], "TARGET_ENTER": [],
@@ -225,6 +264,7 @@ def init(case, seeds):
         raise RuntimeError("No stable same-actor pretarget I/O selectors")
     state = {"schema": 1, "case": case, "kind": kind, "healthy_seeds": seeds,
              "healthy_selected_target_counts": [len(chosen_targets(case, x)) for x in traces],
+             "healthy_elapsed_seconds": sum(x["elapsed_seconds"] or 0 for x in traces),
              "healthy_stable_selectors": stable,
              "healthy_io_families": sorted({io_family(x) for x in stable}),
              "healthy_expected_outcomes": sorted({x["outcome"] for t in traces
@@ -238,6 +278,7 @@ def init(case, seeds):
              "status": "ready", "started_at_unix": time.time()}
     enqueue(state, [], stable, 0)
     atomic_json(checkpoint, state)
+    publish(state)
     return state
 
 
@@ -333,6 +374,9 @@ def campaign(case):
         raise RuntimeError("First run: controller.py init CASE SEED1 SEED2")
     state = json.loads(checkpoint.read_text())
     inflight_path = checkpoint.with_name("inflight.json")
+    publish(state)
+    if state["status"] == "candidate_review_pending_source_and_replay":
+        raise RuntimeError("Review and replay the candidate before resuming this checkpoint")
     while state["effective"] < state["max_effective"] and len(state["trials"]) < state["max_attempts"]:
         if inflight_path.exists():
             inflight = json.loads(inflight_path.read_text())
@@ -359,7 +403,9 @@ def campaign(case):
             subprocess.run(["bash", str(RUN), "trial", state["kind"], seed,
                             ";".join(entry["plan"])], check=False)
         item = ingest(state, entry, inflight["id"])
+        state["status"] = "running"
         atomic_json(checkpoint, state)
+        publish(state)
         inflight_path.unlink()
         print(json.dumps({"case": case, "id": item["id"], "effective": state["effective"],
                           "attempted": len(state["trials"]), "queue": len(state["queue"]),
@@ -372,6 +418,7 @@ def campaign(case):
     elif len(state["trials"]) >= state["max_attempts"]:
         state["status"] = "attempt_cap_pending_audit"
     atomic_json(checkpoint, state)
+    publish(state)
 
 
 def main():

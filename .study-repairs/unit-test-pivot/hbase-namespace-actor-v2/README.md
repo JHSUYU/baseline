@@ -110,7 +110,10 @@ instead of rerunning it; an interrupted run without an exit receipt requires
 manual process/raw-log audit before any retry. A new HBASE-08 selected
 exception pauses at `candidate_review_pending_source_and_replay`; HBASE-21/22
 quota signatures already present in healthy runs are recorded as expected
-signatures, not automatically called new bugs. These V2 counters start at
+signatures, not automatically called new bugs. Every checkpoint also writes
+an atomic case-local `campaigns/CASE/result.json` row with attempts, effective
+trials, fault count, elapsed time, coverage and I/O gains, and stop reason;
+the shared 102-case table can ingest this independently. These V2 counters start at
 zero and never import the older unbound runs.
 
 ## Offline checks
