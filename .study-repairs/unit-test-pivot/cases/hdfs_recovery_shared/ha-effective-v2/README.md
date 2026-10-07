@@ -114,11 +114,11 @@ including startup/shutdown). Because no fault was injected and no selected
 postfault target was observed, pilot 03 is neither effective nor a bug
 candidate. All three remain outside the new 80/128 effective-trial budget.
 
-## Natural-boundary successor
+## Versioned successor and safe boundaries
 
-`successor.py` is prepared for the running node1 campaign. Do not copy it to
-node1 or launch it while `hdfs_ha_effective_full` is running. At the old
-controller's natural complete boundary (12-hour wall cap or attempt cap),
+`successor.py` and `early_quiesce.py` are prepared offline for the running
+node1 campaign. Do not replace its running `campaign.py` or change its JVM.
+At the old controller's natural complete boundary (12-hour wall cap or attempt cap),
 first confirm that its tmux command has exited, the last trial has a full
 manifest and trace, and `checkpoint.json` has `active: null`. The successor
 also takes `campaign.lock` nonblocking; it refuses to touch the checkpoint
@@ -137,14 +137,27 @@ exploration slot and does not add any old-phase attempts to the denominators.
 It preserves the original per-case 80/128 effective goals and
 fault-depth rules. If the old controller stopped at its 320-attempt cap, it
 extends the existing conditional ceiling to 512 cumulative attempts. A
-candidate target exception, a met effective budget, an active trial, an
-empty queue, or an already exhausted 512-attempt cap blocks handoff. The
+candidate target exception, a met effective budget, an empty queue, or an
+already exhausted 512-attempt cap blocks natural handoff. The
 successor keeps the same shared `jvm-start.lock` and Java-process limit (no
 more than four JVMs before a start) and raises its disk-free requirement to
 10 GiB. Its own wall limit is 12 hours.
 
-After copying only `successor.py` to the matching node1 directory, use the
-old source hash as a guard:
+An optional early handoff applies only when HDFS-29 and HDFS-30 have each
+reached 80 **effective** HA trials while HDFS-28 remains below its own goal.
+The old controller must be waiting on the shared start flock with one active
+plan reserved but no `driver.log`, `junit.log`, trace, manifest, Java child, or
+JUnit runner for that trial. `early_quiesce.py` rechecks these conditions
+after SIGSTOP, then stops only the old Python controller and stores a durable
+byte-for-byte checkpoint backup and receipt. Failed checks SIGCONT the old
+controller and leave the campaign running. The successor verifies the backup,
+source SHA, active plan and raw audit under `campaign.lock`, then resumes that
+same reserved plan as the next trial. It preserves `completed`, `queue`,
+`seen`, and `active` across the scheduler checkpoint update. If the condition
+or boundary does not occur, allow the old runner to reach a natural stop.
+
+After a verified boundary, copy the versioned successor into the matching
+node1 directory and use the old source hash as a guard:
 
 ```sh
 python3 successor.py --preview --expected-old-sha256 824df96b2fbbcfeb2d29d444443a837f414d183f90e28fdf2789c8a07a40b93b
@@ -157,6 +170,7 @@ It writes an atomic `successor-handoff-intent.json` before replacing the
 checkpoint and an atomic `successor-handoff-receipt.json` afterward. These
 record old/new checkpoint and source hashes, preserved list counts, scheduler
 policy, the independent audit hash, and the final old trial's raw trace
-hash. Repeating the command
+hash. An early handoff also records the unstarted plan and checkpoint backup
+SHA. Repeating the command
 after interruption resumes the recorded checkpoint, including any active
 trial, without redoing completed trial directories.

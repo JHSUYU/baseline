@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Resume the HA JUnit campaign only after its original controller exits.
+"""Resume HA JUnit after a natural or verified unstarted-plan boundary.
 
 The handoff retains every completed trial, queued sequence, and seen ID.  Its
 only checkpoint changes are a recorded scheduler anchor, a cleared exhausted
@@ -28,6 +28,8 @@ HERE = Path(__file__).resolve().parent
 STATE = HERE / "checkpoint.json"
 INTENT = HERE / "successor-handoff-intent.json"
 RECEIPT = HERE / "successor-handoff-receipt.json"
+EARLY_RECEIPT = HERE / "early-quiesce-receipt.json"
+EARLY_BACKUP = HERE / "checkpoint.pre-successor-early.json"
 POLICY = "four_rpc_one_file_target_eligible_focus28_after_peer80"
 MIN_FREE_BYTES = 10 * 1024**3
 
@@ -121,7 +123,43 @@ def verify_last_raw(state: dict) -> None:
         raise RuntimeError("last completed plan differs from checkpoint")
 
 
-def verify_natural_boundary(state: dict) -> None:
+def verify_boundary(state: dict, original: bytes, old_source_sha: str) -> str:
+    if EARLY_RECEIPT.exists():
+        receipt = json.loads(EARLY_RECEIPT.read_text())
+        active = state.get("active")
+        directory = HERE / "runs" / ("trial-%04d" % (len(state["completed"]) + 1))
+        counts = {case: len(rows) for case, rows in campaign.effective(state).items()}
+        absent = ("driver.log", "junit.log", "runtime_trace.jsonl", "manifest.json")
+        expected = {"schema": 1, "boundary": "unstarted_reserved_plan",
+                    "old_runner_sha256": old_source_sha,
+                    "checkpoint_sha256": sha(original),
+                    "backup_sha256": sha(original),
+                    "completed": len(state["completed"]),
+                    "queue": len(state["queue"]), "seen": len(state["seen"]),
+                    "active_plan": active["id"] if active else None,
+                    "unstarted_trial_directory": str(directory),
+                    "effective": counts, "junit_started": False}
+        if any(receipt.get(key) != value for key, value in expected.items()):
+            raise RuntimeError("early boundary receipt disagrees with checkpoint/source")
+        if (active is None or not EARLY_BACKUP.is_file()
+                or EARLY_BACKUP.read_bytes() != original
+                or counts["HDFS-29"] < campaign.BASE
+                or counts["HDFS-30"] < campaign.BASE
+                or counts["HDFS-28"] >= state["goals"]["HDFS-28"]
+                or campaign.stop_reason(state) is not None
+                or any((directory / name).exists() for name in absent)
+                or campaign.child_java_started(directory)
+                or campaign.previous_runner_alive(directory)):
+            raise RuntimeError("early boundary is no longer an unstarted reserved trial")
+        plan = directory / "fault-plan.tsv"
+        expected_plan = "".join("\t".join(str(item[key]) for key in
+                                           ("marker", "siteId", "sourceKey",
+                                            "occurrenceAddress", "hitOrdinal", "faultType"))
+                                + "\t" + item["filePhase"] + "\n"
+                                for item in active["sequence"])
+        if not plan.is_file() or plan.read_text() != expected_plan:
+            raise RuntimeError("reserved plan differs from active checkpoint")
+        return "early_unstarted_reserved_plan"
     log = HERE / "full-campaign.log"
     last_line = log.read_bytes()[-8192:].splitlines()[-1].decode(errors="replace")
     terminal = campaign.stop_reason(state)
@@ -133,14 +171,17 @@ def verify_natural_boundary(state: dict) -> None:
         raise RuntimeError("old controller ended with a non-resumable outcome")
     if last_line != expected:
         raise RuntimeError("old controller has no matching natural-boundary log")
+    return "natural"
 
 
-def migrated(state: dict) -> dict:
+def migrated(state: dict, boundary: str) -> dict:
     if state.get("schema") != 2 or tuple(state.get("cases", ())) != campaign.CASES:
         raise RuntimeError("unexpected campaign checkpoint schema/cases")
-    if state["active"] is not None:
-        raise RuntimeError("handoff requires an inactive, complete checkpoint")
-    if not state["queue"]:
+    if boundary == "natural" and state["active"] is not None:
+        raise RuntimeError("natural handoff requires an inactive checkpoint")
+    if boundary == "early_unstarted_reserved_plan" and state["active"] is None:
+        raise RuntimeError("early handoff requires a reserved active plan")
+    if not state["queue"] and state["active"] is None:
         raise RuntimeError("no queued sequences left for successor")
     if state.get("successor_scheduler"):
         raise RuntimeError("successor scheduler already installed")
@@ -198,7 +239,7 @@ def handoff(expected_old_sha: str) -> dict:
     original = STATE.read_bytes()
     state = json.loads(original)
     verify_last_raw(state)
-    verify_natural_boundary(state)
+    boundary = verify_boundary(state, original, old_source_sha)
     if audit_raw.main() != 0:
         raise RuntimeError("independent raw audit rejected old checkpoint")
     raw_audit = HERE / "raw-audit.json"
@@ -206,9 +247,9 @@ def handoff(expected_old_sha: str) -> dict:
     if (audit["checkpoint_sha256"] != sha(original) or audit["errors"] or
             audit["completed_attempts"] != len(state["completed"])):
         raise RuntimeError("independent raw audit receipt differs from old checkpoint")
-    changed = migrated(state)
+    changed = migrated(state, boundary)
     new_bytes = encoded(changed)
-    receipt = {"schema": 1, "policy": POLICY,
+    receipt = {"schema": 1, "policy": POLICY, "boundary": boundary,
                "created_at_utc": campaign.utc(),
                "old_runner_sha256": old_source_sha,
                "successor_sha256": sha(Path(__file__).read_bytes()),
@@ -223,7 +264,9 @@ def handoff(expected_old_sha: str) -> dict:
                "new_attempt_cap": changed["attempt_cap"],
                "completed_prefix_sha256": sha(encoded(state["completed"])),
                "independent_raw_audit_sha256": sha(raw_audit.read_bytes()),
-               "last_trial_trace_sha256": state["completed"][-1]["raw_trace_sha256"]}
+               "last_trial_trace_sha256": state["completed"][-1]["raw_trace_sha256"],
+               "early_backup_sha256": sha(EARLY_BACKUP.read_bytes()) if
+               boundary == "early_unstarted_reserved_plan" else None}
     if intent is not None:
         if {k: v for k, v in receipt.items() if k != "created_at_utc"} != {
                 k: v for k, v in intent.items() if k != "created_at_utc"}:
@@ -241,7 +284,7 @@ def handoff(expected_old_sha: str) -> dict:
 def run(args: argparse.Namespace) -> None:
     with campaign.LOCK.open("a+") as lock:
         # The original controller holds this lock for its entire lifetime.
-        # No state is read or mutated until it has naturally released it.
+        # No state is read or mutated until the old controller has released it.
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         receipt = handoff(args.expected_old_sha256)
         campaign.MIN_FREE_BYTES = MIN_FREE_BYTES
