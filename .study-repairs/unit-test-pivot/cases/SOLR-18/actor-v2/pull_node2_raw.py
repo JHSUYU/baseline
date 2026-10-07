@@ -80,7 +80,9 @@ def main() -> None:
     for run_id in available[:args.max_runs]:
         pull(run_id, mirror['runs'][run_id]['sha256'], doc)
         count += 1
-    subprocess.run(['rsync', '-a', '-e', TRANSPORT, str(RECEIPT),
+    # Rapid successive pulls can produce same-size receipts with the same
+    # timestamp. Compare file content when publishing the archive receipt.
+    subprocess.run(['rsync', '-ac', '-e', TRANSPORT, str(RECEIPT),
                     HOST + ':' + REMOTE_CASE + '/' + RECEIPT.name], check=True)
     check = subprocess.run(['rsync', '-acn', '-i', '-e', TRANSPORT, str(RECEIPT),
                             HOST + ':' + REMOTE_CASE + '/' + RECEIPT.name],
