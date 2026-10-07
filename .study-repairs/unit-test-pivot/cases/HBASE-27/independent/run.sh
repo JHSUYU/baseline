@@ -10,7 +10,7 @@ java_bin=/usr/lib/jvm/java-8-openjdk-amd64/bin/java
 javac_bin=/usr/lib/jvm/java-8-openjdk-amd64/bin/javac
 classpath="$case_dir/classes:$shared_dir/classes:$shared_dir/junit-platform-launcher-1.13.4.jar:$shared_dir/byte-buddy-1.12.16.jar:$hbase_dist/conf:$hbase_dist/lib/*:$hbase_dist/lib/client-facing-thirdparty/*:$hadoop_dist/share/hadoop/common/hadoop-common-2.10.0-tests.jar:$hadoop_dist/share/hadoop/common/lib/*"
 
-case "${1:?build or healthy}" in
+case "${1:?build healthy or trial}" in
   build)
     mkdir -p "$case_dir/classes" "$case_dir/logs"
     "$javac_bin" -cp "$classpath" -d "$case_dir/classes" \
@@ -19,8 +19,13 @@ case "${1:?build or healthy}" in
       > "$case_dir/manifest.mf"
     jar cfm "$case_dir/agent.jar" "$case_dir/manifest.mf" -C "$case_dir/classes" .
     ;;
-  healthy)
+  healthy|trial)
     suffix="${2:?run suffix}"
+    selector="${3:-}"
+    if [[ "$1" == trial && -z "$selector" ]]; then
+      echo 'trial requires an exact observed selector' >&2
+      exit 2
+    fi
     data_dir="$case_dir/data-$suffix"
     mkdir -p "$data_dir/tmp" "$case_dir/logs"
     export HBASE_HOME="$hbase_dist"
@@ -29,6 +34,7 @@ case "${1:?build or healthy}" in
         -Djava.library.path="$hadoop_dist/lib/native" \
         -javaagent:"$jacoco_agent=destfile=$case_dir/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.regionserver.HRegionServer:org.apache.hadoop.hbase.zookeeper.ZKNodeTracker:org.apache.hadoop.hbase.zookeeper.ZKUtil" \
         -javaagent:"$case_dir/agent.jar" \
+        -Dhbase27.fault.selector="$selector" \
         -Djava.io.tmpdir="$data_dir/tmp" \
         -Dtest.build.data.basedirectory="$data_dir" \
         -cp "$classpath" NativeJUnit27 \

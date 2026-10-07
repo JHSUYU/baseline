@@ -2,9 +2,12 @@ import static net.bytebuddy.matcher.ElementMatchers.named;
 import static net.bytebuddy.matcher.ElementMatchers.takesArguments;
 
 import java.lang.instrument.Instrumentation;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import net.bytebuddy.agent.builder.AgentBuilder;
 import net.bytebuddy.asm.Advice;
+import org.apache.zookeeper.KeeperException;
 
 /** Original-JUnit reachability observer; never injects a fault. */
 public class HBase27TargetAgent {
@@ -12,6 +15,8 @@ public class HBase27TargetAgent {
   public static final AtomicInteger GUARD_EVALUATIONS = new AtomicInteger();
   public static final AtomicInteger TARGET_THROWS = new AtomicInteger();
   public static final ThreadLocal<Object> ACTIVE_RS = new ThreadLocal<>();
+  public static final Map<String, AtomicInteger> IO_HITS = new ConcurrentHashMap<>();
+  public static final String FAULT_SELECTOR = System.getProperty("hbase27.fault.selector", "");
 
   public static String trackerNode(Object tracker) {
     try { return String.valueOf(tracker.getClass().getMethod("getNode").invoke(tracker)); }
@@ -29,6 +34,20 @@ public class HBase27TargetAgent {
         return "ZKNodeTracker." + frame.getMethodName();
     }
     return "OTHER";
+  }
+
+  public static String watcherRole(Object watcher) {
+    String identity = String.valueOf(watcher);
+    if (identity.startsWith("regionserver:")) return "REGIONSERVER";
+    if (identity.startsWith("master:")) return "MASTER";
+    return "OTHER";
+  }
+
+  public static String selector(String role, String path, String caller) {
+    String family = "ZK_RESPONSE~" + role + "~" + path + "~" + caller;
+    int occurrence = IO_HITS.computeIfAbsent(family, unused -> new AtomicInteger())
+      .incrementAndGet();
+    return family + "~" + occurrence;
   }
 
   public static void premain(String args, Instrumentation inst) {
@@ -94,10 +113,41 @@ public class HBase27TargetAgent {
 
   public static class ZkRead {
     @Advice.OnMethodEnter
-    public static void enter(@Advice.Argument(1) String path) {
-      if (path.endsWith("/master") || path.endsWith("/running"))
-        System.err.println("HBASE27 IO_GETDATA path=" + path + " caller=" + caller()
-          + " thread=" + Thread.currentThread().getName().replace(' ', '_'));
+    public static ReadPoint enter(@Advice.Argument(0) Object watcher,
+        @Advice.Argument(1) String path) {
+      if (!path.endsWith("/master") && !path.endsWith("/running")) return null;
+      String role = watcherRole(watcher);
+      String site = caller();
+      return new ReadPoint(selector(role, path, site), path, role, site);
+    }
+
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(@Advice.Enter ReadPoint point,
+        @Advice.Thrown(readOnly = false) Throwable error) {
+      if (point == null) return;
+      String original = error == null ? "none" : error.getClass().getName();
+      System.err.println("HBASE27 IO selector=" + point.selector
+        + " originalError=" + original + " thread="
+        + Thread.currentThread().getName().replace(' ', '_'));
+      if (!point.selector.equals(FAULT_SELECTOR) || error != null) return;
+      System.err.println("HBASE27 FAULT_MATCHED selector=" + point.selector
+        + " kind=KEEPER_CONNECTIONLOSS");
+      error = KeeperException.create(KeeperException.Code.CONNECTIONLOSS, point.path);
+      System.err.println("HBASE27 FAULT_APPLIED selector=" + point.selector
+        + " kind=KEEPER_CONNECTIONLOSS");
+    }
+  }
+
+  public static class ReadPoint {
+    public final String selector;
+    public final String path;
+    public final String role;
+    public final String site;
+    public ReadPoint(String selector, String path, String role, String site) {
+      this.selector = selector;
+      this.path = path;
+      this.role = role;
+      this.site = site;
     }
   }
 }
