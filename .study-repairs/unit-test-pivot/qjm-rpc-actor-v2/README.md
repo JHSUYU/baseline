@@ -74,6 +74,12 @@ actors or resolved RPC peers are absent, the exact target site/journal is
 absent, or raw JaCoCo/feedback hashes are missing. It requires stable actors
 and I/O families across two seeds. Historical trials are never imported; the
 new effective denominator starts at zero.
+The HDFS-07 three-plan pilot raw archive and independent receipt are under
+`evidence/HDFS-07/pilot3-raw.tar.gz` and `pilot3-audit.json`. The two original
+healthy JUnit seeds for each of HDFS-09/10 are preserved in their separate
+`evidence/HDFS-09/healthy-raw.tar.gz` and
+`evidence/HDFS-10/healthy-raw.tar.gz` archives. These latter cases have no V2
+fault trials yet.
 
 `campaign_v2.py` uses a process lock and atomic checkpoints. It resumes a
 selected plan from its complete immutable manifest; an interrupted run without
