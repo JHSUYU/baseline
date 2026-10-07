@@ -178,7 +178,8 @@ def analyze(state: dict, item: dict, run: Path, root: Path) -> dict:
     now = coverage(run)
     gains = {kind: sorted(values - set(state["coverage_union"][kind]))
              if receipt["pass"] else [] for kind, values in now.items()}
-    new_io = (sorted({family(row) for row in trace if relevant(row)} -
+    new_io = (sorted({family(row) for row in trace if relevant(row) and
+                      next_context(trace, row["seq"]) is not None} -
                      set(state["io_union"])) if receipt["pass"] else [])
     candidate = (receipt["pass"] and
                  receipt["same_context_postfault_exceptions"] > 0 and
@@ -201,7 +202,8 @@ def mutate(state: dict, row: dict, trace: list[dict]) -> None:
     last = row["receipt"]["last_fault_seq"]
     candidates = [event for event in trace if relevant(event) and
                   event["seq"] > last and next_context(trace, event["seq"]) is not None]
-    candidates.sort(key=lambda event: (family(event) in state["io_union"], -event["seq"]))
+    candidates.sort(key=lambda event: (family(event) not in row["new_io_family_ids"],
+                                       -event["seq"]))
     chosen = set()
     gain = row["new_coverage_method_branch"] + row["new_io_families"]
     for event in candidates:

@@ -76,7 +76,8 @@ def inspect(root: Path) -> dict:
             now = coverage(run)
             gains = {key: sorted(values - unions[key]) if row["effective"] else []
                      for key, values in now.items()}
-            new_io = sorted({family(event) for event in trace if relevant(event)} - io_union)
+            new_io = sorted({family(event) for event in trace if relevant(event) and
+                             next_context(trace, event["seq"]) is not None} - io_union)
             if not row["effective"]:
                 new_io = []
             candidate = bool(receipt["pass"] and
