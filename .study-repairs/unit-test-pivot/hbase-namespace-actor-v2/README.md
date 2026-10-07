@@ -79,6 +79,9 @@ the JAR's SHA-256 in that seed's manifest.
 The unchanged server and test JAR SHA-256 values are
 `27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696`
 and `b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5`.
+The local JUnit Platform launcher is bundled under this directory with
+SHA-256 `0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564`;
+the runner does not depend on another case's working directory.
 
 Before running a cluster seed, capture a fresh scratch directory and Java
 agent output for each case. Verify actor and manager binding in at least two

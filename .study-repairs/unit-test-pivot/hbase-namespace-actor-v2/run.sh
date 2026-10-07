@@ -3,7 +3,7 @@ set -euo pipefail
 actor_dir=$(cd "$(dirname "$0")" && pwd)
 hbase_dist=/users/ZhenyuLi/.baseline-deps/hbase-2.6.6
 hadoop_dist=/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0
-launcher_jar=/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-08/work/junit-platform-launcher-1.13.4.jar
+launcher_jar="$actor_dir/junit-platform-launcher-1.13.4.jar"
 jacoco_agent=/users/ZhenyuLi/.m2/repository/org/jacoco/org.jacoco.agent/0.8.15/org.jacoco.agent-0.8.15-runtime.jar
 java_bin=/usr/lib/jvm/java-8-openjdk-amd64/bin/java
 javac_bin=/usr/lib/jvm/java-8-openjdk-amd64/bin/javac
