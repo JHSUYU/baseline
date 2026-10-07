@@ -254,6 +254,18 @@ as `phase-v4/RecoveryProbe.before-target-throw-json.java` before rebuilding
 the same fault selectors. No historical trace contained `TARGET_THROW`;
 new attempts retain their separate source/build provenance.
 
+The bounded priority pilot ended at completed V4 trial 151. Its 23 resumed
+original-JUnit attempts (129–151) included 12 exact ordered injections, but
+none reached any of the three selected checks on the same recovery owner
+after the final fault. The independent
+`phase-v4/audit_effective_resume.py` recomputed plan matching, physical
+recovery identity, post-fault checks, target throws, and JaCoCo export counts
+from each new raw run; `phase-v4/effective-resume-audit-151.json` records the
+checkpoint and per-file SHA-256 values. It also verified the unchanged
+historical checkpoint and raw archive. The actor-qualified totals remain
+18/39/39. This is an ineffective bounded continuation, not an
+80-effective completion; node1 has no running V4 continuation.
+
 ## Independent HA owner-test calibration
 
 The released `TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization`
@@ -284,6 +296,23 @@ three methods, and 22 branch-count IDs
 with this selector, `ha-smoke-file`, had no matched fault because the
 original test chose `dn2` as primary instead of `dn1`. These two HA pilots
 are kept separate from the main 80-trial budget.
+
+The three-DataNode workload also permits a deeper, same-owner sequence.
+On node1, `phase-v4/ha-two-file-pilot-node1-02` applied two file-read
+`IOException` faults in order: `dn0` at trace seq 20, then `dn1` at seq 27,
+both under the same `dn1/block:1073741825/attempt:1` recovery. HDFS-29 and
+HDFS-30 each reached their nonfatal target guard after the second fault at
+seq 28 and 30, respectively; the unchanged JUnit passed in 29.330 seconds.
+Relative to the earlier HA healthy seed, this run added 29 released
+production probes, three methods, and 20 branch-count IDs. HDFS-28's last
+visit preceded the second fault, so this pilot is not HDFS-28 effective.
+The neighboring pilots `ha-two-file-pilot-node1-01` and
+`ha-two-remote-pilot-node1-03` matched no fault because the original test
+selected another physical coordinator. The latter timed out at its JUnit
+annotation limit of 60 seconds before failover; it is not a fault-induced
+target observation. These three runs have distinct raw traces, JUnit logs,
+JaCoCo outputs, and manifests on node0 and node1. They are feasibility
+evidence for a separate HA effective-budget campaign, not added to V4 counts.
 
 ## HDFS-30 HA control-plane supplement
 
