@@ -53,8 +53,11 @@ only observe. Fault mode accepts ordered
 `ACTOR` may be a calibrated `JETTY_n`, `OWNER_OF_CORE:<coreName>`, or
 `PRODUCER_OF_CORE:<coreName>`; the latter two resolve against a preceding
 CREATE sender event in the same run. Every matched/applied event is traced.
-No fault has been injected in this V3 stage yet. The future fault sequence
-budget is 80 effective
+The V3 pilot has two strict, same-actor, target-retaining fault trials;
+neither triggered the selected target exception. Both original JUnits failed
+their asynchronous status assertion after the injected ZooKeeper connection
+loss. `evidence/v3-pilot-review.md` records their source-level chronology,
+coverage, times, and archived raw traces. The fault sequence budget is 80 effective
 target-retaining trials with at most eight ordered faults, and an optional
 128/max10 extension only if late new production coverage or stable I/O sites
 justify it. A strict match without a later execution of the same target is
@@ -115,8 +118,12 @@ Jetty position is carried across trials. The raw traces, JUnit outputs,
 coverage, receipts, and queue are archived with per-file hashes in
 `evidence/v3-healthy-raw.tar.gz` and
 `evidence/v3-healthy-archive-manifest.json`. These healthy and intermediate
-runs supply **zero V3 fault trials**; the earlier coarse actor campaign
-remains historical evidence only.
+runs supply **zero V3 fault trials**; the separate two-round pilot begins the
+new campaign. The earlier coarse actor campaign remains historical evidence
+only. `campaign_v3.py` keeps a monotonic checkpoint and counts only ordered,
+exact same-actor injections with a later target on the same core as effective.
+It retains complete attempts with lost targets as attempts only and provides
+an owner-set `STOP_AFTER_TRIAL` gate at a completed original JUnit boundary.
 `calibrate_v3.py` runs the two unchanged JUnit seeds sequentially under one
 tmux supervisor, saves a checkpoint after each seed, reuses an already
 passing seed after a disconnect, and stops for review on a partial or failed

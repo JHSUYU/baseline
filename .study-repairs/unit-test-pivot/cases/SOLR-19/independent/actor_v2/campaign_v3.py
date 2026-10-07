@@ -247,7 +247,8 @@ def publish(state: dict) -> None:
         return
     prior = json.loads(CASE_RESULT.read_text())
     stat = counts(state)
-    prior.update({"status": "running" if state["stop_reason"] is None else
+    is_pause = state["stop_reason"] == "paused_by_owner_at_complete_trial_boundary"
+    prior.update({"status": "running" if state["stop_reason"] is None or is_pause else
                   "pending_result_review", "quality_complete": False,
                   "methodology": "coverage_io_no_graph_exact_actor",
                   "campaign_workspace": "cases/SOLR-19/independent/actor_v2",
