@@ -56,12 +56,38 @@ exact B5 as true, identify three distinct RegionServers, and verify
 `INITIAL_OWNER==SOURCE_RS`. They take 51.67 s and 57.51 s. The machine-readable
 `independent/healthy_receipt_v2.json` records raw-log SHA-256 values, both
 role maps, exact B5 outcomes, 8 common stable I/O sites, 11 common exact
-selectors, per-seed candidate/exclusion counts, and event kinds. V2 runs in
+selectors, per-seed candidate/exclusion counts, and event kinds. V2 ran in
 node1 tmux `hbase17-v2-campaign` with `checkpoint_v2.json`,
 `trial_ledger_v2.json`, `logs_v2`, 80 effective target-retaining trials,
 maximum eight ordered faults, 180 attempts, and an 11,000-second wall cap.
-Its current counters and elapsed time are separate from the archived legacy
-phase in `result.json`.
+It naturally stopped at 115 attempts and 80 effective trials; its tmux and
+JUnit JVM have exited. The final raw-actor audit proves all 86 strict
+injections and 80 effective trials, with zero identity errors. The unchanged
+original JUnit passed in 110 attempts; two failed only after a direct injected
+META write failure aborted the master before B5, and three target-lost runs
+were stopped after bounded observation. No selected B5 `AssertionError` or
+JUnit failure after a final fault followed by B5 was observed. The campaign
+found no confirmed new bug for HBASE-17.
+
+V2 production JaCoCo coverage grew by one method, 27 branches, and 72 lines
+over its two-seed union; stable I/O sites grew from 11 to 17. Its last 20
+trials added neither new production coverage nor a stable I/O site, so the
+conditional 128-trial extension was not activated. The V2 trial time totals
+6,573.01 seconds; `result.json` separately preserves the earlier
+coarse-identity/calibration time and reports 9,883.27 seconds across all
+HBASE-17 work. Each V2 trial's exact plan, timing, JUnit, and target outcome
+is in `independent/trial_ledger_v2.json`; complete analysis is in
+`independent/v2_source_review.md`. The legacy phase remains separate and
+does not enter the 80-trial V2 denominator.
+
+All 115 original JUnit trial logs and JaCoCo `.exec` files, final checkpoint,
+ledger, healthy receipt, and actor audit are archived in
+`independent/evidence/v2-archive/hbase17-v2-r001-r115.tar.gz` (6,926,939
+bytes; SHA-256
+`9fbbe89b6a15e7c12601a4bf935b97559c270477b5c8dd50a6c0bfb763e0c92a`).
+`independent/evidence/v2-archive/manifest.json` records its contents and
+verification. The archive was compressed on node1 and mirrored to node0;
+node0 retains more than 2 GiB free disk space.
 
 The earlier `TestProcDispatcher.testRetryLimitOnConnClosedErrors` proof below
 is preserved but excluded from the active workload. Six later unchanged-JUnit
