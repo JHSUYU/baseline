@@ -45,7 +45,8 @@ def choose_kind(state):
     selected = Counter(trial["plan"][-1].rsplit("~", 1)[1]
                        for trial in state["trials"]
                        if trial.get("selection_policy") in
-                       ("upstream_v7_retention", "upstream_v9_master_parent_replenish"))
+                       ("upstream_v7_retention", "upstream_v9_master_parent_replenish",
+                        "upstream_v10_same_raw_actor"))
     slot = sum(selected.values()) + 1
     return max(KINDS, key=lambda kind: slot * KIND_SHARE[kind] - selected[kind])
 
@@ -234,6 +235,28 @@ def fault_events(trace):
                   key=lambda item: item["line"])
 
 
+def selector_actor(selector):
+    match = re.match(r"^[^~]+~([^~]+)~replica-(\d+)~", selector)
+    return (match[1], match[2]) if match else None
+
+
+def same_plan_actor(plan):
+    actors = [selector_actor(step) for step in plan]
+    return all(actor is not None for actor in actors) and len(set(actors)) == 1
+
+
+def same_observed_actor(trace):
+    events = fault_events(trace)
+    actors = []
+    for event in events:
+        selector = selector_actor(event.get("selector", ""))
+        raw = event.get("raw_primary_region")
+        if selector is None or not raw:
+            return False
+        actors.append((raw, selector[1]))
+    return bool(actors) and len(set(actors)) == 1
+
+
 def coverage(paths):
     run = subprocess.run(["bash", str(HERE / "run.sh"), "coverage",
                           ",".join(str(path) for path in paths)],
@@ -336,17 +359,24 @@ def enqueue(state, prefix, selectors, after, novelty, seconds, rpc_selectors=(),
                                         item in familiar))
         else:
             pool.sort(key=lambda item: item in familiar)
+        # A faulted parent can observe other regions' I/O.  Those events do
+        # not belong to this check's same-region recovery sequence.
+        actor_key = selector_actor(prefix[0])
+        pool = [item for item in pool if selector_actor(item) == actor_key]
         pool = pool[:CHILD_CAP - 2]
         # Reserve two exact same-actor client RPCs as terminal faults. Their
         # exception enters the selected B7 catch after the upstream prefix.
         rpc_pool = list(dict.fromkeys(selector for line, selector in rpc_selectors
                                       if line > after and common in selector
-                                      and (exact is None or exact in selector)))
+                                      and (exact is None or exact in selector)
+                                      and selector_actor(selector) == actor_key))
         pool.extend(rpc_pool[:2])
     seen = set(state["seen_plans"])
     for selector in pool:
         for kind in KINDS:
             plan = prefix + [selector + "~" + kind]
+            if not same_plan_actor(plan):
+                continue
             key = ";".join(plan)
             if key not in seen:
                 seen.add(key)
@@ -387,7 +417,8 @@ def priority(entry, tried, family_counts, tried_fault=None, prefix_failures=None
 
 def prune(state):
     invalid = [trial["plan"] for trial in state["trials"]
-               if trial["invalid_cluster"] or (trial["strict"] and not trial["target_retained"])]
+               if trial["invalid_cluster"] or trial.get("invalid_actor", False)
+               or (trial["strict"] and not trial["target_retained"])]
     state["queue"] = [entry for entry in state["queue"]
                       if not any(len(entry["plan"]) > len(prefix)
                                  and entry["plan"][:len(prefix)] == prefix
@@ -417,6 +448,7 @@ def publish(state, status="running"):
               "exact_b7": sum(t["exact_b7"] for t in trials),
               "target_lost": sum(t["strict"] and not t["target_retained"] for t in trials),
               "invalid_cluster": sum(t["invalid_cluster"] for t in trials),
+              "invalid_actor": sum(t.get("invalid_actor", False) for t in trials),
               "queue_length": len(state["queue"]),
               "production_coverage": state["coverage_union"],
               "healthy_production_coverage": state["healthy_coverage"],
@@ -663,6 +695,8 @@ def main():
             state["selection_policy"] = "upstream_v9_master_parent_replenish"
             state["version"] = 9
             publish(state)
+        if state.get("version", 1) < 10:
+            raise RuntimeError("Run same-actor v10 checkpoint migration before fuzzing")
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -677,8 +711,8 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 9, "rng_seed": RNG_SEED,
-                 "selection_policy": "upstream_v9_master_parent_replenish",
+        state = {"version": 10, "rng_seed": RNG_SEED,
+                 "selection_policy": "upstream_v10_same_raw_actor",
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),
@@ -813,6 +847,8 @@ def main():
         aborts = sorted({e["server"] for e in trace["RS_ABORT"]
                          if cutoff is None or e["line"] < cutoff})
         invalid = matched and len(aborts) >= 3
+        invalid_actor = not same_plan_actor(entry["plan"]) or (
+            matched and not same_observed_actor(trace))
         retained = bool(reached["method"] or reached["progress"] or reached["guard"])
         guard = bool(reached["guard"])
         exec_file = HERE / "logs" / (trial_id + ".exec")
@@ -823,7 +859,8 @@ def main():
         # Quarantine an anomalous original JUnit until its exact replay and
         # source review finish. Keep raw receipts, but do not let coverage,
         # I/O novelty, or descendants bias the next fault sequence.
-        admitted = matched and retained and not invalid and exec_ok and not unexpected
+        admitted = (matched and retained and not invalid and not invalid_actor
+                    and exec_ok and not unexpected)
         effective = admitted and bool(reached["b7"])
         old = state["coverage_union"]
         new = old
@@ -847,6 +884,7 @@ def main():
                  "same_actor_retry_after_fault": bool(reached["progress"]),
                  "target_retained": retained, "postfault_guard": guard,
                  "exact_b7": bool(reached["b7"]), "invalid_cluster": bool(invalid),
+                 "invalid_actor": bool(invalid_actor),
                  "aborted_region_servers": aborts, "coverage_admitted": admitted,
                  "effective": effective, "new_branches_methods": novelty,
                  "new_io_selectors": new_io, "junit": trace["junit"],
@@ -855,7 +893,8 @@ def main():
                  "log": str(compressed.relative_to(HERE.parent)),
                  "raw_log_sha256": raw_log_sha256(path),
                  "exec_sha256": sha256(exec_file) if exec_ok else None,
-                 "disposition": ("unmatched" if not matched else
+                 "disposition": ("invalid_actor" if invalid_actor else
+                    "unmatched" if not matched else
                     "invalid_cluster" if invalid else "target_lost" if not retained else
                     "timeout_requires_review" if exit_code == 124 else
                     "junit_failure_requires_review" if unexpected else

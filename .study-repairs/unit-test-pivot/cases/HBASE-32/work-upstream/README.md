@@ -102,4 +102,16 @@ rethrow after the final fault. A Master report retry that merely enters the
 target method, or a WAL error that merely causes a same-actor retry, can
 generate children but does not count as a B7-effective trial.
 
+Version 10 enforces that every fault in a sequence uses the same stable
+region and replica selector, and that the injected calls in one run have the
+same raw primary-region bytes and replica. At the s125 complete checkpoint,
+an audit found s120 and s121 crossed from replica 2 to replica 5. Their raw
+traces and elapsed times remain as attempts, but s120's feedback and s121's
+formerly counted B7 hit were withdrawn. The migration recomputed coverage
+and I/O unions from SHA-verified original logs, removed 2,830 cross-actor
+pending plans, retained all 8,124 seen-plan IDs, and left 125 attempts / 28
+valid B7 trials. No completed plan was rerun. See
+`evidence-v10-same-actor-migration.json` for before/after hashes and counts;
+`evidence-v10-pre-checkpoint.json.gz` contains the exact old checkpoint.
+
 `../evidence/upstream-passive-findings.md` records the original-JUnit calibrations, exact actor matching, exclusions, and separate diagnostic pilots. A target B7 throw or an expected server abort is an observation, not by itself a new bug. JUnit failure and timeout trials remain candidates until exact clean replay and source review.
