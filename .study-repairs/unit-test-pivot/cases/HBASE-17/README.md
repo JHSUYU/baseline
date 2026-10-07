@@ -1,4 +1,4 @@
-# HBASE-17: original cluster-test reachability audit
+# HBASE-17: original cluster JUnit and actor-aware fault campaign
 
 ## Active original cluster workload and graph-free campaign
 
@@ -14,26 +14,54 @@ then transitions the same region to `ABNORMALLY_CLOSED`; the selected
 | Target-only ByteBuddy probe | 1/1 passed | 1 true | not collected | 48.83 s |
 | Full ByteBuddy I/O plus JaCoCo seed | 1/1 passed | 1 true | 62 observed events | 48.78 s |
 
-The full seed observed 13 stable I/O sites before B5, including the move's
+The old full seed observed 13 stable I/O sites before B5, including the move's
 `ExecuteProcedures` RPC, the RegionServer state-transition report, and
 `RegionStateStore` writes to `hbase:meta`. Its production JaCoCo scope covers
 228 methods and 329 branches at baseline. The exact-guard advice records
 method and branch outcome; the fault controller matches each observed I/O by
-operation, callsite, thread role, and per-family occurrence. No graph,
-GraphChecker JAR, static skeleton, or prewoven classes are used. The original
-JUnit's server abort is part of its own scenario and is not counted as an
-injected campaign fault.
+operation, callsite, thread role, logical endpoint role, stable region
+resource, and per-family occurrence in V2. No graph, GraphChecker JAR,
+static skeleton, or prewoven classes are used. The original JUnit's server
+abort is part of its own scenario and is not counted as an injected campaign
+fault.
 
 The two raw logs are on node1 at `independent/report_dead_server_healthy.log`
 and `independent/logs/seed.log`; their SHA-256 values are respectively
 `cdef9d15c5d230c34fd6b2c2d81fe24933c46cfff67e190ce7c0c7cea26d8d8c`
 and `6e72f09bf79589fc7ae70c59693bfce2ab29e736ffca57f9f64bf6de348c78ef`.
-The campaign is resume-safe in node1 tmux `hbase17-campaign` with
-`independent/checkpoint.json`, `trial_ledger.json`, and per-trial logs. Its
-budget is 80 strict target-retaining trials with at most eight ordered faults;
-it also has explicit 180-attempt and 11,000-second wall caps. Exact matches,
-applied faults, post-fault B5, JUnit outcome, time, stable I/O sites, and
-production method/branch coverage are recorded for every attempt.
+## Actor identity correction and V2 seed
+
+The first fault controller logged remote endpoint addresses but omitted them
+from the selector. On the three-RegionServer JUnit, the same RPC/occurrence
+could therefore hit a different logical actor on replay. It stopped at r039:
+39 attempts, 34 coarse-selector matches, 23 post-fault B5 reaches. The
+independent role audit can prove the same actor for only 14/34 matched trials
+and 10/23 target-retaining trials. Interrupted r040 is not counted. Raw
+checkpoint, ledger, and audit are archived in `independent/legacy_actor_phase`;
+**none of these old trials enter the V2 effective budget**.
+
+V2 captures the original test's `RegionPlan` source, move destination, target
+region, and the remaining third RegionServer from the online server list.
+The first target-region OPEN RPC records `INITIAL_OWNER`; the plan must later
+prove that it equals `SOURCE_RS`. Each RPC selector includes a stable
+table/start-key/replica resource and one of `SOURCE_RS`, `MOVE_DEST_RS`,
+`THIRD_RS`, `INITIAL_OWNER`, or `MASTER`. `MasterService` and
+`RegionServerStatusService` descriptors identify MASTER. Unknown peers,
+`PREMOVE` RPCs other than the validated first OPEN, and unknown resources
+remain in the trace but are excluded from the fault queue. The local
+`META_PUT` probe covers `RegionStateStore.updateRegionLocation`.
+
+Two final V2 healthy seeds, c and d, each pass the unchanged JUnit, evaluate
+exact B5 as true, identify three distinct RegionServers, and verify
+`INITIAL_OWNER==SOURCE_RS`. They take 51.67 s and 57.51 s. The machine-readable
+`independent/healthy_receipt_v2.json` records raw-log SHA-256 values, both
+role maps, exact B5 outcomes, 8 common stable I/O sites, 11 common exact
+selectors, per-seed candidate/exclusion counts, and event kinds. V2 runs in
+node1 tmux `hbase17-v2-campaign` with `checkpoint_v2.json`,
+`trial_ledger_v2.json`, `logs_v2`, 80 effective target-retaining trials,
+maximum eight ordered faults, 180 attempts, and an 11,000-second wall cap.
+Its current counters and elapsed time are separate from the archived legacy
+phase in `result.json`.
 
 The earlier `TestProcDispatcher.testRetryLimitOnConnClosedErrors` proof below
 is preserved but excluded from the active workload. Six later unchanged-JUnit
@@ -42,11 +70,11 @@ Two full-overlay pilots failed their original 5-second wait without reaching
 B5, and a 3.25-second wrong-method selector launch never executed a test.
 These are setup/calibration evidence and contribute zero fault trials.
 
-## New original test reaches the exact guard
+## One-off TestProcDispatcher reachability proof
 
 The unchanged original `TestProcDispatcher.testRetryLimitOnConnClosedErrors`
-is a suitable three-RegionServer MiniCluster test. It installs HBase's test
-`RSProcDispatcher`, which deliberately returns an RPC error after completing
+reached the exact guard once in a three-RegionServer MiniCluster. It installs
+HBase's test `RSProcDispatcher`, which deliberately returns an RPC error after completing
 some `executeProcedures` calls and exercises server-crash recovery. Thus the
 run below is a **zero additional fault seed**, not a fault-free execution of
 the production protocol. The production `RegionStateStore` log records a
@@ -70,8 +98,10 @@ discovery without editing the test. This failed launch took 1.84 s and is
 excluded from the 55.03 s measured seed.
 
 The prior five-test audit below remains historical evidence for those five
-methods only. It no longer supports `no_cluster_test`. The case is reopened
-for a graph-free coverage and I/O fault campaign with the newly mapped test.
+methods only. The one-off proof motivated full instrumentation calibration,
+but six later unchanged-JUnit calibrations did not reach B5. This method is
+therefore excluded from the active fault campaign; the stable original
+`TestReportRegionStateTransitionFromDeadServer.test` above is its workload.
 
 ## Earlier five-test audit
 

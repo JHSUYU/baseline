@@ -1,0 +1,309 @@
+{
+  "case_id": "HBASE-17",
+  "system": "hbase",
+  "version": "2.6.6",
+  "status": "running",
+  "status_detail": "alternate_original_TestReportRegionStateTransitionFromDeadServer_exact_B5_stable; 80_effective_coverage_io_campaign_starting",
+  "methodology": "coverage_io_no_graph",
+  "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+  "source_line": 379,
+  "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed",
+  "check_code": "assert regionNode.isInState(State.ABNORMALLY_CLOSED);",
+  "target_guard": "confirmClosed#B5",
+  "target_exception": "java.lang.AssertionError",
+  "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer.test",
+  "target_reached": true,
+  "fault_trials": 39,
+  "strict_injections": 34,
+  "target_after_fault": 23,
+  "coverage_gain": 25,
+  "coverage_note": "Alternate full overlay healthy seed covers 228 methods and 329 branches across 8 JaCoCo-included production classes; fault coverage gains are pending.",
+  "bug_mark": "none",
+  "elapsed_seconds": 3092.07,
+  "elapsed_seconds_scope": "319.25 s first five JUnit audits/replays; 1.84 s selector setup; 55.03 s old one-off proof; 125.04 s two excluded overlay pilots; 357.26 s six old workload calibrations; 48.83 s alternate target-only; 3.25 s wrong-method setup; 48.78 s alternate full overlay seed.",
+  "healthy_tests": [
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestRaceBetweenSCPAndTRSP.test",
+      "elapsed_seconds": 38.24,
+      "junit": "passed",
+      "confirm_closed_entries": 1,
+      "entry_states": {
+        "CLOSED": 1
+      },
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/race_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestSCPGetRegionsRace.test",
+      "elapsed_seconds": 44.39,
+      "junit": "passed",
+      "confirm_closed_entries": 1,
+      "entry_states": {
+        "CLOSED": 1
+      },
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/scp_race_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash.testRetryBackoff",
+      "elapsed_seconds": 64.32,
+      "junit": "passed",
+      "confirm_closed_entries": 5,
+      "entry_states": {
+        "CLOSING": 5
+      },
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/close_rs_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestTransitRegionStateProcedure.testRecoveryAndDoubleExecutionUnassignAndAssign",
+      "elapsed_seconds": 39.01,
+      "junit": "passed",
+      "confirm_closed_entries": 3,
+      "entry_states": {
+        "CLOSED": 3
+      },
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/double_exec_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestRegionMoveAndAbandon.test",
+      "elapsed_seconds": 54.65,
+      "junit": "passed",
+      "confirm_closed_entries": 2,
+      "entry_states": {
+        "CLOSED": 2
+      },
+      "target_reached_by_source_control_flow": false,
+      "log": "node1:cases/HBASE-17/independent/abandon_healthy.log"
+    },
+    {
+      "test": "org.apache.hadoop.hbase.util.TestProcDispatcher.testRetryLimitOnConnClosedErrors",
+      "elapsed_seconds": 55.03,
+      "junit": "passed",
+      "confirm_closed_entries": 4,
+      "entry_states": {
+        "CLOSED": 3,
+        "ABNORMALLY_CLOSED": 1
+      },
+      "exact_b5_calls": 1,
+      "exact_b5_outcome": true,
+      "log": "node1:cases/HBASE-17/independent/proc_dispatcher_healthy2.log",
+      "note": "Original JUnit has its own RPC errors; no additional campaign injection."
+    },
+    {
+      "test": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer.test",
+      "elapsed_seconds": 48.83,
+      "junit": "passed",
+      "confirm_closed_entries": 1,
+      "entry_states": {
+        "ABNORMALLY_CLOSED": 1
+      },
+      "exact_b5_calls": 1,
+      "exact_b5_outcome": true,
+      "log": "node1:cases/HBASE-17/independent/report_dead_server_healthy.log",
+      "note": "Target-only original JUnit probe; no additional I/O fault."
+    }
+  ],
+  "probe_validation": {
+    "limitation": "The initial RegionStateNode.isInState advice was not woven (zero total isInState calls), so its exactB5=0 counter is not evidence for the first five tests. The confirmClosed entry observer did work, and all 12 entries had CLOSED or CLOSING state. Source branch order excludes the target assertion for those entries.",
+    "fix": "Use Object advice arguments so RegionStateNode is not loaded before its ByteBuddy transformer is installed.",
+    "replays": [
+      {
+        "test": "TestRaceBetweenSCPAndTRSP.test",
+        "elapsed_seconds": 39.6,
+        "junit": "passed",
+        "is_in_state_calls": 30,
+        "abnormally_closed_argument_calls": 0,
+        "exact_b5_calls": 0,
+        "log": "node1:cases/HBASE-17/independent/race_probe_valid.log",
+        "note": "Auxiliary state-description reflection failed; isInState advice and JUnit still ran."
+      },
+      {
+        "test": "TestRaceBetweenSCPAndTRSP.test",
+        "elapsed_seconds": 39.04,
+        "junit": "passed",
+        "confirm_closed_entries": 1,
+        "entry_states": {
+          "CLOSED": 1
+        },
+        "is_in_state_calls": 31,
+        "abnormally_closed_argument_calls": 0,
+        "exact_b5_calls": 0,
+        "log": "node1:cases/HBASE-17/independent/race_probe_final.log"
+      }
+    ]
+  },
+  "source_audit_note": "Original TestReportRegionStateTransitionFromDeadServer.test uses a 3-RS MiniCluster and explicit report/SCP latches. A source RS abort causes a production ABNORMALLY_CLOSED transition; the target-only and independent full I/O+JaCoCo seed both passed unchanged JUnit and evaluated exact B5 true once. The earlier TestProcDispatcher one-off proof was not reproducible across six subsequent JUnit-pass calibrations, so it is excluded from the active workload and fault budget.",
+  "evidence": "cases/HBASE-17/README.md",
+  "healthy_junit_passed": true,
+  "healthy_elapsed_seconds": 48.78,
+  "healthy_target_guard_evaluations": 1,
+  "healthy_target_guard_outcomes": {
+    "ABNORMALLY_CLOSED_true": 1,
+    "AssertionError": 0
+  },
+  "test_internal_faults": "The selected original JUnit deliberately aborts one RegionServer during a move/report race; this built-in abort is part of the healthy workload and is not counted as a campaign injection.",
+  "budget": {
+    "effective_trials": 80,
+    "max_ordered_faults": 8,
+    "conditional_extension_effective_trials": 128,
+    "conditional_extension_max_ordered_faults": 10
+  },
+  "seed_evidence": {
+    "target_only_log": "node1:cases/HBASE-17/independent/report_dead_server_healthy.log",
+    "target_only_sha256": "cdef9d15c5d230c34fd6b2c2d81fe24933c46cfff67e190ce7c0c7cea26d8d8c",
+    "target_only_elapsed_seconds": 48.83,
+    "full_overlay_log": "node1:cases/HBASE-17/independent/logs/seed.log",
+    "full_overlay_sha256": "6e72f09bf79589fc7ae70c59693bfce2ab29e736ffca57f9f64bf6de348c78ef",
+    "full_overlay_elapsed_seconds": 48.78,
+    "full_overlay_io_events": 62,
+    "pre_target_stable_io_sites": 13,
+    "exact_guard_log_line": 1717,
+    "junit_result_log_line": 2240,
+    "elapsed_log_line": 2243
+  },
+  "legacy_workload_calibration": {
+    "test": "TestProcDispatcher.testRetryLimitOnConnClosedErrors",
+    "runs": 6,
+    "junit_passed": 6,
+    "exact_b5_reached": 0,
+    "elapsed_seconds": [
+      59.59,
+      58.58,
+      58.56,
+      60.51,
+      61.6,
+      58.42
+    ],
+    "counted_fault_trials": 0
+  },
+  "instrumentation_provenance": {
+    "counted_runtime": "unchanged original JUnit, case-local ByteBuddy exact target/I-O recorder, JaCoCo production coverage",
+    "graphchecker_jar_used": false,
+    "prewoven_classes_used": false,
+    "region_skeletons_or_static_scope_map_read": false,
+    "original_test_modified": false
+  },
+  "current_campaign": {
+    "original_cluster_junit": "TestReportRegionStateTransitionFromDeadServer.test",
+    "instrumented_seed_junit": {
+      "found": 1,
+      "succeeded": 1,
+      "failed": 0
+    },
+    "instrumented_seed_elapsed_seconds": 48.78,
+    "instrumented_seed_exact_b5": 1,
+    "instrumented_seed_io_events": 62,
+    "instrumented_seed_coverage": {
+      "classes": {
+        "org/apache/hadoop/hbase/master/procedure/ServerCrashProcedure": {
+          "methods": 27,
+          "branches": 49,
+          "lines": 135
+        },
+        "org/apache/hadoop/hbase/regionserver/RSRpcServices": {
+          "methods": 0,
+          "branches": 0,
+          "lines": 0
+        },
+        "org/apache/hadoop/hbase/procedure2/ProcedureExecutor": {
+          "methods": 0,
+          "branches": 0,
+          "lines": 0
+        },
+        "org/apache/hadoop/hbase/client/HBaseAdmin": {
+          "methods": 0,
+          "branches": 0,
+          "lines": 0
+        },
+        "org/apache/hadoop/hbase/master/assignment/AssignmentManager": {
+          "methods": 83,
+          "branches": 136,
+          "lines": 449
+        },
+        "org/apache/hadoop/hbase/client/HTable": {
+          "methods": 0,
+          "branches": 0,
+          "lines": 0
+        },
+        "org/apache/hadoop/hbase/ipc/AbstractRpcClient": {
+          "methods": 17,
+          "branches": 26,
+          "lines": 119
+        },
+        "org/apache/hadoop/hbase/master/assignment/RegionStateNode": {
+          "methods": 30,
+          "branches": 14,
+          "lines": 73
+        },
+        "org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure": {
+          "methods": 30,
+          "branches": 48,
+          "lines": 130
+        },
+        "org/apache/hadoop/hbase/master/assignment/RegionStateStore": {
+          "methods": 12,
+          "branches": 20,
+          "lines": 65
+        },
+        "org/apache/hadoop/hbase/master/procedure/RSProcedureDispatcher": {
+          "methods": 11,
+          "branches": 18,
+          "lines": 55
+        },
+        "org/apache/hadoop/hbase/master/assignment/RegionRemoteProcedureBase": {
+          "methods": 18,
+          "branches": 18,
+          "lines": 81
+        },
+        "org/apache/hadoop/hbase/master/region/MasterRegion": {
+          "methods": 0,
+          "branches": 0,
+          "lines": 0
+        },
+        "org/apache/hadoop/hbase/regionserver/HRegionServer": {
+          "methods": 0,
+          "branches": 0,
+          "lines": 0
+        }
+      },
+      "methods": 228,
+      "branches": 329,
+      "lines": 1107
+    },
+    "calibration_pilot_logs": [
+      "independent/logs/seed_pilot2_junit_timeout.log",
+      "independent/logs/seed_pilot_junit_timeout.log",
+      "independent/logs/calibration-1.log",
+      "independent/logs/calibration-2.log",
+      "independent/logs/calibration-3.log",
+      "independent/logs/calibration-4.log",
+      "independent/logs/calibration-5.log",
+      "independent/logs/calibration-6.log",
+      "independent/report_dead_server_healthy.log",
+      "independent/logs/report-overlay-setup.log"
+    ],
+    "calibration_pilot_elapsed_seconds": 534.38,
+    "attempted_trials": 39,
+    "strict_trials": 34,
+    "strict_post_fault_target_trials": 23,
+    "effective_budget_trials": 23,
+    "junit_failures_after_target": 0,
+    "target_assertion_false_trials": 0,
+    "new_production_methods": 1,
+    "new_production_branches": 25,
+    "new_stable_io_sites": 2,
+    "budget": {
+      "effective_trials": 80,
+      "max_ordered_faults": 8,
+      "max_attempts": 180,
+      "max_wall_seconds": 11000
+    },
+    "queue_length": 385,
+    "wall_seconds": 2243.6,
+    "checkpoint": "independent/checkpoint.json",
+    "trial_ledger": "independent/trial_ledger.json",
+    "test_internal_faults_counted_as_campaign_injections": false
+  }
+}
