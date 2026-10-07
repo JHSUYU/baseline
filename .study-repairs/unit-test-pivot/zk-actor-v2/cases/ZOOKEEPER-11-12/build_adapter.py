@@ -3,13 +3,14 @@
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import subprocess
 import xml.etree.ElementTree as ET
 
 CASE = Path(__file__).resolve().parent
 V2 = CASE.parents[1]
-SOURCE = Path('/users/ZhenyuLi/zk01-independent-unit')
+SOURCE = Path(os.environ.get('ZK1112_SOURCE', '/users/ZhenyuLi/zk01-independent-unit'))
 SERVER = SOURCE / 'zookeeper-server/target/classes'
 TEST = SOURCE / 'zookeeper-server/target/test-classes'
 BUILD = Path('/users/ZhenyuLi/zk1112-actor-v2-build')
@@ -17,7 +18,8 @@ JAVA = Path('/usr/lib/jvm/java-8-openjdk-amd64/bin')
 ASM_ROOT = Path('/users/ZhenyuLi/.m2/repository/org/ow2/asm')
 ASM = [ASM_ROOT / module / '9.4' / f'{module}-9.4.jar'
        for module in ('asm', 'asm-tree', 'asm-analysis')]
-REPORT = Path('/tmp/zk387-unit-smoke-20261006/zookeeper-server/target/surefire-reports/TEST-org.apache.zookeeper.test.QuorumRestartTest.xml')
+REPORT = Path(os.environ.get('ZK1112_REPORT',
+              '/tmp/zk387-unit-smoke-20261006/zookeeper-server/target/surefire-reports/TEST-org.apache.zookeeper.test.QuorumRestartTest.xml'))
 TEST_NAME = 'org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest'
 PEER_NAME = 'org/apache/zookeeper/server/quorum/QuorumPeer'
 ATOMIC_NAME = 'org/apache/zookeeper/common/AtomicFileOutputStream'

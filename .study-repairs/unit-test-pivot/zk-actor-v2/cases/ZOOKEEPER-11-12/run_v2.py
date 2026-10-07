@@ -15,7 +15,8 @@ from build_adapter import (AGENT, ATOMIC_NAME, BUILD, JAVA, PEER_NAME, REVISION,
 
 CASE = Path(__file__).resolve().parent
 ROOT = Path('/users/ZhenyuLi/zk1112-actor-v2-runs')
-RUNNER = Path('/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-11/evidence/independent/runner/independent-runner.jar')
+RUNNER = Path(os.environ.get('ZK1112_RUNNER',
+              '/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/ZOOKEEPER-11/evidence/independent/runner/independent-runner.jar'))
 TEST_CLASS = TEST_NAME.replace('/', '.')
 TEST_METHOD = 'testReadCurrentEpochFromAcceptedEpochTmpFile'
 MIN_FREE_BYTES = 2 * 1024 ** 3
