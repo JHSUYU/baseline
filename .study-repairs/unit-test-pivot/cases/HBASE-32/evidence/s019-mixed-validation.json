@@ -1,0 +1,52 @@
+{
+  "aborted_region_servers": [
+    "ms1140.utah.cloudlab.us,39387,1791346443343"
+  ],
+  "case": "HBASE-32",
+  "completed_utc": "2026-10-07T04:15:23.995400+00:00",
+  "elapsed_seconds": 59.61,
+  "exec_sha256": "781f39fbc347cd25c30a12daed5abfb6139696a2cac01c3eec895169d4e96208",
+  "exit": 0,
+  "faults": [
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 7958,
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM0NjQ1NzA1NS4xNDhmZTM5MzFiZTNjZTExNjE5YWY4ZDkyMTkzMzg5Ny4",
+      "selector": "WAL_APPEND_START~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-8~target-1~marker-1",
+      "source": "upstream",
+      "step": "1"
+    },
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 8236,
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM0NjQ1NzA1NS4xNDhmZTM5MzFiZTNjZTExNjE5YWY4ZDkyMTkzMzg5Ny4",
+      "selector": "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-8~target-1~rpc-2~FlushRegionCallable.call:81",
+      "source": "rpc",
+      "step": "1"
+    }
+  ],
+  "new_io_selectors": 18,
+  "new_production_branches_methods": 43,
+  "original_junit": {
+    "failed": 0,
+    "found": 1,
+    "succeeded": 1
+  },
+  "phase": "upstream_then_terminal_flush_rpc",
+  "plan": [
+    "WAL_APPEND_START~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-8~target-1~marker-1~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-8~target-1~rpc-2~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+  ],
+  "postfault_b7_lines": [
+    8255
+  ],
+  "postfault_guard_lines": [
+    8239
+  ],
+  "raw_archive_sha256": "e3b171d26fe30f7f4072ebf7e08bc7051468b846bcee9459d2c65cbb4a1301a0",
+  "raw_log_sha256": "5270e06628f91fc515ebe3e36796d977c4d164e344942770d5982f5baceeed2d",
+  "result": "B7-effective; JUnit passed; expected abort; no bug",
+  "same_raw_primary_region": true,
+  "strict_order": true,
+  "trial": "s019"
+}
