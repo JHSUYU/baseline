@@ -1,4 +1,16 @@
 {
+  "actor_v2_recheck": {
+    "authoritative_host": "not_assigned_for_JUnit_yet",
+    "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/cases/HDFS-12/checkpoint.json",
+    "healthy_two_seed_receipt": null,
+    "node1_campaign_state": null,
+    "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
+    "phase": "prepared_awaiting_cluster_slot",
+    "recheck_started_utc": "2026-10-07",
+    "schema": "hdfs-key-actor-v2-recheck-1",
+    "strict_relation": "same concrete DataNode startup episode and same bound block pool",
+    "v2_fault_results_not_in_legacy_counts": true
+  },
   "bug_mark": "none",
   "case_id": "HDFS-12",
   "check_code": "key = allKeys.get(identifier.getKeyId()); if (key == null) throw new InvalidToken(...)",
@@ -156,6 +168,17 @@
     "strict_target_trials": 50,
     "target_exception_candidates": 0
   },
+  "legacy_coarse_actor": {
+    "counts_are_historical": true,
+    "elapsed_seconds": 8575.531,
+    "fault_trials": 256,
+    "fully_applied_trials": 242,
+    "identity_limit": "case-local SASL probe hard-coded hdfs/datanode/0 and used a global call-site ordinal; it did not bind faults and subsequent guards to the same runtime DataNode and MiniDFSCluster startup episode",
+    "previous_status": "quality_complete",
+    "result_sha256_before_reclassification": "ae3943adbc0b3eee2fc71afd617af7cae7f67cde2b630ffcea2b152c28cba856",
+    "target_after_fault": 136,
+    "target_exception_after_fault_trials": 0
+  },
   "legacy_evidence": {
     "elapsed_seconds": 867.342,
     "previous_status": "pending_budget_expansion",
@@ -188,11 +211,11 @@
     "file_count": 1551,
     "sha256": "d5e9d5a9cc94de65cd9994e3ff11e5bda086308fc8c4eb1fd319147fd50c4ee6"
   },
-  "reason": "Two original embedded-cluster JUnits completed independent observed-I/O and coverage-guided campaigns with no selected null-key throw.",
+  "reason": "Archived 256-trial graph-free campaigns are historical because their hard-coded DataNode source and global site ordinal cannot prove same runtime actor across MiniDFSCluster incarnations. V2 actor-aware overlay is prepared; its original long-lived JUnit calibration awaits a separate cluster slot. Old counts remain unchanged.",
   "selection_line": 514,
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_review": "BlockTokenSecretManager.retrievePassword first rejects expired tokens, then looks up keyId in allKeys and throws InvalidToken if absent. The long-lived original test rotates keys and verifies later reads and checksums. No selected null-key throw followed a strict, target-retaining fault sequence in either workload. Fault-induced JUnit failures are recorded separately from this selected throw.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_pending",
   "strict_injections": 242,
   "system": "HDFS 3.4.3",
   "target_after_fault": 136,

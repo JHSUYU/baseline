@@ -1,4 +1,17 @@
 {
+  "actor_v2_recheck": {
+    "authoritative_host": "node1",
+    "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/cases/HDFS-11/checkpoint.json",
+    "healthy_two_seed_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/healthy_receipt.json",
+    "local_mirror_note": "Local campaign-state.json is a snapshot; node1 tmux hdfs11_key_v2_fuzz is authoritative while running.",
+    "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/campaign-state.json",
+    "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
+    "phase": "running_on_node1",
+    "recheck_started_utc": "2026-10-07",
+    "schema": "hdfs-key-actor-v2-recheck-1",
+    "strict_relation": "same concrete DataNode startup episode and same bound block pool",
+    "v2_fault_results_not_in_legacy_counts": true
+  },
   "bug_mark": "none",
   "case_id": "HDFS-11",
   "check_code": "key = allKeys.get(keyId); if (key == null) throw new InvalidEncryptionKeyException(...)",
@@ -119,6 +132,17 @@
     "strict_target_trials": 37,
     "target_exception_candidates": 0
   },
+  "legacy_coarse_actor": {
+    "counts_are_historical": true,
+    "elapsed_seconds": 6032.198,
+    "fault_trials": 208,
+    "fully_applied_trials": 200,
+    "identity_limit": "case-local SASL probe hard-coded hdfs/datanode/0 and used a global call-site ordinal; it did not bind faults and subsequent guards to the same runtime DataNode and MiniDFSCluster startup episode",
+    "previous_status": "quality_complete",
+    "result_sha256_before_reclassification": "54793eed22fc2419b200e56e4be6204acfb20950dcf666472edea3a8c7dad47c",
+    "target_after_fault": 83,
+    "target_exception_after_fault_trials": 0
+  },
   "legacy_evidence": {
     "elapsed_seconds": 543.904,
     "previous_status": "pending_budget_expansion",
@@ -128,11 +152,11 @@
     "trial_count": 19
   },
   "methodology": "coverage_io_case_local_asm_jacoco_two_original_junits",
-  "reason": "Two original embedded-cluster JUnit workloads completed with independent runtime I/O and JaCoCo feedback.",
+  "reason": "Archived 208-trial graph-free campaign is historical because its hard-coded DataNode source and global site ordinal cannot prove same runtime actor across two MiniDFSCluster incarnations. V2 two-seed actor calibration passed and the separate node1 fault campaign is running; old counts remain unchanged.",
   "selection_line": 555,
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_review": "The original TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey waits for the old key to expire, expects one InvalidEncryptionKeyException, clears the client's cached key, then retries the checksum successfully. All 46 strict target-retaining fault runs followed this same pattern.",
-  "status": "quality_complete",
+  "status": "actor_identity_recheck_in_progress",
   "strict_injections": 200,
   "system": "HDFS 3.4.3",
   "target_after_fault": 83,
