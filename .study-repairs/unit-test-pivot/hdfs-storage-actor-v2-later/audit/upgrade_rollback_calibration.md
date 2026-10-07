@@ -74,7 +74,8 @@ and a 360-second external timeout. Each `--output` creates separate
 `java.io.tmpdir`, and `hadoop.log.dir` point there. Trace, JaCoCo data,
 coverage lists, JUnit output, and the manifest stay alongside that scratch.
 The Hadoop test resources are read from the node-local
-`hdfs32/worktrees/hadoop/hadoop-hdfs-project/hadoop-hdfs/src/test/resources`;
+`.study-repairs/unit-test-pivot/hdfs32/worktrees/hadoop/hadoop-hdfs-project/hadoop-hdfs/src/test/resources`
+under the baseline checkout;
 check that directory exists on the selected host before launching. The
 working source on node0 uses a different path, so node0 is not an implicit
 fallback. On 2026-10-07 node0 had only 2.7 GiB free disk.
