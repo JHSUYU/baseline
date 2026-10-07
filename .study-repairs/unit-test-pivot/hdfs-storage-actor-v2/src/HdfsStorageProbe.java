@@ -30,6 +30,7 @@ public final class HdfsStorageProbe {
   private static final ThreadLocal<InetSocketAddress> CURRENT_NAMENODE = new ThreadLocal<>();
   private static final ThreadLocal<String> CURRENT_STORAGE = new ThreadLocal<>();
   private static int nextEpisode;
+  private static int nextDnObject;
   private static final Map<Integer, Integer> EPISODE_SLOTS = new HashMap<>();
   private static final List<String[]> FAULTS = new ArrayList<>();
   private static int nextFault;
@@ -42,11 +43,11 @@ public final class HdfsStorageProbe {
     final int episode;
     final int slot;
     final int objectId;
-    Actor(int episode, int slot, String dataDirs, DataNode dn) {
+    Actor(int episode, int slot, String dataDirs, int objectId) {
       this.episode = episode;
       this.slot = slot;
       this.dataDirs = dataDirs;
-      this.objectId = System.identityHashCode(dn);
+      this.objectId = objectId;
       this.key = "episode=" + episode + "/dn=" + slot + "/dirs=" + dataDirs;
     }
   }
@@ -81,11 +82,12 @@ public final class HdfsStorageProbe {
     synchronized (HdfsStorageProbe.class) {
       int slot = EPISODE_SLOTS.containsKey(episode) ? EPISODE_SLOTS.get(episode) + 1 : 1;
       EPISODE_SLOTS.put(episode, slot);
-      actor = new Actor(episode, slot, dataDirs(conf), dn);
+      actor = new Actor(episode, slot, dataDirs(conf), ++nextDnObject);
       ACTORS.put(dn, actor);
     }
     emit("ACTOR_REGISTERED", ",\"actorKey\":" + q(actor.key)
         + ",\"dnObjectId\":" + actor.objectId
+        + ",\"dnObjectHash\":" + System.identityHashCode(dn)
         + ",\"configuredDataDirsRaw\":" + q(conf.get("dfs.datanode.data.dir", "")));
     return dn;
   }
@@ -178,9 +180,10 @@ public final class HdfsStorageProbe {
     synchronized (HdfsStorageProbe.class) {
       if (writer == null) return;
       try {
+        boolean contextual = event.startsWith("FAULT_") || event.startsWith("TARGET_");
         writer.write("{\"event\":" + q(event) + ",\"seq\":" + (++seq)
             + ",\"thread\":" + q(Thread.currentThread().getName())
-            + actorFields() + fields + "}\n");
+            + (contextual ? actorFields() : "") + fields + "}\n");
         writer.flush();
       } catch (IOException ex) { throw new RuntimeException(ex); }
     }

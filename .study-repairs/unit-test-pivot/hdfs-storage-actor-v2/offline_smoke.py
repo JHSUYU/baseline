@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 
 import campaign
 import run_original
@@ -67,6 +68,36 @@ def check_identity() -> None:
     assert campaign.postfault([applied, target], "HDFS-22", [selected], [applied], True)[0] == [target]
     assert not campaign.postfault([applied, {**target, "actorKey": actor2}],
                                   "HDFS-22", [selected], [applied], True)[0]
+    second = {**target, "caseId": "HDFS-23", "seq": 31}
+    trace = [file1, rpc1, target, second]
+    receipt = {"stable_selectors_by_case": {
+        case: [list((rpc1["marker"], rpc1["siteId"], rpc1["sourceKey"], rpc1["hitOrdinal"]))]
+        for case in ("HDFS-22", "HDFS-23")}}
+    queue = campaign.initial_queue(receipt, trace, ("HDFS-22", "HDFS-23"))
+    assert len(queue) == len(campaign.RPC_FAULTS)
+    assert all(entry["cases"] == ["HDFS-22", "HDFS-23"] for entry in queue)
+    assert all(entry["sequence"][0]["actorKey"] == actor1 for entry in queue)
+    state = {"case_ids": ["HDFS-22"], "effective_by_case": {"HDFS-22": 80},
+             "budget": {"goal_by_case": {"HDFS-22": 80},
+                        "faults_by_case": {"HDFS-22": 8}},
+             "effective_history": {"HDFS-22": [
+                 {"coverage_gain": {"branch_counts": int(i == 79)},
+                  "new_io_families": 0} for i in range(80)]},
+             "completion_order": []}
+    campaign.advance_goals(state)
+    assert state["budget"]["goal_by_case"]["HDFS-22"] == 128
+    assert state["budget"]["faults_by_case"]["HDFS-22"] == 10
+    # A completed sequence is never selected again, including after restart.
+    with tempfile.TemporaryDirectory() as temporary:
+        checkpoint = Path(temporary) / "state.json"
+        queue_state = {"queue": queue, "completed": {queue[0]["id"]: {}},
+                       "completion_order": [queue[0]["id"]], "in_flight": None,
+                       "effective_by_case": {"HDFS-22": 0, "HDFS-23": 0},
+                       "budget": {"goal_by_case": {"HDFS-22": 80, "HDFS-23": 80}}}
+        campaign.write_json(checkpoint, queue_state)
+        reloaded = __import__("json").loads(checkpoint.read_text())
+        chosen = campaign.pick(reloaded)
+        assert chosen["id"] != queue[0]["id"]
     print("Actor, storage volume, peer, order, and post-target checks passed")
 
 
