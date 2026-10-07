@@ -24,6 +24,8 @@ public final class HBase32UpstreamAgent {
   private static final String META = "org/apache/hadoop/hbase/MetaTableAccessor";
   private static final String CONN = "org/apache/hadoop/hbase/client/ConnectionImplementation";
   private static final String SCANNER = "org/apache/hadoop/hbase/client/ScannerCallable";
+  private static final String CLIENT_GET =
+    "org/apache/hadoop/hbase/client/ClientServiceCallable";
   private static final String RS = "org/apache/hadoop/hbase/regionserver/HRegionServer";
   private static final String WAL = "org/apache/hadoop/hbase/regionserver/wal/WALUtil";
   private static final Map<String, Integer> targetHits = new HashMap<>();
@@ -38,6 +40,7 @@ public final class HBase32UpstreamAgent {
     final int replica;
     final int ordinal;
     int metaGets;
+    int metaGetRpcs;
     int metaScans;
     int metaScanRpcs;
     boolean inCatch;
@@ -121,10 +124,26 @@ public final class HBase32UpstreamAgent {
     Context ctx = current.get();
     if (ctx == null || !inTarget()) return;
     int ordinal = ++ctx.metaGets;
-    System.err.println("HBASE32U META_STATE_GET seq=" + (++sequence)
+    System.err.println("HBASE32U META_STATE_GET_ATTEMPT seq=" + (++sequence)
       + " table=" + table.getNameAsString() + " raw_primary_region=" + ctx.primary
       + " replica=" + ctx.replica + " target_ordinal=" + ctx.ordinal
       + " get_ordinal=" + ordinal + " phase=" + phase(ctx));
+  }
+
+  public static synchronized void beforeMetaStateRpc() {
+    Context ctx = current.get();
+    if (ctx == null || !inTarget()) return;
+    boolean inTableStateGet = false;
+    for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
+      if (frame.getClassName().equals("org.apache.hadoop.hbase.MetaTableAccessor")
+          && frame.getMethodName().equals("getTableState")) inTableStateGet = true;
+    }
+    if (!inTableStateGet) return;
+    int ordinal = ++ctx.metaGetRpcs;
+    System.err.println("HBASE32U META_STATE_GET_RPC seq=" + (++sequence)
+      + " raw_primary_region=" + ctx.primary + " replica=" + ctx.replica
+      + " target_ordinal=" + ctx.ordinal + " rpc_ordinal=" + ordinal
+      + " phase=" + phase(ctx));
   }
 
   public static synchronized void beforeMetaScan(TableName table, byte[] row) {
@@ -138,7 +157,7 @@ public final class HBase32UpstreamAgent {
       + " phase=" + phase(ctx));
   }
 
-  public static synchronized void beforeMetaScanRpc() {
+  public static synchronized void beforeMetaScanRpc(String operation) {
     Context ctx = current.get();
     if (ctx == null || !inTarget()) return;
     boolean inMetaLookup = false;
@@ -152,7 +171,7 @@ public final class HBase32UpstreamAgent {
     System.err.println("HBASE32U META_SCAN_RPC seq=" + (++sequence)
       + " raw_primary_region=" + ctx.primary + " replica=" + ctx.replica
       + " target_ordinal=" + ctx.ordinal + " rpc_ordinal=" + ordinal
-      + " phase=" + phase(ctx));
+      + " phase=" + phase(ctx) + " operation=" + operation);
   }
 
   public static synchronized void beforeMasterReport(HRegionServer server,
@@ -199,7 +218,8 @@ public final class HBase32UpstreamAgent {
       + " stable_region=" + ctx.stableRegion
       + " replica=" + info.getReplicaId() + " action=" + ctx.action
       + " sync=" + ctx.sync + " from_flush_rpc=" + ctx.fromFlushRpc
-      + " marker_ordinal=" + ctx.ordinal);
+      + " marker_ordinal=" + ctx.ordinal
+      + " actor_thread=" + Thread.currentThread().getName().replace(' ', '_'));
   }
 
   private static boolean inFlushMarker() {
@@ -217,7 +237,8 @@ public final class HBase32UpstreamAgent {
       + " marker_seq=" + ctx.id + " raw_primary_region=" + ctx.region
       + " stable_region=" + ctx.stableRegion + " action=" + ctx.action
       + " sync=" + ctx.sync + " from_flush_rpc=" + ctx.fromFlushRpc
-      + " marker_ordinal=" + ctx.ordinal);
+      + " marker_ordinal=" + ctx.ordinal
+      + " actor_thread=" + Thread.currentThread().getName().replace(' ', '_'));
   }
 
   private static final class Probes implements ClassFileTransformer {
@@ -226,6 +247,7 @@ public final class HBase32UpstreamAgent {
                             ProtectionDomain domain, byte[] original) {
       if (!HANDLER.equals(className) && !META.equals(className)
           && !CONN.equals(className) && !SCANNER.equals(className)
+          && !CLIENT_GET.equals(className)
           && !RS.equals(className) && !WAL.equals(className)) return null;
       try {
         ClassReader reader = new ClassReader(original);
@@ -298,8 +320,26 @@ public final class HBase32UpstreamAgent {
                                             String desc, boolean isInterface) {
                   if (invoked.equals("scan") && owner.contains("ClientService")
                       && desc.contains("ScanRequest")) {
+                    String operation = method.equals("openScanner") ? "OPEN"
+                      : method.equals("next") ? "NEXT"
+                      : method.equals("close") ? "CLOSE" : "UNKNOWN";
+                    super.visitLdcInsn(operation);
                     super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
-                      "beforeMetaScanRpc", "()V", false);
+                      "beforeMetaScanRpc", "(Ljava/lang/String;)V", false);
+                  }
+                  super.visitMethodInsn(opcode, owner, invoked, desc, isInterface);
+                }
+              };
+            }
+            if (CLIENT_GET.equals(className) && method.equals("doGet")) {
+              return new MethodVisitor(Opcodes.ASM9, delegate) {
+                @Override
+                public void visitMethodInsn(int opcode, String owner, String invoked,
+                                            String desc, boolean isInterface) {
+                  if (invoked.equals("get") && owner.contains("ClientService")
+                      && desc.contains("GetRequest")) {
+                    super.visitMethodInsn(Opcodes.INVOKESTATIC, "HBase32UpstreamAgent",
+                      "beforeMetaStateRpc", "()V", false);
                   }
                   super.visitMethodInsn(opcode, owner, invoked, desc, isInterface);
                 }

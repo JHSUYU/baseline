@@ -9,8 +9,9 @@ import sys
 from pathlib import Path
 
 
-KINDS = ("TARGET", "META_STATE_GET", "META_SCAN_NEXT_ATTEMPT", "META_SCAN_RPC",
-         "MASTER_OPENED_RPC", "WAL_FLUSH_ATTEMPT", "WAL_APPEND_START",
+KINDS = ("TARGET", "META_STATE_GET_ATTEMPT", "META_STATE_GET_RPC",
+         "META_SCAN_NEXT_ATTEMPT", "META_SCAN_RPC", "MASTER_OPENED_RPC",
+         "WAL_FLUSH_ATTEMPT", "WAL_APPEND_START",
          "WAL_APPEND_COMPLETE", "WAL_SYNC_START", "WAL_SYNC_COMPLETE")
 FIELDS = re.compile(r"([a-z_]+)=([^\s]+)")
 
@@ -57,7 +58,7 @@ def summarize(path: Path) -> dict:
                      if table_of(e["raw_primary_region"]) == table]
               for kind, records in events.items()}
     same_target_meta_gets = []
-    for event in subset["META_STATE_GET"]:
+    for event in subset["META_STATE_GET_RPC"]:
         if any(guard["line"] < event["line"]
                and guard.get("raw_primary_region") == event["raw_primary_region"]
                and guard.get("replica_id") == event["replica"]
