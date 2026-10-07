@@ -17,6 +17,40 @@ STABLE_GUARD_FIELDS = ("equal", "reject", "upgrade", "datanodeNamespaceId",
                        "previousLayoutVersion")
 
 
+def archived_exports(anchor: Path) -> set[str]:
+    """Accept a pruned export only with local archive and remote mirror receipts."""
+    index_path = anchor / "archives" / "verified-pruned.json"
+    if not index_path.exists():
+        return set()
+    index = json.loads(index_path.read_text())
+    if index.get("schema") != "hdfs-storage-v2-verified-pruned-1":
+        raise ValueError("invalid pruned-export index")
+    verified: set[str] = set()
+    for batch in index["batches"]:
+        directory = index_path.parent
+        manifest_path = directory / batch["manifest"]
+        archive_path = directory / batch["archive"]
+        receipt_path = directory / batch["remote_receipt"]
+        for path, expected in ((manifest_path, batch["manifest_sha256"]),
+                               (archive_path, batch["archive_sha256"]),
+                               (receipt_path, batch["remote_receipt_sha256"])):
+            if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+                raise ValueError(f"verified archive component missing/changed: {path}")
+        manifest = json.loads(manifest_path.read_text())
+        receipt = json.loads(receipt_path.read_text())
+        if (receipt.get("manifest_sha256") != batch["manifest_sha256"]
+                or receipt.get("archive_sha256") != batch["archive_sha256"]
+                or not receipt.get("restored_raw")
+                or receipt.get("host") == manifest.get("source_host")):
+            raise ValueError("remote mirror receipt does not bind archive")
+        originals = {row["path"]: row["sha256"] for row in manifest["files"]}
+        for row in batch["pruned"]:
+            if originals.get(row["path"]) != row["sha256"]:
+                raise ValueError("pruned export lacks original file SHA")
+            verified.add(row["path"])
+    return verified
+
+
 def rows(path: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line]
 
@@ -55,7 +89,8 @@ def throw_signatures(trace: list[dict]) -> dict[int, str]:
     return signatures
 
 
-def check_trial(item: dict, result: dict, receipt: dict
+def check_trial(item: dict, result: dict, receipt: dict,
+                anchor: Path, pruned_exports: set[str]
                 ) -> tuple[dict[str, bool], dict[str, list[str]], list[str]]:
     issues: list[str] = []
     trace_path = Path(result["trace"])
@@ -74,7 +109,9 @@ def check_trial(item: dict, result: dict, receipt: dict
             (manifest_path.parent / "jacoco.exec").stat().st_size == 0):
         issues.append("missing JaCoCo data")
     for category in ("probes", "methods", "branch_counts", "lines"):
-        if not (manifest_path.parent / f"covered_{category}.txt").is_file():
+        coverage_path = manifest_path.parent / f"covered_{category}.txt"
+        relative = coverage_path.relative_to(anchor).as_posix()
+        if not coverage_path.is_file() and relative not in pruned_exports:
             issues.append(f"missing {category} coverage")
     applied = [row for row in trace if row["event"] == "FAULT_APPLIED"]
     sequence = item["sequence"]
@@ -155,6 +192,11 @@ def audit(anchor: Path) -> dict:
     receipt_path = anchor / "healthy_receipt.json"
     receipt = json.loads(receipt_path.read_text())
     issues: list[str] = []
+    try:
+        pruned_exports = archived_exports(anchor)
+    except (ValueError, KeyError, OSError, json.JSONDecodeError) as error:
+        issues.append(f"archive verification failed: {error}")
+        pruned_exports = set()
     if not receipt.get("pass") or len(receipt.get("seeds", [])) != 2:
         issues.append("two-seed healthy receipt not passed")
     if (len(receipt.get("seeds", [])) == 2 and any(
@@ -194,7 +236,7 @@ def audit(anchor: Path) -> dict:
         entry = state["completed"][sequence_id]
         result = entry["result"]
         trial_effective, postfault_signatures, trial_issues = check_trial(
-            entry["item"], result, receipt)
+            entry["item"], result, receipt, anchor, pruned_exports)
         issues.extend(f"{sequence_id}: {issue}" for issue in trial_issues)
         strict += bool(result["exact_order_applied"])
         junit_exit[str(result["junit_exit"])] += 1
