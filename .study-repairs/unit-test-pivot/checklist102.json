@@ -253187,7 +253187,13 @@
         "work-role-v3/synthetic-role-trace-positive.log",
         "work-role-v3/synthetic-role-trace-negative.log",
         "work-role-v3/synthetic-role-audit-positive.json",
-        "work-role-v3/synthetic-role-audit-negative.json"
+        "work-role-v3/synthetic-role-audit-negative.json",
+        "work-role-v3/logs/healthy-001.receipt.json",
+        "work-role-v3/logs/healthy-002.receipt.json",
+        "work-role-v3/healthy-001.archive-manifest.json",
+        "work-role-v3/healthy-002.archive-manifest.json",
+        "work-role-v3/healthy-001.remote-verified.json",
+        "work-role-v3/healthy-002.remote-verified.json"
       ],
       "fault_trials": 185,
       "fully_applied_trials": 182,
@@ -253575,7 +253581,7 @@
           "first_plan_not_imported_into_v3": true
         },
         "role_aware_variation_v3": {
-          "state": "dynamic_meta_host_secondary_replica_offline_ready_pending_two_healthy",
+          "state": "two_original_healthy_passes_fault_diagnostic_running",
           "classification": "distinct_runtime_meta_host_and_actual_secondary_replica_not_s272_exact_replay_or_v1_v2",
           "spec": "work-role-v3/role-plan.json",
           "plan_sha256": "e3e52e9a77b03c047a25fca1d26b405985a9f7c5f931923981a2fbc07f97e1d0",
@@ -253585,14 +253591,53 @@
           "upstream_agent_sha256": "b9c28c4b8f35d1c275a907a2ac0e2b0ba0462e92c9cee1b369826e9ae64931df",
           "lock_agent_sha256": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
           "healthy_passes_required": 2,
-          "healthy_attempts": 0,
+          "healthy_attempts": 2,
           "fault_attempts": 0,
           "fault_attempt_cap": 3,
           "fuzz_budget_admitted": false,
           "s272_exact_replay": false,
-          "cluster_junit_executed": false,
+          "cluster_junit_executed": true,
           "new_bug": false,
-          "checkpoint": "work-role-v3/role-pilot-checkpoint.json"
+          "checkpoint": "work-role-v3/role-pilot-checkpoint.json",
+          "healthy_passes": 2,
+          "healthy_runs": [
+            {
+              "suffix": "healthy-001",
+              "started_utc": "2026-10-07T13:26:37.549316+00:00",
+              "finished_utc": "2026-10-07T13:27:38.771124+00:00",
+              "elapsed_seconds": 59.96,
+              "original_junit": {
+                "failed": 0,
+                "found": 1,
+                "succeeded": 1
+              },
+              "healthy_gate_passed": true,
+              "eligible_actor_count": 164,
+              "raw_log_sha256": "bba14069dbbef076329f75a4bc10a07769cd04b9f6220bef5a64fbb49a7af60a",
+              "jacoco_sha256": "6034f3dda23740664f41e71cc96e85aa7e576e46dc73dc16b567d279e9efe081",
+              "archive_sha256": "e878fe455016a6275cef9d5b04d6916c9e417c373e7a315c4417f3691d06a7e6",
+              "manifest_sha256": "1532996ca9b30355e26ea9b1c9e96e9deae4a5ec72f18ed7b74227cb4a47e2a4",
+              "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-001"
+            },
+            {
+              "suffix": "healthy-002",
+              "started_utc": "2026-10-07T13:28:08.422205+00:00",
+              "finished_utc": "2026-10-07T13:29:10.713732+00:00",
+              "elapsed_seconds": 60.69,
+              "original_junit": {
+                "failed": 0,
+                "found": 1,
+                "succeeded": 1
+              },
+              "healthy_gate_passed": true,
+              "eligible_actor_count": 175,
+              "raw_log_sha256": "98bb152dc621ae669cc39bcd5628af31bdd62248a0b2ee6ca107a0659a400486",
+              "jacoco_sha256": "16fafcce48eb9aa5916a27cf0baf4e95b7edc47adc82678ec74cbf6fe48c59bd",
+              "archive_sha256": "aef01d699c03c0e6e1dbeec8c618ad57fee10f1e7057a8e78abb469f47acee23",
+              "manifest_sha256": "76348253b3aaae31da2fb8c03ed42c3d409581f787da774164918c5306535ae2",
+              "remote_dir": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/role-aware-v3-pilot/healthy-002"
+            }
+          ]
         }
       },
       "system": "HBase 2.6.6",

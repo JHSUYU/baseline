@@ -489,3 +489,11 @@ and requires F1, F2, target, and B7 to agree on the numeric replica and raw
 primary/secondary region. V3 starts a fresh two-healthy gate and at most
 three diagnostic fault attempts; it remains separate from s272 exact replay
 and both fuzz denominators.
+
+V3 original no-fault calibrations `healthy-001` and `healthy-002` passed
+JUnit 1/1 in 59.96 s and 60.69 s. They observed 164 and 175 exact
+meta-host secondary-replica to same-raw-region target to flush-RPC paths.
+Both complete raw logs, JaCoCo data, and receipts are SHA-verified on node1
+under `role-aware-v3-pilot/healthy-001` and `healthy-002`. These are
+calibrations only; neither enters the 128 main or 68 supplemental effective
+trial count. The V3 bounded fault stage uses its own checkpoint and plan.
