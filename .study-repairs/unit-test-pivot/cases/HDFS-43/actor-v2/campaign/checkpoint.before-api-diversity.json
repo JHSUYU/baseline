@@ -1,0 +1,3762 @@
+{
+  "active": null,
+  "budget": {
+    "max_attempts": 320,
+    "max_effective": 80,
+    "max_faults": 8
+  },
+  "case_id": "HDFS-43",
+  "completed": [
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:34:00.937373+00:00",
+      "coverage_ids": 50920,
+      "coverage_tsv_sha256": "aceb77f852e199affd5b4d3fd8f73f3c2b71b18c93d35d2eb851c1ff0a56cc54",
+      "elapsed_seconds": 36.413,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-001",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-001/jacoco.exec",
+      "junit_elapsed_seconds": 25.012,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-001/junit.log.gz",
+      "last_applied_seq": 308,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-001/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 34785,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 60,
+      "new_coverage_ids": [
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor.shouldRun()Z:935:4",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$RecoveryTaskContiguous.recover()V:169:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/ReceivedDeletedBlockInfo;)I:112:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/ReceivedDeletedBlockInfo;)I:112:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/ReceivedDeletedBlockInfo;)I:113:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks;)V:187:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks;)V:187:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks;)V:190:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager.sendIBRs(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeProtocol;Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;Ljava/lang/String;)V:216:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager.waitTillNextIBR(J)V:156:4",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.initReplicaRecoveryImpl(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/ReplicaMap;Lorg/apache/hadoop/hdfs/protocol/Block;J)Lorg/apache/hadoop/hdfs/server/protocol/ReplicaRecoveryInfo;:3050:2",
+        "METHOD\torg/apache/hadoop/hdfs/protocol/LocatedBlock.toString()Ljava/lang/String;",
+        "METHOD\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor.sleepAfterException()V",
+        "METHOD\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/ReceivedDeletedBlockInfo;)I",
+        "METHOD\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager.putMissing([Lorg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks;)V",
+        "METHOD\torg/apache/hadoop/hdfs/server/protocol/DatanodeStorage.toString()Ljava/lang/String;",
+        "METHOD\torg/apache/hadoop/hdfs/server/protocol/ReceivedDeletedBlockInfo.toString()Ljava/lang/String;",
+        "METHOD\torg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks.toString()Ljava/lang/String;",
+        "PROBE\torg/apache/hadoop/hdfs/protocol/LocatedBlock:65",
+        "PROBE\torg/apache/hadoop/hdfs/protocol/LocatedBlock:66",
+        "PROBE\torg/apache/hadoop/hdfs/protocol/LocatedBlock:67",
+        "PROBE\torg/apache/hadoop/hdfs/protocol/LocatedBlock:68",
+        "PROBE\torg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB:100",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:391",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:392",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:393",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:394",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:398",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:399",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:403",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BPServiceActor:464",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$1:10",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$1:9",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$RecoveryTaskContiguous:32",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$RecoveryTaskContiguous:33",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$RecoveryTaskContiguous:35",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$RecoveryTaskContiguous:36",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$RecoveryTaskContiguous:37",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR:13",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR:14",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR:16",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR:17",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR:18",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager$PerStorageIBR:19",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:30",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:31",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:32",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:34",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:35",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:50",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:51",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:52",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:53",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:54",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/IncrementalBlockReportManager:8",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl:1926",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl:1927",
+        "PROBE\torg/apache/hadoop/hdfs/server/protocol/DatanodeStorage:13",
+        "PROBE\torg/apache/hadoop/hdfs/server/protocol/ReceivedDeletedBlockInfo:23",
+        "PROBE\torg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks:6"
+      ],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741904|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741904|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "71063845705d4350a5e0fcc5e7686101:432",
+        "seq": 315,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 1 on default port 34785",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 310",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "61a7f2494dfe3ee914df",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-001/trace/runtime_trace.jsonl",
+      "trial": 1
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:36:22.303941+00:00",
+      "coverage_ids": 50901,
+      "coverage_tsv_sha256": "b52e9a7fadd91891bc00865cca347f7bc8026f6cb159ecc933cd6e4fc9aee8c6",
+      "elapsed_seconds": 37.13,
+      "expected_original_guard_response": false,
+      "fault_target_relationships": [],
+      "id": "trial-002",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-002/jacoco.exec",
+      "junit_elapsed_seconds": 26.215,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-002/junit.log.gz",
+      "last_applied_seq": 327,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-002/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 36063,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 0,
+      "post_fault_target_guard": null,
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 313",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 2,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "a85fd4e4d3890c90e7c1",
+      "status": "lost_target_or_actor",
+      "strict_injection": true,
+      "target_after_fault_same_actor": false,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-002/trace/runtime_trace.jsonl",
+      "trial": 2
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:37:00.000061+00:00",
+      "coverage_ids": 50948,
+      "coverage_tsv_sha256": "4afb64a0135d8d594f07144a3f99e474439edc665cf2257af67ea0aa3ce245c1",
+      "elapsed_seconds": 36.501,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-003",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-003/jacoco.exec",
+      "junit_elapsed_seconds": 25.456,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-003/junit.log.gz",
+      "last_applied_seq": 305,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-003/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 37887,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 35,
+      "new_coverage_ids": [
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/DFSOutputStream.addBlock([Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/DFSClient;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;J[Ljava/lang/String;Ljava/util/EnumSet;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;:1152:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/DFSOutputStream.addBlock([Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/DFSClient;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;J[Ljava/lang/String;Ljava/util/EnumSet;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;:1156:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/DFSOutputStream.addBlock([Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/DFSClient;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;J[Ljava/lang/String;Ljava/util/EnumSet;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;:1157:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/DFSOutputStream.addBlock([Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/DFSClient;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;J[Ljava/lang/String;Ljava/util/EnumSet;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;:1163:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.validateAddBlock(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;JLjava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;)Lorg/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp$ValidateAddBlockResult;:180:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem.checkBlocksComplete(Ljava/lang/String;Z[Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;)Z:3284:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem.checkBlocksComplete(Ljava/lang/String;Z[Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;)Z:3286:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem.checkFileProgress(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/INodeFile;Z)Z:3270:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/INodeFile.checkBlockComplete([Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;IIS)Ljava/lang/String;:369:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/INodeFile.checkBlockComplete([Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;IIS)Ljava/lang/String;:372:1",
+        "METHOD\torg/apache/hadoop/hdfs/DFSOutputStream.calculateDelayForNextRetry(JJ)J",
+        "METHOD\torg/apache/hadoop/hdfs/server/namenode/NotReplicatedYetException.<init>(Ljava/lang/String;)V",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:558",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:560",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:562",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:563",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:564",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:567",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:568",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:569",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:573",
+        "PROBE\torg/apache/hadoop/hdfs/DFSOutputStream:574",
+        "PROBE\torg/apache/hadoop/hdfs/protocolPB/ClientNamenodeProtocolServerSideTranslatorPB:103",
+        "PROBE\torg/apache/hadoop/hdfs/protocolPB/ClientNamenodeProtocolServerSideTranslatorPB:104",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp:48",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp:49",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1318",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1424",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1431",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1432",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1433",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1435",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/INodeFile:57",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/INodeFile:58",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/NotReplicatedYetException:0"
+      ],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741924|-1|3",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741861|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "50e3f188d14b4809a2edcce8d4bdb214:432",
+        "seq": 314,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 7 on default port 37887",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 312",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "sequence_id": "af4580f24df40ce29502",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-003/trace/runtime_trace.jsonl",
+      "trial": 3
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:37:38.290534+00:00",
+      "coverage_ids": 50903,
+      "coverage_tsv_sha256": "fc3bd469f58c82fad0ddf260deb228dc9169697a5f250841c588642effed6450",
+      "elapsed_seconds": 37.208,
+      "expected_original_guard_response": false,
+      "fault_target_relationships": [],
+      "id": "trial-004",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-004/jacoco.exec",
+      "junit_elapsed_seconds": 25.608,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-004/junit.log.gz",
+      "last_applied_seq": 318,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-004/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 34093,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 0,
+      "post_fault_target_guard": null,
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 313",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 2,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "21bde04f9931b0d349c6",
+      "status": "lost_target_or_actor",
+      "strict_injection": true,
+      "target_after_fault_same_actor": false,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-004/trace/runtime_trace.jsonl",
+      "trial": 4
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:38:17.836893+00:00",
+      "coverage_ids": 50933,
+      "coverage_tsv_sha256": "db53dc9b6d24e0843ea13ba47c16321383b8259be8fbb436d7c8eb78c577e0eb",
+      "elapsed_seconds": 38.4,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report",
+        "same_block_report"
+      ],
+      "id": "trial-005",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-005/jacoco.exec",
+      "junit_elapsed_seconds": 26.502,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-005/junit.log.gz",
+      "last_applied_seq": 312,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-005/manifest.json",
+      "matched_faults": 2,
+      "name_node_port": 33453,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 10,
+      "new_coverage_ids": [
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/FinalizedReplica.getMetadataLength()J:150:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.updateReplicaUnderRecovery(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;JJJ)Lorg/apache/hadoop/hdfs/server/datanode/ReplicaInfo;:3182:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem.commitBlockSynchronization(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJZZ[Lorg/apache/hadoop/hdfs/protocol/DatanodeID;[Ljava/lang/String;)V:4058:2",
+        "PROBE\torg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolServerSideTranslatorPB:128",
+        "PROBE\torg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolServerSideTranslatorPB:129",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/FinalizedReplica:18",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl:2017",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1850",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1851",
+        "PROBE\torg/apache/hadoop/hdfs/server/namenode/FSNamesystem:1892"
+      ],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741857|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741899|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741924|-1|4",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741857|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741924|-1|3",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741924|-1|4",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741857|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "da6a26d0ad314298b4212d2aa334c940:435",
+        "seq": 319,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 5 on default port 33453",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 2,
+      "role_map_confirmed": true,
+      "selection_reason": "mutation of trial-003",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "sequence_id": "76e712806164a7558c6a",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-005/trace/runtime_trace.jsonl",
+      "trial": 5
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:38:54.963505+00:00",
+      "coverage_ids": 50898,
+      "coverage_tsv_sha256": "95505f7c1366f8fcb4403c8ace4e810a3e9bc2910c99a3c1419d5fe7c45c6f2f",
+      "elapsed_seconds": 36.056,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-006",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-006/jacoco.exec",
+      "junit_elapsed_seconds": 25.404,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-006/junit.log.gz",
+      "last_applied_seq": 311,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-006/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 37221,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741892|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741923|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "d6dd47f457b240b08dc06fd777e18cc0:432",
+        "seq": 318,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 9 on default port 37221",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 312",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "sequence_id": "e7bf6933ef0990dafa0a",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-006/trace/runtime_trace.jsonl",
+      "trial": 6
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:39:31.751101+00:00",
+      "coverage_ids": 50904,
+      "coverage_tsv_sha256": "d680ef9d0d28208609f69ef9ff45d21373fcfcd00f11ad426ce03c203dfca5f7",
+      "elapsed_seconds": 35.689,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-007",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-007/jacoco.exec",
+      "junit_elapsed_seconds": 24.742,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-007/junit.log.gz",
+      "last_applied_seq": 307,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-007/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 43347,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 6,
+      "new_coverage_ids": [
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager.processReportedBlock(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;Ljava/util/Collection;Ljava/util/Collection;Ljava/util/Collection;Ljava/util/Collection;)Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;:3475:2",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager.processReportedBlock(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;Ljava/util/Collection;Ljava/util/Collection;Ljava/util/Collection;Ljava/util/Collection;)Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;:3476:1",
+        "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.initializeAddReplicaPool(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl;)V:280:2",
+        "PROBE\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager:1551",
+        "PROBE\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager:1552",
+        "PROBE\torg/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice:69"
+      ],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741875|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741875|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741924|-1|4"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "89a66a66c84242dbb4549415a79852e7:429",
+        "seq": 315,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 4 on default port 43347",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 310",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "e0ecdd39d18bbf8463fb",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-007/trace/runtime_trace.jsonl",
+      "trial": 7
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:40:08.599940+00:00",
+      "coverage_ids": 50931,
+      "coverage_tsv_sha256": "f01b233720b0ee04686ce0d76d6cc712f97a9eb26fd4664a3a6e1e5ee80cf991",
+      "elapsed_seconds": 35.653,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-008",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-008/jacoco.exec",
+      "junit_elapsed_seconds": 24.999,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-008/junit.log.gz",
+      "last_applied_seq": 306,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-008/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 41359,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741882|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741914|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "b58472820ec1480e99510839f2ef368a:433",
+        "seq": 315,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 6 on default port 41359",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 311",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "sequence_id": "1e133a7dbd8e1fa2f312",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-008/trace/runtime_trace.jsonl",
+      "trial": 8
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:40:44.844465+00:00",
+      "coverage_ids": 50912,
+      "coverage_tsv_sha256": "8b5a8d4f084729544a2b187a7bd1e97a6ae107f6c370652e447f4ed13825a1a2",
+      "elapsed_seconds": 34.962,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report",
+        "same_block_report"
+      ],
+      "id": "trial-009",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-009/jacoco.exec",
+      "junit_elapsed_seconds": 24.638,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-009/junit.log.gz",
+      "last_applied_seq": 307,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-009/manifest.json",
+      "matched_faults": 2,
+      "name_node_port": 43551,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "c83d94d0b1174d7591e04c509412a42b:428",
+        "seq": 315,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 5 on default port 43551",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 2,
+      "role_map_confirmed": true,
+      "selection_reason": "mutation of trial-003",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "sequence_id": "2f51b2bd441470e0a78f",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-009/trace/runtime_trace.jsonl",
+      "trial": 9
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:41:20.936079+00:00",
+      "coverage_ids": 50931,
+      "coverage_tsv_sha256": "f01b233720b0ee04686ce0d76d6cc712f97a9eb26fd4664a3a6e1e5ee80cf991",
+      "elapsed_seconds": 35.013,
+      "expected_original_guard_response": false,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-010",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-010/jacoco.exec",
+      "junit_elapsed_seconds": 24.232,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-010/junit.log.gz",
+      "last_applied_seq": 311,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-010/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 35103,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "f11af309f1d64ba5ba3803ab56786994:436",
+        "seq": 318,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 9 on default port 35103",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 2,
+      "role_map_confirmed": true,
+      "selection_reason": "mutation of trial-007",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "sequence_id": "f53f36ff3e2354e9db66",
+      "status": "unmatched_or_partial",
+      "strict_injection": false,
+      "target_after_fault_same_actor": false,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-010/trace/runtime_trace.jsonl",
+      "trial": 10
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:41:56.355034+00:00",
+      "coverage_ids": 50896,
+      "coverage_tsv_sha256": "c533ecf403e40016f5f6cf0a1d0bf07d6f1a523c81d80c898ec2b18dc94fe34f",
+      "elapsed_seconds": 34.03,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report",
+        "same_block_report"
+      ],
+      "id": "trial-011",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-011/jacoco.exec",
+      "junit_elapsed_seconds": 24.292,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-011/junit.log.gz",
+      "last_applied_seq": 313,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-011/manifest.json",
+      "matched_faults": 2,
+      "name_node_port": 35925,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn0||1073741888|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741835|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741858|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741888|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "683aa7af41514336a3bcd48b3024cd66:432",
+        "seq": 320,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 2 on default port 35925",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 2,
+      "role_map_confirmed": true,
+      "selection_reason": "mutation of trial-008",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "30f20738b0d41c7fdb27",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-011/trace/runtime_trace.jsonl",
+      "trial": 11
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:42:31.115767+00:00",
+      "coverage_ids": 50907,
+      "coverage_tsv_sha256": "0b6971d6b09b47e10e0d8885419d7e7c078e5ae2d982359898a9019edac6e51b",
+      "elapsed_seconds": 33.686,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-012",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-012/jacoco.exec",
+      "junit_elapsed_seconds": 23.792,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-012/junit.log.gz",
+      "last_applied_seq": 306,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-012/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 38221,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "270b1c0ee5aa4a32a281e8153b959eed:428",
+        "seq": 313,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 4 on default port 38221",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 311",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "sequence_id": "0ce82d37b071a09a624b",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-012/trace/runtime_trace.jsonl",
+      "trial": 12
+    },
+    {
+      "applied_faults": 2,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:43:13.926578+00:00",
+      "coverage_ids": 50913,
+      "coverage_tsv_sha256": "13e77068b4c116fd449e8be0ed788c111c95686ca0706f814c4e7dd38d3f2e18",
+      "elapsed_seconds": 41.686,
+      "expected_original_guard_response": false,
+      "fault_target_relationships": [
+        "same_block_report",
+        "same_block_report"
+      ],
+      "id": "trial-013",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-013/jacoco.exec",
+      "junit_elapsed_seconds": 30.108,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-013/junit.log.gz",
+      "last_applied_seq": 315,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-013/manifest.json",
+      "matched_faults": 2,
+      "name_node_port": 40435,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "ab3f494c5c7a4eb08f15a6d558e6dd54:437",
+        "seq": 322,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 7 on default port 40435",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 3,
+      "role_map_confirmed": true,
+      "selection_reason": "mutation of trial-009",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "acc6db2a091f2b6641a2",
+      "status": "unmatched_or_partial",
+      "strict_injection": false,
+      "target_after_fault_same_actor": false,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-013/trace/runtime_trace.jsonl",
+      "trial": 13
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:43:55.708673+00:00",
+      "coverage_ids": 50905,
+      "coverage_tsv_sha256": "fb383f238f885bf311128346c78a8ed5fa3965e69f7dcd47a13e2c76cadfcb10",
+      "elapsed_seconds": 40.545,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-014",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-014/jacoco.exec",
+      "junit_elapsed_seconds": 27.749,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-014/junit.log.gz",
+      "last_applied_seq": 309,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-014/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 33567,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741900|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "89d56618a09f426cb9c5545f05726699:434",
+        "seq": 317,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 2 on default port 33567",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 312",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "sequence_id": "c464dddb16072cbae133",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-014/trace/runtime_trace.jsonl",
+      "trial": 14
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:44:35.177701+00:00",
+      "coverage_ids": 51004,
+      "coverage_tsv_sha256": "741e2d406ba629eb1a2beff6a7c9e4bdfd73ab541328957c9eb03a2de62c64dc",
+      "elapsed_seconds": 38.387,
+      "expected_original_guard_response": false,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-015",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-015/jacoco.exec",
+      "junit_elapsed_seconds": 26.56,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-015/junit.log.gz",
+      "last_applied_seq": 312,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-015/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 45813,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "4c52363a849743a7aa2302873ff1a78e:439",
+        "seq": 319,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 3 on default port 45813",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 2,
+      "role_map_confirmed": true,
+      "selection_reason": "mutation of trial-003",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "4d6aac700532e606d840",
+      "status": "unmatched_or_partial",
+      "strict_injection": false,
+      "target_after_fault_same_actor": false,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-015/trace/runtime_trace.jsonl",
+      "trial": 15
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:45:16.429719+00:00",
+      "coverage_ids": 50907,
+      "coverage_tsv_sha256": "f1ded0e9e7f1d135e2d2cf41ecbd4daa81b744937b52da16d131350cae45049f",
+      "elapsed_seconds": 40.087,
+      "expected_original_guard_response": false,
+      "fault_target_relationships": [],
+      "id": "trial-016",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-016/jacoco.exec",
+      "junit_elapsed_seconds": 28.631,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-016/junit.log.gz",
+      "last_applied_seq": 322,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-016/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 45871,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 0,
+      "post_fault_target_guard": null,
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 313",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 2,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "2d39ab1436200289fbaf",
+      "status": "lost_target_or_actor",
+      "strict_injection": true,
+      "target_after_fault_same_actor": false,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-016/trace/runtime_trace.jsonl",
+      "trial": 16
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:45:54.052609+00:00",
+      "coverage_ids": 50899,
+      "coverage_tsv_sha256": "8d8a862b3f35c15b3e7ce67129ce9a4d6965262cc47b4cd9a88b43acbb93bc24",
+      "elapsed_seconds": 36.383,
+      "expected_original_guard_response": true,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-017",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-017/jacoco.exec",
+      "junit_elapsed_seconds": 25.199,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-017/junit.log.gz",
+      "last_applied_seq": 308,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-017/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 37517,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn1||1073741906|-1|2",
+        "RPC_RESPONSE_WAIT|blockReceivedAndDeleted|nn0|dn2||1073741859|-1|2"
+      ],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "0c4cf14709a4431dbf7063501af7633b:434",
+        "seq": 317,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 5 on default port 37517",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 1,
+      "role_map_confirmed": true,
+      "selection_reason": "healthy I/O seq 311",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "sequence_id": "e7b8e45e42170ae251cc",
+      "status": "checked",
+      "strict_injection": true,
+      "target_after_fault_same_actor": true,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-017/trace/runtime_trace.jsonl",
+      "trial": 17
+    },
+    {
+      "applied_faults": 1,
+      "bug_mark": "none",
+      "completed_at_utc": "2026-10-07T09:46:33.461585+00:00",
+      "coverage_ids": 50948,
+      "coverage_tsv_sha256": "f5ca04087c595dab52f0611ceca427ba983af463066cdc260ce72c80427782d4",
+      "elapsed_seconds": 38.219,
+      "expected_original_guard_response": false,
+      "fault_target_relationships": [
+        "same_block_report"
+      ],
+      "id": "trial-018",
+      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-018/jacoco.exec",
+      "junit_elapsed_seconds": 26.461,
+      "junit_exit": 0,
+      "junit_log_gzip": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-018/junit.log.gz",
+      "last_applied_seq": 311,
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-018/manifest.json",
+      "matched_faults": 1,
+      "name_node_port": 39891,
+      "name_node_port_confirmed": true,
+      "new_coverage_count": 0,
+      "new_coverage_ids": [],
+      "new_io_family_ids": [],
+      "new_io_point_ids": [],
+      "physical_source_confirmed": true,
+      "post_fault_target_exception_count": 1,
+      "post_fault_target_guard": {
+        "blockId": 1073741924,
+        "equal": false,
+        "event": "TARGET_GUARD",
+        "inProgressLength": 399,
+        "ordinal": 1,
+        "path": "/testTruncateTwiceTogether/file",
+        "phase": "secondTruncate",
+        "requestedLength": 398,
+        "rpcKey": "994ce196db9f4b388c66e0d947787722:436",
+        "seq": 318,
+        "site": "FSDirTruncateOp.truncate:113-117",
+        "state": "UNDER_RECOVERY",
+        "thread": "IPC Server handler 6 on default port 39891",
+        "truncateBlockId": 1073741924
+      },
+      "requested_faults": 2,
+      "role_map_confirmed": true,
+      "selection_reason": "mutation of trial-003",
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "sequence_id": "6de9673806a7c2dde542",
+      "status": "unmatched_or_partial",
+      "strict_injection": false,
+      "target_after_fault_same_actor": false,
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/actor-v2/campaign/trial-018/trace/runtime_trace.jsonl",
+      "trial": 18
+    }
+  ],
+  "extended": false,
+  "extension": {
+    "max_attempts": 512,
+    "max_effective": 128,
+    "max_faults": 10
+  },
+  "healthy_relevant_io": 11,
+  "healthy_repeat_target": {
+    "blockId": 1073741924,
+    "inProgressLength": 399,
+    "path": "/testTruncateTwiceTogether/file",
+    "requestedLength": 398,
+    "truncateBlockId": 1073741924
+  },
+  "healthy_target": {
+    "blockId": 1073741924,
+    "inProgressLength": 399,
+    "path": "/testTruncateTwiceTogether/file",
+    "requestedLength": 398,
+    "truncateBlockId": 1073741924
+  },
+  "healthy_target_checks": 2,
+  "queue": [
+    {
+      "id": "8a711fb549fa6d822c48",
+      "queued_at": 0,
+      "reason": "healthy I/O seq 310",
+      "score": 300,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "d2c6808431afb305ab8e",
+      "queued_at": 0,
+      "reason": "healthy I/O seq 315",
+      "score": 240,
+      "sequence": [
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 399,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "ac1815a1e34395e797f1",
+      "queued_at": 0,
+      "reason": "healthy I/O seq 315",
+      "score": 240,
+      "sequence": [
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 399,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "8873cc4b28538e8a2578",
+      "queued_at": 0,
+      "reason": "healthy I/O seq 315",
+      "score": 240,
+      "sequence": [
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 399,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "5fe6f74ca47682ba5066",
+      "queued_at": 0,
+      "reason": "healthy I/O seq 318",
+      "score": 240,
+      "sequence": [
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "6a3d0dc0065ff9a3f237",
+      "queued_at": 0,
+      "reason": "healthy I/O seq 318",
+      "score": 240,
+      "sequence": [
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "1852422c61d2aad17d31",
+      "queued_at": 0,
+      "reason": "healthy I/O seq 318",
+      "score": 240,
+      "sequence": [
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "c016ec427f818bc19fc2",
+      "queued_at": 1,
+      "reason": "mutation of trial-001",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "585e0e8a6f641b516ac4",
+      "queued_at": 1,
+      "reason": "mutation of trial-001",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "bcfa851fa6ef0cb302a0",
+      "queued_at": 1,
+      "reason": "mutation of trial-001",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "873a1ed95c5a682c3bef",
+      "queued_at": 3,
+      "reason": "mutation of trial-003",
+      "score": 285,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "d0eb12697ebb3ef869f3",
+      "queued_at": 3,
+      "reason": "mutation of trial-003",
+      "score": 285,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "740f181dc02ec5cfa31a",
+      "queued_at": 3,
+      "reason": "mutation of trial-003",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "88ab7b6fce7049b0afa5",
+      "queued_at": 3,
+      "reason": "mutation of trial-003",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "795dc20978fd85d00792",
+      "queued_at": 3,
+      "reason": "mutation of trial-003",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "63a7b460e0b271d88853",
+      "queued_at": 5,
+      "reason": "mutation of trial-005",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "978a85f3ccef9d4c7056",
+      "queued_at": 5,
+      "reason": "mutation of trial-005",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "987a07866a7e6e5156f5",
+      "queued_at": 5,
+      "reason": "mutation of trial-005",
+      "score": 225,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "ff683b26fbdf5906d1fe",
+      "queued_at": 6,
+      "reason": "mutation of trial-006",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "c39ba99e75d57bb3dcb2",
+      "queued_at": 6,
+      "reason": "mutation of trial-006",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "16e8dcb3f92fc5282398",
+      "queued_at": 6,
+      "reason": "mutation of trial-006",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "35e73db01975bcbe7945",
+      "queued_at": 7,
+      "reason": "mutation of trial-007",
+      "score": 261,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "247dec680f9e2a9ca5c1",
+      "queued_at": 7,
+      "reason": "mutation of trial-007",
+      "score": 261,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "1dc69752eb9b25cd56c6",
+      "queued_at": 7,
+      "reason": "mutation of trial-007",
+      "score": 201,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "3cdd9403a0046907fec6",
+      "queued_at": 7,
+      "reason": "mutation of trial-007",
+      "score": 201,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "a9b23c1e70aa294ef564",
+      "queued_at": 7,
+      "reason": "mutation of trial-007",
+      "score": 201,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "5de8813e3d19cadb1007",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "d671466e4c00d42eb5e0",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "dc2498acaa115dc9384a",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "5198f5b7c8bd0526c26f",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "8864b626df598170401f",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "3205efe3febf34a47c11",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "b00545ffa70cdd762179",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "5a51e5eac660b063dc71",
+      "queued_at": 8,
+      "reason": "mutation of trial-008",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "9f7b06d650e39137bc1e",
+      "queued_at": 9,
+      "reason": "mutation of trial-009",
+      "score": 275,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "3736d6843606afe12d44",
+      "queued_at": 9,
+      "reason": "mutation of trial-009",
+      "score": 275,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "4881b19e9af417cb4240",
+      "queued_at": 9,
+      "reason": "mutation of trial-009",
+      "score": 215,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "80191285e047bfc008bb",
+      "queued_at": 9,
+      "reason": "mutation of trial-009",
+      "score": 215,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "f89019fefd79aa4552cd",
+      "queued_at": 9,
+      "reason": "mutation of trial-009",
+      "score": 215,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "4ae9972c7ae9705b1784",
+      "queued_at": 11,
+      "reason": "mutation of trial-011",
+      "score": 215,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "75e1ddfce134f669b5bb",
+      "queued_at": 11,
+      "reason": "mutation of trial-011",
+      "score": 215,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "2fb93e698ae9a87c6de0",
+      "queued_at": 11,
+      "reason": "mutation of trial-011",
+      "score": 215,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "a342a56d0427fae170a1",
+      "queued_at": 12,
+      "reason": "mutation of trial-012",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "4fbb3cfd377174e762fd",
+      "queued_at": 12,
+      "reason": "mutation of trial-012",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "8e2e711eaf182a120afb",
+      "queued_at": 12,
+      "reason": "mutation of trial-012",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "a13ac19624190d463daa",
+      "queued_at": 14,
+      "reason": "mutation of trial-014",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "076278937ff08e0a0d8d",
+      "queued_at": 14,
+      "reason": "mutation of trial-014",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "56c63bd228f5be0967b6",
+      "queued_at": 14,
+      "reason": "mutation of trial-014",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "8b572e29b77461c901a8",
+      "queued_at": 14,
+      "reason": "mutation of trial-014",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "a693014c1e91bca20552",
+      "queued_at": 14,
+      "reason": "mutation of trial-014",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "6f19132668ae4d110826",
+      "queued_at": 14,
+      "reason": "mutation of trial-014",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "e910c4605c9abf5b0172",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "7c48e24cc8026a1ae32c",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "9a3682a3a0087f4b0e32",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn2"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "22cf464cd8d799ca6caa",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "ad367f0aac8722a428eb",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "d51bddd4cf5ca735edc6",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 255,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn0"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "7812b3ee59afba5c8cad",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "IOException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "eccfdc2079e16f818f84",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    },
+    {
+      "id": "64077cc14fe9f132935c",
+      "queued_at": 17,
+      "reason": "mutation of trial-017",
+      "score": 195,
+      "sequence": [
+        {
+          "api": "blockReceivedAndDeleted",
+          "blockId": 1073741924,
+          "endpoint": "nn0",
+          "exception": "SocketTimeoutException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "",
+          "requestedLength": -1,
+          "sourceRole": "dn1"
+        },
+        {
+          "api": "truncate",
+          "blockId": -1,
+          "endpoint": "nn0",
+          "exception": "EOFException",
+          "marker": "RPC_RESPONSE_WAIT",
+          "ordinal": 1,
+          "path": "/testTruncateTwiceTogether/file",
+          "requestedLength": 398,
+          "sourceRole": "client"
+        }
+      ],
+      "target": {
+        "blockId": 1073741924,
+        "inProgressLength": 399,
+        "path": "/testTruncateTwiceTogether/file",
+        "requestedLength": 398,
+        "truncateBlockId": 1073741924
+      }
+    }
+  ],
+  "schema_version": 2,
+  "seen": [
+    "e0ecdd39d18bbf8463fb",
+    "8a711fb549fa6d822c48",
+    "61a7f2494dfe3ee914df",
+    "1e133a7dbd8e1fa2f312",
+    "e7b8e45e42170ae251cc",
+    "0ce82d37b071a09a624b",
+    "e7bf6933ef0990dafa0a",
+    "af4580f24df40ce29502",
+    "c464dddb16072cbae133",
+    "21bde04f9931b0d349c6",
+    "a85fd4e4d3890c90e7c1",
+    "2d39ab1436200289fbaf",
+    "d2c6808431afb305ab8e",
+    "ac1815a1e34395e797f1",
+    "8873cc4b28538e8a2578",
+    "5fe6f74ca47682ba5066",
+    "6a3d0dc0065ff9a3f237",
+    "1852422c61d2aad17d31",
+    "c016ec427f818bc19fc2",
+    "585e0e8a6f641b516ac4",
+    "bcfa851fa6ef0cb302a0",
+    "873a1ed95c5a682c3bef",
+    "2f51b2bd441470e0a78f",
+    "76e712806164a7558c6a",
+    "d0eb12697ebb3ef869f3",
+    "4d6aac700532e606d840",
+    "6de9673806a7c2dde542",
+    "740f181dc02ec5cfa31a",
+    "88ab7b6fce7049b0afa5",
+    "795dc20978fd85d00792",
+    "63a7b460e0b271d88853",
+    "978a85f3ccef9d4c7056",
+    "987a07866a7e6e5156f5",
+    "ff683b26fbdf5906d1fe",
+    "c39ba99e75d57bb3dcb2",
+    "16e8dcb3f92fc5282398",
+    "35e73db01975bcbe7945",
+    "f53f36ff3e2354e9db66",
+    "247dec680f9e2a9ca5c1",
+    "1dc69752eb9b25cd56c6",
+    "3cdd9403a0046907fec6",
+    "a9b23c1e70aa294ef564",
+    "30f20738b0d41c7fdb27",
+    "5de8813e3d19cadb1007",
+    "d671466e4c00d42eb5e0",
+    "dc2498acaa115dc9384a",
+    "5198f5b7c8bd0526c26f",
+    "8864b626df598170401f",
+    "3205efe3febf34a47c11",
+    "b00545ffa70cdd762179",
+    "5a51e5eac660b063dc71",
+    "acc6db2a091f2b6641a2",
+    "9f7b06d650e39137bc1e",
+    "3736d6843606afe12d44",
+    "4881b19e9af417cb4240",
+    "80191285e047bfc008bb",
+    "f89019fefd79aa4552cd",
+    "4ae9972c7ae9705b1784",
+    "75e1ddfce134f669b5bb",
+    "2fb93e698ae9a87c6de0",
+    "a342a56d0427fae170a1",
+    "4fbb3cfd377174e762fd",
+    "8e2e711eaf182a120afb",
+    "a13ac19624190d463daa",
+    "076278937ff08e0a0d8d",
+    "56c63bd228f5be0967b6",
+    "8b572e29b77461c901a8",
+    "a693014c1e91bca20552",
+    "6f19132668ae4d110826",
+    "e910c4605c9abf5b0172",
+    "7c48e24cc8026a1ae32c",
+    "9a3682a3a0087f4b0e32",
+    "22cf464cd8d799ca6caa",
+    "ad367f0aac8722a428eb",
+    "d51bddd4cf5ca735edc6",
+    "7812b3ee59afba5c8cad",
+    "eccfdc2079e16f818f84",
+    "64077cc14fe9f132935c"
+  ],
+  "source_build_sha256": "296fbefa60c9c54a469937d61d9d6c65c4721188cdcec45d39340f045053f6d1",
+  "started_at_utc": "2026-10-07T09:33:23.332559+00:00",
+  "stop_reason": "paused_by_case_owner",
+  "test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether"
+}
