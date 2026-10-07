@@ -1,0 +1,79 @@
+{
+  "applied_faults": 3,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-07T00:26:33.301279+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-39/independent-coverage-io/campaign/trial-138/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 8722,
+    "METHOD": 8060,
+    "PROBE": 28394
+  },
+  "coverage_ids": 45176,
+  "junit_exit": 0,
+  "junit_seconds": 20.506,
+  "last_applied_seq": 255,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-39/independent-coverage-io/campaign/trial-138/manifest.json",
+  "matched_faults": 3,
+  "new_coverage_count": 4,
+  "new_coverage_ids": [
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager.commitBlock(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;)Z:1175:2",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager.commitOrCompleteLastBlock(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockCollection;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/namenode/INodesInPath;)Z:1216:3",
+    "PROBE\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager:334",
+    "PROBE\torg/apache/hadoop/hdfs/server/blockmanagement/BlockManager:350"
+  ],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [
+    "RPC_RESPONSE:ClientNamenodeProtocolTranslatorPB.lambda$complete$13:nn0:13"
+  ],
+  "number": 138,
+  "observed_io_points": 183,
+  "other_context_guard_after_last_fault_count": 0,
+  "requested_faults": 3,
+  "seconds": 30.75,
+  "selection_reason": "mutated trial-71 from observed post-fault I/O seq 257",
+  "sequence": [
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4",
+      "endpoint": "nn0",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 1
+    },
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4",
+      "endpoint": "nn0",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 19
+    },
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4",
+      "endpoint": "nn0",
+      "exception": "IOException",
+      "marker": "RPC_SEND",
+      "ordinal": 20
+    }
+  ],
+  "sequence_id": "cec2ba20b0fc2daa0b26",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    10
+  ],
+  "target_context_expected": {
+    "block_id": 1073741825,
+    "healthy_guard_ordinal": 10,
+    "healthy_state": "COMPLETE",
+    "path": "/testMultipleAppend/foo"
+  },
+  "target_exception_after_fault_count": 0,
+  "target_exception_any_context_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_states_after_fault": [
+    "COMPLETE"
+  ],
+  "test_method": "testMultipleAppends",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-39/independent-coverage-io/campaign/trial-138/trace/runtime_trace.jsonl",
+  "trial": "trial-138"
+}

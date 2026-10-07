@@ -1,0 +1,88 @@
+{
+  "applied_faults": 3,
+  "bug_mark": "none",
+  "completed_at_utc": "2026-10-06T23:53:01.983724+00:00",
+  "coverage": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-39/independent-coverage-io/campaign/trial-89/coverage.tsv",
+  "coverage_by_kind": {
+    "BRANCH_UNIT": 7997,
+    "METHOD": 7542,
+    "PROBE": 26442
+  },
+  "coverage_ids": 41981,
+  "junit_exit": 1,
+  "junit_seconds": 20.349,
+  "last_applied_seq": 279,
+  "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-39/independent-coverage-io/campaign/trial-89/manifest.json",
+  "matched_faults": 3,
+  "new_coverage_count": 15,
+  "new_coverage_ids": [
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner.calculateShouldScan(Ljava/lang/String;JJJJ)Z:465:2",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner.calculateShouldScan(Ljava/lang/String;JJJJ)Z:469:1",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner.expireOldScannedBytesRecords(J)V:330:2",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner.expireOldScannedBytesRecords(J)V:335:1",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner.expireOldScannedBytesRecords(J)V:335:2",
+    "BRANCH_UNIT\torg/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture.clearListeners(Lorg/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture$Listener;)Lorg/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture$Listener;:975:2",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:112",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:114",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:59",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:60",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:61",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:62",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:63",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/VolumeScanner:64",
+    "PROBE\torg/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture:203"
+  ],
+  "new_io_family_ids": [],
+  "new_io_point_ids": [],
+  "number": 89,
+  "observed_io_points": 184,
+  "other_context_guard_after_last_fault_count": 0,
+  "requested_faults": 3,
+  "seconds": 30.633,
+  "selection_reason": "mutated trial-46 from observed post-fault I/O seq 277",
+  "sequence": [
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4",
+      "endpoint": "nn0",
+      "exception": "IOException",
+      "marker": "RPC_SEND",
+      "ordinal": 27
+    },
+    {
+      "api": "DatanodeProtocolClientSideTranslatorPB.lambda$blockReceivedAndDeleted$4",
+      "endpoint": "nn0",
+      "exception": "IOException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 28
+    },
+    {
+      "api": "ClientNamenodeProtocolTranslatorPB.lambda$append$4",
+      "endpoint": "nn0",
+      "exception": "EOFException",
+      "marker": "RPC_RESPONSE",
+      "ordinal": 11
+    }
+  ],
+  "sequence_id": "8d9de536dd23a021736b",
+  "status": "checked",
+  "strict_injection": true,
+  "target_actual_guard_ordinals_after_fault": [
+    10
+  ],
+  "target_context_expected": {
+    "block_id": 1073741825,
+    "healthy_guard_ordinal": 10,
+    "healthy_state": "COMPLETE",
+    "path": "/testMultipleAppend/foo"
+  },
+  "target_exception_after_fault_count": 0,
+  "target_exception_any_context_after_fault_count": 0,
+  "target_guard_after_last_fault": true,
+  "target_guard_after_last_fault_count": 1,
+  "target_states_after_fault": [
+    "COMPLETE"
+  ],
+  "test_method": "testMultipleAppends",
+  "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-39/independent-coverage-io/campaign/trial-89/trace/runtime_trace.jsonl",
+  "trial": "trial-89"
+}

@@ -1,0 +1,87 @@
+{
+  "trial-118": {
+    "disposition": "rejected_injected_client_io_error",
+    "exact_target_exception_reproduced": true,
+    "failure_cause": "Client.getRpcResponse injected EOFException at append RPC_RESPONSE ordinal 2, propagated from fs.append to JUnit; server target RetriableException is the same expected COMMITTED transient seen in healthy execution.",
+    "junit_exit_in_original_and_replay": 1,
+    "new_bug": false,
+    "original_trace": "campaign/trial-118/trace/runtime_trace.jsonl",
+    "original_trace_sha256": "40738996ee424efcdd10a944c2c81b065d4d2d81d9ee7d79c8365bc0035dd883",
+    "replay_runtime_log": "replay/trial-118-1/logs/runtime.log",
+    "replay_runtime_log_sha256": "7a0959a7c5ce773083d1e7561b60cda0c6ef2470270130f05fa3f02235b7e156",
+    "replay_trace": "replay/trial-118-1/trace/runtime_trace.jsonl",
+    "replay_trace_sha256": "a152565088df472454e5ae59c9b6e7af4d13c896c6ee177f3f4f93f8fef1576f",
+    "source_review": [
+      "FSDirAppendOp.java:130-135 intentionally throws RetriableException while the last block is COMMITTED.",
+      "DFSClient.java:1404-1427 retries remote RetriableException; its catch does not handle the locally injected EOFException."
+    ],
+    "strict_applied_in_original_and_replay": true,
+    "target_after_fault_in_original_and_replay": true
+  },
+  "trial-125": {
+    "disposition": "rejected_injected_client_io_error",
+    "exact_target_exception_reproduced": true,
+    "failure_cause": "Injected local SocketTimeoutException at append Client.getRpcResponse entry propagates to JUnit; server COMMITTED RetriableException also occurs but is the expected transient seen in healthy execution.",
+    "junit_exit_in_original_and_replay": 1,
+    "new_bug": false,
+    "original_trace": "campaign/trial-125/trace/runtime_trace.jsonl",
+    "original_trace_sha256": "cacab9d87efaab1f14a0412bfcd61803b307b5ddfa373f718f86cc9ee801d325",
+    "replay_runtime_log": "replay/trial-125-1/logs/runtime.log",
+    "replay_runtime_log_sha256": "ca2d0825374bab06ceff290a9cc78d6575feae7809fbfdc06f687b139b4de63e",
+    "replay_trace": "replay/trial-125-1/trace/runtime_trace.jsonl",
+    "replay_trace_sha256": "dee397eb8d788692751822ed1ed11c277850919f5ee3b7310500b00070eefd68",
+    "source_review": [
+      "FSDirAppendOp.java:130-135 intentionally emits RetriableException for a COMMITTED block.",
+      "DFSClient.java:1404-1427 retries remote RetriableException, whereas the injected local SocketTimeoutException at Client.getRpcResponse propagates from fs.append."
+    ],
+    "strict_applied_in_original_and_replay": true,
+    "target_after_fault_in_original_and_replay": true
+  },
+  "trial-144": {
+    "disposition": "rejected_injected_client_io_error_and_unreproduced_target_exception",
+    "exact_target_exception_reproduced": false,
+    "failure_cause": "The fourth fault injects local IOException at append Client.getRpcResponse ordinal 11; this exception terminates fs.append in both trial and full replay. A strict prefix-three ablation succeeds. The target COMMITTED exception after the fourth fault occurs only in the original run and is nondeterministic; it is the expected transient already seen in healthy execution.",
+    "junit_exit_in_original_and_replay": 1,
+    "new_bug": false,
+    "original_trace": "campaign/trial-144/trace/runtime_trace.jsonl",
+    "original_trace_sha256": "4120a769c670e2fa902a6a3a1bdbd7bd1c24a4efd6c457295b42245724344455",
+    "prefix3_junit_exit": 0,
+    "prefix3_strict_applied": true,
+    "prefix3_trace": "replay/trial-144-prefix3/trace/runtime_trace.jsonl",
+    "prefix3_trace_sha256": "a6dd99b1e01702e9b1ed9405c1001b6de77e6a7bed9ccbf11beb26e6f43b2ec2",
+    "replay_runtime_log": "replay/trial-144-1/logs/runtime.log",
+    "replay_runtime_log_sha256": "d1e38ef4c94eaf4027cc1cb526c0bbadff6f7e19480a1c106863e9a2aaf8579c",
+    "replay_trace": "replay/trial-144-1/trace/runtime_trace.jsonl",
+    "replay_trace_sha256": "121c80fb782fa990a32bb2a862afa73ee2c4f1be8310dd97ebcba370e08213a9",
+    "source_review": [
+      "FSDirAppendOp.java:130-135 emits a known retriable exception for COMMITTED; healthy test itself emits it and succeeds.",
+      "DFSClient.java:1404-1427 retries a received remote RetriableException, but does not catch the locally injected IOException at Client.getRpcResponse entry."
+    ],
+    "strict_applied_in_original_and_replay": true,
+    "target_after_fault_in_original_and_replay": true
+  },
+  "trial-180": {
+    "disposition": "rejected_injected_client_io_error_with_expected_server_retry",
+    "exact_target_exception_reproduced": true,
+    "failure_cause": "All four faults and target exception reproduce, but the JUnit failure stack is the fourth locally injected SocketTimeoutException at append Client.getRpcResponse. Removing only that fault leaves the first three strictly applied; the target RetriableException occurs twice and DFSClient retries to COMPLETE, JUnit exit 0.",
+    "junit_exit_in_original_and_replay": 1,
+    "new_bug": false,
+    "original_trace": "campaign/trial-180/trace/runtime_trace.jsonl",
+    "original_trace_sha256": "2f2ae95220a0fadf2c0d39ad8c48a7c0182e69b40c2527c48ddc17685679c32d",
+    "prefix3_junit_exit": 0,
+    "prefix3_strict_applied": true,
+    "prefix3_target_exception_after_fault_count": 2,
+    "prefix3_trace": "replay/trial-180-prefix3/trace/runtime_trace.jsonl",
+    "prefix3_trace_sha256": "0359a33f62a23e999f005d845726b987b8940b09a3b0d4c195b30c0b3af97d36",
+    "replay_runtime_log": "replay/trial-180-1/logs/runtime.log",
+    "replay_runtime_log_sha256": "a99a6ae0821a0e31d79deec605d69511ffaaeba67268af78e9190c96edbea1d1",
+    "replay_trace": "replay/trial-180-1/trace/runtime_trace.jsonl",
+    "replay_trace_sha256": "7a4760e9a73081f629017ad749bcc5e298e4cb94c68da689718c116776e6d68b",
+    "source_review": [
+      "FSDirAppendOp.java:130-135 deliberately emits RetriableException for COMMITTED block.",
+      "DFSClient.java:1404-1427 retries remote RetriableException every 500 ms up to 5 s; it does not catch the locally injected SocketTimeoutException at Client.getRpcResponse entry."
+    ],
+    "strict_applied_in_original_and_replay": true,
+    "target_after_fault_in_original_and_replay": true
+  }
+}

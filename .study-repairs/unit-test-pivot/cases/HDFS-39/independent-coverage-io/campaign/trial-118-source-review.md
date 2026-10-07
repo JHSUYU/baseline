@@ -1,0 +1,7 @@
+# HDFS-39 trial-118 candidate adjudication
+
+The unchanged `TestFileAppend#testMultipleAppends` JUnit failed in both the original trial and the same-selector replay. The injected selector was `RPC_RESPONSE / ClientNamenodeProtocolTranslatorPB.lambda$append$4 / nn0 / ordinal 2 / EOFException`. `build_probe.py` inserts this gate at the entry of `Client.getRpcResponse`, before it waits for the response. Both traces show strict 1/1 application, then the same `/testMultipleAppend/foo` block 1073741825 entering `COMMITTED` and emitting `RetriableException` on the NameNode.
+
+The replay runtime stack identifies the JUnit failure as **the injected client-side EOFException** at `Probe.io` → `Client.getRpcResponse` → `DFSClient.callAppend` → `fs.append` → `TestFileAppend.java:425`. The target `RetriableException` is generated on the server in parallel, but the client-side injected EOFException prevents this call from receiving it. The released `DFSClient.callAppend` code retries a received remote `RetriableException`; it does not catch this local EOFException. The healthy JUnit already generates the same target `RetriableException`, then succeeds after retry.
+
+The target exception and the operation failure therefore co-occur under this injection; the target exception did not cause a new incorrect HDFS state. `candidate-reviews.json` retains the raw candidate and replay hashes, and marks it **rejected as an injected I/O outcome, not a new bug**.
