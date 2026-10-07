@@ -118,10 +118,16 @@ public final class Agent {
                   super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
                       "org/apache/solr/cloud/ZkController", "getNodeName",
                       "()Ljava/lang/String;", false);
+                  super.visitVarInsn(Opcodes.ALOAD, 0);
+                  super.visitFieldInsn(Opcodes.GETFIELD, TARGET, "zkController",
+                      "Lorg/apache/solr/cloud/ZkController;");
+                  super.visitMethodInsn(Opcodes.INVOKEVIRTUAL,
+                      "org/apache/solr/cloud/ZkController", "getZkClient",
+                      "()Lorg/apache/solr/common/cloud/SolrZkClient;", false);
                   super.visitVarInsn(Opcodes.ALOAD, 1);
                   super.visitMethodInsn(Opcodes.INVOKESTATIC, PROBE, "targetEnter",
                       "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
-                      + "Ljava/lang/String;Ljava/lang/Object;)V", false);
+                      + "Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V", false);
                   changed[0] = true;
                 }
 

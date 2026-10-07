@@ -21,12 +21,19 @@ specific.
    from their **original test setup** and prove it is stable in two clean JVM
    runs. Do not use the changing TCP port or `System.identityHashCode` as a
    cross-run selector.
-4. The selector and per-site hit ordinal must include
-   `(operation, caller, logical source, actorKey, resource)`. Emit raw rows with
-   `actorKey`, raw node name, `clientIdentity`, Solr home, and MDC node/core.
+4. Sample `SolrZkClient.getSolrZooKeeper()` at each operation. Increment a
+   per-client generation whenever the underlying handle object changes. The
+   selector and per-site hit ordinal must include
+   `(operation, caller, logical source, actorKey, generation, resource)`.
+   Emit raw rows with handle identity, session ID, connected state, configured
+   endpoint, actor key, raw node name, client identity, Solr home, and MDC
+   node/core. Require a connected handle and positive session ID for fault
+   eligibility. Keep raw session IDs and object identities out of cross-run
+   selectors because they change between JVMs.
    Mark any unknown client or unknown home role `UNBOUND`; never generate a
    fault plan from it. A planned fault on an unbound actor must fail closed.
-5. Record the receiving actor of each target check separately. A post-fault
+5. Pass the target's actual `ZkController.getZkClient()` receiver to its
+   probe and record the receiving actor and raw handle/session. A post-fault
    target counts only when its logical child and receiving actor match the two
    healthy seeds. A faulted I/O actor may differ from the target receiver;
    that relationship is explicit in the raw trace and cannot be inferred from
@@ -34,7 +41,8 @@ specific.
 
 `smoke_transform.py` verifies the bytecode hooks on the original Solr 8.11.4
 classes. `smoke_actor_match.py` executes the same I/O signature through two
-bound clients and proves the wrong actor cannot consume a planned exception.
+bound clients and proves the wrong actor or replaced handle cannot consume
+a planned exception.
 `calibrate.py` checks raw client bindings, target child roles, and stable exact
 selectors in two clean original JUnit runs before `fuzz_v2.py` can initialize.
 For another Solr version, re-check the actual `SolrZkClient` lambda methods

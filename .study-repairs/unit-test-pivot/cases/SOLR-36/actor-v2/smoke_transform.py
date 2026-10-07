@@ -20,7 +20,7 @@ def main() -> None:
                     "-cp", cp, "-d", str(HERE / "agent-classes"), str(source)],
                    check=True)
     trace = HERE / "smoke-events.jsonl"
-    subprocess.run([str(JAVA8 / "java"),
+    subprocess.run([str(JAVA8 / "java"), "-Xverify:all",
                     "-Dsolrsubshard.trace.file=" + str(trace),
                     "-cp", cp, "research.solrsubshardv2.SmokeTransform"],
                    check=True)

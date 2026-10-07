@@ -5,8 +5,10 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 import argparse
+import fcntl
 import hashlib
 import json
+import os
 from pathlib import Path
 import random
 import re
@@ -45,8 +47,16 @@ def runner_hashes() -> dict[str, str]:
 def atomic(path: Path, value: object) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + '.tmp')
-    temporary.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+    with temporary.open('w') as stream:
+        stream.write(json.dumps(value, indent=2, sort_keys=True) + '\n')
+        stream.flush()
+        os.fsync(stream.fileno())
     temporary.replace(path)
+    directory_fd = os.open(str(path.parent), os.O_RDONLY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
 
 
 def load_events(directory: Path) -> list[dict]:
@@ -56,7 +66,8 @@ def load_events(directory: Path) -> list[dict]:
 
 def point(event: dict) -> dict:
     return {name: event[name] for name in
-            ('marker', 'siteId', 'sourceKey', 'actorKey', 'resource', 'hitOrdinal')}
+            ('marker', 'siteId', 'sourceKey', 'actorKey', 'resource',
+             'hitOrdinal', 'sessionGeneration')}
 
 
 def point_id(item: dict) -> str:
@@ -69,7 +80,7 @@ def family(item: dict) -> str:
     resource = re.sub(r'(/leader_elect/[^/]+/election/)[^/]+$',
                       r'\1{ephemeral-election-node}', resource)
     return '|'.join((item['marker'], item['siteId'], item['sourceKey'],
-                     item['actorKey'], resource))
+                     item['actorKey'], str(item['sessionGeneration']), resource))
 
 
 def unstable_resource(item: dict) -> bool:
@@ -88,8 +99,53 @@ def relevant(item: dict) -> bool:
                 (resource.startswith('/collections/collection1') or
                  resource.startswith('/overseer/queue/'))))
     return (belongs and item['actorKey'].startswith('JETTY/')
+            and item['sessionGeneration'] > 0
             and not source.startswith('UNRESOLVED:')
             and not item['siteId'].startswith('UNRESOLVED:'))
+
+
+def audit_event_identities(events: list[dict]) -> dict:
+    """Fail closed on a fault or target guard without the registered client and handle."""
+    bindings = {}
+    for event in events:
+        if event['event'] != 'CLIENT_BIND':
+            continue
+        match = re.search(r'clientIdentity=(\d+)', event['detail'])
+        if not match or not event['actorKey'].startswith('JETTY/'):
+            continue
+        identity = int(match.group(1))
+        binding = (event['actorKey'], event['physicalNode'])
+        if identity in bindings and bindings[identity] != binding:
+            raise RuntimeError('one SolrZkClient maps to multiple physical actors')
+        bindings[identity] = binding
+    if not bindings:
+        raise RuntimeError('no registered SolrZkClient')
+    checked_io = checked_target = 0
+    handles = {}
+    for event in events:
+        selected = event['event'] == 'IO_OBSERVED' and event['applied']
+        target = event['event'] in ('TARGET_ENTER', 'TARGET_CHECK', 'TARGET_THROW')
+        if not selected and not target:
+            continue
+        identity = event.get('zkClientIdentity', 0)
+        binding = bindings.get(identity)
+        if binding != (event['actorKey'], event['physicalNode']):
+            raise RuntimeError('selected I/O or target guard has wrong SolrZkClient actor')
+        if (event.get('zkHandleIdentity', 0) <= 0 or
+                event.get('zkSessionId', 0) <= 0 or
+                event.get('sessionGeneration', 0) <= 0):
+            raise RuntimeError('selected I/O or target guard has no raw ZK session')
+        if selected and not event.get('sessionEligible', False):
+            raise RuntimeError('selected I/O has disconnected ZK handle')
+        key = (identity, event['sessionGeneration'])
+        raw = (event['zkHandleIdentity'], event['zkSessionId'])
+        if key in handles and handles[key] != raw:
+            raise RuntimeError('one client generation has inconsistent raw ZK handle/session')
+        handles[key] = raw
+        checked_io += selected
+        checked_target += target
+    return {'bindings': len(bindings), 'applied_io_checked': checked_io,
+            'target_events_checked': checked_target, 'client_generations': len(handles)}
 
 
 def guard_events(events: list[dict], case_id: str) -> list[dict]:
@@ -136,7 +192,7 @@ def seed_candidates(events_a: list[dict], events_b: list[dict]) -> list[dict]:
                        for event in guard_events(events_b, case_id))
     exact_b = {point_id(point(event)) for event in events_b
                if event['event'] == 'IO_OBSERVED' and event['seq'] < second_guard
-               and relevant(point(event))}
+               and event.get('sessionEligible') and relevant(point(event))}
     groups: dict[str, list[dict]] = defaultdict(list)
     seen: set[str] = set()
     for event in events_a:
@@ -144,7 +200,8 @@ def seed_candidates(events_a: list[dict], events_b: list[dict]) -> list[dict]:
             continue
         item = point(event)
         identity = point_id(item)
-        if not relevant(item) or identity not in exact_b or identity in seen:
+        if (not event.get('sessionEligible') or not relevant(item)
+                or identity not in exact_b or identity in seen):
             continue
         seen.add(identity)
         groups[family(item)].append(item)
@@ -161,7 +218,8 @@ def seed_candidates(events_a: list[dict], events_b: list[dict]) -> list[dict]:
 def write_plan(path: Path, sequence: list[dict]) -> None:
     lines = ['count=' + str(len(sequence))]
     for number, item in enumerate(sequence, 1):
-        for field in ('marker', 'siteId', 'sourceKey', 'actorKey', 'resource', 'hitOrdinal'):
+        for field in ('marker', 'siteId', 'sourceKey', 'actorKey', 'resource',
+                      'hitOrdinal', 'sessionGeneration'):
             lines.append(f'step.{number}.{field}={item[field]}')
     path.write_text('\n'.join(lines) + '\n')
 
@@ -175,6 +233,7 @@ def analyze(directory: Path, sequence: list[dict], prior_probes: set[str],
             prior_families: set[str], expected_target_actors: dict[str, str]
             ) -> tuple[dict, set[str], set[str], list[dict]]:
     events = load_events(directory)
+    identity_audit = audit_event_identities(events)
     applied = [event for event in events if event['event'] == 'IO_OBSERVED'
                and event['applied']]
     strict = len(applied) == len(sequence) and all(
@@ -195,12 +254,19 @@ def analyze(directory: Path, sequence: list[dict], prior_probes: set[str],
     post_throw = {case_id: sum(event['seq'] > last_fault for event in rows)
                   if strict else 0 for case_id, rows in throws.items()}
     metadata = json.loads((directory / 'run.json').read_text())
+    if metadata['agent_sha256'] != hashlib.sha256(AGENT.read_bytes()).hexdigest():
+        raise RuntimeError('fault attempt used a different V2 agent')
+    if metadata['original_source_revision'] != json.loads(
+            (HERE / 'source-provenance.json').read_text())['revision']:
+        raise RuntimeError('fault attempt used a different original Solr revision')
+    if metadata['classpath_contains_graphchecker']:
+        raise RuntimeError('fault attempt included GraphChecker classes')
     gate = junit_gate((directory / 'console.log').read_text())
     probes = (covered_probes(directory / 'jacoco.exec')
               if (directory / 'jacoco.exec').is_file()
               and (directory / 'jacoco.exec').stat().st_size else set())
     observed = [event for event in events if event['event'] == 'IO_OBSERVED'
-                and relevant(point(event))]
+                and event.get('sessionEligible') and relevant(point(event))]
     families = {family(point(event)) for event in observed}
     result = {
         'junit_exit': metadata['exit_code'],
@@ -213,8 +279,9 @@ def analyze(directory: Path, sequence: list[dict], prior_probes: set[str],
         'target_guard_after_last_fault': post_guard,
         'exact_target_throw_count': {case_id: len(rows) for case_id, rows in throws.items()},
         'exact_target_throw_after_last_fault': post_throw,
-        'target_preserved': strict and any(post_guard.values()),
+        'target_preserved': strict and all(post_guard.values()),
         'expected_target_actors': expected_target_actors,
+        'raw_actor_session_audit': identity_audit,
         'io_observed_count': sum(event['event'] == 'IO_OBSERVED' for event in events),
         'production_probes_covered': len(probes),
         'new_production_probes': len(probes - prior_probes),
@@ -337,6 +404,9 @@ def initialize(max_trials: int, max_faults: int, max_selected_plans: int) -> dic
     calibration = json.loads(calibration_path.read_text())
     if calibration['agent_sha256'] != hashlib.sha256(AGENT.read_bytes()).hexdigest():
         raise RuntimeError('calibration used a different V2 agent')
+    if calibration['source_provenance_sha256'] != hashlib.sha256(
+            (HERE / 'source-provenance.json').read_bytes()).hexdigest():
+        raise RuntimeError('calibration used different original source/JAR')
     if any(hashlib.sha256((directory / 'events.jsonl').read_bytes()).hexdigest()
            != receipt['trace_sha256']
            for directory, receipt in zip(SEEDS, calibration['healthy_runs'])):
@@ -352,11 +422,14 @@ def initialize(max_trials: int, max_faults: int, max_selected_plans: int) -> dic
     seed_probes = (covered_probes(SEEDS[0] / 'jacoco.exec')
                    | covered_probes(SEEDS[1] / 'jacoco.exec'))
     seed_families = {family(point(event)) for events in seeds for event in events
-                     if event['event'] == 'IO_OBSERVED' and relevant(point(event))}
+                     if event['event'] == 'IO_OBSERVED'
+                     and event.get('sessionEligible') and relevant(point(event))}
     agent_meta = json.loads((HERE / 'agent-build.json').read_text())
     state = {
-        'schema_version': 2,
+        'schema_version': 3,
         'agent_sha256': agent_meta['agent_sha256'],
+        'source_provenance_sha256': hashlib.sha256(
+            (HERE / 'source-provenance.json').read_bytes()).hexdigest(),
         'runner_sha256': runner_hashes(),
         'test': TEST_CLASS + '#' + TEST_METHOD,
         'status': 'running',
@@ -404,12 +477,18 @@ def extend_for_late_novelty(state: dict) -> bool:
 
 
 def campaign(max_trials: int, max_faults: int, max_selected_plans: int) -> None:
+    from run_healthy import source_provenance
+    source_receipt = HERE / 'source-provenance.json'
+    if not source_receipt.is_file() or json.loads(source_receipt.read_text()) != source_provenance():
+        raise RuntimeError('original source/JAR provenance does not match healthy seeds')
     ROOT.mkdir(exist_ok=True)
     state_path = ROOT / 'state.json'
     if state_path.is_file():
         state = json.loads(state_path.read_text())
         if state['runner_sha256'] != runner_hashes():
             raise RuntimeError('runner changed; refusing checkpoint resume')
+        if state['source_provenance_sha256'] != hashlib.sha256(source_receipt.read_bytes()).hexdigest():
+            raise RuntimeError('original source/JAR changed; refusing checkpoint resume')
         expected_agent = json.loads((HERE / 'agent-build.json').read_text())['agent_sha256']
         actual_agent = hashlib.sha256(AGENT.read_bytes()).hexdigest()
         if state['agent_sha256'] != expected_agent or actual_agent != expected_agent:
@@ -505,4 +584,7 @@ if __name__ == '__main__':
     if not (1 <= args.max_effective <= 1000 and 1 <= args.max_faults <= 10
             and args.max_selected_plans >= args.max_effective):
         raise SystemExit('invalid budget')
-    campaign(args.max_effective, args.max_faults, args.max_selected_plans)
+    ROOT.mkdir(exist_ok=True)
+    with (ROOT / '.single-worker.lock').open('w') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        campaign(args.max_effective, args.max_faults, args.max_selected_plans)
