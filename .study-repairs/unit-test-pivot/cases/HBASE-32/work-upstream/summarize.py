@@ -9,8 +9,9 @@ import sys
 from pathlib import Path
 
 
-KINDS = ("TARGET", "META_STATE_GET", "META_SCAN_NEXT", "MASTER_OPENED_RPC",
-         "WAL_FLUSH_MARKER")
+KINDS = ("TARGET", "META_STATE_GET", "META_SCAN_NEXT_ATTEMPT", "META_SCAN_RPC",
+         "MASTER_OPENED_RPC", "WAL_FLUSH_ATTEMPT", "WAL_APPEND_START",
+         "WAL_APPEND_COMPLETE", "WAL_SYNC_START", "WAL_SYNC_COMPLETE")
 FIELDS = re.compile(r"([a-z_]+)=([^\s]+)")
 
 
@@ -73,10 +74,10 @@ def summarize(path: Path) -> dict:
         "upstream_target_enters": len(events["TARGET"]),
         "target_enters_agree": len(base_target) == len(events["TARGET"]),
         "table2_event_counts": {kind: len(records) for kind, records in subset.items()},
-        "table2_flush_rpc_wal_markers": sum(e.get("from_flush_rpc") == "true"
-                                             for e in subset["WAL_FLUSH_MARKER"]),
+        "table2_flush_rpc_wal_attempts": sum(e.get("from_flush_rpc") == "true"
+                                              for e in subset["WAL_FLUSH_ATTEMPT"]),
         "table2_wal_actions": dict(collections.Counter(
-            e.get("action") for e in subset["WAL_FLUSH_MARKER"])),
+            e.get("action") for e in subset["WAL_FLUSH_ATTEMPT"])),
         "table2_meta_gets_after_same_target_guard": len(same_target_meta_gets),
         "examples": {kind: records[:3] for kind, records in subset.items()},
     }

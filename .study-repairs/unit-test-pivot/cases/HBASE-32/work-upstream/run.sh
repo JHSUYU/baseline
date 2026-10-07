@@ -31,7 +31,7 @@ case "${1:?build or run}" in
     exec /usr/bin/time -f 'ELAPSED_SECONDS=%e MAX_RSS_KB=%M' timeout \
       "${HBASE32_UPSTREAM_TIMEOUT:-360}s" \
       "$java_bin" -Xmx4g \
-      -javaagent:"$jacoco_agent=destfile=$upstream_dir/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler:org.apache.hadoop.hbase.client.FlushRegionCallable:org.apache.hadoop.hbase.MetaTableAccessor:org.apache.hadoop.hbase.client.ConnectionImplementation:org.apache.hadoop.hbase.regionserver.HRegionServer:org.apache.hadoop.hbase.regionserver.wal.WALUtil" \
+      -javaagent:"$jacoco_agent=destfile=$upstream_dir/logs/$suffix.exec,append=false,includes=org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler:org.apache.hadoop.hbase.client.FlushRegionCallable:org.apache.hadoop.hbase.MetaTableAccessor:org.apache.hadoop.hbase.client.ConnectionImplementation:org.apache.hadoop.hbase.client.ScannerCallable:org.apache.hadoop.hbase.regionserver.HRegionServer:org.apache.hadoop.hbase.regionserver.wal.WALUtil" \
       -javaagent:"$base_dir/agent.jar" \
       -javaagent:"$upstream_dir/agent.jar" \
       -Dhbase32.fault.plan="$base_plan" \
