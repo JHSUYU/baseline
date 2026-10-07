@@ -79,3 +79,8 @@ clean replay establish an invariant or interface violation.
 the cluster schema and returns `null`. A fault on that read can skip the quota
 guard entirely; such a run is recorded as target lost and cannot count toward
 this selected check's effective budget, even if the original JUnit later fails.
+
+After the main ZooKeeper I/O campaign, `work/manifest/calibrate.py` runs a
+separate healthy seed and up to two exact `DistributedFileSystem.open` faults
+for the snapshot's `data.manifest`. Its ledger stays under `work/manifest/` and
+never consumes the main campaign's 80 effective trials.
