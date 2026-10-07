@@ -12,6 +12,11 @@ run. A postfault target exception is therefore recorded as a replay/source
 review candidate; its presence alone cannot establish a new bug. The
 `TestDatanodeLayoutUpgrade` workload covers the HDFS-27 asynchronous upgrade
 path directly; its legacy healthy trace reached that guard on a pool thread.
+The legacy original healthy traces already contain three target throws at
+HDFS-24 and three at HDFS-37; HDFS-26 and HDFS-27 contain none. V2 records
+the healthy actor, storage-volume, and exception-class signatures from two
+new seeds and annotates later matching throws. A matching signature still
+requires exact-plan replay and source review; it is never silently discarded.
 
 | Group | Original JUnit method | Exact target checks |
 | --- | --- | --- |

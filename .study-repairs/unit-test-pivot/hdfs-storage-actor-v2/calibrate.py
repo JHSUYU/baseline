@@ -38,10 +38,16 @@ def storage_volume(path: str | None) -> str:
     return match.group(0).rstrip("/") if match else "unbound"
 
 
+def target_throw_signature(row: dict) -> tuple[str, str, str, str]:
+    return (row.get("caseId", ""), row.get("actorKey", "unbound"),
+            storage_volume(row.get("storageKey")), row.get("exception", ""))
+
+
 def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
     manifest = json.loads((seed / "manifest.json").read_text())
     trace = rows(seed / "runtime_trace.jsonl")
     targets = [r for r in trace if r["event"] == "TARGET_CHECK" and r.get("caseId") in cases]
+    throws = [r for r in trace if r["event"] == "TARGET_THROW" and r.get("caseId") in cases]
     actors = [r for r in trace if r["event"] == "ACTOR_REGISTERED"]
     entries = [r for r in trace if r["event"] == "ACTOR_ENTER"]
     io = [r for r in trace if r["event"] == "FAULT_POINT_OBSERVED"]
@@ -106,6 +112,11 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
         "actors_registered": len(actors), "actor_entries": len(entries),
         "bound_rpc": len(rpc), "bound_file_io": len(file_io),
         "targets": {case: len(events) for case, events in by_case.items()},
+        "target_throws": {case: len([r for r in throws if r["caseId"] == case])
+                          for case in cases},
+        "target_throw_signatures": {case: [list(s) for s in sorted(
+            {target_throw_signature(r) for r in throws if r["caseId"] == case})]
+            for case in cases},
         "eligible_io": {case: len(events) for case, events in eligible.items()},
         "selectors_by_case": {case: [list(selector(r)) for r in events]
                               for case, events in eligible.items()},
@@ -153,6 +164,7 @@ def calibrate(group: str, output: Path, timeout: int, max_seeds: int = 2) -> dic
             seeds[0]["instrumentation_digest_sha256"] != seeds[1]["instrumentation_digest_sha256"]):
         issues.append("instrumentation digest differs across healthy seeds")
     stable_by_case = {}
+    healthy_throw_signatures = {}
     for case_id in cases:
         common = sorted(set(map(tuple, seeds[0]["selectors_by_case"][case_id]))
                         & set(map(tuple, seeds[1]["selectors_by_case"][case_id])))
@@ -161,6 +173,11 @@ def calibrate(group: str, output: Path, timeout: int, max_seeds: int = 2) -> dic
             issues.append(f"{case_id} has no stable same-actor upstream selector")
         if seeds[0]["target_actors"][case_id] != seeds[1]["target_actors"][case_id]:
             issues.append(f"{case_id} target actor sequence differs across healthy seeds")
+        a = set(map(tuple, seeds[0]["target_throw_signatures"][case_id]))
+        b = set(map(tuple, seeds[1]["target_throw_signatures"][case_id]))
+        healthy_throw_signatures[case_id] = [list(item) for item in sorted(a & b)]
+        if a != b:
+            issues.append(f"{case_id} healthy target-throw identity differs across seeds")
     receipt = {
         "schema": "hdfs-storage-actor-v2-healthy-calibration-1",
         "group": group, "case_ids": list(cases),
@@ -170,6 +187,7 @@ def calibrate(group: str, output: Path, timeout: int, max_seeds: int = 2) -> dic
         "stable_selectors": [list(item) for item in stable],
         "stable_selector_count": len(stable),
         "stable_selectors_by_case": stable_by_case,
+        "healthy_target_throw_signatures_by_case": healthy_throw_signatures,
         "status": "pass" if not issues else "failed",
         "pass": not issues, "issues": issues,
     }

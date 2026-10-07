@@ -8,6 +8,7 @@ import subprocess
 import tempfile
 
 import campaign
+import calibrate
 import run_original
 
 HERE = Path(__file__).resolve().parent
@@ -63,6 +64,9 @@ def check_identity() -> None:
             "actorKey": actor1, "storageKey": "unbound", "peerRole": "NN0",
             "sourceKey": actor1 + "/peer=NN0", "occurrence": "rpc", "hitOrdinal": 1}
     assert campaign.related(file1, target)
+    assert calibrate.target_throw_signature({"caseId": "HDFS-37", "actorKey": actor1,
+        "storageKey": "dfs/data1/current/BP-ID", "exception": "IOException"}) == (
+            "HDFS-37", actor1, "dfs/data1", "IOException")
     assert campaign.related(rpc1, target)
     assert not campaign.related({**file1, "actorKey": actor2}, target)
     assert not campaign.related({**file1, "storageKey": "dfs/data2"}, target)

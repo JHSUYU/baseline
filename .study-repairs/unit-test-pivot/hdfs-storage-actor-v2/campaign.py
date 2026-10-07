@@ -16,7 +16,7 @@ import subprocess
 import sys
 import time
 
-from calibrate import GROUPS, rows, storage_volume
+from calibrate import GROUPS, rows, storage_volume, target_throw_signature
 
 HERE = Path(__file__).resolve().parent
 FILE_FAULTS = ("IOException", "FileNotFoundException")
@@ -150,6 +150,10 @@ def load_state(anchor: Path, group: str, receipt: dict, max_attempts: int) -> di
         if state.get("instrumentation_digest_sha256", instrumentation_hash) != instrumentation_hash:
             raise RuntimeError("instrumentation changed while resuming")
         state["instrumentation_digest_sha256"] = instrumentation_hash
+        expected_throws = receipt.get("healthy_target_throw_signatures_by_case", {})
+        if state.get("healthy_target_throw_signatures_by_case", expected_throws) != expected_throws:
+            raise RuntimeError("healthy target-throw signatures changed while resuming")
+        state["healthy_target_throw_signatures_by_case"] = expected_throws
         if max_attempts < state["budget"]["max_attempts"]:
             raise RuntimeError("attempt cap cannot be reduced on resume")
         state["budget"]["max_attempts"] = max_attempts
@@ -162,6 +166,8 @@ def load_state(anchor: Path, group: str, receipt: dict, max_attempts: int) -> di
         "case_ids": list(cases), "healthy_receipt": str(anchor / "healthy_receipt.json"),
         "healthy_receipt_sha256": receipt_hash,
         "instrumentation_digest_sha256": instrumentation_hash,
+        "healthy_target_throw_signatures_by_case":
+            receipt.get("healthy_target_throw_signatures_by_case", {}),
         "budget": {"base_effective": BASE_EFFECTIVE, "extended_effective": EXTENDED_EFFECTIVE,
                    "base_faults": BASE_FAULTS, "extended_faults": EXTENDED_FAULTS,
                    "max_attempts": max_attempts,
@@ -249,6 +255,11 @@ def summarize_attempt(anchor: Path, item: dict, run: Path, cases: tuple[str, ...
         summary["by_case"][case] = {
             "valid_for_feedback": valid, "same_actor_post_target": len(post),
             "target_exception_after_fault": len(throws), "target_exceptions": throws,
+            "target_exceptions_matching_healthy_signature": sum(
+                target_throw_signature(row) in {
+                    tuple(signature) for signature in
+                    state["healthy_target_throw_signatures_by_case"].get(case, [])}
+                for row in throws),
             "bug_mark": "candidate_needs_replay_source_review" if throws else "none",
             "coverage_gain": gains, "new_io_families": new_io,
         }
