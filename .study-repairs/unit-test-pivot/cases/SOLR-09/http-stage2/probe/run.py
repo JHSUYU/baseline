@@ -27,6 +27,27 @@ def main() -> int:
     if args.original and args.faults:
         parser.error("--original cannot inject faults")
     output = args.output.resolve()
+    pause_request = CASE / "evidence/campaign/pause-request.json"
+    if output.parent == CASE / "evidence/campaign" and pause_request.exists():
+        # The previous campaign trial has already atomically checkpointed.
+        # Gate the *next* child before it creates scratch or launches a JVM.
+        # This keeps the queued exact plan in state.json while the legacy
+        # coarse-actor campaign yields host resources to actor-aware V2.
+        receipt = CASE / "evidence/campaign/pause-ack.json"
+        checkpoint = CASE / "evidence/campaign/state.json"
+        payload = {
+            "next_trial_directory": str(output), "next_plan": args.faults,
+            "checkpoint_trial_count": len(json.loads(checkpoint.read_text())["trials"]),
+            "paused_at_unix_seconds": time.time(), "jvm_started": False,
+        }
+        temporary = receipt.with_suffix(".json.tmp")
+        temporary.write_text(json.dumps(payload, indent=2) + "\n")
+        temporary.replace(receipt)
+        while pause_request.exists():
+            time.sleep(1)
+        payload["resumed_at_unix_seconds"] = time.time()
+        temporary.write_text(json.dumps(payload, indent=2) + "\n")
+        temporary.replace(receipt)
     output.mkdir(parents=True, exist_ok=True)
     scratch = output / "scratch"
     # A resumed, interrupted trial may already have a partial embedded cluster.

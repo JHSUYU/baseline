@@ -1,13 +1,165 @@
 {
+  "actor_aware_nonbudget_replays": {
+    "actual_state_summary": "cases/SOLR-09/actor-v2/evidence/replay-actual-zk/summary.json",
+    "counted_in_top_level_fuzz_trials": false,
+    "fresh_state_control_summary": "cases/SOLR-09/actor-v2/evidence/replay-fresh-state-control/summary.json",
+    "lower_load_replay_attempts": 3,
+    "lower_load_strict_target_exceptions": 1,
+    "lower_load_summary": "cases/SOLR-09/actor-v2/evidence/replay-low-load/summary.json",
+    "map_summary": "cases/SOLR-09/actor-v2/evidence/replay-map-state/summary.json",
+    "role_relative_strict_target_exceptions": 2,
+    "role_summary": "cases/SOLR-09/actor-v2/evidence/replay-role-trial059/summary.json",
+    "strict_fresh_state_control_junit_passes": 1,
+    "strict_map_replays_with_server_replica_absent": 2,
+    "strict_precleanup_watch_present_cache_absent_replays": 1,
+    "strict_target_exceptions_with_server_replica_absent": 1,
+    "timeout_summary": "cases/SOLR-09/actor-v2/evidence/replay-timeout/summary.json"
+  },
+  "budget": {
+    "max_attempts": 384,
+    "max_faults": 10,
+    "max_valid_trials": 128
+  },
+  "bug_mark": "actor_aware_reproduced_known_overlap_novelty_unresolved",
   "case_id": "SOLR-09",
-  "status": "mapped_pending_smoke",
+  "check_code": "if (!callable.call()) throw SolrException(Could not remove replica)",
   "cluster_test": "DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
-  "bug_mark": "none",
-  "evidence": ".study-repairs/unit-test-pivot/SOLR-TEST-MAP.md"
+  "coverage_gain": 281,
+  "coverage_note": "Top-level metrics count actor-aware V2 only. Earlier ZK phases lack concrete actor identity and are exploratory only.",
+  "elapsed_seconds": 3063.996,
+  "evidence": "cases/SOLR-09/actor-v2/evidence/campaign/state.json",
+  "extension_reason": "Production probe or stable callsite-operation-resource I/O novelty in strict, target-retaining trials 73-80",
+  "fault_trials": 161,
+  "function": "DeleteReplicaCmd.deleteCore",
+  "legacy_coarse": {
+    "elapsed_seconds": 8791.948,
+    "fault_trials": 327,
+    "identity_limitation": "ZK client/Overseer reader actor absent from selectors",
+    "next_jvm_started": false,
+    "paused_at_atomic_checkpoint": 108,
+    "strict_injections": 262,
+    "target_after_fault_path_callsite_only": 171,
+    "target_exception_candidates": 1,
+    "valid_trials_path_callsite_only": 171
+  },
+  "methodology": "independent_graph_free_coarse_phases_then_actor_aware_v2",
+  "new_io_identities": 18,
+  "non_target_replay": {
+    "counted_as_fuzz_attempt": false,
+    "evidence": "cases/SOLR-09/independent/evidence/replay-trial-026",
+    "replay_applied_faults": 3,
+    "replay_elapsed_seconds": 99.265,
+    "replay_junit_outcome": "collection_creation_server_response_timeout_before_target",
+    "replay_matched_faults": 3,
+    "replay_strict": true,
+    "replay_target_checks": 0,
+    "replay_target_exception": false,
+    "source_trial_junit_outcome": "leader_registration_retry_timeout_after_normal_target",
+    "source_trial_strict": true,
+    "source_trial_target_after_final_fault": true,
+    "source_trial_target_exception": false,
+    "trial": 26
+  },
+  "phase_results": {
+    "actor_v2": "cases/SOLR-09/actor-v2/result.json",
+    "http_coreadmin_zk": "cases/SOLR-09/http-stage2/result.json",
+    "zk": "cases/SOLR-09/independent/result.json"
+  },
+  "phases": {
+    "actor_v2": {
+      "budget": {
+        "max_attempts": 384,
+        "max_faults": 10,
+        "max_valid_trials": 128
+      },
+      "coverage_gain": 281,
+      "elapsed_seconds": 3063.996,
+      "fault_trials": 161,
+      "new_io_identities": 18,
+      "status": "pending_result_review",
+      "strict_injections": 130,
+      "target_after_fault": 128,
+      "target_exception_candidates": 0,
+      "valid_trials": 128
+    },
+    "http_coreadmin_zk": {
+      "budget": {
+        "max_attempts": 240,
+        "max_faults": 8,
+        "max_valid_trials": 80
+      },
+      "coverage_gain": 349,
+      "elapsed_seconds": 3319.429,
+      "fault_trials": 108,
+      "new_io_identities": 4,
+      "status": "running",
+      "strict_injections": 52,
+      "target_after_fault": 43,
+      "target_exception_candidates": 1,
+      "valid_trials": 43
+    },
+    "zk": {
+      "budget": {
+        "max_attempts": 384,
+        "max_faults": 10,
+        "max_valid_trials": 128
+      },
+      "coverage_gain": 1444,
+      "elapsed_seconds": 5472.519,
+      "fault_trials": 219,
+      "new_io_identities": 5,
+      "status": "quality_complete",
+      "strict_injections": 210,
+      "target_after_fault": 128,
+      "target_exception_candidates": 0,
+      "valid_trials": 128
+    }
+  },
+  "production_branch_coverage": {
+    "case_id": "SOLR-09",
+    "cumulative": {
+      "branches_total_in_executed_classes": 29178,
+      "classes": 986,
+      "covered_branches": 4793,
+      "covered_methods": 3979,
+      "methods_total_in_executed_classes": 9501,
+      "selected_delete_core_branches_covered": 6,
+      "selected_delete_core_branches_total": 16,
+      "selected_delete_core_covered": 1,
+      "unmatched_classes": 0
+    },
+    "delta": {
+      "covered_branches": 131,
+      "covered_methods": 30,
+      "selected_delete_core_branches_covered": 0
+    },
+    "healthy": {
+      "branches_total_in_executed_classes": 29178,
+      "classes": 982,
+      "covered_branches": 4662,
+      "covered_methods": 3949,
+      "methods_total_in_executed_classes": 9495,
+      "selected_delete_core_branches_covered": 6,
+      "selected_delete_core_branches_total": 16,
+      "selected_delete_core_covered": 1,
+      "unmatched_classes": 0
+    },
+    "healthy_runs": 2,
+    "identity_version": "actor-v2",
+    "note": "JaCoCo cumulative production method and branch counts; selected method is DeleteReplicaCmd.deleteCore. Probe feedback is recorded separately in the campaign result.",
+    "production_only": true,
+    "valid_trials": 128
+  },
+  "qualified_actor_v2_valid_trials": 128,
+  "raw_audit": "cases/SOLR-09/actor-v2/evidence/campaign/raw-audit.json",
+  "raw_audit_errors": 0,
+  "source_file": "solr/core/src/java/org/apache/solr/cloud/api/collections/DeleteReplicaCmd.java",
+  "source_line": 278,
+  "status": "quality_complete",
+  "strict_injections": 130,
+  "system": "Solr 8.11.4",
+  "target_after_fault": 128,
+  "target_exception_candidates": 0,
+  "target_reached": true,
+  "valid_trials": 128
 }

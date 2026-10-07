@@ -35,6 +35,8 @@ def main() -> int:
         shutil.rmtree(scratch)
     scratch.mkdir()
     cp = (CASE / ("original-classpath.txt" if args.original else "classpath.txt")).read_text().strip()
+    if not args.original:
+        cp = os.environ.get("SOLR09_CLASSPATH_OVERRIDE", cp)
     command = [
         JAVA, "-ea", "-Xmx3g", "-Djava.awt.headless=true",
         "-Djava.io.tmpdir=" + str(scratch), "-DtempDir=" + str(scratch),
@@ -52,6 +54,8 @@ def main() -> int:
         "-cp", cp, "baseline.solr09.RunSingleJUnit",
         "org.apache.solr.cloud.DeleteReplicaTest", "deleteReplicaAndVerifyDirectoryCleanup",
     ]
+    if os.environ.get("SOLR09_DIAGNOSTIC_ACTUAL_ZK") == "1":
+        command.insert(command.index("-cp"), "-Dsolr09.diagnostic.read_actual=true")
     if args.coverage:
         agent = CASE / "lib/jacoco-agent.jar"
         command.insert(command.index("-cp"),

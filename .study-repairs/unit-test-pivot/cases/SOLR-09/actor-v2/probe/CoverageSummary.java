@@ -77,9 +77,9 @@ public final class CoverageSummary {
       methodTotal += cls.getMethodCounter().getTotalCount();
       branches += cls.getBranchCounter().getCoveredCount();
       branchTotal += cls.getBranchCounter().getTotalCount();
-      if (cls.getName().equals("org/apache/solr/cloud/ZkController")) {
+      if (cls.getName().equals("org/apache/solr/cloud/api/collections/DeleteReplicaCmd")) {
         for (IMethodCoverage method : cls.getMethods()) {
-          if (method.getName().equals("register") && method.getDesc().startsWith("(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)")) {
+          if (method.getName().equals("deleteCore")) {
             selectedMethods += method.getMethodCounter().getCoveredCount();
             selectedBranches += method.getBranchCounter().getCoveredCount();
             selectedBranchTotal += method.getBranchCounter().getTotalCount();
@@ -87,7 +87,7 @@ public final class CoverageSummary {
         }
       }
     }
-    System.out.printf("{\"classes\":%d,\"unmatched_classes\":%d,\"covered_methods\":%d,\"methods_total_in_executed_classes\":%d,\"covered_branches\":%d,\"branches_total_in_executed_classes\":%d,\"selected_register_covered\":%d,\"selected_register_branches_covered\":%d,\"selected_register_branches_total\":%d}%n",
+    System.out.printf("{\"classes\":%d,\"unmatched_classes\":%d,\"covered_methods\":%d,\"methods_total_in_executed_classes\":%d,\"covered_branches\":%d,\"branches_total_in_executed_classes\":%d,\"selected_delete_core_covered\":%d,\"selected_delete_core_branches_covered\":%d,\"selected_delete_core_branches_total\":%d}%n",
         classes, noMatch, methods, methodTotal, branches, branchTotal,
         selectedMethods, selectedBranches, selectedBranchTotal);
   }
