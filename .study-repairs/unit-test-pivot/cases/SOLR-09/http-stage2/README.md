@@ -1,10 +1,16 @@
 # SOLR-09 independent CoreAdmin HTTP follow-up
 
 This is a separate graph-free fault campaign for the original Solr 8.11.4
-`DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup` embedded-cluster
+`DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup` four-node embedded-cluster
 JUnit. It does not change the original test, the running ZooKeeper-only campaign,
 or that campaign's checkpoint. The source checkout is Solr revision
 `e27f44e3d78dfcec230c97e0a1240e3751daeff9`.
+
+The first phase only injects ZooKeeper API failures. It cannot directly fail
+the CoreAdmin `UNLOAD` HTTP request; that response enters the selected
+`DeleteReplicaCmd.deleteCore` callable and determines whether its fallback
+state deletion runs. This stage adds that separately observed I/O family while
+keeping the same original JUnit and exact target check.
 
 The selected check remains `DeleteReplicaCmd.deleteCore`'s
 `if (!callable.call())` guard. A false result marks the exact target exception;
@@ -38,4 +44,8 @@ most 240 attempts. It extends to 128 valid trials and ten faults, at most 384
 attempts, only if the last eight valid trials add production coverage or a
 stable I/O identity. Source-reviewed candidates require an exact target guard
 throw and a clean replay. Stage results live in this directory's `result.json`
-until the two SOLR-09 phases are reviewed together.
+until the two SOLR-09 phases are reviewed together. The root SOLR-09 result
+then reports each phase and the combined attempts, valid trials, post-fault
+target executions, and elapsed time. Production coverage gains remain separate
+because the two phases have distinct healthy baselines and instrumented classes.
+An independent replay is recorded separately and never added to fuzz trial counts.
