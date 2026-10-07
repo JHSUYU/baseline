@@ -1,17 +1,28 @@
 # HDFS-12: block token key lookup
 
-**Actor V2 recheck pending.** The 256 archived fault trials and their
-reported coverage/time remain historical observations. Their SASL selector
-hard-coded `hdfs/datanode/0` and a global call-site ordinal; the original JUnit
-recreates MiniDFSCluster, so the old trace cannot prove that each post-fault
-guard ran on the faulted DataNode incarnation. The isolated
-[V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual receiver and
-key manager to the same DataNode/startup episode and block pool. Its original
-long-lived-client JUnit still needs its own two healthy calibrations after the
-HDFS-11 worker frees the slot. The counts below are preserved from the
-earlier experiment and are not V2 completion counts.
+**Actor V2 original-JUnit campaign running.** Two independent healthy runs of
+Hadoop 3.4.3 `TestEncryptedTransfer#testLongLivedClient[0]` passed. The active
+case-local [V2 overlay](actor-producer-v2/) binds each fault and later selected
+`BlockTokenSecretManager.retrievePassword` guard to the same concrete DataNode
+startup episode and block pool. The durable node1 checkpoint is
+`actor-producer-v2/evidence/HDFS-12/campaign-state.json`; tmux session
+`hdfs12_actor_v2_budget` runs one JUnit child at a time. The first 100 attempts
+were independently audited: 82 ordered full fault sequences, 65 strict
+same-actor target-retaining sequences, and zero selected null-key `InvalidToken`
+throws. The [100-attempt receipt](actor-v2-segment-100-attempts.json) records
+individual artifact hashes and raw JaCoCo/I/O feedback. The current budget is
+80 effective sequences with up to eight faults, conditionally extending to
+128/ten if recent coverage or I/O feedback remains novel.
 
-The current graph-independent campaign runs the original Hadoop 3.4.3
+## Historical campaigns
+
+The 256 archived trials and their reported coverage/time remain historical
+observations. Their SASL selector hard-coded `hdfs/datanode/0` and a global
+call-site ordinal; the original JUnit recreates MiniDFSCluster, so those
+traces cannot prove that each post-fault guard ran on the faulted DataNode
+incarnation. Historical counts below are excluded from the V2 effective budget.
+
+The archived graph-independent campaign ran the original Hadoop 3.4.3
 embedded-cluster JUnit
 `TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]`.
 The default `MiniDFSCluster` has one NameNode and one DataNode. Two independent
