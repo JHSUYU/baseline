@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 from collections import Counter
+import csv
 from datetime import datetime, timezone
 import fcntl
 import hashlib
@@ -52,6 +53,57 @@ def atomic_json(path: Path, data: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     pending = path.with_name(path.name + ".tmp")
     pending.write_text(json.dumps(data, indent=2, sort_keys=True) + "\n")
+    pending.replace(path)
+
+
+def write_summary(state: dict) -> None:
+    valid = effective(state)
+    fault_seconds = sum(row["elapsed_seconds"] for row in state["completed"])
+    result = {
+        "schema": 1, "updated_at_utc": utc(), "test": state["test"],
+        "healthy_seconds": round(sum(row["seconds"] for row in state["healthy"]), 3),
+        "fault_junit_seconds": round(fault_seconds, 3),
+        "attempts": len(state["completed"]),
+        "exact_full_sequence": sum(bool(row["exact_order_applied"])
+                                   for row in state["completed"]),
+        "max_faults": state["max_faults"], "attempt_cap": state["attempt_cap"],
+        "stop_reason": state["stop_reason"],
+        "cases": {case: {
+            "effective": len(valid[case]), "goal": state["goals"][case],
+            "target_exception_candidates": sum(
+                row["target_exceptions_after_fault"][case]
+                for row in state["completed"]),
+            "coverage_gain": {metric: len(set(state["coverage"][case][metric])
+                                          - set(state["healthy_coverage"][metric]))
+                              for metric in COVERAGE},
+        } for case in CASES},
+        "checkpoint": str(STATE),
+    }
+    atomic_json(HERE / "summary.json", result)
+    path = HERE / "trial-ledger.csv"
+    pending = path.with_name(path.name + ".tmp")
+    with pending.open("w", newline="") as stream:
+        writer = csv.writer(stream)
+        writer.writerow(("trial", "case", "sequence_id", "last_fault_site",
+                         "last_fault_source", "last_fault_occurrence", "requested_faults",
+                         "seconds", "junit_exit", "exact_injection",
+                         "postfault_target_checks", "target_ioexception",
+                         "new_probes", "new_methods", "new_branch_counts",
+                         "new_io_families", "run"))
+        for index, row in enumerate(state["completed"], 1):
+            for case in CASES:
+                last = row["sequence"][-1]
+                writer.writerow((index, case, row["id"], last["siteId"],
+                                 last["sourceKey"], last["occurrenceAddress"],
+                                 row["requested_faults"],
+                                 row["elapsed_seconds"], row["junit_exit"],
+                                 row["exact_order_applied"],
+                                 row["post_fault_target_checks"][case],
+                                 row["target_exceptions_after_fault"][case],
+                                 row["coverage_gain"][case]["probes"],
+                                 row["coverage_gain"][case]["methods"],
+                                 row["coverage_gain"][case]["branch_counts"],
+                                 len(row["new_io_families"][case]), row["run"]))
     pending.replace(path)
 
 
@@ -191,6 +243,7 @@ def start_state() -> dict:
     state["io_families"] = {case: sorted(io) for case in CASES}
     state["initial_queue"] = len(state["queue"])
     atomic_json(STATE, state)
+    write_summary(state)
     return state
 
 
@@ -500,6 +553,7 @@ def run_trial(state: dict) -> bool:
     update_budget(state)
     state["stop_reason"] = stop_reason(state)
     atomic_json(STATE, state)
+    write_summary(state)
     print(json.dumps({"trial": len(state["completed"]), "exact": trial["exact_order_applied"],
                       "effective": {case: len(rows) for case, rows in effective(state).items()},
                       "candidate": trial["candidate_needs_review"],
@@ -542,12 +596,14 @@ def main() -> None:
             print("resource gate deferred healthy calibration", flush=True)
             return
         state = json.loads(STATE.read_text()) if STATE.exists() else start_state()
+        write_summary(state)
         new = 0
         while time.monotonic() < deadline:
             reason = stop_reason(state)
             if reason:
                 state["stop_reason"] = reason
                 atomic_json(STATE, state)
+                write_summary(state)
                 print("terminal " + reason, flush=True)
                 return
             if run_trial(state):

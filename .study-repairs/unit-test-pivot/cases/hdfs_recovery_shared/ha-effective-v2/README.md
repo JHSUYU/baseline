@@ -51,7 +51,11 @@ The controller writes `checkpoint.json` atomically after each completed
 trial. Its `active` plan persists across interruption, and a complete
 `runs/trial-NNNN/manifest.json` prevents that JUnit from being rerun after a
 restart. Each trial keeps its fault plan, raw trace, JUnit log, JaCoCo file,
-derived coverage, elapsed seconds, and SHA-256 trace receipt. `audit_raw.py`
+derived coverage, elapsed seconds, and SHA-256 trace receipt. The controller
+also updates `summary.json` and the three-case `trial-ledger.csv` after every
+trial; the table has the exact site, requested fault count, duration, strict
+match, target visit, target exception, and code/I/O feedback for each check.
+`audit_raw.py`
 parses these files independently of `campaign.py` and recomputes ordered
 fault matching, physical identity, postfault target visits, selected throws,
 coverage/I/O novelty, timing, and final unions. It writes `raw-audit.json`.
