@@ -205,6 +205,24 @@ def pick(state: dict) -> dict | None:
         return state["in_flight"]
     while state["queue"]:
         n = len(state["completion_order"])
+        completed = list(state["completed"].values())
+        seen_actors = {
+            entry["item"]["sequence"][-1]["actorKey"]
+            for entry in completed if entry.get("item") and entry["item"].get("sequence")
+        }
+        # An original-JUnit failure with no novel selected target exception is
+        # still recorded as a completed trial. Its depth is a warning that
+        # longer plans may exhaust a test's own time budget. Keep those plans
+        # in the queue, but spend most runs on shorter reachable sequences.
+        non_target_failure_depths = [
+            len(entry["item"]["sequence"])
+            for entry in completed
+            if entry.get("item") and entry.get("result")
+            and entry["result"].get("junit_exit", 0) != 0
+            and not any(row.get("target_exceptions_with_novel_signature", 0)
+                        for row in entry["result"].get("by_case", {}).values())
+        ]
+        failure_depth = min(non_target_failure_depths, default=None)
         target_lost_file = sum(
             bool(entry.get("item")) and bool(entry.get("result"))
             and "FILE:" in entry["item"]["sequence"][-1]["marker"]
@@ -219,17 +237,30 @@ def pick(state: dict) -> dict | None:
         frontier = max(progress.values(), default=0)
         def priority(i: int) -> tuple[int, int, int]:
             entry = state["queue"][i]
+            depth = len(entry["sequence"])
             pending = [c for c in entry["cases"]
                        if progress.get(c, 0) < state["budget"]["goal_by_case"].get(c, 80)]
             deficit = frontier - min((progress.get(c, 0) for c in pending), default=frontier)
             file_penalty = 1000 if (target_lost_file >= 1 and
                                     "FILE:" in entry["sequence"][-1]["marker"]) else 0
-            return (entry["score"] + 300 * deficit - file_penalty,
-                    len(entry["sequence"]), -i)
-        if n % 10 == 9:  # occasionally sample the oldest pending bound RPC
-            rpc = [i for i, entry in enumerate(state["queue"])
-                   if "RPC:" in entry["sequence"][-1]["marker"]]
-            index = rpc[0] if rpc else 0
+            depth_penalty = 180 * max(0, depth - 1)
+            failure_penalty = 600 if failure_depth is not None and depth >= failure_depth else 0
+            return (entry["score"] + 300 * deficit - file_penalty
+                    - depth_penalty - failure_penalty, -depth, -i)
+        rpc = [i for i, entry in enumerate(state["queue"])
+               if "RPC:" in entry["sequence"][-1]["marker"]]
+        fresh_actors = [i for i in rpc if state["queue"][i]["sequence"][-1]["actorKey"]
+                        not in seen_actors]
+        deep = [i for i in rpc if len(state["queue"][i]["sequence"]) >= 3
+                and (failure_depth is None or
+                     len(state["queue"][i]["sequence"]) < failure_depth)]
+        if n % 7 == 0 and fresh_actors:
+            index = max(fresh_actors, key=priority)
+        elif n % 12 == 11 and deep:
+            # Retain bounded multi-fault exploration even when shallow plans
+            # dominate the ordinary coverage-guided queue.
+            index = max(deep, key=lambda i: (len(state["queue"][i]["sequence"]),
+                                             priority(i)))
         else:
             index = max(range(len(state["queue"])), key=priority)
         item = state["queue"].pop(index)
