@@ -57,12 +57,13 @@ directory. Every JUnit launch enables `-Xverify:all`.
 ## Healthy calibration after a host slot is free
 
 Start with the `startup` group: its one original JUnit checks five candidates,
-including HDFS-22/23. The three groups are:
+including HDFS-22/23. The four workload groups reuse one instrumentation:
 
 | Group | Original JUnit | Cases |
 | --- | --- | --- |
 | `startup` | `TestDFSStartupVersions#testVersions` | HDFS-22/23/25/34/35 |
-| `upgrade` | `TestDFSUpgrade#testUpgrade` | HDFS-24/27 |
+| `upgrade` | `TestDFSUpgrade#testUpgrade` | HDFS-24 |
+| `layout_upgrade` | `TestDatanodeLayoutUpgrade#testUpgradeToIdBasedLayout` | HDFS-27 |
 | `rollback` | `TestDFSRollback#testRollback` | HDFS-26/37 |
 
 ```sh
@@ -78,7 +79,7 @@ target is unbound, an actual RPC endpoint is not classified, a case has no
 stable same-actor upstream I/O selector, or the two healthy seeds disagree on
 target actor identities. It also requires the same overlay digest in both
 manifests, plus nonempty JaCoCo execution and production branch coverage.
-The same commands apply to `upgrade` and `rollback`
+The same commands apply to `upgrade`, `layout_upgrade`, and `rollback`
 with isolated output directories.
 
 The constructor-hook `startup` calibration on node1 passed on 2026-10-07:

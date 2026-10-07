@@ -21,7 +21,7 @@ TESTS_BY_CASE = {
     "HDFS-24": ("org.apache.hadoop.hdfs.TestDFSUpgrade", "testUpgrade"),
     "HDFS-25": ("org.apache.hadoop.hdfs.TestDFSStartupVersions", "testVersions"),
     "HDFS-26": ("org.apache.hadoop.hdfs.TestDFSRollback", "testRollback"),
-    "HDFS-27": ("org.apache.hadoop.hdfs.TestDFSUpgrade", "testUpgrade"),
+    "HDFS-27": ("org.apache.hadoop.hdfs.TestDatanodeLayoutUpgrade", "testUpgradeToIdBasedLayout"),
     "HDFS-34": ("org.apache.hadoop.hdfs.TestDFSStartupVersions", "testVersions"),
     "HDFS-35": ("org.apache.hadoop.hdfs.TestDFSStartupVersions", "testVersions"),
     "HDFS-37": ("org.apache.hadoop.hdfs.TestDFSRollback", "testRollback"),

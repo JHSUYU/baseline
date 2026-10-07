@@ -18,7 +18,8 @@ import sys
 HERE = Path(__file__).resolve().parent
 GROUPS = {
     "startup": ("HDFS-22", ("HDFS-22", "HDFS-23", "HDFS-25", "HDFS-34", "HDFS-35")),
-    "upgrade": ("HDFS-24", ("HDFS-24", "HDFS-27")),
+    "upgrade": ("HDFS-24", ("HDFS-24",)),
+    "layout_upgrade": ("HDFS-27", ("HDFS-27",)),
     "rollback": ("HDFS-26", ("HDFS-26", "HDFS-37")),
 }
 
