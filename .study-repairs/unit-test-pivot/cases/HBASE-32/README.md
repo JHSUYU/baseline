@@ -232,3 +232,23 @@ promptly scheduled recovery for its one aborted RegionServer. The original
 360-second stall is an unreproduced scheduling-sensitive candidate, not a
 confirmed new bug. `evidence/r066-replay-verdict.json` and the two r066 raw
 archives contain the checksums and full receipts.
+
+Main trial r123 is a separate pending timeout candidate. Its one selected
+replica-2 flush RPC received a precise `DoNotRetryIOException`, and the same
+raw primary region and actor reached the B7 rethrow. One RegionServer aborted;
+the original JUnit did not finish by the 360-second cap. The runtime including
+shutdown was 413.76 seconds. At 180 seconds and again near the cap,
+`Thread.print -l` captured the Master waiting to submit a ServerCrashProcedure
+while assignment workers were retrying metadata writes. This is an observed
+stall, not a confirmed deadlock or new bug. A clean same-plan 600-second
+replay with competing node1 JUnit campaigns paused is pending.
+
+Policy v6 excludes an unresolved exact timeout or JUnit failure from the
+effective denominator, JaCoCo/I/O feedback unions, and mutation descendants
+until replay and source review settle its status. The original v5 controller
+first checkpointed r123 as effective; the atomic pending-review migration
+retained its plan, raw log, JaCoCo file, and the untouched r124 in-flight plan
+while correcting the r123 effective count from 89 to 88. Pre/post evidence is
+in `work-lots/evidence-r123-pending-pre.json` and
+`work-lots/evidence-r123-pending-post.json`. The main controller is paused at
+that complete checkpoint for diagnostic replay.

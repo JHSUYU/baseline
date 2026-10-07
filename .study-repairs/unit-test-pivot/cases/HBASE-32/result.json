@@ -1,14 +1,140 @@
 {
+  "bug_mark": "candidate_review",
   "case_id": "HBASE-32",
-  "status": "test_identified",
-  "cluster_test": "TestRegionReplicaFailover.testSecondaryRegionKill",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
-  "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-32",
-  "source_audit_note": "Test kills a secondary RS and waits for replica recovery; primary flush IOException is not expected."
+  "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+  "coverage_gain": 6,
+  "current_campaign": {
+    "applied_fault_events": 133,
+    "attempted_trials": 123,
+    "budget": {
+      "effective_trials": 80,
+      "max_attempts": 240,
+      "max_faults": 8
+    },
+    "checkpoint": "work-lots/checkpoint.json",
+    "child_selector_cap": 24,
+    "coverage_admitted_trials": 88,
+    "depth_cadence": 10,
+    "effective_trials": 88,
+    "exact_b7_trials": 89,
+    "exception_kind_feedback": {
+      "DO_NOT_RETRY_IOEXCEPTION": {
+        "admitted_new_io_selectors": 1784,
+        "admitted_production_novelty": 0,
+        "attempts": 73,
+        "effective": 70
+      },
+      "EOF_EXCEPTION": {
+        "admitted_new_io_selectors": 0,
+        "admitted_production_novelty": 0,
+        "attempts": 11,
+        "effective": 0
+      },
+      "IOEXCEPTION": {
+        "admitted_new_io_selectors": 0,
+        "admitted_production_novelty": 0,
+        "attempts": 11,
+        "effective": 0
+      },
+      "SOCKET_TIMEOUT": {
+        "admitted_new_io_selectors": 0,
+        "admitted_production_novelty": 0,
+        "attempts": 10,
+        "effective": 0
+      }
+    },
+    "exception_kind_weights": {
+      "DO_NOT_RETRY_IOEXCEPTION": 0.7557905930719669,
+      "EOF_EXCEPTION": 0.08047951400612836,
+      "IOEXCEPTION": 0.08047951400612836,
+      "SOCKET_TIMEOUT": 0.0832503789157764
+    },
+    "global_related_io_selector_union_size": 2911,
+    "healthy_coverage": {
+      "branches": 13,
+      "classes": {
+        "org/apache/hadoop/hbase/client/FlushRegionCallable": {
+          "branches": 1,
+          "lines": 15,
+          "methods": 5
+        },
+        "org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler": {
+          "branches": 12,
+          "lines": 38,
+          "methods": 5
+        }
+      },
+      "lines": 53,
+      "methods": 10,
+      "target": {
+        "branches": 0,
+        "instructions": 0,
+        "line": 136
+      }
+    },
+    "healthy_elapsed_seconds": 60.13,
+    "healthy_exact_guard_evaluations": 0,
+    "healthy_related_io_events": 555,
+    "healthy_target_invocations": 542,
+    "invalid_cluster_exhaustion_trials": 0,
+    "last_8_effective_global_io_novelty": 91,
+    "new_production_branches": 6,
+    "new_production_methods": 1,
+    "pending_review_candidates": 1,
+    "queue_length": 14205,
+    "requested_fault_events": 135,
+    "review_candidates": 6,
+    "reviewed_candidate_dispositions": {
+      "r003": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r003-replay-verdict.json",
+        "reason": "exact same-plan 600-second replay passed original JUnit in 77.58 seconds"
+      },
+      "r011": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r011-replay-verdict.json",
+        "reason": "exact same-plan 600-second replay passed original JUnit in 76.97 seconds"
+      },
+      "r058": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r058-replay-findings.md",
+        "reason": "exact same-plan 600-second replay passed original JUnit in 68.07 seconds"
+      },
+      "r066": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r066-replay-verdict.json",
+        "reason": "exact same-plan 600-second replay passed original JUnit in 55.82 seconds with 600 of 600 child assignments"
+      },
+      "r075": {
+        "classification": "unreproduced_timeout_candidate",
+        "evidence": "evidence/r075-replay-verdict.json",
+        "reason": "exact same-plan 600-second replay passed original JUnit in 56.45 seconds with 600 of 600 child assignments"
+      }
+    },
+    "rng_seed": 32,
+    "selection_policy": "lots_v5_global_io_novelty",
+    "strict_trials": 121,
+    "target_line_136_coverage": {
+      "branches": 0,
+      "instructions": 2,
+      "line": 136
+    }
+  },
+  "elapsed_seconds": 10114.71,
+  "evidence": [
+    "README.md",
+    "work-lots/checkpoint.json",
+    "work-lots/logs/actor-healthy.log",
+    "work/src/HBase32Agent.java",
+    "work/src/CoverageReport.java",
+    "work/run.sh"
+  ],
+  "fault_trials": 123,
+  "fully_applied_trials": 121,
+  "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
+  "source_audit_note": "Fresh original testLotsOfRegionReplicas campaign; previous testSecondaryRegionKill evidence is retained in result-pilot.json.",
+  "status": "running_coverage_io_campaign",
+  "strict_injections": 121,
+  "target_after_fault": 88,
+  "target_reached": true
 }

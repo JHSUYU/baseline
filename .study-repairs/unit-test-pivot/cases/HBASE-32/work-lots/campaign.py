@@ -504,7 +504,16 @@ def main() -> None:
         invalid_cluster = strict and len(aborted_servers) >= 3
         exec_file = HERE / "logs" / (trial_id + ".exec")
         coverage_present = exec_file.is_file() and exec_file.stat().st_size > 0
-        effective = strict and bool(guards) and coverage_present and not invalid_cluster
+        junit_exit = int(exit_file.read_text().strip())
+        timed_out = junit_exit == 124
+        unexpected = (strict and bool(guards) and not invalid_cluster
+                      and (timed_out or (trace["junit"] is not None
+                                        and trace["junit"]["failed"] > 0)))
+        # Until an exact replay and source review settle an anomalous run,
+        # exclude its coverage and I/O from feedback and do not grow its
+        # queue descendants. The raw trial remains available for diagnosis.
+        effective = (strict and bool(guards) and coverage_present
+                     and not invalid_cluster and not unexpected)
         coverage_admitted = effective
         observed_selectors = related_selectors(trace) if effective else set()
         fresh_selectors = observed_selectors - set(state["related_io_union"])
@@ -516,11 +525,6 @@ def main() -> None:
             state["coverage_union"] = new_coverage
         novelty = (new_coverage["branches"] - old_coverage["branches"]
                    + new_coverage["methods"] - old_coverage["methods"])
-        junit_exit = int(exit_file.read_text().strip())
-        timed_out = junit_exit == 124
-        unexpected = (strict and bool(guards) and not invalid_cluster
-                      and (timed_out or (trace["junit"] is not None
-                                        and trace["junit"]["failed"] > 0)))
         item = {"id": trial_id, "plan": entry["plan"], "strict": strict,
                 "selection_policy": state.get("selection_policy"),
                 "requested_exception_kind": desired_kind,
@@ -536,6 +540,7 @@ def main() -> None:
                 "invalid_cluster": bool(invalid_cluster),
                 "coverage_admitted": bool(coverage_admitted),
                 "effective": effective, "review_candidate": bool(unexpected),
+                "pending_replay": bool(unexpected),
                 "junit": trace["junit"], "junit_exit": junit_exit,
                 "timed_out": timed_out,
                 "elapsed_seconds": trace["elapsed_seconds"],
