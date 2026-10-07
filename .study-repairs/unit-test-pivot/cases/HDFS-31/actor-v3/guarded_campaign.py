@@ -55,9 +55,12 @@ def main() -> None:
     parser.add_argument("--timeout", type=int, default=360)
     parser.add_argument("--min-free-gib", type=float, default=10)
     parser.add_argument("--gate-retry-seconds", type=float, default=30)
+    parser.add_argument("--max-new-completions", type=int,
+                        help="stop at a complete checkpoint after this many new plans")
     args = parser.parse_args()
     if (args.max_attempts < 1 or args.max_attempts > 512 or args.max_hours <= 0
-            or args.gate_retry_seconds <= 0):
+            or args.gate_retry_seconds <= 0 or
+            (args.max_new_completions is not None and args.max_new_completions < 1)):
         parser.error("invalid attempt/time/retry bound")
     anchor = args.anchor.resolve()
     anchor.mkdir(parents=True, exist_ok=True)
@@ -69,12 +72,19 @@ def main() -> None:
     if run_original.instrumentation_digest() != expected:
         raise RuntimeError("host overlay differs from healthy calibration")
     state = campaign.load_state(anchor, receipt, args.max_attempts)
+    initial_completed = len(state["completion_order"])
     ledger = anchor / "guarded-ledger.jsonl"
     with (anchor / "controller.lock").open("a+") as controller:
         fcntl.flock(controller, fcntl.LOCK_EX | fcntl.LOCK_NB)
         while True:
             state = json.loads((anchor / "campaign-state.json").read_text())
             completed = len(state["completion_order"])
+            if (args.max_new_completions is not None and
+                    completed - initial_completed >= args.max_new_completions):
+                append(ledger, {"at_utc": now(), "status": "complete_boundary_cap",
+                                "completed": completed, "effective": state["effective"],
+                                "new_completed": completed - initial_completed})
+                break
             if state["effective"] >= state["budget"]["goal"]:
                 append(ledger, {"at_utc": now(), "status": "effective_budget_met",
                                 "completed": completed, "effective": state["effective"]})
