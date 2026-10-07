@@ -65,6 +65,10 @@ at least 10 GiB is free. A closed gate leaves the checkpoint intact for a
 later resume; the case owner still coordinates the cluster slot with other
 node2 owners.
 
+`campaign/resume_until_terminal.py` is the tmux entry point for the full
+campaign. It resumes the same checkpoint after a temporary node2 resource
+gate pause, and exits for a candidate or a terminal budget decision.
+
 ## Setup status
 
 The six released source files were copied into this case and match the clean
