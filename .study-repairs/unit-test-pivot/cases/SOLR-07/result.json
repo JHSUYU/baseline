@@ -1,16 +1,33 @@
 {
+  "actor_v2_runtime": {
+    "budget": {
+      "conditional_extended_effective": 128,
+      "conditional_extended_max_faults": 10,
+      "conditional_extended_max_selected": 512,
+      "effective_trials": 80,
+      "max_faults": 8,
+      "max_selected": 320
+    },
+    "calibration": ".study-repairs/unit-test-pivot/cases/SOLR-07/actor-v2/calibration-receipt.json",
+    "checkpoint": "cases/SOLR-07/actor-v2/campaign/state.json on node2",
+    "common_actor_target_signatures": 2,
+    "counting_rule": "all planned faults matched in order and same physical Jetty/controller/client/core/leader target checked after final fault",
+    "host": "node2",
+    "original_instrumented_healthy_seeds_passed": 2,
+    "tmux": "solr07_actor_v2_campaign"
+  },
   "budget": {
     "max_faults": 10,
     "max_trials": 128
   },
   "bug_mark": "none",
-  "campaign_workspace": "cases/SOLR-07/independent",
+  "campaign_workspace": "cases/SOLR-07/actor-v2/campaign on node2",
   "case_id": "SOLR-07",
   "check_code": "if (core == null) throw SolrException(SERVICE_UNAVAILABLE)",
   "cluster_test": "AddReplicaTest.testAddMultipleReplicas",
   "coverage_gain": 0,
   "elapsed_seconds": 0.0,
-  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-07/independent/evidence/campaign/state.json",
+  "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-07/actor-v2/calibration-receipt.json",
   "fault_trials": 0,
   "function": "ZkController.register",
   "healthy_target_checks": 9,
@@ -45,16 +62,17 @@
   "production_branches_gained": 0,
   "production_methods_gained": 0,
   "quality_complete": false,
-  "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-07/independent/evidence/campaign/audit.json",
-  "reason": "Actor identity recheck pending; previous campaign is preserved under legacy_coarse_actor.",
+  "raw_trace_audit": null,
+  "reason": "Actor-bound V2 two healthy original JUnit calibrations passed on node2; fresh resumable 80-effective-trial campaign is running. Earlier coarse-actor 128 trials remain historical and are not counted.",
   "source_file": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
   "source_line": 1325,
-  "status": "actor_identity_recheck_pending",
+  "status": "fuzz_running",
   "strict_injections": 0,
   "system": "Solr 8.11.4",
   "target_after_fault": 0,
   "target_exception_candidates": 0,
   "target_guard_branch_taken": false,
   "target_reached": true,
-  "unique_applied_callsite_operation_resource": 0
+  "unique_applied_callsite_operation_resource": 0,
+  "updated_at": 1791372290.4605188
 }

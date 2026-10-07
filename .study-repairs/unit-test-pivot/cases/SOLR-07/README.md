@@ -1,4 +1,4 @@
-> **Actor identity recheck pending.** Earlier fault trials, coverage, and elapsed time are preserved under `legacy_coarse_actor` in `result.json` and in the original raw evidence. Their selectors did not establish the same runtime actor across runs. An actor-aware V2 campaign is required before this check counts as quality complete. [Independent audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
+> **Actor-aware V2 fuzzing in progress.** Two fresh instrumented original JUnits passed on node2 and established two common physical actor/core/leader target signatures. A new resumable campaign is running in tmux `solr07_actor_v2_campaign`. Earlier trials, coverage, and elapsed time remain under `legacy_coarse_actor` in `result.json`; their selectors did not establish the same runtime actor across runs and do not count toward the new budget. [Calibration receipt](actor-v2/calibration-receipt.json); [independent audit of the older run](../../audits/completed-solr-actor-identity-2026-10-07.md).
 
 # SOLR-07: `ZkController.register` core availability check
 
