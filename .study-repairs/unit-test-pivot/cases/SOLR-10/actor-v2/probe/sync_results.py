@@ -122,7 +122,10 @@ def publish(state: dict) -> None:
         if result["case_id"] != site:
             raise ValueError(f"Wrong result file: {path}")
         result.update(metrics(state, site))
-        if site == "SOLR-40" and result["target_exception_candidates"]:
+        reviewed = set(result.get("candidate_campaign_trials", []))
+        pending = sorted(set(result["target_exception_trial_numbers"]) - reviewed)
+        result["unreviewed_target_exception_trials"] = pending
+        if site == "SOLR-40" and result["target_exception_candidates"] and not pending:
             result["bug_mark"] = "reproduced_candidate_novelty_pending"
             result["candidate_report"] = str(CASE / "CANDIDATE-SOLR-40.md")
             result["candidate_replay_summary"] = str(CASE / "evidence/candidate-solr40-v4/summary.json")

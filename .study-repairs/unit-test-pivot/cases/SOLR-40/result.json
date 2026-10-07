@@ -1,4 +1,15 @@
 {
+  "additional_candidate_audits": [
+    {
+      "classification": "same_selected_cache_miss_mechanism",
+      "exact_plan_replay": "pending",
+      "report": ".study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/CANDIDATE-SOLR-40.md",
+      "source_review": "same getAliasProps empty-properties branch after final AliasesManager.process read failure",
+      "trace_sha256": "d0aa02c76244884181fd321723f80fdb48a955f5fe14c82ac37e031c95163485",
+      "trial": 163,
+      "zk_txn_log_sha256": "5ea4c46e2e3b3e876f6f2d6d8f0326d09df40f61176650129a9ccf0d8712e28d"
+    }
+  ],
   "budget": {
     "base_effective_goal": 80,
     "base_max_attempts": 720,
@@ -14,7 +25,8 @@
   "build_receipt_sha256": "1e939577aa0b848806b29dbda72f1086cab1266cffc229cae8d26912f813c084",
   "candidate_campaign_trials": [
     18,
-    36
+    36,
+    163
   ],
   "candidate_control_summary": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/causal-control-v4/summary.json",
   "candidate_independent_replays": {
@@ -35,12 +47,12 @@
   "case_id": "SOLR-40",
   "check_code": "if (aliasProperties.isEmpty()) throw newAliasMustExistException",
   "cluster_test": "TimeRoutedAliasUpdateProcessorTest.test",
-  "coverage_gain": 295,
-  "effective_trials": 14,
-  "elapsed_seconds": 2299.813,
+  "coverage_gain": 319,
+  "effective_trials": 29,
+  "elapsed_seconds": 5217.58,
   "evidence": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)",
-  "fault_trials": 87,
-  "fully_applied_trials": 52,
+  "fault_trials": 170,
+  "fully_applied_trials": 109,
   "function": "RoutedAliasUpdateProcessor.getAliasProps",
   "healthy_target_checks": 22,
   "legacy_coarse_actor": {
@@ -62,28 +74,30 @@
   },
   "max_applied_faults": 6,
   "new_io_families": 14,
-  "new_io_identities": 532,
-  "production_branches_gained": 150,
-  "production_methods_gained": 32,
+  "new_io_identities": 571,
+  "production_branches_gained": 156,
+  "production_methods_gained": 34,
   "quality_complete": false,
   "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/candidate-solr40-v4/summary.json",
-  "reason": "V4 actor-aware unchanged JUnit campaign: 87 shared attempts, 52 strict, 14/80 effective for this guard; stop=running. Strict target exception is a reproduced fault-induced candidate; novelty remains pending. See candidate report and controls.",
-  "shared_elapsed_seconds_at_snapshot": 2299.813,
+  "reason": "V4 actor-aware unchanged JUnit campaign: 170 shared attempts, 109 strict, 29/80 effective for this guard; stop=running. Strict target exception is a reproduced fault-induced candidate; novelty remains pending. See candidate report and controls.",
+  "shared_elapsed_seconds_at_snapshot": 5217.58,
   "shared_execution_group": "SOLR-10/39/40",
-  "snapshot_utc": "2026-10-07T06:44:59+00:00",
+  "snapshot_utc": "2026-10-07T07:36:43+00:00",
   "source_file": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
   "source_line": 132,
   "status": "fuzz_running",
-  "strict_injections": 52,
+  "strict_injections": 109,
   "system": "Solr 8.11.4",
-  "target_after_fault": 14,
-  "target_exception_candidates": 2,
+  "target_after_fault": 29,
+  "target_exception_candidates": 3,
   "target_exception_trial_numbers": [
     18,
-    36
+    36,
+    163
   ],
   "target_guard_branch_taken": true,
   "target_reached": true,
-  "unique_applied_callsite_operation_resource": 8,
+  "unique_applied_callsite_operation_resource": 12,
+  "unreviewed_target_exception_trials": [],
   "v4_checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-10/actor-v2/evidence/campaign-v4/state.json (node2)"
 }

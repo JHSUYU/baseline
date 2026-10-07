@@ -37,6 +37,7 @@ observes the empty local properties map; it does not inspect the full cache.
 | --- | --- | --- | --- | ---: | --- |
 | Campaign trial 18 | yes | yes | present | 19.766 s | `evidence/campaign-v4/trial-018/` |
 | Campaign trial 36, physical `jetty:node4` reader | yes | yes | present | 18.867 s | `evidence/campaign-v4/trial-036/` |
+| Campaign trial 163, three ordered faults on `jetty:node2` | yes | yes | present | 20.221 s | `evidence/campaign-v4/trial-163/` |
 | Fresh replay 5 | yes | yes | present | 17.872 s | `evidence/candidate-solr40-v4/replay-005/` |
 | Fresh replay 7 | yes | yes | present | 17.721 s | `evidence/candidate-solr40-v4/replay-007/` |
 | Fresh replay 8 | yes | yes | present | 18.326 s | `evidence/candidate-solr40-v4/replay-008/` |
@@ -101,8 +102,20 @@ The three replay transaction-log hashes are in their per-run receipts.
 Campaign trial 36 independently reached the same selected guard on another
 physical reader; its ZooKeeper transaction-log SHA-256 is
 `f71bfb1eb252a35fc1699cdf178a44cc06d942e1af2e7be33d27398d84d5ae92`.
-This is a second reproduction of the same suspected mechanism, not a second
-bug. The running campaign checkpoint is on node2 at
+Trial 163 applied `GET_CHILDREN_STAT` and `EXISTS_WATCH` faults on collection
+state, then a final `GET_DATA /aliases.json` failure in
+`AliasesManager.process`, all on the same live `jetty:node2` client and
+manager. The subsequent guard took the same empty-properties branch and the
+unchanged JUnit received the same routed-alias 500. `CREATEALIAS` returned
+success and the retained ZooKeeper transaction log contained
+`collection.myalias` and `collection_metadata.myalias.router.name=time`;
+that log's SHA-256 is
+`5ea4c46e2e3b3e876f6f2d6d8f0326d09df40f61176650129a9ccf0d8712e28d`.
+The raw trace SHA-256 is
+`d0aa02c76244884181fd321723f80fdb48a955f5fe14c82ac37e031c95163485`.
+This is additional evidence for the same selected cache-miss candidate,
+not evidence of a distinct bug; the three-fault plan has not been separately
+replayed. The running campaign checkpoint is on node2 at
 `evidence/campaign-v4/state.json`; completed V4 trials and their measured
 times are recorded there.
 
