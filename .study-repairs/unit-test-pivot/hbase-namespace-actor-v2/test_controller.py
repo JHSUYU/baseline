@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Offline receipt checks; no HBase or ZooKeeper cluster is started."""
 import unittest
+import tempfile
+from pathlib import Path
+import json
 
 import controller
 
@@ -20,44 +23,53 @@ def target(actor="m1", manager=3, point="HBASE-08", subject="TestNamespaceAudito
             f"bound_match={bound} exception=none outcome={outcome}")
 
 
-def guard(point, subject, seq=2):
-    site = "checkAndUpdateNamespaceRegionCount:128" if point == "HBASE-21" \
-        else "checkAndUpdateNamespaceTableCount:166"
-    return (f"NSACTOR GUARD_OPERAND seq={seq} point={point} subject={subject} "
-            f"role=ACTIVE_MASTER actor_raw=m1 manager=3 watcher=7 "
+def guard(point="HBASE-08", subject="TestNamespaceAuditor_np2", seq=2, event_seq=3,
+          actor="m1"):
+    site = ("getNamespace:115" if point == "HBASE-08" else
+            "checkAndUpdateNamespaceRegionCount:128" if point == "HBASE-21" else
+            "checkAndUpdateNamespaceTableCount:166")
+    return (f"NSACTOR GUARD_OPERAND event_seq={event_seq} seq={seq} point={point} subject={subject} "
+            f"role=ACTIVE_MASTER actor_raw={actor} manager=3 watcher=7 "
             f"bound_match=true site={site}")
 
 
 class ReceiptTests(unittest.TestCase):
     def test_exact_same_actor_after_fault(self):
-        trace = controller.parse("\n".join((IO, FAULT, target())))
+        trace = controller.parse("\n".join((IO, FAULT, guard(), target())))
         receipt = controller.exact_receipt("HBASE-08", [STEP], trace)
         self.assertTrue(receipt["strict"])
         self.assertTrue(receipt["target_after_final_fault"])
 
     def test_wrong_actor_fails_closed(self):
-        trace = controller.parse("\n".join((IO, FAULT, target(actor="m2"))))
+        trace = controller.parse("\n".join((IO, FAULT, guard(), target(actor="m2"))))
         receipt = controller.exact_receipt("HBASE-08", [STEP], trace)
         self.assertTrue(receipt["strict"])
         self.assertFalse(receipt["target_after_final_fault"])
 
     def test_wrong_manager_fails_closed(self):
-        trace = controller.parse("\n".join((IO, FAULT, target(manager=4))))
+        trace = controller.parse("\n".join((IO, FAULT, guard(), target(manager=4))))
         self.assertFalse(controller.exact_receipt("HBASE-08", [STEP], trace)
                          ["target_after_final_fault"])
 
     def test_wrong_subject_does_not_count(self):
-        trace = controller.parse("\n".join((IO, FAULT, target(subject="unrelated"))))
+        trace = controller.parse("\n".join((IO, FAULT, guard(subject="unrelated"),
+                                           target(subject="unrelated"))))
         self.assertFalse(controller.exact_receipt("HBASE-08", [STEP], trace)
                          ["target_after_final_fault"])
 
     def test_target_before_last_fault_is_lost(self):
-        trace = controller.parse("\n".join((target(seq=0), IO, FAULT)))
+        trace = controller.parse("\n".join((guard(seq=0, event_seq=0), target(seq=0), IO, FAULT)))
         self.assertFalse(controller.exact_receipt("HBASE-08", [STEP], trace)
                          ["target_after_final_fault"])
 
+    def test_method_enter_before_fault_but_guard_after_is_admitted(self):
+        trace = controller.parse("\n".join((IO, FAULT, guard(seq=0, event_seq=2),
+                                           target(seq=0))))
+        self.assertTrue(controller.exact_receipt("HBASE-08", [STEP], trace)
+                        ["target_after_final_fault"])
+
     def test_missing_second_fault_is_not_strict(self):
-        trace = controller.parse("\n".join((IO, FAULT, target())))
+        trace = controller.parse("\n".join((IO, FAULT, guard(), target())))
         self.assertFalse(controller.exact_receipt("HBASE-08", [STEP, STEP], trace)["strict"])
 
     def test_region_quota_expected_signature(self):
@@ -82,11 +94,13 @@ class ReceiptTests(unittest.TestCase):
                         ["target_after_final_fault"])
 
     def test_ambiguous_selector_excluded_during_calibration(self):
-        first = controller.parse("\n".join((IO, target(seq=3))))
+        first = controller.parse("\n".join((IO, guard(seq=3, event_seq=5), target(seq=3))))
         second_io = IO.replace("seq=1", "seq=2").replace("actor_raw=m1", "actor_raw=m2")
         second_target = target(actor="m2", seq=4)
         first["IO_ATTEMPT"].append(controller.parse(second_io)["IO_ATTEMPT"][0])
         first["TARGET_EXIT"].append(controller.parse(second_target)["TARGET_EXIT"][0])
+        first["GUARD_OPERAND"].append(
+            controller.parse(guard(seq=4, event_seq=6, actor="m2"))["GUARD_OPERAND"][0])
         with self.assertRaisesRegex(RuntimeError, "changed Master/manager"):
             controller.stable_seed_io("HBASE-08", [first, first])
 
@@ -95,10 +109,34 @@ class ReceiptTests(unittest.TestCase):
         other_target = target(actor="m2", seq=4)
         same = IO.replace("seq=1", "seq=5").replace("ordinal=1", "ordinal=2") \
             .replace(SELECTOR, SELECTOR[:-1] + "2")
-        log = "\n".join((IO, FAULT, other, other_target, same, target(seq=6)))
+        log = "\n".join((IO, FAULT, other, guard(seq=4, event_seq=4, actor="m2"),
+                         other_target, same, guard(seq=6, event_seq=7), target(seq=6)))
         trace = controller.parse(log)
         self.assertEqual(controller.pretarget_io("HBASE-08", trace, 1),
                          [SELECTOR[:-1] + "2"])
+
+    def test_case_local_result_excludes_legacy_counts(self):
+        state = {"case": "HBASE-08", "status": "ready", "healthy_seeds": ["h1", "h2"],
+                 "healthy_selected_target_counts": [1, 1],
+                 "healthy_stable_selectors": [SELECTOR],
+                 "healthy_io_families": ["ZK_EXISTS"],
+                 "healthy_expected_outcomes": ["normal"],
+                 "trials": [], "effective": 0, "covered_methods": [],
+                 "baseline_methods": [], "covered_branches": {},
+                 "baseline_branches": {}, "io_family_counts": {"ZK_EXISTS": 2},
+                 "healthy_elapsed_seconds": 2.5, "max_effective": 80,
+                 "max_faults": 8, "max_attempts": 320}
+        with tempfile.TemporaryDirectory() as temporary:
+            old = controller.HERE
+            try:
+                controller.HERE = Path(temporary)
+                controller.publish(state)
+                row = json.loads((Path(temporary) / "campaigns/HBASE-08/result.json").read_text())
+            finally:
+                controller.HERE = old
+        self.assertEqual(row["attempted_trials"], 0)
+        self.assertEqual(row["effective_trials"], 0)
+        self.assertEqual(row["budget"]["effective_trials"], 80)
 
 
 if __name__ == "__main__":

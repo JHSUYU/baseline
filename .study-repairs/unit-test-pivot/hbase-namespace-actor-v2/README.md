@@ -34,11 +34,12 @@ argument and exception outcome. The six intercepted ZK families are
 `getChildDataAndWatchForNewChildren`, `getDataAndWatch`,
 `watchAndCheckExists`, and the two-argument `deleteNode`. The last two cover
 `ZKNamespaceManager.start` and `deleteNamespace` paths missed by the first
-pass. A passive `TableNamespaceManager.getMaxRegions` hook emits
-`GUARD_OPERAND` only for the released HBASE-21 predicate call site (line 128)
-or HBASE-22 predicate call site (line 166). It carries the enclosing target
-invocation's sequence, subject, and actor, even when an HBASE-08 lookup is
-nested in that invocation. `TARGET_EXIT outcome` distinguishes
+pass. Passive `TableNamespaceManager.get(String)` and `getMaxRegions` hooks
+emit `GUARD_OPERAND` only for the released HBASE-08 lookup immediately before
+its null check (line 115), HBASE-21 quota predicate (line 128), or HBASE-22
+quota predicate (line 166). The marker has its **own event sequence** plus
+the enclosing target invocation's sequence, subject, and actor, even when an
+HBASE-08 lookup is nested in an HBASE-21/22 invocation. `TARGET_EXIT outcome` distinguishes
 HBASE-08's selected namespace-not-found throw, HBASE-21's selected region
 count quota throw, and HBASE-22's selected table-region quota throw from
 other exceptions in those methods. These are high-level ZooKeeper API attempts;
@@ -86,9 +87,11 @@ throw is an expected healthy result.
 
 `controller.py run CASE` draws ordered fault plans from the observed I/O
 queue. A trial is effective only if every planned fault is applied in order
-at its exact selector and a selected target receipt **after the final fault**
-has the same raw active Master and manager ID. HBASE-21 and HBASE-22 also
-require the `GUARD_OPERAND` receipt for that exact target invocation and
+at its exact selector and the selected check's **guard operand event after
+the final fault** has the same raw active Master and manager ID. This admits
+a target method that entered before the fault but evaluated its check after
+the fault. All three checks require a `GUARD_OPERAND` receipt for the exact
+target invocation; HBASE-21 and HBASE-22 also require
 JaCoCo coverage of the predicate line (128 or 166); otherwise the guard is unproven and
 the trial is excluded. The HBASE-21 null-namespace early return is therefore
 not mistaken for selected-predicate execution. Wrong-actor, unmatched,
@@ -127,10 +130,12 @@ zero and never import the older unbound runs.
   Advice/helper package boundary at execution time. It also verified that a
   replacement manager receives a new ID and fail-closed watcher status.
   It started no HBase or ZooKeeper cluster.
-- Ten offline receipt tests passed, covering exact same-actor admission,
+- Twelve offline controller tests passed, covering exact same-actor admission,
   wrong Master, manager, and target subject rejection, target order, missing
   fault, ambiguous healthy selector, postfault feedback actor filtering, and
-  HBASE-21 guard-line admission.
+  target entry before fault followed by guard after fault, HBASE-21 guard-line
+  admission, and a zero-based V2 result row that excludes
+  historical trial counts.
   A historical HBASE-22 JaCoCo file produced
   `NamespaceStateManager` branch line 166 with two covered outcomes; this
   checks the reporter against released bytecode without claiming a V2 run.

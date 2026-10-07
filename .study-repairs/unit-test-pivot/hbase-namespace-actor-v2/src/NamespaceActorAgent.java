@@ -64,7 +64,9 @@ public final class NamespaceActorAgent {
     new AgentBuilder.Default().with(AgentBuilder.Listener.StreamWriting.toSystemError().withErrorsOnly())
       .type(named("org.apache.hadoop.hbase.master.TableNamespaceManager"))
       .transform((builder, type, loader, module, domain) -> builder
-        .visit(Advice.to(MaxRegionsOperand.class).on(named("getMaxRegions").and(takesArguments(1)))))
+        .visit(Advice.to(MaxRegionsOperand.class).on(named("getMaxRegions").and(takesArguments(1))))
+        .visit(Advice.to(NamespaceGetOperand.class).on(named("get").and(takesArguments(1))
+            .and(takesArgument(0, named("java.lang.String"))))))
       .installOn(inst);
     new AgentBuilder.Default().with(AgentBuilder.Listener.StreamWriting.toSystemError().withErrorsOnly())
       .type(named("org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl"))
@@ -235,22 +237,25 @@ public final class NamespaceActorAgent {
     return tag;
   }
 
-  /** Marks the exact quota predicate operand in its selected invocation. */
-  public static synchronized void guardOperand() {
+  /** Marks the exact predicate operand in its selected invocation. */
+  public static synchronized void guardOperand(String source) {
     Deque<String> stack = TARGET_STACK.get();
     if (stack.isEmpty()) return;
     String tag = stack.peek();
+    boolean lookup = tag.contains("point=HBASE-08 ") && source.equals("NAMESPACE_GET");
     boolean region = tag.contains("point=HBASE-21 ");
     boolean table = tag.contains("point=HBASE-22 ");
-    if (!region && !table) return;
+    if (!lookup && !(source.equals("MAX_REGIONS") && (region || table))) return;
     for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
-      if (!frame.getClassName().equals("org.apache.hadoop.hbase.namespace.NamespaceStateManager"))
-        continue;
-      if ((region && frame.getMethodName().equals("checkAndUpdateNamespaceRegionCount")
+      if ((lookup && frame.getClassName().equals("org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl")
+          && frame.getMethodName().equals("getNamespace") && frame.getLineNumber() == 115)
+          || (region && frame.getClassName().equals("org.apache.hadoop.hbase.namespace.NamespaceStateManager")
+          && frame.getMethodName().equals("checkAndUpdateNamespaceRegionCount")
           && frame.getLineNumber() == 128)
-          || (table && frame.getMethodName().equals("checkAndUpdateNamespaceTableCount")
+          || (table && frame.getClassName().equals("org.apache.hadoop.hbase.namespace.NamespaceStateManager")
+          && frame.getMethodName().equals("checkAndUpdateNamespaceTableCount")
           && frame.getLineNumber() == 166)) {
-        System.err.println("NSACTOR GUARD_OPERAND " + tag + " site="
+        System.err.println("NSACTOR GUARD_OPERAND event_seq=" + (++nextEvent) + " " + tag + " site="
             + frame.getMethodName() + ":" + frame.getLineNumber());
         return;
       }
@@ -372,7 +377,13 @@ public final class NamespaceActorAgent {
   public static final class MaxRegionsOperand {
     @Advice.OnMethodExit(onThrowable = Throwable.class)
     public static void exit(@Advice.Thrown Throwable thrown) {
-      if (thrown == null) guardOperand();
+      if (thrown == null) guardOperand("MAX_REGIONS");
+    }
+  }
+  public static final class NamespaceGetOperand {
+    @Advice.OnMethodExit(onThrowable = Throwable.class)
+    public static void exit(@Advice.Thrown Throwable thrown) {
+      if (thrown == null) guardOperand("NAMESPACE_GET");
     }
   }
   public static final class NamespaceLookup {

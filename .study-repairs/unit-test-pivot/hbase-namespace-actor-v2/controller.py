@@ -85,6 +85,8 @@ def parse(log):
         fields["line_number"] = line_number
         if "seq" in fields:
             fields["seq"] = int(fields["seq"])
+        if "event_seq" in fields:
+            fields["event_seq"] = int(fields["event_seq"])
         if "manager" in fields:
             fields["manager"] = int(fields["manager"])
         if "step" in fields:
@@ -109,21 +111,24 @@ def same_actor(left, right):
             and left.get("manager") == right.get("manager"))
 
 
+def guard_markers(case, target, trace):
+    if trace is None:
+        return []
+    return [x for x in trace["GUARD_OPERAND"]
+            if x.get("point") == case and x.get("seq") == target.get("seq")
+            and x.get("subject") == target.get("subject")
+            and same_actor(x, target)]
+
+
 def eligible_target(case, target, coverage_text="", trace=None):
     if target.get("role") != "ACTIVE_MASTER" or target.get("outcome") not in CASES[case][2]:
         return False
+    if not guard_markers(case, target, trace):
+        return False
     if case == "HBASE-08":
         return True
-    # A method exit alone does not prove that the quota predicate ran; in
-    # HBASE-21 a null namespace descriptor can return before that predicate.
-    # The operand marker is tied to this invocation's target sequence and
-    # same Master/manager, so another table cannot supply its evidence.
-    if trace is None or not any(x["seq"] == target["seq"]
-                                and x.get("point") == case
-                                and x.get("subject") == target.get("subject")
-                                and same_actor(x, target)
-                                for x in trace["GUARD_OPERAND"]):
-        return False
+    # JaCoCo confirms the released predicate line in addition to the
+    # invocation-specific guard operand receipt.
     line = BRANCH_LINE[case]
     return bool(re.search(rf"BRANCH class={TARGET_CLASS} line={line} covered=[1-9]", coverage_text))
 
@@ -141,14 +146,15 @@ def exact_receipt(case, plan, trace, coverage_text=""):
         and same_actor(x, io_by_seq[x["seq"]]) for x in applied)
     strict = strict and (not applied or all(same_actor(applied[0], x) for x in applied))
     last = applied[-1]["seq"] if applied else -1
-    selected = [x for x in chosen_targets(case, trace) if x["seq"] > last]
+    selected = chosen_targets(case, trace)
     matched = [x for x in selected if strict and x.get("bound_match") == "true"
-               and same_actor(applied[-1], x) and eligible_target(case, x, coverage_text, trace)]
+               and same_actor(applied[-1], x) and eligible_target(case, x, coverage_text, trace)
+               and any(marker["event_seq"] > last for marker in guard_markers(case, x, trace))]
     outcome = matched[0].get("outcome") if matched else None
     return {"strict": bool(strict), "target_after_final_fault": bool(matched),
             "target_outcome": outcome,
             "selected_target_count": len(chosen_targets(case, trace)),
-            "wrong_actor_target_count": len(selected) - len(matched),
+            "unadmitted_selected_target_count": len(selected) - len(matched),
             "applied_count": len(applied), "fault_rejected_count": len(trace["FAULT_REJECTED"]),
             "last_fault_seq": last}
 
@@ -192,12 +198,16 @@ def stable_seed_io(case, traces):
             raise RuntimeError("Healthy seed lacks bound selected target: " + case)
         if len({(x["actor_raw"], x["manager"]) for x in valid}) != 1:
             raise RuntimeError("Healthy selected target changed Master/manager within one run")
-        last = max(x["seq"] for x in valid)
+        markers = [marker for target in valid for marker in guard_markers(case, target, trace)]
+        if not markers:
+            raise RuntimeError("Healthy selected target lacks precise guard operand")
+        last = max(x["event_seq"] for x in markers)
         candidates = {}
         for event in trace["IO_ATTEMPT"]:
             if event["seq"] >= last or event.get("role") != "ACTIVE_MASTER":
                 continue
-            if not any(event["seq"] < t["seq"] and same_actor(event, t) for t in valid):
+            if not any(event["seq"] < marker["event_seq"] and same_actor(event, marker)
+                       for marker in markers):
                 continue
             selector = event.get("selector")
             if selector:
@@ -214,14 +224,17 @@ def io_family(selector):
 
 def pretarget_io(case, trace, last_fault):
     bound = next((x for x in trace["FAULT_APPLIED"] if x["seq"] == last_fault), None)
-    targets = [x for x in chosen_targets(case, trace) if x["seq"] > last_fault
-               and x.get("role") == "ACTIVE_MASTER" and x.get("manager", 0) > 0
-               and (bound is None or same_actor(bound, x))]
+    markers = [marker for target in chosen_targets(case, trace)
+               if target.get("role") == "ACTIVE_MASTER" and target.get("manager", 0) > 0
+               and (bound is None or same_actor(bound, target))
+               for marker in guard_markers(case, target, trace)
+               if marker["event_seq"] > last_fault]
     candidates = set()
     for event in trace["IO_ATTEMPT"]:
         if event["seq"] <= last_fault or event.get("role") != "ACTIVE_MASTER":
             continue
-        if any(event["seq"] < target["seq"] and same_actor(event, target) for target in targets):
+        if any(event["seq"] < marker["event_seq"] and same_actor(event, marker)
+               for marker in markers):
             candidates.add(event["selector"])
     return sorted(candidates)
 
