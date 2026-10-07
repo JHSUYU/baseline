@@ -114,13 +114,21 @@ def verify_state(state):
 
 def choose(state):
     rng = random.Random(1112000 + state['selected_count'])
-    losing_prefixes = {}
+    # A tested parent may have both target-retaining and target-losing
+    # extensions. Group failures by that *whole parent plan* and the actor of
+    # the new fault. Counting only plan[0] would suppress all descendants of
+    # trial-002, including the valid trial-007/008/010 recovery path.
+    losing_followups = {}
+    retaining_followups = set()
     for result in state['results']:
-        if len(result['plan']) < 2 or not result['strict_injection'] or any(
-                item['postfault_guards'] for item in result['case_results'].values()):
+        if len(result['plan']) < 2 or not result['strict_injection']:
             continue
-        prefix = result['plan'][0]
-        losing_prefixes[prefix] = losing_prefixes.get(prefix, 0) + 1
+        actor = result['plan'][-1].split('@@')[1]
+        key = (tuple(result['plan'][:-1]), actor)
+        if any(item['postfault_guards'] for item in result['case_results'].values()):
+            retaining_followups.add(key)
+        else:
+            losing_followups[key] = losing_followups.get(key, 0) + 1
     for job in state['queue']:
         job['wait'] += 1
     ranked = []
@@ -131,10 +139,11 @@ def choose(state):
             ranked.append(float('-inf'))
             continue
         deficit = budget['effective_target'] - budget['effective_count']
-        # A fault prefix that repeatedly removes both selected peer0 guards is
-        # poor for target-directed mutation. Keep one exploration turn in ten
-        # so a different second fault can still expose a recovery path.
-        repeated_loss = len(job['plan']) > 1 and losing_prefixes.get(job['plan'][0], 0) >= 3
+        # Penalize only repeatedly losing follow-ups of this exact parent, not
+        # all descendants of its first fault. Keep one exploration turn in ten.
+        key = (tuple(job['plan'][:-1]), job['plan'][-1].split('@@')[1])
+        repeated_loss = len(job['plan']) > 1 and losing_followups.get(key, 0) >= 3 \
+            and key not in retaining_followups
         penalty = (0 if state['selected_count'] % 10 == 9 else 1000) if repeated_loss else 0
         ranked.append(4 * job['gain'] + min(job['wait'], 40) / 10
                       + min(len(job['plan']), 6) * 2 + deficit / 20
