@@ -96,11 +96,17 @@ last fault**: base 80 effective/max 8 faults, conditionally 128/max 10 when
 the last eight effective trials add production branch coverage or eligible
 I/O. This is distinct from V4's 128-attempt cap. Track attempted, distinct,
 strict, target-retaining, JUnit outcome, elapsed time, coverage gain, and
-fault depth separately. A V5 safety cap of 600 additional attempts or eight
-hours prevents an unattended queue from running forever; hitting that cap
-with a target below its effective goal leaves it `budget_recheck_pending`,
-not `quality_complete`. Source review and exact-plan clean replay are
-required for a novel selected target exception.
+fault depth separately. Each case has a **320 total-attempt base cap** and
+a **conditional 512 total-attempt cap**; the 128 archived V4 attempts count
+toward each cap. Thus V5 may add at most 192 attempts to a base case or 384
+to a conditionally extended case. A shared original JUnit counts as one
+attempt for each case still active when that plan is selected; incidental
+observations of an already capped case remain in the raw trace but do not
+reopen its budget. Effectiveness and extension decisions remain per case.
+Once a case reaches its own cap without its effective
+goal, retain `budget_recheck_pending` and revise the target-preceding I/O
+scope or original JUnit coverage before further trials. Source review and
+exact-plan clean replay are required for a novel selected target exception.
 
 The node1 startup-storage V2 and HDFS-12/Solr campaigns retain their own
 tmux, scratch, and dynamic ports. V5 must wait for a separate host/JVM slot
