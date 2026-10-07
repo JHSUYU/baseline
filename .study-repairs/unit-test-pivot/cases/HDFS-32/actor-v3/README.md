@@ -57,7 +57,10 @@ Every run manifest repeats that build and the original test/JAR hashes.
 trial, preserving queue, seen IDs, active plan, metrics, and per-trial paths.
 `audit_v3.py` independently recomputes exact/effective counts, physical
 actor matches, target outcomes, feedback, source provenance, and raw hashes
-from **all** completed runs. `launch.py` shares the global JVM start lock,
+from **all** completed runs. At a stable checkpoint, `raw_inventory.py`
+additionally hashes every retained healthy, pilot, and completed-trial
+artifact, including JUnit logs and JaCoCo binary data, and binds the
+inventory to the matching semantic audit and checkpoint SHA. `launch.py` shares the global JVM start lock,
 requires at least 10 GiB free disk, and permits a launch only with at most
 four existing Java processes. The campaign can be resumed after process
 interruption without repeating a completed trial.
