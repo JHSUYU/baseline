@@ -1,23 +1,21 @@
-# HDFS-43: original cluster-test selection
+# HDFS-43 independent original-JUnit fault campaign
 
-The selected check is in Hadoop 3.4.3
-`FSDirTruncateOp.truncate` around source lines 105–119. If the last block is
-`UNDER_RECOVERY` and has a truncate block, it compares the new request length
-with the in-progress truncate length. Equal lengths return
-`TruncateResult(false)`; different lengths throw
-`AlreadyBeingCreatedException`.
+- Target: `hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java:117` in `FSDirTruncateOp.truncate(FSNamesystem,String,long,String,String,long,BlocksMapUpdateInfo,FSPermissionChecker)`; guard `newLength == truncateLength for a block UNDER_RECOVERY`. Exact bytecode sites: `FSDirTruncateOp.truncate#L113-IFNE`.
+- Workload: unchanged Hadoop 3.4.3 `org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether` (MiniDFSCluster).
+- Healthy run: 1 exact branch events, 1 target exceptions.
+- Equal-branch calibration: original `org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testMultipleTruncate` passed and reached the equal branch 4 times with no selected exception; this calibration is not a fault trial.
+- Fault campaign: 80 trials in 2684.979 attributed JUnit seconds; 78 exact ordered injections; 49 target-retaining trials.
+- Post-fault target exceptions: 49; 49 trials matched the expected truncate guard. Bug mark: `none`.
+- New production coverage with target retained: 59 methods, 175 covered-branch counts, 376 probes, 384 lines.
+- Post-fault target branch outcomes by exact bytecode site: `{"FSDirTruncateOp.truncate#L113-IFNE": {"false": 49, "true": 0}}`.
+- Status: `quality_complete`; budget 80 trials / 8 ordered faults.
 
-The proposed original `TestFileTruncate#testTruncateTwiceTogether` starts an
-embedded cluster, writes a file, delays DataNode recovery, issues one truncate
-from a second client, then deliberately requests a different length. The
-test **expects** the selected exception and verifies that recovery preserves
-the first requested length. A selected exception in this workload is therefore
-normal behavior, not a new bug by itself.
+- I/O family feedback was reconciled at trial 53: 67 raw thread-name families became 6 stable families after canonicalizing random thread object IDs. Exact runtime selectors and completed trials did not change; see [audit](independent/evidence/stable-io-reconciliation.json).
 
-`TestFileTruncate#testMultipleTruncate` is an additional original embedded
-cluster workload to calibrate: it immediately retries each truncate with the
-same length and expects an idempotent result, potentially covering the equal
-branch without the selected exception. Neither workload is yet counted as a
-current-method fault trial. The next step is case-local ASM/Jacoco healthy
-calibration to measure exact guard and branch visits before selecting I/O
-fault points. The earlier graph-based evidence is not used.
+- Tested sequence depths: `{1: 57, 2: 10, 3: 7, 4: 6}`; target-retaining depths: `{1: 42, 2: 4, 3: 3}`; applied fault types: `{'EOFException': 39, 'IOException': 29, 'SocketTimeoutException': 52}`.
+
+The case-local ASM 9.6 overlay instruments original Hadoop classes; JaCoCo 0.8.15 records production coverage. Fault selection uses only observed RPC I/O and production coverage feedback. A FSEditLog.logSync hook is installed, but the healthy JUnit invokes the asynchronous subclass; no edit-log marker was observed or selected. No GraphChecker prewoven classes, runtime jar, region skeleton, static I/O map, causal graph, closure, Docker cluster, or handwritten workload is used. Target-lost trials count toward the budget but provide no feedback.
+
+Source review: FSDirTruncateOp.truncate compares a second requested length with the length already being truncated while the last block is UNDER_RECOVERY. Equal lengths return an idempotent result; different lengths raise AlreadyBeingCreatedException. TestFileTruncate#testTruncateTwiceTogether deliberately requests a different length and expects that exception. A new post-fault length/state pair needs replay and source review.
+
+Evidence: [result](result.json), [trial ledger](trial-ledger.csv), [checkpoint](independent/evidence/campaign-state.json), [healthy manifest](independent/evidence/healthy/manifest.json), [equal-branch manifest](independent/evidence/equal-calibration/manifest.json), [ASM probe](independent/src/HdfsStorageProbe.java), [patcher](independent/src/PatchHdfsStorage.java).

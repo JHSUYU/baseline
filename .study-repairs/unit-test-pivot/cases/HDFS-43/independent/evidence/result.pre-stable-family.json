@@ -1,0 +1,2757 @@
+{
+  "alternate_cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testMultipleTruncate",
+  "budget": {
+    "max_faults": 8,
+    "max_trials": 80
+  },
+  "bug_mark": "none",
+  "case_id": "HDFS-43",
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testTruncateTwiceTogether",
+  "coverage": {
+    "branch_counts": 10330,
+    "lines": 39910,
+    "methods": 9087,
+    "probes": 32875
+  },
+  "coverage_gain": 166,
+  "elapsed_seconds": 1743.518,
+  "evidence": "independent/evidence/campaign-state.json",
+  "expected_guard_response_trials": 36,
+  "fault_trials": 53,
+  "fully_applied_trials": 51,
+  "healthy": {
+    "branch_count": 10164,
+    "elapsed_seconds": 25.495,
+    "io_points": 528,
+    "junit_exit": 0,
+    "target_checks": 1,
+    "target_exceptions": 1
+  },
+  "instrumentation_provenance": {
+    "causal_graph_or_closure": false,
+    "coverage": "jacoco_0_8_15_production_hdfs_ipc_classes",
+    "coverage_filter": "exclude_runtime_generated_MockitoMock_classes",
+    "graphchecker_prewoven": false,
+    "graphchecker_runtime_jar": false,
+    "io_selection": "observed_original_junit_io_plus_production_coverage_feedback",
+    "junit": "original_hadoop_3_4_3_test_jar_and_native_fixture",
+    "region_skeleton": false,
+    "runtime_hooks": "case_local_offline_asm_9_6_overlay",
+    "static_io_map": false
+  },
+  "io_families": 67,
+  "methodology": "independent_coverage_io_original_junit",
+  "own_mapped_cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testMultipleTruncate",
+  "shared_run_case_ids": [
+    "HDFS-43"
+  ],
+  "source_review": "The proposed original test deliberately requests a second, different truncate length and expects the selected AlreadyBeingCreatedException. That healthy exception cannot be a new-bug oracle. The alternate original test retries the same length; exact guard coverage still requires runtime calibration.",
+  "status": "running",
+  "strict_injections": 51,
+  "target_after_fault": 36,
+  "target_code": "newLength == truncateLength for a block UNDER_RECOVERY",
+  "target_exception_after_fault": 36,
+  "target_function": "FSDirTruncateOp.truncate",
+  "target_guard_sites": [
+    "FSDirTruncateOp.truncate#L113-IFNE"
+  ],
+  "target_reached": true,
+  "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java",
+  "target_source_line": 117,
+  "trial_results": [
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 5,
+        "lines": 6,
+        "methods": 0,
+        "probes": 12
+      },
+      "coverage_total": {
+        "branch_counts": 8815,
+        "lines": 35200,
+        "methods": 8119,
+        "probes": 28997
+      },
+      "elapsed_seconds": 15.613,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/6896edfa204426cd/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/6896edfa204426cd/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 4,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Time-limited test/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Time-limited test"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-26970906_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 7 on default port 41147"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/6896edfa204426cd/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 1,
+        "lines": 0,
+        "methods": 0,
+        "probes": 1
+      },
+      "coverage_total": {
+        "branch_counts": 8651,
+        "lines": 34817,
+        "methods": 8043,
+        "probes": 28654
+      },
+      "elapsed_seconds": 15.615,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2eb4e669b40ba500/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2eb4e669b40ba500/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 4,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Time-limited test/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Time-limited test"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1638696432_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 443,
+          "thread": "IPC Server handler 8 on default port 37861"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2eb4e669b40ba500/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8649,
+        "lines": 34817,
+        "methods": 8043,
+        "probes": 28652
+      },
+      "elapsed_seconds": 16.242,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c9801676e62fafb4/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c9801676e62fafb4/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 4,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Time-limited test/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Time-limited test"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1633276569_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 8 on default port 43853"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c9801676e62fafb4/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 2
+      },
+      "coverage_total": {
+        "branch_counts": 10148,
+        "lines": 39489,
+        "methods": 9018,
+        "probes": 32468
+      },
+      "elapsed_seconds": 24.9,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/41f5664e9bb0d3a0/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/41f5664e9bb0d3a0/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 6,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Thread-N/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Thread-N"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1602580849_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 443,
+          "thread": "IPC Server handler 6 on default port 41759"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/41f5664e9bb0d3a0/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 2,
+        "lines": 1,
+        "methods": 0,
+        "probes": 2
+      },
+      "coverage_total": {
+        "branch_counts": 10151,
+        "lines": 39490,
+        "methods": 9018,
+        "probes": 32471
+      },
+      "elapsed_seconds": 27.372,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/e7b9e88aa7095554/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/e7b9e88aa7095554/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 6,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Thread-N/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Thread-N"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-822434811_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 442,
+          "thread": "IPC Server handler 2 on default port 41847"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/e7b9e88aa7095554/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 4,
+        "lines": 0,
+        "methods": 0,
+        "probes": 3
+      },
+      "coverage_total": {
+        "branch_counts": 10153,
+        "lines": 39489,
+        "methods": 9018,
+        "probes": 32472
+      },
+      "elapsed_seconds": 25.454,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/70dc43eeff463b5c/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/70dc43eeff463b5c/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 6,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Thread-N/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Thread-N"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1244783526_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 436,
+          "thread": "IPC Server handler 8 on default port 46049"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/70dc43eeff463b5c/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8441,
+        "lines": 34045,
+        "methods": 7880,
+        "probes": 28002
+      },
+      "elapsed_seconds": 17.318,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/385f571c4c897fb4/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/385f571c4c897fb4/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 3,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Time-limited test/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Time-limited test"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/385f571c4c897fb4/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8437,
+        "lines": 34049,
+        "methods": 7880,
+        "probes": 28002
+      },
+      "elapsed_seconds": 16.121,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/70a7cd3a4dcfbe58/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/70a7cd3a4dcfbe58/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 3,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Time-limited test/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Time-limited test"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/70a7cd3a4dcfbe58/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8440,
+        "lines": 34049,
+        "methods": 7880,
+        "probes": 28004
+      },
+      "elapsed_seconds": 15.757,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7d5d8c4887fdd0d7/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7d5d8c4887fdd0d7/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 3,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "Time-limited test/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "Time-limited test"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7d5d8c4887fdd0d7/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 34,
+        "lines": 93,
+        "methods": 17,
+        "probes": 92
+      },
+      "coverage_total": {
+        "branch_counts": 9556,
+        "lines": 37460,
+        "methods": 8601,
+        "probes": 30917
+      },
+      "elapsed_seconds": 48.137,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/4b20afac511c53a8/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/4b20afac511c53a8/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_316513366_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 441,
+          "thread": "IPC Server handler 5 on default port 32851"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/4b20afac511c53a8/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 1,
+        "lines": 0,
+        "methods": 0,
+        "probes": 1
+      },
+      "coverage_total": {
+        "branch_counts": 9556,
+        "lines": 37451,
+        "methods": 8600,
+        "probes": 30915
+      },
+      "elapsed_seconds": 48.414,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7c6f26925360e80e/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7c6f26925360e80e/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_725180605_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 1 on default port 36633"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7c6f26925360e80e/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 2,
+        "lines": 7,
+        "methods": 1,
+        "probes": 8
+      },
+      "coverage_total": {
+        "branch_counts": 9555,
+        "lines": 37448,
+        "methods": 8599,
+        "probes": 30916
+      },
+      "elapsed_seconds": 48.742,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/e632d90b41256497/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/e632d90b41256497/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_472931240_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 9 on default port 41941"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/e632d90b41256497/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 2,
+        "lines": 12,
+        "methods": 2,
+        "probes": 18
+      },
+      "coverage_total": {
+        "branch_counts": 10172,
+        "lines": 39574,
+        "methods": 9038,
+        "probes": 32559
+      },
+      "elapsed_seconds": 25.307,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d28439a6695f14ef/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d28439a6695f14ef/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 326,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-739003381_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 443,
+          "thread": "IPC Server handler 9 on default port 33545"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d28439a6695f14ef/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10160,
+        "lines": 39539,
+        "methods": 9032,
+        "probes": 32517
+      },
+      "elapsed_seconds": 25.092,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/47e91d8f746ac03e/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/47e91d8f746ac03e/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 321,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-845688583_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 439,
+          "thread": "IPC Server handler 3 on default port 35755"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/47e91d8f746ac03e/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 1,
+        "lines": 1,
+        "methods": 0,
+        "probes": 2
+      },
+      "coverage_total": {
+        "branch_counts": 9558,
+        "lines": 37456,
+        "methods": 8600,
+        "probes": 30920
+      },
+      "elapsed_seconds": 49.087,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/20b1e45eac753909/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/20b1e45eac753909/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 3,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 321,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1831582911_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 441,
+          "thread": "IPC Server handler 6 on default port 34533"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/20b1e45eac753909/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 3,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10165,
+        "lines": 39543,
+        "methods": 9033,
+        "probes": 32524
+      },
+      "elapsed_seconds": 25.868,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/a02085e2e0ac7017/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/a02085e2e0ac7017/attempt-1/manifest.json",
+      "matched_faults": 3,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 3,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 326,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 327,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/a02085e2e0ac7017/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 73,
+        "lines": 165,
+        "methods": 28,
+        "probes": 146
+      },
+      "coverage_total": {
+        "branch_counts": 10246,
+        "lines": 39757,
+        "methods": 9066,
+        "probes": 32713
+      },
+      "elapsed_seconds": 25.018,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/69a9ed544fec9fbd/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/69a9ed544fec9fbd/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 321,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1577175997_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 9 on default port 38837"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/69a9ed544fec9fbd/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 7,
+        "methods": 1,
+        "probes": 6
+      },
+      "coverage_total": {
+        "branch_counts": 10246,
+        "lines": 39736,
+        "methods": 9066,
+        "probes": 32699
+      },
+      "elapsed_seconds": 24.954,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/681329677b516817/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/681329677b516817/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-290996736_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 0 on default port 43747"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/681329677b516817/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10162,
+        "lines": 39540,
+        "methods": 9032,
+        "probes": 32519
+      },
+      "elapsed_seconds": 26.295,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8d31dbdf6e8ac86b/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8d31dbdf6e8ac86b/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 326,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8d31dbdf6e8ac86b/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9558,
+        "lines": 37451,
+        "methods": 8599,
+        "probes": 30915
+      },
+      "elapsed_seconds": 48.887,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7b4782696426bb8d/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7b4782696426bb8d/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 3,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1767642361_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 436,
+          "thread": "IPC Server handler 0 on default port 40643"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/7b4782696426bb8d/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10165,
+        "lines": 39540,
+        "methods": 9032,
+        "probes": 32522
+      },
+      "elapsed_seconds": 25.598,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/a71fec5c633f844e/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/a71fec5c633f844e/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1394581322_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 435,
+          "thread": "IPC Server handler 4 on default port 46213"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/a71fec5c633f844e/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 6,
+        "lines": 4,
+        "methods": 0,
+        "probes": 7
+      },
+      "coverage_total": {
+        "branch_counts": 9497,
+        "lines": 37229,
+        "methods": 8549,
+        "probes": 30757
+      },
+      "elapsed_seconds": 47.955,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/5c83257b2d4caa48/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/5c83257b2d4caa48/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 321,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-533070824_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 439,
+          "thread": "IPC Server handler 4 on default port 42243"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/5c83257b2d4caa48/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8414,
+        "lines": 33909,
+        "methods": 7847,
+        "probes": 27909
+      },
+      "elapsed_seconds": 15.563,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8465582336723c5a/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8465582336723c5a/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 100,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "DataStreamer for file /testTruncateTwiceTogether/file/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "DataStreamer for file /testTruncateTwiceTogether/file"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8465582336723c5a/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 0,
+      "attempt": 2,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10153,
+        "lines": 39514,
+        "methods": 9026,
+        "probes": 32491
+      },
+      "elapsed_seconds": 25.902,
+      "exact_order_applied": false,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/0937f440b09ff7ac/attempt-2/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/0937f440b09ff7ac/attempt-2/manifest.json",
+      "matched_faults": 0,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 100,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "DataStreamer for file /testTruncateTwiceTogether/file/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "DataStreamer for file /testTruncateTwiceTogether/file"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/0937f440b09ff7ac/attempt-2/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 3,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10160,
+        "lines": 39543,
+        "methods": 9033,
+        "probes": 32519
+      },
+      "elapsed_seconds": 25.994,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d665de4dbb15c6d2/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d665de4dbb15c6d2/attempt-1/manifest.json",
+      "matched_faults": 3,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 3,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 321,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 323,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_342146020_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 441,
+          "thread": "IPC Server handler 2 on default port 37065"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d665de4dbb15c6d2/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 0,
+      "attempt": 2,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10154,
+        "lines": 39514,
+        "methods": 9026,
+        "probes": 32492
+      },
+      "elapsed_seconds": 25.401,
+      "exact_order_applied": false,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/bbcb569b8d5eddc5/attempt-2/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/bbcb569b8d5eddc5/attempt-2/manifest.json",
+      "matched_faults": 0,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 100,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "DataStreamer for file /testTruncateTwiceTogether/file/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "DataStreamer for file /testTruncateTwiceTogether/file"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/bbcb569b8d5eddc5/attempt-2/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10248,
+        "lines": 39736,
+        "methods": 9066,
+        "probes": 32701
+      },
+      "elapsed_seconds": 25.04,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/32d2676fe7ae64e0/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/32d2676fe7ae64e0/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 319,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1788202895_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 0 on default port 35943"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/32d2676fe7ae64e0/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 3,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10164,
+        "lines": 39539,
+        "methods": 9032,
+        "probes": 32521
+      },
+      "elapsed_seconds": 24.803,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/f5f6be4149839e84/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/f5f6be4149839e84/attempt-1/manifest.json",
+      "matched_faults": 3,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 3,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 321,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1933953921_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 440,
+          "thread": "IPC Server handler 6 on default port 42795"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/f5f6be4149839e84/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9556,
+        "lines": 37456,
+        "methods": 8600,
+        "probes": 30918
+      },
+      "elapsed_seconds": 48.757,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/37c83fcb79883b20/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/37c83fcb79883b20/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 319,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_2063903323_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 443,
+          "thread": "IPC Server handler 1 on default port 46747"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/37c83fcb79883b20/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10246,
+        "lines": 39736,
+        "methods": 9066,
+        "probes": 32699
+      },
+      "elapsed_seconds": 25.566,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c11630f42d192aed/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c11630f42d192aed/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 319,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-925837908_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 438,
+          "thread": "IPC Server handler 8 on default port 37435"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c11630f42d192aed/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9553,
+        "lines": 37446,
+        "methods": 8599,
+        "probes": 30908
+      },
+      "elapsed_seconds": 47.974,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/db8fda2b8796eb4a/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/db8fda2b8796eb4a/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 319,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 324,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/db8fda2b8796eb4a/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9553,
+        "lines": 37451,
+        "methods": 8599,
+        "probes": 30911
+      },
+      "elapsed_seconds": 48.101,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/26654523ff001c45/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/26654523ff001c45/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 3,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 318,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1456737403_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 435,
+          "thread": "IPC Server handler 4 on default port 41517"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/26654523ff001c45/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 5,
+        "lines": 4,
+        "methods": 0,
+        "probes": 4
+      },
+      "coverage_total": {
+        "branch_counts": 9561,
+        "lines": 37460,
+        "methods": 8600,
+        "probes": 30922
+      },
+      "elapsed_seconds": 48.328,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/81e5ceae0326e901/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/81e5ceae0326e901/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 318,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1914714598_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 436,
+          "thread": "IPC Server handler 0 on default port 38989"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/81e5ceae0326e901/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9551,
+        "lines": 37451,
+        "methods": 8599,
+        "probes": 30909
+      },
+      "elapsed_seconds": 47.83,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8cb44d9cd0f83e1c/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8cb44d9cd0f83e1c/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 318,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/8cb44d9cd0f83e1c/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9556,
+        "lines": 37456,
+        "methods": 8600,
+        "probes": 30918
+      },
+      "elapsed_seconds": 48.237,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d4c9e33f0e076399/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d4c9e33f0e076399/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 3,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 318,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1881003914_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 438,
+          "thread": "IPC Server handler 8 on default port 39713"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/d4c9e33f0e076399/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9549,
+        "lines": 37446,
+        "methods": 8599,
+        "probes": 30903
+      },
+      "elapsed_seconds": 46.968,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/98b210f535b7b158/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/98b210f535b7b158/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 317,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-2043047580_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 434,
+          "thread": "IPC Server handler 2 on default port 42835"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/98b210f535b7b158/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10157,
+        "lines": 39538,
+        "methods": 9032,
+        "probes": 32512
+      },
+      "elapsed_seconds": 24.638,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c59c91ca185574f9/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c59c91ca185574f9/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 317,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/c59c91ca185574f9/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9561,
+        "lines": 37456,
+        "methods": 8600,
+        "probes": 30922
+      },
+      "elapsed_seconds": 48.263,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/eeeebace77e8a5ea/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/eeeebace77e8a5ea/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 317,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_905648426_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 436,
+          "thread": "IPC Server handler 4 on default port 42393"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/eeeebace77e8a5ea/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9559,
+        "lines": 37455,
+        "methods": 8600,
+        "probes": 30917
+      },
+      "elapsed_seconds": 48.19,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2fada570c93cd001/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2fada570c93cd001/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 317,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_898268406_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 437,
+          "thread": "IPC Server handler 6 on default port 40091"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2fada570c93cd001/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10166,
+        "lines": 39548,
+        "methods": 9034,
+        "probes": 32529
+      },
+      "elapsed_seconds": 24.042,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/b9d4adf5b2d9e2c7/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/b9d4adf5b2d9e2c7/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 317,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 323,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/b9d4adf5b2d9e2c7/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8354,
+        "lines": 33734,
+        "methods": 7818,
+        "probes": 27756
+      },
+      "elapsed_seconds": 15.964,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/31e71e822735c58e/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/31e71e822735c58e/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 99,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "DataStreamer for file /testTruncateTwiceTogether/file/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "DataStreamer for file /testTruncateTwiceTogether/file"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/31e71e822735c58e/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8349,
+        "lines": 33730,
+        "methods": 7818,
+        "probes": 27754
+      },
+      "elapsed_seconds": 14.915,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/907996dfbd75b3af/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/907996dfbd75b3af/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 99,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "DataStreamer for file /testTruncateTwiceTogether/file/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "DataStreamer for file /testTruncateTwiceTogether/file"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/907996dfbd75b3af/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10159,
+        "lines": 39539,
+        "methods": 9032,
+        "probes": 32515
+      },
+      "elapsed_seconds": 24.492,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/073a4700175a4c30/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/073a4700175a4c30/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 317,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 322,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/073a4700175a4c30/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 8351,
+        "lines": 33733,
+        "methods": 7818,
+        "probes": 27757
+      },
+      "elapsed_seconds": 14.205,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/876eeba6971e6f66/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/876eeba6971e6f66/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 99,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "DataStreamer for file /testTruncateTwiceTogether/file/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "DataStreamer for file /testTruncateTwiceTogether/file"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/876eeba6971e6f66/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9555,
+        "lines": 37451,
+        "methods": 8600,
+        "probes": 30914
+      },
+      "elapsed_seconds": 47.07,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/945df411c14ea237/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/945df411c14ea237/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 316,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_41216892_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 434,
+          "thread": "IPC Server handler 4 on default port 37493"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/945df411c14ea237/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 28,
+        "lines": 67,
+        "methods": 10,
+        "probes": 55
+      },
+      "coverage_total": {
+        "branch_counts": 10095,
+        "lines": 39206,
+        "methods": 8932,
+        "probes": 32278
+      },
+      "elapsed_seconds": 22.437,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/9f54b8643edb0939/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/9f54b8643edb0939/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 316,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1835942452_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 437,
+          "thread": "IPC Server handler 5 on default port 44675"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/9f54b8643edb0939/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9552,
+        "lines": 37446,
+        "methods": 8599,
+        "probes": 30907
+      },
+      "elapsed_seconds": 46.268,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/243a7529162c8d51/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/243a7529162c8d51/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 316,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_924367439_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 434,
+          "thread": "IPC Server handler 5 on default port 34123"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/243a7529162c8d51/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 2,
+        "lines": 2,
+        "methods": 0,
+        "probes": 1
+      },
+      "coverage_total": {
+        "branch_counts": 9563,
+        "lines": 37480,
+        "methods": 8602,
+        "probes": 30933
+      },
+      "elapsed_seconds": 46.207,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2ca7c617b04b0eae/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2ca7c617b04b0eae/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 316,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-928792366_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 435,
+          "thread": "IPC Server handler 5 on default port 37223"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/2ca7c617b04b0eae/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 3,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10159,
+        "lines": 39543,
+        "methods": 9033,
+        "probes": 32517
+      },
+      "elapsed_seconds": 23.982,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/ab789756529d86e3/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/ab789756529d86e3/attempt-1/manifest.json",
+      "matched_faults": 3,
+      "new_io_families": 0,
+      "post_fault_target_checks": 0,
+      "requested_faults": 3,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 316,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 320,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 321,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": false,
+      "target_exception_after_fault": 0,
+      "target_exception_classification": "none",
+      "target_exception_events": [],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/ab789756529d86e3/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": false
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9557,
+        "lines": 37456,
+        "methods": 8600,
+        "probes": 30919
+      },
+      "elapsed_seconds": 47.354,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/24a55eeed7b18a8c/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/24a55eeed7b18a8c/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "IOException",
+          "hitOrdinal": 315,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1959693094_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 434,
+          "thread": "IPC Server handler 9 on default port 42191"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/24a55eeed7b18a8c/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9556,
+        "lines": 37456,
+        "methods": 8600,
+        "probes": 30918
+      },
+      "elapsed_seconds": 47.977,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/f0c0083114eb303e/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/f0c0083114eb303e/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 315,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_1956522625_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 433,
+          "thread": "IPC Server handler 6 on default port 36969"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/f0c0083114eb303e/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 2,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 10076,
+        "lines": 39143,
+        "methods": 8922,
+        "probes": 32237
+      },
+      "elapsed_seconds": 25.168,
+      "exact_order_applied": true,
+      "junit_exit": 0,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/12b9456d36ff31c0/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/12b9456d36ff31c0/attempt-1/manifest.json",
+      "matched_faults": 2,
+      "new_io_families": 1,
+      "post_fault_target_checks": 1,
+      "requested_faults": 2,
+      "sequence": [
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 315,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        },
+        {
+          "faultType": "SocketTimeoutException",
+          "hitOrdinal": 319,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1489318834_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 439,
+          "thread": "IPC Server handler 1 on default port 40027"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/12b9456d36ff31c0/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    },
+    {
+      "applied_faults": 1,
+      "attempt": 1,
+      "bug_mark": "none",
+      "coverage_gain": {
+        "branch_counts": 0,
+        "lines": 0,
+        "methods": 0,
+        "probes": 0
+      },
+      "coverage_total": {
+        "branch_counts": 9557,
+        "lines": 37451,
+        "methods": 8600,
+        "probes": 30916
+      },
+      "elapsed_seconds": 48.641,
+      "exact_order_applied": true,
+      "junit_exit": 1,
+      "log": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/af457eda8cc156c9/attempt-1/junit.log",
+      "manifest": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/af457eda8cc156c9/attempt-1/manifest.json",
+      "matched_faults": 1,
+      "new_io_families": 2,
+      "post_fault_target_checks": 1,
+      "requested_faults": 1,
+      "sequence": [
+        {
+          "faultType": "EOFException",
+          "hitOrdinal": 315,
+          "marker": "FAULT:HDFS43_RPC:RESPONSE",
+          "occurrence": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port/Client.getRpcResponse",
+          "siteId": "Client.getRpcResponse",
+          "sourceKey": "BP-N-N.N.N.N-N heartbeating to localhost/N.N.N.N:port"
+        }
+      ],
+      "target_after_fault": true,
+      "target_exception_after_fault": 1,
+      "target_exception_classification": "expected_truncate_in_progress_response",
+      "target_exception_events": [
+        {
+          "caseId": "HDFS-43",
+          "event": "TARGET_THROW",
+          "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException",
+          "message": "Failed to TRUNCATE_FILE /testTruncateTwiceTogether/file for DFSClient_NONMAPREDUCE_-1985799468_1 on 127.0.0.1 because /testTruncateTwiceTogether/file is being truncated.",
+          "seq": 438,
+          "thread": "IPC Server handler 0 on default port 44807"
+        }
+      ],
+      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-43/independent/evidence/runs/af457eda8cc156c9/attempt-1/runtime_trace.jsonl",
+      "valid_for_feedback": true
+    }
+  ]
+}
