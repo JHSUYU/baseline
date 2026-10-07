@@ -48,6 +48,39 @@ seconds. It observed 109 replay RPCs for the selected table and replica 1,
 1002 batch returns and 1000 status comparisons. All compared statuses were
 the `SUCCESS` singleton. The returns referenced one encoded region, always
 replica 1. JaCoCo recorded five instructions and the normal branch at source
-line 2297; the exception line 2298 was unexecuted. The seeded campaign runs
-in separate `hbase30_fuzz` and `hbase30_supervisor` tmux sessions while
-HBASE-29 continues its own experiment.
+line 2297; the exception line 2298 was unexecuted. The seeded campaign ran
+in separate `hbase30_fuzz` and `hbase30_supervisor` tmux sessions. It resumed
+from its checkpoint after a safe priority update; no completed trial was
+repeated.
+
+## Completed result
+
+The default budget finished with 80 distinct attempts. All 80 matched every
+planned runtime selector and fault kind, and all 80 executed the selected
+status check after the last fault. The plans requested and applied 184 RPC
+exceptions. Four trials used five ordered faults, six used four, one used
+three, 68 used two, and one used one. The unchanged JUnit passed in all 80
+faulted runs. Healthy calibration plus the trials took 4977.99 seconds.
+
+The admitted runs added 14 covered production branches and no production
+methods or stable I/O sites. The final 16 effective trials added no new
+feedback, so the conditional extension to 128 trials did not apply. No
+non-`SUCCESS` replay status or target `IOException` was observed. JaCoCo
+covered the normal branch of source line 2297 (five instructions, one
+branch); the exception line 2298 was not covered.
+
+Source review shows that this check propagates the result of the receiver's
+local `HRegion.batchReplay`. It is a local operation-status guard rather
+than a multi-hop control-plane state comparison. The RPC fault did not alter
+the replayed mutations into an invalid batch. This makes the selected site a
+likely static-candidate false positive for complex ad hoc coordination; the
+fault and coverage results are still valid within the tested workload.
+
+All 80 raw logs were independently re-parsed for ordered fault identity,
+post-fault target execution, JUnit outcome and elapsed time. All 80,160
+observed batch returns mapped to the selected table's replica 1 and a
+single encoded region per replay request. The 80,000 compared statuses were
+all `SUCCESS`. The JaCoCo union and the late-novelty gate were independently
+recomputed. Complete logs, coverage files, checkpoint, agent binary and
+runner source are in `evidence/hbase30-graphfree-80.tar.gz` (SHA-256
+`580a72cf75d44235ecbacac9bb1fe144dcceab3e47348a6ba9c53af8c84b7b62`).
