@@ -1,5 +1,11 @@
 # SOLR-06 actor-aware V2 campaign
 
+**Terminal update:** the actor-bound campaign naturally completed its
+conditional 128-effective-trial budget under V3 queue selection. Its complete
+419-trial raw audit, measured time, coverage, target result and archive receipt
+are in [terminal/README.md](terminal/README.md). The pilot and handoff details
+below are historical stages of this same campaign, not additional trials.
+
 This is a separate successor to the historical `independent/` 80-trial run.
 Those coarse trials remain evidence but count as **zero V2 effective trials**.
 The workload is the unchanged Solr 8.11.4
@@ -63,7 +69,7 @@ Each trial persists its fault plan, raw trace, JaCoCo data, original JUnit
 log, elapsed time, target result, and atomic checkpoint. A target assertion
 would be a candidate requiring source and replay review before a bug mark.
 
-**Current state (2026-10-07 UTC):** two fresh assertion-enabled original JUnit
+**Pilot checkpoint (2026-10-07 UTC):** two fresh assertion-enabled original JUnit
 seeds passed. The bounded pilot completed 23 distinct selected trials, including
 13 exact ordered injections and five runs in which the same physical
 controller/PULL core/leader target executed after the final fault. There was
@@ -76,7 +82,7 @@ descendant generation.
 
 At the completed pilot boundary, the checkpoint was promoted to the formal
 80-effective/8-fault budget without repeating trials 1–23. Node2 tmux session
-`solr06_actor_v2_full` resumed at trial 24. The live atomic checkpoint is
+`solr06_actor_v2_full` resumed at trial 24. The then-live atomic checkpoint was
 `campaign/state.json` on node2; the pilot checkpoint and audit are mirrored
 here. A separate selected-attempt cap of 320 prevents endless unmatched
 runs. The 128-effective/10-fault extension is decided only at 80 effective
@@ -101,5 +107,5 @@ mutation, and 80/128 effective-trial budgets remain in the unchanged V2
 module. The atomic state records the scheduler policy and hash. The first V3
 trial (039) used a new one-fault seed and was not effective. An independent
 recount through trial-039 found 39 selected, 18 exact injections, 9 effective,
-zero target throws, and zero issues. The live campaign is in node2 tmux
+zero target throws, and zero issues. The continuation ran in node2 tmux
 `solr06_actor_v3_full`; `handoff-v3-receipt.json` records the stop point.

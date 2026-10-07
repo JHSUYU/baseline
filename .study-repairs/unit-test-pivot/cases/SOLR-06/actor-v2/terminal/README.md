@@ -1,0 +1,18 @@
+# SOLR-06 actor-bound campaign: terminal audit
+
+The unchanged Solr 8.11.4 `TestPullReplica#testCreateDelete` original JUnit ran in its two-Jetty embedded cluster with JVM assertions enabled. The selected check is `ZkController.register:1315`, which asserts that a PULL replica is not leader. Two fresh healthy JUnit seeds passed before this independent actor-bound campaign. Earlier coarse-actor 80-trial results remain historical and are **not** added to this denominator.
+
+The campaign naturally stopped at its conditional **128 effective trial** budget. It selected 419 distinct fault sequences, of which 286 applied every planned fault in order and 128 revisited the *same* bound controller/PULL core/leader target after the final fault. The deepest selected plan had ten faults; the deepest target-retaining plan had nine. The selected assertion's `TARGET_THROW` occurred **zero** times. Thirty-two effective original JUnits exited nonzero for other workload outcomes; these are retained as separate JUnit failures, not target assertion bugs. No new bug is confirmed for this check.
+
+The 419 fault JUnits consumed **17,935.098 s** in total. The two fresh healthy JUnits consumed 15.114 s and 16.829 s, for **17,967.041 s** of measured healthy plus fault JUnit time. Relative to the two healthy seeds' union, effective fault runs added 579 JaCoCo production probe IDs and 19 actor-bound I/O families. The 80→128 extension was taken because the last eight effective trials at the 80 checkpoint included coverage or I/O novelty; the final eight effective trials at 128 added neither. Another 241 queued plans were left untested by the bounded search.
+
+The independent [full raw audit](audit-receipt.json) recomputed all 419 plan selectors, ordered fault applications, physical actor/core/leader identity, post-fault target and exact assertion throw, original JUnit exit/time, build/source hashes, JaCoCo coverage union, and relevant I/O family union. It reported **zero issues** and confirmed 286 strict, 128 effective, zero target throws. Its SHA-256 is `619f2364f490eb419df06a08e01529adaa07535e9f87f6cdf6700a9a469d3a03`; the final atomic [checkpoint](state.json) SHA-256 is `ab325052a7dcb6c19fd683cd684ffaee3e3a345781d019b4f173814d5068ad83`. The JUnit build receipt locks the original test class, Solr source revision `e27f44e3d78dfcec230c97e0a1240e3751daeff9`, and agent SHA. This is a bounded negative result for the selected assertion and hooked I/O scope, not a claim that every schedule is correct.
+
+The complete node2 `actor-v2/campaign` tree was compressed to node1 as `/users/ZhenyuLi/solr06-actor-v3-terminal-419.tar.zst`, SHA-256 `9f99e68ef827e54a3c11aa05f242764c4139fda7427137ee0a2053d3cfcad4c5`. An identical [local archive](raw-campaign.tar.zst) is also kept on node0 outside Git. Node1 `zstd -t` passed; streaming the entire archive back through `zstd -dc | tar -df -` against node2's original campaign tree passed without content or metadata differences. The archive includes the 419 trial directories, plans, JUnit logs, runtime traces, JaCoCo files, manifests, per-trial results, and final checkpoint. The node2 campaign raw tree can be restored with:
+
+```sh
+ssh -i ~/.ssh/id_ed25519_nodes -o IdentitiesOnly=yes ZhenyuLi@node1 \
+  'cat /users/ZhenyuLi/solr06-actor-v3-terminal-419.tar.zst' | zstd -dc | \
+  ssh -i ~/.ssh/id_ed25519_nodes -o IdentitiesOnly=yes ZhenyuLi@node2 \
+  'tar -C /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-06/actor-v2 -xf -'
+```

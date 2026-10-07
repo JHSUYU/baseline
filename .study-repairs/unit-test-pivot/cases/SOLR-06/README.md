@@ -1,4 +1,4 @@
-> **Actor identity recheck pending.** Earlier fault trials, coverage, and elapsed time are preserved under `legacy_coarse_actor` in `result.json` and in the original raw evidence. Their selectors did not establish the same runtime actor across runs. An actor-aware V2 campaign is required before this check counts as quality complete. [Independent audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
+> **Actor-bound campaign quality complete.** The V2 instrumentation with V3 queue selection ran 419 original JUnit fault attempts and independently verified 128 effective same-controller/PULL-core/leader postfault checks. The exact selected assertion threw zero times; no new bug is confirmed. See the [terminal audit](actor-v2/terminal/README.md). Earlier coarse-actor trials remain separate historical evidence under `legacy_coarse_actor` in `result.json`.
 
 # SOLR-06: PULL replica leader assertion
 
