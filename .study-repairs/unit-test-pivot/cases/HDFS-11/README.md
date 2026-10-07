@@ -126,8 +126,9 @@ checksum. `BlockTokenSecretManager.retrieveDataEncryptionKey` throws when
 tested recovery behavior, not a newly discovered failure. The per-trial
 records are in `expiry-trial-ledger.csv`; the full audit is in
 `independent/expiry/audit-result.json`, with compact original traces and
-manifests in `expiry-evidence.tar.gz`. Both original workloads are marked
-`quality_complete`; no new bug is confirmed for HDFS-11.
+manifests in `expiry-evidence.tar.gz`. Those workloads were previously marked
+`quality_complete` under the coarse actor identity; the actor V2 recheck
+above is now in progress. No new bug is confirmed for HDFS-11.
 
 The separate [HDFS-17967 outbound-path calibration](known-bug-calibration/README.md)
 shows a workload limit of those two campaigns: they do not exercise the
