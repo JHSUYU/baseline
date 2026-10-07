@@ -61,6 +61,13 @@ def normalize_trial_counts(record: dict, update: dict,
         record["reported_function"] = update["function"]
     if update.get("check_code"):
         record["reported_check_code"] = update["check_code"]
+    if update.get("source_path") and update["source_path"] != selection["source_path"]:
+        record["reported_source_path"] = update["source_path"]
+    if update.get("source_line") and update["source_line"] != selection["source_line"]:
+        record["resolved_check_line"] = update["source_line"]
+    record["source_path"] = selection["source_path"]
+    record["source_line"] = selection["source_line"]
+    record["site_id"] = selection["site_id"]
     record["function"] = selection["function"]
     record["check_code"] = selection.get("check_code")
     if not record.get("cluster_test") and update.get("cluster_tests"):
