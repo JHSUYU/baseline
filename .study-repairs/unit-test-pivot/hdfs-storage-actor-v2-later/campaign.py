@@ -262,6 +262,12 @@ def summarize_attempt(anchor: Path, item: dict, run: Path, cases: tuple[str, ...
                "requested_faults": len(item["sequence"]), "by_case": {}}
     for case in cases:
         post, throws = postfault(trace, case, item["sequence"], applied, exact)
+        if any(not any(check["seq"] < thrown["seq"] and
+                           storage_volume(check.get("storageKey")) ==
+                           storage_volume(thrown.get("storageKey"))
+                           for check in post) for thrown in throws):
+            raise RuntimeError("target throw has no postfault check on its actor/storage: "
+                               + str(run))
         throw_signatures_for_case = [signatures[row["seq"]] for row in throws]
         if any(json.loads(signature)["checkSite"] is None
                for signature in throw_signatures_for_case):

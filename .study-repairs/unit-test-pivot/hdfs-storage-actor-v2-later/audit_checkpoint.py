@@ -121,6 +121,11 @@ def check_trial(item: dict, result: dict, receipt: dict
             issues.append(f"{case} postfault target receipt differs from checkpoint")
         if len(throws) != saved["target_exception_after_fault"]:
             issues.append(f"{case} target-throw count differs from checkpoint")
+        if any(not any(check["seq"] < thrown["seq"] and
+                           volume(check.get("storageKey")) ==
+                           volume(thrown.get("storageKey"))
+                           for check in matching) for thrown in throws):
+            issues.append(f"{case} target throw lacks postfault same-storage check")
         postfault_signatures[case] = [signatures[row["seq"]] for row in throws]
         if any(json.loads(signature)["checkSite"] is None
                for signature in postfault_signatures[case]):

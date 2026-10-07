@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import json
 from pathlib import Path
 import subprocess
 import tempfile
@@ -155,9 +156,65 @@ def check_identity() -> None:
     print("Actor, storage volume, peer, order, and post-target checks passed")
 
 
+def check_throw_receipt() -> None:
+    """An expected throw must follow the selected guard after the last fault."""
+    actor = "episode=2/dn=1/dirs=dfs/data"
+    rpc = {"event": "FAULT_POINT_OBSERVED", "seq": 10,
+           "marker": "FAULT:HDFS_BP_RPC:RESPONSE", "siteId": "Client.getRpcResponse",
+           "sourceKey": actor + "/peer=NN0", "occurrence": "rpc", "hitOrdinal": 1,
+           "actorKey": actor, "storageKey": "unbound", "peerRole": "NN0",
+           "endpointRaw": "localhost/127.0.0.1:40000",
+           "actorNamenodeRaw": "localhost/127.0.0.1:40000"}
+    applied = {**rpc, "event": "FAULT_APPLIED", "faultIndex": 0,
+               "faultType": "IOException"}
+    check = {"event": "TARGET_CHECK", "seq": 20, "caseId": "HDFS-37",
+             "actorKey": actor, "storageKey": "dfs/data/current/BP-ID",
+             "siteId": "DataStorage.doRollback#L940-IF_ICMPLT",
+             "previousLayoutVersion": -56, "softwareLayoutVersion": -57,
+             "reject": False}
+    thrown = {"event": "TARGET_THROW", "seq": 21, "caseId": "HDFS-37",
+              "actorKey": actor, "storageKey": "dfs/data/current/BP-ID",
+              "exception": "java.io.IOException"}
+    item = {"sequence": [campaign.selector(rpc, "IOException")]}
+    trace = [applied, check, thrown]
+    healthy = [json.loads(calibrate.throw_signatures(trace)[21])]
+    state = {"instrumentation_digest_sha256": "offline-smoke",
+             "coverage": {"HDFS-37": {kind: [] for kind in campaign.COVERAGE}},
+             "io_families": {"HDFS-37": []},
+             "healthy_target_throw_signatures_by_case": {"HDFS-37": healthy}}
+    with tempfile.TemporaryDirectory() as temporary:
+        run = Path(temporary)
+        (run / "manifest.json").write_text(json.dumps({
+            "instrumentation_digest_sha256": "offline-smoke", "returncode": 0,
+            "elapsed_seconds": 1.0}))
+        for kind in campaign.COVERAGE:
+            (run / f"covered_{kind}.txt").write_text("")
+        (run / "jacoco.exec").write_bytes(b"")
+        def summarize(events: list[dict]) -> dict:
+            (run / "runtime_trace.jsonl").write_text(
+                "".join(json.dumps(row) + "\n" for row in events))
+            return campaign.summarize_attempt(run, item, run, ("HDFS-37",), state)
+        result = summarize(trace)
+        assert result["by_case"]["HDFS-37"]["target_exceptions_matching_healthy_signature"] == 1
+        assert result["by_case"]["HDFS-37"]["target_exceptions_with_novel_signature"] == 0
+        effective, _, issues = audit_checkpoint.check_trial(
+            item, result, {"seeds": [{"instrumentation_digest_sha256": "offline-smoke"}],
+                           "healthy_target_throw_signatures_by_case": {"HDFS-37": healthy}})
+        assert effective["HDFS-37"] and not issues, issues
+        before = {**check, "seq": 9}
+        try:
+            summarize([before, applied, thrown])
+        except RuntimeError as error:
+            assert "postfault check" in str(error)
+        else:
+            raise AssertionError("pre-fault guard was accepted as throw context")
+    print("Healthy signature and postfault throw context passed")
+
+
 def main() -> None:
     check_bytecode()
     check_identity()
+    check_throw_receipt()
 
 
 if __name__ == "__main__":
