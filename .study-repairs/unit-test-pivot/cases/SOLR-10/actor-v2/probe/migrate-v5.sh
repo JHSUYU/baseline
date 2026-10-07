@@ -14,6 +14,8 @@ stage="$base/.actor-v2-v5-stage"
 previous="$base/.actor-v2-v5-previous"
 
 ssh "${ssh_opts[@]}" "$source_host" \
+    "python3 '$actor/probe/migrate.py' manifest"
+ssh "${ssh_opts[@]}" "$source_host" \
     "python3 '$actor/probe/audit.py' '$campaign'"
 ssh "${ssh_opts[@]}" "$source_host" \
     "python3 '$actor/probe/migrate.py' manifest"
