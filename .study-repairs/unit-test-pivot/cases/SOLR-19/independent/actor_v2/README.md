@@ -53,11 +53,12 @@ only observe. Fault mode accepts ordered
 `ACTOR` may be a calibrated `JETTY_n`, `OWNER_OF_CORE:<coreName>`, or
 `PRODUCER_OF_CORE:<coreName>`; the latter two resolve against a preceding
 CREATE sender event in the same run. Every matched/applied event is traced.
-The V3 pilot has two strict, same-actor, target-retaining fault trials;
-neither triggered the selected target exception. Both original JUnits failed
-their asynchronous status assertion after the injected ZooKeeper connection
-loss. `evidence/v3-pilot-review.md` records their source-level chronology,
-coverage, times, and archived raw traces. The fault sequence budget is 80 effective
+The V3 bounded pilot has eight attempts, seven strict same-actor injections,
+and five same-core target-retaining effective trials. None triggered the
+selected target exception. The first two original JUnits failed their
+asynchronous status assertion after the injected ZooKeeper connection loss;
+the next six passed. `evidence/v3-pilot-review.md` records the source-level
+chronology, coverage, times, and archived raw traces. The fault sequence budget is 80 effective
 target-retaining trials with at most eight ordered faults, and an optional
 128/max10 extension only if late new production coverage or stable I/O sites
 justify it. A strict match without a later execution of the same target is
@@ -133,8 +134,11 @@ sample a distinct I/O family. An exploratory selector is attempted once; its
 one-seed origin never counts as new I/O feedback or as a strict fault unless
 the original JUnit reaches the exact runtime actor, operation, path, caller,
 and occurrence. `evidence/v3-exploratory-queue-receipt.json` records the
-migration. The campaign remains paused while HBASE-32's timing-sensitive
-clean replay owns node1.
+migration. The campaign paused at the r002 boundary while HBASE-32's
+timing-sensitive clean replay owned node1. It resumed from r003 and stopped
+at r008 after five effective trials. Node1 was then released for HBASE-32's
+five-effective completion window; the saved queue resumes from r009 when
+that slot is free.
 `calibrate_v3.py` runs the two unchanged JUnit seeds sequentially under one
 tmux supervisor, saves a checkpoint after each seed, reuses an already
 passing seed after a disconnect, and stops for review on a partial or failed

@@ -56,3 +56,58 @@ SHA-256 values and archive SHA-256 are in
 `v3-pilot-r001-r002-manifest.json`. The node1 and node0 copies of the
 archive have the same SHA-256. The old coarse-actor 128 rounds remain
 historical and are excluded from these V3 counters.
+
+## Second bounded checkpoint: r003–r008
+
+After the HBASE-32 isolated replay released node1, the same saved queue
+resumed at r003 at 2026-10-07 06:44:00 UTC. It naturally stopped after r008
+met the five-effective pilot gate, without consuming r009. This batch used
+the same unchanged original JUnit and same V3 actor/coverage overlay. The
+six runs took 101.198 seconds in total. All six original JUnits exited 0;
+the logs for some runs contain injected `ConnectionLoss` errors that were
+recovered by Solr. No selected target guard took its missing-value branch.
+
+| Trial | Exact I/O and role | Applied event(s) → same-core target | JUnit | Time | New production probes |
+| --- | --- | --- | --- | ---: | ---: |
+| r003 | owner `EXISTS_WATCH /collections/testAddMultipleReplicas/state.json` ordinal 1 | 529; target n3 was **before** at 525 | pass | 16.469 s | 0 |
+| r004 | same I/O ordinal 2 | 551; target n3 was **before** at 543 | pass | 15.916 s | 0 |
+| r005 | owner `EXISTS .../state.json`, `ZkStateWriter.writePendingUpdates` | 534 → 556, guard `present` | pass | 17.868 s | 25 |
+| r006 | planned r005 I/O then owner `GET_CHILDREN /collections` | 0/2 faults applied; n3 target occurred without fault | pass | 17.517 s | 0 |
+| r007 | r005 I/O then owner `GET_CHILDREN /live_nodes` | 534, 539 → 561, guard `present` | pass | 16.865 s | 4 |
+| r008 | producer `EXISTS .../state.json`, same `ZkStateWriter` callsite | 534 → 556, guard `present` | pass | 16.563 s | 0 |
+
+The independent archive auditor `audit_pilot_v3.py` checks each raw
+`ZK_BIND` and preceding CREATE sender against the fault actor, exact
+operation, path, caller, ordinal, and synchronized IO→match→apply events.
+It found no identity discrepancy in the five strict trials. In r005/r007,
+the target n3 owner was the dynamically resolved `JETTY_3` in those runs;
+in r008 the CREATE producer was `JETTY_3`. Its archived receipt also records
+that r003/r004 target n3 preceded the fault, so they count as attempts only.
+r006 was unmatched and also counts only as an attempt. All six runs recorded
+nine exact nonthrowing guard events and zero external-properties file opens.
+
+The pilot as a whole now has 8 attempts, 7 strict injections, 5 effective
+same-core post-fault target trials, 363.587 seconds of JUnit time, and zero
+target-exception candidates. The healthy plus r001–r008 JaCoCo union covers
+4,490 Solr production methods and 5,614 branches: +8 methods and +26
+branches above the healthy union. The selected `CoreContainer.create`
+remains at 7/24 branches; its missing-core-node branch has not been taken.
+Probe-level feedback gained 67 IDs: 38 in r001, 25 in r005, and 4 in r007.
+r005's new probes were mainly in `ZkDistributedQueue` and
+`Overseer.ClusterStateUpdater`; this is observed execution novelty, not
+proof that the fault caused every new path. Four normalized I/O identities
+appeared in r005: `/collections` and `/live_nodes` reads, and two
+`/overseer/queue/qn-*` reads. The generated queue-item IDs are normalized
+for feedback but are excluded from newly generated exact-path child plans;
+three preexisting two-seed stable concrete queue IDs remain empirical plans.
+
+Node1 raw files are archived in `v3-pilot-r003-r008.tar.gz`, with per-file
+SHA-256 values and archive SHA-256 in
+`v3-pilot-r003-r008-manifest.json`. The node0 archive copy matches the node1
+SHA-256. The independent raw receipt is `v3-pilot-r003-r008-audit.json` and
+the production coverage union is `v3-pilot-r001-r008-union-coverage.json`.
+HDFS startup JUnits overlapping this short Solr pilot completed in 76.110
+and 42.202 seconds with exit 0 and same-actor targets, within their nearby
+timing distribution. The node1 Solr tmux/JVM exited at the r008 boundary.
+The full 80-effective campaign will resume from r009 after HBASE-32 releases
+its five-effective completion window; no pilot trial will be replayed.

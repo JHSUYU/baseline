@@ -180,7 +180,11 @@ def new_children(rows: list[dict], steps: list[dict], last_seq: int,
     for site in sorted(candidates, key=lambda x: x["seq"]):
         key = (site["core"], site["side"], site["op"], site["path"], site["caller"])
         count[key] += 1
-        if any(c in site["path"] or c in site["caller"] for c in ("|", ";")):
+        # Overseer queue item IDs are allocated afresh in every original JUnit
+        # run. Keep their normalized behavior for feedback, but do not enqueue
+        # an exact-path fault plan that cannot identify the same queue item.
+        if (re.search(r"/qn-\d+(?:/|$)", site["path"]) or
+                any(c in site["path"] or c in site["caller"] for c in ("|", ";"))):
             continue
         actor = site["side"] + "_OF_CORE:" + site["core"]
         selector = "|".join((site["op"], site["path"], site["caller"], actor,
