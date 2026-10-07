@@ -11,12 +11,12 @@
       "valid_target_retaining": 29
     },
     "java_slot_wait_enabled": true,
-    "last_audited_attempted": 70,
-    "last_audited_effective": 37,
-    "last_audited_full_fault_sequences": 70,
-    "last_audited_segment": "actor-v2-segment-70-attempts.json",
-    "last_audited_segment_sha256": "fc0713f92c22e1702f32370afb3875934fd39b45c24669b089b34ebd03a5884f",
-    "last_audited_target_lost_or_unmatched": 33,
+    "last_audited_attempted": 87,
+    "last_audited_effective": 46,
+    "last_audited_full_fault_sequences": 87,
+    "last_audited_segment": "actor-v2-segment-87-attempts.json",
+    "last_audited_segment_sha256": "8e2951114f22b17d353e05a196b3f176e56d5f1d9b25d21c499d4af719a6b234",
+    "last_audited_target_lost_or_unmatched": 41,
     "local_mirror_note": "Node1 campaign-state.json is authoritative; the local mirror is a snapshot. Resume in tmux hdfs11_key_v2_fuzz only after the coexistence audit.",
     "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/campaign-state.json",
     "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
@@ -28,8 +28,10 @@
     "schema": "hdfs-key-actor-v2-recheck-1",
     "strict_relation": "same concrete DataNode startup episode and same bound block pool",
     "supervisor_path": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/run_hdfs11_budget_gate.py",
-    "supervisor_sha256": "cccfeb9b246db8dae64413f3db01d14cbbb158572eb3d315a55e6024b79cb014",
+    "supervisor_sha256": "83a1d6267ca24b4282398bfd4f199f9a795b6d0753493027d732f779ce77ef1a",
     "tmux_session": "hdfs11_key_v2_fuzz",
+    "trial87_target_loss_review": "actor-v2-trial87-review.json",
+    "trial87_target_loss_review_sha256": "06ca143bc4c4d2fa83a5ee47adfa768747376cc6007791876324983328a42a00",
     "v2_fault_results_not_in_legacy_counts": true
   },
   "bug_mark": "none",
@@ -42,7 +44,7 @@
     "methods": 28,
     "probes": 238
   },
-  "elapsed_seconds": 1876.35,
+  "elapsed_seconds": 2405.67,
   "expired_key_supplement": {
     "audit": "independent/expiry/audit-result.json",
     "elapsed_seconds": 3584.545,
@@ -54,8 +56,8 @@
     "trial_ledger": "expiry-trial-ledger.csv",
     "unexpected_target_exception_candidates": 0
   },
-  "fault_trials": 70,
-  "fully_applied_trials": 70,
+  "fault_trials": 87,
+  "fully_applied_trials": 87,
   "function": "retrieveDataEncryptionKey(int, byte[])",
   "historical_campaign_summary": {
     "cluster_test": [
@@ -198,9 +200,9 @@
   "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_review": "The original TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey waits for the old key to expire, expects one InvalidEncryptionKeyException, clears the client's cached key, then retries the checksum successfully. All 46 strict target-retaining fault runs followed this same pattern.",
   "status": "actor_v2_running",
-  "strict_injections": 70,
+  "strict_injections": 87,
   "system": "HDFS 3.4.3",
-  "target_after_fault": 37,
+  "target_after_fault": 46,
   "target_exception_after_fault_trials": 0,
   "target_reached": true
 }

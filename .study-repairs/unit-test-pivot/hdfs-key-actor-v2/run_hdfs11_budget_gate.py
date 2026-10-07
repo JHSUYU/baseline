@@ -76,13 +76,18 @@ def fault_induced_target_loss(manifest: dict, result: dict, junit_log: str,
     later_target = bool(applied) and any(
         row.get("event") == "TARGET_CHECK" and row.get("caseId") == "HDFS-11" and
         row["seq"] > applied[-1]["seq"] for row in trace)
+    expected_read_failure = (
+        "Fail to get block MD5" in junit_log or
+        ("org.apache.hadoop.hdfs.BlockMissingException" in junit_log and
+         "No live nodes contain block" in junit_log and
+         "DFS chooseDataNode" in junit_log))
     return (manifest["returncode"] != 0 and
             result["classification"] == "unmatched_or_target_lost" and
             0 < count == result["matched_faults"] <= result["requested_faults"] and
             ordered_prefix and not later_target and
             result["postfault_target_count"] == 0 and
             "V2 injected SASL" in junit_log and
-            "Fail to get block MD5" in junit_log and
+            expected_read_failure and
             not any(error in junit_log for error in
                     ("BindException", "Address already in use", "OutOfMemoryError")))
 

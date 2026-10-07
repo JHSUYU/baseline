@@ -1,0 +1,32 @@
+{
+  "applied_faults": 4,
+  "artifact_hashes": {
+    "jacoco_exec_sha256": "dbbadabf37352d4b411f8e69582bd39329c7a0c7c5976f9f6da95858dbd959f7",
+    "manifest_sha256": "03c9c0cf251d6f39d2d4313819092b0edef8c0c6d29e09da108ede1574faa38a",
+    "plan_sha256": "d0c0b9bae94c8bd4bc2118f2fd3e5d75c2da658670acfde16d33eadfa5bc68ca",
+    "trace_sha256": "ed794f3e8ae0787d87d9ae48e04dcc80b0f9e6b2880216403da97acebbd19dce",
+    "v2_result_sha256": "0dd4794b5ee0d2920be5e5509159ebba6104639d50b7ade96f78ba571ef02236"
+  },
+  "attempt": 87,
+  "audited_prefix": "actor-v2-segment-87-attempts.json",
+  "audited_prefix_sha256": "8e2951114f22b17d353e05a196b3f176e56d5f1d9b25d21c499d4af719a6b234",
+  "case_id": "HDFS-11",
+  "classification": "invalid_target_lost_after_injected_sasl_io",
+  "elapsed_seconds": 35.398,
+  "exact_order_applied": true,
+  "infrastructure_errors_absent": [
+    "BindException",
+    "Address already in use",
+    "OutOfMemoryError"
+  ],
+  "junit_failure": "BlockMissingException: No live nodes contain block after four injected readMagic IOException events on the only DataNode",
+  "matched_faults": 4,
+  "original_junit_exit": 1,
+  "postfault_target_count": 0,
+  "requested_faults": 4,
+  "schema": "hdfs11-actor-v2-target-loss-review-1",
+  "selected_target_exception_count": 0,
+  "sequence_id": "be09e19d4e7a654f934d",
+  "source_review": "Hadoop 3.4.3 DFSInputStream.refetchLocations, lines 968-978, throws BlockMissingException after max block acquisition failures; the JUnit read fails before the selected BlockTokenSecretManager.retrieveDataEncryptionKey null-key guard can execute again.",
+  "supervisor_sha256_after_narrow_target_loss_extension": "83a1d6267ca24b4282398bfd4f199f9a795b6d0753493027d732f779ce77ef1a"
+}
