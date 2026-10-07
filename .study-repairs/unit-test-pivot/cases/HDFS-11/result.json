@@ -11,12 +11,12 @@
       "valid_target_retaining": 29
     },
     "java_slot_wait_enabled": true,
-    "last_audited_attempted": 87,
+    "last_audited_attempted": 100,
     "last_audited_effective": 46,
-    "last_audited_full_fault_sequences": 87,
-    "last_audited_segment": "actor-v2-segment-87-attempts.json",
-    "last_audited_segment_sha256": "8e2951114f22b17d353e05a196b3f176e56d5f1d9b25d21c499d4af719a6b234",
-    "last_audited_target_lost_or_unmatched": 41,
+    "last_audited_full_fault_sequences": 100,
+    "last_audited_segment": "actor-v2-segment-100-attempts.json",
+    "last_audited_segment_sha256": "15bea109de236112c316819b7346c7bfa2ebd0b4b7a109b14e55dde07cffb67c",
+    "last_audited_target_lost_or_unmatched": 54,
     "local_mirror_note": "Node1 campaign-state.json is authoritative; the local mirror is a snapshot. Resume in tmux hdfs11_key_v2_fuzz only after the coexistence audit.",
     "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/campaign-state.json",
     "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
@@ -32,7 +32,9 @@
     "tmux_session": "hdfs11_key_v2_fuzz",
     "trial87_target_loss_review": "actor-v2-trial87-review.json",
     "trial87_target_loss_review_sha256": "06ca143bc4c4d2fa83a5ee47adfa768747376cc6007791876324983328a42a00",
-    "v2_fault_results_not_in_legacy_counts": true
+    "v2_fault_results_not_in_legacy_counts": true,
+    "scheduler_depth_v4_receipt": "actor-v2-scheduler-depth-v4-migration.json",
+    "scheduler_runner_sha256": "2d8694ba9e4a5ca14dddfcbf73fc77cac094da3650269742d8191f6b1c13f040"
   },
   "bug_mark": "none",
   "case_id": "HDFS-11",
@@ -44,7 +46,7 @@
     "methods": 28,
     "probes": 238
   },
-  "elapsed_seconds": 2405.67,
+  "elapsed_seconds": 2850.499,
   "expired_key_supplement": {
     "audit": "independent/expiry/audit-result.json",
     "elapsed_seconds": 3584.545,
@@ -56,8 +58,8 @@
     "trial_ledger": "expiry-trial-ledger.csv",
     "unexpected_target_exception_candidates": 0
   },
-  "fault_trials": 87,
-  "fully_applied_trials": 87,
+  "fault_trials": 100,
+  "fully_applied_trials": 100,
   "function": "retrieveDataEncryptionKey(int, byte[])",
   "historical_campaign_summary": {
     "cluster_test": [
@@ -198,9 +200,9 @@
   "source_file": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
   "source_line": 552,
   "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
-  "source_review": "The original TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey waits for the old key to expire, expects one InvalidEncryptionKeyException, clears the client's cached key, then retries the checksum successfully. All 46 strict target-retaining fault runs followed this same pattern.",
+  "source_review": "The original normal-read TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0] reaches the allKeys null guard; none of the 46 V2 strict same-actor target-retaining fault sequences threw the selected InvalidEncryptionKeyException. The separate expired-key JUnit deliberately expects one such exception and is historical until actor V2 rechecked.",
   "status": "actor_v2_running",
-  "strict_injections": 87,
+  "strict_injections": 100,
   "system": "HDFS 3.4.3",
   "target_after_fault": 46,
   "target_exception_after_fault_trials": 0,

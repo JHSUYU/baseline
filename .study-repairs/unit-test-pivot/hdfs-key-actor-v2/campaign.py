@@ -87,13 +87,31 @@ def suffix_feedback(output: Path, state: dict) -> dict[str, dict[str, int]]:
     return dict(stats)
 
 
+def depth_feedback(output: Path, state: dict) -> dict[int, dict[str, int]]:
+    """Count exact injections by depth without trusting scheduler history."""
+    stats: dict[int, dict[str, int]] = defaultdict(lambda: {"strict": 0, "valid": 0})
+    for identity in state["completed"]:
+        result_path = output / "runs" / identity / "v2_result.json"
+        plan_path = output / "plans" / (identity + ".tsv")
+        if not result_path.exists() or not plan_path.exists():
+            continue
+        result = json.loads(result_path.read_text())
+        if not result.get("exact_order_applied"):
+            continue
+        depth = sum(bool(line) for line in plan_path.read_text().splitlines())
+        stats[depth]["strict"] += 1
+        stats[depth]["valid"] += bool(result.get("valid_for_feedback"))
+    return dict(stats)
+
+
 def select_next(output: Path, state: dict) -> tuple[dict, dict]:
     if state.get("in_flight"):
         for item in state["queue"]:
             if item["id"] == state["in_flight"]:
-                return item, {"reason": "resume_in_flight", "scheduler_version": 3}
+                return item, {"reason": "resume_in_flight", "scheduler_version": 4}
         raise RuntimeError("in-flight sequence is missing from queue")
     stats = suffix_feedback(output, state)
+    depth_stats = depth_feedback(output, state)
     now = time.time()
     candidates = []
     for item in state["queue"]:
@@ -101,24 +119,36 @@ def select_next(output: Path, state: dict) -> tuple[dict, dict]:
         prior = stats.get(family, {"lost": 0, "valid": 0})
         # Only a repeatedly observed, *exactly applied* target-losing suffix
         # gets demoted. A single valid target-retaining run cancels demotion.
-        penalty = (min(1200, 250 * prior["lost"])
-                   if family and prior["lost"] >= 3 and prior["valid"] == 0 else 0)
+        suffix_penalty = (min(1200, 250 * prior["lost"])
+                          if family and prior["lost"] >= 3 and prior["valid"] == 0 else 0)
+        depth = len(item["sequence"])
+        prior_depth = depth_stats.get(depth, {"strict": 0, "valid": 0})
+        # Ten exact depth-four injections with zero target retention justify
+        # ranking shallower candidates first. Keep depth-four plans in the
+        # queue and sample penalized plans every twelfth selection.
+        depth_penalty = (600 if depth >= 4 and prior_depth["strict"] >= 10 and
+                         5 * prior_depth["valid"] < prior_depth["strict"] else 0)
         age = min(400, int(max(0, now - item["enqueued"]) / 12))
-        candidates.append((item["priority"] - penalty + age, item, family,
-                           penalty, age, prior))
+        candidates.append((item["priority"] - suffix_penalty - depth_penalty + age,
+                           item, family, suffix_penalty, depth_penalty, age,
+                           prior, prior_depth))
     # Keep a small, deterministic exploration share for demoted families.
-    penalized = [entry for entry in candidates if entry[3] > 0]
+    penalized = [entry for entry in candidates if entry[3] + entry[4] > 0]
     explore = bool(penalized) and state["attempted_trials"] % 12 == 11
     if explore:
         chosen = min(penalized, key=lambda entry: entry[1]["enqueued"])
     else:
         chosen = max(candidates, key=lambda entry: (entry[0], -entry[1]["enqueued"]))
-    score, item, family, penalty, age, prior = chosen
-    return item, {"scheduler_version": 3,
+    score, item, family, suffix_penalty, depth_penalty, age, prior, prior_depth = chosen
+    return item, {"scheduler_version": 4,
                   "reason": "penalized_family_exploration" if explore else "highest_adjusted_score",
                   "suffix_family": family, "prior_strict_target_loss": prior["lost"],
                   "prior_valid": prior["valid"], "base_priority": item["priority"],
-                  "target_loss_penalty": penalty, "waiting_age_bonus": age,
+                  "target_loss_penalty": suffix_penalty,
+                  "depth_retention_penalty": depth_penalty,
+                  "depth_prior_strict": prior_depth["strict"],
+                  "depth_prior_valid": prior_depth["valid"],
+                  "waiting_age_bonus": age,
                   "adjusted_score": score}
 
 

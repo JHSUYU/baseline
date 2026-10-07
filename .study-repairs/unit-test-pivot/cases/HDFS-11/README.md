@@ -5,9 +5,9 @@
 `TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite[0]` passed.
 The isolated [V2 follow-up](../../hdfs-key-actor-v2/README.md) binds the actual
 SASL receiver and key manager to the same DataNode startup episode and block
-pool. Its [87-attempt raw audit](actor-v2-segment-87-attempts.json) verifies 87
+pool. Its [100-attempt raw audit](actor-v2-segment-100-attempts.json) verifies 100
 fully ordered fault sequences, 46 strict same-actor target-retaining sequences,
-and zero selected `InvalidEncryptionKeyException` throws. The other 41
+and zero selected `InvalidEncryptionKeyException` throws. The other 54
 sequences lose the target after an injected-I/O checksum or block-read failure;
 they are recorded but not effective. The audit hashes each original JUnit
 manifest, raw trace, fault plan, result, and JaCoCo file. It reports 238 added
@@ -26,6 +26,13 @@ At attempt 87, four exact SASL `readMagic` exceptions exhausted the original
 test's only DataNode and caused a `BlockMissingException` before a later target
 check. Its [source and raw-event review](actor-v2-trial87-review.json) classifies
 this as target loss, then the same checkpoint resumed without replaying it.
+At the complete 100-attempt boundary, 13 exactly injected four-fault plans had
+all lost the target, while 36 of 68 three-fault plans retained it. The
+[depth-priority migration](actor-v2-scheduler-depth-v4-migration.json) preserved
+the checkpoint byte for byte, every queued sequence, and all measured coverage.
+It ranks the poorly retaining depth below shallower plans while still sampling
+penalized plans every twelfth selection. The existing tmux session resumed
+from attempt 100; the 80-effective budget and eight-fault limit remain intact.
 
 ## Historical campaigns
 
