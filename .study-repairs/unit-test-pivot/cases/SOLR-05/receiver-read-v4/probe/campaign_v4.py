@@ -16,7 +16,7 @@ import time
 
 from audit_v4 import (CASE, EVIDENCE, PATH, CALLER, CONTEXT, healthy, observed_pairs,
                       semantic, trace_events, trial)
-from deps import asm_jars
+from deps import asm_jars, guarded_check_output
 
 ROOT = EVIDENCE / "campaign-v4"
 STATE = ROOT / "checkpoint.json"
@@ -46,11 +46,11 @@ def coverage(directory: Path) -> tuple[set[str], set[str], dict[str, int]]:
         return set(), set(), {}
     cp = ":".join([str(CASE / "classes"), str(CASE.parent / "lib/jacoco-core.jar"),
                    *map(str, asm_jars()), (CASE / "classpath.txt").read_text().strip()])
-    blocks = subprocess.check_output([JAVA, "-cp", cp,
-        "baseline.solr05v4.CoverageProbes", str(execution), DIST], text=True)
-    methods_out = subprocess.check_output([JAVA, "-cp", cp,
+    blocks = guarded_check_output([JAVA, "-cp", cp,
+        "baseline.solr05v4.CoverageProbes", str(execution), DIST], CASE)
+    methods_out = guarded_check_output([JAVA, "-cp", cp,
         "baseline.solr05v4.CoverageFeedback", DIST, str(CASE / "classes"),
-        str(execution)], text=True)
+        str(execution)], CASE)
     branches = {}
     for line in methods_out.splitlines():
         method, count = line.rsplit("\t", 1)
