@@ -135,6 +135,7 @@ def relevant_sites(rows: list[dict], after_seq: int = 0) -> list[dict]:
     io = [row for row in rows if row["phase"].startswith("IO_") and
           audit_seeds.relevant_io_path(row["core"]) and row["actor"] != "UNBOUND"]
     out = []
+    emitted = set()
     for core, target_seq in ((core, seq) for core, seqs in guards.items() for seq in seqs):
         sender = latest_sender(senders, core, target_seq)
         if sender is None:
@@ -152,6 +153,10 @@ def relevant_sites(rows: list[dict], after_seq: int = 0) -> list[dict]:
             if row["actor"] == producer and producer != owner:
                 sides.append("PRODUCER")
             for side in sides:
+                occurrence = (core, side, seq)
+                if occurrence in emitted:
+                    continue
+                emitted.add(occurrence)
                 out.append({"core": core, "side": side, "op": row["phase"][3:],
                             "path": row["core"], "caller": row["detail"],
                             "seq": seq, "distance_to_guard": target_seq - seq,
@@ -313,7 +318,7 @@ def finish_attempt(state: dict) -> None:
     atomic_json(output / "trial.json", record)
     state["attempts"].append(record)
     state["inflight"] = None
-    if effective:
+    if effective and (manifest["exit_code"] != 124 or new_probes or new_io):
         known = set(state["seen_plans"]) | {
             json.dumps(x["steps"], sort_keys=True) for x in state["queue"]}
         children = new_children(rows, plan["steps"], last_seq, known,
