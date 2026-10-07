@@ -1,0 +1,1423 @@
+{
+  "archive": "v3-campaign-r061-r080.tar.gz",
+  "archive_sha256": "3f8305f476e49a998e87012a58843961637f387254bfe6039cf7e06081a222fb",
+  "attempts": 20,
+  "effective": 15,
+  "elapsed_seconds": 917.747,
+  "first_trial": 61,
+  "junit_failures": 12,
+  "last_trial": 80,
+  "max_ordered_faults": 8,
+  "original_junit": "AddReplicaTest.testAddMultipleReplicas",
+  "source_commit": "e27f44e",
+  "strict": 15,
+  "strict_identity_issues": 0,
+  "target_actor_lineage_issues": 0,
+  "target_exceptions": 0,
+  "trials": [
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 15.463,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 862,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#offer:311",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 860,
+          "match_seq": 861,
+          "op": "EXISTS_WATCH",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:39955_solr",
+          "sender_seq": 858
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": false,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 61,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:39955_solr",
+          "branch": "present",
+          "seq": 868
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": false,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:39955_solr",
+          "guard_seq": 868,
+          "same_node": true,
+          "sender_node": "127.0.0.1:39955_solr",
+          "sender_seq": 858
+        }
+      ],
+      "trial": 61
+    },
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 16.864,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 574,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#peekElements:489",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 572,
+          "match_seq": 573,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/overseer/queue/qn-0000000008",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:39879_solr",
+          "sender_seq": 567
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": false,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 62,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:44193_solr",
+          "branch": "present",
+          "seq": 833
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": false,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:44193_solr",
+          "guard_seq": 833,
+          "same_node": true,
+          "sender_node": "127.0.0.1:44193_solr",
+          "sender_seq": 823
+        }
+      ],
+      "trial": 62
+    },
+    {
+      "applied_faults": 6,
+      "elapsed_seconds": 16.868,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 535,
+          "caller": "org.apache.solr.cloud.overseer.ZkStateWriter#writePendingUpdates:262",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 533,
+          "match_seq": 534,
+          "op": "SET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:35401_solr",
+          "sender_seq": 521
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 539,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 537,
+          "match_seq": 538,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:35401_solr",
+          "sender_seq": 521
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 544,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshLiveNodes:849",
+          "expected_actor": "JETTY_3",
+          "index": 2,
+          "io_seq": 542,
+          "match_seq": 543,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/live_nodes",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:35401_solr",
+          "sender_seq": 521
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 548,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 3,
+          "io_seq": 546,
+          "match_seq": 547,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:35401_solr",
+          "sender_seq": 521
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 552,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 4,
+          "io_seq": 550,
+          "match_seq": 551,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:35401_solr",
+          "sender_seq": 521
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 560,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef#get:811",
+          "expected_actor": "JETTY_3",
+          "index": 5,
+          "io_seq": 558,
+          "match_seq": 559,
+          "op": "EXISTS_WATCH",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:35401_solr",
+          "sender_seq": 521
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 6,
+      "number": 63,
+      "planned_faults": 6,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:35401_solr",
+          "branch": "present",
+          "seq": 577
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:35401_solr",
+          "guard_seq": 577,
+          "same_node": true,
+          "sender_node": "127.0.0.1:35401_solr",
+          "sender_seq": 521
+        }
+      ],
+      "trial": 63
+    },
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 16.512,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 979,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#offer:311",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 977,
+          "match_seq": 978,
+          "op": "EXISTS_WATCH",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:40339_solr",
+          "sender_seq": 975
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 64,
+      "planned_faults": 1,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:40339_solr",
+          "branch": "present",
+          "seq": 985
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:40339_solr",
+          "guard_seq": 985,
+          "same_node": true,
+          "sender_node": "127.0.0.1:40339_solr",
+          "sender_seq": 975
+        }
+      ],
+      "trial": 64
+    },
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 15.359,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 956,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#offer:311",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 954,
+          "match_seq": 955,
+          "op": "EXISTS_WATCH",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:40589_solr",
+          "sender_seq": 952
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": false,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 65,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:40589_solr",
+          "branch": "present",
+          "seq": 962
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": false,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:40589_solr",
+          "guard_seq": 962,
+          "same_node": true,
+          "sender_node": "127.0.0.1:40589_solr",
+          "sender_seq": 952
+        }
+      ],
+      "trial": 65
+    },
+    {
+      "applied_faults": 7,
+      "elapsed_seconds": 132.858,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 532,
+          "caller": "org.apache.solr.cloud.overseer.ZkStateWriter#writePendingUpdates:262",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 530,
+          "match_seq": 531,
+          "op": "SET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 536,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 534,
+          "match_seq": 535,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 541,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshLiveNodes:849",
+          "expected_actor": "JETTY_3",
+          "index": 2,
+          "io_seq": 539,
+          "match_seq": 540,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/live_nodes",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 545,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 3,
+          "io_seq": 543,
+          "match_seq": 544,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 549,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 4,
+          "io_seq": 547,
+          "match_seq": 548,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 557,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef#get:811",
+          "expected_actor": "JETTY_3",
+          "index": 5,
+          "io_seq": 555,
+          "match_seq": 556,
+          "op": "EXISTS_WATCH",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 560,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState:1641",
+          "expected_actor": "JETTY_3",
+          "index": 6,
+          "io_seq": 558,
+          "match_seq": 559,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 7,
+      "number": 66,
+      "planned_faults": 7,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:46183_solr",
+          "branch": "present",
+          "seq": 568
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:46183_solr",
+          "guard_seq": 568,
+          "same_node": true,
+          "sender_node": "127.0.0.1:46183_solr",
+          "sender_seq": 518
+        }
+      ],
+      "trial": 66
+    },
+    {
+      "applied_faults": 7,
+      "elapsed_seconds": 13.552,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 536,
+          "caller": "org.apache.solr.cloud.overseer.ZkStateWriter#writePendingUpdates:262",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 534,
+          "match_seq": 535,
+          "op": "SET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 540,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 538,
+          "match_seq": 539,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 545,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshLiveNodes:849",
+          "expected_actor": "JETTY_3",
+          "index": 2,
+          "io_seq": 543,
+          "match_seq": 544,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/live_nodes",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 549,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 3,
+          "io_seq": 547,
+          "match_seq": 548,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 553,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#refreshCollectionList:718",
+          "expected_actor": "JETTY_3",
+          "index": 4,
+          "io_seq": 551,
+          "match_seq": 552,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        },
+        {
+          "actual_actor": "JETTY_1",
+          "applied_seq": 579,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef#get:811",
+          "expected_actor": "JETTY_1",
+          "index": 5,
+          "io_seq": 577,
+          "match_seq": 578,
+          "op": "EXISTS_WATCH",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        },
+        {
+          "actual_actor": "JETTY_1",
+          "applied_seq": 582,
+          "caller": "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState:1641",
+          "expected_actor": "JETTY_1",
+          "index": 6,
+          "io_seq": 580,
+          "match_seq": 581,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections/testAddMultipleReplicas/state.json",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": false,
+      "ledger_target_exception": false,
+      "matched_faults": 7,
+      "number": 67,
+      "planned_faults": 8,
+      "same_core_guards_after_fault": [],
+      "same_core_guards_before_fault": [
+        575
+      ],
+      "strict_exact_actor": false,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:36771_solr",
+          "guard_seq": 575,
+          "same_node": true,
+          "sender_node": "127.0.0.1:36771_solr",
+          "sender_seq": 522
+        }
+      ],
+      "trial": 67
+    },
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 16.767,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 834,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 832,
+          "match_seq": 833,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:45395_solr",
+          "sender_seq": 829
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 68,
+      "planned_faults": 1,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:45395_solr",
+          "branch": "present",
+          "seq": 841
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:45395_solr",
+          "guard_seq": 841,
+          "same_node": true,
+          "sender_node": "127.0.0.1:45395_solr",
+          "sender_seq": 829
+        }
+      ],
+      "trial": 68
+    },
+    {
+      "applied_faults": 2,
+      "elapsed_seconds": 135.513,
+      "faults": [
+        {
+          "actual_actor": "JETTY_1",
+          "applied_seq": 951,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_1",
+          "index": 0,
+          "io_seq": 949,
+          "match_seq": 950,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_1",
+          "sender_node": "127.0.0.1:38269_solr",
+          "sender_seq": 946
+        },
+        {
+          "actual_actor": "JETTY_1",
+          "applied_seq": 1065,
+          "caller": "org.apache.solr.client.solrj.impl.ZkDistribStateManager#hasData:60",
+          "expected_actor": "JETTY_1",
+          "index": 1,
+          "io_seq": 1063,
+          "match_seq": 1064,
+          "op": "EXISTS",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections/testAddMultipleReplicas",
+          "producer_role": "JETTY_1",
+          "sender_node": "127.0.0.1:38269_solr",
+          "sender_seq": 1058
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 2,
+      "number": 69,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:38269_solr",
+          "branch": "present",
+          "seq": 1070
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:38269_solr",
+          "guard_seq": 1070,
+          "same_node": true,
+          "sender_node": "127.0.0.1:38269_solr",
+          "sender_seq": 1058
+        }
+      ],
+      "trial": 69
+    },
+    {
+      "applied_faults": 2,
+      "elapsed_seconds": 16.564,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 858,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 856,
+          "match_seq": 857,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:38303_solr",
+          "sender_seq": 853
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 968,
+          "caller": "org.apache.solr.common.cloud.ZkCmdExecutor#ensureExists:120",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 966,
+          "match_seq": 967,
+          "op": "EXISTS",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:38303_solr",
+          "sender_seq": 965
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 2,
+      "number": 70,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:38303_solr",
+          "branch": "present",
+          "seq": 974
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:38303_solr",
+          "guard_seq": 974,
+          "same_node": true,
+          "sender_node": "127.0.0.1:38303_solr",
+          "sender_seq": 965
+        }
+      ],
+      "trial": 70
+    },
+    {
+      "applied_faults": 3,
+      "elapsed_seconds": 133.603,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 871,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 869,
+          "match_seq": 870,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46763_solr",
+          "sender_seq": 866
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 993,
+          "caller": "org.apache.solr.common.cloud.ZkCmdExecutor#ensureExists:120",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 991,
+          "match_seq": 992,
+          "op": "EXISTS",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46763_solr",
+          "sender_seq": 990
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 996,
+          "caller": "org.apache.solr.cloud.DistributedMap#size:87",
+          "expected_actor": "JETTY_3",
+          "index": 2,
+          "io_seq": 994,
+          "match_seq": 995,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/collection-map-failure",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:46763_solr",
+          "sender_seq": 990
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 3,
+      "number": 71,
+      "planned_faults": 3,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:46763_solr",
+          "branch": "present",
+          "seq": 1001
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:46763_solr",
+          "guard_seq": 1001,
+          "same_node": true,
+          "sender_node": "127.0.0.1:46763_solr",
+          "sender_seq": 990
+        }
+      ],
+      "trial": 71
+    },
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 17.716,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 976,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 974,
+          "match_seq": 975,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:45091_solr",
+          "sender_seq": 971
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 72,
+      "planned_faults": 1,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:45091_solr",
+          "branch": "present",
+          "seq": 987
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:45091_solr",
+          "guard_seq": 987,
+          "same_node": true,
+          "sender_node": "127.0.0.1:45091_solr",
+          "sender_seq": 971
+        }
+      ],
+      "trial": 72
+    },
+    {
+      "applied_faults": 2,
+      "elapsed_seconds": 135.428,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 1055,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 1053,
+          "match_seq": 1054,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:33307_solr",
+          "sender_seq": 1050
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 1061,
+          "caller": "org.apache.solr.client.solrj.impl.ZkDistribStateManager#hasData:60",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 1059,
+          "match_seq": 1060,
+          "op": "EXISTS",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/collections/testAddMultipleReplicas",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:33307_solr",
+          "sender_seq": 1050
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 2,
+      "number": 73,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:33307_solr",
+          "branch": "present",
+          "seq": 1066
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:33307_solr",
+          "guard_seq": 1066,
+          "same_node": true,
+          "sender_node": "127.0.0.1:33307_solr",
+          "sender_seq": 1050
+        }
+      ],
+      "trial": 73
+    },
+    {
+      "applied_faults": 2,
+      "elapsed_seconds": 16.564,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 967,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 965,
+          "match_seq": 966,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:34821_solr",
+          "sender_seq": 962
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 970,
+          "caller": "org.apache.solr.cloud.Overseer$ClusterStateUpdater#amILeader:473",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 968,
+          "match_seq": 969,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer_elect/leader",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:34821_solr",
+          "sender_seq": 962
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 2,
+      "number": 74,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:34821_solr",
+          "branch": "present",
+          "seq": 976
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:34821_solr",
+          "guard_seq": 976,
+          "same_node": true,
+          "sender_node": "127.0.0.1:34821_solr",
+          "sender_seq": 962
+        }
+      ],
+      "trial": 74
+    },
+    {
+      "applied_faults": 3,
+      "elapsed_seconds": 18.468,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 975,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 973,
+          "match_seq": 974,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:34343_solr",
+          "sender_seq": 970
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 978,
+          "caller": "org.apache.solr.cloud.Overseer$ClusterStateUpdater#amILeader:473",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 976,
+          "match_seq": 977,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/overseer_elect/leader",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:34343_solr",
+          "sender_seq": 970
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 1051,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417",
+          "expected_actor": "JETTY_3",
+          "index": 2,
+          "io_seq": 1049,
+          "match_seq": 1050,
+          "op": "GET_CHILDREN",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:43637_solr",
+          "sender_seq": 1048
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 3,
+      "number": 75,
+      "planned_faults": 3,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:43637_solr",
+          "branch": "present",
+          "seq": 1059
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:43637_solr",
+          "guard_seq": 1059,
+          "same_node": true,
+          "sender_node": "127.0.0.1:43637_solr",
+          "sender_seq": 1048
+        }
+      ],
+      "trial": 75
+    },
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 17.366,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 863,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#peekElements:489",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 861,
+          "match_seq": 862,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/overseer/queue/qn-0000000021",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:35625_solr",
+          "sender_seq": 857
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 76,
+      "planned_faults": 1,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:35625_solr",
+          "branch": "present",
+          "seq": 869
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:35625_solr",
+          "guard_seq": 869,
+          "same_node": true,
+          "sender_node": "127.0.0.1:35625_solr",
+          "sender_seq": 857
+        }
+      ],
+      "trial": 76
+    },
+    {
+      "applied_faults": 2,
+      "elapsed_seconds": 135.554,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 869,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#peekElements:489",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 867,
+          "match_seq": 868,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue/qn-0000000021",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:45871_solr",
+          "sender_seq": 863
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 932,
+          "caller": "org.apache.solr.client.solrj.impl.ZkDistribStateManager#hasData:60",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 930,
+          "match_seq": 931,
+          "op": "EXISTS",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/collections/testAddMultipleReplicas",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:39743_solr",
+          "sender_seq": 921
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 2,
+      "number": 77,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:39743_solr",
+          "branch": "present",
+          "seq": 933
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:39743_solr",
+          "guard_seq": 933,
+          "same_node": true,
+          "sender_node": "127.0.0.1:39743_solr",
+          "sender_seq": 921
+        }
+      ],
+      "trial": 77
+    },
+    {
+      "applied_faults": 2,
+      "elapsed_seconds": 14.359,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 867,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#peekElements:489",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 865,
+          "match_seq": 866,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_1",
+          "path": "/overseer/queue/qn-0000000021",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:43895_solr",
+          "sender_seq": 861
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 922,
+          "caller": "org.apache.solr.common.cloud.ZkCmdExecutor#ensureExists:120",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 920,
+          "match_seq": 921,
+          "op": "EXISTS",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:43085_solr",
+          "sender_seq": 919
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 2,
+      "number": 78,
+      "planned_faults": 2,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:43085_solr",
+          "branch": "present",
+          "seq": 928
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:43085_solr",
+          "guard_seq": 928,
+          "same_node": true,
+          "sender_node": "127.0.0.1:43085_solr",
+          "sender_seq": 919
+        }
+      ],
+      "trial": 78
+    },
+    {
+      "applied_faults": 2,
+      "elapsed_seconds": 15.456,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 858,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#peekElements:489",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 856,
+          "match_seq": 857,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_3",
+          "path": "/overseer/queue/qn-0000000021",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:34217_solr",
+          "sender_seq": 852
+        },
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 913,
+          "caller": "org.apache.solr.common.cloud.ZkCmdExecutor#ensureExists:120",
+          "expected_actor": "JETTY_3",
+          "index": 1,
+          "io_seq": 911,
+          "match_seq": 912,
+          "op": "EXISTS",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/overseer/queue",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:44149_solr",
+          "sender_seq": 910
+        }
+      ],
+      "issues": [],
+      "junit_exit": 1,
+      "ledger_effective": false,
+      "ledger_target_exception": false,
+      "matched_faults": 2,
+      "number": 79,
+      "planned_faults": 3,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:44149_solr",
+          "branch": "present",
+          "seq": 919
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": false,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:44149_solr",
+          "guard_seq": 919,
+          "same_node": true,
+          "sender_node": "127.0.0.1:44149_solr",
+          "sender_seq": 910
+        }
+      ],
+      "trial": 79
+    },
+    {
+      "applied_faults": 1,
+      "elapsed_seconds": 16.913,
+      "faults": [
+        {
+          "actual_actor": "JETTY_3",
+          "applied_seq": 978,
+          "caller": "org.apache.solr.cloud.ZkDistributedQueue#peekElements:489",
+          "expected_actor": "JETTY_3",
+          "index": 0,
+          "io_seq": 976,
+          "match_seq": 977,
+          "op": "GET_DATA",
+          "ordinal": 1,
+          "owner_role": "JETTY_2",
+          "path": "/overseer/queue/qn-0000000027",
+          "producer_role": "JETTY_3",
+          "sender_node": "127.0.0.1:33779_solr",
+          "sender_seq": 972
+        }
+      ],
+      "issues": [],
+      "junit_exit": 0,
+      "ledger_effective": true,
+      "ledger_target_exception": false,
+      "matched_faults": 1,
+      "number": 80,
+      "planned_faults": 1,
+      "same_core_guards_after_fault": [
+        {
+          "actor_node": "127.0.0.1:33779_solr",
+          "branch": "present",
+          "seq": 984
+        }
+      ],
+      "same_core_guards_before_fault": [],
+      "strict_exact_actor": true,
+      "target_guard_sender_lineage": [
+        {
+          "guard_node": "127.0.0.1:33779_solr",
+          "guard_seq": 984,
+          "same_node": true,
+          "sender_node": "127.0.0.1:33779_solr",
+          "sender_seq": 972
+        }
+      ],
+      "trial": 80
+    }
+  ]
+}
