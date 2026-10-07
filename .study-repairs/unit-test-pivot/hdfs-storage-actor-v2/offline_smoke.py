@@ -106,6 +106,17 @@ def check_identity() -> None:
         reloaded = __import__("json").loads(checkpoint.read_text())
         chosen = campaign.pick(reloaded)
         assert chosen["id"] != queue[0]["id"]
+    rpc_entry = next(entry for entry in queue if "RPC:" in entry["sequence"][0]["marker"])
+    file_entry = {**rpc_entry, "id": "file-choice", "score": rpc_entry["score"] + 10,
+                  "sequence": [{**rpc_entry["sequence"][0], "marker": "FAULT:HDFS_BP_FILE:VERSION_READ"}]}
+    lost = {str(i): {"item": file_entry, "result": {
+        "exact_order_applied": True,
+        "by_case": {"HDFS-22": {"valid_for_feedback": False}}}} for i in range(3)}
+    adaptive = {"in_flight": None, "completion_order": list(lost), "completed": lost,
+                "queue": [file_entry, rpc_entry],
+                "effective_by_case": {"HDFS-22": 0},
+                "budget": {"goal_by_case": {"HDFS-22": 80}}}
+    assert campaign.pick(adaptive)["id"] == rpc_entry["id"]
     print("Actor, storage volume, peer, order, and post-target checks passed")
 
 

@@ -176,7 +176,20 @@ def pick(state: dict) -> dict | None:
         return state["in_flight"]
     while state["queue"]:
         n = len(state["completion_order"])
-        if n % 5 == 4:  # waiting-round fairness
+        target_lost_file = sum(
+            bool(entry.get("item")) and bool(entry.get("result"))
+            and "FILE:" in entry["item"]["sequence"][-1]["marker"]
+            and entry["result"]["exact_order_applied"]
+            and not any(result["valid_for_feedback"]
+                        for result in entry["result"]["by_case"].values())
+            for entry in state["completed"].values())
+        # File VERSION-read faults that abort startup give no target feedback.
+        # After three such outcomes, first seek a bound NameNode RPC seed.
+        rpc = [i for i, entry in enumerate(state["queue"])
+               if "RPC:" in entry["sequence"][-1]["marker"]]
+        if target_lost_file >= 3 and not any(state["effective_by_case"].values()) and rpc:
+            index = max(rpc, key=lambda i: (state["queue"][i]["score"], -i))
+        elif n % 5 == 4:  # waiting-round fairness
             index = 0
         else:
             index = max(range(len(state["queue"])), key=lambda i:
@@ -279,7 +292,8 @@ def advance_goals(state: dict) -> None:
                 "at_completed": len(state["completion_order"])})
 
 
-def campaign(group: str, anchor: Path, max_attempts: int, timeout: int) -> dict:
+def campaign(group: str, anchor: Path, max_attempts: int, timeout: int,
+             pause_after_first_effective: bool = False) -> dict:
     case, cases = GROUPS[group]
     receipt = json.loads((anchor / "healthy_receipt.json").read_text())
     if not receipt["pass"] or receipt["group"] != group:
@@ -287,6 +301,9 @@ def campaign(group: str, anchor: Path, max_attempts: int, timeout: int) -> dict:
     state = load_state(anchor, group, receipt, max_attempts)
     state_path = anchor / "campaign-state.json"
     while len(state["completion_order"]) < max_attempts:
+        if pause_after_first_effective and any(state["effective_by_case"].values()):
+            state["status"] = "first_effective_pause"
+            break
         if all(state["effective_by_case"][c] >= state["budget"]["goal_by_case"][c]
                for c in cases):
             state["status"] = "effective_budget_met"
@@ -358,8 +375,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-attempts", type=int, default=600)
     parser.add_argument("--timeout", type=int, default=360)
+    parser.add_argument("--pause-after-first-effective", action="store_true",
+                        help="Stop after the first strict same-actor postfault target")
     args = parser.parse_args()
-    state = campaign(args.group, args.output.resolve(), args.max_attempts, args.timeout)
+    state = campaign(args.group, args.output.resolve(), args.max_attempts, args.timeout,
+                     args.pause_after_first_effective)
     print(json.dumps({"group": args.group, "status": state["status"],
                       "completed": len(state["completion_order"]),
                       "effective_by_case": state["effective_by_case"],
