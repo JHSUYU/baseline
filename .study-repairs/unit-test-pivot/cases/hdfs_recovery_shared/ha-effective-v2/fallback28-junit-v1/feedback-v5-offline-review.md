@@ -30,7 +30,7 @@ discards no ID. The sample rate never overrides the depth/parent tier.
 ## Frozen offline dry-run
 
 - V4 policy source SHA-256: `d45c88f9473ac19b28191c175f664a03f5c6a78124e3d412892bb023716ab61a`.
-- V5 policy source SHA-256: `998043d74abc980b42eb122a1c3934c095444046b5a3c3cd2bbb1b41d82fc5f2`.
+- V5 policy source SHA-256: `da465e0ebc5adca0eabb293cc3c4e4124e074809fcd75458a5a4bf1c21f3c997`.
 - Node2 checkpoint snapshot SHA-256:
   `2b175c58629a74433de5cd5f38bfc4e53e1df1339f9cd6d59fad427de51e5818`.
 - Snapshot: 322 completed, 63 effective, 82 queued, 238 seen, active

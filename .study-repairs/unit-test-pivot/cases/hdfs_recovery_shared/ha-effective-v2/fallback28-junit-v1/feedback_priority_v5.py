@@ -44,12 +44,23 @@ def evidence(state: dict) -> tuple[dict[str, dict], dict[tuple[str, int, str], t
     parents: dict[str, dict] = {}
     groups: dict[tuple[str, int, str], list[int]] = defaultdict(lambda: [0, 0])
     for trial in state["completed"]:
-        parents[trial["id"]] = trial
+        prior = parents.get(trial["id"])
+        if prior is None or parent_quality(trial) > parent_quality(prior):
+            parents[trial["id"]] = trial
         group = groups[group_key(trial)]
         group[0] += 1
         group[1] += int(bool(trial["exact_order_applied"] and
                              trial["post_fault_target_checks"][CASE]))
     return parents, {key: tuple(value) for key, value in groups.items()}
+
+
+def parent_quality(trial: dict) -> tuple[int, int, int]:
+    retained = bool(trial["exact_order_applied"] and
+                    trial["post_fault_target_checks"][CASE])
+    return (int(retained),
+            sum(trial.get("target_related_coverage_gain", {}).values()) +
+            len(trial.get("stable_actor_io_gain", [])) if retained else 0,
+            sum(trial.get("coverage_gain", {}).get(CASE, {}).values()) if retained else 0)
 
 
 def rank(row: dict, parents: dict[str, dict],
