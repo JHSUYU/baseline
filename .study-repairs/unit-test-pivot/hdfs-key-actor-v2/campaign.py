@@ -56,11 +56,14 @@ def plan_text(sequence: list[dict]) -> str:
 
 
 def suffix_family(sequence: list[dict]) -> str | None:
-    """The last SASL read position in a multi-fault sequence, not its prefix."""
+    """The last two actor-local SASL reads at this sequence depth."""
     if len(sequence) < 2:
         return None
     last = sequence[-1]
-    return last["siteId"] + "|actorOrdinal=" + str(last["actorLocalOrdinal"])
+    suffix = "->".join(step["siteId"] + "@" + str(step["actorLocalOrdinal"])
+                       for step in sequence[-2:])
+    return (last["faultActor"] + "|" + last["resource"]
+            + "|depth=" + str(len(sequence)) + "|" + suffix)
 
 
 def suffix_feedback(output: Path, state: dict) -> dict[str, dict[str, int]]:
@@ -77,7 +80,9 @@ def suffix_feedback(output: Path, state: dict) -> dict[str, dict[str, int]]:
         selected = [line.split("\t") for line in plan_path.read_text().splitlines() if line]
         if len(selected) < 2:
             continue
-        family = selected[-1][1] + "|actorOrdinal=" + selected[-1][4]
+        last = selected[-1]
+        family = (last[2] + "|" + last[3] + "|depth=" + str(len(selected)) + "|"
+                  + "->".join(step[1] + "@" + step[4] for step in selected[-2:]))
         stats[family]["valid" if result.get("valid_for_feedback") else "lost"] += 1
     return dict(stats)
 
@@ -86,7 +91,7 @@ def select_next(output: Path, state: dict) -> tuple[dict, dict]:
     if state.get("in_flight"):
         for item in state["queue"]:
             if item["id"] == state["in_flight"]:
-                return item, {"reason": "resume_in_flight", "scheduler_version": 2}
+                return item, {"reason": "resume_in_flight", "scheduler_version": 3}
         raise RuntimeError("in-flight sequence is missing from queue")
     stats = suffix_feedback(output, state)
     now = time.time()
@@ -109,7 +114,7 @@ def select_next(output: Path, state: dict) -> tuple[dict, dict]:
     else:
         chosen = max(candidates, key=lambda entry: (entry[0], -entry[1]["enqueued"]))
     score, item, family, penalty, age, prior = chosen
-    return item, {"scheduler_version": 2,
+    return item, {"scheduler_version": 3,
                   "reason": "penalized_family_exploration" if explore else "highest_adjusted_score",
                   "suffix_family": family, "prior_strict_target_loss": prior["lost"],
                   "prior_valid": prior["valid"], "base_priority": item["priority"],

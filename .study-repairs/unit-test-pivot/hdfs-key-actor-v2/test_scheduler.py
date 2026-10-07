@@ -5,19 +5,21 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from campaign import select_next, suffix_feedback
+from campaign import select_next, suffix_family, suffix_feedback
 
 
 SITE = "SaslDataTransferServer.doSaslHandshake#readSecret"
+MAGIC = "SaslDataTransferServer.doSaslHandshake#readMagic"
 
 
 def item(identity, ordinal, priority, enqueued=1.0):
     return {
         "id": identity, "priority": priority, "enqueued": enqueued,
         "sequence": [
-            {"siteId": "SaslDataTransferServer.doSaslHandshake#readMagic",
-             "actorLocalOrdinal": 1},
-            {"siteId": SITE, "actorLocalOrdinal": ordinal},
+            {"siteId": MAGIC, "actorLocalOrdinal": 1,
+             "faultActor": "actor", "resource": "BP0"},
+            {"siteId": SITE, "actorLocalOrdinal": ordinal,
+             "faultActor": "actor", "resource": "BP0"},
         ],
     }
 
@@ -32,7 +34,7 @@ class SchedulerTests(unittest.TestCase):
         (run / "v2_result.json").write_text(json.dumps({
             "exact_order_applied": exact, "valid_for_feedback": valid,
         }))
-        plan.write_text("FAULT\tmagic\tactor\tBP0\t1\tIOException\n"
+        plan.write_text(f"FAULT\t{MAGIC}\tactor\tBP0\t1\tIOException\n"
                         f"FAULT\t{SITE}\tactor\tBP0\t{ordinal}\tIOException\n")
 
     def test_repeated_exact_target_loss_demotes_suffix(self):
@@ -43,7 +45,7 @@ class SchedulerTests(unittest.TestCase):
             state = {"completed": {f"lost-{i}": {} for i in range(3)},
                      "in_flight": None, "attempted_trials": 3,
                      "queue": [item("demoted", 2, 500), item("fresh", 3, 100)]}
-            self.assertEqual(suffix_feedback(output, state)[SITE + "|actorOrdinal=2"],
+            self.assertEqual(suffix_feedback(output, state)[suffix_family(item("probe", 2, 0)["sequence"])],
                              {"lost": 3, "valid": 0})
             selected, receipt = select_next(output, state)
             self.assertEqual(selected["id"], "fresh")
@@ -79,6 +81,30 @@ class SchedulerTests(unittest.TestCase):
             selected, receipt = select_next(output, state)
             self.assertEqual(selected["id"], "fresh")
             self.assertEqual(receipt["reason"], "resume_in_flight")
+
+    def test_three_fault_recovery_does_not_cancel_two_fault_loss(self):
+        with TemporaryDirectory() as name:
+            output = Path(name)
+            for index in range(3):
+                self.result(output, f"lost-{index}", 2)
+            run = output / "runs" / "valid-three"
+            plan = output / "plans" / "valid-three.tsv"
+            run.mkdir(parents=True)
+            (run / "v2_result.json").write_text(json.dumps({
+                "exact_order_applied": True, "valid_for_feedback": True,
+            }))
+            plan.write_text("FAULT\tmagic\tactor\tBP0\t1\tIOException\n"
+                            "FAULT\toptions\tactor\tBP0\t1\tIOException\n"
+                            f"FAULT\t{SITE}\tactor\tBP0\t2\tIOException\n")
+            state = {"completed": {**{f"lost-{i}": {} for i in range(3)},
+                                   "valid-three": {}},
+                     "in_flight": None, "attempted_trials": 4,
+                     "queue": [item("demoted", 2, 500), item("fresh", 3, 100)]}
+            selected, _ = select_next(output, state)
+            self.assertEqual(selected["id"], "fresh")
+            feedback = suffix_feedback(output, state)
+            self.assertEqual(feedback[suffix_family(item("probe", 2, 0)["sequence"])],
+                             {"lost": 3, "valid": 0})
 
 
 if __name__ == "__main__":

@@ -92,12 +92,14 @@ target exception above the healthy count is a candidate for replay and source
 review, not a confirmed bug. Coverage and I/O mutations use only valid
 target-retaining trials. The HDFS-11 node1 scheduler migration at
 `evidence/HDFS-11/scheduler-migration/migration-receipt.json` preserves the
-old queue and runner hashes. After at least three strictly applied trials in
-one multi-fault suffix lose the same-actor target, with no valid trial in that
-suffix, the scheduler lowers its priority. A target-retaining trial removes
-that penalty. Every twelfth choice can still explore a demoted suffix, and
-new code/I/O coverage remains in the priority score. The exact fault gate
-and effective budget are unchanged.
+old queue and runner hashes. The [family correction](evidence/HDFS-11/scheduler-migration/family-v3-receipt.json)
+then narrowed a family to the same actor/pool, sequence depth, and final two
+site/actor-local ordinal pairs. After at least three strictly applied trials
+in that family lose the same-actor target, with no valid trial in the family,
+the scheduler lowers its priority. A target-retaining trial in the same
+family removes that penalty. Every twelfth choice can still explore a demoted
+suffix, and new code/I/O coverage remains in the priority score. The exact
+fault gate and effective budget are unchanged.
 
 ## Current status
 
