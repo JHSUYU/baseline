@@ -69,7 +69,8 @@ def guard(r: dict, block: int) -> bool:
             and r.get("phase") == "secondTruncate")
 
 
-def relation(f: dict, t: dict, mapping: dict[str, str]) -> str | None:
+def relation(f: dict, t: dict, mapping: dict[str, str],
+             rows: list[dict]) -> str | None:
     if f.get("seq", 0) >= t["seq"] or f.get("endpoint") != "nn0":
         return None
     if f.get("api") == "truncate":
@@ -80,7 +81,15 @@ def relation(f: dict, t: dict, mapping: dict[str, str]) -> str | None:
             return "same_rpc" if f.get("rpcKey") == t["rpcKey"] else None
         if (f.get("requestedLength") == t["inProgressLength"] and
                 f.get("phase") == "firstTruncate"):
-            return "same_file_precursor"
+            bound = [entry for entry in rows
+                     if entry.get("event") == "TRUNCATE_FILE_BLOCK"
+                     and entry["seq"] < t["seq"]
+                     and entry.get("rpcKey") == f.get("rpcKey")
+                     and entry.get("path") == t["path"]
+                     and entry.get("requestedLength") == f.get("requestedLength")
+                     and entry.get("blockId") in
+                     (t["blockId"], t["truncateBlockId"])]
+            return "same_file_block_precursor" if len(bound) == 1 else None
     if f.get("api") == "blockReceivedAndDeleted":
         role = f.get("sourceRole")
         if (role in mapping and f.get("sourceUuid") == mapping[role]
@@ -182,10 +191,10 @@ def run(limit: int = 0) -> dict:
         strict = mapped and physical and selectors_match
         last = max((p["seq"] for p in applied), default=-1)
         post = [r for r in rows if guard(r, target_block) and r["seq"] > last >= 0]
-        target = next((t for t in post if all(relation(p, t, mapping)
+        target = next((t for t in post if all(relation(p, t, mapping, rows)
                                               for p in applied)), None)
         valid = strict and target is not None
-        relations = [relation(p, target, mapping) for p in applied] if target else []
+        relations = [relation(p, target, mapping, rows) for p in applied] if target else []
         exceptions = [r for r in rows if r.get("event") == "TARGET_EXCEPTION" and
                       target is not None and r["seq"] > target["seq"] and
                       all(r.get(k) == target.get(k) for k in
@@ -235,18 +244,25 @@ def run(limit: int = 0) -> dict:
                     "new_coverage_count", "bug_mark", "sequence_id"):
             require(row.get(key) == str(expected.get(key, "")),
                     f"ledger {n}: {key} differs", problems)
-    if len(completed) >= 80:
-        recent = completed[72:80]
-        novelty = any(r["target_after_fault_same_actor"] and
-                      (r["new_coverage_ids"] or r["new_io_family_ids"])
-                      for r in recent)
-        require(bool(state["extended"]) == novelty,
-                "80->128 extension gate differs from chronological last eight", problems)
+    all_effective = [r for r in completed if r["target_after_fault_same_actor"]]
+    gate_reached = len(all_effective) >= 80
+    novelty = (any(r["new_coverage_ids"] or r["new_io_family_ids"]
+                   for r in all_effective[72:80]) if gate_reached else None)
+    if state.get("extended"):
+        require(gate_reached and novelty is True,
+                "128-trial extension lacks novelty in effective trials 73-80", problems)
+    if (state.get("stop_reason") == "effective_budget_reached" and
+            not state.get("extended") and gate_reached):
+        require(novelty is False,
+                "80-trial stop ignored extension novelty", problems)
     return {"case_id": "HDFS-43", "checkpoint_sha256": sha(state_bytes),
             "audited_trials": end, "completed_at_snapshot": len(completed),
             "strict": sum(r["strict"] for r in summaries),
             "effective": sum(r["effective"] for r in summaries),
             "expected_guard": sum(r["expected_guard"] for r in summaries),
+            "extension_gate_reached": gate_reached,
+            "extension_gate_novelty": novelty,
+            "extension_applied": bool(state.get("extended")),
             "errors": problems, "integrity_passed": not problems}
 
 

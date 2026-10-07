@@ -136,7 +136,8 @@ def io_eligible(row: dict, target: dict, mapping: dict[str, str]) -> bool:
     return False
 
 
-def relationship(fault: dict, target: dict, mapping: dict[str, str]) -> str | None:
+def relationship(fault: dict, target: dict, mapping: dict[str, str],
+                 rows: list[dict]) -> str | None:
     if fault.get("endpoint") != "nn0" or fault.get("seq", -1) >= target["seq"]:
         return None
     if fault.get("api") == "truncate":
@@ -147,7 +148,15 @@ def relationship(fault: dict, target: dict, mapping: dict[str, str]) -> str | No
                     else None)
         if (fault.get("requestedLength") == target["inProgressLength"] and
                 fault.get("phase") == "firstTruncate"):
-            return "same_file_precursor"
+            bound = [entry for entry in rows
+                     if entry.get("event") == "TRUNCATE_FILE_BLOCK"
+                     and entry["seq"] < target["seq"]
+                     and entry.get("rpcKey") == fault.get("rpcKey")
+                     and entry.get("path") == target["path"]
+                     and entry.get("requestedLength") == fault.get("requestedLength")
+                     and entry.get("blockId") in
+                     (target["blockId"], target["truncateBlockId"])]
+            return "same_file_block_precursor" if len(bound) == 1 else None
         return None
     if fault.get("api") == "blockReceivedAndDeleted":
         role = fault.get("sourceRole")
@@ -205,7 +214,8 @@ def initial_state() -> dict:
                for row in rows):
         raise RuntimeError("client truncate RPC and server guard have no shared request key")
     points = [row for row in rows if io_eligible(row, target, mapping)
-              and row.get("remotePort") == port]
+              and row.get("remotePort") == port
+              and relationship(row, target, mapping, rows)]
     if not points:
         raise RuntimeError("healthy target has no actor-resolved I/O")
     source_digest = digest((CASE / "system-test/build-probe.json").read_bytes())
@@ -215,8 +225,10 @@ def initial_state() -> dict:
                                 ("path", "blockId", "truncateBlockId",
                                  "requestedLength", "inProgressLength")},
              "healthy_target_checks": len(targets), "healthy_relevant_io": len(points),
-             "budget": {"max_attempts": 80, "max_faults": 8},
-             "extension": {"max_attempts": 128, "max_faults": 10},
+             "budget": {"max_effective": 80, "max_attempts": 320,
+                        "max_faults": 8},
+             "extension": {"max_effective": 128, "max_attempts": 512,
+                           "max_faults": 10},
              "extended": False, "active": None, "queue": [], "seen": [],
              "completed": [], "stop_reason": None}
     for row in sorted(points, key=lambda p: (p["api"] != "blockReceivedAndDeleted",
@@ -356,7 +368,7 @@ def analyze(number: int, item: dict, out: Path, manifest: dict,
     linked: list[str] = []
     target = None
     for candidate in target_options:
-        relations = [relationship(p, candidate, mapping) for p in applied]
+        relations = [relationship(p, candidate, mapping, rows) for p in applied]
         if all(relations):
             target = candidate
             linked = [str(x) for x in relations]
@@ -427,7 +439,8 @@ def mutate(state: dict, row: dict) -> None:
     mapping = roles(rows)
     after = row["last_applied_seq"]
     points = [p for p in rows if after < p["seq"] < target["seq"] and
-              io_eligible(p, target, mapping)]
+              io_eligible(p, target, mapping) and
+              relationship(p, target, mapping, rows)]
     points.sort(key=lambda p: (p["api"] != "blockReceivedAndDeleted",
                                target["seq"] - p["seq"]))
     families: set[str] = set()
@@ -476,6 +489,7 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
               "target_code": "newLength == truncateLength for a block UNDER_RECOVERY",
               "target_site": SITE, "healthy_target": state["healthy_target"],
               "fault_trials": len(completed),
+              "effective_trials": len(valid),
               "fully_applied_trials": sum(r["strict_injection"] for r in completed),
               "target_after_fault": len(valid),
               "target_exception_after_fault": sum(
@@ -530,20 +544,25 @@ def main() -> None:
         if shutil.disk_usage(CASE).free < 1024 ** 3:
             state["stop_reason"] = "local_disk_below_1GiB"
             break
-        if len(state["completed"]) >= state["budget"]["max_attempts"]:
-            recent = state["completed"][-8:]
-            novelty = any(r["target_after_fault_same_actor"] and (
+        effective = [r for r in state["completed"]
+                     if r["target_after_fault_same_actor"]]
+        if len(effective) >= state["budget"]["max_effective"]:
+            recent = effective[72:80]
+            novelty = any(
                 any(identifier.startswith(("METHOD\t", "BRANCH_UNIT\t", "PROBE\t"))
                     for identifier in r["new_coverage_ids"]) or
-                r["new_io_family_ids"]) for r in recent)
+                r["new_io_family_ids"] for r in recent)
             if not state["extended"] and novelty:
                 state["budget"] = dict(state["extension"])
                 state["extended"] = True
-                state["extension_reason"] = "production coverage or stable I/O family in chronological trials 73-80"
+                state["extension_reason"] = "production coverage or stable I/O family in effective trials 73-80"
                 atomic_json(STATE, state)
             else:
-                state["stop_reason"] = "attempt_budget_reached"
+                state["stop_reason"] = "effective_budget_reached"
                 break
+        if len(state["completed"]) >= state["budget"]["max_attempts"]:
+            state["stop_reason"] = "attempt_safety_cap_reached"
+            break
         if state["active"] is None:
             state["active"] = choose(state)
             atomic_json(STATE, state)

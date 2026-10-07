@@ -176,6 +176,16 @@ public final class Probe {
     CONTEXT.remove();
   }
 
+  public static synchronized void truncateFileBlock(String path, long blockId,
+      long requestedLength) {
+    emit("TRUNCATE_FILE_BLOCK", ",\"path\":" + q(path)
+        + ",\"blockId\":" + blockId
+        + ",\"requestedLength\":" + requestedLength
+        + ",\"phase\":" + q(phase)
+        + ",\"rpcKey\":" + q(hex(Server.getClientId()) + ":"
+            + Server.getCallId()));
+  }
+
   /** Called after Hadoop has sent an RPC, immediately before waiting for its reply. */
   public static synchronized void rpcResponse(int callId, byte[] clientId,
       String remote, int remotePort) throws IOException {

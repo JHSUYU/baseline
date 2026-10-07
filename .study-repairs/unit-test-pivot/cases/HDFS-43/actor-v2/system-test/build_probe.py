@@ -61,6 +61,14 @@ def main() -> None:
             throw hdfs43Target;
           }
 """)
+    target_body = target.read_text()
+    last_block_site = "      final BlockInfo last = file.getLastBlock();"
+    if target_body.count(last_block_site) != 1:
+        raise RuntimeError("expected one truncate file/block binding site")
+    target.write_text(target_body.replace(
+        last_block_site,
+        last_block_site + "\n      Probe.truncateFileBlock(src, "
+        "last == null ? -1L : last.getBlockId(), newLength);", 1))
     rpc = override(
         "org/apache/hadoop/ipc/Client.java",
         """  private Writable getRpcResponse(final Call call, final Connection connection,

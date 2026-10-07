@@ -31,11 +31,14 @@ exception gate:
   A block-report selector includes the DN role, UUID in the event, and block ID.
 - `FSDirTruncateOp.truncate` records path, last block ID, truncate block ID,
   both lengths, branch outcome, phase, and server-side client ID/call ID.
+- The same source records the file's last block at truncate entry. A fault on
+  the first truncate qualifies as a predecessor only when that server-side
+  entry has the same request key and resolves to the later target block.
 - The original JUnit has phase markers before the first and second truncate.
   Target eligibility requires the same file/block after the last applied
   fault, in the second-truncate phase. A second-truncate RPC requires the exact
-  client/server request key; a prior truncate is recorded as the same-file
-  predecessor; a DataNode block report requires the same block and UUID-to-role
+  client/server request key; a prior truncate requires the same file, block,
+  and request key; a DataNode block report requires the same block and UUID-to-role
   mapping. Ambiguous I/O is observed but not selected.
 
 JaCoCo feedback is exported only for classes analyzed from the released HDFS,
@@ -45,9 +48,11 @@ and JUnit classes are excluded. `METHOD` and `PROBE` are exact identities;
 which edge was taken. The target branch outcome is logged explicitly.
 
 The new campaign has its own checkpoint and atomic per-trial result. It starts
-at 80 attempts with at most 8 ordered faults; production coverage or a stable
-I/O-family gain in chronological trials 73-80 extends it to 128 attempts and
-10 faults. The previous trials are excluded from both the budget and coverage
+at 80 effective trials with at most 8 ordered faults; production coverage or
+a stable I/O-family gain in effective trials 73-80 extends it to 128 effective
+trials and 10 faults. Attempt safety caps are 320 and 512 respectively, and
+queue exhaustion is reported if the observed I/O cannot supply the effective
+budget. The previous trials are excluded from both the budget and coverage
 union. An exact target outcome outside the original expected exception stops
 the campaign for same-selector replay and source review.
 
