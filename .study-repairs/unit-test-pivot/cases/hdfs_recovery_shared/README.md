@@ -265,6 +265,11 @@ checkpoint and per-file SHA-256 values. It also verified the unchanged
 historical checkpoint and raw archive. The actor-qualified totals remain
 18/39/39. This is an ineffective bounded continuation, not an
 80-effective completion; node1 has no running V4 continuation.
+The 23 resumed runs are retained in a 230-entry, SHA-256-verified
+`phase-v4/resume-129-151-raw.tar.zst` archive on node0 and node1;
+`phase-v4/resume-129-151-raw-manifest.json` records every entry hash and
+the exact checkpoint. The archive includes each run's trace, fault plan,
+original JUnit log, JaCoCo data, coverage exports, and timing manifest.
 
 ## Independent HA owner-test calibration
 
