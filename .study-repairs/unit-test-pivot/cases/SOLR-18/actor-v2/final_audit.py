@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import tempfile
 
 from actor_audit import audit
 from build import CLASSES, HERE
@@ -17,6 +18,7 @@ from run_native import RUN_ROOT
 STATE = HERE / 'campaign-state.json'
 MIRROR = HERE / 'mirror-receipt.json'
 OFFLOAD = HERE / 'console-offload.json'
+RAW_OFFLOAD = HERE / 'noncandidate-raw-offload.json'
 CALIBRATION = HERE / 'calibration.json'
 OUTPUT = HERE / 'final-audit.json'
 RAW_NAMES = ('events.tsv', 'jacoco.exec', 'console.log', 'run.json')
@@ -45,6 +47,7 @@ def audit_all() -> dict:
     state = json.loads(STATE.read_text())
     mirror = json.loads(MIRROR.read_text())
     offloaded = json.loads(OFFLOAD.read_text())['runs'] if OFFLOAD.exists() else {}
+    raw_offloaded = json.loads(RAW_OFFLOAD.read_text())['runs'] if RAW_OFFLOAD.exists() else {}
     remote = remote_hashes()
     calibration = json.loads(CALIBRATION.read_text())
     junit_sha = calibration['junit_class_sha256']
@@ -84,10 +87,27 @@ def audit_all() -> dict:
             local = directory / name
             if name == 'console.log' and not local.exists():
                 assert run_id in offloaded and offloaded[run_id]['sha256'] == digests[name]
-                assert not item['effective'] and offloaded[run_id]['local_events_jacoco_run_retained']
+                assert not item['effective']
+            elif name in ('events.tsv', 'jacoco.exec') and not local.exists():
+                receipt = raw_offloaded[run_id]
+                assert not item['effective'] and not item['selected_target_throw']
+                assert not item['needs_source_review']
+                assert receipt['sha256'][name] == digests[name]
+                assert receipt['local_plan_run_and_target_receipts_retained']
             else:
                 assert sha(local) == digests[name], (run_id, name)
-        observed = audit(directory / 'events.tsv', item['plan'])
+        event_path = directory / 'events.tsv'
+        if event_path.exists():
+            observed = audit(event_path, item['plan'])
+        else:
+            remote_path = DEST + '/' + run_id + '/events.tsv'
+            content = subprocess.run(SSH + [HOST, "cat -- '" + remote_path + "'"],
+                                     capture_output=True, check=True).stdout
+            assert hashlib.sha256(content).hexdigest() == digests['events.tsv']
+            with tempfile.TemporaryDirectory(prefix='solr18-audit-') as tempdir:
+                restored = Path(tempdir) / 'events.tsv'
+                restored.write_bytes(content)
+                observed = audit(restored, item['plan'])
         assert observed['strict_ordered_faults'] == item['strict_ordered_injection']
         assert observed['all_faults_on_target_client'] == item['all_faults_on_target_client']
         assert observed['target_after_final_fault'] == item['target_after_final_fault']
@@ -140,6 +160,7 @@ def audit_all() -> dict:
         'raw_mirror_remote_sha_reverified_files': sum(
             len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']),
         'noncandidate_consoles_offloaded_to_node2': len(offloaded),
+        'noncandidate_event_jacoco_pairs_offloaded_to_node2': len(raw_offloaded),
         'graphchecker_runtime': False,
     }
 

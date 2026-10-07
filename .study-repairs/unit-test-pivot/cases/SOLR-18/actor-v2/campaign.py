@@ -14,6 +14,7 @@ from actor_audit import actor, audit, events, selected_check
 from build import CLASSES, HERE
 from mirror import mirror_run
 from offload_console import offload
+from offload_non_candidate_raw import offload as offload_non_candidate_raw
 from run_native import RUN_ROOT, run
 
 STATE = HERE / 'campaign-state.json'
@@ -260,6 +261,7 @@ def record(state: dict, job: dict, meta: dict) -> dict:
     sync_ledger(state)
     mirror_run(job['run_id'], prune_derived=True)
     offload(item)
+    offload_non_candidate_raw(item)
     print('trial={} depth={} effective={}/{} strict={} same_client={} post={} '
           'exit={} outcome={} probes+={} methods+={} elapsed={:.3f}s'.format(
               job['run_id'], len(job['plan']), state['effective'], state['attempts'],
@@ -298,6 +300,7 @@ def main() -> None:
     for item in state['trials']:
         mirror_run(item['run_id'], prune_derived=True)
         offload(item)
+        offload_non_candidate_raw(item)
     assert not state['finished'] or state['effective'] >= state['budget']
     while not state['finished'] and not STOP:
         if state.get('awaiting_extension_review'):
