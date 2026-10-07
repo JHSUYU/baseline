@@ -32,8 +32,9 @@ exception gate:
 - `FSDirTruncateOp.truncate` records path, last block ID, truncate block ID,
   both lengths, branch outcome, phase, and server-side client ID/call ID.
 - The same source records the file's last block at truncate entry. A fault on
-  the first truncate qualifies as a predecessor only when that server-side
-  entry has the same request key and resolves to the later target block.
+  a truncate RPC qualifies only when that server-side entry has the same
+  request key and resolves to the later target block. Block numbers may differ
+  across fresh MiniDFSCluster runs; the link is checked within each run.
 - The original JUnit has phase markers before the first and second truncate.
   Target eligibility requires the same file/block after the last applied
   fault, in the second-truncate phase. A second-truncate RPC requires the exact
@@ -55,6 +56,12 @@ queue exhaustion is reported if the observed I/O cannot supply the effective
 budget. The previous trials are excluded from both the budget and coverage
 union. An exact target outcome outside the original expected exception stops
 the campaign for same-selector replay and source review.
+
+Before the healthy JUnit and each fault trial, the node2 controller checks
+that adding one Java process stays within five active Java processes and that
+at least 10 GiB is free. A closed gate leaves the checkpoint intact for a
+later resume; the case owner still coordinates the cluster slot with other
+node2 owners.
 
 ## Setup status
 

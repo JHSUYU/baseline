@@ -12,6 +12,7 @@ import json
 import os
 from pathlib import Path
 import random
+import shlex
 import shutil
 import subprocess
 import time
@@ -35,6 +36,11 @@ SELECTOR = ("marker", "api", "endpoint", "sourceRole", "path", "blockId",
             "requestedLength", "ordinal", "exception")
 POINT = SELECTOR[:-1]
 EXCEPTIONS = ("IOException", "SocketTimeoutException", "EOFException")
+RESOURCE_SCRIPT = ("import json, shutil, subprocess; "
+                   "ps=subprocess.run(['ps','-C','java','-o','pid='], "
+                   "capture_output=True,text=True); "
+                   "print(json.dumps({'java_count':len(ps.stdout.splitlines()),"
+                   "'free_bytes':shutil.disk_usage('/users/ZhenyuLi').free}))")
 
 
 def now() -> str:
@@ -61,6 +67,16 @@ def atomic_json(path: Path, value: dict) -> None:
 
 def read(path: Path) -> dict:
     return json.loads(path.read_text())
+
+
+def resource_gate() -> dict:
+    response = subprocess.run(SSH + ["python3", "-c", shlex.quote(RESOURCE_SCRIPT)],
+                              capture_output=True, text=True, check=True)
+    gate = json.loads(response.stdout)
+    gate["ready"] = gate["java_count"] < 5 and gate["free_bytes"] >= 10 * 1024 ** 3
+    gate["checked_at_utc"] = now()
+    atomic_json(CAMP / "node2-resource-gate-last.json", gate)
+    return gate
 
 
 def events(path: Path) -> list[dict]:
@@ -143,20 +159,22 @@ def relationship(fault: dict, target: dict, mapping: dict[str, str],
     if fault.get("api") == "truncate":
         if fault.get("sourceRole") != "client" or fault.get("path") != target["path"]:
             return None
+        bound = [entry for entry in rows
+                 if entry.get("event") == "TRUNCATE_FILE_BLOCK"
+                 and entry["seq"] < target["seq"]
+                 and entry.get("rpcKey") == fault.get("rpcKey")
+                 and entry.get("path") == target["path"]
+                 and entry.get("requestedLength") == fault.get("requestedLength")
+                 and entry.get("blockId") in
+                 (target["blockId"], target["truncateBlockId"])]
+        if len(bound) != 1:
+            return None
         if fault.get("requestedLength") == target["requestedLength"]:
-            return ("same_rpc" if fault.get("rpcKey") == target.get("rpcKey")
+            return ("same_rpc_block" if fault.get("rpcKey") == target.get("rpcKey")
                     else None)
         if (fault.get("requestedLength") == target["inProgressLength"] and
                 fault.get("phase") == "firstTruncate"):
-            bound = [entry for entry in rows
-                     if entry.get("event") == "TRUNCATE_FILE_BLOCK"
-                     and entry["seq"] < target["seq"]
-                     and entry.get("rpcKey") == fault.get("rpcKey")
-                     and entry.get("path") == target["path"]
-                     and entry.get("requestedLength") == fault.get("requestedLength")
-                     and entry.get("blockId") in
-                     (target["blockId"], target["truncateBlockId"])]
-            return "same_file_block_precursor" if len(bound) == 1 else None
+            return "same_file_block_precursor"
         return None
     if fault.get("api") == "blockReceivedAndDeleted":
         role = fault.get("sourceRole")
@@ -362,9 +380,7 @@ def analyze(number: int, item: dict, out: Path, manifest: dict,
     strict = (requested == actual and len(matched) == len(requested)
               and mapped and physical)
     after = max((p["seq"] for p in applied), default=-1)
-    target_options = [p for p in rows if guard(p) and p["seq"] > after >= 0
-                      and p["path"] == PATH and
-                      p["blockId"] == item["target"]["blockId"]]
+    target_options = [p for p in rows if guard(p) and p["seq"] > after >= 0]
     linked: list[str] = []
     target = None
     for candidate in target_options:
@@ -481,6 +497,7 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
     result = {"case_id": "HDFS-43", "status": (
                   "candidate_review" if any(r["bug_mark"] == "candidate"
                                             for r in completed) else
+                  "resource_gate_wait" if state.get("resource_gate_wait") else
                   "pending_final_audit" if state["stop_reason"] else "fuzzing"),
               "methodology": "original_embedded_cluster_junit_actor_aware_source_probes",
               "cluster_test": TEST,
@@ -496,7 +513,9 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
                   bool(r["post_fault_target_exception_count"]) for r in valid),
               "expected_original_guard_response_trials": sum(
                   r["expected_original_guard_response"] for r in valid),
-              "coverage_gain": gain, "bug_mark": (
+              "coverage_gain": gain,
+              "resource_gate_wait": state.get("resource_gate_wait"),
+              "bug_mark": (
                   "candidate" if any(r["bug_mark"] == "candidate"
                                      for r in completed) else "none"),
               "elapsed_seconds": round(read(SEED / "manifest.json")[
@@ -524,6 +543,11 @@ def publish(state: dict, union: set[str], seed: set[str]) -> None:
 
 
 def main() -> None:
+    seed_required = ("manifest.json", "trace/runtime_trace.jsonl",
+                     "jacoco.exec", "coverage.tsv")
+    if not all((SEED / name).is_file() for name in seed_required) and not resource_gate()["ready"]:
+        print("node2 resource gate is closed; no healthy JUnit started", flush=True)
+        return
     ensure_seed()
     state = initial_state()
     seed_cov = covered(SEED / "coverage.tsv")
@@ -563,6 +587,14 @@ def main() -> None:
         if len(state["completed"]) >= state["budget"]["max_attempts"]:
             state["stop_reason"] = "attempt_safety_cap_reached"
             break
+        gate = resource_gate()
+        if not gate["ready"]:
+            state["resource_gate_wait"] = gate
+            atomic_json(STATE, state)
+            publish(state, coverage_union, seed_cov)
+            print("node2 resource gate closed; checkpoint preserved", flush=True)
+            return
+        state.pop("resource_gate_wait", None)
         if state["active"] is None:
             state["active"] = choose(state)
             atomic_json(STATE, state)

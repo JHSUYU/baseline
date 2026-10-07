@@ -62,9 +62,10 @@ def nn_port(rows: list[dict]) -> int:
     return port if isinstance(port, int) and port > 0 else -1
 
 
-def guard(r: dict, block: int) -> bool:
+def guard(r: dict) -> bool:
     return (r.get("event") == "TARGET_GUARD" and r.get("site") == SITE
-            and r.get("path") == FILE and r.get("blockId") == block
+            and r.get("path") == FILE and isinstance(r.get("blockId"), int)
+            and r["blockId"] >= 0
             and r.get("state") == "UNDER_RECOVERY"
             and r.get("phase") == "secondTruncate")
 
@@ -77,19 +78,21 @@ def relation(f: dict, t: dict, mapping: dict[str, str],
         if (f.get("sourceRole") != "client" or f.get("sourceUuid") or
                 f.get("path") != t["path"]):
             return None
+        bound = [entry for entry in rows
+                 if entry.get("event") == "TRUNCATE_FILE_BLOCK"
+                 and entry["seq"] < t["seq"]
+                 and entry.get("rpcKey") == f.get("rpcKey")
+                 and entry.get("path") == t["path"]
+                 and entry.get("requestedLength") == f.get("requestedLength")
+                 and entry.get("blockId") in
+                 (t["blockId"], t["truncateBlockId"])]
+        if len(bound) != 1:
+            return None
         if f.get("requestedLength") == t["requestedLength"]:
-            return "same_rpc" if f.get("rpcKey") == t["rpcKey"] else None
+            return "same_rpc_block" if f.get("rpcKey") == t["rpcKey"] else None
         if (f.get("requestedLength") == t["inProgressLength"] and
                 f.get("phase") == "firstTruncate"):
-            bound = [entry for entry in rows
-                     if entry.get("event") == "TRUNCATE_FILE_BLOCK"
-                     and entry["seq"] < t["seq"]
-                     and entry.get("rpcKey") == f.get("rpcKey")
-                     and entry.get("path") == t["path"]
-                     and entry.get("requestedLength") == f.get("requestedLength")
-                     and entry.get("blockId") in
-                     (t["blockId"], t["truncateBlockId"])]
-            return "same_file_block_precursor" if len(bound) == 1 else None
+            return "same_file_block_precursor"
     if f.get("api") == "blockReceivedAndDeleted":
         role = f.get("sourceRole")
         if (role in mapping and f.get("sourceUuid") == mapping[role]
@@ -127,10 +130,13 @@ def run(limit: int = 0) -> dict:
     healthy = CASE / "healthy/actor-seed"
     healthy_manifest = read(healthy / "manifest.json")
     healthy_trace = trace(healthy / "trace/runtime_trace.jsonl")
-    target_block = state["healthy_target"]["blockId"]
-    healthy_target = [r for r in healthy_trace if guard(r, target_block)]
+    healthy_target = [r for r in healthy_trace if guard(r)]
     require(healthy_manifest.get("test") == TEST and healthy_manifest.get("exit") == 0
             and len(healthy_target) == 1, "original healthy target differs", problems)
+    if healthy_target:
+        require(all(healthy_target[0].get(key) == value for key, value in
+                    state["healthy_target"].items()),
+                "healthy target actor differs from checkpoint", problems)
     mapping = role_map(healthy_trace)
     healthy_port = nn_port(healthy_trace)
     require(set(mapping) == {"dn0", "dn1", "dn2"} and
@@ -190,7 +196,7 @@ def run(limit: int = 0) -> dict:
                        for p in applied)
         strict = mapped and physical and selectors_match
         last = max((p["seq"] for p in applied), default=-1)
-        post = [r for r in rows if guard(r, target_block) and r["seq"] > last >= 0]
+        post = [r for r in rows if guard(r) and r["seq"] > last >= 0]
         target = next((t for t in post if all(relation(p, t, mapping, rows)
                                               for p in applied)), None)
         valid = strict and target is not None
