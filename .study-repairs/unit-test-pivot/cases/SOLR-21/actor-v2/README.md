@@ -99,3 +99,21 @@ most eight ordered faults in node2 tmux `solr21_actor_v2_80`. The node0 tmux
 `solr21_actor_v2_mirror` updates this case's `result.json` from its atomic
 progress receipt. Old coarse-selector trials stay in `legacy_coarse_actor` and
 do not enter the V2 denominator.
+
+## Completed V2 result
+
+The node2 campaign naturally reached its 128-effective/max10-fault budget.
+Independent `audit_v2.py` recounted 128 unique selected plans, 128 exact
+injections, and 128 target guard evaluations after the final fault on the
+same bound actor and physical Jetty. All 128 unchanged original JUnits passed;
+there were zero exact target `AssertionError` throws. Fault JUnits took
+2,590.912 seconds, and the two healthy JUnits took 31.837 seconds. Original
+release-JAR JaCoCo union gained 7 production methods and 31 branch outcomes;
+no new semantic I/O family appeared. The immutable per-trial raw/JUnit/JaCoCo
+receipts and recount are in `campaign/final-audit.json` (SHA-256
+`16cb8ef51d4b396ef39d0bcfc9dc947ae23aa460f3d48ee779fa7c9a8f91090e`).
+
+The 102-check row is `quality_complete`, `bug_mark=none` for the **observed
+reload-before-explicit-session-expiry** window. The original test does not
+execute explicit session expiry before or concurrently with this reload, so
+the negative result does not exclude those interleavings.

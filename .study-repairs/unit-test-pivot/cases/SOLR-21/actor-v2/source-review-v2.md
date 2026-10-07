@@ -7,3 +7,10 @@ The mapped original embedded-cluster test is `CollectionReloadTest#testReloadedL
 This order limits what a negative campaign can establish. Exact I/O faults during the original reload can test the descriptor/collection-state consistency at this check, including the observed `core.properties` file read and ZooKeeper calls. The original test does not directly test a session expiry before or concurrent with the reload that reaches this same guard. A result with no target assertion must retain this workload gap; it is not proof that all session-loss/reload interleavings preserve the replica mapping.
 
 The actor-V2 campaign uses no static graph or precomputed region skeleton. It binds the actual `SolrZkClient` object to stable `JETTY/node1`, checks the raw physical Jetty and exact core properties path, and records an original JUnit/JaCoCo execution for each fault plan. Two new healthy seeds and every trial are preserved on node2; the main 102-case table counts only the new actor-V2 fault plans. The older 80 coarse actor plans remain historical evidence under `legacy_coarse_actor`.
+
+The completed actor-V2 raw recount found 128/128 strict injections with the
+same target guard after the final fault on the same actor and physical node,
+and zero exact `AssertionError` outcomes. Original release-JAR coverage added
+7 production methods and 31 branch outcomes. This supports completion for
+the original test's reload-before-expiry window only; it does not resolve the
+expiry-before/concurrent-reload workload gap described above.
