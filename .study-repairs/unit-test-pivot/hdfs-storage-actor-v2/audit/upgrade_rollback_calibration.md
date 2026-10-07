@@ -55,3 +55,31 @@ The per-case base budget is 80 effective same-actor postfault checks with up to
 8 faults per sequence; coverage or eligible I/O novelty in the last eight
 effective trials conditionally extends to 128 effective checks and 10 faults.
 No legacy case checkpoint is imported into these V2 counts.
+
+## Host, ports, and scratch before the first seed
+
+The runner starts one Java 8 process per seed or fault attempt with `-Xmx3g`
+and a 360-second external timeout. Each `--output` creates separate
+`scratch/data`, `scratch/tmp`, and `scratch/logs`; `test.build.data`,
+`java.io.tmpdir`, and `hadoop.log.dir` point there. Trace, JaCoCo data,
+coverage lists, JUnit output, and the manifest stay alongside that scratch.
+The Hadoop test resources are read from the node-local
+`hdfs32/worktrees/hadoop/hadoop-hdfs-project/hadoop-hdfs/src/test/resources`;
+check that directory exists on the selected host before launching. The
+working source on node0 uses a different path, so node0 is not an implicit
+fallback. On 2026-10-07 node0 had only 2.7 GiB free disk.
+
+| Group | Seed directories under V2 `evidence/` | Original healthy duration in legacy run | Port behavior in the original test |
+| --- | --- | ---: | --- |
+| upgrade | `upgrade-constructor/healthy-a`, `healthy-b` | 43.449 s | `MiniDFSCluster.Builder` default NameNode port 0; DataNode transfer, HTTP, IPC listeners use `127.0.0.1:0` unless a test supplies a port. |
+| layout_upgrade | `layout-upgrade-constructor/healthy-a`, `healthy-b` | 17.572 s | Same port-0 builder and DataNode path; one configured DataNode. |
+| rollback | `rollback-constructor/healthy-a`, `healthy-b` | 49.158/48.824 s for the same original JUnit in old HDFS-26/37 runs | Same port-0 builder and DataNode path. |
+
+For every fault plan the scratch is under
+`<group>/runs/<sequence-id>/attempt-1/scratch` (or `attempt-2` when the
+first ordered injection did not match). `TestDFSUpgrade#testUpgrade` has its
+own JUnit `@Test(timeout = 60000)` and was 43.449 s in the old unbound run;
+run its two healthy seeds in a free slot and treat a timing failure as a
+calibration failure. The V2 campaign retains every raw attempt. Startup V2
+currently uses about 8 MiB per single-attempt run (295 MiB for 30 plans), so
+reserve several GiB for a 600-attempt campaign plus retry and fixture data.
