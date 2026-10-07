@@ -324,10 +324,9 @@ instructions. All eight timeout candidates are reviewed and excluded from
 the valid denominator and feedback; none is a confirmed new bug. The
 machine-readable receipt is `work-lots/evidence-main-terminal-audit.json`.
 The largest executed plan had two faults, despite the configured maximum of
-ten; the configured maximum is not evidence of deeper coverage. The
-separately counted upstream supplemental phase remains paused at 113
-attempts and 26 valid plans while node0 is allocated to another original
-JUnit campaign.
+ten; the configured maximum is not evidence of deeper coverage. The separately counted upstream supplemental phase is paused at s203
+with 203 attempts and 51 valid plans, pending source review of an isolated
+reproduced timeout.
 
 In the independent upstream phase, s078 applied a Master OPENED report
 exception and then a client flush RPC exception to the same raw region and
@@ -366,7 +365,7 @@ are in `evidence/s113-original-and-clean-replay-node0.tar.gz`,
 `evidence/s113-replay-verdict.json`, and
 `evidence/s113-checkpoint-exclusion.json`. It remains excluded from effective,
 coverage, and descendant counts. The supplemental reporting review map marks
-s078, s101, and s113 reviewed; no supplemental candidate remains pending.
+s078, s101, and s113 reviewed; s203 is a separate pending candidate.
 To protect node0 disk space, 25 completed noncandidate raw logs from
 s081-s100 and s102-s106 were copied to the HBASE-32 archive on node1 and
 verified byte-for-byte by SHA-256 before their node0 copies were removed.
@@ -376,3 +375,31 @@ exit receipts, plus both s078 and s101 candidate raw logs, remain on node0.
 Eight completed healthy, pilot, and meta-observation logs were archived the
 same way; `work-upstream/relocate-calibration-*.json` records the byte counts
 and hashes. Their JaCoCo files remain local.
+
+## Supplemental s203 exact timeout candidate (interim)
+
+The unchanged original JUnit `TestRegionReplicaFailover#testLotsOfRegionReplicas`
+received two exact `DoNotRetryIOException` faults for the same raw primary
+region and replica 7: a Master OPENED report, then the client flush RPC. The
+selected `RegionReplicaFlushHandler.triggerFlushInPrimaryRegion` B7 rethrow
+occurred after the second fault. The original trial timed out in 405.83 seconds
+including shutdown. Its isolated, identical-plan replay timed out again at
+the 600-second limit (641.94 seconds including shutdown). The replay applied
+both faults, reached the same actor's B7 once, and left the original JUnit
+incomplete with 170/600 table-2 assignment children successful. Only one
+region server aborted before timeout cleanup. The server-expiration handler
+started at 09:50:30 UTC but did not schedule the first ServerCrashProcedure
+until 10:00:09 UTC, after the 09:59:43 shutdown hook began. Five `Thread.print
+-l` dumps retain the wait stacks before cleanup.
+
+This is a **reproduced exact timeout candidate**, with `new_bug=false` until
+source and lock-owner review establish its mechanism and novelty. s203 remains
+excluded from the effective denominator, JaCoCo/I/O feedback, and descendants;
+the fuzz controller is stopped at its complete s203 checkpoint. The original
+7 files and replay 11 files were each mirrored to node1 with independent
+per-file SHA-256 checks. `work-upstream/evidence-s203-candidate-receipt.json`,
+`work-upstream/evidence-s203-original-manifest.json`, and
+`work-upstream/evidence-s203-replay-manifest.json` give the trial times, exact
+plan SHA, file hashes, and node1 locations. The main 128/128 phase remains
+complete; the independent supplemental budget is 51/80 effective at this
+interim checkpoint.
