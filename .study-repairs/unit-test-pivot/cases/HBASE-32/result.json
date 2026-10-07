@@ -147,7 +147,7 @@
   "fault_trials": 185,
   "fully_applied_trials": 182,
   "methodology": "graph_free_original_cluster_junit_flush_rpc_exception_jacoco_feedback",
-  "source_audit_note": "Main 185/128 effective phase complete. Independent supplemental 272 attempts/68 effective paused after s272 exact timeout candidate. Original had same ServerStateNode READ held while tracker waited WRITE and SCP was scheduled only after timeout shutdown; six exact 600s replays (two meta-host) passed original JUnit, with no outstanding READ in meta-host controls. Candidate is scheduling-sensitive; no confirmed new bug. s203 remains separately unconfirmed.",
+  "source_audit_note": "Main 185/128 effective phase complete. Independent supplemental 272 attempts/68 effective paused after s272 exact timeout candidate. Original had same ServerStateNode READ held while tracker waited WRITE and SCP was scheduled only after timeout shutdown; six exact 600s replays (two meta-host) passed original JUnit, with no outstanding READ in meta-host controls. Candidate is scheduling-sensitive; no confirmed new bug. s203 remains separately unconfirmed. A distinct meta-host role-aware plan is offline-built and selector-smoke-validated; no role-stage MiniCluster JUnit or fault trial has run, and its count is zero.",
   "status": "campaign_budget_reached",
   "strict_injections": 182,
   "supplemental_stage": {
@@ -349,7 +349,13 @@
       "work-upstream/evidence-s272-repeat5-manifest.json",
       "work-upstream/evidence-s272-repeat5-remote-receipt.json",
       "work-upstream/evidence-s272-repeat6-manifest.json",
-      "work-upstream/evidence-s272-repeat6-remote-receipt.json"
+      "work-upstream/evidence-s272-repeat6-remote-receipt.json",
+      "work-role/README.md",
+      "work-role/role-plan.json",
+      "work-role/smoke.log",
+      "work-role/audit_role_run.py",
+      "work-role/synthetic-role-audit-positive.json",
+      "work-role/synthetic-role-audit-negative.json"
     ],
     "last_reviewed_trial": "s272",
     "last_reviewed_utc": "2026-10-07T12:15:15.589419+00:00",
@@ -362,6 +368,26 @@
       "s272"
     ],
     "phase": "independent_upstream_and_terminal_rpc",
+    "role_aware_variation": {
+      "agent_shas": {
+        "base": "c9573013edb7ab584b283f3a2173ab94fb78084ae51e718f86284512f74e69c1",
+        "lock": "c4ac78d1f34c4ada2728ebea831dec0505f76aab7f7c1b3ff3b3f98f5d94e4fa",
+        "upstream": "783ac1b6fbe847c19270372767670d9ae9963dbb051770433eb13f68beab0604"
+      },
+      "attempted_trials": 0,
+      "classification": "distinct_plan_not_s272_exact_replay",
+      "cluster_junit_executed": false,
+      "effective_trials": 0,
+      "fuzz_budget_admitted": false,
+      "java8_build_smoke": true,
+      "next_gate": "unchanged fault-free original JUnit healthy calibration in isolated slot; then bounded new-plan fault phase with separate checkpoint",
+      "original_junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+      "plan_sha256": "c201789d264c40d45184802b75839c0a1baaa3020649715cadcef3a82e2a1740",
+      "runtime_identity_smoke_negative_rejected": true,
+      "runtime_identity_smoke_positive": true,
+      "spec": "work-role/role-plan.json",
+      "state": "offline_ready_pending_healthy_junit"
+    },
     "s272": {
       "all_replays_children_success": 600,
       "all_replays_original_junit_pass": true,
