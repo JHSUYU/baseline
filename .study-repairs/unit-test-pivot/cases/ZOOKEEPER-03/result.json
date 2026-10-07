@@ -38,6 +38,17 @@
   },
   "fault_model": "ordered IOException before bound socket I/O and, in a separate stage, after complete client write/server response",
   "fault_trials": 666,
+  "frontier_audit": {
+    "audit": "evidence/frontier-audit.json",
+    "new_observed_actor_bound_selectors": 0,
+    "post_response_pending": 0,
+    "pre_io_pending_ordered_plans": 63,
+    "pre_io_pending_unique_last_selectors": 32,
+    "pre_io_pending_last_selectors_previously_tested": 32,
+    "pre_io_status": "attempt_cap",
+    "multiop_pending": 0,
+    "scope_limit": "The 63 untried pre-I/O plans are new ordered fault histories at previously tested exact I/O selectors; this is not full sequence-space exhaustion. Unbound startup file I/O and pre-session socket I/O lack the required runtime actor identity."
+  },
   "fully_applied_trials": 663,
   "function": "org.apache.zookeeper.server.SessionTrackerImpl.setOwner(long,java.lang.Object)",
   "graphchecker_or_skeleton_runtime_dependency": false,
