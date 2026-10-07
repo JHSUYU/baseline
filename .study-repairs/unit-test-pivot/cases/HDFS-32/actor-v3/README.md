@@ -97,3 +97,15 @@ nor new coverage/I/O feedback. See `coverage-unavailable-review.md`.
 `archive/raw-v3-archive-receipt.json` records a 71,093,287-byte archive of
 those files, with full extraction and per-file SHA verification. The archive
 SHA-256 is `fa7c71054b66dcc9dfdae0652f0d23956f2faea4f081496a7705bb3cc9a37679`.
+
+After the terminal audit, a separate node2 storage pass reopened that archive
+and verified all 1,519 extracted files against the full raw inventory. It
+also verified the byte-identical node0 archive mirror and each expanded file
+selected for pruning. Only 592 derivable coverage text files (1,132,869,722
+bytes) were removed from node2's expanded copy; 927 other files, including
+every JUnit log, runtime trace, JaCoCo binary, manifest, and fault plan,
+remain expanded. The full raw archive remains on both node0 and node2.
+`archive/coverage-prune-intent.json` and
+`archive/coverage-prune-receipt.json` contain the exact inventory paths,
+source hashes, mirror proof, and an idempotent recovery boundary. Restoring
+the archive reconstructs all 1,519 files for future audits.
