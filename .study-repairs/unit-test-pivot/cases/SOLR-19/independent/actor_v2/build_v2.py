@@ -32,13 +32,13 @@ def main() -> None:
         ("          sreq.params.set(CoreAdminParams.CORE_NODE_NAME, replicas.get(e.getKey()).getName());\n"
          "          shardHandler.submit(sreq, sreq.shards[0], sreq.params);",
          "          sreq.params.set(CoreAdminParams.CORE_NODE_NAME, replicas.get(e.getKey()).getName());\n"
-         "          baseline.solr19v2.ActorProbe.sender(\"CREATE_COLLECTION\", sreq.params, sreq.nodeName, sreq.shards[0]);\n"
+         "          baseline.solr19v2.ActorProbe.sender(\"CREATE_COLLECTION\", sreq.params, sreq.nodeName, sreq.shards[0], zkStateReader.getZkClient());\n"
          "          shardHandler.submit(sreq, sreq.shards[0], sreq.params);"),
     ]))
     sources.append(patched(java + "cloud/api/collections/AddReplicaCmd.java", [
         ("      shardRequestTracker.sendShardRequest(createReplica.node, params, shardHandler);",
          "      baseline.solr19v2.ActorProbe.sender(\"ADD_REPLICA\", params, createReplica.node, "
-         "zkStateReader.getBaseUrlForNodeName(createReplica.node));\n"
+         "zkStateReader.getBaseUrlForNodeName(createReplica.node), zkStateReader.getZkClient());\n"
          "      shardRequestTracker.sendShardRequest(createReplica.node, params, shardHandler);"),
     ]))
     sources.append(patched(java + "handler/admin/CoreAdminOperation.java", [

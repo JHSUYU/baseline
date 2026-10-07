@@ -83,6 +83,7 @@ def audit(seed: Path):
         results.append({
             "core": core,
             "sender_phase": send[0]["phase"] if send else None,
+            "producer_role": send[0]["detail"].rsplit("|sourceRole=", 1)[-1] if send else None,
             "sender_actor": send[0]["actor"] if send else None,
             "receiver_actor": phases["RECEIVE_CREATE"][0]["actor"] if phases.get("RECEIVE_CREATE") else None,
             "standard_core_node": send[0]["standard"] if send else None,
@@ -103,6 +104,9 @@ def audit(seed: Path):
         result["receiver_role"] = role_by_node.get(result["receiver_actor"])
         if result["sender_role"] is None or result["receiver_role"] is None:
             result["issues"].append("create_actor_lacks_zk_client_binding")
+            issue_count += 1
+        if result["producer_role"] == "UNBOUND":
+            result["issues"].append("producer_actor_lacks_zk_client_binding")
             issue_count += 1
     return {"seed": str(seed), "elapsed_seconds": manifest["elapsed_seconds"],
             "junit_exit": manifest["exit_code"], "event_count": len(rows),

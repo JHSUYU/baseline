@@ -15,7 +15,7 @@ workload, or hand-written test replaces the original JUnit.
 * `CreateCollectionCmd` and `AddReplicaCmd` record the outgoing CoreAdmin
   CREATE request's core name, standard `coreNodeName`, any
   `property.coreNodeName`, all `property.*` values, target logical node name,
-  and base URL.
+  base URL, and the producer's bound ZooKeeper-client role.
 * `CoreAdminOperation` records the receiving `ZkController` node name and
   mapped create parameters. The per-core audit requires an exact sender to
   receiver node match and a base URL whose host, port, and context agree with
@@ -25,12 +25,15 @@ workload, or hand-written test replaces the original JUnit.
   and an actual `FILE_OPEN` event if that file is read. `CoreContainer`
   records the exact guard value and branch outcome.
 * `ZkController` binds its `SolrZkClient` object to the actual node name and a
-  startup-order `JETTY_n` role. Six `SolrZkClient` methods record operation,
+  within-run startup-order `JETTY_n` label. Six `SolrZkClient` methods record operation,
   ZooKeeper path, first Solr caller, role, and ZooKeeper endpoint. I/O before
   this binding or from another client is marked `UNBOUND` and is ineligible
-  for high-quality cross-run fault selectors. The `JETTY_n` role is only
-  usable after two healthy runs show stable core placement and role-specific
-  I/O identities; the raw node name is retained in each `ZK_BIND` receipt.
+  for high-quality cross-run fault selectors. The `JETTY_n` label cannot be
+  assumed stable across runs: the original test starts Jetty nodes in
+  parallel and replica placement can move. A fault plan must either prove a
+  stable role-specific I/O identity in two seeds or resolve its actor from a
+  preceding sender event as `OWNER_OF_CORE(coreName)` within the same run.
+  The raw node name is retained in each `ZK_BIND` receipt.
 
 The request already carries a unique core name, so the adapter joins the
 sender and receiver using that existing field and the real node name. It does
@@ -56,9 +59,11 @@ files are retained under `evidence/`.
 The current adapter additionally binds each ZooKeeper client to its Jetty
 actor and records actual file opens. Its two homogeneous final healthy seeds
 are pending the node1 JVM timing gate. `audit_seeds.py` must report passing
-original JUnit, nine exact target paths, zero lineage issues, stable
-role-specific core selectors, and a nonempty intersection of bound
-role-specific I/O identities before a fault campaign starts. The source
+original JUnit, nine exact target paths, zero lineage issues, stable core
+selectors independent of ephemeral ports, and a nonempty intersection of
+actor-qualified I/O identities before a fault campaign starts. If physical
+placement changes, fixed `JETTY_n` selectors are excluded unless their own
+identity is separately proven. The source
 override's production JaCoCo baseline is summarized by `coverage_v2.py`.
 
 For node1, use `/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4` as the

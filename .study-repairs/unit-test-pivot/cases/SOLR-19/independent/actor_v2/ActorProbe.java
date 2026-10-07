@@ -54,9 +54,15 @@ public final class ActorProbe {
     return String.join(";", entries);
   }
 
-  public static void sender(String kind, SolrParams params, String node, String baseUrl) {
+  public static void sender(String kind, SolrParams params, String node, String baseUrl,
+                            Object producerClient) {
+    String producerRole;
+    synchronized (ActorProbe.class) {
+      producerRole = ZK_CLIENT_ROLE.get(producerClient);
+    }
     emit("SEND_" + kind, params.get("name"), node, baseUrl, params.get("coreNodeName"),
-        params.get("property.coreNodeName"), "", properties(params));
+        params.get("property.coreNodeName"), "", properties(params) + "|sourceRole="
+            + (producerRole == null ? "UNBOUND" : producerRole));
   }
 
   public static void receiver(SolrParams params, Map<String, String> coreParams, String node) {
