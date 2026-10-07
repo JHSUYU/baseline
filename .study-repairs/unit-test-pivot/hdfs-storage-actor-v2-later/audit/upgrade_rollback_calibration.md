@@ -2,8 +2,15 @@
 
 The shared overlay and `calibrate.py` already contain the original Hadoop 3.4.3
 JUnit mapping. The following commands are prepared for a separately released
-host slot. No extra cluster JVM should be started alongside the node1 startup
-campaign without a resource lease.
+host slot. The HDFS startup V2 campaign has completed; concurrent HDFS,
+Solr, and QJM controllers currently use node1, so no later-group cluster JVM
+starts until its host slot is explicitly assigned.
+
+When a slot is assigned, start with `rollback`: one original JUnit run covers
+both HDFS-26 and HDFS-37. Then run `upgrade` for HDFS-24 and
+`layout_upgrade` for HDFS-27. Keep only one of these three group controllers
+active at a time; each has its own healthy receipt, checkpoint, raw traces,
+and effective-trial counters.
 
 `TestDFSUpgrade` and `TestDFSRollback` loop over one and two configured
 DataNode directories and deliberately create valid and invalid storage states.
