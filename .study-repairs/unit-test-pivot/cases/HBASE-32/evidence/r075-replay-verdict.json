@@ -1,0 +1,51 @@
+{
+  "case": "HBASE-32",
+  "classification": "unreproduced_timeout_candidate",
+  "confirmed_new_bug": false,
+  "exact_replay": {
+    "agent_class_sha256": "edb7757522361622087f3a5be2f7efded71281da4ff27bcf62d82b235de1bdbd",
+    "all_aborted_region_servers": [
+      "ms1144.utah.cloudlab.us,45877,1791346840497"
+    ],
+    "create_table_child_success_count": 600,
+    "create_table_procedure_id": "20",
+    "elapsed_seconds": 56.45,
+    "exec_sha256": "9105141447f1b04d0c1cd4a3c93fc5e0abb04aaf57acc5649f5cdba7aeea3c88",
+    "exit": 0,
+    "first_scheduled_server_crash_procedure": {
+      "line": 23980,
+      "message": "2026-10-07T04:21:02,644 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=1221 for ms1144.utah.cloudlab.us,45877,1791346840497 (carryingMeta=false) ms1144.utah.cloudlab.us,45877,1791346840497/CRASHED/regionCount=205/lock=java.util.concurrent.locks.ReentrantReadWriteLock@32524ae8[Write locks = 1, Read locks = 0], oldState=ONLINE."
+    },
+    "fully_applied": true,
+    "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "junit": {
+      "failed": 0,
+      "found": 1,
+      "succeeded": 1
+    },
+    "log_sha256": "5e992a84f8e31bc21fb7b246e836887f041ddec870450c473efbc976a013f08e",
+    "plan": [
+      "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMixvqQg~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+    ],
+    "pre_shutdown_aborted_region_servers": [
+      "ms1144.utah.cloudlab.us,45877,1791346840497"
+    ],
+    "same_actor_b7": 1,
+    "same_actor_guard": 1,
+    "shutdown_hook_line": null,
+    "source_trial": "r075",
+    "timeout_seconds": 600
+  },
+  "interpretation": "The exact fault and B7 rethrow recurred, but original JUnit passed and all 600 child assignments completed; original timeout has not been reproduced.",
+  "original": {
+    "elapsed_seconds": 414.63,
+    "exact_b7": true,
+    "exit": 124,
+    "pre_shutdown_aborted_region_servers": [
+      "ms1105.utah.cloudlab.us,46215,1791345358909"
+    ],
+    "raw_log_sha256": "f3ffd535d312d2ef797eb3af18b480f8951e6a81dbbb6890957ded7e98280d96"
+  },
+  "replay_raw_archive_sha256": "9541b4ab026b35ae0f9cd93d1d7ce3e2205901f7c3bf31ad1950864ae57ec363",
+  "source_trial": "r075"
+}
