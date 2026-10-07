@@ -1,47 +1,58 @@
 {
   "bug_mark": "none",
   "case_id": "HDFS-30",
-  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
   "cluster_tests": [
     "org.apache.hadoop.hdfs.server.datanode.TestBlockRecovery2#testRecoveryTimeout",
     "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization"
   ],
-  "conclusion": "No selected HDFS-30 IOException observed after strict same-identity target retention in either bounded campaign; 60 queued HA sequences remain untested.",
-  "coverage_gain": {
-    "ha_supplement_probes": 22,
-    "main_v4_probes": 288
-  },
-  "coverage_scope": "separate_production_jacoco_unions_per_original_junit; gains are not deduplicated across tests",
-  "elapsed_seconds": 4689.058,
-  "evidence": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/final-audit.json; .study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/phase-v4/raw-evidence-receipt.json; .study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-final-audit.json; .study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-control-v1/ha-raw-evidence-receipt.json; legacy RPC-only pilot separate in .study-repairs/unit-test-pivot/cases/HDFS-30/legacy-rpc-result.json",
-  "fault_trials": 152,
-  "fully_applied_trials": 74,
+  "conclusion": "First 80 strict same-owner postfault visits to the selected guard completed without its selected IOException. The last eight effective trials added no production method/branch or I/O family coverage, so the protocol did not extend this case to 128. This is a bounded negative result for this original JUnit, not a proof of absence of bugs.",
+  "coverage_gain": 1893,
+  "coverage_scope": "current_HA_original_JUnit_production_JaCoCo; historical_JUnits_separate",
+  "elapsed_seconds": 7753.268,
+  "evidence": "cases/hdfs_recovery_shared/ha-effective-v2/audits/hdfs29-30-peer80-terminal.json; cases/hdfs_recovery_shared/ha-effective-v2/audits/hdfs29-30-peer80-raw-audit.json; raw per-trial JUnit/trace/JaCoCo on node1 under /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-effective-v2/runs",
+  "fault_trials": 203,
+  "fully_applied_trials": 80,
   "ha_effective_campaign": {
     "attempt_cap": 320,
-    "attempts": 76,
+    "attempts": 203,
     "candidate_review": null,
     "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-effective-v2/checkpoint.json",
-    "checkpoint_sha256": "0cd14334f10f8d556f987f9cedd13af8ad4c3128db320ff63144e66dbb44b1bc",
     "effective_goal": 80,
-    "effective_trials": 30,
-    "exact_full_sequence": 30,
-    "fault_junit_seconds_shared": 2479.94,
+    "effective_trials": 80,
+    "elapsed_seconds_shared": 7753.268,
+    "exact_full_sequence": 80,
+    "fault_junit_seconds_shared": 7699.194,
+    "first_80_prefix_completed_sha256": "92aa46b13f3c5e216458d0049aed4849e2f718b3022aaff4ea5ec44023c37032",
     "healthy_seconds_shared": 54.074,
-    "independent_raw_audit_completed_prefix": 74,
+    "independent_raw_audit": "cases/hdfs_recovery_shared/ha-effective-v2/audits/hdfs29-30-peer80-raw-audit.json",
+    "independent_raw_audit_completed_prefix": 215,
     "independent_raw_audit_errors": 0,
+    "independent_raw_audit_sha256": "e771d56b919ee15af0552474469382157f74eab2eaf303cb1076858f2920bbd8",
+    "last_eight_effective_attempts": [
+      193,
+      194,
+      196,
+      197,
+      199,
+      200,
+      202,
+      203
+    ],
+    "last_eight_novelty": false,
     "max_faults": 8,
-    "pending_queue": 208,
     "production_coverage_gain": {
-      "branch_counts": 693,
-      "methods": 344,
-      "probes": 1650
+      "branch_counts": 794,
+      "methods": 401,
+      "probes": 1893
     },
+    "scope": "first 203 HA attempts; subsequent shared HDFS-28 exploration excluded",
     "selected_target_exceptions": 0,
     "separate_from_historical_v4_counts": true,
-    "snapshot_at_utc": "2026-10-07T11:05:53.493698+00:00",
-    "snapshot_path": ".study-repairs/unit-test-pivot/cases/hdfs_recovery_shared/ha-effective-v2/audits/live-progress-snapshot.json",
-    "state": "running",
-    "stop_reason": null,
+    "snapshot_at_utc": "2026-10-07T14:35:27.114566+00:00",
+    "state": "quality_complete_for_case_at_first80_prefix",
+    "stop_reason": "per_case_effective_budget_met_without_extension",
+    "terminal_receipt": "cases/hdfs_recovery_shared/ha-effective-v2/audits/hdfs29-30-peer80-terminal.json",
     "workload": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization"
   },
   "ha_supplement": {
@@ -75,6 +86,8 @@
     "target_exception_candidates": 0,
     "untried_queued_sequences": 60
   },
+  "historical_total_elapsed_seconds": 4868.851,
+  "historical_trial_count_scope": "128 V4 recovery trials + 24 HA heartbeat trials; older 13-trial RPC pilot excluded",
   "independent_campaign": {
     "branch_count_gain": 129,
     "budget": {
@@ -121,6 +134,7 @@
     "target_exception_candidates": 0
   },
   "methodology": "original_junit_case_local_asm_jacoco_graph_free",
+  "new_bug": false,
   "quality_review": {
     "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
     "bug_mark_unchanged": "none",
@@ -139,13 +153,12 @@
     "issue": "Historical trial cap was reached with fewer than 80 same-owner postfault target-retaining effective trials and an untested feasible queue; resume without repeating completed trials.",
     "prior_status": "quality_complete",
     "required_action": "Resume the original actor-aware checkpoint toward 80 effective target-retaining trials or document a justified early stop.",
+    "resolution": "Actor-bound original HA JUnit reached 80 effective visits; the last-eight novelty gate did not extend the budget.",
     "reviewed_at_utc": "2026-10-07T06:52:08+00:00"
   },
-  "status": "fuzz_running",
-  "strict_injections": 74,
-  "target_after_fault": 41,
+  "status": "quality_complete",
+  "strict_injections": 80,
+  "target_after_fault": 80,
   "target_exception_after_fault_trials": 0,
-  "target_reached": true,
-  "total_elapsed_seconds": 4868.851,
-  "trial_count_scope": "128 V4 recovery trials + 24 HA heartbeat trials; older 13-trial RPC pilot excluded"
+  "target_reached": true
 }
