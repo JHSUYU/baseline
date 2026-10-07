@@ -6,7 +6,7 @@ After `ensureCollection` and a ZooKeeper alias refresh, it throws if the
 created collection is absent from the observed alias list. The mapped original
 cluster test is `TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation`.
 
-**Status: both graph-free fault phases completed their budgets.** The original test
+**Status: quality complete for the tested I/O scope; both graph-free fault phases completed their budgets.** The original test
 class inherits `@AwaitsFix(SOLR-13696)` from
 `RoutedAliasUpdateProcessorTest.java:64`. With the default test-group setting,
 JUnit reported one test and zero failures but the listener recorded an
