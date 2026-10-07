@@ -15,7 +15,7 @@ from seed_audit import main as audit  # noqa: E402
 def main() -> None:
     agent = HERE / 'solrsubshard-rpc-agent.jar'
     for number in (1, 2):
-        out = HERE / f'healthy-{number:02d}'
+        out = HERE / f'healthy-sender-{number:02d}'
         if not (out / 'run.json').is_file():
             code = run(out, agent_path=agent)
             if code:

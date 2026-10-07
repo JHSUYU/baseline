@@ -8,6 +8,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
+import fuzz_rpc
 import run_stages as stages
 
 
@@ -42,6 +43,23 @@ NO_NOVELTY = lambda state: {'extend': False,
 
 
 class StageCheckpointTest(unittest.TestCase):
+    def test_parent_sender_is_part_of_exact_http_plan(self) -> None:
+        event = {'marker': 'FAULT:HTTP:parentForwardAdd',
+                 'siteId': 'SolrCmdDistributor.submit#L309',
+                 'senderKey': 'SOLR/PARENT/collection1/shard1/core_node3',
+                 'sourceKey': 'SOLR/SUBSHARD/collection1/shard1_0/core_node11',
+                 'resource': '/update/Add/collection1/shard1_0/core_node11',
+                 'hitOrdinal': 1}
+        selected = fuzz_rpc.point(event)
+        migrated = dict(event, senderKey='SOLR/PARENT/collection1/shard1/core_node4')
+        self.assertNotEqual(fuzz_rpc.point_id(selected),
+                            fuzz_rpc.point_id(fuzz_rpc.point(migrated)))
+        with tempfile.TemporaryDirectory(prefix='solr-http-sender-') as scratch:
+            plan = Path(scratch) / 'fault.properties'
+            fuzz_rpc.write_plan(plan, [fuzz_rpc.step(selected, 'TIMEOUT')])
+            self.assertIn('step.1.senderKey=' + selected['senderKey'],
+                          plan.read_text())
+
     def test_pilot_monotonically_reaches_80_effective(self) -> None:
         with tempfile.TemporaryDirectory(prefix='solr-http-stage-') as scratch:
             root = Path(scratch)

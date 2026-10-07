@@ -21,6 +21,7 @@ SSH = ("ssh", "-i", "/users/ZhenyuLi/.ssh/id_ed25519_nodes",
 ZK_SESSION = "solr36_37_zk_extend_128"
 HTTP_SESSION = "solr36_37_http_fuzz"
 MIRROR_SESSION = "solr36_37_http_mirror"
+SEED_SESSION = "solr36_37_http_sender_seeds"
 
 
 def remote(command: str, *, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -100,13 +101,55 @@ def freeze_zk() -> None:
     print(f"Frozen {destination}", flush=True)
 
 
-def verify_http_inputs() -> None:
-    for relative in ("fuzz_rpc.py", "run_stages.py",
-                     "solrsubshard-rpc-agent.jar", "seed-audit.json"):
+def verify_http_static_inputs() -> None:
+    for relative in ("fuzz_rpc.py", "run_stages.py", "record_seeds.py",
+                     "seed_audit.py", "solrsubshard-rpc-agent.jar",
+                     "agent-build.json", "src/research/solrsubshard/Probe.java"):
         local_digest = hashlib.sha256((RPC / relative).read_bytes()).hexdigest()
         remote_digest = remote("sha256sum " + shlex.quote(str(RPC / relative)))
         if remote_digest.stdout.split()[0] != local_digest:
             raise RuntimeError(f"HTTP input differs on node2: {relative}")
+    build = json.loads((RPC / "agent-build.json").read_text())
+    if build["agent_sha256"] != hashlib.sha256(
+            (RPC / "solrsubshard-rpc-agent.jar").read_bytes()).hexdigest():
+        raise RuntimeError("HTTP sender-aware agent does not match build record")
+
+
+def calibrate_http() -> None:
+    if remote_session(SEED_SESSION):
+        raise RuntimeError("HTTP sender calibration tmux already exists")
+    command = ("cd " + shlex.quote(str(RPC))
+               + " && python3 record_seeds.py >> sender-seeds.log 2>&1")
+    remote("tmux new-session -d -s " + shlex.quote(SEED_SESSION)
+           + " " + shlex.quote(command))
+    for _ in range(180):
+        if not remote_session(SEED_SESSION):
+            break
+        time.sleep(10)
+    else:
+        raise RuntimeError("HTTP sender calibration exceeded thirty minutes")
+    report = json.loads(remote("cat " + shlex.quote(str(RPC / "seed-audit.json"))).stdout)
+    build = json.loads((RPC / "agent-build.json").read_text())
+    if ([run["run"] for run in report["runs"]]
+            != ["healthy-sender-01", "healthy-sender-02"]
+            or any(run["agent_sha256"] != build["agent_sha256"]
+                   for run in report["runs"])
+            or len(report["stable_exact_parent_child_command_families"]) < 4):
+        raise RuntimeError("two original sender-aware JUnits did not calibrate")
+    subprocess.run(("rsync", "-a", "-e",
+                    "ssh -i /users/ZhenyuLi/.ssh/id_ed25519_nodes "
+                    "-o IdentitiesOnly=yes -o BatchMode=yes",
+                    "ZhenyuLi@node2:" + str(RPC / "seed-audit.json"),
+                    str(RPC / "seed-audit.json")), check=True)
+    print("Two sender-aware original JUnit seeds passed", flush=True)
+
+
+def verify_http_inputs() -> None:
+    verify_http_static_inputs()
+    local_seed = hashlib.sha256((RPC / "seed-audit.json").read_bytes()).hexdigest()
+    remote_seed = remote("sha256sum " + shlex.quote(str(RPC / "seed-audit.json")))
+    if remote_seed.stdout.split()[0] != local_seed:
+        raise RuntimeError("HTTP calibrated seed audit differs on node2")
     if remote_session(HTTP_SESSION) or local_session(MIRROR_SESSION):
         raise RuntimeError("HTTP stage tmux already exists; inspect before restart")
     if (RPC / "campaign" / "state.json").exists():
@@ -145,6 +188,8 @@ def main() -> None:
     wait_for_zk()
     finalize_zk()
     freeze_zk()
+    verify_http_static_inputs()
+    calibrate_http()
     verify_http_inputs()
     launch_http()
 

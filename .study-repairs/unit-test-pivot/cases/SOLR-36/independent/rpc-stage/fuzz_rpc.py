@@ -17,16 +17,17 @@ HERE = Path(__file__).resolve().parent
 PARENT = HERE.parent
 sys.path.insert(0, str(PARENT))
 from coverage import covered_probes  # noqa: E402
-from fuzz import junit_gate, load_events, point, point_id  # noqa: E402
+from fuzz import junit_gate, load_events, point_id  # noqa: E402
 from run import run as run_junit  # noqa: E402
 
 
 AGENT = HERE / 'solrsubshard-rpc-agent.jar'
 ROOT = HERE / 'campaign'
-SEEDS = (HERE / 'healthy-01', HERE / 'healthy-02')
+SEEDS = (HERE / 'healthy-sender-01', HERE / 'healthy-sender-02')
 MARKERS = frozenset(('FAULT:HTTP:parentForwardAdd',
                      'FAULT:HTTP:parentForwardDeleteById'))
 SOURCE_PREFIX = 'SOLR/SUBSHARD/collection1/shard1_'
+SENDER_PREFIX = 'SOLR/PARENT/collection1/shard1/'
 WOVEN_COVERAGE = ':org/apache/solr/update/SolrCmdDistributor:'
 CHECKS = {'SOLR-36': ('SOLR36:ACTIVE_SUBSHARD_GUARD',
                       'SOLR36:ACTIVE_SUBSHARD_THROW'),
@@ -63,7 +64,14 @@ def rpc_events(directory: Path) -> list[dict]:
     return [event for event in load_events(directory)
             if event['event'] == 'IO_OBSERVED'
             and event['marker'] in MARKERS
-            and event['sourceKey'].startswith(SOURCE_PREFIX)]
+            and event['sourceKey'].startswith(SOURCE_PREFIX)
+            and event.get('senderKey', '').startswith(SENDER_PREFIX)]
+
+
+def point(event: dict) -> dict:
+    return {name: event[name] for name in
+            ('marker', 'siteId', 'senderKey', 'sourceKey', 'resource',
+             'hitOrdinal')}
 
 
 def entry_id(sequence: list[dict]) -> str:
@@ -98,7 +106,8 @@ def initialize(max_trials: int, max_faults: int) -> dict:
     for event in records[0]:
         selected = point(event)
         if point_id(selected) in intersection:
-            by_family.setdefault((selected['sourceKey'], selected['marker']),
+            by_family.setdefault((selected['senderKey'], selected['sourceKey'],
+                                  selected['marker']),
                                  []).append(selected)
     state = {
         'status': 'running',
@@ -133,7 +142,8 @@ def initialize(max_trials: int, max_faults: int) -> dict:
 
 def choose(state: dict) -> dict:
     rows = state['completed']
-    source_counts = Counter(row['last_fault_source'] for row in rows)
+    source_counts = Counter((row['last_fault_sender'], row['last_fault_source'])
+                            for row in rows)
     marker_counts = Counter(row['last_fault_marker'] for row in rows)
     mode_counts = Counter(row['last_fault_mode'] for row in rows)
     point_counts = Counter(row['last_fault_point_id'] for row in rows)
@@ -152,7 +162,8 @@ def choose(state: dict) -> dict:
         last = item['sequence'][-1]
         selected = last['point']
         score = (35.0 * selected['hitOrdinal'] / max(1, max_ordinal)
-                 + 30.0 / (1 + source_counts[selected['sourceKey']])
+                 + 30.0 / (1 + source_counts[(selected['senderKey'],
+                                             selected['sourceKey'])])
                  + 30.0 / (1 + marker_counts[selected['marker']])
                  + 18.0 / (1 + mode_counts[last['fault_mode']])
                  + 12.0 / (1 + point_counts[point_id(selected)])
@@ -173,7 +184,8 @@ def write_plan(path: Path, sequence: list[dict]) -> None:
     lines = [f'count={len(sequence)}']
     for number, item in enumerate(sequence, 1):
         prefix = f'step.{number}.'
-        for field in ('marker', 'siteId', 'sourceKey', 'resource', 'hitOrdinal'):
+        for field in ('marker', 'siteId', 'senderKey', 'sourceKey',
+                      'resource', 'hitOrdinal'):
             lines.append(f'{prefix}{field}={item["point"][field]}')
         lines.append(f'{prefix}faultMode={item["fault_mode"]}')
         if item['fault_mode'] == 'DELAY':
@@ -222,6 +234,7 @@ def analyze(directory: Path, sequence: list[dict], state: dict) -> tuple[dict, s
         'strict_injection': strict, 'planned_faults': len(sequence),
         'applied_faults': len(applied),
         'last_fault_source': last_source,
+        'last_fault_sender': sequence[-1]['point']['senderKey'],
         'last_fault_marker': sequence[-1]['point']['marker'],
         'last_fault_mode': sequence[-1]['fault_mode'],
         'last_fault_point_id': point_id(sequence[-1]['point']),

@@ -52,19 +52,16 @@ def publish(rpc: dict, stage: dict) -> None:
         result_path = ROOT / case_id / 'result.json'
         result = json.loads(result_path.read_text())
         rpc_n = rpc['fault_trials']
-        strict = stage1['strict_injections'] + rpc['strict_injections']
-        reached = (stage1_identity[
-            'strict_postfault_same_last_fault_child_or_collection_scope']
-            + rpc['same_child_post_target_trials'][case_id])
-        thrown = (stage1['strict_exact_target_throw_trials']
-                  + rpc['exact_target_throw_trials'][case_id])
+        strict = rpc['strict_injections']
+        reached = rpc['same_child_post_target_trials'][case_id]
+        thrown = rpc['exact_target_throw_trials'][case_id]
         stage_status = stage['status']
         status = ('target_exception_candidate_source_review'
                   if rpc['status'] == 'candidate_target_exception'
                   or stage_status == 'candidate'
-                  else 'campaign_budget_complete_source_audit_pending'
+                  else 'pending_actor_aware_zk_v2_http_source_audit'
                   if stage_status == 'complete'
-                  else 'campaign_queue_exhausted_audit_pending'
+                  else 'pending_actor_aware_zk_v2_http_queue_exhausted'
                   if stage_status == 'queue_exhausted'
                   else 'campaign_interrupted_resume_pending'
                   if stage_status in ('interrupted', 'incomplete_budget_limit')
@@ -72,18 +69,25 @@ def publish(rpc: dict, stage: dict) -> None:
                   if rpc['status'] == 'budget_complete' else 'fuzz_running')
         result.update(
             status=status,
-            methodology='coverage_io_independent_asm_jacoco',
-            fault_trials=stage1['fault_trials'] + rpc_n,
+            methodology='coverage_io_independent_asm_jacoco_http_actor_exact',
+            fault_trials=rpc_n,
             strict_injections=strict,
             post_fault_target_reach_trials=reached,
             target_after_fault=reached,
             target_exception_after_fault_trials=thrown,
-            total_attempts=stage1['total_attempts'] + rpc['total_attempts'],
+            total_attempts=rpc['total_attempts'],
             elapsed_seconds=round(result['baseline_seconds']
                                   + stage1['elapsed_seconds']
                                   + rpc['elapsed_seconds'], 3),
-            zk_stage_trials=stage1['fault_trials'],
-            zk_stage_target_exceptions=stage1['strict_exact_target_throw_trials'],
+            coverage_gain=rpc['production_probe_gain'],
+            coverage_gain_scope=('Current-quality HTTP release-JAR production probes; '
+                                 'legacy ZooKeeper actor-unverified probes excluded.'),
+            legacy_zk_coarse_selected_plans=stage1['fault_trials'],
+            legacy_zk_coarse_strict_point_matches=stage1['strict_injections'],
+            legacy_zk_coarse_same_child_post_target=stage1_identity[
+                'strict_postfault_same_last_fault_child_or_collection_scope'],
+            legacy_zk_coarse_target_exceptions=stage1[
+                'strict_exact_target_throw_trials'],
             rpc_stage_progress=rpc,
             rpc_stage_control=stage,
             rpc_stage_fault_trials=rpc_n,

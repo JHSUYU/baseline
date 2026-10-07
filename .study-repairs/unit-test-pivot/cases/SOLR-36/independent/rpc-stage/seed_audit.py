@@ -12,13 +12,20 @@ import sys
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parent))
-from fuzz import junit_gate, load_events, point, point_id  # noqa: E402
+from fuzz import junit_gate, load_events, point_id  # noqa: E402
 
 
 MARKERS = frozenset(('FAULT:HTTP:parentForwardAdd',
                      'FAULT:HTTP:parentForwardDeleteById'))
 TARGET_PREFIX = 'SOLR/SUBSHARD/collection1/shard1_'
-SEEDS = (HERE / 'healthy-01', HERE / 'healthy-02')
+SENDER_PREFIX = 'SOLR/PARENT/collection1/shard1/'
+SEEDS = (HERE / 'healthy-sender-01', HERE / 'healthy-sender-02')
+
+
+def point(event: dict) -> dict:
+    return {name: event[name] for name in
+            ('marker', 'siteId', 'senderKey', 'sourceKey', 'resource',
+             'hitOrdinal')}
 
 
 def main() -> None:
@@ -31,7 +38,8 @@ def main() -> None:
         sends = [event for event in events
                  if event['event'] == 'IO_OBSERVED'
                  and event['marker'] in MARKERS
-                 and event['sourceKey'].startswith(TARGET_PREFIX)]
+                 and event['sourceKey'].startswith(TARGET_PREFIX)
+                 and event.get('senderKey', '').startswith(SENDER_PREFIX)]
         guards_by_case = {
             case_id: [event for event in events
                       if event['event'] == 'TARGET_CHECK'
@@ -60,6 +68,11 @@ def main() -> None:
             'parent_forward_http_sends': len(sends),
             'parent_forward_http_sends_by_command': dict(
                 Counter(event['marker'] for event in sends)),
+            'parent_sender_replicas': dict(Counter(
+                event['senderKey'] for event in sends)),
+            'parent_sender_to_child_pairs': dict(Counter(
+                event['senderKey'] + ' -> ' + event['sourceKey']
+                for event in sends)),
             'logical_targets': dict(Counter(event['sourceKey'] for event in sends)),
             'physical_urls_by_logical_target': {
                 source: sorted({event['physicalNode'] for event in sends
@@ -88,9 +101,15 @@ def main() -> None:
         marker: sum(json.loads(item)['marker'] == marker
                     for item in exact[0] & exact[1])
         for marker in MARKERS}
+    report['stable_exact_parent_child_command_families'] = dict(Counter(
+        json.loads(item)['marker'] + ' | ' + json.loads(item)['senderKey']
+        + ' -> ' + json.loads(item)['sourceKey']
+        for item in exact[0] & exact[1]))
     if any(count == 0 for count in
            report['stable_exact_http_selectors_by_command'].values()):
         raise RuntimeError('add/delete parent-forward HTTP selectors do not both replay')
+    if len(report['stable_exact_parent_child_command_families']) < 4:
+        raise RuntimeError('both commands must have stable sender-to-each-child selectors')
     (HERE / 'seed-audit.json').write_text(json.dumps(report, indent=2,
                                                      sort_keys=True) + '\n')
     print(json.dumps({key: value for key, value in report.items()

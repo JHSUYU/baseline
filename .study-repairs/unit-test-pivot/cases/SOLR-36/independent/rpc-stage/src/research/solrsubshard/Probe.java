@@ -17,6 +17,8 @@ import org.apache.solr.common.SolrException;
 import org.apache.solr.common.cloud.DocRouter;
 import org.apache.solr.common.cloud.Replica;
 import org.apache.solr.common.cloud.Slice;
+import org.apache.solr.cloud.CloudDescriptor;
+import org.apache.solr.core.SolrCore;
 import org.apache.solr.update.AddUpdateCommand;
 import org.apache.solr.update.DeleteUpdateCommand;
 import org.apache.solr.update.SolrCmdDistributor;
@@ -60,7 +62,7 @@ public final class Probe {
           throw new IllegalArgumentException("fault plan count must be 1..10");
         for (int step = 1; step <= plannedSteps; step++) {
           String prefix = "step." + step + ".";
-          for (String field : new String[]{"marker", "siteId", "sourceKey", "resource", "hitOrdinal"}) {
+          for (String field : new String[]{"marker", "siteId", "sourceKey", "senderKey", "resource", "hitOrdinal"}) {
             if (FAULT.getProperty(prefix + field) == null)
               throw new IllegalArgumentException("missing fault field " + prefix + field);
           }
@@ -99,6 +101,14 @@ public final class Probe {
                                         String source, String physicalNode,
                                         String resource, int ordinal, boolean applied,
                                         String detail) {
+    emitWithSender(event, marker, site, source, "", physicalNode,
+                   resource, ordinal, applied, detail);
+  }
+
+  private static synchronized void emitWithSender(String event, String marker, String site,
+                                        String source, String senderKey,
+                                        String physicalNode, String resource,
+                                        int ordinal, boolean applied, String detail) {
     if (output == null) return;
     String row = "{\"event\":" + quote(event)
         + ",\"seq\":" + SEQUENCE.incrementAndGet()
@@ -107,6 +117,7 @@ public final class Probe {
         + ",\"marker\":" + quote(marker)
         + ",\"siteId\":" + quote(site)
         + ",\"sourceKey\":" + quote(source)
+        + ",\"senderKey\":" + quote(senderKey)
         + ",\"physicalNode\":" + quote(physicalNode)
         + ",\"resource\":" + quote(resource)
         + ",\"hitOrdinal\":" + ordinal
@@ -190,22 +201,35 @@ public final class Probe {
     Replica child = (Replica) request.node.getNodeProps().getNodeProps();
     String replica = child.getName();
     if (replica == null) return;
+    // The update command retains its originating SolrQueryRequest across submit().
+    // Read that core's CloudDescriptor, not thread-local MDC, so async handoffs
+    // cannot accidentally assign the send to a different parent replica.
+    if (request.cmd == null || request.cmd.getReq() == null) return;
+    SolrCore senderCore = request.cmd.getReq().getCore();
+    if (senderCore == null || senderCore.getCoreDescriptor() == null) return;
+    CloudDescriptor sender = senderCore.getCoreDescriptor().getCloudDescriptor();
+    if (sender == null || sender.getCollectionName() == null
+        || sender.getShardId() == null || sender.getCoreNodeName() == null
+        || !collection.equals(sender.getCollectionName())
+        || !fromParent.equals(sender.getShardId())) return;
+    String senderKey = "SOLR/PARENT/" + sender.getCollectionName() + "/"
+        + sender.getShardId() + "/" + sender.getCoreNodeName();
     String marker = "FAULT:HTTP:parentForward" + commandKind;
     String site = "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request";
     String logicalTarget = "SOLR/SUBSHARD/" + collection + "/" + shard + "/" + replica;
     String physicalTarget = request.node.getUrl();
     String resource = "/update/" + commandKind + "/" + collection + "/" + shard
         + "/" + replica;
-    String key = marker + '\u0000' + site + '\u0000' + logicalTarget + '\u0000' + resource;
+    String key = marker + '\u0000' + site + '\u0000' + senderKey
+        + '\u0000' + logicalTarget + '\u0000' + resource;
     int ordinal = ORDINALS.computeIfAbsent(key, unused -> new AtomicInteger())
         .incrementAndGet();
     int step = NEXT_STEP.get();
-    boolean matched = apply(marker, site, logicalTarget, resource, ordinal);
-    emit("IO_OBSERVED", marker, site, logicalTarget, physicalTarget,
+    boolean matched = apply(marker, site, logicalTarget, senderKey, resource, ordinal);
+    emitWithSender("IO_OBSERVED", marker, site, logicalTarget, senderKey, physicalTarget,
         resource, ordinal, matched,
         "command=" + commandKind + ";fromParent=" + fromParent
-            + ";senderShard=" + MDC.get("shard")
-            + ";senderReplica=" + MDC.get("replica")
+            + ";senderCore=" + senderCore.getName()
             + ";destNode=" + child.getNodeName());
     if (!matched) return;
     String mode = FAULT.getProperty("step." + step + ".faultMode", "TIMEOUT");
@@ -223,7 +247,7 @@ public final class Probe {
       Thread.currentThread().interrupt();
       throw new SocketTimeoutException("injected parent-to-child HTTP delay interrupted");
     }
-    emit("FAULT_EFFECT", marker, site, logicalTarget, physicalTarget,
+    emitWithSender("FAULT_EFFECT", marker, site, logicalTarget, senderKey, physicalTarget,
         resource, ordinal, true, "delayMs=" + delayMs + ";sent=next");
   }
 
@@ -241,13 +265,14 @@ public final class Probe {
   }
 
   private static boolean apply(String marker, String site, String source,
-                               String resource, int ordinal) {
+                               String senderKey, String resource, int ordinal) {
     int step = NEXT_STEP.get();
     if (step > plannedSteps) return false;
     String prefix = "step." + step + ".";
     boolean exact = marker.equals(FAULT.getProperty(prefix + "marker"))
         && site.equals(FAULT.getProperty(prefix + "siteId"))
         && source.equals(FAULT.getProperty(prefix + "sourceKey"))
+        && senderKey.equals(FAULT.getProperty(prefix + "senderKey"))
         && resource.equals(FAULT.getProperty(prefix + "resource"))
         && ordinal == Integer.parseInt(FAULT.getProperty(prefix + "hitOrdinal"));
     if (exact && (source.startsWith("UNRESOLVED:") || site.startsWith("UNRESOLVED:")))
@@ -287,7 +312,7 @@ public final class Probe {
     String key = marker + '\u0000' + site + '\u0000' + source + '\u0000' + path;
     int ordinal = ORDINALS.computeIfAbsent(key, unused -> new AtomicInteger())
         .incrementAndGet();
-    boolean matched = apply(marker, site, source, path, ordinal);
+    boolean matched = apply(marker, site, source, "", path, ordinal);
     String node = inDefensiveCheck ? TARGET_PHYSICAL.get() : MDC.get("node_name");
     emit("IO_OBSERVED", marker, site, source, node == null ? "" : node,
         path, ordinal, matched, "path=" + path + ";mdcCore=" + MDC.get("core"));
