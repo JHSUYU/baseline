@@ -81,7 +81,7 @@ def audit(terminal=False):
                      'selected_target_throws': stored['selected_target_throw_count'],
                      'new_coverage_lines': gain, 'new_io_families': family_gain,
                      'invalid_reason': stored['invalid_reason'],
-                     'event_sha256': sha(folder / 'events.tsv'),
+                     'events_sha256': sha(folder / 'events.tsv'),
                      'coverage_sha256': sha(folder / 'coverage.tsv'),
                      'receipt_sha256': sha(folder / 'run.json')})
     if coverage != set(state['seen_coverage']) or families != set(state['seen_families']):
