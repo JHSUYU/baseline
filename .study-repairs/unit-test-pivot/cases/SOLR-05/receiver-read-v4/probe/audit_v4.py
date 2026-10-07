@@ -197,13 +197,25 @@ def trial(directory: Path, plan: list[str]) -> dict:
                e["fields"].get("client_id") == last_read["fields"].get("client_id") and
                e["fields"].get("reader_id") == last_read["fields"].get("reader_id") and
                e["fields"].get("last_fault") == f"F{len(plan)-1}"]
-    exceptions = [e for e in events if targets and e["seq"] > final["seq"] and
-                  e["kind"] == "TARGET_EXCEPTION" and e["parts"][0] == "SOLR-05" and
-                  any(e["seq"] == target["seq"] + 1 and
-                      semantic(e) == semantic(target) and
-                      all(e["fields"].get(k) == target["fields"].get(k) for k in
-                          ("actor", "node", "client_id", "reader_id", "last_fault"))
-                      for target in targets)]
+    selected_target_seqs = {target["seq"] for target in targets}
+    last_target_by_thread = {}
+    exceptions = []
+    for event in events:
+        thread = event["fields"].get("thread")
+        if event["kind"] == "TARGET_CHECK":
+            last_target_by_thread[thread] = event
+        elif event["kind"] == "TARGET_EXCEPTION" and thread:
+            # Other JVM threads can log between the check and its throw. The
+            # immediately preceding check on *this* thread must be the
+            # selected post-fault guard, with the same physical reader.
+            target = last_target_by_thread.get(thread)
+            if (target is not None and target["seq"] in selected_target_seqs and
+                    target["parts"][0] == "missing" and
+                    event["parts"][0] == "SOLR-05" and
+                    semantic(event) == semantic(target) and
+                    all(event["fields"].get(k) == target["fields"].get(k) for k in
+                        ("actor", "node", "client_id", "reader_id", "last_fault", "thread"))):
+                exceptions.append(event)
     return {"strict": strict, "effective": bool(targets),
             "target_exception": bool(exceptions), "applied": len(applied),
             "target_count": len(targets), "junit_exit": manifest["exit_code"],
