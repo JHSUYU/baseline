@@ -13,7 +13,7 @@ from campaign import parse_log, related_after_fault, strict_trace
 
 
 HERE = Path(__file__).resolve().parent
-SPEC = HERE / "replay-r003-plan.json"
+SPEC = Path(os.environ.get("HBASE32_REPLAY_SPEC", str(HERE / "replay-r003-plan.json")))
 JAVA = Path("/usr/lib/jvm/java-8-openjdk-amd64/bin/jcmd")
 AGENT_CLASS = HERE.parent / "work/classes/HBase32Agent.class"
 HBASE_JAR = Path("/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar")
@@ -47,7 +47,7 @@ def main():
         raise RuntimeError("HBase32Agent bytecode differs from original trial")
     if sha256(HBASE_JAR) != spec["hbase_server_jar_sha256"]:
         raise RuntimeError("HBase server JAR differs from original trial")
-    suffix = "replay-r003"
+    suffix = "replay-" + spec["source_trial"]
     log = HERE / "logs" / (suffix + ".log")
     exec_path = HERE / "logs" / (suffix + ".exec")
     exit_path = HERE / "logs" / (suffix + ".exit")
