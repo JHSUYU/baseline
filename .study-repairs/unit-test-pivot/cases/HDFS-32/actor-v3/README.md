@@ -76,3 +76,24 @@ trials before its handoff, retained the reserved trial and every queue/seen
 entry, and wrote `coverage-handoff-receipt.json`. The scheduling change
 therefore begins **after** reserved trial 18; earlier trials retain their
 original recorded policy and outcome.
+
+## Final result
+
+The extended campaign naturally stopped after 152 selected attempts: 135
+exact actor-bound injections and 128 effective same-UUID/BPID, postfault
+selected checks. No run changed the healthy selected-check outcome. The
+independent semantic audit found zero errors and zero candidates. The
+terminal receipt records 5,199.257 seconds of original JUnit time, including
+both healthy runs and all fault trials. The production coverage union gained
+1,812 probes, 339 methods, and 821 branch-count entries over the healthy
+baseline; this is global feedback, not a claim that every gain lies on the
+selected check's path.
+
+The all-raw inventory verifies 1,519 retained files totaling 1,196,308,651
+bytes. Seven 180-second JUnit timeout trials have zero-byte JaCoCo data and
+no coverage text output under the original runner's semantics; they are
+recorded as coverage unavailable and contributed neither an effective check
+nor new coverage/I/O feedback. See `coverage-unavailable-review.md`.
+`archive/raw-v3-archive-receipt.json` records a 71,093,287-byte archive of
+those files, with full extraction and per-file SHA verification. The archive
+SHA-256 is `fa7c71054b66dcc9dfdae0652f0d23956f2faea4f081496a7705bb3cc9a37679`.

@@ -32,6 +32,15 @@ def main() -> None:
     inventory_path = HERE / "raw-inventory.json"
     inventory = json.loads(inventory_path.read_text())
     valid = [row for row in state["completed"] if row["post_fault_target"]]
+    unavailable = inventory.get("coverage_unavailable_due_to_junit_timeout", [])
+    for record in unavailable:
+        number = record["trial"]
+        row = state["completed"][number - 1]
+        if (record != {"trial": number, "junit_exit": 124, "jacoco_bytes": 0}
+                or row["junit_exit"] != 124 or row["post_fault_target"]
+                or any(row["coverage_gain"][metric] for metric in METRICS)
+                or row["new_io_families"]):
+            raise RuntimeError("coverage-unavailable timeout was counted as effective or novel")
     if (state.get("case") != "HDFS-32"
             or state.get("stop_reason") != "effective_budget_met_pending_independent_audit"
             or len(valid) != state["goal"] or state["goal"] not in (80, 128)
@@ -74,6 +83,7 @@ def main() -> None:
                "selected_target_outcome_candidates": 0,
                "raw_file_count": inventory["raw_file_count"],
                "raw_total_bytes": inventory["raw_total_bytes"],
+               "coverage_unavailable_due_to_junit_timeout": unavailable,
                "historical_unbound_trials_excluded": 80,
                "source_build_sha256": sha(HERE / "build" / "built.json"),
                "completed_at_utc": datetime.now(timezone.utc).isoformat()}

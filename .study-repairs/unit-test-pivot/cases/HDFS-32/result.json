@@ -1,17 +1,48 @@
 {
-  "audit_evidence": "independent/evidence/final-audit.json",
+  "actor_v3": {
+    "attempts": 152,
+    "candidates": 0,
+    "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-32/actor-v3/checkpoint.json",
+    "confirmed_bugs": 0,
+    "effective": 128,
+    "fault_junit_seconds": 5143.698,
+    "goal": 128,
+    "healthy_junit_seconds": 55.559,
+    "historical_attempts_excluded": 80,
+    "raw_inventory": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-32/actor-v3/raw-inventory.json",
+    "runtime_identity": "MiniDFSCluster DN object slot + DataNode UUID + NN/BP role + raw BPID + RPC endpoint or dataset object",
+    "semantic_audit": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-32/actor-v3/audit-v3.json",
+    "status": "quality_complete",
+    "strict": 135,
+    "summary": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-32/actor-v3/summary.json",
+    "terminal_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-32/actor-v3/terminal-v3.json",
+    "test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool"
+  },
+  "audit_evidence": "actor-v3/audit-v3.json",
   "bug_mark": "none",
-  "campaign_budget": 80,
+  "campaign_budget": 128,
   "case_id": "HDFS-32",
   "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
-  "coverage_gain": 750,
-  "elapsed_seconds": 3206.874,
-  "fault_trials": 80,
-  "fully_applied_trials": 74,
-  "healthy_elapsed_seconds": 34.431,
+  "coverage_gain": 1812,
+  "coverage_scope": "current_actor_v3_original_JUnit_production_JaCoCo",
+  "elapsed_seconds": 5199.257,
+  "evidence": "actor-v3/terminal-v3.json",
+  "fault_trials": 152,
+  "fully_applied_trials": 135,
+  "healthy_elapsed_seconds": 55.559,
   "healthy_evidence": "independent/evidence/healthy-baseline.json",
   "healthy_expected_target_throw_count": 2,
-  "independent_evidence": "independent/evidence/campaign-state.json",
+  "historical_actor_unbound_campaign": {
+    "attempts": 80,
+    "audit": "independent/evidence/final-audit.json",
+    "coverage_gain": 750,
+    "elapsed_seconds": 3206.874,
+    "evidence": "independent/evidence/campaign-state.json",
+    "excluded_from_actor_v3_budget": true,
+    "strict": 74,
+    "target_after_fault": 47
+  },
+  "independent_evidence": "actor-v3/checkpoint.json",
   "invalid_probe_interference": {
     "archive": "/users/ZhenyuLi/hdfs32-invalid-probe-runs-20261006",
     "case_evidence": "independent/evidence/invalid-probe-interference",
@@ -22,7 +53,7 @@
     "old_budget_and_bug_stats_excluded": true,
     "old_probe_class_sha256": "5f69cd787b1d82a9acce9c2141abc332ef2845ebcaa9aec2a8abccee13edbb06"
   },
-  "junit_nonzero_trials": 21,
+  "junit_nonzero_trials": 7,
   "last_trial": {
     "all_target_throw_count": 0,
     "all_target_throw_events": [],
@@ -93,9 +124,10 @@
     "result_sha256": "c0cd341ec324a86ee0b1f7ca03df079dcda4e3aeaca5cbaec2146d2102802b1c",
     "trial_count": 3
   },
-  "max_fault_depth_attempted": 8,
-  "max_faults": 8,
+  "max_fault_depth_attempted": 5,
+  "max_faults": 10,
   "methodology": "original_cluster_junit_case_local_asm_jacoco_graph_free",
+  "new_bug": false,
   "new_selected_target_exception_trials": 0,
   "non_target_failure_breakdown": {
     "direct_injected_rpc_ioexception_before_target": 17,
@@ -103,8 +135,26 @@
     "timeout_before_target": 3
   },
   "production_line_gain": 820,
-  "production_method_gain": 130,
-  "reason": "Original two-NameNode/two-DataNode JUnit and exact DataNode guard verified; 47 strict target-retaining trials reproduced only the healthy expected IOException, with no new selected-target failure.",
+  "production_method_gain": 339,
+  "quality_review": {
+    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
+    "bug_mark_unchanged": "none",
+    "historical_counters": {
+      "coverage_gain": 750,
+      "elapsed_seconds": 3206.874,
+      "fault_trials": 80,
+      "fully_applied_trials": 74,
+      "strict_injections": 74,
+      "target_after_fault": 47
+    },
+    "historical_counters_not_current_quality_effective": true,
+    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
+    "prior_status": "quality_complete",
+    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
+    "resolution": "Fresh actor-bound V3 reached its effective goal with independent same-UUID/BPID target and all-raw SHA audits.",
+    "reviewed_at_utc": "2026-10-07T06:52:08+00:00"
+  },
+  "reason": "Selected IOException is expected in both healthy JUnit seeds; all effective actor-bound trials retained the same selected target signature. No differing selected outcome was observed.",
   "recorder_error_path_verified": true,
   "secondary_observation": {
     "classification": "source_reviewed_non_target_test_assumption_after_replica_replacement",
@@ -113,11 +163,12 @@
     "run_id": "trial-047",
     "target_reached_after_fault": false
   },
-  "selected_target_throw_after_fault_trials": 47,
-  "status": "actor_identity_recheck_pending",
-  "stop_reason": "80_trial_budget_complete_no_late_new_production_or_stable_io",
-  "strict_injections": 74,
-  "target_after_fault": 47,
+  "selected_target_throw_after_fault_trials": 128,
+  "status": "quality_complete",
+  "stop_reason": "effective_budget_met_pending_independent_audit",
+  "strict_injections": 135,
+  "target_after_fault": 128,
+  "target_exception_after_fault_trials": 128,
   "target_reached": true,
   "target_retaining_junit_nonzero_trials": 0,
   "test_mapping_review": {
@@ -126,22 +177,5 @@
     "selected_test": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
     "source_review_file": "hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
     "target_source_file": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java"
-  },
-  "quality_review": {
-    "reviewed_at_utc": "2026-10-07T06:52:08+00:00",
-    "audit": "audits/hdfs-hbase-quality-2026-10-07.md",
-    "prior_status": "quality_complete",
-    "issue": "Runtime fault selector does not prove the specific communicating actor on multi-actor I/O; postfault target and I/O actor identity must be reconciled against raw evidence or rerun with actor-aware hook.",
-    "historical_counters_not_current_quality_effective": true,
-    "historical_counters": {
-      "fault_trials": 80,
-      "fully_applied_trials": 74,
-      "strict_injections": 74,
-      "target_after_fault": 47,
-      "coverage_gain": 750,
-      "elapsed_seconds": 3206.874
-    },
-    "required_action": "Audit raw actor mappings; add actor-aware hook and rerun unresolved plans before restoring quality_complete.",
-    "bug_mark_unchanged": "none"
   }
 }
