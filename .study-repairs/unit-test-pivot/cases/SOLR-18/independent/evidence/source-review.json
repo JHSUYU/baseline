@@ -1,0 +1,88 @@
+{
+  "campaign_counts": {
+    "attempts": 124,
+    "effective_target_retaining": 80,
+    "junit_nonzero": 33,
+    "maximum_fault_depth": 8,
+    "production_line_gain": 311,
+    "production_method_gain": 41,
+    "production_probe_gain": 312,
+    "selected_target_assertion_throws": 0,
+    "strict_ordered_injection": 117,
+    "target_retaining_junit_nonzero": 2
+  },
+  "case_id": "SOLR-18",
+  "conclusion": "No selected equal-version alias JSON assertion failure under 80 valid ordered fault trials. This is a bounded negative result for the original JUnit and observed SolrZkClient I/O sites; the 1353 pending feedback plans were not run after the explicit budget was met.",
+  "dynamic_identity": "First applyModificationAndExportToZk whose stack includes the original testProperties method, then the first version-1 cmp=0 JSON-equality check on the same AliasesManager before a later apply and before TEST_FINISHED. The test body stack tag excludes tearDown-induced modifications.",
+  "fault_model": "Ordered KeeperException.ConnectionLossException at observed SolrZkClient getData/setData/exists method entries. First 15 trials used /aliases.json; second phase observed all ZooKeeper paths in the same original test. A valid trial requires all faults matched and applied in order and the selected body-origin version-1 check after the last fault.",
+  "healthy_expectation": "Original JUnit passed ran=1 ignored=0 failures=0, no assumption skip. Instrumented healthy passed, selected JSON equality true, 13 equal-version checks, 0 target throws.",
+  "junit_nonzero_review": {
+    "categories": {
+      "client_http_response_timeout": 5,
+      "direct_keeper_connection_loss": 7,
+      "remote_cluster_property_read_error": 2,
+      "remote_collection_activation_timeout": 2,
+      "remote_collection_setup_error": 6,
+      "remote_connection_loss": 7,
+      "remote_solr_exception": 4
+    },
+    "interpretation": "The 33 nonzero JUnit outcomes are fault-associated test or remote-cluster failures; only 7 have the injected KeeperException at the top-level JUnit failure stack. The two target-retaining failures, trial-003 and trial-014, both throw the injected ConnectionLossException from the original test raw /aliases.json getData at AliasIntegrationTest.java:120 after the selected equality check; neither throws at setIfNewer:2347. Other remote and timeout classes are recorded separately and are not counted as selected-target bugs."
+  },
+  "late_signal_review": {
+    "observed": {
+      "extend": true,
+      "late_new_production_lines_requiring_source_review": [
+        {
+          "line": "org/apache/solr/common/cloud/ZkStateReader$StateWatcher:1352",
+          "trial": "trial-118"
+        },
+        {
+          "line": "org/apache/solr/common/cloud/ZkStateReader$StateWatcher:1353",
+          "trial": "trial-118"
+        }
+      ],
+      "late_new_production_methods": [],
+      "late_new_production_probes": [
+        {
+          "probe": "org/apache/solr/common/cloud/ZkStateReader$StateWatcher#3",
+          "trial": "trial-118"
+        },
+        {
+          "probe": "org/apache/solr/common/cloud/ZkStateReader$StateWatcher#4",
+          "trial": "trial-118"
+        }
+      ],
+      "late_stable_new_io_families": [
+        {
+          "family": "SolrZkClient.getData:/collections/collection1meta/state.json:recoveryExecutor-N-thread-N-processing-n:port.N.N.N:port_solr x:collectionNmeta_shardN_replica_nN c:collectionNmeta s:shardN r:core_nodeN",
+          "first_trial": 75,
+          "valid_observations": 2
+        },
+        {
+          "family": "SolrZkClient.exists:/collections/collection1meta/state.json:recoveryExecutor-N-thread-N-processing-n:port.N.N.N:port_solr x:collectionNmeta_shardN_replica_nN c:collectionNmeta s:shardN r:core_nodeN",
+          "first_trial": 75,
+          "valid_observations": 2
+        },
+        {
+          "family": "SolrZkClient.exists:/collections/collection1meta/state.json:zkCallback-N-thread-N",
+          "first_trial": 75,
+          "valid_observations": 2
+        }
+      ]
+    },
+    "source_verification": "ZkStateReader$StateWatcher.process source lines1352-1353 log and return when a collection watch is no longer interesting. This is the collection-state watcher, distinct from AliasesManager.setIfNewer at line2347. The three stable new target-before I/O families are /collections/collection1meta/state.json reads/existence checks from recoveryExecutor or zkCallback, not /aliases.json. They may merit a separate cluster-state study; they do not show a new alias JSON mismatch. The delegated budget remains 80 effective trials/max8; no automatic extension was applied."
+  },
+  "original_source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "original_test": "org.apache.solr.cloud.AliasIntegrationTest#testProperties",
+  "phase_1_alias_path": {
+    "attempts": 15,
+    "phase_1_probe_class_sha256": "323be8c38ff6f04e57a1127384f00ab6c675c0a561ceb1e11bc11fa759a6976c",
+    "stop_reason": "alias_path_observed_frontier_exhausted",
+    "strict": 13,
+    "target_retaining": 4
+  },
+  "provisional_quarantine": "Five exploratory runs using a recorder that could misidentify tearDown apply as test body were archived under independent/evidence/provisional-before-body-origin; none count in the 124 attempts or 80 effective trials.",
+  "raw_run_root": "/users/ZhenyuLi/solr18-independent-runs",
+  "selected_check": "AliasesManager.setIfNewer: equal ZK version (cmp=0) requires equal aliases JSON; original Arrays.equals BCI109 and selected AssertionError ATHROW BCI148",
+  "selected_source": "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java:2347"
+}
