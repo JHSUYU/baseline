@@ -1,3 +1,5 @@
+> **Actor identity recheck pending.** Earlier fault trials, coverage, and elapsed time are preserved under `legacy_coarse_actor` in `result.json` and in the original raw evidence. Their selectors did not establish the same runtime actor across runs. An actor-aware V2 campaign is required before this check counts as quality complete. [Independent audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
+
 # SOLR-19: core node identity before core creation
 
 - Original Solr 8.11.4 source commit: `e27f44e`; `independent/solr-source` is a read-only link to the clean SOLR-05 source worktree to save disk space. All classes, temp state, traces, and checkpoints are case-local.

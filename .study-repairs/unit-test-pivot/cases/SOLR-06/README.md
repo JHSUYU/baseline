@@ -1,3 +1,5 @@
+> **Actor identity recheck pending.** Earlier fault trials, coverage, and elapsed time are preserved under `legacy_coarse_actor` in `result.json` and in the original raw evidence. Their selectors did not establish the same runtime actor across runs. An actor-aware V2 campaign is required before this check counts as quality complete. [Independent audit](../../audits/completed-solr-actor-identity-2026-10-07.md).
+
 # SOLR-06: PULL replica leader assertion
 
 The selected check is the assertion at `ZkController.register` line 1315 in Solr 8.11.4 source revision `e27f44e3d78dfcec230c97e0a1240e3751daeff9`:

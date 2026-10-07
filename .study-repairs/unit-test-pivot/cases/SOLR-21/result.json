@@ -1,239 +1,12 @@
 {
   "baseline_seconds": 103.209,
   "bug_mark": "none",
-  "calibration": {
-    "elapsed_seconds": 16.615,
-    "exact_fault_applied": true,
-    "original_junit": {
-      "failures": 0,
-      "ignored": 0,
-      "ran": 1
-    },
-    "target_assertion_throw_after_fault": 0,
-    "target_guard_after_fault": 1,
-    "target_guard_same_thread_after_fault": 1,
-    "trial": "calibration/file-read"
-  },
-  "campaign": {
-    "budget": {
-      "max_faults": 8,
-      "max_trials": 80
-    },
-    "case_id": "SOLR-21",
-    "elapsed_seconds": 1581.408,
-    "fault_trials": 80,
-    "first_fault_families": {
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 1,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/counter": 1,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 1,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/collections/c8n_1x1": 7,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf": 7,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/configoverlay.json": 6,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/configsetprops.json": 5,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/schema.xml": 5,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/solrconfig.xml": 6,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 2,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L258->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef.get#L811->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
-      "FAULT:ZK_NATIVE:exists|org.apache.solr.core.RequestParams.getFreshRequestParams#L160->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/params.json": 5,
-      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.client.solrj.impl.ZkDistribStateManager.listData#L70->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms": 1,
-      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.cloud.LeaderElector.checkIfIamLeader#L107->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect/shard1/election": 1,
-      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.cloud.ShardLeaderElectionContext.waitForReplicasToComeUp#L396->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect/shard1/election": 1,
-      "FAULT:ZK_NATIVE:getChildren|org.apache.solr.common.cloud.ZkStateReader$StateWatcher.refreshAndWatchChildren#L1405->SolrZkClient.lambda$getChildren$5(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
-      "FAULT:ZK_NATIVE:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/counter": 1,
-      "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkController.getLeaderProps#L1495->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leaders/shard1/leader": 1,
-      "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 1,
-      "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkSolrResourceLoader.openResource#L84->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/solrconfig.xml": 6,
-      "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.fetchCollectionState#L1641->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
-      "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 2,
-      "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/collections/c8n_1x1": 7,
-      "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect": 1,
-      "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect/shard1": 1,
-      "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ShardLeaderElectionContextBase.<init>#L82->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leaders": 1,
-      "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 1,
-      "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms": 1,
-      "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 1,
-      "FAULT:ZK_NATIVE:setData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/counter": 1,
-      "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 1,
-      "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L262->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1
-    },
-    "io_family_gain": 0,
-    "latest": {
-      "applied_faults": 3,
-      "attempts": 1,
-      "elapsed_seconds": 21.332,
-      "exact_target_throw_after_last_fault": 0,
-      "exact_target_throw_count": 0,
-      "fault_sequence": [
-        {
-          "hitOrdinal": 1,
-          "marker": "FAULT:ZK_NATIVE:exists",
-          "resource": "/collections/c8n_1x1",
-          "siteId": "org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
-          "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
-        },
-        {
-          "hitOrdinal": 1,
-          "marker": "FAULT:ZK_NATIVE:exists",
-          "resource": "/configs/conf/configsetprops.json",
-          "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
-          "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
-        },
-        {
-          "hitOrdinal": 2,
-          "marker": "FAULT:ZK_NATIVE:exists",
-          "resource": "/configs/conf/configsetprops.json",
-          "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
-          "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
-        }
-      ],
-      "first_family": "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/collections/c8n_1x1",
-      "io_observed_count": 667,
-      "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-21/independent/campaign/trials/0080-193ce9d6796df7ac47e4/attempt-01/jacoco.exec",
-      "junit_exit": 0,
-      "junit_gate": [
-        1,
-        0,
-        0
-      ],
-      "last_family": "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/configsetprops.json",
-      "new_io_families": 0,
-      "new_production_probes": 0,
-      "planned_faults": 3,
-      "production_probes_covered": 19351,
-      "status": "checked",
-      "strict_injection": true,
-      "target_guard_after_last_fault": 1,
-      "target_guard_count": 1,
-      "target_preserved": true,
-      "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-21/independent/campaign/trials/0080-193ce9d6796df7ac47e4/attempt-01/events.jsonl",
-      "trial_number": 80
-    },
-    "methodology": "coverage_io_independent_asm_jacoco",
-    "post_fault_target_reach_trials": 80,
-    "production_probe_gain": 78,
-    "status": "budget_complete",
-    "strict_injections": 80,
-    "target_exception_after_fault_trials": 0,
-    "target_preserved_trials": 80,
-    "total_attempts": 80
-  },
   "case_id": "SOLR-21",
   "cluster_test": "org.apache.solr.cloud.api.collections.CollectionReloadTest#testReloadedLeaderStateAfterZkSessionLoss",
-  "coverage_audit": {
-    "excluded_runtime_woven_classes": [
-      "CoreContainer",
-      "CorePropertiesLocator",
-      "SolrZkClient"
-    ],
-    "healthy": {
-      "covered_production_branch_outcomes": 5706,
-      "covered_production_methods": 4731,
-      "original_release_jar_count": 3
-    },
-    "healthy_plus_valid": {
-      "covered_production_branch_outcomes": 5741,
-      "covered_production_methods": 4738,
-      "original_release_jar_count": 3
-    },
-    "methodology": "original_release_jar_jacoco_union",
-    "new_production_branch_outcomes": 35,
-    "new_production_methods": 7,
-    "strict_target_preserving_trial_numbers": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      11,
-      12,
-      13,
-      14,
-      15,
-      16,
-      17,
-      18,
-      19,
-      20,
-      21,
-      22,
-      23,
-      24,
-      25,
-      26,
-      27,
-      28,
-      29,
-      30,
-      31,
-      32,
-      33,
-      34,
-      35,
-      36,
-      37,
-      38,
-      39,
-      40,
-      41,
-      42,
-      43,
-      44,
-      45,
-      46,
-      47,
-      48,
-      49,
-      50,
-      51,
-      52,
-      53,
-      54,
-      55,
-      56,
-      57,
-      58,
-      59,
-      60,
-      61,
-      62,
-      63,
-      64,
-      65,
-      66,
-      67,
-      68,
-      69,
-      70,
-      71,
-      72,
-      73,
-      74,
-      75,
-      76,
-      77,
-      78,
-      79,
-      80
-    ],
-    "valid_trial_count": 80
-  },
-  "coverage_gain": 78,
-  "elapsed_seconds": 1684.617,
+  "coverage_gain": 0,
+  "elapsed_seconds": 0.0,
   "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-21/independent/campaign/production-coverage-audit.json",
-  "excluded_setup_attempts": [
-    {
-      "elapsed_seconds": 19.37,
-      "failure": "ASM local-slot VerifyError after JaCoCo weaving; fixed by deriving slots from original invocation/store sequence; no target or fault outcome counted",
-      "run": "healthy-02"
-    }
-  ],
-  "fault_trials": 81,
+  "fault_trials": 0,
   "healthy_original_junit": "ran=1 ignored=0 failures=0",
   "healthy_repeated_original_junit_passed": 2,
   "healthy_target_guard_hits": 2,
@@ -241,744 +14,990 @@
   "healthy_target_source": "SOLR/RELOAD/c8n_1x1/shard1/core_node2",
   "healthy_target_throw_hits": 0,
   "io_family_gain": 0,
-  "io_novelty_audit": {
-    "dynamic_election_name_artifact_gain": 0,
-    "healthy_raw_io_families": 46,
-    "healthy_semantic_io_families": 46,
-    "identity_injection_unchanged": true,
-    "methodology": "exact_runtime_callsite_source_and_path_with_election_ephemeral_suffix_normalized_for_feedback_only",
-    "trials": [
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 14,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 1,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 4,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 2,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 19,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 3,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 4,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 5,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 6,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 7,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 8,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 9,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 10,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 11,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 7,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 12,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 13,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 14,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 15,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 16,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 2,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 17,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 18,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 19,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 5,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 20,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 21,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 2,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 22,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 23,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 24,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 25,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 3,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 26,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 27,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 28,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 29,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 30,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 31,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 32,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 33,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 34,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 35,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 36,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 37,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 38,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 39,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 40,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 41,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 42,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 43,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 4,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 44,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 45,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 46,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 47,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 48,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 49,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 50,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 51,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 52,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 53,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 54,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 55,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 56,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 4,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 57,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 58,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 59,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 60,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 61,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 62,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 1,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 63,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 64,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 65,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 66,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 67,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 68,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 4,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 69,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 70,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 71,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 72,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 73,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 74,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 75,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 76,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 77,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 78,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 9,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 79,
-        "valid_strict_target_preserving": true
-      },
-      {
-        "dynamic_election_resource_names_observed": 0,
-        "production_probe_gain": 0,
-        "recounted_raw_io_family_gain": 0,
-        "reported_raw_io_family_gain": 0,
-        "semantic_io_family_gain": 0,
-        "trial_number": 80,
-        "valid_strict_target_preserving": true
+  "legacy_coarse_actor": {
+    "calibration": {
+      "elapsed_seconds": 16.615,
+      "exact_fault_applied": true,
+      "original_junit": {
+        "failures": 0,
+        "ignored": 0,
+        "ran": 1
+      },
+      "target_assertion_throw_after_fault": 0,
+      "target_guard_after_fault": 1,
+      "target_guard_same_thread_after_fault": 1,
+      "trial": "calibration/file-read"
+    },
+    "campaign": {
+      "budget": {
+        "max_faults": 8,
+        "max_trials": 80
+      },
+      "case_id": "SOLR-21",
+      "elapsed_seconds": 1581.408,
+      "fault_trials": 80,
+      "first_fault_families": {
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 1,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.client.solrj.impl.ZkDistribStateManager.hasData#L60->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/counter": 1,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 1,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/collections/c8n_1x1": 7,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf": 7,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/configoverlay.json": 6,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/configsetprops.json": 5,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/schema.xml": 5,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/solrconfig.xml": 6,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkShardTerms.registerWatcher#L403->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 2,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L258->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef.get#L811->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
+        "FAULT:ZK_NATIVE:exists|org.apache.solr.core.RequestParams.getFreshRequestParams#L160->SolrZkClient.lambda$exists$2(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/params.json": 5,
+        "FAULT:ZK_NATIVE:getChildren|org.apache.solr.client.solrj.impl.ZkDistribStateManager.listData#L70->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms": 1,
+        "FAULT:ZK_NATIVE:getChildren|org.apache.solr.cloud.LeaderElector.checkIfIamLeader#L107->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect/shard1/election": 1,
+        "FAULT:ZK_NATIVE:getChildren|org.apache.solr.cloud.ShardLeaderElectionContext.waitForReplicasToComeUp#L396->SolrZkClient.lambda$getChildren$4(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect/shard1/election": 1,
+        "FAULT:ZK_NATIVE:getChildren|org.apache.solr.common.cloud.ZkStateReader$StateWatcher.refreshAndWatchChildren#L1405->SolrZkClient.lambda$getChildren$5(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)Ljava/util/List;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
+        "FAULT:ZK_NATIVE:getData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.getData#L88->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/counter": 1,
+        "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkController.getLeaderProps#L1495->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leaders/shard1/leader": 1,
+        "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkShardTerms.refreshTerms#L352->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 1,
+        "FAULT:ZK_NATIVE:getData|org.apache.solr.cloud.ZkSolrResourceLoader.openResource#L84->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/solrconfig.xml": 6,
+        "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.fetchCollectionState#L1641->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1,
+        "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 2,
+        "FAULT:ZK_NATIVE:getData|org.apache.solr.common.cloud.ZkStateReader.readConfigName#L311->SolrZkClient.lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/collections/c8n_1x1": 7,
+        "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect": 1,
+        "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.LeaderElector.setup#L371->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leader_elect/shard1": 1,
+        "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ShardLeaderElectionContextBase.<init>#L82->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/leaders": 1,
+        "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1": 1,
+        "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms": 1,
+        "FAULT:ZK_NATIVE:makePath|org.apache.solr.cloud.ZkShardTerms.ensureTermNodeExist#L332->SolrZkClient.lambda$makePath$10(Ljava/lang/String;[BLorg/apache/zookeeper/CreateMode;)Ljava/lang/Object;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 1,
+        "FAULT:ZK_NATIVE:setData|org.apache.solr.client.solrj.impl.ZkDistribStateManager.setData#L157->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/counter": 1,
+        "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.ZkShardTerms.saveTerms#L306->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/terms/shard1": 1,
+        "FAULT:ZK_NATIVE:setData|org.apache.solr.cloud.overseer.ZkStateWriter.writePendingUpdates#L262->SolrZkClient.lambda$setData$7(Ljava/lang/String;[BI)Lorg/apache/zookeeper/data/Stat;|SOLR/COLLECTION/c8n_1x1|/collections/c8n_1x1/state.json": 1
+      },
+      "io_family_gain": 0,
+      "latest": {
+        "applied_faults": 3,
+        "attempts": 1,
+        "elapsed_seconds": 21.332,
+        "exact_target_throw_after_last_fault": 0,
+        "exact_target_throw_count": 0,
+        "fault_sequence": [
+          {
+            "hitOrdinal": 1,
+            "marker": "FAULT:ZK_NATIVE:exists",
+            "resource": "/collections/c8n_1x1",
+            "siteId": "org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+            "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+          },
+          {
+            "hitOrdinal": 1,
+            "marker": "FAULT:ZK_NATIVE:exists",
+            "resource": "/configs/conf/configsetprops.json",
+            "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+            "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+          },
+          {
+            "hitOrdinal": 2,
+            "marker": "FAULT:ZK_NATIVE:exists",
+            "resource": "/configs/conf/configsetprops.json",
+            "siteId": "org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;",
+            "sourceKey": "SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1"
+          }
+        ],
+        "first_family": "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.CloudConfigSetService.createCoreResourceLoader#L75->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/collections/c8n_1x1",
+        "io_observed_count": 667,
+        "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-21/independent/campaign/trials/0080-193ce9d6796df7ac47e4/attempt-01/jacoco.exec",
+        "junit_exit": 0,
+        "junit_gate": [
+          1,
+          0,
+          0
+        ],
+        "last_family": "FAULT:ZK_NATIVE:exists|org.apache.solr.cloud.ZkController.pathExists#L1234->SolrZkClient.lambda$exists$3(Ljava/lang/String;)Ljava/lang/Boolean;|SOLR/RELOAD_CORE/c8n_1x1_shard1_replica_n1|/configs/conf/configsetprops.json",
+        "new_io_families": 0,
+        "new_production_probes": 0,
+        "planned_faults": 3,
+        "production_probes_covered": 19351,
+        "status": "checked",
+        "strict_injection": true,
+        "target_guard_after_last_fault": 1,
+        "target_guard_count": 1,
+        "target_preserved": true,
+        "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-21/independent/campaign/trials/0080-193ce9d6796df7ac47e4/attempt-01/events.jsonl",
+        "trial_number": 80
+      },
+      "methodology": "coverage_io_independent_asm_jacoco",
+      "post_fault_target_reach_trials": 80,
+      "production_probe_gain": 78,
+      "status": "budget_complete",
+      "strict_injections": 80,
+      "target_exception_after_fault_trials": 0,
+      "target_preserved_trials": 80,
+      "total_attempts": 80
+    },
+    "coverage_audit": {
+      "excluded_runtime_woven_classes": [
+        "CoreContainer",
+        "CorePropertiesLocator",
+        "SolrZkClient"
+      ],
+      "healthy": {
+        "covered_production_branch_outcomes": 5706,
+        "covered_production_methods": 4731,
+        "original_release_jar_count": 3
+      },
+      "healthy_plus_valid": {
+        "covered_production_branch_outcomes": 5741,
+        "covered_production_methods": 4738,
+        "original_release_jar_count": 3
+      },
+      "methodology": "original_release_jar_jacoco_union",
+      "new_production_branch_outcomes": 35,
+      "new_production_methods": 7,
+      "strict_target_preserving_trial_numbers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67,
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80
+      ],
+      "valid_trial_count": 80
+    },
+    "coverage_gain": 78,
+    "elapsed_seconds": 1684.617,
+    "excluded_setup_attempts": [
+      {
+        "elapsed_seconds": 19.37,
+        "failure": "ASM local-slot VerifyError after JaCoCo weaving; fixed by deriving slots from original invocation/store sequence; no target or fault outcome counted",
+        "run": "healthy-02"
       }
     ],
-    "valid_raw_io_family_gain": 0,
-    "valid_semantic_io_family_gain": 0
+    "fault_trials": 81,
+    "io_family_gain": 0,
+    "io_novelty_audit": {
+      "dynamic_election_name_artifact_gain": 0,
+      "healthy_raw_io_families": 46,
+      "healthy_semantic_io_families": 46,
+      "identity_injection_unchanged": true,
+      "methodology": "exact_runtime_callsite_source_and_path_with_election_ephemeral_suffix_normalized_for_feedback_only",
+      "trials": [
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 14,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 1,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 4,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 2,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 19,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 3,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 4,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 5,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 6,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 7,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 8,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 9,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 10,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 11,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 7,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 12,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 13,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 14,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 15,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 16,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 2,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 17,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 18,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 19,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 5,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 20,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 21,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 2,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 22,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 23,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 24,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 25,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 3,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 26,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 27,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 28,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 29,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 30,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 31,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 32,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 33,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 34,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 35,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 36,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 37,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 38,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 39,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 40,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 41,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 42,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 43,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 4,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 44,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 45,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 46,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 47,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 48,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 49,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 50,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 51,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 52,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 53,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 54,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 55,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 56,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 4,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 57,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 58,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 59,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 60,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 61,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 62,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 1,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 63,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 64,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 65,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 66,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 67,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 68,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 4,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 69,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 70,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 71,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 72,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 73,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 74,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 75,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 76,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 77,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 78,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 9,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 79,
+          "valid_strict_target_preserving": true
+        },
+        {
+          "dynamic_election_resource_names_observed": 0,
+          "production_probe_gain": 0,
+          "recounted_raw_io_family_gain": 0,
+          "reported_raw_io_family_gain": 0,
+          "semantic_io_family_gain": 0,
+          "trial_number": 80,
+          "valid_strict_target_preserving": true
+        }
+      ],
+      "valid_raw_io_family_gain": 0,
+      "valid_semantic_io_family_gain": 0
+    },
+    "post_fault_target_reach_trials": 81,
+    "prior_quality_complete": null,
+    "prior_status": "quality_complete",
+    "production_branch_outcomes_gain": 35,
+    "production_methods_gain": 7,
+    "quality_scope": "Unchanged CollectionReloadTest reload-before-session-expiry target path with exact core/ZK I/O, 80 bounded fault trials, and postfault same-core guard; later session-expiry path not tested at this assertion.",
+    "raw_io_family_gain": 0,
+    "reason": "Quality complete for the original reload-before-session-expiry path: 80/80 campaign faults plus one calibration precisely injected and followed by the exact target check, with no target AssertionError; original JUnit passed every run. Original production JaCoCo gained 7 methods and 35 branch outcomes; semantic I/O family gain 0. The session expiry occurs after this target check.",
+    "stable_exact_file_io_selectors": 1,
+    "stable_exact_pretarget_io_selectors": 95,
+    "strict_injections": 81,
+    "target_after_fault": 81,
+    "target_exception_after_fault_trials": 0
   },
   "methodology": "coverage_io_independent_asm_jacoco",
-  "post_fault_target_reach_trials": 81,
-  "production_branch_outcomes_gain": 35,
-  "production_methods_gain": 7,
-  "quality_scope": "Unchanged CollectionReloadTest reload-before-session-expiry target path with exact core/ZK I/O, 80 bounded fault trials, and postfault same-core guard; later session-expiry path not tested at this assertion.",
+  "post_fault_target_reach_trials": 0,
+  "production_branch_outcomes_gain": 0,
+  "production_methods_gain": 0,
+  "quality_complete": false,
   "raw_io_family_gain": 0,
-  "reason": "Quality complete for the original reload-before-session-expiry path: 80/80 campaign faults plus one calibration precisely injected and followed by the exact target check, with no target AssertionError; original JUnit passed every run. Original production JaCoCo gained 7 methods and 35 branch outcomes; semantic I/O family gain 0. The session expiry occurs after this target check.",
+  "reason": "Actor identity recheck pending; previous campaign is preserved under legacy_coarse_actor.",
   "source_review": {
     "code_condition": "docCollection.getReplica(coreNodeName) must be nonnull; an exact AssertionError would mean cluster state did not contain the reloaded core replica",
     "decision": "No exact target assertion in 81 strict posttarget injections. Bounded high-quality negative, not proof for other workloads or later recovery windows.",
@@ -986,11 +1005,11 @@
     "sequence_limit": "JUnit reloads before explicitly expiring the ZooKeeper session; target observed during reload only",
     "source": "CoreContainer.reload(String, UUID) at CoreContainer.java:1765"
   },
-  "stable_exact_file_io_selectors": 1,
-  "stable_exact_pretarget_io_selectors": 95,
-  "status": "quality_complete",
-  "strict_injections": 81,
-  "target_after_fault": 81,
+  "stable_exact_file_io_selectors": 0,
+  "stable_exact_pretarget_io_selectors": 0,
+  "status": "actor_identity_recheck_pending",
+  "strict_injections": 0,
+  "target_after_fault": 0,
   "target_exception_after_fault_trials": 0,
   "target_reached": true,
   "updated_at": 1791330621.0411239
