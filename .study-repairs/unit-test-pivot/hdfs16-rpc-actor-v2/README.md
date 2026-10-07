@@ -25,23 +25,41 @@ UUID/BP binding and the remote port was registered by that translator.
 Unbound, incomplete, or unrelated client RPCs are recorded as unbound and
 cannot match a DN plan.
 
-The new selector is `(marker, API, senderActor, actor-local ordinal,
+`PatchMiniDfsRole.java` also instruments the sole return of
+`MiniDFSCluster.getDataNodes()` to register each DataNode's list position,
+object identity, and UUID. The original JUnit explicitly takes index 0 for
+its manual registration. Fault plans use stable `dn0`/`dn1` roles so that a
+new MiniDFSCluster can replay them even though raw UUIDs and block-pool IDs
+change. Every selected RPC still logs and checks its concrete UUID/BP and
+registered NN peer. A conflicting role mapping cannot inject. Early BP RPCs
+before the JUnit obtains the DataNode list are recorded as unbound and cannot
+inject.
+
+The new selector is `(marker, API, senderRole, role-local ordinal,
 exception)` in a five-column TSV. The old four-column plans are rejected.
 `BlockInfo.setGenerationStampAndVerifyReplicas` keeps the original exact guard
 hook: `TARGET_GUARD` records block ID, caller, current/proposed generation
 stamp, and guard outcome; `TARGET_EXCEPTION` keeps the same context.
 `strict_receipt.py` requires each ordered fault to have an active same-thread
-DN binding, a registered NN port, and the selected block/caller/proposed-stamp
-guard **after the last fault**. A target exception remains a candidate until
-source review and a clean same-plan replay.
+DN binding, a registered NN port, and the selected original-test guard
+**after the last fault**. The original JUnit creates a single file and fresh
+block IDs/stamps each run, so the queue stores its stable
+`BlockManager.updateLastBlock` phase, not numeric IDs from a healthy seed.
+Each trial receipt records its concrete postfault block/caller/stamp triples;
+a target exception must match one such triple on the same thread. A target
+exception remains a candidate until source review and a clean same-plan
+replay.
 
 The source-derived overlay, including the preexisting target and edit-log
 hooks, is built at `build/overlay`; it never edits the historical case
 campaign or its files. Run `python3 build_offline.py` to compile against the
 released Hadoop jars, verify `Client`/translator/probe bytecode with ASM,
-assert the six bind sites and one NN endpoint registration, and run a no-cluster
-sender/peer/target smoke. The build receipt and generated source remain in
-ignored `build/` for inspection. The last offline build passed on 2026-10-07.
+assert six bind sites, one role hook and one NN endpoint registration, and
+run no-cluster sender/peer/target smoke. `strict_receipt.py --self-test` checks
+the same-thread actor and target context gate; `offline_smoke.py` verifies
+that two healthy runs with different UUIDs, block IDs and stamps generate one
+stable role-aware queue. The build receipt and generated source remain in
+ignored `build/` for inspection. These offline checks passed on 2026-10-07.
 
 ## Historical evidence and runtime plan
 
@@ -58,15 +76,20 @@ file-only trial is among the 40 effective historical trials. Prior JaCoCo
 coverage and elapsed times remain valid observations but cannot fill the V2
 DN identity gap.
 
-After node1 is explicitly released, run two fresh original JUnit healthy
-calibrations in separate scratch directories with this overlay. Require two
-distinct DN UUID/BP actors, the manually issued `main` registration to carry
-DataNode 0's UUID, a registered actual NN peer port for every selected DN RPC,
-and the expected block/caller/proposed-stamp target contexts. Then start a
-new resumable actor-aware campaign/checkpoint; seed only observed V2
-selectors, preserve per-trial raw trace/plan/JaCoCo/JUnit/time, and apply
-`strict_receipt.py` before counting an effective trial. Keep historical
-client/file evidence and old 80-round totals in their existing archive.
+After node1 is explicitly released, run `run_v2.py --name healthy-a` and
+`--name healthy-b` in separate scratch directories, then `calibrate_v2.py`.
+Calibration requires distinct DN0/DN1 UUIDs, manual `main` registration from
+DN0, actual registered NN peers, one concrete test-file block per run, and a
+common stable original-test target phase and role-aware I/O family. Only then
+initialize `campaign_v2.py`. Its new checkpoint has **zero** imported legacy
+trials, a base budget of 80 effective / max 8 faults / 320 attempts and an
+optional 128 / max 10 / 512 extension if the last eight effective trials add
+production method/branch coverage or actor-aware I/O. Every selected plan
+gets its own original-JUnit scratch, raw plan/trace/JaCoCo/coverage/time and
+`strict_receipt.py` gate. `audit_campaign_v2.py` independently recomputes
+the checkpoint from those raw artifacts. The controller stops at each whole
+JUnit boundary on `campaign-v2/PAUSE` and checks Java count and free disk
+before another run. Historical evidence stays in its existing archive.
 
 No HDFS cluster JUnit or new fuzz trial was run for this repair. HDFS-16
 remains `actor_identity_recheck_pending` until its own runtime calibration

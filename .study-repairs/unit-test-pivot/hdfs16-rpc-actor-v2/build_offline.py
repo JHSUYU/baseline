@@ -116,11 +116,14 @@ def main() -> None:
         [str(HADOOP / "bin/hadoop"), "classpath", "--glob"],
         env=env, text=True).strip()
     dependencies = sorted((HADOOP / "share/hadoop/tools/lib").glob("*.jar"))
-    cp = os.pathsep.join((str(OVERLAY), base_cp,
+    test_jar = HADOOP / "share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar"
+    cp = os.pathsep.join((str(OVERLAY), str(test_jar), base_cp,
+        *(str(path) for path in ASM_JARS),
         *(str(path) for path in dependencies)))
     command = [str(JDK / "javac"), "-J-Xmx2g", "-cp", cp,
                "-d", str(OVERLAY), str(HERE / "Probe.java"),
                str(HERE / "ProbeSmoke.java"),
+               str(HERE / "PatchMiniDfsRole.java"),
                str(generated_client), str(generated_translator)]
     compile_run = subprocess.run(command, env=env, text=True,
                                  stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -140,9 +143,21 @@ def main() -> None:
         raise RuntimeError("translator DN RPC bind count drift")
     if translator_disasm.count("Probe.registerNnPort") != 1:
         raise RuntimeError("translator NN endpoint registration drift")
+    test_class = "org/apache/hadoop/hdfs/MiniDFSCluster.class"
+    role_input = BUILD / "input" / test_class
+    role_input.parent.mkdir(parents=True, exist_ok=True)
+    with zipfile.ZipFile(test_jar) as archive:
+        role_input.write_bytes(archive.read(test_class))
+    subprocess.run([str(JDK / "java"), "-cp", cp, "PatchMiniDfsRole",
+                    str(role_input), str(OVERLAY / test_class)], check=True)
+    role_disasm = subprocess.check_output([str(JDK / "javap"), "-cp", str(OVERLAY),
+        "-c", "org.apache.hadoop.hdfs.MiniDFSCluster"], text=True)
+    if role_disasm.count("Probe.registerRoles") != 1:
+        raise RuntimeError("MiniDFSCluster DN list role hook missing or duplicated")
     verify_cp = os.pathsep.join((cp, *(str(path) for path in ASM_JARS)))
     for name in ("org/apache/hadoop/ipc/Client",
                  "org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB",
+                 "org/apache/hadoop/hdfs/MiniDFSCluster",
                  "org/apache/hadoop/hdfs/hdfs16independent/Probe"):
         verified = subprocess.run(
             [str(JDK / "java"), "-cp", verify_cp,
@@ -162,7 +177,7 @@ def main() -> None:
             raise RuntimeError(f"historical target/file hooks missing in {name}")
     smoke_plan = BUILD / "smoke-plan.tsv"
     smoke_trace = BUILD / "smoke-trace.jsonl"
-    smoke_plan.write_text("RPC_RESPONSE\tother\tdn:dn-one|bp:bp-one\t2\tEOFException\n")
+    smoke_plan.write_text("RPC_RESPONSE\tother\tdn0\t2\tEOFException\n")
     smoke_run = subprocess.run([str(JDK / "java"), "-cp", cp,
                                 "ProbeSmoke", str(smoke_plan), str(smoke_trace)],
                                check=True, text=True, stdout=subprocess.PIPE,
@@ -172,13 +187,24 @@ def main() -> None:
     observed = [event for event in events if event["event"] == "IO_OBSERVED"]
     guards = [event for event in events if event["event"] == "TARGET_GUARD"]
     if (len(applied) != 1 or applied[0]["senderActor"] != "dn:dn-one|bp:bp-one"
+        or applied[0]["senderRole"] != "dn0"
         or applied[0]["ordinal"] != 2 or applied[0]["peerPort"] != 19001
-        or [(event["senderActor"], event["ordinal"]) for event in observed]
-           != [("dn:dn-one|bp:bp-one", 1), ("dn:dn-one|bp:bp-one", 2),
-               ("dn:dn-two|bp:bp-one", 1)]
+        or [(event["senderRole"], event["ordinal"]) for event in observed]
+           != [("dn0", 1), ("dn0", 2), ("dn1", 1)]
         or len(guards) != 1 or guards[0]["blockId"] != 7
         or guards[0]["proposedGenerationStamp"] != 1002):
         raise RuntimeError(f"sender/target smoke failed: {smoke_run.stdout} {events}")
+    runner_classes = BUILD / "runner-classes"
+    runner_classes.mkdir(exist_ok=True)
+    test_cp = os.pathsep.join((str(OVERLAY), str(CASE / "source/test-resources"),
+        str(CASE / "source/test"),
+        str(HADOOP / "share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar"),
+        str(HADOOP / "share/hadoop/common/hadoop-common-3.4.3-tests.jar"),
+        *(str(path) for path in sorted((CASE / "deps").glob("*.jar"))),
+        base_cp, *(str(path) for path in dependencies)))
+    subprocess.run([str(JDK / "javac"), "-cp", test_cp, "-d", str(runner_classes),
+        str(CASE / "system-test/OriginalHdfs16Test.java"),
+        str(CASE / "system-test/CoverageDump.java")], check=True)
     receipt = {
         "case": "HDFS-16", "mode": "offline_compile_only",
         "source_jar": str(SOURCE_JAR),
@@ -187,9 +213,11 @@ def main() -> None:
         "generated_client_sha256": sha(client.encode()),
         "probe_sha256": sha((HERE / "Probe.java").read_bytes()),
         "translator_bound_rpc_methods": 6,
+        "minidfs_dn_list_role_hooks": 1,
         "known_nn_endpoint_smoke": "pass",
         "sender_actor_and_target_context_smoke": "pass",
         "client_coarse_rpc_hooks": 0,
+        "original_junit_and_coverage_runner_compiled": True,
         "overlay": str(OVERLAY), "status": "compile_asm_verification_and_sender_smoke_pass",
     }
     (BUILD / "offline-receipt.json").write_text(json.dumps(receipt, indent=2) + "\n")

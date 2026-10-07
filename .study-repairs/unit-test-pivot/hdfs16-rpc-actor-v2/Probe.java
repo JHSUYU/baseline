@@ -16,20 +16,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.hadoop.hdfs.server.protocol.DatanodeRegistration;
+import org.apache.hadoop.hdfs.server.datanode.DataNode;
 
 /** Case-local recorder and exact ordered fault gate; no graph runtime. */
 public final class Probe {
   private static final class Fault {
     final String marker;
     final String api;
-    final String senderActor;
+    final String senderRole;
     final int ordinal;
     final String exception;
 
-    Fault(String marker, String api, String senderActor, int ordinal, String exception) {
+    Fault(String marker, String api, String senderRole, int ordinal, String exception) {
       this.marker = marker;
       this.api = api;
-      this.senderActor = senderActor;
+      this.senderRole = senderRole;
       this.ordinal = ordinal;
       this.exception = exception;
     }
@@ -38,6 +39,9 @@ public final class Probe {
   private static final List<Fault> FAULTS = new ArrayList<Fault>();
   private static final Map<String, Integer> HITS = new HashMap<String, Integer>();
   private static final Set<Integer> NN_PORTS = new HashSet<Integer>();
+  private static final Map<String, String> DN_ROLES = new HashMap<String, String>();
+  private static final Map<String, String> ROLE_UUIDS = new HashMap<String, String>();
+  private static final Set<String> CONFLICTED_ROLES = new HashSet<String>();
   private static BufferedWriter writer;
   private static long sequence;
   private static int nextFault;
@@ -45,6 +49,8 @@ public final class Probe {
   private static final ThreadLocal<String> LAST_TARGET =
       new ThreadLocal<String>();
   private static final ThreadLocal<String> DN_RPC_ACTOR =
+      new ThreadLocal<String>();
+  private static final ThreadLocal<String> DN_RPC_ROLE =
       new ThreadLocal<String>();
 
   static {
@@ -92,7 +98,8 @@ public final class Probe {
     try {
       writer.write("{\"seq\":" + (++sequence) + ",\"event\":\"" + event +
           "\",\"thread\":\"" + escape(Thread.currentThread().getName()) +
-          "\"" + fields + "}\n");
+          "\",\"threadId\":" + Thread.currentThread().getId() +
+          fields + "}\n");
       writer.flush();
     } catch (IOException error) {
       throw new IllegalStateException("HDFS-16 trace write failed", error);
@@ -143,6 +150,46 @@ public final class Probe {
     return "other";
   }
 
+  /** The original JUnit obtains DN0 from this exact MiniDFSCluster list. */
+  public static synchronized void registerRoles(List<DataNode> nodes) {
+    if (nodes == null) return;
+    for (int index = 0; index < nodes.size(); index++) {
+      DataNode node = nodes.get(index);
+      String uuid = node == null ? null : node.getDatanodeUuid();
+      if (uuid == null || uuid.isEmpty()) continue;
+      String role = "dn" + index;
+      String existing = DN_ROLES.get(uuid);
+      String roleUuid = ROLE_UUIDS.get(role);
+      if (CONFLICTED_ROLES.contains(role)) continue;
+      if ((existing != null && !existing.equals(role)) ||
+          (roleUuid != null && !roleUuid.equals(uuid))) {
+        DN_ROLES.remove(uuid); // Conflicting list position is never injectible.
+        if (roleUuid != null) DN_ROLES.remove(roleUuid);
+        ROLE_UUIDS.remove(role);
+        CONFLICTED_ROLES.add(role);
+        emit("DN_ROLE_CONFLICT", ",\"senderRole\":\"" + role +
+            "\",\"dnUuid\":\"" + escape(uuid) + "\"");
+        continue;
+      }
+      DN_ROLES.put(uuid, role);
+      ROLE_UUIDS.put(role, uuid);
+      emit("DN_ROLE_REGISTER", ",\"senderRole\":\"" + role +
+          "\",\"dnUuid\":\"" + escape(uuid) +
+          "\",\"dnObjectId\":" + System.identityHashCode(node));
+    }
+  }
+
+  /** Offline smoke only; production uses registerRoles on the JUnit DN list. */
+  public static synchronized void registerRoleForSmoke(String uuid, int index) {
+    if (uuid == null || uuid.isEmpty() || index < 0) return;
+    String role = "dn" + index;
+    DN_ROLES.put(uuid, role);
+    ROLE_UUIDS.put(role, uuid);
+    emit("DN_ROLE_REGISTER", ",\"senderRole\":\"" + role +
+        "\",\"dnUuid\":\"" + escape(uuid) +
+        "\",\"dnObjectId\":-1");
+  }
+
   /** Bind only a synchronous DatanodeProtocol RPC that carries its registration. */
   public static String bindDatanodeRpc(DatanodeRegistration registration) {
     String prior = DN_RPC_ACTOR.get();
@@ -152,7 +199,11 @@ public final class Probe {
     String actor = uuid == null || uuid.isEmpty() || bp == null || bp.isEmpty()
         ? null : "dn:" + uuid + "|bp:" + bp;
     DN_RPC_ACTOR.set(actor);
+    String role;
+    synchronized (Probe.class) { role = DN_ROLES.get(uuid); }
+    DN_RPC_ROLE.set(role);
     emit("DN_RPC_BIND", ",\"senderActor\":\"" + escape(actor) +
+        "\",\"senderRole\":\"" + escape(role) +
         "\",\"senderDnUuid\":\"" + escape(uuid) +
         "\",\"blockPoolId\":\"" + escape(bp) + "\"");
     return prior;
@@ -161,10 +212,15 @@ public final class Probe {
   public static void restoreDatanodeRpc(String prior) {
     if (prior == null) {
       DN_RPC_ACTOR.remove();
+      DN_RPC_ROLE.remove();
     } else {
       DN_RPC_ACTOR.set(prior);
+      String uuid = prior.startsWith("dn:") && prior.contains("|bp:")
+          ? prior.substring(3, prior.indexOf("|bp:")) : null;
+      synchronized (Probe.class) { DN_RPC_ROLE.set(DN_ROLES.get(uuid)); }
     }
-    emit("DN_RPC_UNBIND", "");
+    emit("DN_RPC_UNBIND", ",\"senderActor\":\"" + escape(prior) +
+        "\",\"senderRole\":\"" + escape(DN_RPC_ROLE.get()) + "\"");
   }
 
   public static synchronized void registerNnPort(int port) {
@@ -176,12 +232,13 @@ public final class Probe {
   /** The Client hook provides the real remote NN port, not a thread-name guess. */
   public static synchronized void rpcResponse(int peerPort) throws IOException {
     String actor = DN_RPC_ACTOR.get();
-    if (actor == null || peerPort <= 0 || !NN_PORTS.contains(peerPort)) {
+    String role = DN_RPC_ROLE.get();
+    if (actor == null || role == null || peerPort <= 0 || !NN_PORTS.contains(peerPort)) {
       emit("RPC_ACTOR_UNBOUND", ",\"api\":\"" + escape(rpcApi()) +
           "\",\"peerPort\":" + peerPort);
       return; // No actor identity, no fault injection.
     }
-    ioObserved("RPC_RESPONSE", "Client.getRpcResponse", actor, peerPort);
+    ioObserved("RPC_RESPONSE", "Client.getRpcResponse", role, actor, peerPort);
   }
 
   public static synchronized void io(String marker, String detail)
@@ -189,26 +246,27 @@ public final class Probe {
     if ("RPC_RESPONSE".equals(marker)) {
       throw new IllegalStateException("coarse RPC hook used with V2 recorder");
     }
-    ioObserved(marker, detail, "nn-editlog", -1);
+    ioObserved(marker, detail, "nn-editlog", "nn-editlog", -1);
   }
 
   private static void ioObserved(String marker, String detail,
-      String senderActor, int peerPort) throws IOException {
+      String senderRole, String senderActor, int peerPort) throws IOException {
     String api = "RPC_RESPONSE".equals(marker) ? rpcApi() : fileApi(detail);
-    String key = marker + "\t" + api + "\t" + senderActor;
+    String key = marker + "\t" + api + "\t" + senderRole;
     Integer previous = HITS.get(key);
     int ordinal = previous == null ? 1 : previous.intValue() + 1;
     HITS.put(key, ordinal);
     String fields = ",\"marker\":\"" + escape(marker) +
         "\",\"api\":\"" + escape(api) +
         "\",\"senderActor\":\"" + escape(senderActor) +
+        "\",\"senderRole\":\"" + escape(senderRole) +
         "\",\"peerPort\":" + peerPort +
         ",\"ordinal\":" + ordinal;
     emit("IO_OBSERVED", fields);
     if (nextFault < FAULTS.size()) {
       Fault fault = FAULTS.get(nextFault);
       if (fault.marker.equals(marker) && fault.api.equals(api) &&
-          fault.senderActor.equals(senderActor) &&
+          fault.senderRole.equals(senderRole) &&
           fault.ordinal == ordinal) {
         emit("FAULT_MATCHED", fields);
         nextFault++;

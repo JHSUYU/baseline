@@ -25,6 +25,8 @@ public final class ProbeSmoke {
     System.setProperty("hdfs16.independent.fault.plan", args[0]);
     System.setProperty("hdfs16.independent.trace", args[1]);
     Probe.registerNnPort(19001);
+    Probe.registerRoleForSmoke("dn-one", 0);
+    Probe.registerRoleForSmoke("dn-two", 1);
     Probe.rpcResponse(19001); // No sender actor: fail closed.
     String firstPrior = Probe.bindDatanodeRpc(registration("dn-one", "bp-one"));
     try {
