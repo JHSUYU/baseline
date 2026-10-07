@@ -61,8 +61,12 @@ def main() -> None:
             print("SOLR-19 terminal result retained; mirror stopped", flush=True)
             break
         if fetch(REMOTE_CASE + "/result.json", LOCAL_RESULT):
-            fetch(REMOTE_CASE + "/independent/actor_v2/evidence/v3-campaign/state.json",
-                  LOCAL_STATE)
+            result_count = json.loads(LOCAL_RESULT.read_text()).get("fault_trials", -1)
+            mirrored_count = (len(json.loads(LOCAL_STATE.read_text()).get("attempts", []))
+                              if LOCAL_STATE.exists() else -1)
+            if result_count > mirrored_count:
+                fetch(REMOTE_CASE + "/independent/actor_v2/evidence/v3-campaign/state.json",
+                      LOCAL_STATE)
         time.sleep(20)
 
 
