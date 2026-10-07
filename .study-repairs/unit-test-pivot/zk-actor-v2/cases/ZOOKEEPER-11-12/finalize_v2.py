@@ -77,9 +77,11 @@ def main():
             sha(CALIBRATION) != audit['calibration_sha256']:
         raise RuntimeError('offline build or healthy calibration receipt absent/changed')
     build = json.loads(BUILD_RECEIPT.read_text())
+    calibration = json.loads(CALIBRATION.read_text())
     if build['agent_sha256'] != audit['agent_sha256'] or \
             build['source_commit'] != audit['original_source_commit'] or \
-            build['junit_executed']:
+            build['junit_executed'] or calibration['first_server_sid'] != '0' or \
+            any(seed['status'] != 'pass' for seed in calibration['healthy']):
         raise RuntimeError('offline build disagrees with original JUnit audit')
     table(audit)
     case_summaries = {}
@@ -109,6 +111,11 @@ def main():
             'source_line': 1175 if case_id.endswith('11') else 1197,
             'function': 'org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()',
             'target_guard_line': 1169 if case_id.endswith('11') else 1193,
+            'healthy_target_guard_count_per_seed': [
+                seed['guard_counts'][case_id] for seed in calibration['healthy']],
+            'healthy_bound_io_count_per_seed': [
+                seed['bound_io_count'] for seed in calibration['healthy']],
+            'healthy_stable_selectors': len(calibration['common_selectors']),
             'check_code': old.get('check_code') or (
                 'if (currentTmp.exists()) restore its epoch; else throw IOException '
                 'because currentEpoch is older than the last zxid'
