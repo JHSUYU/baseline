@@ -1,7 +1,10 @@
 {
-  "actor_identity_audit": "independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md",
-  "actor_identity_gap": "Archived fault selectors normalize runtime RPC thread and endpoint; target probes lack DN/storage/startup-episode identity. Historical injection and coverage counts await actor-aware replay.",
+  "actor_identity_audit": "hdfs-storage-actor-v2/audit/hdfs22_23_25_base80_review.md",
+  "actor_identity_gap": "resolved_for_v2; historical coarse-actor trials remain excluded",
   "budget": {
+    "attempt_cap_shared_group": 600,
+    "conditional_extension_triggered": false,
+    "effective_goal": 80,
     "max_faults": 8,
     "max_trials": 80
   },
@@ -14,31 +17,44 @@
   "case_id": "HDFS-25",
   "cluster_test": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
   "coverage": {
-    "branch_counts": 0,
-    "lines": 0,
-    "methods": 0,
-    "probes": 0
+    "branch_counts": 9356,
+    "lines": 36705,
+    "methods": 8350,
+    "probes": 30142
   },
-  "coverage_gain": 0,
+  "coverage_gain": 51,
   "coverage_gain_detail": {
-    "branch_counts": 0,
-    "lines": 0,
-    "methods": 0,
-    "probes": 0
+    "branch_counts": 51,
+    "lines": 96,
+    "methods": 12,
+    "probes": 101
   },
-  "elapsed_seconds": 0.0,
-  "elapsed_seconds_semantics": "No actor-qualified campaign time is counted yet; prior measured time is preserved in legacy_coarse_actor.",
-  "evidence": "../HDFS-22/independent/evidence/campaign-state.json",
+  "elapsed_seconds": 5969.666,
+  "elapsed_seconds_semantics": "Two healthy seeds (37.944+41.562 s) plus 88 measured shared original-JUnit fault attempts (5890.160 s) until this check first reached 80 effective trials. This same shared JUnit time is attributed to HDFS-22/23/25 and must not be summed across cases; pauses and controller overhead are excluded.",
+  "evidence": "hdfs-storage-actor-v2/audit/hdfs22_23_25_base80_review.md",
   "expected_guard_response_trials": 0,
-  "fault_trials": 0,
-  "fully_applied_trials": 0,
+  "fault_trials": 88,
+  "fully_applied_trials": 88,
   "healthy": {
-    "branch_count": 9162,
-    "elapsed_seconds": 68.108,
-    "io_points": 172,
-    "junit_exit": 0,
-    "target_checks": 6,
-    "target_exceptions": 0
+    "actor_binding": "startup_episode+DataNode_slot+configured_storage_directory+raw_NN0_endpoint",
+    "elapsed_seconds": [
+      37.944,
+      41.562
+    ],
+    "instrumentation_digest_sha256": "ec5a27c482919e86eb3eb82805abd44a9a32af45dcd6d89781e2b8178d91df30",
+    "original_junit_exit": [
+      0,
+      0
+    ],
+    "stable_exact_selector_count_shared": 91,
+    "target_checks": [
+      6,
+      6
+    ],
+    "target_exceptions": [
+      0,
+      0
+    ]
   },
   "instrumentation_provenance": {
     "causal_graph_or_closure": false,
@@ -49,11 +65,14 @@
     "io_selection": "observed_original_junit_io_plus_production_coverage_feedback",
     "junit": "original_hadoop_3_4_3_test_jar_and_native_fixture",
     "region_skeleton": false,
-    "runtime_hooks": "case_local_offline_asm_9_6_overlay",
+    "runtime_hooks": "shared_hdfs_storage_actor_v2_offline_asm_overlay",
+    "runtime_identity": "startup_episode+DataNode_object/slot+storage_volume+raw_NN0_endpoint; fail_closed",
     "static_io_map": false
   },
-  "io_families": 0,
+  "io_families": 18,
   "legacy_coarse_actor": {
+    "actor_identity_audit": "independent-audits/hdfs-hbase-quality-20261007/actor-identity-screen.md",
+    "actor_identity_gap": "Archived fault selectors normalize runtime RPC thread and endpoint; target probes lack DN/storage/startup-episode identity. Historical injection and coverage counts await actor-aware replay.",
     "completed_at_utc": "2026-10-06T22:06:19.460267+00:00",
     "coverage": {
       "branch_counts": 9198,
@@ -71,6 +90,7 @@
     "coverage_metric_note": "JaCoCo probe IDs are exact; branch_counts uses per-method covered branch counts as monotone feedback rather than individual branch outcomes; generated Mockito classes excluded.",
     "elapsed_seconds": 3245.356,
     "elapsed_seconds_semantics": "Shared original JUnit: one healthy duration plus each actual shared fault-trial JUnit duration; the same run is attributed separately to all five checks, not summed five times.",
+    "evidence": "../HDFS-22/independent/evidence/campaign-state.json",
     "expected_guard_response_trials": 0,
     "extension_decision": {
       "budget_ceiling_reached": false,
@@ -80,6 +100,14 @@
     },
     "fault_trials": 80,
     "fully_applied_trials": 78,
+    "healthy": {
+      "branch_count": 9162,
+      "elapsed_seconds": 68.108,
+      "io_points": 172,
+      "junit_exit": 0,
+      "target_checks": 6,
+      "target_exceptions": 0
+    },
     "io_families": 8,
     "methodology": "independent_coverage_io_original_junit_shared_run",
     "shared_run_case_ids": [
@@ -94,12 +122,13 @@
     "target_after_fault": 57,
     "target_exception_after_fault": 0
   },
-  "methodology": "actor_identity_recheck_pending_original_junit",
-  "quality_complete": false,
-  "source_review": "TestDFSStartupVersions.testVersions intentionally starts DataNodes with 20 VERSION variants. The selected storage guards compare VERSION namespaceID, blockpoolID, clusterID, or CTime with NameNode NamespaceInfo. The original test expects many incompatibilities and checks whether each DataNode starts; a matching version rejection alone is not a new bug.",
-  "status": "actor_identity_recheck_pending",
-  "strict_injections": 0,
-  "target_after_fault": 0,
+  "methodology": "coverage_io_no_graph_actor_identity_original_junit_v2",
+  "new_bug": false,
+  "quality_complete": true,
+  "source_review": "Hadoop 3.4.3 TestDFSStartupVersions.testVersions loops over deliberately valid and invalid DataNode VERSION states and checks whether each startup outcome matches the compatibility rule. This exact BlockPoolSliceStorage guard compares a stored field with NameNode NamespaceInfo. Two healthy actor-bound seeds reached it; 80 strictly injected same-actor postfault checks produced no exception at this target. Its simple storage-version comparison does not establish a multi-hop ad hoc coordination chain, and no new bug was observed at this guard in the base budget.",
+  "status": "quality_complete",
+  "strict_injections": 88,
+  "target_after_fault": 80,
   "target_code": "getCTime() == nsInfo.getCTime()",
   "target_exception_after_fault": 0,
   "target_function": "BlockPoolSliceStorage.loadStorageDirectory(NamespaceInfo,StorageLocation,StartupOption,List,Configuration)",
@@ -4005,5 +4034,28 @@
       "valid_for_feedback": true
     }
   ],
-  "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials"
+  "trial_results_scope": "historical_coarse_actor; not counted as actor-qualified trials",
+  "v2_actor_quality": {
+    "checkpoint_prefix_distinct_sequences": 88,
+    "coverage_gain": {
+      "branch_counts": 51,
+      "lines": 96,
+      "methods": 12,
+      "probes": 101
+    },
+    "effective_same_actor_postfault_checks": 80,
+    "exact_ordered_sequences_in_prefix": 88,
+    "first_80_effective_finished_at_utc": "2026-10-07T06:24:31.031633+00:00",
+    "first_80_effective_sequence_id": "977d14ccdd619dcf9673",
+    "healthy_seconds": 79.506,
+    "historical_coarse_actor_excluded": true,
+    "independent_raw_audit_pass": true,
+    "raw_evidence_anchor": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-storage-actor-v2/evidence/startup-constructor",
+    "raw_evidence_host": "node1",
+    "review": "hdfs-storage-actor-v2/audit/hdfs22_23_25_base80_review.md",
+    "same_junit_time_nonadditive": true,
+    "shared_junit_attempt_seconds": 5890.16,
+    "target_exceptions": 0,
+    "two_healthy_seed_pass": true
+  }
 }
