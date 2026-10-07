@@ -1,14 +1,215 @@
 {
   "case_id": "HBASE-37",
-  "status": "test_identified",
-  "cluster_test": "TestRSStatusPage.testStatusPage",
-  "target_reached": null,
-  "elapsed_seconds": 0,
-  "fault_trials": 0,
-  "strict_injections": 0,
-  "target_after_fault": 0,
-  "coverage_gain": 0,
+  "status": "quality_complete",
+  "cluster_test": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+  "target_reached": true,
+  "elapsed_seconds": 6319.5,
+  "fault_trials": 108,
+  "strict_injections": 108,
+  "target_after_fault": 61,
+  "coverage_gain": 3,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-37",
-  "source_audit_note": "Active-master znode is normally present. Target null-znode IOException is not expected; setup also starts LocalHBaseCluster at test line 76."
+  "evidence": [
+    "README.md",
+    "evidence/hbase37-graphfree-108-queue-exhausted.tar.gz",
+    "work/checkpoint.json",
+    "work/audit-summary.json",
+    "work/candidate-review-r002.json",
+    "work/provenance.json",
+    "work/timing-recovered.json"
+  ],
+  "source_audit_note": "ZKUtil.getData catches direct ZooKeeper NoNodeException and returns null; MasterAddressTracker.getMasterInfoPort then throws the exact IOException at line 206; ActiveMasterManager catches it and returns port zero. All 31 exact target exceptions followed a direct NONODE injected at this read, including an independent r002 replay. The selected check is a single active-master znode missing-data guard; no distinct coordination failure was established.",
+  "fully_applied_trials": 108,
+  "methodology": "graph_free_original_junit_master_znode_io_jacoco_feedback",
+  "current_campaign": {
+    "healthy_elapsed_seconds": 52.49,
+    "healthy_target_calls": 1,
+    "healthy_guard_calls": 1,
+    "healthy_related_io_events": 10,
+    "healthy_coverage": {
+      "classes": {
+        "org/apache/hadoop/hbase/master/ActiveMasterManager": {
+          "methods": 14,
+          "branches": 19,
+          "lines": 71
+        },
+        "org/apache/hadoop/hbase/zookeeper/MasterAddressTracker": {
+          "methods": 14,
+          "branches": 13,
+          "lines": 59
+        },
+        "org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper": {
+          "methods": 16,
+          "branches": 18,
+          "lines": 118
+        },
+        "org/apache/hadoop/hbase/zookeeper/ZKUtil": {
+          "methods": 36,
+          "branches": 37,
+          "lines": 135
+        },
+        "org/apache/hadoop/hbase/master/HMaster": {
+          "methods": 87,
+          "branches": 144,
+          "lines": 673
+        }
+      },
+      "target": {
+        "205": {
+          "instructions": 2,
+          "branches": 1
+        },
+        "206": {
+          "instructions": 0,
+          "branches": null
+        }
+      },
+      "methods": 167,
+      "branches": 231,
+      "lines": 1056
+    },
+    "cumulative_target_source_lines": {
+      "205": {
+        "instructions": 2,
+        "branches": 2
+      },
+      "206": {
+        "instructions": 5,
+        "branches": null
+      }
+    },
+    "attempted_trials": 108,
+    "strict_trials": 108,
+    "effective_trials": 61,
+    "strict_post_fault_target_trials": 61,
+    "strict_post_fault_exact_exception_trials": 31,
+    "requested_fault_events": 402,
+    "applied_fault_events": 402,
+    "new_production_methods": 2,
+    "new_production_branches": 3,
+    "new_io_sites": 0,
+    "elapsed_seconds": 6319.5,
+    "queue_length": 0,
+    "budget": {
+      "effective_trials": 80,
+      "max_attempts": 240,
+      "max_faults": 8
+    },
+    "checkpoint": "work/checkpoint.json",
+    "termination_reason": "queue_exhausted",
+    "budget_extended": false,
+    "late_novelty_in_final_16_effective_trials": false,
+    "max_observed_fault_sequence_length": 5,
+    "junit_passed_attempts": 30,
+    "junit_failed_attempts": 75,
+    "junit_without_summary_attempts": 3,
+    "requested_fault_kinds": {
+      "CONNECTIONLOSS": 183,
+      "NONODE": 36,
+      "OPERATIONTIMEOUT": 183
+    },
+    "applied_fault_kinds": {
+      "CONNECTIONLOSS": 183,
+      "NONODE": 36,
+      "OPERATIONTIMEOUT": 183
+    },
+    "sequence_depths": {
+      "1": 18,
+      "2": 6,
+      "3": 12,
+      "4": 24,
+      "5": 48
+    },
+    "healthy_pre_target_exact_selectors": [
+      "ZK_WATCH_EXISTS~master@/hbase/master~ZKNodeTracker.start:75~1",
+      "ZK_WATCH_EXISTS~regionserver@/hbase/master~ZKNodeTracker.start:75~1",
+      "ZK_CREATE~master@/hbase/master~MasterAddressTracker.setMasterAddress:263~1",
+      "ZK_WATCH_EXISTS~master@/hbase/master~MasterAddressTracker.setMasterAddress:263~1",
+      "ZK_WATCH_EXISTS~master@/hbase/master~ActiveMasterManager.handleMasterNodeChange:198~1",
+      "ZK_GET_DATA~master@/hbase/master~MasterAddressTracker.getMasterInfoPort:200~1"
+    ],
+    "eligible_pre_target_io_sites": [
+      "ZK_CREATE~master@/hbase/master~MasterAddressTracker.setMasterAddress:263",
+      "ZK_GET_DATA~master@/hbase/master~MasterAddressTracker.getMasterInfoPort:200",
+      "ZK_WATCH_EXISTS~master@/hbase/master~ActiveMasterManager.handleMasterNodeChange:198",
+      "ZK_WATCH_EXISTS~master@/hbase/master~MasterAddressTracker.setMasterAddress:263",
+      "ZK_WATCH_EXISTS~master@/hbase/master~ZKNodeTracker.start:75",
+      "ZK_WATCH_EXISTS~regionserver@/hbase/master~ZKNodeTracker.start:75"
+    ],
+    "excluded_io_sites": [
+      "ZK_DELETE~master@/hbase/master~ActiveMasterManager.stop:347",
+      "ZK_GET_DATA~master@/hbase/master~MasterAddressTracker.getMasterAddress:171",
+      "ZK_WATCH_EXISTS~master@/hbase/master~ZKNodeTracker.nodeDeleted:215",
+      "ZK_WATCH_EXISTS~regionserver@/hbase/master~ZKNodeTracker.nodeDeleted:215"
+    ],
+    "excluded_io_reason": "Only observed after selected guard or in runs whose target guard was lost; not admitted into target-retaining feedback.",
+    "raw_log_audit": "108/108 distinct exact plans strictly applied; 61/108 post-last-fault selected guard; all 402 fault events matched; each healthy/effective pre-target I/O selector generated every supported fault kind; JaCoCo union independently recomputed; 31/31 exact target exceptions directly injected NONODE; r002 replay reproduced; original JUnit and timing recovered from raw evidence; audit errors empty.",
+    "timing_recovery": [
+      "r026: 180s timeout from exit/log file birth timestamps",
+      "r064: 56s completed orphan JUnit from JaCoCo exec mtime/log birth timestamps"
+    ]
+  },
+  "reviewed_candidate_signatures": [
+    {
+      "signature": "direct_master_znode_getData_NONODE_to_selected_null_guard_IOException",
+      "trial_ids": [
+        "r002",
+        "r007",
+        "r009",
+        "r012",
+        "r082",
+        "r083",
+        "r084",
+        "r085",
+        "r086",
+        "r087",
+        "r088",
+        "r089",
+        "r090",
+        "r091",
+        "r092",
+        "r093",
+        "r094",
+        "r095",
+        "r096",
+        "r097",
+        "r098",
+        "r099",
+        "r100",
+        "r101",
+        "r102",
+        "r103",
+        "r104",
+        "r105",
+        "r106",
+        "r107",
+        "r108"
+      ],
+      "source_review": "ZKUtil.getData catches NoNodeException and returns null; MasterAddressTracker.getMasterInfoPort then throws the specified IOException; ActiveMasterManager catches it and returns port 0.",
+      "independent_replay": "work/logs/replay-r002.log",
+      "classification": "expected_protective_guard_path_not_new_bug"
+    }
+  ],
+  "candidate_signature_count": 1,
+  "unreviewed_target_exception_trial_ids": [],
+  "system": "HBase 2.6.6",
+  "source_path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+  "source_line": 205,
+  "function": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker.getMasterInfoPort(ZKWatcher)",
+  "termination_reason": "queue_exhausted",
+  "check_classification": "direct_single_master_znode_missing_data_guard_expected_fault_response_no_new_bug",
+  "evidence_archive_sha256": "3cc2bd7a49e371fd9f7dd63eaba8bbfe08c18224599b627a02507af9eefeb121",
+  "instrumentation_provenance": {
+    "method": "case_local_ByteBuddy_runtime_master_znode_IO_and_exact_target_probe_plus_JaCoCo_0.8.15",
+    "graphchecker_runtime": false,
+    "prewoven_classes": false,
+    "static_skeleton_or_map": false,
+    "graph_or_closure_feedback": false,
+    "hbase_source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+    "hbase_server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "hbase_zookeeper_jar_sha256": "6ad67305af4910e61e324034cab9ce0f50b966ce203c195581daeff552a8b957",
+    "hbase_server_tests_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+    "agent_source_sha256": "958432d0edc8c9acb0840728ee53cddd67d68e8c9cb0807dd9a95d3bf31951d4",
+    "agent_jar_sha256": "c914ef2fa460171ff7c1b5ca0829a0aaae84cc2ee1dde8f725a0b2f83df4f078"
+  }
 }
