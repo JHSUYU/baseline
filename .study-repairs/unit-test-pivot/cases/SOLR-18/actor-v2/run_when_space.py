@@ -12,7 +12,7 @@ import time
 
 HERE = Path(__file__).resolve().parent
 STATE = HERE / 'campaign-state.json'
-RESUME_FREE_BYTES = int(2.3 * (1 << 30))
+RESUME_FREE_BYTES = int(2.25 * (1 << 30))
 
 
 def stamp() -> str:
@@ -27,7 +27,7 @@ def main() -> int:
             return 0
         free = shutil.disk_usage('/').free
         if free < RESUME_FREE_BYTES:
-            print(stamp(), 'waiting for 2.3 GiB node0 free; current', free, flush=True)
+            print(stamp(), 'waiting for 2.25 GiB node0 free; current', free, flush=True)
             time.sleep(20)
             continue
         print(stamp(), 'resuming at', state['effective'], 'effective /',
