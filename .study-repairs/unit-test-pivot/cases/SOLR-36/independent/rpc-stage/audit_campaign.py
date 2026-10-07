@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from urllib.parse import urlsplit
 
 
 HERE = Path(__file__).resolve().parent
@@ -15,7 +16,10 @@ PARENT = HERE.parent
 sys.path.insert(0, str(PARENT))
 from build import CASE22, JAVA8, original_classpath  # noqa: E402
 from coverage import production_classes  # noqa: E402
-from fuzz_rpc import SEEDS, point, rpc_events  # noqa: E402
+from fuzz import junit_gate  # noqa: E402
+from fuzz_rpc import (CHECKS, SEEDS, point, reviewed_protective_rejection,
+                      rpc_events)  # noqa: E402
+from seed_audit import role_receipt_valid  # noqa: E402
 
 
 ROOT = HERE / 'campaign'
@@ -61,6 +65,96 @@ def rpc_families(directory: Path) -> set[str]:
             for item in (point(event),)}
 
 
+def raw_actor_receipts(state: dict) -> dict:
+    """Recount sender/child identity from immutable HTTP fault traces."""
+    healthy_run = json.loads((SEEDS[0] / 'run.json').read_text())
+    source_revision = healthy_run['original_source_revision']
+    expected_test = healthy_run['test']
+    expected_agent = healthy_run['agent_sha256']
+    counts = {case_id: {'logical_postfault': 0, 'same_physical_postfault': 0,
+                        'physical_mismatch_trials': []}
+              for case_id in CHECKS}
+    verified = []
+    for row in state['completed']:
+        final_dir = Path(row['trace']).parent
+        trial_dir = final_dir.parent
+        elapsed = 0.0
+        for attempt in range(1, row['attempts'] + 1):
+            metadata = json.loads((trial_dir / f'attempt-{attempt:02d}' /
+                                   'run.json').read_text())
+            if (metadata['test'] != expected_test
+                    or metadata['original_source_revision'] != source_revision
+                    or metadata['agent_sha256'] != expected_agent
+                    or metadata['classpath_contains_graphchecker']):
+                raise RuntimeError(f"trial {row['trial_number']} attempt {attempt}: "
+                                   'original JUnit provenance differs')
+            elapsed += metadata['elapsed_seconds']
+        if abs(elapsed - row['elapsed_seconds']) > 0.01:
+            raise RuntimeError(f"trial {row['trial_number']}: elapsed time omits an attempt")
+        last_run = json.loads((final_dir / 'run.json').read_text())
+        gate = junit_gate((final_dir / 'console.log').read_text())
+        expected_gate = (tuple(row['junit_gate'])
+                         if row['junit_gate'] is not None else None)
+        if last_run['exit_code'] != row['junit_exit'] or gate != expected_gate:
+            raise RuntimeError(f"trial {row['trial_number']}: original JUnit outcome differs")
+        if not row['strict_injection']:
+            continue
+        with Path(row['trace']).open() as trace:
+            events = [json.loads(line) for line in trace if line.strip()]
+        applied = [event for event in events
+                   if event['event'] == 'IO_OBSERVED' and event['applied']]
+        if (len(applied) != row['planned_faults']
+                or not all(role_receipt_valid(event) for event in applied)
+                or [event.get('senderActorKey') for event in applied]
+                != row['applied_raw_sender_actors']
+                or [event.get('leaderActorKey') for event in applied]
+                != row['applied_raw_leader_actors']
+                or [event.get('senderPhysicalNode') for event in applied]
+                != row['applied_sender_physical_nodes']
+                or [event.get('physicalNode') for event in applied]
+                != row['applied_child_urls']):
+            raise RuntimeError(f"trial {row['trial_number']}: raw actor receipt differs")
+        actual_child = urlsplit(applied[-1]['physicalNode']).netloc + '_'
+        if actual_child == '_':
+            raise RuntimeError(f"trial {row['trial_number']}: child URL lacks physical node")
+        boundary = row['fault_effect_boundary_seq']
+        for case_id, (guard_marker, throw_marker) in CHECKS.items():
+            guards = [event for event in events
+                      if event['event'] == 'TARGET_CHECK'
+                      and event['marker'] == guard_marker
+                      and event['sourceKey'] == row['last_fault_source']
+                      and event['seq'] > boundary]
+            if len(guards) != row['postfault_same_child_guards'][case_id]:
+                raise RuntimeError(f"trial {row['trial_number']}: target guard recount differs")
+            throws = [event for event in events
+                      if event['event'] == 'TARGET_THROW'
+                      and event['marker'] == throw_marker
+                      and event['sourceKey'] == row['last_fault_source']
+                      and event['seq'] > boundary]
+            if len(throws) != row['postfault_same_child_throws'][case_id]:
+                raise RuntimeError(f"trial {row['trial_number']}: target throw recount differs")
+            if guards:
+                counts[case_id]['logical_postfault'] += 1
+                if any(event['physicalNode'] == actual_child for event in guards):
+                    counts[case_id]['same_physical_postfault'] += 1
+                else:
+                    counts[case_id]['physical_mismatch_trials'].append(
+                        row['trial_number'])
+        if bool(row.get('reviewed_expected_target_rejection')) != bool(
+                row['postfault_same_child_throws']['SOLR-36'] > 0
+                and row['postfault_same_child_throws']['SOLR-37'] == 0
+                and reviewed_protective_rejection(
+                    events, row['last_fault_source'], boundary,
+                    gate, last_run['exit_code'])):
+            raise RuntimeError(f"trial {row['trial_number']}: protective 503 review differs")
+        verified.append(row['trial_number'])
+    return {'original_junit': expected_test,
+            'original_source_revision': source_revision,
+            'agent_sha256': expected_agent,
+            'strict_raw_actor_receipt_trials': verified,
+            'by_case': counts}
+
+
 def main() -> None:
     stage2 = json.loads((ROOT / 'state.json').read_text())
     if stage2['status'] not in ('budget_complete', 'queue_exhausted',
@@ -76,6 +170,7 @@ def main() -> None:
                                for directory in SEEDS))
     legacy = json.loads((PARENT / 'campaign/final-audit-SOLR-36.json').read_text())
     source_seed = json.loads((HERE / 'seed-audit.json').read_text())
+    actor_receipts = raw_actor_receipts(stage2)
     agent_sha = source_seed['runs'][0]['agent_sha256']
     if any(run['agent_sha256'] != agent_sha for run in source_seed['runs']):
         raise RuntimeError('HTTP healthy seeds used different agents')
@@ -101,6 +196,7 @@ def main() -> None:
             'healthy_sender_child_seed_sha256': [
                 run['trace_sha256'] for run in source_seed['runs']],
             'sender_bound_agent_sha256': agent_sha,
+            'raw_actor_receipts': actor_receipts,
             'http_stage_control': stage_control,
             'stage2_http_status': stage2['status'],
             'stage2_http_budget': stage2['budget'],
