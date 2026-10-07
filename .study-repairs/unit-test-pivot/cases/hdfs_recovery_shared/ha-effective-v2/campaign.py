@@ -592,8 +592,15 @@ def main() -> None:
     deadline = time.monotonic() + args.wall_seconds
     with LOCK.open("a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        if not STATE.exists() and not calibrate():
-            print("resource gate deferred healthy calibration", flush=True)
+        calibrated = STATE.exists()
+        while not calibrated and time.monotonic() < deadline:
+            calibrated = calibrate()
+            if calibrated:
+                break
+            print("resource gate deferred healthy calibration; retrying", flush=True)
+            time.sleep(min(args.poll_seconds, max(0, deadline - time.monotonic())))
+        if not calibrated:
+            print("wall cap reached while awaiting healthy calibration", flush=True)
             return
         state = json.loads(STATE.read_text()) if STATE.exists() else start_state()
         write_summary(state)
