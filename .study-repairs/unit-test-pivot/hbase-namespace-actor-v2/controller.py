@@ -360,6 +360,20 @@ def priority(entry, state):
         + (10 if exact_used == 0 else 0) + min(len(entry["plan"]), 6) * 2
 
 
+def same_site_loss_penalty(entry, state):
+    """Defer repeated same-site target loss without removing exact plans."""
+    if state.get("loss_priority_policy") != "same_site_target_loss_v1":
+        return 0
+    site = "~".join(entry["plan"][-1].split("~")[:4])
+    history = [trial for trial in state["trials"]
+               if "~".join(trial["plan"][-1].split("~")[:4]) == site]
+    if any(trial["effective"] for trial in history):
+        return 0
+    losses = sum(trial["strict"] and not trial["target_after_final_fault"]
+                 for trial in history)
+    return min(90, 18 * max(0, losses - 2))
+
+
 def next_trial(state):
     # Every eighth attempt uses the original CrashFuzz-style priority so
     # startup and other distant candidates remain explorable. All queued
@@ -370,7 +384,9 @@ def next_trial(state):
         selector = entry["plan"][-1].rsplit("~", 1)[0]
         distance = distances.get(selector)
         proximity = 0 if explore else (40 if distance is None else 3 * max(0, 26 - distance))
-        return (-priority(entry, state) - proximity, ";".join(entry["plan"]))
+        penalty = 0 if explore else same_site_loss_penalty(entry, state)
+        return (-priority(entry, state) - proximity + penalty,
+                ";".join(entry["plan"]))
     state["queue"].sort(key=ranked)
     return state["queue"][0]
 

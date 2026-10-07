@@ -3,10 +3,12 @@
 This standalone passive Java agent is a reusable identity layer for
 HBASE-08, HBASE-21, and HBASE-22. It targets the unchanged HBase 2.6.6
 production JAR and the original two-master `TestNamespaceAuditor` methods.
-The isolated node1 staging directory has run two unchanged table and two
-unchanged restore JUnit healthy seeds. HBASE-08 has begun V2 fault trials;
-HBASE-21 and HBASE-22 have independent zero-trial checkpoints. Current
-counts and stop reasons are in each case's atomic `campaigns/CASE/result.json`.
+The isolated node1 staging directory ran two unchanged table and two
+unchanged restore JUnit healthy seeds. HBASE-08 has completed and passed its
+independent raw audit; HBASE-21 continues from its own checkpoint on node1.
+HBASE-22 has two further unchanged table healthy seeds and its own checkpoint
+on node0. Current counts and stop reasons are in each case's atomic
+`campaigns/CASE/result.json`.
 
 ## Source relationship
 
@@ -114,6 +116,32 @@ trials, a safe checkpoint migration added this ordering and ingested the
 already completed fifth raw run without replay. Case-local
 `migration-before.json`, `migration-after.json`, and immutable checkpoint
 copies record the old/new controller, queue, seen, and agent SHA-256 values.
+
+HBASE-21 later had repeated exact `nodeDataChanged:131` faults whose selected
+quota guard ran on a replacement Master/manager. Those trials failed the
+same-actor gate. After attempt 21, its node1 runner blocked the already
+selected attempt 22 **before** creating a run directory or JVM; the controller
+was stopped with its completed 21-trial checkpoint intact. The new priority
+penalizes a final fault's exact role/family/path/site only after at least
+three strict target-losing trials at that site and no effective trial there.
+It never deletes a plan, and every eighth attempt retains the original
+exploration ordering. The first two postmigration original JUnit trials
+(`r022`, `r023`) were both strict, same-actor, guard-after-fault, passed the
+JUnit, and returned the healthy expected region quota signature. The pilot
+used a temporary 23-attempt cap and then restored the original 320-attempt,
+80-effective-trial budget without replay. The migration's before/after
+checkpoints, raw pilot audit, queue/seen hashes, controller hashes, and
+paused-but-unstarted selector are under `evidence/HBASE-21/`.
+
+HBASE-22 runs on node0 with independent `runs/table-*` scratch, checkpoint,
+and tmux. Both node0 healthy seeds passed the original table JUnit, reached
+the exact selected quota guard once on the same active Master, and had JaCoCo
+line 166 with two covered branch outcomes; the immutable receipt is
+`evidence/healthy-node0-HBASE-22.json`. Its node0 runner uses the host-shared
+`jvm-start.lock`: before each JUnit it requires at most three already running
+Java processes and at least 3 GiB free, and holds the lock until the new Java
+process appears. The node1 staging runner and HBASE-21 checkpoint remain
+separate.
 
 The default bound is **80 effective trials, at most eight ordered faults**.
 If any of the final eight effective trials first adds a production method,

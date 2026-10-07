@@ -172,6 +172,27 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(controller.next_trial(state)["plan"], [STEP])
         self.assertEqual(len(state["queue"]), 2)
 
+    def test_repeated_same_site_loss_only_changes_priority(self):
+        other = "ACTIVE_MASTER~ZK_CREATE~L2hiYXNl~writeNamespace:183~1~CONNECTIONLOSS"
+        failing = STEP
+        losses = [{"plan": [failing], "strict": True,
+                   "target_after_final_fault": False, "effective": False}
+                  for _ in range(4)]
+        state = {"loss_priority_policy": "same_site_target_loss_v1",
+                 "trials": losses,
+                 "queue": [{"plan": [failing], "score": 0},
+                           {"plan": [other], "score": 0}],
+                 "selector_distance": {SELECTOR: 5,
+                                       other.rsplit("~", 1)[0]: 6}}
+        self.assertGreater(controller.same_site_loss_penalty(state["queue"][0], state), 0)
+        self.assertEqual(controller.same_site_loss_penalty(state["queue"][1], state), 0)
+        self.assertEqual(controller.next_trial(state)["plan"], [other])
+        self.assertEqual(len(state["queue"]), 2)
+        state["trials"].append({"plan": [failing], "strict": True,
+                                "target_after_final_fault": True, "effective": True})
+        failed_entry = next(x for x in state["queue"] if x["plan"] == [failing])
+        self.assertEqual(controller.same_site_loss_penalty(failed_entry, state), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
