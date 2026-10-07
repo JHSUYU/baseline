@@ -5,7 +5,8 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from campaign import initial_state, select_next, suffix_family, suffix_feedback
+from campaign import (initial_state, parent_prefix_feedback, parent_prefix_key,
+                      plan_text, select_next, suffix_family, suffix_feedback)
 from identity_gate import KEYS
 
 
@@ -130,6 +131,56 @@ class SchedulerTests(unittest.TestCase):
             feedback = suffix_feedback(output, state)
             self.assertEqual(feedback[suffix_family(item("probe", 2, 0)["sequence"])],
                              {"lost": 3, "valid": 0})
+
+    def test_partial_children_demote_only_their_exact_parent_prefix(self):
+        def step(site, ordinal, fault_type="IOException"):
+            return {"marker": "FAULT:HDFS_SASL:READ", "siteId": site,
+                    "faultActor": "dn1", "resource": "BP0",
+                    "hitOrdinal": ordinal, "actorLocalOrdinal": ordinal,
+                    "faultType": fault_type, "requiredRawKeyId": "-"}
+
+        with TemporaryDirectory() as name:
+            output = Path(name)
+            (output / "runs").mkdir()
+            (output / "plans").mkdir()
+            bad_parent = [step("response", 1), step("readMagic", 2),
+                          step("readSecret", 3)]
+            good_parent = [step("response", 1), step("readOptions", 2),
+                           step("readSecret", 3)]
+            for index, fault_type in enumerate(
+                    ("IOException", "EOFException", "SocketTimeoutException")):
+                identity = f"lost-child-{index}"
+                (output / "runs" / identity).mkdir()
+                (output / "runs" / identity / "v2_result.json").write_text(
+                    json.dumps({"valid_for_feedback": False,
+                                "exact_order_applied": False}))
+                (output / "plans" / (identity + ".tsv")).write_text(
+                    plan_text(bad_parent + [step("later", 4, fault_type)]))
+            state = {"completed": {f"lost-child-{i}": {} for i in range(3)},
+                     "in_flight": None, "attempted_trials": 3,
+                     "queue": [
+                         {"id": "bad", "priority": 500, "enqueued": 1.0,
+                          "sequence": bad_parent + [step("later", 4)]},
+                         {"id": "good", "priority": 100, "enqueued": 1.0,
+                          "sequence": good_parent + [step("later", 4)]},
+                     ]}
+            self.assertEqual(parent_prefix_feedback(output, state)
+                             [parent_prefix_key(state["queue"][0]["sequence"])],
+                             {"lost": 3, "valid": 0})
+            chosen, _ = select_next(output, state)
+            self.assertEqual(chosen["id"], "good")
+            identity = "valid-child"
+            (output / "runs" / identity).mkdir()
+            (output / "runs" / identity / "v2_result.json").write_text(
+                json.dumps({"valid_for_feedback": True,
+                            "exact_order_applied": True}))
+            (output / "plans" / (identity + ".tsv")).write_text(
+                plan_text(bad_parent + [step("other", 4)]))
+            state["completed"][identity] = {}
+            state["attempted_trials"] = 4
+            chosen, receipt = select_next(output, state)
+            self.assertEqual(chosen["id"], "bad")
+            self.assertEqual(receipt["parent_target_loss_penalty"], 0)
 
 
 if __name__ == "__main__":

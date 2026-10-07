@@ -100,13 +100,38 @@ def suffix_feedback(output: Path, state: dict) -> dict[str, dict[str, int]]:
     return dict(stats)
 
 
+def parent_prefix_key(sequence: list[dict]) -> str | None:
+    """Identify all proposed children of the same exact tested fault prefix."""
+    if len(sequence) < 3:
+        return None
+    return hashlib.sha256(plan_text(sequence[:-1]).encode()).hexdigest()
+
+
+def parent_prefix_feedback(output: Path, state: dict) -> dict[str, dict[str, int]]:
+    """Count target-retaining and lost children from immutable trial receipts."""
+    stats: dict[str, dict[str, int]] = defaultdict(lambda: {"lost": 0, "valid": 0})
+    for identity in state["completed"]:
+        result_path = output / "runs" / identity / "v2_result.json"
+        plan_path = output / "plans" / (identity + ".tsv")
+        if not result_path.exists() or not plan_path.exists():
+            continue
+        lines = plan_path.read_text().splitlines()
+        if len(lines) < 3:
+            continue
+        key = hashlib.sha256(("\n".join(lines[:-1]) + "\n").encode()).hexdigest()
+        result = json.loads(result_path.read_text())
+        stats[key]["valid" if result.get("valid_for_feedback") else "lost"] += 1
+    return dict(stats)
+
+
 def select_next(output: Path, state: dict) -> tuple[dict, dict]:
     if state.get("in_flight"):
         for item in state["queue"]:
             if item["id"] == state["in_flight"]:
-                return item, {"reason": "resume_in_flight", "scheduler_version": 3}
+                return item, {"reason": "resume_in_flight", "scheduler_version": 4}
         raise RuntimeError("in-flight sequence is missing from queue")
     stats = suffix_feedback(output, state)
+    parents = parent_prefix_feedback(output, state)
     now = time.time()
     candidates = []
     for item in state["queue"]:
@@ -114,11 +139,18 @@ def select_next(output: Path, state: dict) -> tuple[dict, dict]:
         prior = stats.get(family, {"lost": 0, "valid": 0})
         # Only a repeatedly observed, *exactly applied* target-losing suffix
         # gets demoted. A single valid target-retaining run cancels demotion.
-        penalty = (min(1200, 250 * prior["lost"])
-                   if family and prior["lost"] >= 3 and prior["valid"] == 0 else 0)
+        suffix_penalty = (min(1200, 250 * prior["lost"])
+                          if family and prior["lost"] >= 3 and prior["valid"] == 0 else 0)
+        parent_key = parent_prefix_key(item["sequence"])
+        parent_prior = parents.get(parent_key, {"lost": 0, "valid": 0})
+        parent_penalty = (min(1200, 250 * parent_prior["lost"])
+                          if parent_key and parent_prior["lost"] >= 3
+                          and parent_prior["valid"] == 0 else 0)
+        penalty = suffix_penalty + parent_penalty
         age = min(400, int(max(0, now - item["enqueued"]) / 12))
         candidates.append((item["priority"] - penalty + age, item, family,
-                           penalty, age, prior))
+                           penalty, age, prior, suffix_penalty, parent_key,
+                           parent_prior, parent_penalty))
     # Keep a small, deterministic exploration share for demoted families.
     penalized = [entry for entry in candidates if entry[3] > 0]
     explore = bool(penalized) and state["attempted_trials"] % 12 == 11
@@ -126,11 +158,17 @@ def select_next(output: Path, state: dict) -> tuple[dict, dict]:
         chosen = min(penalized, key=lambda entry: entry[1]["enqueued"])
     else:
         chosen = max(candidates, key=lambda entry: (entry[0], -entry[1]["enqueued"]))
-    score, item, family, penalty, age, prior = chosen
-    return item, {"scheduler_version": 3,
+    (score, item, family, penalty, age, prior, suffix_penalty, parent_key,
+     parent_prior, parent_penalty) = chosen
+    return item, {"scheduler_version": 4,
                   "reason": "penalized_family_exploration" if explore else "highest_adjusted_score",
                   "suffix_family": family, "prior_strict_target_loss": prior["lost"],
                   "prior_valid": prior["valid"], "base_priority": item["priority"],
+                  "suffix_target_loss_penalty": suffix_penalty,
+                  "parent_prefix_key": parent_key,
+                  "parent_prior_target_loss": parent_prior["lost"],
+                  "parent_prior_valid": parent_prior["valid"],
+                  "parent_target_loss_penalty": parent_penalty,
                   "target_loss_penalty": penalty, "waiting_age_bonus": age,
                   "adjusted_score": score}
 
