@@ -140,8 +140,12 @@ def port_window(slot, workers):
 
 def preflight(slot, workers):
     free = shutil.disk_usage(ROOT.parent).free
-    java_count = len(subprocess.check_output(
-        ["ps", "-C", "java", "-o", "pid="], text=True).splitlines())
+    java_ps = subprocess.run(["ps", "-C", "java", "-o", "pid="],
+                             capture_output=True, text=True)
+    # procps exits 1 when its selection is empty; zero Java processes pass.
+    if java_ps.returncode not in (0, 1):
+        raise RuntimeError("cannot count Java processes: " + java_ps.stderr)
+    java_count = len(java_ps.stdout.splitlines())
     if free < MIN_FREE or java_count >= MAX_JAVA:
         raise RuntimeError(f"resource gate: free={free} java={java_count}")
     low, high = port_window(slot, workers)

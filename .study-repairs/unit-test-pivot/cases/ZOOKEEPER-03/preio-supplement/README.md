@@ -42,8 +42,10 @@ It launches one embedded-cluster JVM at a time. A checkpoint and JSONL ledger
 are written atomically after each trial. On restart, a completed raw receipt
 is audited once; an incomplete, no-longer-live run is moved to `interrupted`
 and its plan retried. The expected 63-JVM time from the previous campaign's
-4.158-second mean is about 4.4 minutes, with a 30-minute wall limit; it can
-pause on resource gate failure, timeout, or target-exception candidate.
+4.158-second mean is about 4.4 minutes, excluding shared-lock waits. The first
+five runs on a contended node1 took 85–119 seconds apiece including waits, so
+the actual stage can span multiple 30-minute batches. It can pause on resource
+gate failure, timeout, or target-exception candidate.
 
 After the tmux run is terminal, run `python3 audit.py --archive` on node1.
 `audit-summary.json` and the separate raw tar archive then report the actual
@@ -60,3 +62,17 @@ target-exception candidate, timeout, unfinished Java process, resource gate
 failure, or unexpected runner exit. When the queue is exhausted, it performs
 the final raw audit and archive. The watcher itself launches no JVM while the
 original tmux campaign remains active.
+
+During the first batch, the sixth plan stopped **before JVM launch** because
+`ps -C java` exits with status 1 when node1 has zero Java processes. The
+resource gate now treats that empty selection as count zero. The old
+`supplement-006` directory contained no launch receipt, events, coverage, or
+JUnit output and was preserved under `interrupted`. `migrate_zero_java.py`
+saved the old and new checkpoint SHA values, confirmed the same five completed
+trials and 58 pending plans, changed only the runner asset-manifest SHA in the
+checkpoint, and reset the next run ID to retry plan six. The original two
+healthy traces remain valid because the test, agent, compiled classes, and
+classpath hashes did not change. The [migration receipt and old/new checkpoint
+snapshots](evidence/migration/zero-java-migration.json) are copied into this
+case and remain with the node1 raw runs; the completed-trial denominator is
+unchanged.

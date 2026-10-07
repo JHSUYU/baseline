@@ -29,8 +29,11 @@ def session_alive():
 
 def resource_gate():
     free = shutil.disk_usage(ROOT.parent).free
-    java = len(subprocess.check_output(
-        ["ps", "-C", "java", "-o", "pid="], text=True).splitlines())
+    java_ps = subprocess.run(["ps", "-C", "java", "-o", "pid="],
+                             capture_output=True, text=True)
+    if java_ps.returncode not in (0, 1):
+        raise RuntimeError("cannot count Java processes: " + java_ps.stderr)
+    java = len(java_ps.stdout.splitlines())
     ports = []
     for line in subprocess.check_output(["ss", "-H", "-ltn"],
                                         text=True).splitlines():
