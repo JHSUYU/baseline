@@ -50,8 +50,9 @@ gate failure, timeout, or target-exception candidate.
 After the tmux run is terminal, run `python3 audit.py --archive` on node1.
 `audit-summary.json` and the separate raw tar archive then report the actual
 selected/effective counts, per-trial time, coverage, I/O, and selected target
-exception evidence. No parent-trace target window is counted as a faulted
-trial outcome.
+exception evidence. `sequence_stats.py` independently separates fully applied
+ordered fault plans from trials where the same actor's target guard survived.
+No parent-trace target window is counted as a faulted trial outcome.
 
 The separate `resume_supervisor.py` tmux watcher waits until the original
 campaign tmux exits. If and only if it stopped at `paused_wall_limit`, the
