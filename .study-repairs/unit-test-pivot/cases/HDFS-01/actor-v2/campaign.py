@@ -203,10 +203,12 @@ def choose(state: dict) -> dict:
     # Every fourth attempt exercises an untested healthy root; the other
     # rounds use coverage/I/O reward, actor novelty, depth and waiting time.
     roots = [(i, item) for i, item in enumerate(queue) if len(item["plan"]) == 1]
-    if roots and attempt % 4 == 0:
-        preferred = [(i, item) for i, item in roots
-                     if item["plan"][-1]["marker"] not in target_losing]
-        candidates = roots if attempt % 16 == 0 or not preferred else preferred
+    preferred = [(i, item) for i, item in roots
+                 if item["plan"][-1]["marker"] not in target_losing]
+    # When every unused root has repeatedly removed the target, keep a
+    # one-in-sixteen exploration slot instead of spending every fourth run.
+    if roots and attempt % 4 == 0 and (preferred or attempt % 16 == 0):
+        candidates = roots if attempt % 16 == 0 else preferred
         index = min(candidates, key=lambda pair: pair[1]["queued_at_attempt"])[0]
     else:
         def score(item: dict) -> tuple[int, int, int]:
