@@ -118,6 +118,15 @@ def main() -> None:
                 row['trial_number'] for row in stage2['completed']
                 if row['strict_injection']
                 and row['postfault_same_child_throws'][case_id] > 0],
+            'stage2_http_reviewed_expected_target_rejection_trials': [
+                row['trial_number'] for row in stage2['completed']
+                if case_id == 'SOLR-36' and row['strict_injection']
+                and row.get('reviewed_expected_target_rejection', False)],
+            'stage2_http_unreviewed_exact_target_throw_trials': [
+                row['trial_number'] for row in stage2['completed']
+                if row['strict_injection']
+                and row['postfault_same_child_throws'][case_id] > 0
+                and not row.get('reviewed_expected_target_rejection', False)],
             'stage2_http_postfault_guard_operands': dict(operands),
             'stage2_http_junit_gate_counts': dict(Counter(
                 str(row['junit_gate']) for row in stage2['completed'])),

@@ -206,6 +206,15 @@ def choose(state: dict) -> dict:
     candidates = [item for item in queue
                   if marker_counts[item['sequence'][-1]['point']['marker']]
                   == smallest_family]
+    # The receiving child checks its range only while it is not ACTIVE.
+    # A long send delay usually passes that window; synchronous I/O timeouts
+    # retained the range check in the reviewed original-JUnit pilot. Keep
+    # every fourth selection available for delay-based coverage exploration.
+    preferred_mode = ('DELAY' if (len(rows) + 1) % 4 == 0 else 'TIMEOUT')
+    mode_candidates = [item for item in candidates
+                       if item['sequence'][-1]['fault_mode'] == preferred_mode]
+    if mode_candidates:
+        candidates = mode_candidates
     max_ordinal = max(item['sequence'][-1]['point']['hitOrdinal']
                       for item in candidates)
     ranked = []
@@ -365,9 +374,12 @@ def mutate(state: dict, parent: list[dict], directory: Path, result: dict,
     for index in indices:
         selected = ordered[index]
         enqueue(state, parent + [step(selected, 'DELAY', 15000)], gain)
+        if result['postfault_same_child_guards']['SOLR-37'] > 0:
+            enqueue(state, parent + [step(selected, 'TIMEOUT')], gain)
     for selected in (ordered[0], ordered[-1]):
         if point_id(selected) in newly_observed:
             enqueue(state, [step(selected, 'DELAY', 15000)], gain)
+            enqueue(state, [step(selected, 'TIMEOUT')], gain)
 
 
 def publish(state: dict) -> None:
