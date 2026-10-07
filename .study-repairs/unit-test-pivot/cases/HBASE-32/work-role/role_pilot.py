@@ -142,11 +142,13 @@ def healthy_audit(log: Path, exit_code: int, spec: dict) -> dict:
         actor = (event.get("raw_primary_region"),
                  event.get("raw_secondary_region"), event.get("replica"))
         target = next((item for item in trace["TARGET"]
-                       if (item.get("raw_primary_region"),
+                       if item["line"] > event["line"]
+                       and (item.get("raw_primary_region"),
                            item.get("raw_secondary_region"), item.get("replica")) == actor
                        and item.get("target_ordinal") == "1"), None)
         io = next((item for item in rpc
-                   if item.get("raw_primary_region") == actor[0]
+                   if target is not None and item["line"] > target["line"]
+                   and item.get("raw_primary_region") == actor[0]
                    and item.get("context_match") == "true"
                    and item.get("target_ordinal") == "1"
                    and item.get("selector", "").replace("~actor-other~",
