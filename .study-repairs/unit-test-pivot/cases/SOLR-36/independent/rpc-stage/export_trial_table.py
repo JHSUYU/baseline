@@ -37,6 +37,29 @@ def rows_for_trial(entry: dict) -> list[dict]:
     strict = bool(entry['strict_injection'])
     if strict and len(selected) != entry['planned_faults']:
         raise RuntimeError(f"trial {entry['trial_number']}: applied fault count changed")
+    if strict:
+        if not entry['fault_effects_verified']:
+            raise RuntimeError(f"trial {entry['trial_number']}: missing fault effect")
+        boundaries = []
+        for applied, step in zip(selected, entry['sequence']):
+            if any(applied[field] != value for field, value in step['point'].items()):
+                raise RuntimeError(f"trial {entry['trial_number']}: plan/actor selector mismatch")
+            if step['fault_mode'] == 'TIMEOUT':
+                boundaries.append(applied['seq'])
+                continue
+            effects = [event for event in events
+                       if event['event'] == 'FAULT_EFFECT'
+                       and event['seq'] > applied['seq']
+                       and all(event[field] == applied[field]
+                               for field in step['point'])
+                       and event['senderActorKey'] == applied['senderActorKey']
+                       and event['physicalNode'] == applied['physicalNode']
+                       and f"delayMs={step['delay_ms']}" in event['detail']]
+            if not effects:
+                raise RuntimeError(f"trial {entry['trial_number']}: delayed send did not resume")
+            boundaries.append(effects[0]['seq'])
+        if max(boundaries) != entry['fault_effect_boundary_seq']:
+            raise RuntimeError(f"trial {entry['trial_number']}: fault effect boundary differs")
     boundary = entry['fault_effect_boundary_seq'] if strict else -1
     last_child = entry['last_fault_source'] if strict else ''
     physical = urlsplit(selected[-1]['physicalNode']).netloc + '_' if strict else ''
