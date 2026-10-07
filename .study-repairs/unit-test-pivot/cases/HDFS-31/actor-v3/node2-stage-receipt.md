@@ -11,7 +11,7 @@ matched, and checksum-mode dry-run `rsync -nrc` reported no changed files.
 
 | Tree | Files | Local and node2 digest |
 | --- | ---: | --- |
-| V3 image, excluding `test-resources/`, this receipt, and Python cache | 32 | `684f0bdccb2eedd2c795227a3b00e7d0a4bfc77101880cf25f56b5ec3c9496c5` |
+| V3 image, excluding `test-resources/`, this receipt, and Python cache | 33 | `f67003dfcdc5a709ee9d33215f4e74b850e5e27ea7dee8b79b8369310bb0124d` |
 | Original HDFS test resources | 63 | `63771954e53cf225e15aac7dcd1695e2da698dca1a6d5d588799d0b21a85c56d` |
 
 The already verified runtime overlay digest is
