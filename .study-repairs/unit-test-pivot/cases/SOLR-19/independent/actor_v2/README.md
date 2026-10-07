@@ -86,15 +86,41 @@ records, Overseer task queues, and live-node reads. The V3 gate must qualify
 these sites with the bound producer or receiver actor before they enter a
 fault queue.
 
-The current adapter additionally binds each ZooKeeper client to its Jetty
-actor and records actual file opens. Its two homogeneous final healthy seeds
-are pending the node1 JVM timing gate. `audit_seeds.py` must report passing
-original JUnit, nine exact target paths, zero lineage issues, stable core
-selectors independent of ephemeral ports, and a nonempty intersection of
-actor-qualified I/O identities before a fault campaign starts. If physical
-placement changes, fixed `JETTY_n` selectors are excluded unless their own
-identity is separately proven. The source
-override's production JaCoCo baseline is summarized by `coverage_v2.py`.
+The V3 adapter additionally binds each ZooKeeper client to its actual Jetty
+node and records file opens. Two homogeneous, unchanged original JUnit seeds
+passed on node1 at 2026-10-07 05:55:36.060–05:55:53.603 UTC and
+05:55:53.625–05:56:10.665 UTC, taking 17.413 and 16.963 seconds. Each
+reached nine exact, nonthrowing target guards with zero sender/receiver,
+descriptor, file, or actor audit issues. Each bound three Jetty ZooKeeper
+clients; the seeds recorded 1,054 and 1,022 ZooKeeper I/O events, including
+1,016 and 984 bound events. No external properties file was opened. The
+`property.coreNodeName` override was absent for all nine cores in both
+runs. The stable core-name intersection is nine of nine, but only two of nine
+core-to-fixed-`JETTY_n` placements agree across seeds. This excludes fixed
+Jetty roles from the high-quality fault queue.
+
+The selected production `CoreContainer.create` method was executed in both
+seeds, with 7/24 branches covered. The JaCoCo union covers 4,482 methods and
+5,588 branches in executed Solr production classes, with zero unmatched
+classes. `coverage_v2.py` records method/branch totals; `CoverageProbes.java`
+and `coverage_probes_v3.py` provide stable production probe IDs for feedback.
+The 36 stable sender-to-guard actor-relative I/O identities become 15
+nonduplicate, two-seed stable one-fault selectors after requiring a preceding
+CREATE sender and excluding overlapping owner/producer actor roles. They are
+predominantly the producer's collection counter and Overseer queue accesses.
+`seed_queue_v3.py` persists the exact selectors in
+`evidence/v3-initial-queue.json`. It resolves `PRODUCER_OF_CORE:<coreName>`
+at runtime from that same run's CREATE sender; no ephemeral port or fixed
+Jetty position is carried across trials. The raw traces, JUnit outputs,
+coverage, receipts, and queue are archived with per-file hashes in
+`evidence/v3-healthy-raw.tar.gz` and
+`evidence/v3-healthy-archive-manifest.json`. These healthy and intermediate
+runs supply **zero V3 fault trials**; the earlier coarse actor campaign
+remains historical evidence only.
+`calibrate_v3.py` runs the two unchanged JUnit seeds sequentially under one
+tmux supervisor, saves a checkpoint after each seed, reuses an already
+passing seed after a disconnect, and stops for review on a partial or failed
+seed. Thus reconnection does not silently rerun completed cluster work.
 
 For node1, use `/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4` as the
 release source root (commit `e27f44e`). Keep every run's scratch, logs,

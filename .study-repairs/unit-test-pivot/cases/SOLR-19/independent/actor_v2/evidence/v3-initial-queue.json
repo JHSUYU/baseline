@@ -1,0 +1,179 @@
+{
+  "case_id": "SOLR-19",
+  "phase": "v3_actor_qualified_seed_queue",
+  "original_junit": "AddReplicaTest.testAddMultipleReplicas",
+  "receipt_sha256": "ce485aed3622525e29e77009157b59914a9c4d2e344d8a2c4b989f814091f9b9",
+  "stable_actor_relative_site_count": 15,
+  "distinct_one_fault_plan_count": 15,
+  "family_counts": {
+    "collection_other": 3,
+    "overseer_control": 12
+  },
+  "plans": [
+    {
+      "selector": "EXISTS|/collections/testAddMultipleReplicas|org.apache.solr.client.solrj.impl.ZkDistribStateManager#hasData:60|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t4",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4",
+      "family": "collection_other",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 8,
+      "seed_b_last_distance_to_guard": 7,
+      "ordinal": 1
+    },
+    {
+      "selector": "EXISTS|/collections/testAddMultipleReplicas/counter|org.apache.solr.client.solrj.impl.ZkDistribStateManager#hasData:60|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t4",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4",
+      "family": "collection_other",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 7,
+      "seed_b_last_distance_to_guard": 6,
+      "ordinal": 1
+    },
+    {
+      "selector": "GET_DATA|/collections/testAddMultipleReplicas/counter|org.apache.solr.client.solrj.impl.ZkDistribStateManager#getData:88|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t4",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4",
+      "family": "collection_other",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 6,
+      "seed_b_last_distance_to_guard": 5,
+      "ordinal": 1
+    },
+    {
+      "selector": "EXISTS|/overseer/queue|org.apache.solr.common.cloud.ZkCmdExecutor#ensureExists:120|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t4",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 13,
+      "seed_b_last_distance_to_guard": 11,
+      "ordinal": 1
+    },
+    {
+      "selector": "EXISTS_WATCH|/overseer/queue|org.apache.solr.cloud.ZkDistributedQueue#offer:311|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t4",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 12,
+      "seed_b_last_distance_to_guard": 10,
+      "ordinal": 1
+    },
+    {
+      "selector": "GET_CHILDREN|/overseer/queue|org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t4",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 11,
+      "seed_b_last_distance_to_guard": 9,
+      "ordinal": 1
+    },
+    {
+      "selector": "EXISTS|/overseer/queue|org.apache.solr.common.cloud.ZkCmdExecutor#ensureExists:120|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10|1",
+      "core": "testAddMultipleReplicas_shard1_replica_n10",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 8,
+      "seed_b_last_distance_to_guard": 11,
+      "ordinal": 1
+    },
+    {
+      "selector": "EXISTS|/overseer/queue|org.apache.solr.common.cloud.ZkCmdExecutor#ensureExists:120|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t12",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 8,
+      "seed_b_last_distance_to_guard": 9,
+      "ordinal": 1
+    },
+    {
+      "selector": "GET_DATA|/overseer/queue/qn-0000000008|org.apache.solr.cloud.ZkDistributedQueue#peekElements:489|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t4",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t4",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 9,
+      "seed_b_last_distance_to_guard": 8,
+      "ordinal": 1
+    },
+    {
+      "selector": "EXISTS_WATCH|/overseer/queue|org.apache.solr.cloud.ZkDistributedQueue#offer:311|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10|1",
+      "core": "testAddMultipleReplicas_shard1_replica_n10",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 7,
+      "seed_b_last_distance_to_guard": 10,
+      "ordinal": 1
+    },
+    {
+      "selector": "EXISTS_WATCH|/overseer/queue|org.apache.solr.cloud.ZkDistributedQueue#offer:311|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t12",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 7,
+      "seed_b_last_distance_to_guard": 8,
+      "ordinal": 1
+    },
+    {
+      "selector": "GET_CHILDREN|/overseer/queue|org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10|1",
+      "core": "testAddMultipleReplicas_shard1_replica_n10",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 6,
+      "seed_b_last_distance_to_guard": 9,
+      "ordinal": 1
+    },
+    {
+      "selector": "GET_CHILDREN|/overseer/queue|org.apache.solr.cloud.ZkDistributedQueue#fetchZkChildren:417|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t12",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 6,
+      "seed_b_last_distance_to_guard": 7,
+      "ordinal": 1
+    },
+    {
+      "selector": "GET_DATA|/overseer/queue/qn-0000000021|org.apache.solr.cloud.ZkDistributedQueue#peekElements:489|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10|1",
+      "core": "testAddMultipleReplicas_shard1_replica_n10",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_n10",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 5,
+      "seed_b_last_distance_to_guard": 8,
+      "ordinal": 1
+    },
+    {
+      "selector": "GET_DATA|/overseer/queue/qn-0000000027|org.apache.solr.cloud.ZkDistributedQueue#peekElements:489|PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12|1",
+      "core": "testAddMultipleReplicas_shard1_replica_t12",
+      "actor_spec": "PRODUCER_OF_CORE:testAddMultipleReplicas_shard1_replica_t12",
+      "family": "overseer_control",
+      "seed_a_occurrences": 1,
+      "seed_b_occurrences": 1,
+      "seed_a_last_distance_to_guard": 5,
+      "seed_b_last_distance_to_guard": 6,
+      "ordinal": 1
+    }
+  ]
+}
