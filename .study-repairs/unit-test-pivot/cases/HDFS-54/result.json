@@ -1,0 +1,408 @@
+{
+  "case_id": "HDFS-54",
+  "bug_id": "HDFS-17897",
+  "known_bug": true,
+  "new_bug": false,
+  "classification": "known_bug_reproduced_at_selected_check",
+  "status": "quality_complete",
+  "bug_mark": "known_HDFS-17897_reproduced",
+  "source_version": "Hadoop 3.4.3",
+  "graph_used": false,
+  "target_site": "FileChecksumHelper$StripedFileNonStripedChecksumComputer.checksumBlocks#L629",
+  "source_path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+  "function": "StripedFileNonStripedChecksumComputer.checksumBlocks()",
+  "check_code": "if (!checksumBlockGroup(blockGroup)) throw new PathIOException(...)",
+  "linked_upstream_check": "HDFS-11 BlockTokenSecretManager.retrieveDataEncryptionKey#L552",
+  "original_junit_basis": "TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey",
+  "workload_change": "XOR-2-1 striped file, 1 NameNode and 3 DataNodes",
+  "fault": "real NameNode block-key rotation and expiry on all 3 DataNodes",
+  "injected_io_faults": 6,
+  "fault_trials": 6,
+  "fully_applied_trials": 6,
+  "target_after_fault": 6,
+  "natural_key_expiry_target_after_fault": true,
+  "trial_count": 8,
+  "injected_mutant_count": 6,
+  "target_retaining_mutant_count": 6,
+  "elapsed_seconds": 213.541,
+  "seed": {
+    "elapsed_seconds": 24.732,
+    "returncode": 0,
+    "mode": "original",
+    "key_id": 1183040781,
+    "dn_identity_map": {
+      "861318333": "DatanodeRegistration(127.0.0.1:40065, datanodeUuid=a7ec78ed-5c35-4238-b3aa-9cb389d8b2ca, infoPort=34203, infoSecurePort=0, ipcPort=44309, storageInfo=lv=-57;cid=testClusterID;nsid=1289312171;c=1791331649634)",
+      "4657333": "DatanodeRegistration(127.0.0.1:34725, datanodeUuid=96136601-e823-48bf-a00c-f5ca647723d5, infoPort=34487, infoSecurePort=0, ipcPort=34069, storageInfo=lv=-57;cid=testClusterID;nsid=1289312171;c=1791331649634)",
+      "717730741": "DatanodeRegistration(127.0.0.1:46211, datanodeUuid=30af2a75-abba-4f92-bb3f-926ad80efc3d, infoPort=36775, infoSecurePort=0, ipcPort=40549, storageInfo=lv=-57;cid=testClusterID;nsid=1289312171;c=1791331649634)"
+    },
+    "target_guard_null_for_cached_key": 6,
+    "target_throw_after_fault": 6,
+    "target_check_after_fault": 3,
+    "target_false_after_fault": 2,
+    "generic_stale_key_catches_after_fault": 6,
+    "matched_faults": 0,
+    "applied_faults": 0,
+    "runtime_dn_identities": [
+      "DatanodeRegistration(127.0.0.1:34725, datanodeUuid=96136601-e823-48bf-a00c-f5ca647723d5, infoPort=34487, infoSecurePort=0, ipcPort=34069, storageInfo=lv=-57;cid=testClusterID;nsid=1289312171;c=1791331649634)",
+      "DatanodeRegistration(127.0.0.1:40065, datanodeUuid=a7ec78ed-5c35-4238-b3aa-9cb389d8b2ca, infoPort=34203, infoSecurePort=0, ipcPort=44309, storageInfo=lv=-57;cid=testClusterID;nsid=1289312171;c=1791331649634)",
+      "DatanodeRegistration(127.0.0.1:46211, datanodeUuid=30af2a75-abba-4f92-bb3f-926ad80efc3d, infoPort=36775, infoSecurePort=0, ipcPort=40549, storageInfo=lv=-57;cid=testClusterID;nsid=1289312171;c=1791331649634)"
+    ],
+    "post_expiry_io_points": 18,
+    "post_expiry_io_sites": [
+      "SaslDataTransferServer.doSaslHandshake#readMagic",
+      "SaslDataTransferServer.doSaslHandshake#readOptions",
+      "SaslDataTransferServer.doSaslHandshake#readSecret"
+    ],
+    "coverage_gain_vs_seed": {},
+    "operation_failed": true,
+    "repeat_failed": true,
+    "operation_recovered": false,
+    "patched_retry_seen": false,
+    "junit_ok": true,
+    "sha256_log": "6310b2119930816c96db67674dc0004d63736aa160f6e8f226c8d2e55fe24c03",
+    "sha256_trace": "7de68bc39d39948afe0e40680df007434b121ebd20b3ec682e4c30a35e5bcdec"
+  },
+  "fixed_control": {
+    "elapsed_seconds": 24.834,
+    "returncode": 0,
+    "mode": "fixed",
+    "key_id": 902080004,
+    "dn_identity_map": {
+      "1577912698": "DatanodeRegistration(127.0.0.1:34979, datanodeUuid=2c96763b-e9b7-43cf-bb8a-4590a441ec25, infoPort=33651, infoSecurePort=0, ipcPort=42025, storageInfo=lv=-57;cid=testClusterID;nsid=2079358390;c=1791331684493)",
+      "1504645651": "DatanodeRegistration(127.0.0.1:37247, datanodeUuid=a42ec971-e98b-4edd-8444-74c1f5dc2853, infoPort=43817, infoSecurePort=0, ipcPort=40205, storageInfo=lv=-57;cid=testClusterID;nsid=2079358390;c=1791331684493)",
+      "1944627535": "DatanodeRegistration(127.0.0.1:40607, datanodeUuid=8a21fde7-09c0-4c47-8f2c-f3c31cb1e8fe, infoPort=39507, infoSecurePort=0, ipcPort=39707, storageInfo=lv=-57;cid=testClusterID;nsid=2079358390;c=1791331684493)"
+    },
+    "target_guard_null_for_cached_key": 1,
+    "target_throw_after_fault": 1,
+    "target_check_after_fault": 3,
+    "target_false_after_fault": 0,
+    "generic_stale_key_catches_after_fault": 1,
+    "matched_faults": 0,
+    "applied_faults": 0,
+    "runtime_dn_identities": [
+      "DatanodeRegistration(127.0.0.1:40607, datanodeUuid=8a21fde7-09c0-4c47-8f2c-f3c31cb1e8fe, infoPort=39507, infoSecurePort=0, ipcPort=39707, storageInfo=lv=-57;cid=testClusterID;nsid=2079358390;c=1791331684493)"
+    ],
+    "post_expiry_io_points": 12,
+    "post_expiry_io_sites": [
+      "SaslDataTransferServer.doSaslHandshake#readMagic",
+      "SaslDataTransferServer.doSaslHandshake#readOptions",
+      "SaslDataTransferServer.doSaslHandshake#readSecret"
+    ],
+    "coverage_gain_vs_seed": {
+      "probes": 21,
+      "methods": 3,
+      "branch_counts": 4,
+      "lines": 24
+    },
+    "operation_failed": false,
+    "repeat_failed": false,
+    "operation_recovered": true,
+    "patched_retry_seen": true,
+    "junit_ok": true,
+    "sha256_log": "acae32a14917a354efb73139c75c23594ebb9dcc862fdd9ca844a218bfda9cff",
+    "sha256_trace": "8f48bba00c46ca62d8627aa6ef63cf6a205343d3cd46e296e5eb4ed92662b5ef"
+  },
+  "mutant_summaries": [
+    {
+      "id": "mutation-01",
+      "result": "target_retaining_fault_trial",
+      "plan": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-54/plans/mutation-01.tsv",
+      "summary": {
+        "elapsed_seconds": 28.401,
+        "returncode": 0,
+        "mode": "original",
+        "key_id": 1882417902,
+        "dn_identity_map": {
+          "929207341": "DatanodeRegistration(127.0.0.1:34431, datanodeUuid=3a545b91-6f47-4e16-b6dc-67079a9d4622, infoPort=39609, infoSecurePort=0, ipcPort=39163, storageInfo=lv=-57;cid=testClusterID;nsid=1666254113;c=1791331722479)",
+          "222009390": "DatanodeRegistration(127.0.0.1:38543, datanodeUuid=853d29c3-9d14-4860-a1cd-5822ebeef3f0, infoPort=41253, infoSecurePort=0, ipcPort=33879, storageInfo=lv=-57;cid=testClusterID;nsid=1666254113;c=1791331722479)",
+          "1385545550": "DatanodeRegistration(127.0.0.1:33807, datanodeUuid=d1ff7906-ea7d-4b6a-8e16-53f1f2311861, infoPort=34525, infoSecurePort=0, ipcPort=33675, storageInfo=lv=-57;cid=testClusterID;nsid=1666254113;c=1791331722479)"
+        },
+        "target_guard_null_for_cached_key": 5,
+        "target_throw_after_fault": 5,
+        "target_check_after_fault": 2,
+        "target_false_after_fault": 2,
+        "generic_stale_key_catches_after_fault": 5,
+        "matched_faults": 1,
+        "applied_faults": 1,
+        "runtime_dn_identities": [
+          "DatanodeRegistration(127.0.0.1:33807, datanodeUuid=d1ff7906-ea7d-4b6a-8e16-53f1f2311861, infoPort=34525, infoSecurePort=0, ipcPort=33675, storageInfo=lv=-57;cid=testClusterID;nsid=1666254113;c=1791331722479)",
+          "DatanodeRegistration(127.0.0.1:34431, datanodeUuid=3a545b91-6f47-4e16-b6dc-67079a9d4622, infoPort=39609, infoSecurePort=0, ipcPort=39163, storageInfo=lv=-57;cid=testClusterID;nsid=1666254113;c=1791331722479)",
+          "DatanodeRegistration(127.0.0.1:38543, datanodeUuid=853d29c3-9d14-4860-a1cd-5822ebeef3f0, infoPort=41253, infoSecurePort=0, ipcPort=33879, storageInfo=lv=-57;cid=testClusterID;nsid=1666254113;c=1791331722479)"
+        ],
+        "post_expiry_io_points": 17,
+        "post_expiry_io_sites": [
+          "SaslDataTransferServer.doSaslHandshake#readMagic",
+          "SaslDataTransferServer.doSaslHandshake#readOptions",
+          "SaslDataTransferServer.doSaslHandshake#readSecret"
+        ],
+        "coverage_gain_vs_seed": {
+          "probes": 10,
+          "methods": 1,
+          "branch_counts": 8,
+          "lines": 6
+        },
+        "operation_failed": true,
+        "repeat_failed": true,
+        "operation_recovered": false,
+        "patched_retry_seen": false,
+        "junit_ok": true,
+        "sha256_log": "6d9c2966ef32724ff8cc98d0846aa4d30e20db1851b5945deb2abee764529ce0",
+        "sha256_trace": "477f6d65158f7d47161abf00bd909788122bfc2572e43fccff89ffbb6d24c7f6"
+      }
+    },
+    {
+      "id": "mutation-02",
+      "result": "target_retaining_fault_trial",
+      "plan": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-54/plans/mutation-02.tsv",
+      "summary": {
+        "elapsed_seconds": 25.826,
+        "returncode": 0,
+        "mode": "original",
+        "key_id": 1229532276,
+        "dn_identity_map": {
+          "128034091": "DatanodeRegistration(127.0.0.1:36725, datanodeUuid=987fa8c6-1d91-4ea9-86d2-e865a5ad6ee1, infoPort=33637, infoSecurePort=0, ipcPort=45211, storageInfo=lv=-57;cid=testClusterID;nsid=1875602059;c=1791331758523)",
+          "427359266": "DatanodeRegistration(127.0.0.1:33885, datanodeUuid=264d541e-d85d-4a59-94ee-ec5f3748f29d, infoPort=38365, infoSecurePort=0, ipcPort=34603, storageInfo=lv=-57;cid=testClusterID;nsid=1875602059;c=1791331758523)",
+          "1960112682": "DatanodeRegistration(127.0.0.1:41717, datanodeUuid=c8ca915c-fc30-4caf-9d44-f4d48207d6de, infoPort=46203, infoSecurePort=0, ipcPort=37495, storageInfo=lv=-57;cid=testClusterID;nsid=1875602059;c=1791331758523)"
+        },
+        "target_guard_null_for_cached_key": 5,
+        "target_throw_after_fault": 5,
+        "target_check_after_fault": 2,
+        "target_false_after_fault": 2,
+        "generic_stale_key_catches_after_fault": 5,
+        "matched_faults": 1,
+        "applied_faults": 1,
+        "runtime_dn_identities": [
+          "DatanodeRegistration(127.0.0.1:33885, datanodeUuid=264d541e-d85d-4a59-94ee-ec5f3748f29d, infoPort=38365, infoSecurePort=0, ipcPort=34603, storageInfo=lv=-57;cid=testClusterID;nsid=1875602059;c=1791331758523)",
+          "DatanodeRegistration(127.0.0.1:36725, datanodeUuid=987fa8c6-1d91-4ea9-86d2-e865a5ad6ee1, infoPort=33637, infoSecurePort=0, ipcPort=45211, storageInfo=lv=-57;cid=testClusterID;nsid=1875602059;c=1791331758523)",
+          "DatanodeRegistration(127.0.0.1:41717, datanodeUuid=c8ca915c-fc30-4caf-9d44-f4d48207d6de, infoPort=46203, infoSecurePort=0, ipcPort=37495, storageInfo=lv=-57;cid=testClusterID;nsid=1875602059;c=1791331758523)"
+        ],
+        "post_expiry_io_points": 18,
+        "post_expiry_io_sites": [
+          "SaslDataTransferServer.doSaslHandshake#readMagic",
+          "SaslDataTransferServer.doSaslHandshake#readOptions",
+          "SaslDataTransferServer.doSaslHandshake#readSecret"
+        ],
+        "coverage_gain_vs_seed": {
+          "probes": 12,
+          "methods": 1,
+          "branch_counts": 9,
+          "lines": 8
+        },
+        "operation_failed": true,
+        "repeat_failed": true,
+        "operation_recovered": false,
+        "patched_retry_seen": false,
+        "junit_ok": true,
+        "sha256_log": "f120d5a52f83a2f6f3ba0cfac1ead1ac86c1de7de54d2a2d14d5198cb3fa6222",
+        "sha256_trace": "05702668c2c3be82350c2578339e4dd41ee74731c25a813268e375c6f525ac95"
+      }
+    },
+    {
+      "id": "mutation-03",
+      "result": "target_retaining_fault_trial",
+      "plan": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-54/plans/mutation-03.tsv",
+      "summary": {
+        "elapsed_seconds": 26.745,
+        "returncode": 0,
+        "mode": "original",
+        "key_id": 2109232021,
+        "dn_identity_map": {
+          "281172130": "DatanodeRegistration(127.0.0.1:34139, datanodeUuid=62c4992b-8ba6-4688-a9de-9d2a0cdf4076, infoPort=42305, infoSecurePort=0, ipcPort=44113, storageInfo=lv=-57;cid=testClusterID;nsid=282468399;c=1791331794455)",
+          "853583129": "DatanodeRegistration(127.0.0.1:39535, datanodeUuid=333fca80-e47d-4bfe-a7fe-13ab6b517233, infoPort=34547, infoSecurePort=0, ipcPort=37845, storageInfo=lv=-57;cid=testClusterID;nsid=282468399;c=1791331794455)",
+          "103958035": "DatanodeRegistration(127.0.0.1:33471, datanodeUuid=b8162844-e218-4b43-9bd6-540fcdf2e922, infoPort=43017, infoSecurePort=0, ipcPort=38349, storageInfo=lv=-57;cid=testClusterID;nsid=282468399;c=1791331794455)"
+        },
+        "target_guard_null_for_cached_key": 5,
+        "target_throw_after_fault": 5,
+        "target_check_after_fault": 2,
+        "target_false_after_fault": 2,
+        "generic_stale_key_catches_after_fault": 5,
+        "matched_faults": 1,
+        "applied_faults": 1,
+        "runtime_dn_identities": [
+          "DatanodeRegistration(127.0.0.1:33471, datanodeUuid=b8162844-e218-4b43-9bd6-540fcdf2e922, infoPort=43017, infoSecurePort=0, ipcPort=38349, storageInfo=lv=-57;cid=testClusterID;nsid=282468399;c=1791331794455)",
+          "DatanodeRegistration(127.0.0.1:34139, datanodeUuid=62c4992b-8ba6-4688-a9de-9d2a0cdf4076, infoPort=42305, infoSecurePort=0, ipcPort=44113, storageInfo=lv=-57;cid=testClusterID;nsid=282468399;c=1791331794455)",
+          "DatanodeRegistration(127.0.0.1:39535, datanodeUuid=333fca80-e47d-4bfe-a7fe-13ab6b517233, infoPort=34547, infoSecurePort=0, ipcPort=37845, storageInfo=lv=-57;cid=testClusterID;nsid=282468399;c=1791331794455)"
+        ],
+        "post_expiry_io_points": 16,
+        "post_expiry_io_sites": [
+          "SaslDataTransferServer.doSaslHandshake#readMagic",
+          "SaslDataTransferServer.doSaslHandshake#readOptions",
+          "SaslDataTransferServer.doSaslHandshake#readSecret"
+        ],
+        "coverage_gain_vs_seed": {
+          "probes": 186,
+          "methods": 32,
+          "branch_counts": 87,
+          "lines": 182
+        },
+        "operation_failed": true,
+        "repeat_failed": true,
+        "operation_recovered": false,
+        "patched_retry_seen": false,
+        "junit_ok": true,
+        "sha256_log": "a2568c51fb06a642362b1af074d7f2978777aa489df312127e2d7839d32464c0",
+        "sha256_trace": "ca76bce8d232ce78edb5da798f970a91126721109f3173e53cfe172bf7b7cb4b"
+      }
+    },
+    {
+      "id": "mutation-06",
+      "result": "target_retaining_fault_trial",
+      "plan": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-54/plans/mutation-06.tsv",
+      "summary": {
+        "elapsed_seconds": 27.86,
+        "returncode": 0,
+        "mode": "original",
+        "key_id": 673538160,
+        "dn_identity_map": {
+          "1511808067": "DatanodeRegistration(127.0.0.1:41921, datanodeUuid=c77fde30-7480-41e1-9c05-cde00b015142, infoPort=46383, infoSecurePort=0, ipcPort=45845, storageInfo=lv=-57;cid=testClusterID;nsid=836306982;c=1791331871209)",
+          "1344480586": "DatanodeRegistration(127.0.0.1:37461, datanodeUuid=dcdb9a93-7722-4b2a-accb-bf7a6b2bf837, infoPort=35721, infoSecurePort=0, ipcPort=41977, storageInfo=lv=-57;cid=testClusterID;nsid=836306982;c=1791331871209)",
+          "1859511055": "DatanodeRegistration(127.0.0.1:45153, datanodeUuid=b6fa2740-2bcb-4cb2-a3b6-ec71f2c2bcb4, infoPort=43347, infoSecurePort=0, ipcPort=43461, storageInfo=lv=-57;cid=testClusterID;nsid=836306982;c=1791331871209)"
+        },
+        "target_guard_null_for_cached_key": 4,
+        "target_throw_after_fault": 4,
+        "target_check_after_fault": 2,
+        "target_false_after_fault": 2,
+        "generic_stale_key_catches_after_fault": 4,
+        "matched_faults": 1,
+        "applied_faults": 1,
+        "runtime_dn_identities": [
+          "DatanodeRegistration(127.0.0.1:37461, datanodeUuid=dcdb9a93-7722-4b2a-accb-bf7a6b2bf837, infoPort=35721, infoSecurePort=0, ipcPort=41977, storageInfo=lv=-57;cid=testClusterID;nsid=836306982;c=1791331871209)",
+          "DatanodeRegistration(127.0.0.1:41921, datanodeUuid=c77fde30-7480-41e1-9c05-cde00b015142, infoPort=46383, infoSecurePort=0, ipcPort=45845, storageInfo=lv=-57;cid=testClusterID;nsid=836306982;c=1791331871209)",
+          "DatanodeRegistration(127.0.0.1:45153, datanodeUuid=b6fa2740-2bcb-4cb2-a3b6-ec71f2c2bcb4, infoPort=43347, infoSecurePort=0, ipcPort=43461, storageInfo=lv=-57;cid=testClusterID;nsid=836306982;c=1791331871209)"
+        ],
+        "post_expiry_io_points": 16,
+        "post_expiry_io_sites": [
+          "SaslDataTransferServer.doSaslHandshake#readMagic",
+          "SaslDataTransferServer.doSaslHandshake#readOptions",
+          "SaslDataTransferServer.doSaslHandshake#readSecret"
+        ],
+        "coverage_gain_vs_seed": {
+          "probes": 187,
+          "methods": 32,
+          "branch_counts": 88,
+          "lines": 182
+        },
+        "operation_failed": true,
+        "repeat_failed": true,
+        "operation_recovered": false,
+        "patched_retry_seen": false,
+        "junit_ok": true,
+        "sha256_log": "1f2c78ecee1f492e99c58302dfb330405f04b508ad360d2a04cda6fe7ed9264a",
+        "sha256_trace": "9f982bb4ad7edb2c1201760a9d3242aecdd4f5715e631d17002384a8144af1c4"
+      }
+    },
+    {
+      "id": "mutation-05",
+      "result": "target_retaining_fault_trial",
+      "plan": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-54/plans/mutation-05.tsv",
+      "summary": {
+        "elapsed_seconds": 28.069,
+        "returncode": 0,
+        "mode": "original",
+        "key_id": 851836238,
+        "dn_identity_map": {
+          "1958349668": "DatanodeRegistration(127.0.0.1:40021, datanodeUuid=80010f64-8cbc-48af-a0e0-5d167c8948b0, infoPort=45871, infoSecurePort=0, ipcPort=39793, storageInfo=lv=-57;cid=testClusterID;nsid=1677581372;c=1791331908836)",
+          "1107730766": "DatanodeRegistration(127.0.0.1:39041, datanodeUuid=e73a16ae-cd4a-4fcf-ac52-ed2ebf481160, infoPort=46787, infoSecurePort=0, ipcPort=33093, storageInfo=lv=-57;cid=testClusterID;nsid=1677581372;c=1791331908836)",
+          "1895975000": "DatanodeRegistration(127.0.0.1:41011, datanodeUuid=512d673f-1e26-4bc3-b1c1-7d8e827fa2a1, infoPort=35651, infoSecurePort=0, ipcPort=32977, storageInfo=lv=-57;cid=testClusterID;nsid=1677581372;c=1791331908836)"
+        },
+        "target_guard_null_for_cached_key": 4,
+        "target_throw_after_fault": 4,
+        "target_check_after_fault": 2,
+        "target_false_after_fault": 2,
+        "generic_stale_key_catches_after_fault": 4,
+        "matched_faults": 1,
+        "applied_faults": 1,
+        "runtime_dn_identities": [
+          "DatanodeRegistration(127.0.0.1:39041, datanodeUuid=e73a16ae-cd4a-4fcf-ac52-ed2ebf481160, infoPort=46787, infoSecurePort=0, ipcPort=33093, storageInfo=lv=-57;cid=testClusterID;nsid=1677581372;c=1791331908836)",
+          "DatanodeRegistration(127.0.0.1:40021, datanodeUuid=80010f64-8cbc-48af-a0e0-5d167c8948b0, infoPort=45871, infoSecurePort=0, ipcPort=39793, storageInfo=lv=-57;cid=testClusterID;nsid=1677581372;c=1791331908836)",
+          "DatanodeRegistration(127.0.0.1:41011, datanodeUuid=512d673f-1e26-4bc3-b1c1-7d8e827fa2a1, infoPort=35651, infoSecurePort=0, ipcPort=32977, storageInfo=lv=-57;cid=testClusterID;nsid=1677581372;c=1791331908836)"
+        ],
+        "post_expiry_io_points": 18,
+        "post_expiry_io_sites": [
+          "SaslDataTransferServer.doSaslHandshake#readMagic",
+          "SaslDataTransferServer.doSaslHandshake#readOptions",
+          "SaslDataTransferServer.doSaslHandshake#readSecret"
+        ],
+        "coverage_gain_vs_seed": {
+          "probes": 193,
+          "methods": 33,
+          "branch_counts": 95,
+          "lines": 185
+        },
+        "operation_failed": true,
+        "repeat_failed": true,
+        "operation_recovered": false,
+        "patched_retry_seen": false,
+        "junit_ok": true,
+        "sha256_log": "332144d43f75c6dc0d99feb684eaff319764fc58b86ccd2863f0000ed65312c4",
+        "sha256_trace": "7ec0cfe8d282f88e133027fc8e4a2e124b52c87d846078c23624a7d4af672422"
+      }
+    },
+    {
+      "id": "mutation-04",
+      "result": "target_retaining_fault_trial",
+      "plan": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HDFS-54/plans/mutation-04.tsv",
+      "summary": {
+        "elapsed_seconds": 27.074,
+        "returncode": 0,
+        "mode": "original",
+        "key_id": 1630668948,
+        "dn_identity_map": {
+          "232912328": "DatanodeRegistration(127.0.0.1:40123, datanodeUuid=4cba6c77-befd-4d47-823c-3f3cbdbd013d, infoPort=40493, infoSecurePort=0, ipcPort=38851, storageInfo=lv=-57;cid=testClusterID;nsid=2144259199;c=1791331946089)",
+          "1338711681": "DatanodeRegistration(127.0.0.1:33041, datanodeUuid=2c36dd08-6ba9-4a81-b2a9-5093647a1aca, infoPort=44841, infoSecurePort=0, ipcPort=43713, storageInfo=lv=-57;cid=testClusterID;nsid=2144259199;c=1791331946089)",
+          "1548218593": "DatanodeRegistration(127.0.0.1:36461, datanodeUuid=4f0daf8f-a3fb-4a1c-aedc-79b0c7a9b570, infoPort=35215, infoSecurePort=0, ipcPort=36935, storageInfo=lv=-57;cid=testClusterID;nsid=2144259199;c=1791331946089)"
+        },
+        "target_guard_null_for_cached_key": 4,
+        "target_throw_after_fault": 4,
+        "target_check_after_fault": 2,
+        "target_false_after_fault": 2,
+        "generic_stale_key_catches_after_fault": 4,
+        "matched_faults": 1,
+        "applied_faults": 1,
+        "runtime_dn_identities": [
+          "DatanodeRegistration(127.0.0.1:33041, datanodeUuid=2c36dd08-6ba9-4a81-b2a9-5093647a1aca, infoPort=44841, infoSecurePort=0, ipcPort=43713, storageInfo=lv=-57;cid=testClusterID;nsid=2144259199;c=1791331946089)",
+          "DatanodeRegistration(127.0.0.1:36461, datanodeUuid=4f0daf8f-a3fb-4a1c-aedc-79b0c7a9b570, infoPort=35215, infoSecurePort=0, ipcPort=36935, storageInfo=lv=-57;cid=testClusterID;nsid=2144259199;c=1791331946089)",
+          "DatanodeRegistration(127.0.0.1:40123, datanodeUuid=4cba6c77-befd-4d47-823c-3f3cbdbd013d, infoPort=40493, infoSecurePort=0, ipcPort=38851, storageInfo=lv=-57;cid=testClusterID;nsid=2144259199;c=1791331946089)"
+        ],
+        "post_expiry_io_points": 17,
+        "post_expiry_io_sites": [
+          "SaslDataTransferServer.doSaslHandshake#readMagic",
+          "SaslDataTransferServer.doSaslHandshake#readOptions",
+          "SaslDataTransferServer.doSaslHandshake#readSecret"
+        ],
+        "coverage_gain_vs_seed": {
+          "probes": 12,
+          "methods": 1,
+          "branch_counts": 9,
+          "lines": 8
+        },
+        "operation_failed": true,
+        "repeat_failed": true,
+        "operation_recovered": false,
+        "patched_retry_seen": false,
+        "junit_ok": true,
+        "sha256_log": "b615d0c19d5122a71a98777e4316754e98c2ad704e7102b0fbe2f7d18ca53415",
+        "sha256_trace": "7d6517d37b8fe84ba6fdcc20a4f6d94eb8af694ce569a0fb1db375c88a2b8a8d"
+      }
+    }
+  ],
+  "pre_campaign_original_smoke": {
+    "manifest": "runs/original-01/manifest.json",
+    "elapsed_seconds": 28.867,
+    "runtime_trace": "runs/original-01/runtime_trace.jsonl"
+  },
+  "checkpoint": "campaign-state.json",
+  "trial_ledger": "trial-ledger.csv",
+  "evidence": {
+    "checkpoint": "campaign-state.json",
+    "trial_ledger": "trial-ledger.csv",
+    "raw_archive": "evidence.tar.gz",
+    "seed_trace": "campaign-runs/seed-original/runtime_trace.jsonl",
+    "seed_log": "campaign-runs/seed-original/junit.log",
+    "fix_trace": "campaign-runs/fixed-control/runtime_trace.jsonl",
+    "fix_log": "campaign-runs/fixed-control/junit.log"
+  },
+  "evidence_archive": "evidence.tar.gz",
+  "evidence_archive_sha256": "da29981257a99de235ae6e7644edad3164da0d0bc2ba061e7f35c59bc08f0800",
+  "evidence_archive_bytes": 3557276
+}
