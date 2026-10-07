@@ -159,6 +159,8 @@ def passed(row: dict) -> bool:
 
 
 def next_work(state: dict) -> tuple[str, str] | None:
+    if verdict(state)['qualifying_candidates']:
+        return None
     for method in CANDIDATES:
         runs = state['candidates'].setdefault(method, {})
         if 'clean' not in runs:
