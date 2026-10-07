@@ -28,6 +28,9 @@ responses are eligible only when their raw remote address equals the bound
 actor's NameNode address. Unknown actor, storage, or peer identity fails
 closed. Every JUnit run collects production JaCoCo coverage and exact branch
 events, plus file/RPC I/O and target check/throw traces.
+The two healthy seeds must prove one raw NameNode endpoint per actor; a fault
+receipt with multiple endpoints under one actor is rejected rather than
+merging them under `peer=NN0`.
 
 Run `python3 offline_smoke.py` in this directory before allocating a cluster
 slot. The exact original JUnit mapping, two-seed calibration and campaign

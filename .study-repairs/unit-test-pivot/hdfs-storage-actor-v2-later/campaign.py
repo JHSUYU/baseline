@@ -87,6 +87,20 @@ def exact_applied(sequence: list[dict], trace: list[dict]) -> tuple[bool, list[d
     exact = len(sequence) == len(applied) and all(
         all(a.get(k) == s.get(k) for k in fields) and a.get("faultIndex") == index
         for index, (s, a) in enumerate(zip(sequence, applied)))
+    if exact:
+        endpoints_by_actor: dict[str, set[str]] = {}
+        for row in trace:
+            if row.get("peerRole") == "NN0" and row.get("endpointRaw"):
+                endpoints_by_actor.setdefault(row.get("actorKey", "unbound"), set()).add(
+                    row["endpointRaw"])
+        for step, event in zip(sequence, applied):
+            if "RPC:" not in step["marker"]:
+                continue
+            endpoints = endpoints_by_actor.get(step["actorKey"], set())
+            if (len(endpoints) != 1 or event.get("endpointRaw") not in endpoints
+                    or event.get("actorNamenodeRaw") != event.get("endpointRaw")):
+                exact = False
+                break
     return exact, applied
 
 

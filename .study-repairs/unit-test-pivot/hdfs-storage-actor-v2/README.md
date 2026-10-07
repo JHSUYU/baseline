@@ -25,6 +25,10 @@ The file `sourceKey` includes actor and exact normalized storage path. The RPC
 evidence but never stripped and silently merged across actors. A missing actor,
 storage, or peer mapping is logged as `unbound` and cannot inject. Each plan
 step is matched atomically and in order.
+Both startup healthy seeds had exactly one raw NameNode endpoint per actor.
+Calibration and fault receipt reject a multi-endpoint actor or a raw endpoint
+that differs from its bound NameNode, since `peer=NN0` would otherwise
+collapse distinct peers.
 
 The source relationship used for selecting file I/O is the same DataNode
 **volume** (`dfs/dataN` or `dfs/datanodeMaster`) as a later target. This permits a DataStorage VERSION

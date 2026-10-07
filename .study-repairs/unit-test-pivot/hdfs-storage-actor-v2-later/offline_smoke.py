@@ -64,6 +64,8 @@ def check_identity() -> None:
     rpc1 = {"event": "FAULT_POINT_OBSERVED", "seq": 11,
             "marker": "FAULT:HDFS_BP_RPC:RESPONSE", "siteId": "Client.getRpcResponse",
             "actorKey": actor1, "storageKey": "unbound", "peerRole": "NN0",
+            "endpointRaw": "localhost/127.0.0.1:40000",
+            "actorNamenodeRaw": "localhost/127.0.0.1:40000",
             "sourceKey": actor1 + "/peer=NN0", "occurrence": "rpc", "hitOrdinal": 1}
     assert campaign.related(file1, target)
     assert calibrate.target_throw_signature({"caseId": "HDFS-37", "actorKey": actor1,
@@ -81,6 +83,10 @@ def check_identity() -> None:
     assert not campaign.exact_applied([selected], [{**applied, "actorKey": actor2}])[0]
     assert not campaign.exact_applied([selected], [{**applied, "peerRole": "unbound"}])[0]
     assert not campaign.exact_applied([selected], [{**applied, "storageKey": "dfs/data1"}])[0]
+    assert not campaign.exact_applied([selected], [{**applied,
+        "actorNamenodeRaw": "localhost/127.0.0.1:40001"}])[0]
+    assert not campaign.exact_applied([selected], [applied, {**rpc1,
+        "endpointRaw": "localhost/127.0.0.1:40001"}])[0]
     assert campaign.postfault([applied, target], "HDFS-22", [selected], [applied], True)[0] == [target]
     assert not campaign.postfault([applied, {**target, "actorKey": actor2}],
                                   "HDFS-22", [selected], [applied], True)[0]

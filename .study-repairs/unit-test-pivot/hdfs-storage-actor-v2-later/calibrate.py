@@ -53,6 +53,9 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
     bound = [r for r in io if r.get("actorKey") != "unbound"
              and r.get("sourceKey") != "unbound"]
     rpc = [r for r in bound if "RPC:" in r["marker"] and r.get("peerRole") == "NN0"]
+    endpoints_by_actor: dict[str, set[str]] = {}
+    for row in rpc:
+        endpoints_by_actor.setdefault(row["actorKey"], set()).add(row.get("endpointRaw", ""))
     file_io = [r for r in bound if "FILE:" in r["marker"]
                and r.get("storageKey") != "unbound"]
     actor_by_object: dict[int, str] = {}
@@ -85,6 +88,11 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
         issues.append("no DataNode registration or BPServiceActor adoption")
     if not rpc:
         issues.append("no actual RPC endpoint matched its actor NameNode")
+    if any(len(endpoints) != 1 or "" in endpoints
+           for endpoints in endpoints_by_actor.values()):
+        issues.append("one actor has multiple or missing NN0 RPC endpoints")
+    if any(r.get("endpointRaw") != r.get("actorNamenodeRaw") for r in rpc):
+        issues.append("NN0 RPC raw endpoint differs from actor NameNode")
     if not file_io:
         issues.append("no bound storage file I/O")
     for case, events in by_case.items():
