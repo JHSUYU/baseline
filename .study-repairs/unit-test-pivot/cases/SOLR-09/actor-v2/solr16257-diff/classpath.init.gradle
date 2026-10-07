@@ -1,0 +1,14 @@
+gradle.projectsEvaluated {
+  def core = gradle.rootProject.findProject(':solr:core')
+  if (core != null) {
+    core.tasks.register('writeResearchTestClasspath') {
+      doLast {
+        def destination = System.getenv('SOLR09_CP_OUT')
+        if (destination == null || destination.isEmpty()) {
+          throw new GradleException('SOLR09_CP_OUT is required')
+        }
+        new File(destination).text = core.sourceSets.test.runtimeClasspath.asPath + '\n'
+      }
+    }
+  }
+}
