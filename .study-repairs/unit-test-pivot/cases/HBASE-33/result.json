@@ -1,14 +1,87 @@
 {
   "case_id": "HBASE-33",
-  "status": "test_identified",
+  "status": "no_cluster_test",
   "cluster_test": "TestTokenAuthentication.testTokenCreation",
-  "target_reached": null,
-  "elapsed_seconds": 0,
+  "target_reached": false,
+  "elapsed_seconds": 16.47,
   "fault_trials": 0,
   "strict_injections": 0,
   "target_after_fault": 0,
   "coverage_gain": 0,
   "bug_mark": "none",
-  "evidence": "HBASE-TEST-MAP.json#HBASE-33",
-  "source_audit_note": "No existing test found for simultaneous missing allKeys entry and aborted ZooKeeper watcher; this test has valid key and only supplies a healthy call path."
+  "evidence": {
+    "readme": "README.md",
+    "healthy_log": "native/healthy_fixed.log",
+    "healthy_exec": "native/healthy_fixed.exec",
+    "setup_failure_log": "native/healthy.log",
+    "archive": "evidence/hbase33-healthy-reachability.tar.gz",
+    "manifest": "evidence/native-manifest.json",
+    "archive_sha256": "a80dc7ea91c00e49df2016f4fd7afe9860f5d6077f25addda0b65bfbe7ecf02c"
+  },
+  "source_audit_note": "No existing test found for simultaneous missing allKeys entry and aborted ZooKeeper watcher; this test has valid key and only supplies a healthy call path.",
+  "target_method_entered": true,
+  "target_method_entry_count": 2,
+  "healthy_guard_line_139_reached": false,
+  "healthy_throw_line_141_reached": false,
+  "healthy_junit_passed": true,
+  "healthy_junit_found": 2,
+  "healthy_junit_succeeded": 2,
+  "healthy_key_present_at_both_entries": true,
+  "healthy_key_id": 1,
+  "healthy_coverage_target_lines": {
+    "132": {
+      "instructions": 0,
+      "branches": 0
+    },
+    "134": {
+      "instructions": 5,
+      "branches": 1
+    },
+    "137": {
+      "instructions": 8,
+      "branches": 0
+    },
+    "138": {
+      "instructions": 2,
+      "branches": 1
+    },
+    "139": {
+      "instructions": 0,
+      "branches": 0
+    },
+    "141": {
+      "instructions": 0,
+      "branches": 0
+    },
+    "153": {
+      "instructions": 0,
+      "branches": 0
+    },
+    "157": {
+      "instructions": 0,
+      "branches": 0
+    },
+    "159": {
+      "instructions": 2,
+      "branches": 1
+    },
+    "160": {
+      "instructions": 0,
+      "branches": 0
+    },
+    "163": {
+      "instructions": 6,
+      "branches": 0
+    }
+  },
+  "stop_reason": "The original mapped JUnit enters retrievePassword with the key present in both parameterizations, so nested abort guard line 139 is not executed; the test uses MiniZK and TokenServer rather than MiniHBaseCluster. No original cluster test was found for missing key plus aborted watcher.",
+  "instrumentation_provenance": {
+    "counted_runtime": "Unchanged original JUnit, case-local ByteBuddy and JaCoCo",
+    "graphchecker_jar_used": false,
+    "prewoven_classes_used": false,
+    "region_skeletons_or_static_scope_map_read": false,
+    "original_test_modified": false,
+    "setup_failure_counted_as_healthy": false
+  },
+  "source_revision": "97a51ab9e3cf9f9d21bf08c3b1e52c962579ef2b"
 }
