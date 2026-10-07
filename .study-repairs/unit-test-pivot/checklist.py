@@ -243,10 +243,14 @@ def markdown(items: list[dict]) -> str:
         "Fully applied trials matched and injected every selected fault. "
         "Target after fault counts check reach, not target exceptions. "
         "Coverage gain is the case's reported feedback; its provenance is in the result.",
-        "New and resumed campaigns use 80 trials / at most 8 faults, with "
-        "a conditional 128 / 10 extension when production method/branch coverage "
-        "or stable I/O families still grow near the limit. Completed earlier budgets remain "
-        "recorded as run; they are not replayed.",
+        "New and resumed campaigns aim for 80 effective trials / at most 8 ordered "
+        "faults. An effective trial applies every selected fault in order and reaches "
+        "the same actor's target check after the final fault. Attempts that lose the "
+        "target remain recorded but do not count toward this goal. If the final eight "
+        "effective trials add production method/branch coverage or a new relevant "
+        "I/O family, the same checkpoint extends to 128 effective trials / 10 faults. "
+        "Queue exhaustion and per-case attempt caps are reported separately. "
+        "Completed earlier budgets remain recorded as run; they are not replayed.",
         "",
         "Status: " + ", ".join(f"{key}={value}" for key, value in sorted(counts.items())),
         "", "| Check | Cohort | System | Source | Function | Check code | Cluster test | "

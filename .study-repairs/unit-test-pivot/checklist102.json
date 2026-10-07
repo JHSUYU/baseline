@@ -206175,12 +206175,12 @@
       "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer.test",
       "status": "running",
       "target_reached": true,
-      "fault_trials": 89,
-      "strict_injections": 66,
-      "fully_applied_trials": 66,
-      "target_after_fault": 61,
+      "fault_trials": 103,
+      "strict_injections": 76,
+      "fully_applied_trials": 76,
+      "target_after_fault": 70,
       "coverage_gain": 27,
-      "elapsed_seconds": 8232.11,
+      "elapsed_seconds": 9027.87,
       "bug_mark": "none",
       "evidence": "cases/HBASE-17/README.md",
       "version": "2.6.6",
@@ -206603,10 +206603,10 @@
           "independent/logs_v2/seed_v2c.log"
         ],
         "calibration_pilot_elapsed_seconds": 160.68,
-        "attempted_trials": 89,
-        "strict_trials": 66,
-        "strict_post_fault_target_trials": 61,
-        "effective_budget_trials": 61,
+        "attempted_trials": 103,
+        "strict_trials": 76,
+        "strict_post_fault_target_trials": 70,
+        "effective_budget_trials": 70,
         "junit_failures_after_target": 0,
         "target_assertion_false_trials": 0,
         "new_production_methods": 1,
@@ -206621,8 +206621,8 @@
           "max_attempts": 180,
           "max_wall_seconds": 11000
         },
-        "queue_length": 772,
-        "wall_seconds": 5429.35,
+        "queue_length": 897,
+        "wall_seconds": 6267.93,
         "checkpoint": "independent/checkpoint_v2.json",
         "trial_ledger": "independent/trial_ledger_v2.json",
         "test_internal_faults_counted_as_campaign_injections": false
@@ -252919,13 +252919,13 @@
       "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
       "status": "running_coverage_io_campaign",
       "target_reached": true,
-      "fault_trials": 113,
-      "strict_injections": 112,
-      "fully_applied_trials": 112,
-      "target_after_fault": 82,
+      "fault_trials": 122,
+      "strict_injections": 120,
+      "fully_applied_trials": 120,
+      "target_after_fault": 88,
       "coverage_gain": 6,
-      "elapsed_seconds": 9103.87,
-      "bug_mark": "candidate_review",
+      "elapsed_seconds": 9700.949999999999,
+      "bug_mark": "none",
       "evidence": [
         "README.md",
         "work-lots/checkpoint.json",
@@ -252935,8 +252935,8 @@
         "work/run.sh"
       ],
       "current_campaign": {
-        "applied_fault_events": 123,
-        "attempted_trials": 113,
+        "applied_fault_events": 132,
+        "attempted_trials": 122,
         "budget": {
           "effective_trials": 128,
           "max_attempts": 384,
@@ -252944,27 +252944,27 @@
         },
         "checkpoint": "work-lots/checkpoint.json",
         "child_selector_cap": 24,
-        "coverage_admitted_trials": 82,
+        "coverage_admitted_trials": 88,
         "depth_cadence": 10,
-        "effective_trials": 82,
-        "exact_b7_trials": 82,
+        "effective_trials": 88,
+        "exact_b7_trials": 88,
         "exception_kind_feedback": {
           "DO_NOT_RETRY_IOEXCEPTION": {
-            "admitted_new_io_selectors": 1728,
+            "admitted_new_io_selectors": 1784,
             "admitted_production_novelty": 0,
-            "attempts": 65,
-            "effective": 64
+            "attempts": 72,
+            "effective": 70
           },
           "EOF_EXCEPTION": {
             "admitted_new_io_selectors": 0,
             "admitted_production_novelty": 0,
-            "attempts": 10,
+            "attempts": 11,
             "effective": 0
           },
           "IOEXCEPTION": {
             "admitted_new_io_selectors": 0,
             "admitted_production_novelty": 0,
-            "attempts": 10,
+            "attempts": 11,
             "effective": 0
           },
           "SOCKET_TIMEOUT": {
@@ -252975,12 +252975,12 @@
           }
         },
         "exception_kind_weights": {
-          "DO_NOT_RETRY_IOEXCEPTION": 0.7531877451820778,
-          "EOF_EXCEPTION": 0.08227075160597414,
-          "IOEXCEPTION": 0.08227075160597414,
-          "SOCKET_TIMEOUT": 0.08227075160597414
+          "DO_NOT_RETRY_IOEXCEPTION": 0.7569155609054314,
+          "EOF_EXCEPTION": 0.08011555382471339,
+          "IOEXCEPTION": 0.08011555382471339,
+          "SOCKET_TIMEOUT": 0.08285333144514187
         },
-        "global_related_io_selector_union_size": 2855,
+        "global_related_io_selector_union_size": 2911,
         "healthy_coverage": {
           "branches": 13,
           "classes": {
@@ -253008,12 +253008,12 @@
         "healthy_related_io_events": 555,
         "healthy_target_invocations": 542,
         "invalid_cluster_exhaustion_trials": 0,
-        "last_8_effective_global_io_novelty": 83,
+        "last_8_effective_global_io_novelty": 91,
         "new_production_branches": 6,
         "new_production_methods": 1,
-        "pending_review_candidates": 3,
-        "queue_length": 13639,
-        "requested_fault_events": 124,
+        "pending_review_candidates": 0,
+        "queue_length": 14206,
+        "requested_fault_events": 134,
         "review_candidates": 5,
         "reviewed_candidate_dispositions": {
           "r003": {
@@ -253025,11 +253025,26 @@
             "classification": "unreproduced_timeout_candidate",
             "evidence": "evidence/r011-replay-verdict.json",
             "reason": "exact same-plan 600-second replay passed original JUnit in 76.97 seconds"
+          },
+          "r058": {
+            "classification": "unreproduced_timeout_candidate",
+            "evidence": "evidence/r058-replay-findings.md",
+            "reason": "exact same-plan 600-second replay passed original JUnit in 68.07 seconds"
+          },
+          "r066": {
+            "classification": "unreproduced_timeout_candidate",
+            "evidence": "evidence/r066-replay-verdict.json",
+            "reason": "exact same-plan 600-second replay passed original JUnit in 55.82 seconds with 600 of 600 child assignments"
+          },
+          "r075": {
+            "classification": "unreproduced_timeout_candidate",
+            "evidence": "evidence/r075-replay-verdict.json",
+            "reason": "exact same-plan 600-second replay passed original JUnit in 56.45 seconds with 600 of 600 child assignments"
           }
         },
         "rng_seed": 32,
         "selection_policy": "lots_v5_global_io_novelty",
-        "strict_trials": 112,
+        "strict_trials": 120,
         "target_line_136_coverage": {
           "branches": 0,
           "instructions": 2,
@@ -316739,10 +316754,11 @@
       "evidence": null,
       "actor_v2_recheck": {
         "authoritative_host": "node1",
-        "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/cases/HDFS-11/checkpoint.json",
+        "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/campaign-state.json",
         "healthy_two_seed_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/healthy_receipt.json",
         "local_mirror_note": "Local campaign-state.json is a snapshot; node1 tmux hdfs11_key_v2_fuzz is authoritative while running.",
         "node1_campaign_state": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/campaign-state.json",
+        "scheduler_migration_receipt": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-11/scheduler-migration/migration-receipt.json",
         "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
         "phase": "running_on_node1",
         "recheck_started_utc": "2026-10-07",
@@ -316912,7 +316928,7 @@
       "evidence": null,
       "actor_v2_recheck": {
         "authoritative_host": "not_assigned_for_JUnit_yet",
-        "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/cases/HDFS-12/checkpoint.json",
+        "checkpoint": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2/evidence/HDFS-12/campaign-state.json",
         "healthy_two_seed_receipt": null,
         "node1_campaign_state": null,
         "overlay": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs-key-actor-v2",
@@ -363520,14 +363536,14 @@
       "site_id": "<org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer: void checksumBlocks()>#L629",
       "proposed_cluster_test": "TestEncryptedTransfer.testFileChecksumWithInvalidEncryptionKey (XOR-2-1 striped adaptation)",
       "cluster_test": "org.apache.hadoop.hdfs.TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]",
-      "status": "running_original_junit_supplement",
+      "status": "quality_complete",
       "target_reached": true,
-      "fault_trials": 3,
-      "strict_injections": 3,
-      "fully_applied_trials": 3,
-      "target_after_fault": 3,
-      "coverage_gain": 163,
-      "elapsed_seconds": 73.588,
+      "fault_trials": 80,
+      "strict_injections": 80,
+      "fully_applied_trials": 80,
+      "target_after_fault": 80,
+      "coverage_gain": 1349,
+      "elapsed_seconds": 1333.37,
       "bug_mark": "known_HDFS-17897_reproduced",
       "evidence": {
         "checkpoint": "campaign-state.json",
@@ -363542,20 +363558,20 @@
       "known_bug": true,
       "new_bug": false,
       "classification": "known_bug_reproduced_at_selected_check",
-      "quality_complete": false,
+      "quality_complete": true,
       "source_version": "Hadoop 3.4.3",
       "graph_used": false,
       "target_site": "FileChecksumHelper$StripedFileNonStripedChecksumComputer.checksumBlocks#L629",
       "linked_upstream_check": "HDFS-11 BlockTokenSecretManager.retrieveDataEncryptionKey#L552",
       "original_junit_basis": "TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]",
       "workload_change": "none; original released TestFileChecksum JUnit",
-      "fault": "native striped checksum RPC IOException, with one-, two-, and three-fault original-JUnit trials; full fuzz campaign running",
-      "injected_io_faults": 6,
-      "trial_count": 4,
-      "injected_mutant_count": 3,
-      "target_retaining_mutant_count": 3,
-      "elapsed_seconds_scope": "original JUnit healthy 17.72s plus strict fault trials 17.57s, 21.065s, and 17.233s through trial 3; adapted control time excluded",
-      "coverage_gain_unit": "distinct production JaCoCo probe tokens in union of original JUnit healthy and two fault trials, minus healthy tokens",
+      "fault": "80 unchanged embedded-cluster JUnit fault plans at runtime-identified striped checksum RPC points; one to nine synthetic I/O exceptions per plan",
+      "injected_io_faults": 552,
+      "trial_count": 81,
+      "injected_mutant_count": 80,
+      "target_retaining_mutant_count": 80,
+      "elapsed_seconds_scope": "unchanged original JUnit healthy 17.72s plus 80 strict fault trials 1315.65s; adapted known-bug control and wall-clock pauses excluded",
+      "coverage_gain_unit": "distinct production JaCoCo probe-token union of original JUnit healthy and 80 fault runs minus healthy tokens",
       "adapted_known_bug_control": {
         "status": "complete",
         "workload": "case-local XOR-2-1 striped adaptation of TestEncryptedTransfer#testFileChecksumWithInvalidEncryptionKey",
@@ -363951,7 +363967,7 @@
       "evidence_archive_sha256": "da29981257a99de235ae6e7644edad3164da0d0bc2ba061e7f35c59bc08f0800",
       "evidence_archive_bytes": 3557276,
       "original_junit_supplement": {
-        "status": "campaign_running_after_three_strict_trials",
+        "status": "budget_complete",
         "workload": "org.apache.hadoop.hdfs.TestFileChecksum#testStripedAndReplicatedFileChecksum2[0]",
         "workload_unmodified": true,
         "source_tag": "rel/release-3.4.3",
@@ -363969,10 +363985,10 @@
         "fault_pilot_target_after_final_fault": 1,
         "fault_pilot_covered_production_probes": 28727,
         "fault_pilot_junit_failures": 0,
-        "campaign_effective": 3,
-        "campaign_attempts": 3,
-        "campaign_queue_pending": 60,
-        "progress_snapshot_utc": "2026-10-07T04:23:18Z",
+        "campaign_effective": 80,
+        "campaign_attempts": 80,
+        "campaign_queue_pending": 512,
+        "progress_snapshot_utc": "2026-10-07T04:54:19Z",
         "campaign_effective_budget": 80,
         "campaign_max_faults": 10,
         "campaign_initial_max_faults": 8,
@@ -363993,10 +364009,38 @@
           "clean_replay": "node2:/users/ZhenyuLi/hdfs54-replays/trial28-clean-01 (15.160s, 9/9 ordered, line629 false, original JUnit one failure)",
           "not_counted_as_new_bug": true,
           "not_counted_as_known_hdfs17897_reproduction": true,
-          "source_review": "original-junit/trial28-source-review.md"
+          "source_review": "original-junit/trial28-source-review.md",
+          "review_status": "reproduced_expected_fault_model_outcome"
         },
-        "interpretation": "The original test reaches the selected check with native checksum RPC faults. Its synthetic InvalidEncryptionKeyException does not establish an actual expired DataNode allKeys state; the adapted known-bug control remains separate."
+        "interpretation": "The original test reaches the selected check with native checksum RPC faults. Its synthetic InvalidEncryptionKeyException does not establish an actual expired DataNode allKeys state; the adapted known-bug control remains separate.",
+        "campaign_max_depth_tested": 9,
+        "campaign_injected_io_faults": 552,
+        "campaign_strict_postfault_trials": 80,
+        "campaign_junit_failure_trials": 44,
+        "campaign_target_false_trials": 44,
+        "campaign_target_false_subnine_trials": 0,
+        "campaign_coverage_positive_trials": 20,
+        "campaign_coverage_gain": {
+          "branch_counts": 498,
+          "methods": 295,
+          "probes": 1349
+        },
+        "campaign_fault_trials_elapsed_seconds": 1315.65,
+        "campaign_total_junit_elapsed_seconds": 1333.37,
+        "campaign_wall_elapsed_seconds": 8419.0,
+        "terminal_audit": "original-junit/terminal/terminal-audit.json",
+        "terminal_trial_ledger": "original-junit/terminal/trial-ledger.csv",
+        "terminal_evidence_index": "original-junit/terminal/terminal-evidence-index.json",
+        "terminal_checkpoint_gzip": "original-junit/terminal/terminal-campaign-state.json.gz",
+        "terminal_checkpoint_gzip_sha256": "9638f435f3ac0e4dfc28df58aed3cb0348a398d2facf1bbcea47292b670f6a0c",
+        "first_scheduling_refinement": "original-junit/scheduling-boundary-receipt.json",
+        "second_scheduling_refinement": "original-junit/scheduling-second-boundary-receipt.json",
+        "target_false_interpretation": "All 44 false outcomes used nine ordered synthetic checksum RPC exceptions on nine distinct located DataNodes for the same block group. Trial 28 reproduced the expected all-sources-exhausted PathIOException in a clean original-JUnit fixture. No less-than-nine false outcome and no original-JUnit evidence of real stale cached encryption key.",
+        "known_bug_reproduction_scope": "HDFS-17897 reproduced only by the separately recorded adapted stale-key control; this unchanged original-JUnit synthetic I/O campaign did not reproduce that mechanism."
       },
+      "campaign_wall_start_utc": "2026-10-07T02:34:00Z",
+      "campaign_wall_end_utc": "2026-10-07T04:54:19Z",
+      "campaign_wall_elapsed_seconds": 8419.0,
       "reported_function": "StripedFileNonStripedChecksumComputer.checksumBlocks()",
       "reported_check_code": "if (!checksumBlockGroup(blockGroup)) throw new PathIOException(...)"
     },
@@ -364010,7 +364054,7 @@
       "check_code": "if (encryptionKey == null || encryptionKey.expiryDate < timer.now()) {\n  encryptionKey = blockTokenSecretManager.generateDataEncryptionKey();\n}",
       "site_id": "<org.apache.hadoop.hdfs.server.balancer.KeyManager: org.apache.hadoop.hdfs.security.token.block.DataEncryptionKey newDataEncryptionKey()>#L123",
       "proposed_cluster_test": "TestBalancerWithEncryptedTransfer.testEncryptedBalancer0",
-      "cluster_test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+      "cluster_test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0 (unchanged site-level); adapted integrationTest/oneNodeTest (known-bug differential)",
       "status": "quality_complete",
       "target_reached": true,
       "fault_trials": 46,
@@ -364253,7 +364297,40 @@
       "stateful_control_injected_events": 18,
       "stateful_control_post_fault_target_guard_events": 17,
       "stateful_control_post_fault_cached_key_reuse_events": 17,
-      "stateful_control_fault_policy": "All observed Balancer outbound SASL attempts from attempt 1 until cache clear or cap 24; all 18 observed attempts were injected in original 3.4.3"
+      "stateful_control_fault_policy": "All observed Balancer outbound SASL attempts from attempt 1 until cache clear or cap 24; all 18 observed attempts were injected in original 3.4.3",
+      "quality_complete": true,
+      "workload_evidence_layers": {
+        "unchanged_original_junit_site_level": {
+          "test": "TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+          "workload_modified": false,
+          "fault_trials": 44,
+          "fully_applied_trials": 31,
+          "target_after_fault": 27,
+          "components": {
+            "initial_stateful_control": 1,
+            "exact_plan_campaign": 31,
+            "runtime_prefix_campaign": 12
+          },
+          "known_bug_direct_reproduction": false,
+          "scope": "runtime target identity, fault application, production coverage, and possible oracle candidates"
+        },
+        "adapted_known_bug_differential": {
+          "workload": "case-local encrypted integrationTest/oneNodeTest with one mover thread and 180-second JUnit bound",
+          "workload_modified": true,
+          "fault_trials": 2,
+          "fully_applied_trials": 2,
+          "target_after_fault": 2,
+          "known_bug_reproduced": true,
+          "source_version": "Hadoop 3.4.3",
+          "original_version_outcome": "remote INVALID_KEY response 23/24 times; same-manager cached-key guard 44/46 times; Balancer NO_MOVE_PROGRESS (-3); JUnit fail in original and clean replay",
+          "fixed_outcome": "one remote INVALID_KEY, one cache clear, five successful block moves, JUnit pass",
+          "qualification": "campaign/dn-wire/qualification.json"
+        }
+      },
+      "table_counts_scope": "Aggregated unchanged original-JUnit site-level 44/31/27 and adapted known-bug differential 2/2/2. The known HDFS-17899 reproduction belongs only to the adapted differential.",
+      "elapsed_seconds_scope": "2831.325 seconds aggregate the original-JUnit site-level and adapted differential phases; phase-specific times and evidence remain separately recorded.",
+      "known_bug_detection_workload_modified": true,
+      "unchanged_junit_direct_known_bug_reproduction": false
     },
     {
       "case_id": "SOLR-01",
@@ -364266,15 +364343,15 @@
       "site_id": "<org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider: java.util.Map getAliases(boolean)>#u93",
       "proposed_cluster_test": null,
       "cluster_test": "CloudHttp2SolrClientTest.testAliasHandling",
-      "status": "actor_v2_running",
+      "status": "quality_complete",
       "target_reached": true,
-      "fault_trials": 36,
-      "strict_injections": 36,
-      "fully_applied_trials": 36,
-      "target_after_fault": 36,
-      "coverage_gain": 91,
-      "elapsed_seconds": 584.995,
-      "bug_mark": "actor_v2_candidate_needs_source_review",
+      "fault_trials": 80,
+      "strict_injections": 80,
+      "fully_applied_trials": 80,
+      "target_after_fault": 80,
+      "coverage_gain": 101,
+      "elapsed_seconds": 1286.095,
+      "bug_mark": "none",
       "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-01/actor-v2/campaign/state.json",
       "actor_identity_note": "Each applied LISTALIASES point binds the selected provider/client and verifies the actual Jetty nodeName and baseUrl; cross-run selector uses its attempt-relative role.",
       "budget": {
@@ -364283,9 +364360,11 @@
         "max_valid_trials": 80
       },
       "campaign_workspace": "cases/SOLR-01/actor-v2",
-      "candidate_disposition": "pending_v2_source_review",
-      "candidate_review_evidence": ".study-repairs/unit-test-pivot/cases/SOLR-01/independent/evidence/campaign/candidate-review.json",
-      "extension_reason": null,
+      "candidate_disposition": "expected_all_live_endpoints_failed_fallback",
+      "candidate_review_evidence": ".study-repairs/unit-test-pivot/cases/SOLR-01/actor-v2/campaign/candidate-review.json",
+      "clean_replay": ".study-repairs/unit-test-pivot/cases/SOLR-01/actor-v2/replay-trial-004/replay-summary.json",
+      "extension_reason": "last eight effective trials added no production coverage or stable I/O family",
+      "healthy_elapsed_seconds": 29.421,
       "healthy_target_checks": 36,
       "legacy_coarse_actor": {
         "clean_replays": [
@@ -364318,17 +364397,20 @@
       },
       "max_applied_faults": 3,
       "methodology": "independent_graph_free_actor_aware_http_io_coverage_v2",
+      "new_bug_confirmed": false,
       "new_io_identities": 4,
-      "production_branches_gained": 0,
-      "production_methods_gained": 0,
-      "quality_complete": false,
-      "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-01/independent/evidence/campaign/audit.json",
-      "reason": "Actor-aware V2 campaign running from atomic trial checkpoints",
+      "production_branches_gained": 60,
+      "production_coverage_summary": ".study-repairs/unit-test-pivot/cases/SOLR-01/actor-v2/campaign/coverage-summary.json",
+      "production_methods_gained": 9,
+      "quality_complete": true,
+      "raw_trace_audit": ".study-repairs/unit-test-pivot/cases/SOLR-01/actor-v2/campaign/raw-audit.json",
+      "reason": "Actor-aware V2 completed 80 effective strict target-retaining trials; raw audit and clean replay passed.",
+      "replay_elapsed_seconds": 14.309,
       "source_file": "solr/solrj/src/java/org/apache/solr/client/solrj/impl/BaseHttpClusterStateProvider.java",
-      "target_exception_candidates": 20,
+      "target_exception_candidates": 45,
       "target_guard_branch_taken": true,
-      "unique_applied_callsite_operation_resource": 0,
-      "valid_trials": 36,
+      "unique_applied_callsite_operation_resource": 1,
+      "valid_trials": 80,
       "reported_function": "BaseHttpClusterStateProvider.getAliases",
       "reported_check_code": "after LISTALIASES fails at every known live node, throw RuntimeException"
     },
@@ -371005,16 +371087,16 @@
       "site_id": "<org.apache.solr.update.processor.DistributedZkUpdateProcessor: void doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)>#u40",
       "proposed_cluster_test": null,
       "cluster_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
-      "status": "http_role_v2_bounded_pilot_running",
+      "status": "fuzz_running",
       "target_reached": true,
-      "fault_trials": 0,
-      "strict_injections": 0,
-      "fully_applied_trials": 0,
-      "target_after_fault": 0,
-      "coverage_gain": 0,
-      "elapsed_seconds": 14614.535,
+      "fault_trials": 2,
+      "strict_injections": 2,
+      "fully_applied_trials": 2,
+      "target_after_fault": 2,
+      "coverage_gain": 166,
+      "elapsed_seconds": 14924.902,
       "bug_mark": "none",
-      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/seed-audit.json",
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/progress.json",
       "baseline_seconds": 311.784,
       "campaign_final_audit": {
         "budget": {
@@ -371224,7 +371306,7 @@
         "source_request_type": "parent_forward_delete_by_id",
         "source_review": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/campaign/candidate-0078-review.md"
       },
-      "coverage_gain_scope": "Current-quality counters exclude the ZooKeeper phase: its marker/site/path/ordinal selector lacked a stable actor or SolrZkClient reader binding. Full raw counts are retained under legacy_zk_coarse_*.",
+      "coverage_gain_scope": "Current-quality HTTP release-JAR production probes from strict trials reaching this case’s exact same-child guard after the fault effect; legacy ZooKeeper actor-unverified probes excluded.",
       "extension_coverage_audits": [
         {
           "class": "org/apache/lucene/index/DocumentsWriter",
@@ -371249,7 +371331,7 @@
         92,
         100
       ],
-      "http_fault_trials": 0,
+      "http_fault_trials": 1,
       "http_role_seed": {
         "agent_sha256": "048b30548f2dc103dcbdd7cdcd9346ba0318a657f0acbfbe9a71c49f4abe55b6",
         "elapsed_seconds": 201.83,
@@ -371292,6 +371374,31 @@
           98,
           98
         ]
+      },
+      "http_role_v2_pilot": {
+        "classification": "expected_target_rejection_for_SOLR-36",
+        "elapsed_seconds": 103.526,
+        "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/candidates/0001-role-v2/frozen-manifest.json",
+        "exact_target_throws": 1,
+        "fault_effect_seq": 3983,
+        "injected_child": "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+        "injected_raw_leader": "SOLR/PARENT/collection1/shard1/core_node3",
+        "injected_raw_sender": "SOLR/PARENT/collection1/shard1/core_node3",
+        "junit_attempts": 1,
+        "new_bug": false,
+        "original_junit_gate": [
+          1,
+          0,
+          0
+        ],
+        "production_probes_strict_raw": 162,
+        "same_child_postfault_target": 1,
+        "selected_plans": 1,
+        "source_review": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/candidates/0001-role-v2/source-review.md",
+        "status": "exact_target_exception_candidate_source_review",
+        "strict_injections": 1,
+        "target_guard_seq": 3985,
+        "target_throw_seq": 3986
       },
       "io_family_gain": 0,
       "legacy_http_raw_sender_pilot": {
@@ -371535,8 +371642,10 @@
       "legacy_zk_coarse_same_child_post_target": 117,
       "legacy_zk_coarse_selected_plans": 128,
       "legacy_zk_coarse_strict_point_matches": 127,
+      "legacy_zk_coarse_target_exceptions": 2,
       "legacy_zk_coarse_total_attempts": 133,
-      "methodology": "coverage_io_independent_asm_jacoco_http_current_leader_child_exact",
+      "methodology": "coverage_io_independent_asm_jacoco_http_actor_exact",
+      "new_bug": false,
       "original_junit": {
         "elapsed_seconds": 102.743,
         "failures": 0,
@@ -371545,21 +371654,160 @@
         "seed": "F0993D5343E20BA4"
       },
       "post_fault_any_child_trials": 0,
-      "post_fault_target_reach_trials": 0,
+      "post_fault_target_reach_trials": 2,
       "production_branch_outcomes_gain": 0,
       "production_methods_gain": 0,
-      "reason": "Original JUnit role V2 healthy pair passed with raw parent core_node4/core_node3 but 49 exact role selectors; bounded one-plan HTTP pilot is running. Legacy raw and lazy-lookup trials excluded from current-quality fault counts.",
-      "remaining_work": "Review first bounded pilot for strict fault, same-child postfault target, exact throw, original JUnit outcome; only then expand HTTP budget. Separate actor-aware ZK V2 remains pending.",
+      "reason": "SOLR-36 exact active-child 503 after a delayed parent Add is source-reviewed as a protective rejection; the original JUnit passed and subsequent checks remain under test.",
+      "remaining_work": "Continue saved HTTP role-V2 checkpoint to 80 strict same-child postfault effective trials per check; source-review any unrecognized exact target exception. Actor-aware ZK V2 remains a separate campaign.",
+      "rpc_stage_attempted_junits": 3,
+      "rpc_stage_case_production_probe_gain": 166,
+      "rpc_stage_control": {
+        "counts": {
+          "attempted_junits": 1,
+          "effective_by_case": {
+            "SOLR-36": 1,
+            "SOLR-37": 0
+          },
+          "elapsed_seconds": 103.526,
+          "fault_depths": {
+            "1": 1
+          },
+          "selected_plans": 1,
+          "strict_injections": 1,
+          "unmatched_plans": 0
+        },
+        "late_novelty": null,
+        "max_faults": 2,
+        "reason": "finish 24-plan pilot from bounded selected-plan checkpoint",
+        "selected_cap": 24,
+        "status": "running",
+        "target_effective": null,
+        "updated_at": 1791349129.447605
+      },
+      "rpc_stage_effective_by_case": {
+        "SOLR-36": 2,
+        "SOLR-37": 0
+      },
+      "rpc_stage_expected_target_rejection_trials": 2,
+      "rpc_stage_fault_trials": 2,
+      "rpc_stage_post_fault_target_reach_trials": 2,
+      "rpc_stage_progress": {
+        "budget": {
+          "max_faults": 2,
+          "max_trials": 24
+        },
+        "distinct_first_rpc_fault_sites": 2,
+        "elapsed_seconds": 310.367,
+        "exact_target_throw_trials": {
+          "SOLR-36": 2,
+          "SOLR-37": 0
+        },
+        "fault_command_families": {
+          "FAULT:HTTP:parentForwardAdd": 1,
+          "FAULT:HTTP:parentForwardDeleteById": 1
+        },
+        "fault_depths": {
+          "1": 2
+        },
+        "fault_modes": {
+          "DELAY": 2
+        },
+        "fault_trials": 2,
+        "latest": {
+          "applied_child_urls": [
+            "http://127.0.0.1:41237/collection1_shard1_0_replica_n9/"
+          ],
+          "applied_faults": 1,
+          "applied_raw_leader_actors": [
+            "SOLR/PARENT/collection1/shard1/core_node3"
+          ],
+          "applied_raw_sender_actors": [
+            "SOLR/PARENT/collection1/shard1/core_node3"
+          ],
+          "applied_sender_physical_nodes": [
+            "127.0.0.1:41237_"
+          ],
+          "attempt": 2,
+          "attempts": 2,
+          "elapsed_seconds": 206.841,
+          "fault_effect_boundary_seq": 4109,
+          "fault_effects_verified": true,
+          "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0002-befb4e7e5c4a084dd072/attempt-02/jacoco.exec",
+          "junit_exit": 0,
+          "junit_gate": [
+            1,
+            0,
+            0
+          ],
+          "last_fault_marker": "FAULT:HTTP:parentForwardDeleteById",
+          "last_fault_mode": "DELAY",
+          "last_fault_point_id": "{\"hitOrdinal\":12,\"marker\":\"FAULT:HTTP:parentForwardDeleteById\",\"resource\":\"/update/DeleteById/collection1/shard1_0/core_node11\",\"senderKey\":\"SOLR/PARENT_LEADER/collection1/shard1\",\"siteId\":\"org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request\",\"sourceKey\":\"SOLR/SUBSHARD/collection1/shard1_0/core_node11\"}",
+          "last_fault_sender": "SOLR/PARENT_LEADER/collection1/shard1",
+          "last_fault_source": "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+          "new_exact_rpc_selectors": 0,
+          "new_production_probes": 4,
+          "planned_faults": 1,
+          "postfault_guard_operands": {
+            "SOLR-36": {
+              "state=active;phase=FROMLEADER": 1
+            },
+            "SOLR-37": {}
+          },
+          "postfault_same_child_guards": {
+            "SOLR-36": 1,
+            "SOLR-37": 0
+          },
+          "postfault_same_child_throws": {
+            "SOLR-36": 1,
+            "SOLR-37": 0
+          },
+          "reviewed_expected_target_rejection": true,
+          "selected_parent_gain": 0,
+          "selected_queue_id": "befb4e7e5c4a084dd072",
+          "sequence": [
+            {
+              "delay_ms": 5000,
+              "fault_mode": "DELAY",
+              "point": {
+                "hitOrdinal": 12,
+                "marker": "FAULT:HTTP:parentForwardDeleteById",
+                "resource": "/update/DeleteById/collection1/shard1_0/core_node11",
+                "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
+                "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
+                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
+              }
+            }
+          ],
+          "strict_injection": true,
+          "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0002-befb4e7e5c4a084dd072/attempt-02/events.jsonl",
+          "trial_number": 2
+        },
+        "new_rpc_selectors": 0,
+        "production_probe_gain": 166,
+        "reviewed_expected_target_rejection_trials": 2,
+        "same_child_post_target_trials": {
+          "SOLR-36": 2,
+          "SOLR-37": 0
+        },
+        "status": "running",
+        "strict_injections": 2,
+        "total_attempts": 3
+      },
+      "rpc_stage_selected_plans": 2,
+      "rpc_stage_shared_production_probe_gain": 166,
+      "rpc_stage_strict_injections": 2,
+      "rpc_stage_target_exception_after_fault_trials": 2,
+      "rpc_stage_unreviewed_target_exception_trials": 0,
       "seed_audit": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/seed-audit.json",
       "shared_run_with": "SOLR-37",
       "stable_precursor_io_families": 120,
       "stable_precursor_io_selectors": 200,
       "target_check_description": "ACTIVE child shard state under parent forwarding",
       "target_check_source": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java:987",
-      "target_exception_after_fault_trials": 0,
-      "total_attempts": 0,
+      "target_exception_after_fault_trials": 2,
+      "total_attempts": 3,
       "unreviewed_exact_target_throw_trial_numbers": [],
-      "updated_at": 1791348480.5870378,
+      "updated_at": 1791349359.7637107,
       "zk_budget_semantics": {
         "effective_trial_definition": "strict_injection and same_logical_child_target_guard_after_last_fault",
         "max_original_junit_attempts_per_plan": 2,
@@ -371595,16 +371843,16 @@
       "site_id": "<org.apache.solr.update.processor.DistributedZkUpdateProcessor: void doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)>#u56",
       "proposed_cluster_test": null,
       "cluster_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
-      "status": "http_role_v2_bounded_pilot_running",
+      "status": "fuzz_running",
       "target_reached": true,
-      "fault_trials": 0,
-      "strict_injections": 0,
-      "fully_applied_trials": 0,
+      "fault_trials": 2,
+      "strict_injections": 2,
+      "fully_applied_trials": 2,
       "target_after_fault": 0,
       "coverage_gain": 0,
-      "elapsed_seconds": 14614.535,
+      "elapsed_seconds": 14924.902,
       "bug_mark": "none",
-      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/seed-audit.json",
+      "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/progress.json",
       "baseline_seconds": 311.784,
       "campaign_final_audit": {
         "budget": {
@@ -371789,7 +372037,7 @@
           88
         ]
       },
-      "coverage_gain_scope": "Current-quality counters exclude the ZooKeeper phase: its marker/site/path/ordinal selector lacked a stable actor or SolrZkClient reader binding. Full raw counts are retained under legacy_zk_coarse_*.",
+      "coverage_gain_scope": "Current-quality HTTP release-JAR production probes from strict trials reaching this case’s exact same-child guard after the fault effect; legacy ZooKeeper actor-unverified probes excluded.",
       "extension_coverage_audits": [
         {
           "class": "org/apache/lucene/index/DocumentsWriter",
@@ -371814,7 +372062,7 @@
         92,
         100
       ],
-      "http_fault_trials": 0,
+      "http_fault_trials": 1,
       "http_role_seed": {
         "agent_sha256": "048b30548f2dc103dcbdd7cdcd9346ba0318a657f0acbfbe9a71c49f4abe55b6",
         "elapsed_seconds": 201.83,
@@ -371857,6 +372105,31 @@
           98,
           98
         ]
+      },
+      "http_role_v2_pilot": {
+        "classification": "shared_trial_SOLR-37_target_not_reached_after_fault",
+        "elapsed_seconds": 103.526,
+        "evidence": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/candidates/0001-role-v2/frozen-manifest.json",
+        "exact_target_throws": 0,
+        "fault_effect_seq": 3983,
+        "injected_child": "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+        "injected_raw_leader": "SOLR/PARENT/collection1/shard1/core_node3",
+        "injected_raw_sender": "SOLR/PARENT/collection1/shard1/core_node3",
+        "junit_attempts": 1,
+        "new_bug": false,
+        "original_junit_gate": [
+          1,
+          0,
+          0
+        ],
+        "production_probes_strict_raw": 162,
+        "same_child_postfault_target": 0,
+        "selected_plans": 1,
+        "source_review": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/candidates/0001-role-v2/source-review.md",
+        "status": "same_run_target_not_reached_after_fault",
+        "strict_injections": 1,
+        "target_guard_seq": null,
+        "target_throw_seq": null
       },
       "io_family_gain": 0,
       "legacy_http_raw_sender_pilot": {
@@ -372100,8 +372373,10 @@
       "legacy_zk_coarse_same_child_post_target": 117,
       "legacy_zk_coarse_selected_plans": 128,
       "legacy_zk_coarse_strict_point_matches": 127,
+      "legacy_zk_coarse_target_exceptions": 0,
       "legacy_zk_coarse_total_attempts": 133,
-      "methodology": "coverage_io_independent_asm_jacoco_http_current_leader_child_exact",
+      "methodology": "coverage_io_independent_asm_jacoco_http_actor_exact",
+      "new_bug": false,
       "original_junit": {
         "elapsed_seconds": 102.743,
         "failures": 0,
@@ -372113,8 +372388,147 @@
       "post_fault_target_reach_trials": 0,
       "production_branch_outcomes_gain": 0,
       "production_methods_gain": 0,
-      "reason": "Original JUnit role V2 healthy pair passed with raw parent core_node4/core_node3 but 49 exact role selectors; bounded one-plan HTTP pilot is running. Legacy raw and lazy-lookup trials excluded from current-quality fault counts.",
-      "remaining_work": "Review first bounded pilot for strict fault, same-child postfault target, exact throw, original JUnit outcome; only then expand HTTP budget. Separate actor-aware ZK V2 remains pending.",
+      "reason": "The first strict role-V2 HTTP fault did not reach the SOLR-37 guard after fault effect; its effective budget remains open.",
+      "remaining_work": "Continue saved HTTP role-V2 checkpoint to 80 strict same-child postfault effective trials per check; source-review any unrecognized exact target exception. Actor-aware ZK V2 remains a separate campaign.",
+      "rpc_stage_attempted_junits": 3,
+      "rpc_stage_case_production_probe_gain": 0,
+      "rpc_stage_control": {
+        "counts": {
+          "attempted_junits": 1,
+          "effective_by_case": {
+            "SOLR-36": 1,
+            "SOLR-37": 0
+          },
+          "elapsed_seconds": 103.526,
+          "fault_depths": {
+            "1": 1
+          },
+          "selected_plans": 1,
+          "strict_injections": 1,
+          "unmatched_plans": 0
+        },
+        "late_novelty": null,
+        "max_faults": 2,
+        "reason": "finish 24-plan pilot from bounded selected-plan checkpoint",
+        "selected_cap": 24,
+        "status": "running",
+        "target_effective": null,
+        "updated_at": 1791349129.447605
+      },
+      "rpc_stage_effective_by_case": {
+        "SOLR-36": 2,
+        "SOLR-37": 0
+      },
+      "rpc_stage_expected_target_rejection_trials": 0,
+      "rpc_stage_fault_trials": 2,
+      "rpc_stage_post_fault_target_reach_trials": 0,
+      "rpc_stage_progress": {
+        "budget": {
+          "max_faults": 2,
+          "max_trials": 24
+        },
+        "distinct_first_rpc_fault_sites": 2,
+        "elapsed_seconds": 310.367,
+        "exact_target_throw_trials": {
+          "SOLR-36": 2,
+          "SOLR-37": 0
+        },
+        "fault_command_families": {
+          "FAULT:HTTP:parentForwardAdd": 1,
+          "FAULT:HTTP:parentForwardDeleteById": 1
+        },
+        "fault_depths": {
+          "1": 2
+        },
+        "fault_modes": {
+          "DELAY": 2
+        },
+        "fault_trials": 2,
+        "latest": {
+          "applied_child_urls": [
+            "http://127.0.0.1:41237/collection1_shard1_0_replica_n9/"
+          ],
+          "applied_faults": 1,
+          "applied_raw_leader_actors": [
+            "SOLR/PARENT/collection1/shard1/core_node3"
+          ],
+          "applied_raw_sender_actors": [
+            "SOLR/PARENT/collection1/shard1/core_node3"
+          ],
+          "applied_sender_physical_nodes": [
+            "127.0.0.1:41237_"
+          ],
+          "attempt": 2,
+          "attempts": 2,
+          "elapsed_seconds": 206.841,
+          "fault_effect_boundary_seq": 4109,
+          "fault_effects_verified": true,
+          "jacoco": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0002-befb4e7e5c4a084dd072/attempt-02/jacoco.exec",
+          "junit_exit": 0,
+          "junit_gate": [
+            1,
+            0,
+            0
+          ],
+          "last_fault_marker": "FAULT:HTTP:parentForwardDeleteById",
+          "last_fault_mode": "DELAY",
+          "last_fault_point_id": "{\"hitOrdinal\":12,\"marker\":\"FAULT:HTTP:parentForwardDeleteById\",\"resource\":\"/update/DeleteById/collection1/shard1_0/core_node11\",\"senderKey\":\"SOLR/PARENT_LEADER/collection1/shard1\",\"siteId\":\"org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request\",\"sourceKey\":\"SOLR/SUBSHARD/collection1/shard1_0/core_node11\"}",
+          "last_fault_sender": "SOLR/PARENT_LEADER/collection1/shard1",
+          "last_fault_source": "SOLR/SUBSHARD/collection1/shard1_0/core_node11",
+          "new_exact_rpc_selectors": 0,
+          "new_production_probes": 4,
+          "planned_faults": 1,
+          "postfault_guard_operands": {
+            "SOLR-36": {
+              "state=active;phase=FROMLEADER": 1
+            },
+            "SOLR-37": {}
+          },
+          "postfault_same_child_guards": {
+            "SOLR-36": 1,
+            "SOLR-37": 0
+          },
+          "postfault_same_child_throws": {
+            "SOLR-36": 1,
+            "SOLR-37": 0
+          },
+          "reviewed_expected_target_rejection": true,
+          "selected_parent_gain": 0,
+          "selected_queue_id": "befb4e7e5c4a084dd072",
+          "sequence": [
+            {
+              "delay_ms": 5000,
+              "fault_mode": "DELAY",
+              "point": {
+                "hitOrdinal": 12,
+                "marker": "FAULT:HTTP:parentForwardDeleteById",
+                "resource": "/update/DeleteById/collection1/shard1_0/core_node11",
+                "senderKey": "SOLR/PARENT_LEADER/collection1/shard1",
+                "siteId": "org.apache.solr.update.SolrCmdDistributor.submit#L309->Http2SolrClient.request",
+                "sourceKey": "SOLR/SUBSHARD/collection1/shard1_0/core_node11"
+              }
+            }
+          ],
+          "strict_injection": true,
+          "trace": "/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/SOLR-36/independent/rpc-stage/campaign/trials/0002-befb4e7e5c4a084dd072/attempt-02/events.jsonl",
+          "trial_number": 2
+        },
+        "new_rpc_selectors": 0,
+        "production_probe_gain": 166,
+        "reviewed_expected_target_rejection_trials": 2,
+        "same_child_post_target_trials": {
+          "SOLR-36": 2,
+          "SOLR-37": 0
+        },
+        "status": "running",
+        "strict_injections": 2,
+        "total_attempts": 3
+      },
+      "rpc_stage_selected_plans": 2,
+      "rpc_stage_shared_production_probe_gain": 166,
+      "rpc_stage_strict_injections": 2,
+      "rpc_stage_target_exception_after_fault_trials": 0,
+      "rpc_stage_unreviewed_target_exception_trials": 0,
       "seed_audit": ".study-repairs/unit-test-pivot/cases/SOLR-36/independent/seed-audit.json",
       "shared_run_with": "SOLR-36",
       "stable_precursor_io_families": 120,
@@ -372123,9 +372537,9 @@
       "target_check_description": "child hash range outside parent range under parent forwarding",
       "target_check_source": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java:995",
       "target_exception_after_fault_trials": 0,
-      "total_attempts": 0,
+      "total_attempts": 3,
       "unreviewed_exact_target_throw_trial_numbers": [],
-      "updated_at": 1791348480.5888968,
+      "updated_at": 1791349359.7721379,
       "zk_budget_semantics": {
         "effective_trial_definition": "strict_injection and same_logical_child_target_guard_after_last_fault",
         "max_original_junit_attempts_per_plan": 2,
@@ -372740,171 +373154,102 @@
       "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u27",
       "proposed_cluster_test": "QuorumPeerMainTest.testQuorum",
       "cluster_test": "org.apache.zookeeper.test.QuorumTest#testSessionMoved",
-      "status": "actor_identity_recheck_pending",
+      "status": "quality_complete",
       "target_reached": true,
-      "fault_trials": 0,
-      "strict_injections": 0,
-      "fully_applied_trials": 0,
-      "target_after_fault": 0,
-      "coverage_gain": 0,
-      "elapsed_seconds": 0,
+      "fault_trials": 85,
+      "strict_injections": 80,
+      "fully_applied_trials": 80,
+      "target_after_fault": 80,
+      "coverage_gain": 8,
+      "elapsed_seconds": 367.874,
       "bug_mark": "none",
       "evidence": null,
-      "applied_faults": 376,
+      "active_campaign_wall_seconds": 180.345,
+      "actor_identity": "actual client handle/socket destination or server peer/connection; one raw moved session; actual leader SID and prior/request owner objects",
+      "budget_denominator": "fully applied ordered actor-aware plans with same-session owner receipt and selected target guard after final fault",
       "campaign_budget": 80,
       "campaign_finished": true,
-      "case_wall_elapsed_seconds_fault_campaign": 250.899,
-      "coverage_gain_all_attempts": 37,
-      "elapsed_measurement": "sum of healthy, positive-control, and 80 completed original-JUnit JVM elapsed times; the two-worker fault-campaign wall time is separate",
-      "exact_matched_faults": 376,
+      "coverage_feedback": "case-local ASM production source-line coverage.tsv; JaCoCo exec not collected",
+      "coverage_gain_all_attempts": 8,
+      "effective_cumulative_coverage_lines": 130,
+      "elapsed_measurement": "sum of four original-JUnit healthy JVMs and 85 counted fault JVMs; two fault workers ran concurrently; excludes pilot/development/audit time",
       "graphchecker_or_skeleton_runtime_dependency": false,
-      "healthy_guard_count": 21,
+      "healthy_coverage_lines": 122,
+      "healthy_elapsed_seconds": 13.954,
+      "healthy_target_guard_count_per_seed": 20,
       "healthy_target_throw_count": 0,
-      "independent_audit": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-02/evidence/independent/audit.json",
-      "independent_provenance": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-02/evidence/independent/provenance.json",
-      "io_family_gain": 0,
-      "junit_failure_classes": {
-        "connection_loss_initial_create": 22,
-        "connection_loss_sync": 16,
-        "epoch_startup_failed": 4,
-        "sync_assertion_failed": 10
-      },
-      "junit_nonzero_trials": 52,
-      "last_trial": {
-        "applied": [
-          "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@5"
-        ],
-        "bug_mark": "none",
-        "candidate_pretarget_io": [],
-        "elapsed_seconds": 5.795,
-        "fault_count": 1,
-        "junit_exit": 1,
-        "junit_outcome_differs_from_healthy": true,
-        "matched": [
-          "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@5"
-        ],
-        "needs_source_review": false,
-        "new_pretarget_io_count": 0,
-        "new_production_coverage": [
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanAndNotifyState\t1336",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanAndNotifyState\t1337",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanAndNotifyState\t1338",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanAndNotifyState\t1340",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanAndNotifyState\t1341",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanAndNotifyState\t1342",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanup\t1407",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanup\t1408",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanup\t1409",
-          "org.apache.zookeeper.ClientCnxn$SendThread\tcleanup\t1410",
-          "org.apache.zookeeper.ClientCnxn$SendThread\trun\t1300",
-          "org.apache.zookeeper.ClientCnxn$SendThread\trun\t1303",
-          "org.apache.zookeeper.ClientCnxn$SendThread\trun\t1309",
-          "org.apache.zookeeper.server.NIOServerCnxn\tdoIO\t337",
-          "org.apache.zookeeper.server.NIOServerCnxn\tdoIO\t338",
-          "org.apache.zookeeper.server.NIOServerCnxn\tdoIO\t340",
-          "org.apache.zookeeper.server.NIOServerCnxn\tdoIO\t342",
-          "org.apache.zookeeper.server.NIOServerCnxn\tdoIO\t343",
-          "org.apache.zookeeper.server.NIOServerCnxn\thandleFailedRead\t168",
-          "org.apache.zookeeper.server.NIOServerCnxn\thandleFailedRead\t169",
-          "org.apache.zookeeper.server.NIOServerCnxn\thandleFailedRead\t170",
-          "org.apache.zookeeper.server.NIOServerCnxn\thandleFailedRead\t172",
-          "org.apache.zookeeper.server.NIOServerCnxn\thandleFailedRead\t173"
-        ],
-        "new_production_coverage_lines": 23,
-        "parent": "healthy-01",
-        "plan": [
-          "org.apache.zookeeper.ClientCnxnSocketNIO#doIO:74:java.nio.channels.SocketChannel#read(Ljava/nio/ByteBuffer;)I@@5"
-        ],
-        "run_id": "trial-080",
-        "strict_injection": true,
-        "target_after_final_fault": false,
-        "target_guard_after_fault_count": 0,
-        "target_guard_sessions_after_fault": [],
-        "target_throw_after_fault_count": 0,
-        "target_throw_contexts": [],
-        "target_throw_total_count": 0,
-        "worker_id": 6
-      },
-      "legacy_evidence": {
-        "bootstrap_audit_path": "bootstrap-audit.json",
-        "bootstrap_audit_sha256": "9dfa8b14de1ec156e3efcd7490ea3aea0fddc9b14306cbc7250b56c6b179bd68",
-        "campaign_config_path": "legacy-graph-campaign.json",
-        "campaign_config_sha256": "4f83c973a7ff5e8df1a568ee3175df593681c4279b82a9ee302fcd9e4d90e5dd",
-        "elapsed_seconds": 2209.739,
-        "exact_target_exception_after_fault_trials": 0,
-        "file_resource_path_recorded": false,
-        "graphchecker_recorder_jar_sha256": "fdee49a2134fe8afffbb3f851c6ff93296063e05a7e4d63a257ed926fa8c10cb",
-        "healthy_exact_target_exception_count": 0,
-        "healthy_lifecycle_trace_sha256": "1b66db9ed4ccbda21db1b4a3e10579a1e2ce22cf386650e8acdadd0601b3221e",
-        "healthy_target_entries": 21,
-        "io_family_gain": 4,
-        "io_family_identity_fields": [
-          "marker",
-          "siteId",
-          "sourceKey"
-        ],
-        "post_fault_target_reach_trials": 47,
-        "precomputed_skeleton_identity": true,
-        "previous_status": "budget_or_queue_complete",
-        "prewoven_graphchecker_recorder": true,
-        "production_coverage_gain": 661,
-        "readme": "README.md",
-        "result_path": "legacy-graph-result.json",
-        "result_sha256": "3933e573b9d5dd3acbf243a0ae80c04ee6963a04fae5032c0c7694949412ca66",
-        "strict_injections": 110,
-        "trace_archive_manifest_path": "archive-manifest.jsonl",
-        "trace_archive_manifest_sha256": "8f0e5aad71206754223fcc3a96f630c0315c0f6287433d35fa7663c79e6d6410",
-        "trial_count": 128,
-        "trial_ledger_path": "trial-ledger.jsonl",
-        "trial_ledger_sha256": "ed09bffe967f7a90a1cb282dfb723ec037ac2f52ecf7f5fb1840fa291f1e82de"
-      },
-      "max_fault_depth_attempted": 8,
+      "historical_result": "result.pre-actor-v2.json",
+      "historical_result_sha256": "28e0373683b6a4c876210e22b9eb5d9232f91a1e0fbbc1ca0b30fe333792017d",
+      "io_family_gain": 1,
+      "junit_non_target_failure_trials": 20,
+      "known_bug": false,
+      "max_fault_depth_attempted": 6,
       "max_faults": 8,
-      "methodology": "original_cluster_junit_case_local_asm_independent_recorder",
-      "new_methodology_run_root": "/users/ZhenyuLi/zk02-independent-runs",
-      "observed_target_pre_io_positions": 230,
-      "post_fault_target_reach_trials": 0,
-      "production_coverage_gain": 9,
-      "quality_complete": false,
-      "raw_archive": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-02/evidence/independent/raw-runs.tar.gz",
-      "raw_archive_sha256": "aa61c11eb87fe4cdeabac31b8bc736e68a406e37eafe0ff0b6bd26be32e91418",
-      "reason": "The original QuorumTest cluster JUnit and independent case-local ASM recorder completed 80 ordered-fault trials. All 80 plans strictly matched and applied; 28 reached the exact checkSession owner-mismatch guard after the final fault, and none reached the selected SessionMovedException throw. Fifty-two injected-fault JUnit runs failed only after the target path was lost; all 28 target-retaining runs passed. No new production line, method, or stable I/O family appeared in target-retaining runs among trials 73-80, so the 128-trial extension condition was not met. The 128 historical skeleton-derived trials remain legacy only.",
-      "schema_version": 1,
+      "methodology": "original_cluster_junit_actor_v2_complete_io_asm_line_feedback",
+      "new_bug": false,
+      "old_pre_io_excluded": {
+        "attempts": 113,
+        "checkpoint": "/users/ZhenyuLi/zk02-actor-v2-runs/v2-campaign.json",
+        "checkpoint_sha256": "fb4f582b455d7eab71e2b69047b24a56756d6943c64f73fcc52f252a0f2cae57",
+        "effective": 0,
+        "faults_applied": 113,
+        "postfault_selected_guard": 0,
+        "reason": "pre-I/O socket exception aborted synchronous original JUnit operations before the next owner check; never contributes to current denominator",
+        "status": "paused_for_semantic_diagnosis"
+      },
+      "original_source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+      "post_fault_target_reach_trials": 80,
+      "quality_complete": true,
+      "reason": "Two fresh original-cluster JUnit calibrations per agent variant passed. Twenty complete client-write faults and sixty complete server sync-response fault sequences retained the same moved-session owner check after the final fault. No selected SessionMovedException occurred. The twenty client-stage ConnectionLoss JUnit outcomes are separate non-target failures.",
+      "selected_target_throw_events": 0,
       "source_inventory_only": false,
-      "stop_reason": "80_trial_budget_complete_no_late_valid_new_production_or_stable_io",
+      "stop_reason": "80_effective_budget_complete; last eight effective trials added no selected target throw, ASM line, or bound I/O family; 128/10 conditional extension not triggered",
       "target_code": "else if (session.owner != owner) { throw new KeeperException.SessionMovedException(); }",
       "target_exception_after_fault_trials": 0,
       "target_method": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>",
-      "target_retaining_junit_failures": 0,
+      "target_related_io_families": 20,
       "target_source_file": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
       "target_source_line": 323,
-      "target_throw_method": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>",
-      "target_throw_site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u27",
-      "trial_elapsed_seconds": 494.171,
-      "trial_ledger": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-02/evidence/independent/trials.jsonl",
-      "trial_table": ".study-repairs/unit-test-pivot/cases/ZOOKEEPER-02/evidence/independent/trial-summary.csv",
-      "unattempted_queued_plans_at_budget": 425,
-      "unwoven_original_class_files_verified": true,
-      "legacy_coarse_actor": {
-        "identity_limit": "fault selector uses call site and global ordinal without stable peer/client/socket/file owner; old postfault target may be a different actor",
-        "audit": "../../audits/zookeeper-terminal-actor-identity-2026-10-07.md",
-        "fault_trials": 80,
-        "strict_injections": 80,
-        "fully_applied_trials": 80,
-        "target_after_fault": 28,
-        "post_fault_target_reach_trials": 28,
-        "coverage_gain": 9,
-        "elapsed_seconds": 507.015,
-        "applied_faults": 376,
-        "exact_matched_faults": 376,
-        "coverage_gain_all_attempts": 37,
-        "production_coverage_gain": 9,
-        "case_wall_elapsed_seconds_fault_campaign": 250.899,
-        "trial_elapsed_seconds": 494.171,
-        "target_exception_after_fault_trials": 0
-      },
-      "identity_audit": "../../audits/zookeeper-terminal-actor-identity-2026-10-07.md",
-      "trial_results_scope": "historical_coarse_actor"
+      "trial_elapsed_seconds": 353.92,
+      "trial_results_scope": "actor_v2_two_complete_io_stages_only",
+      "v2_campaign_audit": "../../zk-actor-v2/cases/ZOOKEEPER-02/after-response/campaign-audit.json",
+      "v2_campaign_audit_sha256": "4caf693e3d2d4520ef4746e6b75c50df4ef088e499043659bf670ed379a553cd",
+      "v2_stages": [
+        {
+          "agent_sha256": "e4e6ae6b5e7b0a98990b0eefe35ce97c904e21a11b4bbbafeb1d5fce068ba20b",
+          "attempts": 20,
+          "coverage_gain": 5,
+          "effective": 20,
+          "fault_campaign_wall_seconds": 37.156,
+          "healthy_elapsed_seconds": 6.35,
+          "max_fault_depth": 1,
+          "name": "client_after_write",
+          "new_io_families": 0,
+          "non_target_junit_failures": 20,
+          "run_root": "/users/ZhenyuLi/zk02-actor-v2-afterio-runs",
+          "selected_target_throws": 0,
+          "status": "queue_exhausted",
+          "trial_elapsed_seconds": 73.463
+        },
+        {
+          "agent_sha256": "b71a603cab94bb143daee5123ca60694084d3e93b6459b101a272d1528276331",
+          "attempts": 65,
+          "coverage_gain": 3,
+          "effective": 60,
+          "fault_campaign_wall_seconds": 143.189,
+          "healthy_elapsed_seconds": 7.604,
+          "max_fault_depth": 6,
+          "name": "server_after_sync_response",
+          "new_io_families": 1,
+          "non_target_junit_failures": 0,
+          "run_root": "/users/ZhenyuLi/zk02-actor-v2-after-response-runs",
+          "selected_target_throws": 0,
+          "status": "budget_complete",
+          "trial_elapsed_seconds": 280.457
+        }
+      ],
+      "v2_trial_table": "../../zk-actor-v2/cases/ZOOKEEPER-02/after-response/trial-summary.csv",
+      "v2_trial_table_sha256": "0b5e794ea782bb94af7d059e6e079af3a9cfa2b518e02a7c9520d3f48e7b2917"
     },
     {
       "case_id": "ZOOKEEPER-03",
