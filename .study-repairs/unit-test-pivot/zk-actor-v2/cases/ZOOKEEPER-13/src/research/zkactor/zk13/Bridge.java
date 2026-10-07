@@ -173,7 +173,6 @@ public final class Bridge {
         "org.apache.zookeeper.server.quorum.ReadOnlyZooKeeperServer")) return false;
     Object peer = PEERS.get(1L);
     return peer != null && value(server, "self") == peer
-        && call(peer, "getActiveServer") == server
         && ((Number) call(server, "getServerId")).longValue() == 1L;
   }
 
