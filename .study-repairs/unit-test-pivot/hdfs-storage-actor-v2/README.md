@@ -60,14 +60,18 @@ including HDFS-22/23. The three groups are:
 | `rollback` | `TestDFSRollback#testRollback` | HDFS-26/37 |
 
 ```sh
-python3 calibrate.py --group startup --output evidence/startup
+python3 calibrate.py --group startup --output evidence/startup --max-seeds 1
+python3 calibrate.py --group startup --output evidence/startup --max-seeds 2
 ```
 
-Calibration runs the unchanged JUnit twice and writes `healthy-a`, `healthy-b`,
+The first command runs only seed `a`, so other node1 campaign owners can
+inspect timing before seed `b`. The second reuses its manifest and runs only
+seed `b`. Calibration writes `healthy-a`, `healthy-b`,
 and `healthy_receipt.json`. The receipt fails if either JUnit fails, an exact
 target is unbound, an actual RPC endpoint is not classified, a case has no
 stable same-actor upstream I/O selector, or the two healthy seeds disagree on
-target actor identities. The same commands apply to `upgrade` and `rollback`
+target actor identities. It also requires the same overlay digest in both
+manifests. The same commands apply to `upgrade` and `rollback`
 with isolated output directories.
 
 Archived healthy runs used about 8 MiB and 43–68 s each. Allow at least

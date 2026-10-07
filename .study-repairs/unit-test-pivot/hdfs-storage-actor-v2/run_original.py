@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -37,6 +39,17 @@ CLIENT = HADOOP / "share/hadoop/hdfs/hadoop-hdfs-client-3.4.3.jar"
 COMMON = HADOOP / "share/hadoop/common/hadoop-common-3.4.3.jar"
 TESTS = HADOOP / "share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar"
 RESOURCE = Path("/users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/hdfs32/worktrees/hadoop/hadoop-hdfs-project/hadoop-hdfs/src/test/resources")
+
+
+def instrumentation_digest() -> str:
+    digest = hashlib.sha256()
+    for path in sorted(OVERLAY.rglob("*.class")):
+        digest.update(str(path.relative_to(OVERLAY)).encode())
+        digest.update(path.read_bytes())
+    for path in sorted((BUILD / "classes").glob("HdfsStorageProbe*.class")):
+        digest.update(path.name.encode())
+        digest.update(path.read_bytes())
+    return digest.hexdigest()
 
 
 def build() -> None:
@@ -104,6 +117,7 @@ def main() -> None:
            + ",includes=org.apache.hadoop.hdfs.*:org.apache.hadoop.ipc.*,dumponexit=true,append=false",
            *(["-DhdfsStorage.independent.plan=" + str(args.plan.resolve())] if args.plan else []),
            "-cp", cp, "RunJUnitMethod", test_class, test_method]
+    started_at_utc = datetime.now(timezone.utc).isoformat()
     start = time.monotonic()
     with (out / "junit.log").open("w") as log:
         try:
@@ -113,6 +127,9 @@ def main() -> None:
             status = 124
     manifest = {"case_id": args.case,
                 "test": test_class + "#" + test_method,
+                "instrumentation_digest_sha256": instrumentation_digest(),
+                "started_at_utc": started_at_utc,
+                "finished_at_utc": datetime.now(timezone.utc).isoformat(),
                 "returncode": status, "elapsed_seconds": round(time.monotonic() - start, 3),
                 "trace": str(out / "runtime_trace.jsonl"), "coverage": str(out / "jacoco.exec"),
                 "plan": str(args.plan.resolve()) if args.plan else None}

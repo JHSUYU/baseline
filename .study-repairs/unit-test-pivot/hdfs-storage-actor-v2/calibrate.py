@@ -89,6 +89,9 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
         "manifest": str(seed / "manifest.json"),
         "trace_sha256": hashlib.sha256((seed / "runtime_trace.jsonl").read_bytes()).hexdigest(),
         "elapsed_seconds": manifest["elapsed_seconds"],
+        "started_at_utc": manifest.get("started_at_utc"),
+        "finished_at_utc": manifest.get("finished_at_utc"),
+        "instrumentation_digest_sha256": manifest.get("instrumentation_digest_sha256"),
         "junit_exit": manifest["returncode"],
         "actors_registered": len(actors), "actor_entries": len(entries),
         "bound_rpc": len(rpc), "bound_file_io": len(file_io),
@@ -103,11 +106,11 @@ def inspect(seed: Path, cases: tuple[str, ...]) -> dict:
     }
 
 
-def calibrate(group: str, output: Path, timeout: int) -> dict:
+def calibrate(group: str, output: Path, timeout: int, max_seeds: int = 2) -> dict:
     case, cases = GROUPS[group]
     output.mkdir(parents=True, exist_ok=True)
     seeds = []
-    for suffix in ("a", "b"):
+    for suffix in ("a", "b")[:max_seeds]:
         seed = output / f"healthy-{suffix}"
         if not (seed / "manifest.json").is_file():
             with (output / f"runner-{suffix}.log").open("w") as log:
@@ -117,12 +120,28 @@ def calibrate(group: str, output: Path, timeout: int) -> dict:
         if not (seed / "manifest.json").is_file():
             raise RuntimeError(f"missing healthy manifest for {suffix}")
         seeds.append(inspect(seed, cases))
+    if max_seeds == 1:
+        receipt = {
+            "schema": "hdfs-storage-actor-v2-healthy-calibration-1",
+            "group": group, "case_ids": list(cases),
+            "test": json.loads((output / "healthy-a/manifest.json").read_text())["test"],
+            "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
+            "seeds": seeds, "status": "awaiting_second_seed",
+            "pass": False, "issues": [f"healthy-a: {issue}" for issue in seeds[0]["issues"]],
+        }
+        temp = output / "healthy_receipt.json.tmp"
+        temp.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+        temp.replace(output / "healthy_receipt.json")
+        return receipt
     stable = sorted(set(map(tuple, seeds[0]["selectors"]))
                     & set(map(tuple, seeds[1]["selectors"])))
     issues = [f"healthy-{i}: {issue}" for i, seed in zip("ab", seeds)
               for issue in seed["issues"]]
     if not stable:
         issues.append("no stable exact actor-aware I/O selectors in two seeds")
+    if (not seeds[0]["instrumentation_digest_sha256"] or
+            seeds[0]["instrumentation_digest_sha256"] != seeds[1]["instrumentation_digest_sha256"]):
+        issues.append("instrumentation digest differs across healthy seeds")
     stable_by_case = {}
     for case_id in cases:
         common = sorted(set(map(tuple, seeds[0]["selectors_by_case"][case_id]))
@@ -141,6 +160,7 @@ def calibrate(group: str, output: Path, timeout: int) -> dict:
         "stable_selectors": [list(item) for item in stable],
         "stable_selector_count": len(stable),
         "stable_selectors_by_case": stable_by_case,
+        "status": "pass" if not issues else "failed",
         "pass": not issues, "issues": issues,
     }
     temp = output / "healthy_receipt.json.tmp"
@@ -154,11 +174,13 @@ def main() -> None:
     parser.add_argument("--group", choices=GROUPS, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--timeout", type=int, default=360)
+    parser.add_argument("--max-seeds", type=int, choices=(1, 2), default=2,
+                        help="Use 1 to pause after seed a; rerun with 2 to reuse a and run b")
     args = parser.parse_args()
-    receipt = calibrate(args.group, args.output.resolve(), args.timeout)
+    receipt = calibrate(args.group, args.output.resolve(), args.timeout, args.max_seeds)
     print(json.dumps({k: receipt[k] for k in
-                      ("group", "pass", "issues", "stable_selector_count")}, indent=2))
-    if not receipt["pass"]:
+                      ("group", "status", "pass", "issues")}, indent=2))
+    if receipt["status"] == "failed":
         raise SystemExit(1)
 
 
