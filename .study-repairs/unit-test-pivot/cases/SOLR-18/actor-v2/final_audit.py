@@ -63,6 +63,23 @@ def audit_all() -> dict:
         assert not seed['classpath_has_graphchecker_or_skeleton_jar']
     assert len(state['trials']) == state['attempts']
     assert len({item['run_id'] for item in state['trials']}) == state['attempts']
+    by_id = {item['run_id']: item for item in state['trials']}
+    executed_plans = {tuple(item['plan']) for item in state['trials']}
+    pending_plans = {tuple(item['plan']) for item in state['pending']}
+    for skipped in state.get('pruned_plans', []):
+        plan = tuple(skipped['plan'])
+        assert len(plan) > 1 and ':SUITE@@' in plan[0]
+        assert plan not in executed_plans and plan not in pending_plans
+        assert skipped['reason'] == 'suite_setup_ended_after_first_fault'
+        witnesses = skipped['witnesses']
+        for kind in ('standalone', 'suffix'):
+            witness = by_id[witnesses[kind]]
+            assert witness['plan'][0] == plan[0]
+            assert (len(witness['plan']) == 1) == (kind == 'standalone')
+            assert witness['applied'] == [plan[0]]
+            assert witness['test_started_count'] == 0 and not witness['effective']
+        assert not any(item['effective'] for item in state['trials']
+                       if item['plan'][0] == plan[0])
     valid, strict, wrong, lost, unreviewed, expected_fault_site = [], [], [], [], [], []
     probes, methods, lines = set(), set(), set()
     elapsed = 0.0
@@ -150,6 +167,7 @@ def audit_all() -> dict:
         'effective_junit_nonzero_expected_direct_fault_site': expected_fault_site,
         'all_junit_nonzero_trials': all_junit_nonzero,
         'max_depth_attempted': max((x['fault_count'] for x in state['trials']), default=0),
+        'unreachable_suite_suffix_plans_pruned': len(state.get('pruned_plans', [])),
         'new_production_probes': len(probes), 'new_production_methods': len(methods),
         'new_production_lines': len(lines),
         'fault_junit_elapsed_seconds': round(elapsed, 3),
