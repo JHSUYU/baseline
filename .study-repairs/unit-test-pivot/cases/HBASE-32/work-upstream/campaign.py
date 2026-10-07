@@ -311,11 +311,9 @@ def prune(state):
     invalid = [trial["plan"] for trial in state["trials"]
                if trial["invalid_cluster"] or (trial["strict"] and not trial["target_retained"])]
     state["queue"] = [entry for entry in state["queue"]
-                      if (sum(step.endswith("~DO_NOT_RETRY_IOEXCEPTION")
-                              for step in entry["plan"]) <= 2
-                          and not any(len(entry["plan"]) > len(prefix)
-                                      and entry["plan"][:len(prefix)] == prefix
-                                      for prefix in invalid))]
+                      if not any(len(entry["plan"]) > len(prefix)
+                                 and entry["plan"][:len(prefix)] == prefix
+                                 for prefix in invalid)]
 
 
 def publish(state, status="running"):
@@ -375,6 +373,45 @@ def main():
                 "coverage_union_unchanged": state["coverage_union"]})
             state["version"] = 2
             publish(state)
+        if state.get("version", 1) < 3:
+            # Versions 1/2 pruned any sequence with three DNR faults, even
+            # though HBase retries a failed WAL marker up to five times. Bring
+            # back only children of admitted two-DNR runs. Their original raw
+            # traces determine both the event order and exact actor identity.
+            before_queue = len(state["queue"])
+            before_seen = len(state["seen_plans"])
+            state["seen_plans"] = [key for key in state["seen_plans"]
+                                   if sum(step.endswith("~DO_NOT_RETRY_IOEXCEPTION")
+                                          for step in key.split(";")) <= 2]
+            restored_from = []
+            for trial in state["trials"]:
+                if (not trial["coverage_admitted"] or
+                        sum(step.endswith("~DO_NOT_RETRY_IOEXCEPTION")
+                            for step in trial["plan"]) != 2):
+                    continue
+                path = HERE.parent / trial["log"]
+                trace = parse_log(path)
+                if not strict(trace, trial["plan"]):
+                    raise RuntimeError("Admitted parent lost exact trace: " + trial["id"])
+                enqueue(state, trial["plan"], selector_events(trace),
+                        trace["FAULT_APPLIED"][-1]["line"],
+                        trial["new_branches_methods"], trial["elapsed_seconds"])
+                restored_from.append(trial["id"])
+            prune(state)
+            state.setdefault("migration_log", []).append({
+                "at_utc": datetime.now(timezone.utc).isoformat(),
+                "to_version": 3,
+                "reason": "remove_unsupported_two_DNR_fault_limit",
+                "restored_from_admitted_parents": restored_from,
+                "queue_before": before_queue,
+                "queue_after": len(state["queue"]),
+                "seen_before": before_seen,
+                "seen_after": len(state["seen_plans"]),
+                "coverage_union_unchanged": state["coverage_union"],
+                "io_union_unchanged_sha256": hashlib.sha256(
+                    json.dumps(state["io_union"], sort_keys=True).encode()).hexdigest()})
+            state["version"] = 3
+            publish(state)
     else:
         healthy_log = HERE / "logs/healthy4.log"
         healthy_exec = HERE / "logs/healthy4.exec"
@@ -389,7 +426,7 @@ def main():
                 or family_counts["WAL_SYNC_START"] < 300):
             raise RuntimeError("Exact upstream seed identities are missing")
         baseline = coverage([healthy_exec])
-        state = {"version": 2, "rng_seed": RNG_SEED,
+        state = {"version": 3, "rng_seed": RNG_SEED,
                  "healthy_log_sha256": sha256(healthy_log),
                  "healthy_exec_sha256": sha256(healthy_exec),
                  "healthy_selector_families": dict(family_counts),

@@ -6,6 +6,8 @@ The workload is the unchanged HBase 2.6.6 `TestRegionReplicaFailover#testLotsOfR
 
 A plan whose exact I/O identity never appears can be retried at most twice, with a lower selection priority. Such attempts retain their raw evidence, never enter the effective denominator or coverage feedback, and do not generate children. Checkpoint version 2 restores unmatched plans from the initial running campaign into the queue without replaying completed trial IDs or changing the accumulated coverage.
 
+Checkpoint version 3 removes an unjustified limit of two `DoNotRetryIOException` faults per sequence. HBase 2.6.6's `HRegion.writeCanNotFlushMarkerToWAL` catches a marker `IOException` and returns `false`; `RegionReplicaFlushHandler` retries that response using `RetryCounter` (default configuration gives five retries after the first failure). The old limit prevented the queue from testing retry exhaustion through this upstream WAL path. Version 3 reconstructs previously pruned children only from fully applied, target-retaining two-fault parent traces, using their original event order and actor identity. The overall eight-fault limit and cluster/target validity rules still apply.
+
 ```sh
 cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream
 tmux attach -t hbase32-upstream-fuzz
