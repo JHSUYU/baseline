@@ -245,7 +245,9 @@ def markdown(items: list[dict]) -> str:
         "Coverage gain is the case's reported feedback; its provenance is in the result.",
         "New and resumed campaigns aim for 80 effective trials / at most 8 ordered "
         "faults. An effective trial applies every selected fault in order and reaches "
-        "the same actor's target check after the final fault. Attempts that lose the "
+        "the target check after the final fault with the case's verified runtime "
+        "identity relation; cross-node RPC cases bind the communicating actors. "
+        "Attempts that lose the "
         "target remain recorded but do not count toward this goal. If the final eight "
         "effective trials add production method/branch coverage or a new relevant "
         "I/O family, the same checkpoint extends to 128 effective trials / 10 faults. "
