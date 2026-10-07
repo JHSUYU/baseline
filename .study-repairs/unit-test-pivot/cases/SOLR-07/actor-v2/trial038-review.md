@@ -67,3 +67,7 @@ collection timeout. The target throw is again after test teardown began, so
 it remains in the same candidate family and is not a confirmed new bug. The
 [raw six-file archive](evidence/trial064-raw.tar.gz) has SHA-256
 `ca80a8f12172e3f1b8ac24acc6cd5a301f365c580c38a61e67df59abde17d54b`.
+The [independent 64-trial raw audit](live-v4-audit-64.json) found zero
+discrepancies across 41 strict plans, 14 postfault target checks, and three
+exact selected throws; its frozen node2 checkpoint SHA-256 is
+`bab23565cff1a239a7d9e01ac66e2949458f3a418a15e4e26b5459dd8a071aa3`.
