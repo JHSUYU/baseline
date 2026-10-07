@@ -20,6 +20,7 @@ MIRROR = HERE / 'mirror-receipt.json'
 OFFLOAD = HERE / 'console-offload.json'
 RAW_OFFLOAD = HERE / 'noncandidate-raw-offload.json'
 NODE2_PULL = HERE / 'node2-pull-receipt.json'
+DERIVED_PRUNE = HERE / 'derived-prune-receipt.json'
 CALIBRATION = HERE / 'calibration.json'
 OUTPUT = HERE / 'final-audit.json'
 RAW_NAMES = ('events.tsv', 'jacoco.exec', 'console.log', 'run.json')
@@ -54,6 +55,7 @@ def audit_all() -> dict:
     offloaded = json.loads(OFFLOAD.read_text())['runs'] if OFFLOAD.exists() else {}
     raw_offloaded = json.loads(RAW_OFFLOAD.read_text())['runs'] if RAW_OFFLOAD.exists() else {}
     pulled = json.loads(NODE2_PULL.read_text())['runs'] if NODE2_PULL.exists() else {}
+    pruned = json.loads(DERIVED_PRUNE.read_text())['runs'] if DERIVED_PRUNE.exists() else {}
     remote = remote_hashes()
     calibration = json.loads(CALIBRATION.read_text())
     junit_sha = calibration['junit_class_sha256']
@@ -81,6 +83,12 @@ def audit_all() -> dict:
     assert len(state['trials']) == state['attempts']
     assert len({item['run_id'] for item in state['trials']}) == state['attempts']
     by_id = {item['run_id']: item for item in state['trials']}
+    for run_id, entry in pruned.items():
+        assert run_id in by_id and int(run_id.split('-')[1]) <= 189
+        for name, data in entry['files'].items():
+            assert name in ('covered_probes.txt', 'covered_methods.txt', 'covered_lines.txt')
+            assert mirror['runs'][run_id]['sha256'][name] == data['sha256']
+            assert data['size_bytes'] > 0
     executed_plans = {tuple(item['plan']) for item in state['trials']}
     pending_plans = {tuple(item['plan']) for item in state['pending']}
     for skipped in state.get('pruned_plans', []):
@@ -153,7 +161,12 @@ def audit_all() -> dict:
             assert mirror_entry['rsync_checksum_dry_run_exit'] == 0
             assert mirror_entry['rsync_checksum_dry_run_output'] == ''
         for name, expected in digests.items():
-            assert remote[(run_id, name)] == expected, (run_id, name, 'node2')
+            if name in pruned.get(run_id, {}).get('files', {}):
+                # Only named, SHA-attested derived JaCoCo text may be absent.
+                if (run_id, name) in remote:
+                    assert remote[(run_id, name)] == expected
+            else:
+                assert remote[(run_id, name)] == expected, (run_id, name, 'node2')
         for name in RAW_NAMES:
             local = directory / name
             if name == 'console.log' and not local.exists():
@@ -243,12 +256,24 @@ def audit_all() -> dict:
         'node0_archive_sha_attested_files': sum(
             len(pulled[x['run_id']]['sha256']) for x in state['trials']
             if x['run_id'] in pulled),
+        'derived_coverage_files_pruned_after_sha': sum(
+            (run_id, name) not in remote for run_id, entry in pruned.items()
+            for name in entry['files']),
+        'derived_coverage_bytes_reclaimed': sum(
+            data['size_bytes'] for run_id, entry in pruned.items()
+            for name, data in entry['files'].items()
+            if (run_id, name) not in remote),
+        'derived_prune_receipt_sha256': sha(DERIVED_PRUNE) if DERIVED_PRUNE.exists() else None,
         'raw_mirror_remote_sha_reverified_files': sum(
-            len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']
+            (x['run_id'], name) in remote
+            for x in state['trials']
+            for name in mirror['runs'][x['run_id']]['sha256']
             if not NODE2_LOCAL or
             mirror['runs'][x['run_id']].get('archive_status') != 'pending_node0_pull'),
         'raw_primary_sha_reverified_files': sum(
-            len(mirror['runs'][x['run_id']]['sha256']) for x in state['trials']),
+            (x['run_id'], name) in remote
+            for x in state['trials']
+            for name in mirror['runs'][x['run_id']]['sha256']),
         'noncandidate_consoles_offloaded_to_node2': len(offloaded),
         'noncandidate_event_jacoco_pairs_offloaded_to_node2': len(raw_offloaded),
         'graphchecker_runtime': False,

@@ -246,14 +246,18 @@ def choose_pending(state: dict) -> dict:
             count = yields.setdefault(trial['plan'][0], [0, 0])
             count[0] += int(trial['effective'])
             count[1] += 1
-        def priority(i: int) -> tuple[float, int, int, int]:
+        def priority(i: int) -> tuple[int, float, int, int, int]:
             job = pending[i]
             successes, attempts = yields.get(job['plan'][0], [0, 0])
             # Smoothed observed eligibility keeps unseen prefixes in play.
             yield_score = (successes + 1) / (attempts + 2)
-            return (yield_score,
+            # Across 42 target-retaining applied callback faults at the
+            # 350/41 checkpoint, none used the selected manager's client.
+            # Keep those plans queued, but try other same-actor candidates first.
+            callback_plan = any('zkCallback-' in selector for selector in job['plan'])
+            return (-int(callback_plan), yield_score,
                     (1 if prefer_deep else -1) * len(job['plan']),
-                    int('/aliases.json' in job['plan'][-1]), -i)
+                    int('/aliases.json:TEST' in job['plan'][-1]), -i)
         index = max(pool, key=lambda i:
                     priority(i))
     job = pending.pop(index)

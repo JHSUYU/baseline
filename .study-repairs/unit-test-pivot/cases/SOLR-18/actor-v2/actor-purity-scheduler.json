@@ -1,0 +1,71 @@
+{
+  "after": {
+    "audit_sha256": "debf2f83bbd95a0fb9f9d904953b2fefc3418587ab954f0652e4c226261da9a6",
+    "campaign_source_sha256": "9adc1310144010b73fab6c543078a0e4a2c4ef2e64721aa46d7ca0d9efbcac96",
+    "coverage_canonical_sha256": "a5fb118e1baf830e1b7771c0cdd7cee3beb05efdd6816ca736a26135e61af5d5",
+    "known_plans_canonical_sha256": "84d38075c5358193096ae79f9565df4778a270fa4d1335910a6d0a7f93616431",
+    "ledger_sha256": "a87daedc1afc1063b6104381fac27955bc468efd13e602489e829892da661b44",
+    "mirror_receipt_sha256": "01530776a2c76d321357346773423e96e3098c438a90793d4cd851eb4d5e8464",
+    "next_job_preview": {
+      "parent": "trial-300",
+      "plan": [
+        "SolrZkClient.exists:/collections/collection1meta/state.json:TEST@@1",
+        "SolrZkClient.exists:/collections/collection2meta/state.json:TEST@@1",
+        "SolrZkClient.getData:/collections/collection2meta/state.json:TEST@@2",
+        "SolrZkClient.exists:/clusterprops.json:TEST@@1"
+      ],
+      "run_id": "trial-351"
+    },
+    "pending_canonical_sha256": "b59093728b1f4be14fd56a8d8eae3c2aa00e34f20d1ef05a60ed895943c1eb38",
+    "state_sha256": "24bfa6b1d1ef0c8336bc4c209226b7edee6688000329200dd01e5ce71f7493a9",
+    "trial_id_plan_outcome_canonical_sha256": "ed12fce28fc595dc8276879da1d4384c893d5cee839b2984b12f8d9810a4e6d7"
+  },
+  "before": {
+    "audit_sha256": "debf2f83bbd95a0fb9f9d904953b2fefc3418587ab954f0652e4c226261da9a6",
+    "campaign_source_sha256": "15302dd4a46a125bd2f59aaf56bf81ae1cb1b3c80daae8608413052041c0e736",
+    "coverage_canonical_sha256": "a5fb118e1baf830e1b7771c0cdd7cee3beb05efdd6816ca736a26135e61af5d5",
+    "known_plans_canonical_sha256": "84d38075c5358193096ae79f9565df4778a270fa4d1335910a6d0a7f93616431",
+    "ledger_sha256": "a87daedc1afc1063b6104381fac27955bc468efd13e602489e829892da661b44",
+    "mirror_receipt_sha256": "01530776a2c76d321357346773423e96e3098c438a90793d4cd851eb4d5e8464",
+    "next_job_preview": {
+      "parent": "trial-300",
+      "plan": [
+        "SolrZkClient.exists:/collections/collection1meta/state.json:TEST@@1",
+        "SolrZkClient.exists:/collections/collection2meta/state.json:TEST@@1",
+        "SolrZkClient.getData:/collections/collection2meta/state.json:TEST@@2",
+        "SolrZkClient.exists:/clusterprops.json:TEST@@1"
+      ],
+      "run_id": "trial-351"
+    },
+    "pending_canonical_sha256": "b59093728b1f4be14fd56a8d8eae3c2aa00e34f20d1ef05a60ed895943c1eb38",
+    "state_sha256": "24bfa6b1d1ef0c8336bc4c209226b7edee6688000329200dd01e5ce71f7493a9",
+    "trial_id_plan_outcome_canonical_sha256": "ed12fce28fc595dc8276879da1d4384c893d5cee839b2984b12f8d9810a4e6d7"
+  },
+  "callback_actor_purity": {
+    "SolrZkClient.getData:/aliases.json:zkCallback-N-thread-N@@1": {
+      "same_actor": 0,
+      "target_retained_applied": 15
+    },
+    "SolrZkClient.getData:/aliases.json:zkCallback-N-thread-N@@2": {
+      "same_actor": 0,
+      "target_retained_applied": 12
+    },
+    "SolrZkClient.getData:/aliases.json:zkCallback-N-thread-N@@3": {
+      "same_actor": 0,
+      "target_retained_applied": 15
+    }
+  },
+  "case_id": "SOLR-18",
+  "change": "Within each suite/test phase, defer queued plans containing a zkCallback selector behind other observed-I/O plans, then retain the existing smoothed prefix yield, depth, test-body alias, and queue-order priorities. No plan is removed and eligibility is unchanged.",
+  "checkpoint": {
+    "attempts": 350,
+    "callback_plan_count": 14,
+    "effective": 41,
+    "inflight": null,
+    "next_trial": 351,
+    "pending_count": 187
+  },
+  "completed_utc": "2026-10-07T10:28:42.973374+00:00",
+  "prepared_utc": "2026-10-07T10:28:18.809542+00:00",
+  "schema_version": 1
+}
