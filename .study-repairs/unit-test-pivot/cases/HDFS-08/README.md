@@ -93,7 +93,9 @@ has its own manifest and result. The old 40-trial
 
 For adjacent journal checks, the immutable HDFS 3.4.3 distribution and
 `deps/unit-test-hdfs-c41dc5ee3-273672a0053c.jar` can be used read only.
-The original JUnit adapter is `OriginalHdfs08Test.java`; the case-local
-runner is `run_state_case.py`. Exact target identity and oracle must be
-defined again for each different check; HDFS-08's negative result does not
-transfer to another site.
+The historical graph-dependent runner has been removed. The current
+case-local runner is `independent-coverage-io/system-test/run_original.py`,
+and its resumable controller is
+`independent-coverage-io/campaign/run_campaign.py`. Exact target identity
+and oracle must be defined again for each different check; HDFS-08's
+negative result does not transfer to another site.

@@ -76,3 +76,6 @@ healthy and faulted trace/manifest/log/JaCoCo records without temporary
 JournalNode scratch data; its checksum is in
 [independent-archive-manifest.json](independent-archive-manifest.json).
 The earlier 24 graph-based trials remain excluded.
+The old graph-based execution script has been removed. The current case
+runner and resumable controller are `independent/run_original.py` and
+`independent/campaign.py`; the historical result and raw evidence remain.
