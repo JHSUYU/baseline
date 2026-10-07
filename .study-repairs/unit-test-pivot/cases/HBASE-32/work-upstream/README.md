@@ -18,6 +18,12 @@ Checkpoint version 7 retains every version 6 plan and receipt. Among new selecti
 
 Before starting a new JUnit, the controller checks local free space. Below 2 GiB it atomically publishes `paused_low_disk` and exits at the checkpoint. Existing raw traces, JaCoCo files, and receipts remain intact; moving them to a larger node requires a separate verified archival step.
 
+At the s047 complete checkpoint, 198 closed source, trace, coverage, and
+receipt files (164,013,674 bytes) were copied to a dedicated node1 archive.
+`archive-s047-manifest.json` records each source SHA-256, and
+`archive-s047-verified.json` records the node1 verification of all 198 files.
+The node0 originals were retained and the controller resumed at s048.
+
 ```sh
 cd /users/ZhenyuLi/baseline/.study-repairs/unit-test-pivot/cases/HBASE-32/work-upstream
 tmux attach -t hbase32-upstream-fuzz
