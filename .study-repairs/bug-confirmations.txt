@@ -1,77 +1,397 @@
 1. HDFS - Stale slow-disk exclusion after disabling exclusion
+=============================================================
 
-A DataNode first runs with dfs.datanode.max.slowdisks.to.exclude greater than zero and publishes an SSD path in DataNodeDiskMetrics.slowDisksToExclude. An administrator then changes the property to zero through DataNode.reconfigureProperty. DataNodeDiskMetrics.setMaxSlowDisksToExclude changes the numeric limit, but it does not clear the previously published list. Later detector iterations assign a new exclusion list only when the limit is greater than zero, so the old SSD path remains indefinitely in the same metrics object.
+Required states and exact causal path
+-------------------------------------
+1. The published contract explicitly says that the default value 0 for
+   dfs.datanode.max.slowdisks.to.exclude disables exclusion when choosing a
+   volume: hadoop-hdfs-project/hadoop-hdfs/src/main/resources/hdfs-default.xml:
+   2577-2584; DFSConfigKeys.java:760-763 also sets the default to 0.
+2. Disk metrics must be enabled and a nonempty exclusion list must first be
+   published while maxSlowDisksToExclude is positive. DataNodeDiskMetrics.java:
+   83-87 stores the limit and the list separately; 108-175 runs the periodic
+   detector. Lines 150-163 assign slowDisksToExclude only inside
+   if (maxSlowDisksToExclude > 0). The production detector classifies disks
+   through detectAndUpdateDiskOutliers at 178-205 and publishes their paths
+   in the separate exclusion list.
+3. An administrator may reconfigure the setting without restarting the DN.
+   DataNode.java:362-370 advertises this property as reconfigurable;
+   729-734 dispatches it; 955-961 parses the new value and calls
+   diskMetrics.setMaxSlowDisksToExclude(0). That setter at
+   DataNodeDiskMetrics.java:281-283 changes only the volatile integer. It
+   neither clears nor replaces slowDisksToExclude.
+4. On subsequent detector iterations with the limit equal to 0,
+   DataNodeDiskMetrics.java:151 skips the only assignment to the exclusion
+   list. Thus a list published before the transition remains nonempty while
+   exclusion is supposedly disabled. If the detector finds no stats at all,
+   lines 141-145 continue even earlier; that also cannot clear the list.
+   This persistence lasts while the limit remains 0 and the same metrics
+   object remains alive; restart or later reconfiguration can change it.
+5. For a block targeting SSD, FsVolumeList.java:177-185 first collects volumes
+   of the requested storage type, then 105-118 removes every volume whose
+   path appears in the stale list and invokes the configured volume chooser.
+   With exactly one SSD and that SSD in the list, the filtered list is empty
+   despite the physical SSD still being present. The ALL_SSD policy prefers
+   StorageType.SSD (BlockStoragePolicySuite.java:72-77); a normal client
+   PIPELINE_SETUP_CREATE goes through BlockReceiver.java:218-222 and
+   FsDatasetImpl.java:1664-1666 to this chooser.
+6. With RoundRobinVolumeChoosingPolicy configured, its chooseVolume guard
+   at RoundRobinVolumeChoosingPolicy.java:78-84 throws
+   DiskOutOfSpaceException("No more available volumes") for that empty list.
+   A client write targeting this DataNode fails despite the advertised
+   disable-exclusion value. Other DISK writes can still work because their
+   candidate list does not consist solely of the excluded SSD.
 
-FsVolumeList.chooseVolume filters candidate volumes against that stale list without consulting the current limit. If a block requires SSD storage and this DataNode has only one SSD, the filter removes the only eligible volume. RoundRobinVolumeChoosingPolicy then throws DiskOutOfSpaceException("No more available volumes") even though the SSD still exists and exclusion has been disabled. The failure requires a populated exclusion list before the configuration change; starting with a limit of zero does not create this state.
+Why this is a correctness bug, and its scope
+---------------------------------------------------------------
+The runtime invariant implied by the documented value 0 is that a former
+slow-disk designation no longer removes a volume from selection. The setter
+updates one part of the state, while the consumer unconditionally uses the
+other part; no guard in FsVolumeList checks the limit. The end result is
+semantically inconsistent even if the SSD remains genuinely slow. The same
+guard is expected when exclusion is enabled and every requested-type volume
+is deliberately excluded, but it is unexpected after exclusion is disabled.
+
 
 2. ZooKeeper - Partially initialized quota cannot be retried or enforced
+========================================================================
 
-SetQuotaCommand.createQuota stores the quota limit in zookeeper_limits and then creates the separate zookeeper_stats node. These writes are not atomic. If the operation is interrupted after the first create commits, the quota path has a limit but no usage statistics. On retry, createQuota sees the existing limit and enters its update branch, which reads zookeeper_stats before trying to repair it. That read throws NoNodeException, so repeating the same quota command does not complete initialization.
+Contract and state. SetQuotaCommand.createQuota sets a limit for an existing application path. The metadata consists of separate zookeeper_limits and zookeeper_stats znodes under /zookeeper/quota/<path>. A hard count quota should reject a create that takes the subtree over its limit when enforcement is enabled. ZooKeeperServer.java:114,158 defines zookeeper.enforceQuota and shows that enforcement is disabled by default; the hard-limit consequence below specifically assumes it was enabled.
 
-The partial metadata also affects later client writes when hard quota enforcement is enabled. ZooKeeperServer finds the limit through the quota prefix tree, but its quota check returns on a missing stats node instead of rejecting or reconstructing the usage record. DataTree.updateQuotaStat likewise skips the update. Writes can therefore exceed a configured hard count or byte limit while usage remains untracked. The NoNode response is correct for the absent node; the defect is the persistent partial quota and the failure to enforce or repair it.
+Trigger sequence.
+1. The first createQuota call reaches SetQuotaCommand.java:235-244. It commits zookeeper_limits before issuing the separate create for zookeeper_stats. There is no multi-operation atomicity or rollback in this method. An interruption between the two calls, or a lost successful response to the first create, leaves limit present and stats absent.
+2. On applying that limit node, DataTree.java:502-519 adds the application path to the quota prefix trie. DataTree.java:1242-1257 and :1280-1290 show that startup rebuilding also refuses to fabricate a missing stats node. The partial state can therefore survive a server restart.
+3. The caller retries createQuota with the same input. Because the limit node now exists, SetQuotaCommand.java:253-274 takes the update branch. It calls getData(statPath) at :270 before any write that could repair stats. DataTree.java:711-715 throws NoNodeException for the absent node. Repeating the same call repeats the failure. An external delete/recreate or explicit repair of the metadata is required.
+4. With quota enforcement enabled, ZooKeeperServer.java:2171-2189 locates the registered quota prefix for future creates. Its private checkQuota reads the limit but, on a missing stats node, logs and returns at :2233-2240 instead of denying or repairing the write. DataTree.updateQuotaStat at DataTree.java:375-390 also returns when stats is missing. Thus writes beyond a configured hard count or byte limit can commit while the usage remains untracked.
+
+Incorrect outcome. NoNode on the missing stats path is an expected low-level response. The bug is that a public quota operation can leave partial persistent metadata, its own retry cannot complete, and enforcement silently fails open. The relevant invariants are (a) a registered quota has its usage stat, and (b) an enabled hard limit is enforced. The two independent create RPCs and the missing-node early returns violate those invariants under the stated fault.
+
 
 3. ZooKeeper - Leader-election offer is left behind after a disappearing competitor
+===================================================================================
 
-LeaderElectionSupport.start creates its own ephemeral sequential offer before scanning the offers returned by getChildren. It then reads each offer with a separate getData call. A competing offer can be deleted normally between those calls. ZooKeeper returns NoNode for that vanished competitor, but start catches the exception, marks the recipe FAILED, and leaves its own newly created offer in ZooKeeper. It installs no predecessor watch and does not rescan the election using the still-live offer.
+Contract and state. LeaderElectionSupport creates an ephemeral sequential offer for its ZooKeeper session, then scans all offers to decide whether it is ELECTED or READY. Its field leaderOffer holds only one path. A failed initial start should not leave an offer that the recipe no longer tracks as an active contender, because lower-numbered offers make later contenders wait.
 
-A new participant receives a larger sequence number and waits behind the abandoned offer, although the owner of that offer is no longer completing the election. Retrying start on the same LeaderElectionSupport instance creates another offer and overwrites its single leaderOffer field; stop then removes only the newer remembered offer. The earlier offer remains until its session ends or it is explicitly removed. Thus an ordinary list/read race can prevent leader-election progress for the lifetime of an otherwise healthy session.
+Trigger sequence.
+1. LeaderElectionSupport.start at zookeeper-recipes/zookeeper-recipes-election/src/main/java/org/apache/zookeeper/recipes/leader/LeaderElectionSupport.java:119-140 calls makeOffer followed by determineElectionStatus in one try block. makeOffer creates n_1 and stores it in leaderOffer at :165-179.
+2. determineElectionStatus gets a child-name snapshot at :188-200 and passes it to toLeaderOffers. That method reads each offer's data in a separate ZooKeeper getData call at :300-322. Suppose competing n_0 appears in the snapshot, then its owner normally deletes n_0 before this worker reads it. ZooKeeper correctly returns NoNode. The missing-node guard is DataTree.java:711-715 (the server's FinalRequestProcessor.java:717-723 may also reject the absent node first).
+3. start catches the KeeperException and calls becomeFailed at :139 and :270-275. It neither deletes n_1 nor resumes election using a refreshed child list. No predecessor watch has yet been installed, since becomeReady is only reached after toLeaderOffers completes (:227-255). The failed worker still owns n_1 until explicit stop or session expiration.
+4. A fresh contender creates a larger sequential offer and, on a normal scan, sees n_1 first. It becomes READY watching n_1, while no participant is ELECTED. A same-worker retry calls makeOffer again, creates n_2, and overwrites leaderOffer with n_2. stop at :147-161 then deletes only the remembered n_2; the old n_1 remains until its ZooKeeper session ends.
+
+Incorrect outcome. A getData NoNode after a competing session deletes its znode is correct ZooKeeper behavior. The defect is recipe handling of that ordinary race: it moves to FAILED without revoking or reconciling its own already-created offer. The resulting orphan n_1 can prevent election progress while the owning session remains alive. A deliberate stop before retry can clean up n_1; the failure is not literally permanent, and session expiry also releases it.
+
 
 4. ZooKeeper - Container cleanup deletes a replacement node at the same path
+============================================================================
 
-ContainerManager selects empty old containers for deletion and retains only their path strings. Between candidate selection and processing of DeleteContainerRequest, a client can delete the selected container and create a different node at the same path. The queued cleanup request still names the old path, but carries no creation zxid or other identity tying it to the old node.
+Contract and state. ContainerManager should remove an empty eligible container, while preserving a newly created node at the same pathname. DataTree's container set and node stats distinguish a particular incarnation of a znode. ContainerManager.getCandidates at zookeeper-server/src/main/java/org/apache/zookeeper/server/ContainerManager.java:185-225 snapshots only path strings after checking emptiness and age/cversion. A new container with cversion=0 is deliberately protected for maxNeverUsedIntervalMs; a persistent znode is not a container-cleanup candidate at all.
 
-PrepRequestProcessor resolves the path again when handling deleteContainer. It checks that the current node has no children and is not a normal ephemeral node; it does not require the current node to be the selected container generation. A newly created empty container, or even an empty persistent znode with user data, passes those checks and is deleted by DataTree.deleteNode. The former is removed before its intended grace period, and the latter loses successfully written data. A replacement with children is protected by the child-count check, so the failure specifically needs an empty replacement when the stale request is prepared.
+Trigger sequence.
+1. Old container P has become empty after it previously had a child, so its cversion > 0 and P enters getCandidates' returned set (:185-199). checkContainers iterates that set later at :140-160, creates DeleteContainerRequest(P) at :145, and sends it at :149. The request includes the path, not the old P's czxid, cversion, ephemeral owner or other generation identity.
+2. Before postDeleteRequest, a client deletes old P and creates a new empty P. The replacement may be a fresh container protected by its age/cversion, or a persistent node with user data. This normal path reuse removes old P from the live container set; it does not remove the already captured P from the manager's local candidate set.
+3. PrepRequestProcessor.pRequest2Txn's deleteContainer arm at zookeeper-server/src/main/java/org/apache/zookeeper/server/PrepRequestProcessor.java:328-347 fetches the *current* node for path P. It checks only childCount > 0 and EphemeralType == NORMAL. It never verifies that P is still the selected container generation, nor that the current node is a container. EphemeralType.get(0) returns VOID at EphemeralType.java:168-186, so a new persistent P also passes. The server builds DeleteTxn(P) at :340.
+4. DataTree.java:945-951 applies that transaction through deleteNode(P); DataTree.java:545-605 removes the current node and its data. A subsequent client read correctly gets NoNode via FinalRequestProcessor.java:717-723 / DataTree.java:711-715. The incorrect operation was the stale internal delete, not the NoNode response.
+
+Impact and limits. The newest P may contain user data and is deleted despite never being selected as an eligible container. That is data loss of a successfully created znode. If it is a new empty container, it is deleted before the intended grace period. A new nonempty P is protected by childCount > 0, so the bug requires a replacement with no children at the moment the stale request is prepared. It also requires the cleanup request to reach the server after the replacement create has committed. An explicit application retry could create P again, but does not recover data already deleted.
+
 
 5. Solr - REINDEX abort can leave the source collection read-only
+=================================================================
 
-ReindexCollectionCmd creates a target collection and changes the source collection to readOnly=true while reindexing. A concurrent CREATEALIAS can point a new alias at that target. When REINDEX is aborted, its cleanup deletes the target before clearing readOnly and the source's reindex state. DeleteCollectionCmd refuses to delete a collection referenced by an alias and throws an exception.
+Relevant source (paths below are in Solr 8.11.4):
+  solrj/src/java/org/apache/solr/common/params/CollectionParams.java:78,129 -- CREATEALIAS has collection-level locking; REINDEXCOLLECTION has LockLevel.NONE.
+  core/src/java/org/apache/solr/cloud/api/collections/ReindexCollectionCmd.java:338-343,376-386 -- creates target T, then publishes readOnly=true for source S.
+  core/src/java/org/apache/solr/cloud/api/collections/ReindexCollectionCmd.java:500-512,773-817 -- abort/error invokes cleanup in finally; cleanup deletes T before clearing readOnly and reindex state.
+  core/src/java/org/apache/solr/cloud/api/collections/DeleteCollectionCmd.java:84-89,230-249 -- deletion refreshes aliases and throws BAD_REQUEST if a different alias references T.
+  core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java:156-157 -- a public add to read-only S is rejected with FORBIDDEN.
 
-That exception escapes the cleanup method before it reaches the steps that restore the source collection. The source remains read-only, so normal document adds are rejected by DistributedZkUpdateProcessor even though reindexing has been aborted. Preventing deletion of an aliased target is expected; allowing that refusal to skip restoration of the independent source state is the defect. The interleaving needs the alias to be published after target creation and before abort cleanup attempts the delete.
+Trigger and state transition:
+  1. REINDEXCOLLECTION(S -> T) reaches target creation and sets S read-only. Its NONE lock does not serialize the unrelated alias operation.
+  2. CREATEALIAS(A -> T) is allowed while T exists. It writes A into aliases.json.
+  3. ABORT is requested while the reindex command is running. The running command observes ABORTED and enters cleanup.
+  4. cleanup calls DELETE(T). DeleteCollectionCmd sees A -> T and throws before deleting T. The exception propagates out of cleanup; there is no per-step catch/finally around the subsequent readOnly=false update and removeReindexingState(S).
+  5. S therefore remains read-only; repeating the same add hits the data-plane guard. The status of the in-progress reindex metadata is also left partially updated. Retrying ABORT does not inherently undo the prior partial cleanup, because the ABORT handler only performs cleanup through the running command.
+
+Why this is a bug and its scope:
+  Refusing to delete an aliased T protects an object in use. The defect is that this refusal prevents unrelated recovery of S. A source collection which was writable before the maintenance operation remains unavailable after the operation aborts.
+
 
 6. Solr - Failed MIGRATE strands the target in update buffering
+===============================================================
 
-MigrateCmd asks the target leader to enter update buffering and then publishes a routing rule on the source. It performs further control-plane work before sending REQUESTAPPLYUPDATES to the target. If a later step fails after the routing rule is visible, such as source-leader lookup losing its ZooKeeper connection, the command exits without applying or dropping the target's buffered updates and without retracting the source rule.
+Relevant source (in Solr 8.11.4):
+  core/src/java/org/apache/solr/cloud/api/collections/MigrateCmd.java:180-205 -- first REQUESTBUFFERUPDATES on target leader, then ADDROUTINGRULE on source state.
+  core/src/java/org/apache/solr/cloud/api/collections/MigrateCmd.java:207-231,361-369 -- waits for the rule and only later finds the source leader and sends REQUESTAPPLYUPDATES; there is no compensation/finally covering the gap.
+  core/src/java/org/apache/solr/handler/admin/CoreAdminOperation.java:176-189 -- REQUESTBUFFERUPDATES rejects a core unless UpdateLog.State.ACTIVE.
+  core/src/java/org/apache/solr/update/UpdateLog.java:573-577,1639-1665 -- buffered adds are written to bufferTlog and return; bufferUpdates sets BUFFERING. The explicit dropBufferedUpdates path at 1668+ shows state exit requires another action.
 
-Matching updates can continue to be forwarded to the target, where UpdateLog stores them in its buffer rather than making them visible to normal searches. An unchanged MIGRATE retry starts by sending REQUESTBUFFERUPDATES again. CoreAdminOperation requires the update log to be ACTIVE for that action, so it rejects the retry while the target remains BUFFERING; the retry never reaches REQUESTAPPLYUPDATES. Expiration of the source routing rule does not itself apply the buffered updates. This is a persistent visibility and retry failure, although buffered transaction-log data is not thereby proven lost from disk.
+Trigger and state transition:
+  1. MIGRATE(S route key -> T) successfully asks T to buffer updates, leaving its UpdateLog in BUFFERING.
+  2. The routing rule becomes visible on S, so matching updates are forwarded to T.
+  3. A later control-plane step fails, for example a ConnectionLoss during the source-leader lookup. migrateKey propagates the exception without requesting apply or drop on T, and without retracting the already published rule.
+  4. T continues accepting forwarded updates into its buffer log, while normal search does not see those not-yet-applied updates.
+  5. An unchanged MIGRATE retry sends REQUESTBUFFERUPDATES first. Since T is still BUFFERING, the ACTIVE guard throws SERVER_ERROR before the operation can reach REQUESTAPPLYUPDATES. The route rule's expiry does not by itself apply prior buffered updates.
+
+Why this is a bug:
+  One failed administrative operation leaves two independently maintained pieces of state inconsistent: the source has a forwarding rule while the target is stuck buffering. The public retry path cannot complete the interrupted operation because it requires the target to be ACTIVE. This is a liveness/visibility failure and can require manual core-level apply/drop or restart/recovery. Buffered transaction-log bytes may still exist even when searches cannot see the updates.
+
 
 7. Solr - Overseer collection lock survives a failed running-map write
+======================================================================
 
-OverseerTaskProcessor obtains a collection lock before it publishes an async task in its ZooKeeper running map. If that write ends with a terminal KeeperException other than the specifically handled NodeExists or Interrupted cases, execution reaches an outer catch without starting the task Runner and without releasing the lock. Runner normally owns the unlock in its finally block, so it cannot clean up an error that occurs before construction.
+Relevant source (in Solr 8.11.4):
+  core/src/java/org/apache/solr/cloud/OverseerTaskProcessor.java:298-333 -- obtains collection lock, then calls markTaskAsRunning. Only NodeExistsException and InterruptedException branches unlock; other KeeperException reaches outer catch at 333.
+  core/src/java/org/apache/solr/cloud/OverseerTaskProcessor.java:478-490 -- adds queue ID to runningZKTasks/runningTasks before runningMap.put(asyncId).
+  core/src/java/org/apache/solr/cloud/DistributedMap.java:60-61 -- runningMap.put calls SolrZkClient.makePath.
+  solrj/src/java/org/apache/solr/common/cloud/ZkCmdExecutor.java:68-97 -- retryOperation retries ConnectionLoss only; OperationTimeout is propagated. An exhausted ConnectionLoss is also propagated.
+  core/src/java/org/apache/solr/cloud/api/collections/OverseerCollectionMessageHandler.java:930-946 -- LockTree lock is obtained for the collection; the old clear-on-no-running-tasks guard cannot fire while the leaked runningTasks marker remains.
+  core/src/java/org/apache/solr/handler/admin/CollectionsHandler.java:331-372,375-379 -- duplicate async ID is rejected; synchronous request waits for queue response until timeout.
+  In the newer OverseerTaskProcessor.java:365-403, the collection lock can still survive this exception, while runningTasks.put occurs only after the ZooKeeper write succeeds.
 
-In Solr 8.11.4, markTaskAsRunning also inserts the task into in-memory running sets before the ZooKeeper write; a failed write can therefore leave both the lock and a runningTasks marker. Later tasks for the same collection cannot acquire the lock, and retrying the same async ID can be rejected as already claimed. In the inspected newer Solr code, runningTasks insertion occurs after the ZooKeeper write, but the exceptional path can still retain the collection lock. The stuck state lasts in that Overseer tenure unless the Overseer is restarted or its leadership changes.
+Trigger and state transition:
+  1. An async collection task is accepted and queued. Its async request ID is claimed before execution.
+  2. Overseer takes the collection LockTree lock and tries to mark the task running in ZooKeeper.
+  3. A non-NodeExists, non-Interrupted terminal KeeperException (for example OperationTimeoutException) escapes runningMap.put. In 8.11.4 the in-memory running task sets were already modified. The outer catch logs and returns to the loop without handing the lock to a Runner or calling unlock.
+  4. A retry with the same async ID is rejected as already claimed. A different request requiring the same collection lock cannot run and eventually times out; if the original task was meant to clear readOnly, the source remains read-only and writes still fail.
+
+Why this is a bug:
+  Lock acquisition and durable running-state publication are not failure-atomic. The cleanup responsibility is normally in Runner.finally, but Runner is never created for this exceptional path. A transient ZooKeeper write failure thus becomes a persistent in-memory availability failure for later tasks in that Overseer term. SessionExpired is a different path because it causes the Overseer loop to exit.
+
 
 8. Solr - Snapshot reports success when a shard has no active replica
+=====================================================================
 
-CreateSnapshotCmd writes collection-level InProgress metadata and sends core snapshot requests only to replicas whose cluster-state status is ACTIVE. If a shard has no active replicas, the command sends no request for that shard. Its later failure calculation considers only shards represented by sent requests, so the absent shard is not counted as failed. When no shard has an active replica, the empty request and failure sets can lead to SnapshotStatus.Successful with an empty replica list.
+Relevant source (in Solr 8.11.4):
+  core/src/java/org/apache/solr/cloud/api/collections/CreateSnapshotCmd.java:85-94 -- refuses an existing snapshot name, then writes InProgress metadata.
+  core/src/java/org/apache/solr/cloud/api/collections/CreateSnapshotCmd.java:98-124 -- skips every non-ACTIVE replica; only sent core requests enter shardByCoreName.
+  core/src/java/org/apache/solr/cloud/api/collections/CreateSnapshotCmd.java:126-182 -- despite comment requiring one successful replica per shard, failure computation only considers requests in shardByCoreName. Empty request/failure sets reach SnapshotStatus.Successful with an empty replicas list.
+  core/src/java/org/apache/solr/cloud/api/collections/BackupCmd.java:186-208 -- a named snapshot with no matching live replica cannot be backed up.
 
-No core snapshot exists for the omitted shard, despite the successful collection-level result. BackupCmd cannot use the recorded snapshot to find a suitable live replica. Once the node recovers, retrying the same snapshot name is refused because the false-success metadata already exists. The defect is the missing per-shard success check: skipping an unavailable replica must not make a shard silently disappear from the success criterion.
+Trigger and state transition:
+  1. Stop the only node hosting a shard's replica, leaving that replica non-ACTIVE in ClusterState while another node accepts the collection API request.
+  2. CREATESNAPSHOT(C,M) creates collection-level InProgress metadata. It skips the unavailable replica and sends no core snapshot RPC for that shard.
+  3. Because no RPC was sent, the corresponding shard is absent from shardByCoreName and the failedShards calculation. When all shards are in this condition, both sets are empty and the command records Successful(M, replicas={}). The same omission can affect one unavailable shard in a multi-shard collection.
+  4. After node recovery, retrying the same snapshot name hits snapshotExists and fails BAD_REQUEST, despite no core snapshot having been made. The metadata is unusable for the intended backup/restore operation.
+
+Why this is a bug:
+  A successful collection snapshot should contain at least one successful core snapshot for each shard. The implementation's own comment states this invariant, yet its failure accounting ignores shards with zero eligible requests. The durable false-success record also blocks a normal retry under the same name. Administrative deletion of the false snapshot followed by recreation can repair it, but retry alone cannot.
+
 
 9. Solr - RESTORE retry preserves a shard stuck in CONSTRUCTION
+===============================================================
 
-When restoring into a new collection, RestoreCmd creates the target, marks its shards CONSTRUCTION, creates initial replicas, restores data, and finally marks the shards ACTIVE. A failure after the target and an initial core exist but before that final transition leaves the collection present with a CONSTRUCTION shard. This failure window bypasses the cleanup used for some earlier initial-replica failures.
+Relevant source (in Solr 8.11.4):
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:97-106 -- selects new-collection or existing-collection strategy solely from target collection existence.
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:263-285 -- new path marks all shards CONSTRUCTION, creates first replicas, sends restore and apply requests, then marks shards ACTIVE. Failures after initial replica creation have no cleanup/finally to reset shard state.
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:110-132 -- failed RESTORECORE response propagates via processResponses(..., true).
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:587-611 -- existing path checks shard count, restores data and clears readOnly, but never marks CONSTRUCTION shards ACTIVE.
+  solrj/src/java/org/apache/solr/common/cloud/HashBasedRouter.java:61-67 -- update routing searches only active slices and rejects when none serves the hash.
 
-Retrying the same restore name selects RestoreOnExistingCollection solely because the target collection now exists. That path may restore the data and report success, but it never changes the shard from CONSTRUCTION to ACTIVE. HashBasedRouter uses active slices for update routing; with no active slice for the key, public adds fail despite the successful retry. Repeating the same restore follows the same existing-collection path and does not repair the shard state. A failure before target creation or one handled by the earlier cleanup branch does not produce this state.
+Trigger and state transition:
+  1. RESTORE a valid backup B to absent target T. The new-collection path creates T, marks its shard CONSTRUCTION, and creates a real first replica/core.
+  2. A later shard restore/transfer RPC fails once. The operation returns error before markAllShardsAsActive, leaving T present in ZooKeeper with a CONSTRUCTION shard. This is distinct from the earlier initial-replica failure branch, which explicitly cleans up T.
+  3. Retrying identical RESTORE(B,T) sees that T exists and chooses RestoreOnExistingCollection. Shard count matches, transfer succeeds, and the request can report success.
+  4. Existing-collection strategy never transitions CONSTRUCTION to ACTIVE. A public add to T has no active hash slice and is rejected BAD_REQUEST on every unchanged retry.
+
+Why this is a bug:
+  A failed first attempt leaves internal construction state that changes the control path of the next attempt. The retry reports success after restoring data but omits the activation step required for normal routing. Restoring to a fresh name or manually deleting T avoids the partial state, but normal retry to T is not self-healing.
+
 
 10. Solr - Time-routed alias initialization overwrites another alias
+===================================================================
 
-On the first document whose time-routed alias has a date-math router.start value, TimeRoutedAlias reads an entire Aliases snapshot and schedules an asynchronous property update. The lambda passed to aliasesManager.applyModificationAndExportToZk ignores the current Aliases argument supplied by that manager. Instead, it clones the earlier captured snapshot and changes only the time-routed alias property.
+Relevant source (in Solr 8.11.4):
+  core/src/java/org/apache/solr/cloud/api/collections/TimeRoutedAlias.java:366-387 -- first document with a date-math router.start captures the entire Aliases object and schedules an async lambda. The lambda ignores its current alias argument a and clones the captured object.
+  solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java:2231-2283 -- applyModificationAndExportToZk reads current aliases, passes them to the lambda, and CAS-writes the lambda result with the current znode version; BadVersion retries use the same lambda.
+  solrj/src/java/org/apache/solr/common/cloud/Aliases.java:414-431 -- cloneWithCollectionAliasProperties changes the property map but retains collectionAliases from its receiver.
+  core/src/java/org/apache/solr/cloud/api/collections/CreateAliasCmd.java:90-99 -- normal CREATEALIAS applies its update to the then-current aliases.
 
-Suppose another operation creates alias B after the snapshot is captured but before the asynchronous write. The manager reads the newer aliases version containing B and uses its version for the ZooKeeper compare-and-set, yet the lambda builds the new payload from the older snapshot without B. A successful write removes B from aliases.json. Retrying after BadVersion does not help because the same lambda still uses the captured object. Requests through B then fail even though its target collection remains available. The faulty update discards an unrelated concurrent control-plane change.
+Trigger and state transition:
+  1. First ADD through time-routed alias A parses a date-math router.start. The update thread reads aliases snapshot V containing A, calculates fixed start, and schedules an asynchronous write based on V.
+  2. Before that write runs, CREATEALIAS(B -> D) commits a later aliases version V+1 containing B. This is a valid independent control-plane operation.
+  3. The async task reads current V+1 but its modification function returns V cloned with A's new property. It uses the current version number for setData. If the cached current version is stale, the BadVersion retry refreshes it, but the lambda still returns V's collectionAliases. Eventually the CAS can succeed and overwrite aliases.json without B.
+  4. Queries or updates addressed through B fail as an unknown collection/alias while direct requests to D can succeed. Refreshing clients does not restore B because the durable aliases.json itself lost that entry.
+
+Why this is a bug:
+  The CAS protects against writing an old version number, but it cannot protect unrelated keys when the modification function builds its payload from a stale full-map snapshot. The current code ignores the manager's latest Aliases argument a and silently deletes a concurrently created alias.
+
 
 11. HBase - Non-monotonic master active time can strand a region opening
+=======================================================================
 
-An active master M0 starts an OpenRegionProcedure with its wall-clock masterActiveTime T0. Before the RegionServer reports OPENED, a second master M1 takes over on a host whose clock is sufficiently behind, producing T1 < T0. MasterRpcServices.throwOnOldMaster interprets a report's initiatingMasterActiveTime greater than the current master's active time as evidence that the receiver is an old master. M1 therefore rejects the legitimate OPENED report from M0's earlier term with MasterNotRunningException("Another master is active").
+System and trigger
+------------------
+An active master M0 initiates OpenRegionProcedure P with active time T0. Before
+the RegionServer reports OPENED, M0 loses leadership. A backup master M1 becomes
+active so quickly, and its host clock is sufficiently behind M0's, that its
+new active time T1 is less than T0. This is possible with a few seconds of
+host skew; the default RS/master skew check tolerates up to 30,000 ms. The
+trigger is the ordering T1 < T0, not a 5-second value specifically.
 
-The RegionServer constructs the transition report using the original T0 and retries that same value; waiting cannot change the fixed relation T0 > T1. Its open handler has not called finishRegionProcedure, while duplicate open requests with the same procedure ID are rejected by submittedRegionProcedures. The region can remain in the opening transition and unavailable to client reads during M1's tenure even though failover succeeded. A later master change or RegionServer restart may break the state. This failure needs the particular active-time inversion and an in-flight open; ordinary monotonic master times do not trigger the guard.
+Code path and state
+-------------------
+* HMaster.finishActiveMasterInitialization assigns masterActiveTime from
+  EnvironmentEdgeManager.currentTime(), a wall clock rather than a monotonically
+  increasing leadership epoch. In HBase 2.6.6 this is HMaster.java:949;
+  in HBase 4.0.0-alpha-1-SNAPSHOT it is HMaster.java:986.
+* OpenRegionProcedure.newRemoteOperation includes the current Master's active
+  time in RegionOpenOperation. The RegionServer carries that immutable value
+  into AssignRegionHandler and PostOpenDeployContext. In HBase 4.0:
+  OpenRegionProcedure.java:60-63, RSRpcServices.java:3942-3970,
+  AssignRegionHandler.java:63-75,139-154. The 2.6.6 code has the same path.
+* After HRegion.openHRegion succeeds, AssignRegionHandler invokes
+  postOpenDeployTasks BEFORE rs.addRegion and finishRegionProcedure. See
+  HBase 2.6.6 AssignRegionHandler.java:151-166 (HBase 4.0: 150-165).
+  HRegionServer.postOpenDeployTasks sends the OPENED report with the saved T0;
+  see 2.6.6 HRegionServer.java:2623-2654.
+* MasterRpcServices.reportRegionStateTransition calls throwOnOldMaster before
+  AssignmentManager handles the transition. The guard rejects when
+  initiatingMasterActiveTime > currentMasterActiveTime, throwing
+  MasterNotRunningException("Another master is active"). See 2.6.6
+  MasterRpcServices.java:1795-1806,2584-2592 (4.0: 1890-1896,2620-2630).
+  For T0 > T1, M1 rejects the legitimate report from M0's earlier term.
+* HRegionServer.reportRegionStateTransition constructs the request once outside
+  its retry loop. On ServiceException it resets the stub and retries but never
+  changes the saved initiatingMasterActiveTime. See 4.0 HRegionServer.java:
+  2366-2420; the 2.6.6 path has the same structure. Waiting cannot make T0 <=
+  T1 because T1 is fixed for M1's tenure.
+* M1 may replay P's open request, but HRegionServer.submitRegionProcedure
+  rejects the same procId while the original handler remains in
+  submittedRegionProcedures. See 2.6.6 HRegionServer.java:4162-4185 and
+  RSRpcServices.java:3998-4003. The original handler has not reached
+  finishRegionProcedure because it is blocked reporting OPENED.
+
+Failure and invariant
+---------------------
+The RegionServer has opened the HRegion internally but does not add it to
+onlineRegions until the OPENED report succeeds. The Master cannot accept the
+report, and retrying its request does not create another handler. A client Get
+to that RS can receive RegionOpeningException from
+HRegionServer.getRegionByEncodedName while regionsInTransitionInRS remains
+opening (2.6.6 HRegionServer.java:3690-3706). This violates expected
+availability after a tolerated master failover and has no progress under the
+same M1 tenure. A further failover or RS restart can restore service; the
+state does not imply permanent data loss. The handler's fatal
+exception abort path is reached if reportRegionStateTransition eventually
+returns failure; while its retry loop remains active, the observed symptom is
+an indefinitely opening region.
+
 
 12. HBase - Lost backup-lock response leaves an unrepairable exclusive lock
+==========================================================================
 
-A full backup first changes the backup:system exclusive-lock cell from absent or NO to YES with checkAndMutate. If the RegionServer commits YES but the successful response is lost, the client cannot distinguish success from failure. Its retry uses a new comparison against absent or NO; both comparisons now fail because the cell is already YES. The checkAndMutate path uses no nonce that would let the retry identify the earlier committed operation.
+System and trigger
+------------------
+The exclusive backup lock is a cell in the default backup:system table
+(the table name is configurable): row "activesession:",
+sessions-family column "c", value YES or NO. A FULL backup first atomically
+changes an absent/NO lock to YES with checkAndMutate. The RegionServer commits
+this Put, then the response is lost or transformed into an IOException before
+the backup client receives success. The failure must occur AFTER the server
+commit; an exception before the commit does not create this orphan state.
 
-TableBackupClient acquires the lock before it writes a RUNNING backup record. A failure at this boundary therefore leaves YES without a corresponding operation record. Subsequent backup operations cannot obtain the exclusive lock. BackupCommands.RepairCommand searches for RUNNING or failed delete/merge records and returns without clearing the lock when none exists. Ordinary retry and repair cannot restore progress; the lock must be corrected explicitly. The failure requires a lost response after the server commit, not an exception before the lock write.
+Code path and state
+-------------------
+* BackupSystemTable.startBackupExclusiveOperation first CASes "not exists"
+  to YES, then CASes NO to YES; when both fail it throws
+  ExclusiveOperationException. See 2.6.6 BackupSystemTable.java:466-492
+  (HBase 4.0: 489-514).
+* RawAsyncTableImpl's checkAndMutate builder sends the Put with
+  HConstants.NO_NONCE for both nonce arguments, so an RPC retry does not
+  identify an earlier successful CAS as the same logical request. See 2.6.6
+  RawAsyncTableImpl.java:386-400 (HBase 4.0: 423-436). If the RPC layer
+  retries after the lost response, the first CAS observes YES and returns
+  false; the second CAS also observes YES and returns false. If it propagates
+  a non-retryable IOException instead, the caller exits before recording a
+  session. Both routes preserve YES without ownership metadata.
+* TableBackupClient.init calls BackupManager.startBackupSession before
+  beginBackup. The RUNNING backup record is written later in beginBackup,
+  after the lock call. See 2.6.6 TableBackupClient.java:90-121. Thus this
+  failure window leaves no BackupState.RUNNING record to identify the owner.
+* BackupManager.startBackupSession only waits/retries on
+  ExclusiveOperationException; other IOException exits directly. Repeated
+  attempts against YES eventually throw "Failed to acquire backup system
+  table exclusive lock" after the configured timeout. See 2.6.6
+  BackupManager.java:296-331.
+* BackupCommands.RepairCommand searches for a RUNNING record. If absent, it
+  checks failed DELETE and MERGE operation records and returns. Its
+  finishBackupExclusiveOperation call lies on the RUNNING, DELETE, or MERGE
+recovery paths, not on the no-record branch. See HBase 2.6.6
+  BackupCommands.java:679-712,715-733 and its merge repair method. The
+  no-record branch therefore cannot clear this orphan lock. Deletion also
+  calls startBackupExclusiveOperation first and refuses to proceed if the
+  lock is YES (BackupAdminImpl.java:101-116).
+
+Failure and invariant
+---------------------
+YES normally means some backup/delete/merge operation owns the exclusive
+lock, with a record that repair can find. Here YES persists although the
+operation never reached beginBackup and no repairable record exists. Later
+backup creation, deletion, and merge cannot acquire the lock. Retrying or
+running the provided repair command does not resolve it; an explicit
+administrative lock correction is required. The committed-write/lost-ack
+boundary leaves an exclusive lock with no operation that can release it.
+
 
 13. HBase - Namespace creation races with removal of its RSGroup
+===============================================================
 
-Creating namespace N with hbase.rsgroup.name=G validates that G exists and has servers before the namespace descriptor is persisted. An administrator can then move the last server out of G and remove G while N is still in the creation procedure. Group removal checks already persisted namespace references, but N is not yet persisted and its namespace-scoped procedure lock does not protect G. The procedure resumes and stores N's descriptor referring to the now-absent group without validating G again.
+System and trigger
+------------------
+Namespace N is being created with hbase.rsgroup.name=G. At validation, G
+exists and contains at least one RegionServer. Before N is persisted, another
+administrator moves the last server out of G and removes G. The namespace
+creation then persists N -> G. No transaction or common lock spans the
+validation, group removal, and namespace write.
 
-A later createTable in N inherits the missing group and fails its group-existence check, although createNamespace reported success. The invalid namespace-to-group reference is persistent and ordinary createTable retries do not recreate G. In the inspected HBase 4.0 source, the initial check is in CreateNamespaceProcedure.prepareCreate; in HBase 2.6.6, the analogous validation is in RSGroupAdminEndpoint.preCreateNamespace. The precise call stack differs, but both place a check before a durable write without serializing it against group removal.
+Code path and interleaving in HBase 4.0
+------------------------------------------------------
+1. CreateNamespaceProcedure.prepareCreate calls checkNamespaceRSGroup in
+   CREATE_NAMESPACE_PREPARE. This verifies the named group exists and is
+   nonempty (CreateNamespaceProcedure.java:60-78,184-194;
+   AbstractStateMachineNamespaceProcedure.java:124-131;
+   MasterProcedureUtil.java:206-236).
+2. The procedure later runs CREATE_NAMESPACE_CREATE_DIRECTORY and only then
+   CREATE_NAMESPACE_INSERT_INTO_NS_TABLE; the latter calls
+   addOrUpdateNamespace. There is no second group-existence validation
+   (CreateNamespaceProcedure.java:75-85). The namespace procedure holds a
+   lock scoped to N, not to RSGroup G
+   (CreateNamespaceProcedure.java:160-174).
+3. RSGroupInfoManagerImpl.moveServers checks current table references when
+   removing the last server, but does not check in-flight namespace creation
+   (RSGroupInfoManagerImpl.java:1257-1317). Once G is empty,
+   removeRSGroup checks current server count, table descriptors, and the
+   persisted namespace list. N is not yet in that list, so those checks can
+   pass; removeRSGroup then deletes G and flushes config
+   (RSGroupInfoManagerImpl.java:370-397). MasterRpcServices invokes this
+   manager method directly from removeRSGroup RPC, without taking N's
+   procedure lock (MasterRpcServices.java:3233-3247).
+4. CreateNamespaceProcedure resumes and calls TableNamespaceManager,
+   which writes N's descriptor to hbase:meta then caches it
+   (TableNamespaceManager.java:195-210). It does not recheck G.
+5. A later CreateTableProcedure.prepareCreate inherits N's group and calls
+   MasterProcedureUtil.checkGroupExists. G is absent, so it raises
+   ConstraintException("Region server group G ... does not exit")
+   (CreateTableProcedure.java:309-324; MasterProcedureUtil.java:225-238).
+
+HBase 2.6.6 version difference
+------------------------------
+In rel/2.6.6, CreateNamespaceProcedure.prepareCreate itself does not call
+checkNamespaceRSGroup (CreateNamespaceProcedure.java:205-214). The RSGroup
+coprocessor instead checks group existence in preCreateNamespace
+(RSGroupAdminEndpoint.java:622-629). Group removal validates only currently
+persisted namespaces (RSGroupAdminServer.java:482-510); the subsequent
+procedure states can persist N after that check (CreateNamespaceProcedure.java:
+67-91,226-235). The same logical check/use gap exists, but 2.6.6's exact
+later create-table check and error path differ from the 4.0 source cited
+above.
+
+Failure and invariant
+---------------------
+The committed namespace descriptor references a group that no longer exists.
+Namespace creation can report success while ordinary table creation in N
+fails; the state survives restart because the descriptor and group config
+are persistent. Normal retries of createTable cannot reconstruct G. An
+administrator must recreate/configure G or change N's group property. The
+race is between a validation read and a later durable write, rather than an
+expected refusal to delete a group that an already-persisted namespace uses.
