@@ -13,6 +13,7 @@ import tempfile
 
 HERE = Path(__file__).resolve().parent
 SELECTION = HERE / "selection102.json"
+CHECK_LOCATIONS = HERE / "check_locations.json"
 RESULTS = HERE / "cases"
 # Losing the target in every attempted sequence is a search gap. A later
 # fault family or a larger budget may still yield a target-retaining trial.
@@ -156,10 +157,13 @@ def rows() -> list[dict]:
     selected = json.loads(SELECTION.read_text())
     original = selected["checks"]
     additions = selected.get("additional_known_issue_checks", [])
+    check_starts = json.loads(CHECK_LOCATIONS.read_text())["check_start_lines"]
     if len(original) != selected["count"] or selected["count"] != 102:
         raise ValueError("the original selection must retain exactly 102 checks")
     if {entry["case_id"] for entry in additions} != {"HDFS-54", "HDFS-55"}:
         raise ValueError("the two known-issue additions must be HDFS-54 and HDFS-55")
+    if set(check_starts) != {entry["case_id"] for entry in original + additions}:
+        raise ValueError("check locations must cover exactly the 104 selected checks")
     result = []
     for entry in original + additions:
             case_id = entry["case_id"]
@@ -198,6 +202,28 @@ def rows() -> list[dict]:
             record["system"] = SYSTEM_NAMES[entry["system"].lower()]
             record["selection_group"] = ("original_102" if entry in original
                                          else "added_known_issue_check")
+            check_start = check_starts[case_id]
+            if (not isinstance(check_start, int) or isinstance(check_start, bool)
+                    or not 0 < check_start <= entry["source_line"]):
+                raise ValueError(f"{case_id}: invalid check start line")
+            record["exact_check_location"] = {
+                "file": entry["source_path"],
+                "check_start_line": check_start,
+                "selected_line": entry["source_line"],
+                "enclosing_function": entry["function"],
+                "site_id": entry["site_id"],
+            }
+            total_time = record.get("total_elapsed_seconds")
+            case_time = record.get("elapsed_seconds")
+            if isinstance(total_time, (int, float)) and total_time > 0:
+                record["reported_time_seconds"] = total_time
+                record["reported_time_scope"] = "total elapsed"
+            elif isinstance(case_time, (int, float)) and case_time > 0:
+                record["reported_time_seconds"] = case_time
+                record["reported_time_scope"] = "case reported"
+            else:
+                record["reported_time_seconds"] = None
+                record["reported_time_scope"] = "unrecorded"
             result.append(record)
     result.sort(key=lambda row: (row["system"], row["case_id"]))
     expected = 102 + len(additions)
@@ -230,7 +256,27 @@ def markdown(items: list[dict]) -> str:
                                   for key, amount in value.items())
         return cell(value)
 
+    def location_cell(row: dict) -> str:
+        location = row["exact_check_location"]
+        parts = [f"{location['file']}:{location['check_start_line']}"]
+        if location["selected_line"] != location["check_start_line"]:
+            parts.append(f"selected unit line {location['selected_line']}")
+        runtime_line = row.get("resolved_check_line")
+        if (runtime_line is not None and
+                runtime_line not in (location["check_start_line"],
+                                     location["selected_line"])):
+            parts.append(f"runtime match line {runtime_line}")
+        parts.append(location["enclosing_function"])
+        return "<br>".join(map(cell, parts))
+
+    def time_cell(row: dict) -> str:
+        seconds = row["reported_time_seconds"]
+        if seconds is None:
+            return "unrecorded"
+        return f"{cell(seconds)}<br>{cell(row['reported_time_scope'])}"
+
     counts = Counter(row["status"] for row in items)
+    measured = sum(row["reported_time_seconds"] is not None for row in items)
     lines = [
         f"# Unit-test cluster fuzz checklist ({len(items)} checks)", "",
         "The original random selection contains 102 checks. Two HDFS known-issue "
@@ -238,8 +284,12 @@ def markdown(items: list[dict]) -> str:
         "cohort is shown in the table. Known bug reproduction is not a new finding.", "",
         "This is the new campaign. Legacy Docker trials and trials that load "
         "GraphChecker runtime or region-woven classes are not counted.", "",
+        "Check location shows the first source line of the check-code excerpt, "
+        "the originally selected unit line when different, and the enclosing "
+        "function. System identifies the source version. "
         "Time uses total elapsed time when reported; otherwise it uses the "
         "case's measured duration (see the result for its scope). "
+        "An unrecorded time is unknown, not zero elapsed time. "
         "Fully applied trials matched and injected every selected fault. "
         "Target after fault counts check reach, not target exceptions. "
         "Coverage gain is the case's reported feedback; its provenance is in the result.",
@@ -255,21 +305,19 @@ def markdown(items: list[dict]) -> str:
         "Completed earlier budgets remain recorded as run; they are not replayed.",
         "",
         "Status: " + ", ".join(f"{key}={value}" for key, value in sorted(counts.items())),
-        "", "| Check | Cohort | System | Source | Function | Check code | Cluster test | "
-        "Reported time (s) | Fault trials | Fully applied trials | Target after fault | "
+        f"Recorded time: {measured} checks measured; "
+        f"{len(items) - measured} checks have no recorded duration.",
+        "", "| Check | Cohort | System | Check location | Check code | Cluster test | "
+        "Reported time (s; scope) | Fault trials | Fully applied trials | Target after fault | "
         "Coverage gain | Result | Bug | Evidence |",
-        "| --- | --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
+        "| --- | --- | --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |",
     ]
     for row in items:
-        line = row.get("resolved_check_line") or row["source_line"]
-        source = f"{row['source_path']}:{line}"
-        if line != row["source_line"]:
-            source += f" (selection line {row['source_line']})"
         values = [row["case_id"], row["selection_group"], row["system"],
-                  source, row["function"],
+                  location_cell(row),
                   row.get("check_code"),
                   row.get("cluster_test") or row.get("proposed_cluster_test"),
-                  row.get("total_elapsed_seconds") or row.get("elapsed_seconds"),
+                  time_cell(row),
                   row.get("fault_trials"), row.get("fully_applied_trials"),
                   row.get("target_after_fault")]
         tail = [row["status"], row.get("bug_mark")]

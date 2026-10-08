@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 
 import checklist
@@ -40,6 +41,20 @@ def audit(require_terminal: bool) -> list[str]:
         errors.append("rendered checklist IDs differ from the selection")
 
     expected = {entry["case_id"]: entry for entry in selection}
+    check_starts = json.loads((HERE / "check_locations.json").read_text())[
+        "check_start_lines"]
+    if set(check_starts) != set(ids):
+        errors.append("check location catalog differs from the selection")
+    markdown_lines = (HERE / "checklist102.md").read_text().splitlines()
+    markdown_rows = {}
+    for line in markdown_lines:
+        match = re.match(r"^\| ([A-Z]+-\d+) \|", line)
+        if match:
+            markdown_rows[match.group(1)] = line
+    if len(markdown_rows) != 104 or set(markdown_rows) != set(ids):
+        errors.append("Markdown checklist must contain all 104 check rows")
+    if "| Check location |" not in "\n".join(markdown_lines[:30]):
+        errors.append("Markdown checklist lacks the check location column")
     for case_id in ids:
         path = HERE / "cases" / case_id / "result.json"
         if not path.is_file():
@@ -58,6 +73,37 @@ def audit(require_terminal: bool) -> list[str]:
         for field in ("source_path", "source_line", "site_id", "function"):
             if row.get(field) != expected[case_id].get(field):
                 errors.append(f"{case_id}: selected {field} changed in table")
+        start_line = check_starts.get(case_id)
+        expected_location = {
+            "file": expected[case_id]["source_path"],
+            "check_start_line": start_line,
+            "selected_line": expected[case_id]["source_line"],
+            "enclosing_function": expected[case_id]["function"],
+            "site_id": expected[case_id]["site_id"],
+        }
+        if (not isinstance(start_line, int) or isinstance(start_line, bool) or
+                not 0 < start_line <= expected[case_id]["source_line"] or
+                row.get("exact_check_location") != expected_location):
+            errors.append(f"{case_id}: exact check location is missing or invalid")
+        markdown_row = markdown_rows.get(case_id, "")
+        if (f"{expected[case_id]['source_path']}:{start_line}" not in markdown_row or
+                expected[case_id]["function"] not in markdown_row):
+            errors.append(f"{case_id}: Markdown row lacks its exact source location")
+        total_time = row.get("total_elapsed_seconds")
+        case_time = row.get("elapsed_seconds")
+        if isinstance(total_time, (int, float)) and total_time > 0:
+            reported_time, time_scope = total_time, "total elapsed"
+        elif isinstance(case_time, (int, float)) and case_time > 0:
+            reported_time, time_scope = case_time, "case reported"
+        else:
+            reported_time, time_scope = None, "unrecorded"
+        if (row.get("reported_time_seconds") != reported_time or
+                row.get("reported_time_scope") != time_scope):
+            errors.append(f"{case_id}: reported time differs from the case record")
+        if (reported_time is None and "unrecorded" not in markdown_row) or (
+                reported_time is not None and
+                f"{reported_time}<br>{time_scope}" not in markdown_row):
+            errors.append(f"{case_id}: Markdown row lacks its reported time")
 
         status = result.get("status")
         if require_terminal and status not in TERMINAL:
