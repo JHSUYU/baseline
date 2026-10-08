@@ -1,0 +1,76 @@
+ID: hbase-bugs-backup-lock-reply-lost (attachment #12; HBase-2.txt #16)
+Review date: 2026-10-07
+Verdict: SOURCE-CONFIRMED commit/response ambiguity bug in HBase 2.6.6 and the
+          inspected 4.0.0-alpha-1-SNAPSHOT checkout. The attachment reports a
+          passing fault-injection MiniCluster test, but its source/raw output
+          were not available here; independent runtime reproduction and
+          upstream novelty remain unverified.
+
+System and trigger
+------------------
+The exclusive backup lock is a cell in the default backup:system table
+(the table name is configurable): row "activesession:",
+sessions-family column "c", value YES or NO. A FULL backup first atomically
+changes an absent/NO lock to YES with checkAndMutate. The RegionServer commits
+this Put, then the response is lost or transformed into an IOException before
+the backup client receives success. The failure must occur AFTER the server
+commit; an exception before the commit does not create this orphan state.
+
+Code path and state
+-------------------
+* BackupSystemTable.startBackupExclusiveOperation first CASes "not exists"
+  to YES, then CASes NO to YES; when both fail it throws
+  ExclusiveOperationException. See 2.6.6 BackupSystemTable.java:466-492
+  (4.0 checkout: 489-514).
+* RawAsyncTableImpl's checkAndMutate builder sends the Put with
+  HConstants.NO_NONCE for both nonce arguments, so an RPC retry does not
+  identify an earlier successful CAS as the same logical request. See 2.6.6
+  RawAsyncTableImpl.java:386-400 (4.0 checkout: 423-436). If the RPC layer
+  retries after the lost response, the first CAS observes YES and returns
+  false; the second CAS also observes YES and returns false. If it propagates
+  a non-retryable IOException instead, the caller exits before recording a
+  session. Both routes preserve YES without ownership metadata.
+* TableBackupClient.init calls BackupManager.startBackupSession before
+  beginBackup. The RUNNING backup record is written later in beginBackup,
+  after the lock call. See 2.6.6 TableBackupClient.java:90-121. Thus this
+  failure window leaves no BackupState.RUNNING record to identify the owner.
+* BackupManager.startBackupSession only waits/retries on
+  ExclusiveOperationException; other IOException exits directly. Repeated
+  attempts against YES eventually throw "Failed to acquire backup system
+  table exclusive lock" after the configured timeout. See 2.6.6
+  BackupManager.java:296-331.
+* BackupCommands.RepairCommand searches for a RUNNING record. If absent, it
+  checks failed DELETE and MERGE operation records and returns. Its
+  finishBackupExclusiveOperation call lies on the RUNNING, DELETE, or MERGE
+  recovery paths, not on the no-record branch. See 2.6.6
+  BackupCommands.java:679-712,715-733 and its merge repair method. The
+  no-record branch therefore cannot clear this orphan lock. Deletion also
+  calls startBackupExclusiveOperation first and refuses to proceed if the
+  lock is YES (BackupAdminImpl.java:101-116).
+
+Failure and invariant
+---------------------
+YES normally means some backup/delete/merge operation owns the exclusive
+lock, with a record that repair can find. Here YES persists although the
+operation never reached beginBackup and no repairable record exists. Later
+backup creation, deletion, and merge cannot acquire the lock. Retrying or
+running the provided repair command does not resolve it; an explicit
+administrative lock correction is required. This is a genuine safety/liveness
+failure caused by the unhandled committed-write/lost-ack boundary, not merely
+the expected rejection of two concurrent backups.
+
+Evidence boundary and reproduction
+----------------------------------
+The attachment says TestBackupLockCommitReplyLostMiniCluster passed 1/0/0
+by injecting DoNotRetryIOException after a real HRegion.checkAndMutate Put
+committed. That test and its raw state assertions were not available for
+independent inspection. A definitive replay should verify: server-side YES
+after the injected error, absent RUNNING/DELETE/MERGE records, a second
+backup's timeout, repair returning without clearing YES, and success after
+explicitly clearing the lock. This review does not establish whether the
+issue has already been reported upstream.
+
+Source roots inspected
+----------------------
+/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6 (tag rel/2.6.6)
+/users/ZhenyuLi/hbase (commit db7081f6739d32bec142cab76936e4a2c16c62de)

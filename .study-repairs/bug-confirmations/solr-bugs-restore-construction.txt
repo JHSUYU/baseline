@@ -1,0 +1,23 @@
+case: solr-bugs-restore-construction
+system/version: Solr 8.11.4 local source copy; also checked current upstream checkout 56ec140e363 (2026-09-30)
+verdict: Source-confirmed real failed-restore/retry defect, conditional on a first-run failure after the target collection and initial core exist but before the shard is marked ACTIVE. The attachment reports a passing two-node JUnit on 91cbb6a3; raw test/log unavailable locally.
+
+Relevant source (relative to .study-repairs/unit-test-pivot/source/solr-8.11.4/solr):
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:97-106 -- selects new-collection or existing-collection strategy solely from target collection existence.
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:263-285 -- new path marks all shards CONSTRUCTION, creates first replicas, sends restore and apply requests, then marks shards ACTIVE. Failures after initial replica creation have no cleanup/finally to reset shard state.
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:110-132 -- failed RESTORECORE response propagates via processResponses(..., true).
+  core/src/java/org/apache/solr/cloud/api/collections/RestoreCmd.java:587-611 -- existing path checks shard count, restores data and clears readOnly, but never marks CONSTRUCTION shards ACTIVE.
+  solrj/src/java/org/apache/solr/common/cloud/HashBasedRouter.java:61-67 -- update routing searches only active slices and rejects when none serves the hash.
+  Current upstream RestoreCmd.java:99-107,268-300,615-655 keeps the same state transition gap, although its core transfer action is now INSTALLSHARDDATA rather than the 8.11 RESTORECORE action.
+
+Trigger and state transition:
+  1. RESTORE a valid backup B to absent target T. The new-collection path creates T, marks its shard CONSTRUCTION, and creates a real first replica/core.
+  2. A later shard restore/transfer RPC fails once. The operation returns error before markAllShardsAsActive, leaving T present in ZooKeeper with a CONSTRUCTION shard. This is distinct from the earlier initial-replica failure branch, which explicitly cleans up T.
+  3. Retrying identical RESTORE(B,T) sees that T exists and chooses RestoreOnExistingCollection. Shard count matches, transfer succeeds, and the request can report success.
+  4. Existing-collection strategy never transitions CONSTRUCTION to ACTIVE. A public add to T has no active hash slice and is rejected BAD_REQUEST on every unchanged retry.
+
+Why this is a bug:
+  A failed first attempt leaves internal construction state that changes the control path of the next attempt. The retry reports success after restoring data but omits the activation step required for normal routing. Restoring to a fresh name or manually deleting T avoids the partial state, but normal retry to T is not self-healing. The attachment's fresh-name control is consistent with that diagnosis.
+
+Evidence limits:
+  Source confirms the missing transition and guard. The attachment reports TestRestoreRetryLeavesConstructionShard run6 1/0/0; its raw evidence was unavailable. A failure before the first core exists may take the explicit cleanup branch and is not this bug. This review does not establish independent novelty.

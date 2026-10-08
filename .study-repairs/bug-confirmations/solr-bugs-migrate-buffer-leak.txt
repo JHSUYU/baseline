@@ -1,0 +1,23 @@
+case: solr-bugs-migrate-buffer-leak
+system/version: Solr 8.11.4 local source copy; also checked current upstream checkout 56ec140e363 (2026-09-30)
+verdict: Source-confirmed real partial-state/retry defect under an exception after publishing a migration rule. The attached summary reports a passing two-node JUnit reproduction on 91cbb6a3; raw test/log unavailable here. Do not interpret the observed query invisibility as proven permanent on-disk data loss.
+
+Relevant source (relative to .study-repairs/unit-test-pivot/source/solr-8.11.4/solr):
+  core/src/java/org/apache/solr/cloud/api/collections/MigrateCmd.java:180-205 -- first REQUESTBUFFERUPDATES on target leader, then ADDROUTINGRULE on source state.
+  core/src/java/org/apache/solr/cloud/api/collections/MigrateCmd.java:207-231,361-369 -- waits for the rule and only later finds the source leader and sends REQUESTAPPLYUPDATES; there is no compensation/finally covering the gap.
+  core/src/java/org/apache/solr/handler/admin/CoreAdminOperation.java:176-189 -- REQUESTBUFFERUPDATES rejects a core unless UpdateLog.State.ACTIVE.
+  core/src/java/org/apache/solr/update/UpdateLog.java:573-577,1639-1665 -- buffered adds are written to bufferTlog and return; bufferUpdates sets BUFFERING. The explicit dropBufferedUpdates path at 1668+ shows state exit requires another action.
+  The newer checkout keeps REQUESTBUFFERUPDATES before route publication and REQUESTAPPLYUPDATES later in MigrateCmd.java:218-265,479+.
+
+Trigger and state transition:
+  1. MIGRATE(S route key -> T) successfully asks T to buffer updates, leaving its UpdateLog in BUFFERING.
+  2. The routing rule becomes visible on S, so matching updates are forwarded to T.
+  3. A later control-plane step fails, for example a ConnectionLoss during the source-leader lookup. migrateKey propagates the exception without requesting apply or drop on T, and without retracting the already published rule.
+  4. T continues accepting forwarded updates into its buffer log, while normal search does not see those not-yet-applied updates.
+  5. An unchanged MIGRATE retry sends REQUESTBUFFERUPDATES first. Since T is still BUFFERING, the ACTIVE guard throws SERVER_ERROR before the operation can reach REQUESTAPPLYUPDATES. The route rule's expiry does not by itself apply prior buffered updates.
+
+Why this is a bug:
+  One failed administrative operation leaves two independently maintained pieces of state inconsistent: the source has a forwarding rule while the target is stuck buffering. The public retry path cannot complete the interrupted operation because it requires the target to be ACTIVE. This is a liveness/visibility failure and can require manual core-level apply/drop or restart/recovery. It is not evidence that tlog bytes were permanently lost.
+
+Evidence limits:
+  Source confirms the ordering, guard, and absent compensation. The attachment reports TestMigrateBufferLeakAfterRulePublication run2 with 1 test and 0 failures/errors on a two-node cluster, injecting one ConnectionLoss after rule publication. That raw result and exact injected call site are not present locally. The bounded prior-issue search in the attachment does not prove novelty.

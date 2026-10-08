@@ -1,0 +1,85 @@
+ID: hbase-bugs-ns-rsgroup-removal (attachment #13; HBase-2.txt #01)
+Review date: 2026-10-07
+Verdict: SOURCE-CONFIRMED check/use race on the inspected HBase 4.0.0-alpha-1-
+          SNAPSHOT source. HBase 2.6.6 has an analogous race but different
+          validation placement; do not attribute 4.0's exact procedure guard
+          to 2.6.6. The attachment reports a passing MiniCluster regression,
+          but its test source/raw output were unavailable here. Independent
+          runtime reproduction and upstream novelty remain unverified.
+
+System and trigger
+------------------
+Namespace N is being created with hbase.rsgroup.name=G. At validation, G
+exists and contains at least one RegionServer. Before N is persisted, another
+administrator moves the last server out of G and removes G. The namespace
+creation then persists N -> G. No transaction or common lock spans the
+validation, group removal, and namespace write.
+
+Code path and interleaving on the inspected 4.0 source
+------------------------------------------------------
+1. CreateNamespaceProcedure.prepareCreate calls checkNamespaceRSGroup in
+   CREATE_NAMESPACE_PREPARE. This verifies the named group exists and is
+   nonempty (CreateNamespaceProcedure.java:60-78,184-194;
+   AbstractStateMachineNamespaceProcedure.java:124-131;
+   MasterProcedureUtil.java:206-236).
+2. The procedure later runs CREATE_NAMESPACE_CREATE_DIRECTORY and only then
+   CREATE_NAMESPACE_INSERT_INTO_NS_TABLE; the latter calls
+   addOrUpdateNamespace. There is no second group-existence validation
+   (CreateNamespaceProcedure.java:75-85). The namespace procedure holds a
+   lock scoped to N, not to RSGroup G
+   (CreateNamespaceProcedure.java:160-174).
+3. RSGroupInfoManagerImpl.moveServers checks current table references when
+   removing the last server, but does not check in-flight namespace creation
+   (RSGroupInfoManagerImpl.java:1257-1317). Once G is empty,
+   removeRSGroup checks current server count, table descriptors, and the
+   persisted namespace list. N is not yet in that list, so those checks can
+   pass; removeRSGroup then deletes G and flushes config
+   (RSGroupInfoManagerImpl.java:370-397). MasterRpcServices invokes this
+   manager method directly from removeRSGroup RPC, without taking N's
+   procedure lock (MasterRpcServices.java:3233-3247).
+4. CreateNamespaceProcedure resumes and calls TableNamespaceManager,
+   which writes N's descriptor to hbase:meta then caches it
+   (TableNamespaceManager.java:195-210). It does not recheck G.
+5. A later CreateTableProcedure.prepareCreate inherits N's group and calls
+   MasterProcedureUtil.checkGroupExists. G is absent, so it raises
+   ConstraintException("Region server group G ... does not exit")
+   (CreateTableProcedure.java:309-324; MasterProcedureUtil.java:225-238).
+
+HBase 2.6.6 version difference
+------------------------------
+In rel/2.6.6, CreateNamespaceProcedure.prepareCreate itself does not call
+checkNamespaceRSGroup (CreateNamespaceProcedure.java:205-214). The RSGroup
+coprocessor instead checks group existence in preCreateNamespace
+(RSGroupAdminEndpoint.java:622-629). Group removal validates only currently
+persisted namespaces (RSGroupAdminServer.java:482-510); the subsequent
+procedure states can persist N after that check (CreateNamespaceProcedure.java:
+67-91,226-235). The same logical check/use gap exists, but 2.6.6's exact
+later create-table check and error path differ from the 4.0 source cited
+above. This distinction matters when claiming a regression on a release.
+
+Failure and invariant
+---------------------
+The committed namespace descriptor references a group that no longer exists.
+Namespace creation can report success while ordinary table creation in N
+fails; the state survives restart because the descriptor and group config
+are persistent. Normal retries of createTable cannot reconstruct G. An
+administrator must recreate/configure G or change N's group property. The
+race is between a validation read and a later durable write, rather than an
+expected refusal to delete a group that an already-persisted namespace uses.
+
+Evidence boundary and reproduction
+----------------------------------
+The attachment says TestCreateNamespaceRSGroupRemovalCoordination passed
+1/0/0 on a real Master/two-RS MiniCluster by pausing after PREPARE. Its
+test/logs were not available for direct review here. A definitive replay
+should capture the PREPARE success, empty-G transition, successful remove,
+successful namespace creation, durable N -> G descriptor, and two subsequent
+createTable failures. This review establishes that the production code
+permits that schedule; it does not establish whether it is already reported
+upstream.
+
+Source roots inspected
+----------------------
+/users/ZhenyuLi/hbase (commit db7081f6739d32bec142cab76936e4a2c16c62de;
+                     4.0.0-alpha-1-SNAPSHOT)
+/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6 (tag rel/2.6.6)
