@@ -1,0 +1,134 @@
+{
+  "case_id": "SOLR-18",
+  "classification": "fault_model_no_same_actor_postfault_target",
+  "exact_applied_trials": 5,
+  "full_campaign_promoted": false,
+  "generic_target_retained_trials": 4,
+  "healthy_audit_sha256": "db408fc39b7a042ece20ae4438a2595d7e6b78ad667379239b7288f409e7645f",
+  "healthy_observed_path_doors": 17,
+  "healthy_result_sha256": "00fe3e87046aacaf88bd0d806a1119a91f051be4ffbdcd3ddff52966afb678ee",
+  "healthy_sync_receipt_sha256": "488d8912da2624dbbeb0fabb7be829a84e19ba8f2c2551518ced870949fe7e40",
+  "new_bug_confirmed": false,
+  "pilot_audit_sha256": "131584771de0d20b8e5fb7ed9236aa7db60d1bbd6fb27328dd6bf1e854bff3c8",
+  "pilot_config_sha256": "61d9c6826deca90e0dcdab660fd1ba432820641adeb5f750e108f60de9bfa2bc",
+  "pilot_result_sha256": "a2445870376fdfba80d15ed69859c4101181452bcbb4c0294ea2282773db0c5f",
+  "pilot_sync_receipt_sha256": "4b1bb07c20dfe72ff50137f2ef7841d3bbb73d1c5f04ee57db2b1bc9840ed5ee",
+  "same_actor_postfault_target_trials": 0,
+  "schema_version": 1,
+  "source_finding": "AliasesManager.update reads ZK data before setIfNewer and propagates the read exception. AliasesManager.process catches ConnectionLossException and exits that callback before setIfNewer. A target seen in another call does not establish a fault-to-target path for these injected doors.",
+  "source_sha256": "83e14eadfcc4896ff05f9ac77706fdb683e0c181caeee21802f8861f68ac373d",
+  "trials": [
+    {
+      "exact_applied": true,
+      "junit_status": "passed",
+      "planned_point": {
+        "door_ordinal": 6,
+        "epoch": 0,
+        "node": "client",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": false,
+      "trial_id": 1,
+      "trial_result_sha256": "bc576a2bd8d571c9753ffeb3ee435cc44f36c39389a609d3c737eded5ad465dc"
+    },
+    {
+      "exact_applied": false,
+      "junit_status": "passed",
+      "planned_point": {
+        "door_ordinal": 9,
+        "epoch": 0,
+        "node": "node2",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#update()Z@2296:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": false,
+      "trial_id": 2,
+      "trial_result_sha256": "49bcfb333a53840de724d62670e6673b974ad23bf5d534b9f30172475b38d1e5"
+    },
+    {
+      "exact_applied": false,
+      "junit_status": "passed",
+      "planned_point": {
+        "door_ordinal": 8,
+        "epoch": 0,
+        "node": "node2",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#update()Z@2296:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": false,
+      "trial_id": 3,
+      "trial_result_sha256": "0ea55e59749522a4e71d47eac67c5d6a12b04ca8c7c8a8c4420035da18a2d25b"
+    },
+    {
+      "exact_applied": true,
+      "junit_status": "failed",
+      "planned_point": {
+        "door_ordinal": 5,
+        "epoch": 0,
+        "node": "client",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#update()Z@2296:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": true,
+      "trial_id": 4,
+      "trial_result_sha256": "ed30e8a03b79128a87977e262b01dea427eefe804a47e9fb8fbcd9b958eca7e6"
+    },
+    {
+      "exact_applied": true,
+      "junit_status": "passed",
+      "planned_point": {
+        "door_ordinal": 4,
+        "epoch": 0,
+        "node": "node2",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": true,
+      "trial_id": 5,
+      "trial_result_sha256": "c748c3989fc7a7f5b950dfe83e4c5825fffb6d054c5f0f469808a9e3fe537847"
+    },
+    {
+      "exact_applied": true,
+      "junit_status": "failed",
+      "planned_point": {
+        "door_ordinal": 4,
+        "epoch": 0,
+        "node": "client",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#update()Z@2296:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": true,
+      "trial_id": 6,
+      "trial_result_sha256": "d52797be7f63a5e528ce95a3b26a377446d56c2d163c629f98bcdce66c99dc28"
+    },
+    {
+      "exact_applied": false,
+      "junit_status": "passed",
+      "planned_point": {
+        "door_ordinal": 3,
+        "epoch": 0,
+        "node": "node2",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V@2259:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": false,
+      "trial_id": 7,
+      "trial_result_sha256": "976f92c9fdeceeef49b8d732dbf40b12bfea5641b23b5e81c48e523dcb9e5601"
+    },
+    {
+      "exact_applied": true,
+      "junit_status": "passed",
+      "planned_point": {
+        "door_ordinal": 7,
+        "epoch": 0,
+        "node": "node2",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#update()Z@2296:door:1"
+      },
+      "same_actor_target_after_fault": false,
+      "target_retained_anywhere": true,
+      "trial_id": 8,
+      "trial_result_sha256": "4c1345e0767ce5f90adb8a8640178d1814d5a891d10b078b0b499459a1b93d00"
+    }
+  ]
+}
