@@ -1,4 +1,5 @@
 import json
+import gzip
 import hashlib
 import subprocess
 import tempfile
@@ -6,13 +7,120 @@ import unittest
 from pathlib import Path
 
 from Mallory.report.build import (_causal_audit, _causal_precision_review,
-                                  _faulted_path_review,
+                                  _event_path_review, _faulted_path_review,
                                   _posthoc_attestation, _quality,
                                   _row, _source_gap, _source_review, build,
                                   markdown)
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_event_path_receipt_requires_ordered_matching_handoff(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data" / "mallory"
+            case_id = "CASE-000"
+            case = results / "cases" / case_id
+            case.mkdir(parents=True)
+            digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            result = {"case_id": case_id, "fault_trials_completed": 1,
+                      "strict_target_trials": 1,
+                      "target": {"check_sites": ["X#check"]}}
+            result_path = case / "result.json"
+            result_path.write_text(json.dumps(result))
+            audit_path = case / "offline-causal-audit.json"
+            audit_path.write_text("{}")
+            config_path = case / "config.json"
+            config_path.write_text("{}")
+            rows = []
+            for trial_id in (0, 1):
+                path = case / "trials" / f"r{trial_id:04d}" / "result.json"
+                path.parent.mkdir(parents=True)
+                evidence = {"raw_sha256": "a" * 64}
+                if trial_id == 1:
+                    def event(kind, seq, occurrence, **extra):
+                        return {"id": f"{case_id}-r0001:{seq}", "type": kind,
+                                "node": "peer1", "epoch": 0, "thread": "worker",
+                                "occurrence": occurrence, "seq": seq, **extra}
+                    token = "zk-following-retry:1:1:2:3:1"
+                    events = [
+                        event("REGION_ENTER", 1, "old"),
+                        event("FAULT_APPLIED", 2, "old"),
+                        event("TASK_SUBMIT", 3, "old", correlation=token),
+                        event("REGION_EXIT", 4, "old"),
+                        event("REGION_ENTER", 5, "new"),
+                        event("TASK_CLAIM", 6, "new", correlation=token,
+                              parent_id=token),
+                        event("REGION_ENTER", 7, "target", parent_id="new"),
+                        event("TARGET_CHECK", 8, "target", site="X#check")]
+                    raw = b"".join((json.dumps(item) + "\n").encode() for item in events)
+                    gz = path.parent / "events.jsonl.gz"
+                    with gzip.open(gz, "wb") as stream:
+                        stream.write(raw)
+                    evidence = {"raw_sha256": hashlib.sha256(raw).hexdigest(),
+                                "raw_bytes": len(raw), "gzip_path": gz.name,
+                                "gzip_sha256": digest(gz), "gzip_bytes": gz.stat().st_size}
+                path.write_text(json.dumps({"events_evidence": evidence}))
+                rows.append({"trial_id": trial_id, "trial_result_sha256": digest(path),
+                             "trace_raw_sha256": evidence["raw_sha256"],
+                             "applied_fault_event_ids": [], "verified_retry_edges": [],
+                             "postfault_retry_target_paths": []})
+            prefix = f"{case_id}-r0001:"
+            rows[1]["applied_fault_event_ids"] = [prefix + "2"]
+            rows[1]["verified_retry_edges"] = [{
+                "producer_event": prefix + "3", "consumer_event": prefix + "6",
+                "token": token, "node": "peer1", "epoch": 0, "thread": "worker"}]
+            rows[1]["postfault_retry_target_paths"] = [{
+                "fault_event": prefix + "2", "old_enter_event": prefix + "1",
+                "submit_event": prefix + "3", "old_exit_event": prefix + "4",
+                "new_enter_event": prefix + "5", "claim_event": prefix + "6",
+                "target_enter_event": prefix + "7", "target_check_event": prefix + "8",
+                "token": token, "node": "peer1", "epoch": 0,
+                "thread": "worker",
+                "evidence_type": "observed_task_edge_and_same_thread_retry_continuation"}]
+            root = results / "quality_reviews" / "causal_precision_v3"
+            root.mkdir(parents=True)
+            receipt_path = root / "CASE-000-path.json"
+            receipt = {"schema_version": 1, "case_id": case_id,
+                       "status": "postfault_retry_target_proven",
+                       "campaign_result_sha256": digest(result_path),
+                       "offline_audit_sha256": digest(audit_path),
+                       "config_sha256": digest(config_path),
+                       "proven_postfault_path_trials": 1, "trials": rows}
+            receipt_path.write_text(json.dumps(receipt))
+            archive = results / "evidence_archives" / "campaign" / "CASE-000.tar.gz"
+            archive.parent.mkdir(parents=True)
+            archive.write_bytes(b"archive")
+            manifest_path = archive.with_suffix(".manifest.json")
+            manifest_path.write_text(json.dumps({
+                "case_id": case_id, "archive_sha256": digest(archive),
+                "campaign_result_sha256": digest(result_path),
+                "offline_audit_sha256": digest(audit_path),
+                "config_sha256": digest(config_path),
+                "continuation_receipt_sha256": digest(receipt_path),
+                "strict_path_trials": 1}))
+            (root / "index.json").write_text(json.dumps({
+                "schema_version": 1, "review_status": "verified_faulted_event_path",
+                "cases": [{"case_id": case_id, "classification": "observed_event_path",
+                           "receipt": "data/mallory/quality_reviews/causal_precision_v3/CASE-000-path.json",
+                           "receipt_sha256": digest(receipt_path),
+                           "result_sha256": digest(result_path),
+                           "audit_sha256": digest(audit_path),
+                           "config_sha256": digest(config_path),
+                           "archive_sha256": digest(archive),
+                           "archive_manifest_sha256": digest(manifest_path),
+                           "qualifying_trial_count": 1}]}))
+            self.assertEqual("observed_event_path", _event_path_review(
+                results, result_path, result)[0])
+            compressed = case / "trials" / "r0001" / "events.jsonl.gz"
+            original_trace = compressed.read_bytes()
+            compressed.write_bytes(original_trace + b"tampered")
+            self.assertEqual("invalid", _event_path_review(
+                results, result_path, result)[0])
+            compressed.write_bytes(original_trace)
+            rows[1]["postfault_retry_target_paths"][0]["target_check_event"] = prefix + "1"
+            receipt_path.write_text(json.dumps(receipt))
+            self.assertEqual("invalid", _event_path_review(
+                results, result_path, result)[0])
+
     def test_faulted_path_receipt_requires_canonical_hashes_and_region_proof(self):
         with tempfile.TemporaryDirectory() as temporary:
             results = Path(temporary) / "data" / "mallory"

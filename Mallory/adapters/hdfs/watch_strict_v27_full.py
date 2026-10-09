@@ -52,9 +52,10 @@ def ready() -> bool:
     if state.get("status") not in {"budget_exhausted", "queue_exhausted"}:
         return False
     if (state.get("status") != result.get("status") or
-            state.get("running") is not None or
-            state.get("case_id") != CASE or result.get("case_id") != CASE):
-        raise RuntimeError("terminal checkpoint and result disagree")
+            state.get("running") is not None):
+        return False
+    if state.get("case_id") != CASE or result.get("case_id") != CASE:
+        raise RuntimeError("terminal checkpoint and result case IDs disagree")
     return True
 
 

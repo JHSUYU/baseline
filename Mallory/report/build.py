@@ -8,6 +8,7 @@ deliberately not imported into this report.
 from __future__ import annotations
 
 import argparse
+import gzip
 import hashlib
 import json
 import os
@@ -283,6 +284,218 @@ def _faulted_path_review(results: Path, result_path: Path,
     if not valid:
         return "invalid", str(receipt_path)
     return ("observed_local_timeline" if positive else "faulted_path_unverified"), str(receipt_path)
+
+
+def _event_path_review(results: Path, result_path: Path,
+                       result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Verify a named, ordered fault-to-target witness from a completed run."""
+    root = results / "quality_reviews" / "causal_precision_v3"
+    index = _json(root / "index.json")
+    if index is None:
+        return None, None
+    entries = index.get("cases")
+    if not isinstance(entries, list):
+        return "invalid", str(root / "index.json")
+    case_id = result.get("case_id")
+    matches = [entry for entry in entries if isinstance(entry, dict) and
+               entry.get("case_id") == case_id]
+    if not matches:
+        return None, None
+    if len(matches) != 1:
+        return "invalid", str(root / "index.json")
+    entry = matches[0]
+    relative = entry.get("receipt")
+    prefix = "data/mallory/quality_reviews/causal_precision_v3/"
+    if (not isinstance(relative, str) or not relative.startswith(prefix) or
+            Path(relative).name != relative[len(prefix):]):
+        return "invalid", str(root / "index.json")
+    receipt_path = root / Path(relative).name
+    receipt = _json(receipt_path)
+    audit_path = result_path.with_name("offline-causal-audit.json")
+    config_path = result_path.with_name("config.json")
+    archive = results / "evidence_archives/campaign" / f"{case_id}.tar.gz"
+    manifest_path = archive.with_suffix(".manifest.json")
+    if (receipt is None or not audit_path.is_file() or not config_path.is_file()
+            or not archive.is_file() or not manifest_path.is_file()):
+        return "invalid", str(receipt_path)
+    digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+    result_hash, audit_hash = digest(result_path), digest(audit_path)
+    config_hash, archive_hash = digest(config_path), digest(archive)
+    receipt_hash, manifest_hash = digest(receipt_path), digest(manifest_path)
+    manifest = _json(manifest_path)
+    rows = receipt.get("trials")
+    trial_count = result.get("fault_trials_completed", -1) + 1
+    valid_rows = (isinstance(rows, list) and len(rows) == trial_count
+                  and {row.get("trial_id") for row in rows if isinstance(row, dict)}
+                  == set(range(trial_count)))
+    proven = 0
+    if valid_rows:
+        for row in rows:
+            trial_id = row["trial_id"]
+            trial_path = result_path.parent / "trials" / f"r{trial_id:04d}" / "result.json"
+            trial = _json(trial_path)
+            if (trial is None or digest(trial_path) != row.get("trial_result_sha256")
+                    or trial.get("events_evidence", {}).get("raw_sha256") !=
+                    row.get("trace_raw_sha256")):
+                valid_rows = False
+                break
+            paths = row.get("postfault_retry_target_paths")
+            if not isinstance(paths, list):
+                valid_rows = False
+                break
+            if paths:
+                proven += 1
+            for witness in paths:
+                if not isinstance(witness, dict):
+                    valid_rows = False
+                    break
+                prefix_id = f"{case_id}-r{trial_id:04d}:"
+                names = ("fault_event", "submit_event", "new_enter_event",
+                         "claim_event", "target_enter_event", "target_check_event")
+                if any(not isinstance(witness.get(name), str) or
+                       not witness[name].startswith(prefix_id) for name in names):
+                    valid_rows = False
+                    break
+                try:
+                    fault, submit, enter, claim, target_enter, target_check = (
+                        int(witness[name][len(prefix_id):]) for name in names)
+                except ValueError:
+                    valid_rows = False
+                    break
+                edges = row.get("verified_retry_edges")
+                matched_edge = (isinstance(edges, list) and any(
+                    isinstance(edge, dict) and
+                    edge.get("producer_event") == witness["submit_event"] and
+                    edge.get("consumer_event") == witness["claim_event"] and
+                    edge.get("token") == witness.get("token") and
+                    all(edge.get(key) == witness.get(key)
+                        for key in ("node", "epoch", "thread"))
+                    for edge in edges))
+                if (not fault < submit < enter < claim < target_enter < target_check
+                        or witness["fault_event"] not in row.get("applied_fault_event_ids", [])
+                        or witness.get("node") in (None, "", "unknown")
+                        or not witness.get("thread") or not matched_edge
+                        or witness.get("evidence_type") !=
+                        "observed_task_edge_and_same_thread_retry_continuation"):
+                    valid_rows = False
+                    break
+            if valid_rows and paths and not _verify_retry_path_trace(
+                    trial_path.parent, trial, row, result):
+                valid_rows = False
+            if not valid_rows:
+                break
+    valid = (
+        index.get("schema_version") == 1
+        and index.get("review_status") == "verified_faulted_event_path"
+        and entry.get("classification") == "observed_event_path"
+        and entry.get("receipt_sha256") == receipt_hash
+        and entry.get("result_sha256") == result_hash
+        and entry.get("audit_sha256") == audit_hash
+        and entry.get("config_sha256") == config_hash
+        and entry.get("archive_sha256") == archive_hash
+        and entry.get("archive_manifest_sha256") == manifest_hash
+        and receipt.get("schema_version") == 1
+        and receipt.get("case_id") == case_id
+        and receipt.get("status") == "postfault_retry_target_proven"
+        and receipt.get("campaign_result_sha256") == result_hash
+        and receipt.get("offline_audit_sha256") == audit_hash
+        and receipt.get("config_sha256") == config_hash
+        and manifest is not None
+        and manifest.get("case_id") == case_id
+        and manifest.get("archive_sha256") == archive_hash
+        and manifest.get("campaign_result_sha256") == result_hash
+        and manifest.get("offline_audit_sha256") == audit_hash
+        and manifest.get("config_sha256") == config_hash
+        and manifest.get("continuation_receipt_sha256") == receipt_hash
+        and valid_rows
+        and proven == receipt.get("proven_postfault_path_trials")
+        and proven == entry.get("qualifying_trial_count")
+        and proven == manifest.get("strict_path_trials")
+        and 0 < proven <= result.get("strict_target_trials", 0)
+    )
+    return ("observed_event_path" if valid else "invalid"), str(receipt_path)
+
+
+def _verify_retry_path_trace(trial_dir: Path, trial: dict[str, Any],
+                             row: dict[str, Any], result: dict[str, Any]) -> bool:
+    """Recheck a positive task-handoff witness against SHA-verified raw events."""
+    evidence = trial.get("events_evidence")
+    if not isinstance(evidence, dict):
+        return False
+    name = evidence.get("gzip_path") or evidence.get("raw_path")
+    if not isinstance(name, str) or Path(name).name != name:
+        return False
+    path = trial_dir / name
+    if not path.is_file():
+        return False
+    if evidence.get("gzip_path") and (
+            hashlib.sha256(path.read_bytes()).hexdigest() != evidence.get("gzip_sha256") or
+            path.stat().st_size != evidence.get("gzip_bytes")):
+        return False
+    witnesses = row["postfault_retry_target_paths"]
+    event_ids = {witness[name] for witness in witnesses for name in (
+        "fault_event", "old_enter_event", "submit_event", "old_exit_event",
+        "new_enter_event", "claim_event", "target_enter_event", "target_check_event")}
+    tokens = {witness["token"] for witness in witnesses}
+    found: dict[str, dict[str, Any]] = {}
+    token_events: dict[tuple[str, str], list[str]] = {}
+    raw = hashlib.sha256()
+    raw_bytes = 0
+    try:
+        opener = gzip.open if evidence.get("gzip_path") else open
+        with opener(path, "rb") as source:
+            for line in source:
+                raw.update(line)
+                raw_bytes += len(line)
+                event = json.loads(line)
+                event_id = event.get("id")
+                if event_id in event_ids:
+                    found[event_id] = event
+                token = event.get("correlation")
+                kind = event.get("type")
+                if token in tokens and kind in {"TASK_SUBMIT", "TASK_CLAIM"}:
+                    token_events.setdefault((token, kind), []).append(event_id)
+    except (OSError, EOFError, ValueError, TypeError):
+        return False
+    if (raw.hexdigest() != row.get("trace_raw_sha256") or
+            raw_bytes != evidence.get("raw_bytes") or len(found) != len(event_ids)):
+        return False
+    check_sites = result.get("target", {}).get("check_sites", [])
+    for witness in witnesses:
+        token = witness["token"]
+        token_parts = token.split(":") if isinstance(token, str) else []
+        if (len(token_parts) != 6 or token_parts[0] != "zk-following-retry" or
+                not token_parts[3].isdigit() or not token_parts[4].isdigit() or
+                int(token_parts[3]) <= 0 or int(token_parts[4]) <= 0 or
+                token_events.get((token, "TASK_SUBMIT")) != [witness["submit_event"]] or
+                token_events.get((token, "TASK_CLAIM")) != [witness["claim_event"]]):
+            return False
+        fault, old_enter, submit, old_exit, new_enter, claim, target_enter, check = (
+            found[witness[name]] for name in (
+                "fault_event", "old_enter_event", "submit_event", "old_exit_event",
+                "new_enter_event", "claim_event", "target_enter_event",
+                "target_check_event"))
+        kinds = ("FAULT_APPLIED", "REGION_ENTER", "TASK_SUBMIT", "REGION_EXIT",
+                 "REGION_ENTER", "TASK_CLAIM", "REGION_ENTER", "TARGET_CHECK")
+        if tuple(event.get("type") for event in (
+                fault, old_enter, submit, old_exit, new_enter, claim,
+                target_enter, check)) != kinds:
+            return False
+        if any(event.get(key) != witness.get(key) for event in (
+                fault, old_enter, submit, old_exit, new_enter, claim,
+                target_enter, check) for key in ("node", "epoch", "thread")):
+            return False
+        if (fault.get("occurrence") != old_enter.get("occurrence") or
+                submit.get("occurrence") != fault.get("occurrence") or
+                old_exit.get("occurrence") != fault.get("occurrence") or
+                new_enter.get("occurrence") != claim.get("occurrence") or
+                submit.get("correlation") != token or claim.get("correlation") != token or
+                claim.get("parent_id") != token or
+                target_enter.get("parent_id") != claim.get("occurrence") or
+                check.get("occurrence") != target_enter.get("occurrence") or
+                check.get("site") not in check_sites):
+            return False
+    return True
 
 
 def _posthoc_attestation(result_path: Path, case: dict[str, Any],
@@ -879,9 +1092,12 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 row["quality_status"] = "causal_precision_review_invalid"
             else:
                 precision, receipt = _faulted_path_review(results, result_path, result)
+                if precision is None:
+                    precision, receipt = _event_path_review(results, result_path, result)
                 row["causal_precision_review"] = precision
                 row["causal_precision_receipt"] = receipt
-                if precision in {"observed_local_timeline", "faulted_path_unverified"}:
+                if precision in {"observed_local_timeline", "observed_event_path",
+                                 "faulted_path_unverified"}:
                     row["quality_status"] = precision
                 elif precision == "invalid":
                     row["quality_status"] = "causal_precision_review_invalid"
@@ -936,7 +1152,8 @@ def build(inventory_path: Path, results: Path) -> dict[str, Any]:
         "calibration_counts": dict(Counter(row["calibration_status"] for row in rows
                                            if row["calibration_status"] is not None)),
         "quality_counts": dict(quality_counts),
-        "high_quality_completed": quality_counts["observed_local_timeline"],
+        "high_quality_completed": (quality_counts["observed_local_timeline"] +
+                                   quality_counts["observed_event_path"]),
         "rows": rows,
         "known_issue_controls": control_rows,
     }
