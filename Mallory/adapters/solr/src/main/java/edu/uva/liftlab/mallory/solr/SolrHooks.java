@@ -94,6 +94,15 @@ public final class SolrHooks {
 
   public static void endAliasesManager() { end("aliases"); }
 
+  /** Scope the real ZooKeeper watcher before its callback is submitted to ExecutorUtil. */
+  public static void beginZkWatchDispatch(Object wrapper) {
+    Object watcher = field(wrapper, "watcher");
+    SCOPES.get().push(new Scope("zk_watch_dispatch",
+        Probe.withRegisteredNode(watcher), null));
+  }
+
+  public static void endZkWatchDispatch() { end("zk_watch_dispatch"); }
+
   /** A standalone SolrJ ZooKeeper reader belongs to the test client actor. */
   public static void registerClientReader(Object reader) {
     if (reader == null) return;

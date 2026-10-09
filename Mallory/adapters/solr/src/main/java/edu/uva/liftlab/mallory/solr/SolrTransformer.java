@@ -25,6 +25,7 @@ public final class SolrTransformer implements ClassFileTransformer {
   private static final String OVERSEER = "org/apache/solr/cloud/api/collections/OverseerCollectionMessageHandler";
   private static final String OVERSEER_TASK_PROCESSOR = "org/apache/solr/cloud/OverseerTaskProcessor";
   private static final String ALIASES = "org/apache/solr/common/cloud/ZkStateReader$AliasesManager";
+  private static final String ZK_WATCH_DISPATCH = "org/apache/solr/common/cloud/SolrZkClient$ProcessWatchWithExecutor";
   private static final String POOL = "org/apache/solr/common/util/ExecutorUtil$MDCAwareThreadPoolExecutor";
 
   @Override
@@ -33,7 +34,7 @@ public final class SolrTransformer implements ClassFileTransformer {
     if (!ZK.equals(className) && !FILTER.equals(className) && !CLIENT_STATE.equals(className)
         && !CLIENT_ZK.equals(className)
         && !OVERSEER.equals(className) && !OVERSEER_TASK_PROCESSOR.equals(className)
-        && !ALIASES.equals(className)
+        && !ALIASES.equals(className) && !ZK_WATCH_DISPATCH.equals(className)
         && !HTTP1.equals(className) && !HTTP2.equals(className) && !POOL.equals(className)) return null;
     try {
       ClassReader reader = new ClassReader(classfileBuffer);
@@ -72,6 +73,10 @@ public final class SolrTransformer implements ClassFileTransformer {
               || "process".equals(name) || "update".equals(name)
               || "applyModificationAndExportToZk".equals(name)))
             return scoped(method, "beginAliasesManager", "endAliasesManager", false,
+                className, access, descriptor);
+          if (ZK_WATCH_DISPATCH.equals(className) && "process".equals(name)
+              && "(Lorg/apache/zookeeper/WatchedEvent;)V".equals(descriptor))
+            return scoped(method, "beginZkWatchDispatch", "endZkWatchDispatch", false,
                 className, access, descriptor);
           if ((HTTP2.equals(className) || HTTP1.equals(className)) && "<init>".equals(name))
             return constructor(method, "registerHttpClient");

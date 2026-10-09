@@ -62,6 +62,11 @@ public class SolrHooksTest {
     Filter(CoreContainer cores) { this.cores = cores; }
   }
 
+  public static final class WatchDispatchWrapper {
+    private final Object watcher;
+    WatchDispatchWrapper(Object watcher) { this.watcher = watcher; }
+  }
+
   @Test public void requestHeaderAndLogicalNodeArePaired() {
     Controller controller = new Controller();
     SolrHooks.registerController(controller);
@@ -113,6 +118,26 @@ public class SolrHooksTest {
       SolrHooks.endAliasesManager();
       assertEquals("client", Probe.currentNode());
     }
+  }
+
+  @Test public void zkCallbackSubmitCarriesOnlyTheRegisteredWatcherActor() {
+    Object knownWatcher = new Object();
+    Probe.registerNode(knownWatcher, "node2", 4);
+    SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(knownWatcher));
+    assertEquals("node2", Probe.currentNode());
+    Runnable callback = SolrHooks.wrapTask(new Runnable() {
+      @Override public void run() {
+        assertEquals("node2", Probe.currentNode());
+        assertEquals(4, Probe.currentEpoch());
+      }
+    });
+    SolrHooks.endZkWatchDispatch();
+    assertEquals("unknown", Probe.currentNode());
+    callback.run();
+    assertEquals("unknown", Probe.currentNode());
+    SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(new Object()));
+    assertEquals("unknown", Probe.currentNode());
+    SolrHooks.endZkWatchDispatch();
   }
 
   @Test public void clientProviderDoesNotRebindServerOwnedReader() {
