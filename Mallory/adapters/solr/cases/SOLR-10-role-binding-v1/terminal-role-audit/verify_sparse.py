@@ -37,6 +37,7 @@ def verify_sparse(base: Path, canonical: Path, index_path: Path) -> dict:
     expected = base / "data/mallory/replays/SOLR-10-role-v1-full-metadata"
     require(actual == expected.resolve(strict=True), "canonical path is not sparse export")
     role_dir = base / "Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/terminal-role-audit"
+    frozen_core = role_dir.parent / "work/Mallory/core"
     role_path = role_dir / "receipt.json"
     role_manifest_path = role_dir / "audit-manifest.json"
     role_verifier_path = role_dir / "verify.py"
@@ -64,6 +65,9 @@ def verify_sparse(base: Path, canonical: Path, index_path: Path) -> dict:
             and index.get("archive_sha256") == ARCHIVE_SHA
             and index.get("static_audit_status") ==
             "diagnostic_role_point_unsupported", "pinned review identity mismatch")
+    require(index.get("frozen_events_sha256") == sha(frozen_core / "events.py")
+            and index.get("frozen_package_init_sha256") == sha(frozen_core / "__init__.py"),
+            "frozen graph dependency SHA mismatch")
     for relative, expected_sha in SOURCE_SHA.items():
         require(sha(base / relative) == expected_sha,
                 f"pinned role-audit source changed: {relative}")

@@ -18,6 +18,47 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_zk12_terminal_review_rechecks_archive_and_trial_identity(self):
+        from Mallory.report.build import _zk12_filenotfound_review
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        names = (
+            "cases/ZOOKEEPER-12/result.json",
+            "cases/ZOOKEEPER-12/config.json",
+            "cases/ZOOKEEPER-12/offline-causal-audit.json",
+            "cases/ZOOKEEPER-12/sync-receipt.json",
+            "evidence_archives/campaign/ZOOKEEPER-12.tar.gz",
+            "evidence_archives/campaign/ZOOKEEPER-12.tar.manifest.json",
+            "admissions/ZOOKEEPER-12-fa5f-filenotfound-v1-full-review.json",
+            "quality_reviews/zk12_filenotfound_full/index.json",
+            "quality_reviews/zk12_filenotfound_full/ZOOKEEPER-12.json",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "data/mallory"
+            for name in names:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source / name, target)
+            result_path = root / "cases/ZOOKEEPER-12/result.json"
+            result = json.loads(result_path.read_text())
+            review = lambda: _zk12_filenotfound_review(root, result_path, result)[0]
+            self.assertEqual(review(), "observed_local_timeline")
+
+            receipt_path = root / "quality_reviews/zk12_filenotfound_full/ZOOKEEPER-12.json"
+            index_path = root / "quality_reviews/zk12_filenotfound_full/index.json"
+            original = receipt_path.read_bytes()
+            receipt = json.loads(original)
+            receipt["trial_evidence"][0]["last_fault_identity"]["thread_id"] += 1
+            receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+            index = json.loads(index_path.read_text())
+            index["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index))
+            self.assertEqual(review(), "invalid")
+            receipt_path.write_bytes(original)
+            archive = root / "evidence_archives/campaign/ZOOKEEPER-12.tar.gz"
+            archive.write_bytes(archive.read_bytes()[:-1])
+            self.assertEqual(review(), "invalid")
+
     def test_solr10_sparse_role_gate_recomputes_path_and_rejects_tampering(self):
         baseline = Path(__file__).resolve().parents[2]
         script = (baseline / "Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/"

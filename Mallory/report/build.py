@@ -532,6 +532,73 @@ def _solr10_role_event_review(results: Path, result_path: Path,
     return ("observed_event_path" if check.returncode == 0 else "invalid"), str(index_path)
 
 
+def _zk12_filenotfound_review(results: Path, result_path: Path,
+                             result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Recheck every archived FNF fault and same-occurrence selected guard."""
+    if result.get("case_id") != "ZOOKEEPER-12":
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    root = results / "quality_reviews/zk12_filenotfound_full"
+    index_path, receipt_path = root / "index.json", root / "ZOOKEEPER-12.json"
+    index, receipt = _json(index_path), _json(receipt_path)
+    verifier = baseline / "Mallory/adapters/zookeeper/verify_zk12_terminal.py"
+    paths = {
+        "verifier": verifier,
+        "receipt": receipt_path,
+        "result": result_path,
+        "audit": result_path.with_name("offline-causal-audit.json"),
+        "config": result_path.with_name("config.json"),
+        "sync": result_path.with_name("sync-receipt.json"),
+        "archive": results / "evidence_archives/campaign/ZOOKEEPER-12.tar.gz",
+        "archive_manifest": results / "evidence_archives/campaign/ZOOKEEPER-12.tar.manifest.json",
+        "prior_review": results / "admissions/ZOOKEEPER-12-fa5f-filenotfound-v1-full-review.json",
+    }
+    if (not isinstance(index, dict) or not isinstance(receipt, dict)
+            or any(not path.is_file() or
+                   index.get(f"{name}_sha256") != hashlib.sha256(path.read_bytes()).hexdigest()
+                   for name, path in paths.items())):
+        return "invalid", str(index_path)
+    if not (
+        index.get("schema_version") == 1
+        and index.get("case_id") == "ZOOKEEPER-12"
+        and index.get("classification") == "observed_local_timeline"
+        and index.get("qualifying_trial_count") == 14
+        and result_path.resolve() == (results / "cases/ZOOKEEPER-12/result.json").resolve()
+        and result.get("status") == "queue_exhausted"
+        and result.get("fault_trials_completed") == 18
+        and result.get("strict_injected_trials") == 18
+        and result.get("strict_target_trials") == 14
+        and result.get("exact_exception_trials") == 0
+        and receipt.get("status") == "terminal_verified_no_selected_exception"
+        and receipt.get("classification") == "target_exercised_local_timeline"
+        and receipt.get("fault_trials") == 18
+        and receipt.get("faults_matched_and_applied") == 36
+        and receipt.get("strict_same_actor_postfault_check_trials") == 14
+        and receipt.get("target_lost_trials") == 4
+        and receipt.get("selected_target_exception_trials") == 0
+        and isinstance(receipt.get("trial_evidence"), list)
+        and len(receipt["trial_evidence"]) == 18
+        and sum(row.get("classification") == "target_retained_no_throw"
+                for row in receipt["trial_evidence"]) == 14
+        and all(row.get("classification") in {"target_retained_no_throw", "target_lost"}
+                for row in receipt["trial_evidence"])
+    ):
+        return "invalid", str(index_path)
+    with tempfile.TemporaryDirectory() as temporary:
+        output = Path(temporary) / "independent.json"
+        try:
+            check = subprocess.run(
+                ["python3", str(verifier), "--root", str(baseline),
+                 "--output", str(output)], cwd=baseline, capture_output=True,
+                text=True, timeout=30)
+        except (OSError, subprocess.TimeoutExpired):
+            return "invalid", str(index_path)
+        if (check.returncode != 0 or not output.is_file()
+                or output.read_bytes() != receipt_path.read_bytes()):
+            return "invalid", str(index_path)
+    return "observed_local_timeline", str(receipt_path)
+
+
 def _hdfs11_faulted_event_review(results: Path, result_path: Path,
                                  result: dict[str, Any]) -> tuple[str | None, str | None]:
     """Recompute the exact NN error-response-to-DN path from frozen raw traces."""
@@ -2665,6 +2732,8 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                     precision, receipt = _event_path_review(results, result_path, result)
                 if precision is None:
                     precision, receipt = _hdfs11_faulted_event_review(results, result_path, result)
+                if precision is None:
+                    precision, receipt = _zk12_filenotfound_review(results, result_path, result)
                 if precision is None:
                     precision, receipt = _local_timeline_review(results, result_path, result)
                 row["causal_precision_review"] = precision
