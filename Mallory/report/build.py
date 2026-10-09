@@ -1184,6 +1184,194 @@ def _fault_model_target_lost(results: Path, case_id: str) -> tuple[str | None, s
     return ("fault_model_target_lost" if valid else "invalid_fault_model_receipt"), str(path)
 
 
+def _zk04_zxid_influence_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Keep the current ZK04 fault-model gap separate from a completed campaign.
+
+    This receipt establishes a healthy reconnect check and a bounded readBool
+    pilot. It does not establish a fault that changes either zxid operand.
+    """
+    if case_id != "ZOOKEEPER-04":
+        return None, None
+    path = (results / "admissions" /
+            "ZOOKEEPER-04-fa5f-write-reconnect-v1-fault-model-gap.json")
+    if not path.is_file():
+        return None, None
+    invalid = ("invalid_fault_model_receipt", str(path))
+    receipt = _json(path)
+    if not isinstance(receipt, dict):
+        return invalid
+
+    healthy_dir = results / "calibration_fa5f_lane2" / "ZOOKEEPER-04-write-reconnect-v1"
+    paths = {
+        "healthy_result": healthy_dir / "result.json",
+        "healthy_audit": healthy_dir / "offline-causal-audit.json",
+        "healthy_attestation": results / "admissions" /
+            "ZOOKEEPER-04-fa5f-write-reconnect-v1-healthy.json",
+        "prior_pilot": results / "pilot_fa5f_lane2" / "ZOOKEEPER-04-readbool-v2" /
+            "result.json",
+        "config": healthy_dir / "config.json",
+        "trial": healthy_dir / "trials/r0000/result.json",
+    }
+    hashes = {
+        "healthy_result": "healthy_result_sha256",
+        "healthy_audit": "healthy_offline_audit_sha256",
+        "healthy_attestation": "healthy_attestation_sha256",
+        "prior_pilot": "prior_readbool_pilot_result_sha256",
+    }
+    def digest(file: Path) -> str:
+        return hashlib.sha256(file.read_bytes()).hexdigest()
+
+    try:
+        if any(not file.is_file() for file in paths.values()):
+            return invalid
+        if any(digest(paths[name]) != receipt.get(field)
+               for name, field in hashes.items()):
+            return invalid
+        healthy = _json(paths["healthy_result"])
+        audit = _json(paths["healthy_audit"])
+        attestation = _json(paths["healthy_attestation"])
+        pilot = _json(paths["prior_pilot"])
+        config = _json(paths["config"])
+        trial = _json(paths["trial"])
+        if not all(isinstance(item, dict) for item in
+                   (healthy, audit, attestation, pilot, config, trial)):
+            return invalid
+        selector = "org.apache.zookeeper.test.WatchEventWhenAutoResetTest#testNodeDataChanged"
+        witness = attestation.get("post_restart_witness")
+        fact = receipt.get("healthy_trace_fact")
+        mapping = config.get("mapping")
+        evidence = trial.get("events_evidence")
+        if not all(isinstance(item, dict) for item in
+                   (witness, fact, mapping, evidence)):
+            return invalid
+        overlay_path = Path(config.get("source_overlay_receipt", ""))
+        if (not overlay_path.is_absolute() or not overlay_path.is_file() or
+                digest(overlay_path) != config.get("source_overlay_receipt_sha256")):
+            return invalid
+        overlay = _json(overlay_path)
+        if not isinstance(overlay, dict):
+            return invalid
+        base_root = Path(overlay.get("base_root", ""))
+        if not base_root.is_absolute() or not base_root.is_dir():
+            return invalid
+        commit = subprocess.run(["git", "-C", str(base_root), "rev-parse", "HEAD"],
+                                capture_output=True, text=True, check=True).stdout.strip()
+        source_files = receipt.get("source_files")
+        required_sources = {
+            "zookeeper-server/src/test/java/org/apache/zookeeper/test/WatchEventWhenAutoResetTest.java",
+            "zookeeper-server/src/main/java/org/apache/zookeeper/ClientCnxn.java",
+            "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+            "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+            "zookeeper-server/src/main/java/org/apache/zookeeper/server/DataTree.java",
+            "zookeeper-server/src/main/java/org/apache/zookeeper/server/persistence/FileTxnSnapLog.java",
+        }
+        if (not isinstance(source_files, dict) or
+                not required_sources.issubset(source_files) or len(source_files) < 12):
+            return invalid
+        for relative, expected in source_files.items():
+            if not isinstance(relative, str) or not isinstance(expected, str):
+                return invalid
+            source = (base_root / relative).resolve()
+            if (not source.is_relative_to(base_root.resolve()) or
+                    not source.is_file() or digest(source) != expected):
+                return invalid
+        target_source = "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java"
+        target_class = "zookeeper-server/target/classes/org/apache/zookeeper/server/ZooKeeperServer.class"
+        compiled = overlay.get("compiled_artifacts")
+        trace = paths["trial"].parent / evidence.get("gzip_path", "")
+        if (Path(evidence.get("gzip_path", "")).name != evidence.get("gzip_path") or
+                not trace.is_file() or digest(trace) != evidence.get("gzip_sha256") or
+                trace.stat().st_size != evidence.get("gzip_bytes") or
+                not isinstance(compiled, list)):
+            return invalid
+        raw = hashlib.sha256()
+        door = target = None
+        with gzip.open(trace, "rb") as stream:
+            for line in stream:
+                raw.update(line)
+                event = json.loads(line)
+                if event.get("id") == witness.get("door_event_id"):
+                    door = event
+                if event.get("id") == witness.get("target_check_event_id"):
+                    target = event
+        valid = (
+            receipt.get("schema_version") == 1
+            and receipt.get("case_id") == case_id
+            and receipt.get("status") ==
+                "no_target_preserving_zxid_changing_io_fault_demonstrated"
+            and receipt.get("full_campaign_admission") is False
+            and selector.split(".")[-1] in receipt.get("scope", "")
+            and "current IOException-at-I/O fault model" in receipt.get("scope", "")
+            and isinstance(receipt.get("source_findings"), list)
+            and len(receipt["source_findings"]) >= 7
+            and healthy.get("case_id") == case_id
+            and healthy.get("cluster_test") == selector
+            and healthy.get("status") == "calibration_complete"
+            and healthy.get("healthy_seed_valid") is True
+            and healthy.get("fault_trials_completed") == 0
+            and audit.get("case_id") == case_id
+            and audit.get("campaign_result_sha256") == receipt["healthy_result_sha256"]
+            and audit.get("report_gate_passed") is True
+            and audit.get("healthy_observed_path_doors") == 0
+            and audit.get("healthy_local_timeline_doors", 0) > 0
+            and attestation.get("case_id") == case_id
+            and attestation.get("selected_junit") == selector
+            and attestation.get("result_sha256") == receipt["healthy_result_sha256"]
+            and attestation.get("offline_audit_sha256") ==
+                receipt["healthy_offline_audit_sha256"]
+            and attestation.get("config_sha256") == digest(paths["config"])
+            and config.get("case_id") == case_id
+            and config.get("cluster_test") == selector
+            and mapping.get("target_source_sha256") ==
+                receipt.get("patched_target_source_sha256") ==
+                attestation.get("target_source_sha256") ==
+                overlay.get("modified_files", {}).get(target_source)
+            and mapping.get("compiled_class_sha256") ==
+                receipt.get("loaded_target_class_sha256") ==
+                attestation.get("loaded_target_class_sha256")
+            and any(isinstance(item, dict) and
+                    item.get("path", "").endswith(target_class) and
+                    item.get("sha256") == receipt["loaded_target_class_sha256"]
+                    for item in compiled)
+            and commit == overlay.get("base_commit") ==
+                "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae"
+            and attestation.get("test_source_sha256") ==
+                source_files["zookeeper-server/src/test/java/org/apache/zookeeper/test/WatchEventWhenAutoResetTest.java"]
+            and pilot.get("case_id") == case_id
+            and pilot.get("status") in TERMINAL
+            and pilot.get("healthy_seed_valid") is True
+            and pilot.get("cluster_test") ==
+                "org.apache.zookeeper.server.ConnectionMetricsTest#testRevalidateCount"
+            and pilot.get("fault_trials_completed") == 2
+            and pilot.get("strict_injected_trials") == 2
+            and pilot.get("strict_target_trials") == 2
+            and pilot.get("exact_exception_trials") == 0
+            and fact.get("post_restart_node") == witness.get("node") == "zk1"
+            and fact.get("post_restart_epoch") == witness.get("epoch") == 1
+            and fact.get("door_event_id") == witness.get("door_event_id")
+            and fact.get("target_check_event_id") == witness.get("target_check_event_id")
+            and fact.get("evidence_type") == witness.get("evidence_type") ==
+                "observed_local_timeline"
+            and fact.get("observed_graph_path_doors") == 0
+            and isinstance(door, dict) and isinstance(target, dict)
+            and door.get("type") == "DOOR_OBSERVED"
+            and target.get("type") == "TARGET_CHECK"
+            and target.get("site") in config.get("target", {}).get("check_sites", [])
+            and all(door.get(key) == target.get(key) == witness.get(key)
+                    for key in ("node", "epoch", "thread_id", "occurrence"))
+            and door.get("seq") == witness.get("door_seq")
+            and target.get("seq") == witness.get("target_check_seq")
+            and door["seq"] < target["seq"]
+            and raw.hexdigest() == evidence.get("raw_sha256") ==
+                attestation.get("trace_raw_sha256")
+            and digest(trace) == attestation.get("trace_gzip_sha256")
+        )
+        return ("fault_model_zxid_influence_unproven" if valid else
+                "invalid_fault_model_receipt"), str(path)
+    except (OSError, ValueError, TypeError, KeyError, subprocess.CalledProcessError):
+        return invalid
+
+
 def _fault_model_no_target_path(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Record a bounded pilot whose retained checks have no observed fault path."""
     path = results / "quality_reviews" / "solr37_v29p_gap" / f"{case_id}.json"
@@ -1638,6 +1826,11 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "new_bug": None,
     }
     if result is None:
+        zxid_status, zxid_receipt = _zk04_zxid_influence_gap(results, case_id)
+        if zxid_status is not None:
+            row["report_status"] = zxid_status
+            row["fault_model_receipt"] = zxid_receipt
+            return row
         no_path_status, no_path_receipt = _fault_model_no_target_path(results, case_id)
         if no_path_status is not None:
             row["report_status"] = no_path_status
@@ -1813,6 +2006,10 @@ def markdown(report: dict[str, Any]) -> str:
              "it is not a completed campaign. `fault_model_no_target_path` records "
              "a SHA-checked bounded pilot with retained checks but no observed "
              "fault-to-target path; it is also not a completed campaign. "
+             "`fault_model_zxid_influence_unproven` means the existing ZK04 "
+             "cluster JUnit reaches the guard, but current I/O exception evidence "
+             "does not show a target-preserving change to either zxid operand; "
+             "it is neither an impossibility claim nor a completed campaign. "
              "Local-timeline-only quality also requires a same-actor, "
              "same-epoch, same-occurrence target check after an admitted fault door. "
              "A SHA-bound faulted-path review is required for high-quality status. "

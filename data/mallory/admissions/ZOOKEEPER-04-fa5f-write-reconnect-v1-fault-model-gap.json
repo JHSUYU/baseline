@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-04",
+  "status": "no_target_preserving_zxid_changing_io_fault_demonstrated",
+  "scope": "Existing WatchEventWhenAutoResetTest#testNodeDataChanged and the current IOException-at-I/O fault model; this is not an impossibility claim for other existing tests or fault models.",
+  "healthy_result_sha256": "5c2e7f3a34521c9620ebf5a4f15d50d9cc05b7e12f1c2d1c30be145188989af9",
+  "healthy_offline_audit_sha256": "c0958a37cb7b60653ede4adb2a62f7b2c722b81a6b3673c712ae57ceee00c9ec",
+  "healthy_attestation_sha256": "99baa53c4815521471c9caba444bdd9c0d58bba7a0ab8b550308abcb935657b7",
+  "prior_readbool_pilot_result_sha256": "7f432e287a7530939917cd2c464e59b3e9aefaaab15123ad8a2cebd05042d49b",
+  "source_files": {
+    "zookeeper-server/src/test/java/org/apache/zookeeper/test/WatchEventWhenAutoResetTest.java": "ecb8c84d050050e376b1a1a9fbd6a4b4b50527288a23ed687fb01d62a790b3d6",
+    "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumUtil.java": "e9e031110ba0d3c4f45bff78ee8c160ed911f21ba5b884f585178b3f35d1e487",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/ClientCnxn.java": "e38ec983c6b822632f2c7783cce3189889cd08752115ec5ed1f79008a85cf819",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ServerCnxn.java": "7f11aaed6e3055444fe98ff8c19e7b67c388ec7fd0002d282e028d8e9c301f23",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/NIOServerCnxn.java": "2b2433dd224e5d56e85008dc734a4c02def0539258c2a2f38492f64f18ff2762",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java": "72606c8b4f2d887a94555de2d5fd6ec213b33496da8469df73064d5dfbe4d651",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java": "2008eb36fd2a4e69f557f616f7449b0bd04ee4dd0fdc81786e0a4d9113e648e0",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java": "3827ccefc4a632b3f37ebe5258f4c97c142211675a5a22801aac1ae2122cb830",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZKDatabase.java": "512d8f592a402f4c140991c950d08b8b95f09ef210b3c593b8115db4bfec02b2",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/DataTree.java": "701986b867635c82d743710a7a2cc0c9711b121d24fe5ce813d69adbca81678a",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/persistence/FileTxnSnapLog.java": "896ccd0cd1a07f338ab4edd3e370c7f6959d58f09bfd0f8819d8428e84c28f68",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/SyncRequestProcessor.java": "c82a706168dc69b2c3e7589c3d75800c40b2372d5695adbee9e40ba9d5cd3ef3"
+  },
+  "patched_target_source_sha256": "6011ece2590691c458bfd4cc95758c732a31717586ad7d0952c6cab056efeb9e",
+  "loaded_target_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+  "source_findings": [
+    "ClientCnxn.java:964 updates a client's lastZxid from its own successful reply; line 1019 sends that value in ConnectRequest. The reconnecting client1 created the znode before peer1 shutdown (WatchEventWhenAutoResetTest.java:131), but the later setData while peer1 is down is performed by different client2 (line 134). Therefore that later write does not increase the reconnecting client's lastZxidSeen.",
+    "QuorumPeer.java:1128-1133 calls loadDataBase before starting the client connection factory. ZKDatabase.java:285 calls FileTxnSnapLog.restore; QuorumPeer.java:1199-1201 wraps an IOException from this startup recovery as RuntimeException, preventing this startup path from serving a client connection.",
+    "Follower.java:108 calls Learner.syncWithLeader before steady following; Learner.java:576-604 handles SNAP/TRUNC and lines 765-778 persist pending transactions before line 791 calls startServing. Follower.java:127 catches an exception during this phase and closes its leader socket.",
+    "NIOServerCnxn.java:434 checks isZKServerRunning before processConnectRequest; ServerCnxn.java:609 requires zkServer.isRunning, and ZooKeeperServer.startServing switches to RUNNING. Thus an exception that aborts the restart sync before startServing does not demonstrate the same restart's target guard.",
+    "ZooKeeperServer.processConnectRequest patched line1420 catches readBool IOException and leaves readOnly=false; its selected line1434 guard separately compares the ConnectRequest zxid with DataTree.lastProcessedZxid. The observed r0001 readBool fault preserved the guard but did not change either value or throw.",
+    "Learner.java:791 starts serving before lines 802-826 enqueue or commit some pending synchronization transactions. SyncRequestProcessor.java:181/235 appends and commits those writes, and its outer Throwable catch exits the processor. This is a source-plausible live-server fault surface, but missing the peer2 setData still does not put peer1 behind reconnecting client1's earlier lastZxid; no relevant exact observed path or bounded fault outcome has been shown for it.",
+    "DataTree.java:1118-1119 advances lastProcessedZxid after applying a transaction. FileTxnSnapLog and ZKDatabase recovery/commit I/O are relevant state-changing surfaces, but no current exact, target-preserving exception door that makes peer1's zxid lower than client1's submitted zxid has been demonstrated."
+  ],
+  "healthy_trace_fact": {
+    "post_restart_node": "zk1",
+    "post_restart_epoch": 1,
+    "door_event_id": "ZOOKEEPER-04-r0000:289",
+    "target_check_event_id": "ZOOKEEPER-04-r0000:290",
+    "evidence_type": "observed_local_timeline",
+    "observed_graph_path_doors": 0
+  },
+  "full_campaign_admission": false,
+  "followup": "Only promote a new, versioned existing-test configuration after a fresh healthy trace proves an exact named, pretarget state-changing I/O path and a bounded fault trial proves the affected actor still reaches the same guard."
+}

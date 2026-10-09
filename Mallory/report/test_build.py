@@ -1,6 +1,7 @@
 import json
 import gzip
 import hashlib
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -17,6 +18,44 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_zk04_zxid_gap_is_nonterminal_and_fails_closed_on_tamper(self):
+        from Mallory.report.build import _zk04_zxid_influence_gap
+        baseline = Path(__file__).resolve().parents[2]
+        original = baseline / "data/mallory"
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            for relative in (
+                "calibration_fa5f_lane2/ZOOKEEPER-04-write-reconnect-v1",
+                "pilot_fa5f_lane2/ZOOKEEPER-04-readbool-v2",
+            ):
+                shutil.copytree(original / relative, results / relative)
+            admission = results / "admissions"
+            admission.mkdir(parents=True)
+            for name in (
+                "ZOOKEEPER-04-fa5f-write-reconnect-v1-healthy.json",
+                "ZOOKEEPER-04-fa5f-write-reconnect-v1-fault-model-gap.json",
+            ):
+                shutil.copy2(original / "admissions" / name, admission / name)
+            self.assertEqual("fault_model_zxid_influence_unproven",
+                             _zk04_zxid_influence_gap(results, "ZOOKEEPER-04")[0])
+
+            healthy_result = (results / "calibration_fa5f_lane2" /
+                              "ZOOKEEPER-04-write-reconnect-v1/result.json")
+            healthy_result.write_bytes(healthy_result.read_bytes() + b" ")
+            self.assertEqual("invalid_fault_model_receipt",
+                             _zk04_zxid_influence_gap(results, "ZOOKEEPER-04")[0])
+            shutil.copy2(original / "calibration_fa5f_lane2" /
+                         "ZOOKEEPER-04-write-reconnect-v1/result.json", healthy_result)
+
+            receipt_path = (admission /
+                            "ZOOKEEPER-04-fa5f-write-reconnect-v1-fault-model-gap.json")
+            receipt = json.loads(receipt_path.read_text())
+            source = next(iter(receipt["source_files"]))
+            receipt["source_files"][source] = "0" * 64
+            receipt_path.write_text(json.dumps(receipt))
+            self.assertEqual("invalid_fault_model_receipt",
+                             _zk04_zxid_influence_gap(results, "ZOOKEEPER-04")[0])
+
     def test_solr37_no_target_path_receipt_fails_closed(self):
         from Mallory.report.build import _fault_model_no_target_path
         with tempfile.TemporaryDirectory() as temporary:

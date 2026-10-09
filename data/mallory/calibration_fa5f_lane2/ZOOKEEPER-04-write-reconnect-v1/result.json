@@ -1,0 +1,125 @@
+{
+  "calibration_only": true,
+  "case_id": "ZOOKEEPER-04",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.zookeeper.test.WatchEventWhenAutoResetTest#testNodeDataChanged",
+  "coverage_ids_seen": 186,
+  "dispatch_attempt_ids": [
+    "zk-healthy-20261009T213024Z"
+  ],
+  "duration_seconds": 19.935,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 127,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_5d49e6deabf94f788c4bc7076a95cefa",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.zookeeper.test.WatchEventWhenAutoResetTest-mallory_0000_5d49e6deabf94f788c4bc7076a95cefa.xml",
+        "sha256": "c03a5caf16144e1f22338b2af4b6d3cea8a2d689ac1cb251579f74660120ca5b"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "d06eb34ba5d91bbb0ca2b742e8c8d1f39b4cee7d2bf5859ecf55d6c46c7821be",
+    "tests": 1
+  },
+  "healthy_local_timeline_doors": 4,
+  "healthy_observed_door_events": 170,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "zk-healthy-20261009T213024Z",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "zk1"
+    ],
+    "eligible_doors_before_target": 127,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+    "observed_target_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+    "reasons": [],
+    "site_catalog_sha256": "e38ceae208f7eac853d6e94351f2ab634809583812861519fcbc3ef6a23f4bba",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "zookeeper",
+  "target": {
+    "check_code": "throw new CloseRequestException(msg, ServerCnxn.DisconnectReason.CLIENT_ZXID_AHEAD);",
+    "check_sites": [
+      "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1434:branch:7"
+    ],
+    "exception_class": "org.apache.zookeeper.server.ServerCnxn$CloseRequestException",
+    "function": "org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)",
+    "nodes": [
+      "zk1"
+    ],
+    "site_id": "<org.apache.zookeeper.server.ZooKeeperServer: void processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)>#u97",
+    "source_line": 1444,
+    "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+    "throw_site": "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1444:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "zk1"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "zk-healthy-20261009T213024Z",
+      "duration_seconds": 19.935,
+      "eligible_doors_before_target": 127,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": 4,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 186
+      },
+      "observed_door_events": 170,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

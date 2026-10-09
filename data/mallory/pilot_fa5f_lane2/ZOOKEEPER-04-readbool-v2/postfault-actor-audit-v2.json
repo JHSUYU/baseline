@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-04",
+  "status": "postfault_target_causality_proven",
+  "pilot_result": "/users/ZhenyuLi/baseline/data/mallory/pilot_fa5f_lane2/ZOOKEEPER-04-readbool-v2/result.json",
+  "pilot_result_sha256": "7f432e287a7530939917cd2c464e59b3e9aefaaab15123ad8a2cebd05042d49b",
+  "original_offline_audit": "/users/ZhenyuLi/baseline/data/mallory/pilot_fa5f_lane2/ZOOKEEPER-04-readbool-v2/offline-causal-audit.json",
+  "original_offline_audit_sha256": "a0c02c3a3e2fe11cdd2a2d6ec93f4b9a3a8104457ed1eb3dcc25ed23123562ff",
+  "original_audit_gate_passed": true,
+  "applied_fault_count": 2,
+  "proven_fault_count": 1,
+  "exact_same_occurrence_count": 1,
+  "time_respecting_observed_path_count": 0,
+  "faults": [
+    {
+      "trial_id": 1,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-04-r0001:205",
+      "fault_seq": 205,
+      "fault_site": "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1420:door:1",
+      "fault_node": "zk2",
+      "fault_epoch": 0,
+      "fault_occurrence": "zk2:0:org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V:root:1",
+      "fault_scope_valid": true,
+      "scope_rejection": null,
+      "later_exact_check_event_ids": [
+        "ZOOKEEPER-04-r0001:206"
+      ],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0001:206"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": true
+    },
+    {
+      "trial_id": 2,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-04-r0002:204",
+      "fault_seq": 204,
+      "fault_site": "zookeeper.client.connect.read",
+      "fault_node": "zk2",
+      "fault_epoch": 0,
+      "fault_occurrence": "zk2:0:org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V:root:1",
+      "fault_scope_valid": true,
+      "scope_rejection": null,
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0002:226"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    }
+  ]
+}

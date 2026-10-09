@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-04",
+  "status": "healthy_write_reconnect_target_observed",
+  "selected_junit": "org.apache.zookeeper.test.WatchEventWhenAutoResetTest#testNodeDataChanged",
+  "duration_seconds": 19.935,
+  "config_sha256": "7d18a74120884d269157eb00f0160efd970e6effcb68eb15cacd46a3033b62a1",
+  "result_sha256": "5c2e7f3a34521c9620ebf5a4f15d50d9cc05b7e12f1c2d1c30be145188989af9",
+  "offline_audit_sha256": "c0958a37cb7b60653ede4adb2a62f7b2c722b81a6b3673c712ae57ceee00c9ec",
+  "trace_gzip_sha256": "05f938cb49efbb5117850b2d68239e2de4b84be8bea4754912b4332668ed19dd",
+  "trace_raw_sha256": "e11257915f1393d293938161bf267567dabc78fd4f591e7be6a56ede8babc8df",
+  "site_catalog_sha256": "e38ceae208f7eac853d6e94351f2ab634809583812861519fcbc3ef6a23f4bba",
+  "source_review_sha256": "cc98feb2e58a7d2c52bacf1a11872840a7579cd177c9b6667e0180959dd1bb16",
+  "target_source_sha256": "6011ece2590691c458bfd4cc95758c732a31717586ad7d0952c6cab056efeb9e",
+  "test_source_sha256": "ecb8c84d050050e376b1a1a9fbd6a4b4b50527288a23ed687fb01d62a790b3d6",
+  "loaded_target_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+  "post_restart_witness": {
+    "door_event_id": "ZOOKEEPER-04-r0000:289",
+    "door_seq": 289,
+    "target_check_event_id": "ZOOKEEPER-04-r0000:290",
+    "target_check_seq": 290,
+    "node": "zk1",
+    "epoch": 1,
+    "thread_id": 188,
+    "occurrence": "zk1:1:org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V:root:1",
+    "evidence_type": "observed_local_timeline"
+  },
+  "initial_connection_witness": {
+    "door_event_id": "ZOOKEEPER-04-r0000:72",
+    "door_seq": 72,
+    "target_check_event_id": "ZOOKEEPER-04-r0000:73",
+    "target_check_seq": 73,
+    "node": "zk1",
+    "epoch": 0,
+    "thread_id": 139,
+    "occurrence": "zk1:0:org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V:root:1",
+    "evidence_type": "observed_local_timeline"
+  },
+  "scope_limit": "Existing JUnit writes before reconnect and reaches the nonthrowing zk1 guard after restart. This is local temporal evidence; no fault outcome or zxid value-flow has been established."
+}
