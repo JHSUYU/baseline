@@ -94,7 +94,8 @@ public final class SolrHooks {
 
   /** ZooKeeper watcher callbacks can run outside the initiating request thread. */
   public static void beginAliasesManager(Object manager) {
-    SCOPES.get().push(new Scope("aliases", Probe.withRegisteredNode(manager), null));
+    Object reader = field(manager, "this$0");
+    SCOPES.get().push(new Scope("aliases", Probe.withRegisteredNode(reader), null));
   }
 
   public static void endAliasesManager() { end("aliases"); }

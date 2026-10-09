@@ -56,7 +56,8 @@ public class SolrHooksTest {
   }
 
   public static final class Reader {
-    public final Object aliasesManager = new Object();
+    public final AliasesManager aliasesManager = new AliasesManager();
+    public final class AliasesManager { }
     private final Object zkClient;
     Reader() { this(new Object()); }
     Reader(Object zkClient) { this.zkClient = zkClient; }
@@ -160,6 +161,18 @@ public class SolrHooksTest {
     SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(new Object(), shared));
     assertEquals("unknown", Probe.currentNode());
     SolrHooks.endZkWatchDispatch();
+  }
+
+  @Test public void aliasesManagerUsesItsRegisteredReaderEvenForNewInstance() {
+    Reader reader = new Reader();
+    SolrHooks.registerClientReader(reader);
+    SolrHooks.beginAliasesManager(reader.new AliasesManager());
+    assertEquals("client", Probe.currentNode());
+    SolrHooks.endAliasesManager();
+    assertEquals("unknown", Probe.currentNode());
+    SolrHooks.beginAliasesManager(new Reader().new AliasesManager());
+    assertEquals("unknown", Probe.currentNode());
+    SolrHooks.endAliasesManager();
   }
 
   @Test public void clientProviderDoesNotRebindServerOwnedReader() {
@@ -338,7 +351,7 @@ public class SolrHooksTest {
         new org.apache.solr.common.cloud.ZkStateReader();
     Object watcher = watcherClass.getConstructor(org.apache.solr.common.cloud.ZkStateReader.class)
         .newInstance(reader);
-    Probe.registerNode(watcher, "node1", 0);
+    Probe.registerNode(reader, "node1", 0);
     assertEquals("node1", watcherClass.getMethod("setIfNewer", Object.class)
         .invoke(watcher, "new"));
     assertEquals("node1", watcherClass.getMethod("update").invoke(watcher));
