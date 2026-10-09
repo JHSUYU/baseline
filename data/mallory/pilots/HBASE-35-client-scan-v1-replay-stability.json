@@ -1,0 +1,158 @@
+{
+  "case_id": "HBASE-35",
+  "core_release_id": "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+  "door_site": "org.apache.hadoop.hbase.client.ScannerCallable#openScanner()Lorg/apache/hadoop/hbase/shaded/protobuf/generated/ClientProtos$ScanResponse;@365:door:1",
+  "finding": "Two healthy traces select ordinal 11, but target-producing Scan door shifts to ordinal 13 in two faulted reruns. Injected ordinals 10 and 9 reach the target later without an observed event path. Raw task tokens vary by run, so current global ordinal and token are not replay-stable under faults.",
+  "full_campaign_admission": false,
+  "kind": "source_and_raw_replay_stability_review",
+  "piloted_fault_trials": 3,
+  "schema_version": 1,
+  "strict_postfault_path_trials": 1,
+  "target_site": "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2715:branch:10",
+  "traces": [
+    {
+      "applied_faults": [],
+      "candidate_door_count": 18,
+      "qualified_doors": [
+        {
+          "context": "HBASE-35-r0000:task:427",
+          "door_event_id": "HBASE-35-r0000:1181",
+          "door_ordinal": 11,
+          "door_seq": 1181,
+          "occurrence": "unscoped:client:0:HBASE-35-r0000:task:427:thread:568:segment:2",
+          "target_check_ids": [
+            "HBASE-35-r0000:1200",
+            "HBASE-35-r0000:1204",
+            "HBASE-35-r0000:1208",
+            "HBASE-35-r0000:1212"
+          ]
+        }
+      ],
+      "trace": "calibration_v29",
+      "trace_gzip_sha256": "0261ea282d31273c2469b26467cb45ee00e358a6bffd0605a8dbbafccace0bf5",
+      "trace_path": "data/mallory/calibration_v29/HBASE-35/trials/r0000/events.jsonl.gz"
+    },
+    {
+      "applied_faults": [],
+      "candidate_door_count": 18,
+      "qualified_doors": [
+        {
+          "context": "HBASE-35-r0000:task:427",
+          "door_event_id": "HBASE-35-r0000:1181",
+          "door_ordinal": 11,
+          "door_seq": 1181,
+          "occurrence": "unscoped:client:0:HBASE-35-r0000:task:427:thread:571:segment:2",
+          "target_check_ids": [
+            "HBASE-35-r0000:1200",
+            "HBASE-35-r0000:1204",
+            "HBASE-35-r0000:1208",
+            "HBASE-35-r0000:1212"
+          ]
+        }
+      ],
+      "trace": "pilot_r0000",
+      "trace_gzip_sha256": "b33fcd920b1a7ee102af1000ac278989fa1e5ec0724fc810a82835987b22b77c",
+      "trace_path": "data/mallory/pilots/HBASE-35-client-scan-v1/trials/r0000/events.jsonl.gz"
+    },
+    {
+      "applied_faults": [
+        {
+          "context": "HBASE-35-r0001:task:421",
+          "door_ordinal": 11,
+          "event_id": "HBASE-35-r0001:1164",
+          "seq": 1164
+        }
+      ],
+      "candidate_door_count": 19,
+      "qualified_doors": [
+        {
+          "context": "HBASE-35-r0001:task:421",
+          "door_event_id": "HBASE-35-r0001:1162",
+          "door_ordinal": 11,
+          "door_seq": 1162,
+          "occurrence": "unscoped:client:0:HBASE-35-r0001:task:421:thread:571:segment:2",
+          "target_check_ids": [
+            "HBASE-35-r0001:1184",
+            "HBASE-35-r0001:1188",
+            "HBASE-35-r0001:1192",
+            "HBASE-35-r0001:1196"
+          ]
+        },
+        {
+          "context": "HBASE-35-r0001:task:421",
+          "door_event_id": "HBASE-35-r0001:1165",
+          "door_ordinal": 12,
+          "door_seq": 1165,
+          "occurrence": "unscoped:client:0:HBASE-35-r0001:task:421:thread:571:segment:2",
+          "target_check_ids": [
+            "HBASE-35-r0001:1184",
+            "HBASE-35-r0001:1188",
+            "HBASE-35-r0001:1192",
+            "HBASE-35-r0001:1196"
+          ]
+        }
+      ],
+      "trace": "pilot_r0001",
+      "trace_gzip_sha256": "2e8e1983a7ea58db06099a81bea14ee51c21837fa2fbbbae7a9f1ed6f20df39f",
+      "trace_path": "data/mallory/pilots/HBASE-35-client-scan-v1/trials/r0001/events.jsonl.gz"
+    },
+    {
+      "applied_faults": [
+        {
+          "context": "HBASE-35-r0002:task:211",
+          "door_ordinal": 10,
+          "event_id": "HBASE-35-r0002:576",
+          "seq": 576
+        }
+      ],
+      "candidate_door_count": 20,
+      "qualified_doors": [
+        {
+          "context": "HBASE-35-r0002:task:436",
+          "door_event_id": "HBASE-35-r0002:1208",
+          "door_ordinal": 13,
+          "door_seq": 1208,
+          "occurrence": "unscoped:client:0:HBASE-35-r0002:task:436:thread:571:segment:2",
+          "target_check_ids": [
+            "HBASE-35-r0002:1227",
+            "HBASE-35-r0002:1231",
+            "HBASE-35-r0002:1235",
+            "HBASE-35-r0002:1239"
+          ]
+        }
+      ],
+      "trace": "pilot_r0002",
+      "trace_gzip_sha256": "23c34fd996fd24a905f8dbe26391177b2ffffadc20fda057312e7f9a49fe23f4",
+      "trace_path": "data/mallory/pilots/HBASE-35-client-scan-v1/trials/r0002/events.jsonl.gz"
+    },
+    {
+      "applied_faults": [
+        {
+          "context": "HBASE-35-r0003:task:205",
+          "door_ordinal": 9,
+          "event_id": "HBASE-35-r0003:563",
+          "seq": 563
+        }
+      ],
+      "candidate_door_count": 20,
+      "qualified_doors": [
+        {
+          "context": "HBASE-35-r0003:task:430",
+          "door_event_id": "HBASE-35-r0003:1189",
+          "door_ordinal": 13,
+          "door_seq": 1189,
+          "occurrence": "unscoped:client:0:HBASE-35-r0003:task:430:thread:572:segment:2",
+          "target_check_ids": [
+            "HBASE-35-r0003:1208",
+            "HBASE-35-r0003:1212",
+            "HBASE-35-r0003:1216",
+            "HBASE-35-r0003:1220"
+          ]
+        }
+      ],
+      "trace": "pilot_r0003",
+      "trace_gzip_sha256": "9d5adb5faf2b8df5d421f98d390c221f6abb7b40e0293a7b5032f814a8eae83a",
+      "trace_path": "data/mallory/pilots/HBASE-35-client-scan-v1/trials/r0003/events.jsonl.gz"
+    }
+  ]
+}
