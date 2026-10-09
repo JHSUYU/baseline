@@ -1,0 +1,222 @@
+{
+  "schema_version": 1,
+  "kind": "source_only_existing_test_search_and_required_rpc_path",
+  "source_system": "HBase 2.6.6",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "scope": "HBASE-19 and HBASE-20 exact inner guards in ModifyTableProcedure.preflightChecks",
+  "status": "no_suitable_existing_cluster_test_identified",
+  "cases": [
+    {
+      "case_id": "HBASE-19",
+      "target_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3",
+        "lines": [
+          96,
+          98,
+          102,
+          119,
+          128,
+          135,
+          137,
+          139
+        ]
+      },
+      "exact_check_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@133:branch:7",
+      "exact_throw_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@135:throw:1",
+      "target_exception": "org.apache.hadoop.hbase.HBaseIOException",
+      "current_validated_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+      "current_healthy_result": "data/mallory/calibration_v8/HBASE-19/result.json",
+      "current_healthy_result_sha256": "12dca70f4f8a9e5ec8b9ce659cd96f2baff14302e3220566c65a4978b7e71058",
+      "current_offline_audit": "data/mallory/calibration_v8/HBASE-19/offline-causal-audit.json",
+      "current_offline_audit_sha256": "cac4d06c07aca87c1efb47af42be6da8ca3224ea03b41573204fee59ad8af909",
+      "current_healthy_summary": {
+        "junit_tests": 1,
+        "named_actor": [
+          "master0"
+        ],
+        "target_reached": true,
+        "selected_target_exception": false,
+        "eligible_doors_before_target": 46,
+        "closure_edges": 0,
+        "observed_path_doors": 0,
+        "fault_trials_completed": 0
+      },
+      "original_calibration_result": "data/mallory/calibration/HBASE-19/result.json",
+      "original_calibration_result_sha256": "e8e139248507b1f0bdf18ca159d1d34240e5a220f9d96a5ad673c459159e012e",
+      "existing_remote_selector": null,
+      "existing_remote_selector_status": "no_suitable_existing_cluster_junit_found_in_pinned_hbase_2_6_6_tests"
+    },
+    {
+      "case_id": "HBASE-20",
+      "target_source": {
+        "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3",
+        "lines": [
+          96,
+          98,
+          102,
+          119,
+          128,
+          135,
+          137,
+          139
+        ]
+      },
+      "exact_check_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@138:branch:8",
+      "exact_throw_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@139:throw:1",
+      "target_exception": "org.apache.hadoop.hbase.HBaseIOException",
+      "current_validated_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+      "current_healthy_result": "data/mallory/calibration_v8/HBASE-20/result.json",
+      "current_healthy_result_sha256": "ebe920d6295c99758018928e101d0f1f72aef98a913a72057ac3f39a99df8776",
+      "current_offline_audit": "data/mallory/calibration_v8/HBASE-20/offline-causal-audit.json",
+      "current_offline_audit_sha256": "5aa2b2cbddfb7c8886e03f08d95c88093227c50dab3e31035e0c4e75441f8b67",
+      "current_healthy_summary": {
+        "junit_tests": 1,
+        "named_actor": [
+          "master0"
+        ],
+        "target_reached": true,
+        "selected_target_exception": false,
+        "eligible_doors_before_target": 46,
+        "closure_edges": 0,
+        "observed_path_doors": 0,
+        "fault_trials_completed": 0
+      },
+      "original_calibration_result": "data/mallory/calibration/HBASE-20/result.json",
+      "original_calibration_result_sha256": "c0c91abd5825eaea83aa9749852279ec0058882ff3dda0865b4ef0da62ef2c87",
+      "existing_remote_selector": null,
+      "existing_remote_selector_status": "no_suitable_existing_cluster_junit_found_in_pinned_hbase_2_6_6_tests"
+    }
+  ],
+  "source_evidence": {
+    "target": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+      "sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3",
+      "lines": [
+        96,
+        98,
+        102,
+        119,
+        128,
+        135,
+        137,
+        139
+      ]
+    },
+    "admin_api": {
+      "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/Admin.java",
+      "sha256": "c56486a931d33ac75be1f0df5476f7c898133450d210118fbd39841936ebe0e9",
+      "lines": [
+        1533,
+        1538,
+        1544,
+        1551,
+        1560
+      ]
+    },
+    "admin_impl": {
+      "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+      "sha256": "2cfbe453b9ddbe6669c17d93b77f9a43ff9bd3bd2ab47ff9ad6f3b82ee5d06d0",
+      "lines": [
+        394,
+        404,
+        405
+      ]
+    },
+    "request_converter": {
+      "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/shaded/protobuf/RequestConverter.java",
+      "sha256": "fc0de7c0f65a7dab9c1cac357a696bce5aae2f99ffedde8ec51822effa7edba5",
+      "lines": [
+        1309,
+        1317
+      ]
+    },
+    "rpc_service": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/MasterRpcServices.java",
+      "sha256": "2d2c7350c99435f9dfd961a4c35c832ecb55008cb381a9c0b6ad1a18a2bf1e34",
+      "lines": [
+        1482,
+        1485,
+        1487
+      ]
+    },
+    "master": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java",
+      "sha256": "6d47807a0bf39b6cf48677bd8acbd7eaf0bc0a6a148a04d013573cefa4b4deb1",
+      "lines": [
+        2821,
+        2824,
+        2828,
+        2848,
+        2865,
+        2868
+      ]
+    },
+    "direct_test": {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java",
+      "sha256": "eca1ba9410c4a42de82594fdb4b08f8515289ffe8225332f0699ed7f1233d17e",
+      "lines": [
+        593,
+        604,
+        702,
+        709,
+        727,
+        748
+      ]
+    },
+    "remote_near_miss": {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestTableDescriptorModificationFromClient.java",
+      "sha256": "d32a3aa470b22b57ff4e3b28b1c14e1ec9dc9092b1f547d97ddd8aa26f9e8499",
+      "lines": [
+        73,
+        76,
+        94
+      ]
+    }
+  },
+  "existing_test_search": {
+    "scope": "All Java files under all HBase 2.6.6 src/test trees, including hbase-server and other modules. Inspected modifyTable/modifyTableAsync invocations and every two-argument call; searched buildModifyTableRequest and setReopenRegions call sites.",
+    "finding": "No active JUnit call supplies false (or a false-valued variable) as the reopenRegions argument to Admin.modifyTable or Admin.modifyTableAsync. The two-argument test calls supply TableName and TableDescriptor to the deprecated overload; Admin.java:1538 forwards with true. One-argument Admin.modifyTable and AsyncAdmin.modifyTable default to true. The only test declarations setting reopenRegions=false are TestModifyTableProcedure#testModifyWillNotReopenRegions and #testModifyTableWithCoprocessorAndColumnFamilyPropertyChange, which submit new ModifyTableProcedure directly through ProcedureExecutor.",
+    "near_misses": [
+      {
+        "selector": "org.apache.hadoop.hbase.master.procedure.TestTableDescriptorModificationFromClient#testModifyTable",
+        "source": {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestTableDescriptorModificationFromClient.java",
+          "sha256": "d32a3aa470b22b57ff4e3b28b1c14e1ec9dc9092b1f547d97ddd8aa26f9e8499",
+          "lines": [
+            73,
+            76,
+            94
+          ]
+        },
+        "reason": "MiniHBaseCluster and Admin.modifyTable(TABLE_NAME, modifiedHtd) at line 94 provide real client-to-master RPC, but the deprecated overload forwards reopenRegions=true, so the inner false-only guards at lines 133 and 138 are unreachable."
+      },
+      {
+        "selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+        "source": {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java",
+          "sha256": "eca1ba9410c4a42de82594fdb4b08f8515289ffe8225332f0699ed7f1233d17e",
+          "lines": [
+            593,
+            604,
+            702,
+            709,
+            727,
+            748
+          ]
+        },
+        "reason": "At lines 727 and 748 the test constructs ModifyTableProcedure directly on its JUnit thread with reopenRegions=false. v8 healthy calibration confirms exact checks on named master0 without selected throws, but offline causal audit finds zero observed-path doors/closure edges into the target."
+      }
+    ]
+  },
+  "required_path_if_a_new_test_is_authorized": [
+    "Start MiniHBaseCluster and create a table with one column family.",
+    "Read the descriptor through Admin; create a new descriptor with the same table name, family count, coprocessor descriptors, region replication, and memstore replication, changing only a permitted column-family property or benign table property.",
+    "Call Admin.modifyTable(newDescriptor, false) or modifyTableAsync(newDescriptor, false) from the test client. HBaseAdmin.modifyTableAsync builds ModifyTableRequest with reopenRegions=false; MasterRpcServices.modifyTable forwards it to HMaster.modifyTable.",
+    "HMaster constructs ModifyTableProcedure on the master RPC thread; its constructor calls preflightChecks before submitting the procedure. Both exact healthy guard sites should be reached without throwing; the received ModifyTable RPC must be bound as a causal predecessor and named master actor in runtime evidence."
+  ],
+  "caveat": "This is a proposed new test design, not an existing selector or a verified healthy run. Runtime calibration must validate exact site IDs, named actor, selected throw absence, and at least one observed pretarget RPC door. Do not dispatch fault campaigns from the current zero-door seeds.",
+  "inventory_changes": false,
+  "jvm_runs_by_this_audit": 0
+}

@@ -1,0 +1,107 @@
+{
+  "agent_arg_property": "mallory.agent.arg",
+  "agent_include": [
+    "org.apache.zookeeper.server.SessionTrackerImpl"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-causal-context-bf8e6dba.jar",
+  "agent_properties": {
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": true
+  },
+  "agent_transport": "surefire_argline",
+  "auto_promote_if_healthy": true,
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_basis": "3x_historical_seed_plus_60s_capped_180_to_1200",
+    "trial_timeout_seconds": 180,
+    "trials": 80
+  },
+  "calibration_only": false,
+  "case_id": "ZOOKEEPER-02",
+  "cluster_test": "org.apache.zookeeper.test.QuorumTest#testMultiToFollower",
+  "command": [
+    "mvn",
+    "-pl",
+    "zookeeper-server",
+    "-am",
+    "-Dtest=QuorumTest#testMultiToFollower",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dmallory.test.dir={trial_dir}/test-data",
+    "test"
+  ],
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-requestpath-lane2",
+  "expected_target_class_sha256": "79699a785a100abcd9e127c2258a94696676123eff5e9117a23f9052e65b96db",
+  "mapping": {
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation"
+    },
+    "agent_sha256": "bf8e6dbae07027dce750f15e3385c763f4894c2856056e2320bd85a54ed100c5",
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-requestpath-lane2/zookeeper-server/target/classes",
+    "compiled_class_sha256": "79699a785a100abcd9e127c2258a94696676123eff5e9117a23f9052e65b96db",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",
+    "compiled_jar_sha256": "fd12731eecb5d3ace48fa25f0141f011bcb13273b5dca301ff15d5409bd52a91",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin",
+    "distribution_root_env": "MALLORY_ZOOKEEPER_DIST_ROOT",
+    "epochfix_healthy_attestation": "/users/ZhenyuLi/.mallory-worktrees/zk-calibration/ZOOKEEPER-02-requestpath-healthy/causal-path-attestation.json",
+    "epochfix_healthy_attestation_sha256": "f48c079acdd77d720b54fc7118f2308b5b5cca38637330ef123860a7ee211eea",
+    "healthy_seed_verified": true,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/zookeeper-3.8.7",
+    "node_identity_binding_configured": true,
+    "node_identity_binding_verified": false,
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-requestpath-lane2",
+    "source_root_env": "MALLORY_ZOOKEEPER_SOURCE_ROOT",
+    "status": "epochfix_causal_path_proven_pending_campaign_seed",
+    "target_source_sha256": "beaf83a1c2d111cd99aec9ea9dff213193ddb4e03de3d07a2ae7a50f411c1e54",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "67a3f264bc95434d9fca8de86a3ac2f398f28aa2ad752b803ad1f6411b0181b6",
+    "verified_healthy_probe": {
+      "check_sites": [
+        "org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V@326:branch:4"
+      ],
+      "class_sha256": "79699a785a100abcd9e127c2258a94696676123eff5e9117a23f9052e65b96db",
+      "evidence": "/users/ZhenyuLi/.mallory-worktrees/zk-calibration/ZOOKEEPER-02-requestpath-healthy/causal-path-attestation.json",
+      "evidence_sha256": "f48c079acdd77d720b54fc7118f2308b5b5cca38637330ef123860a7ee211eea",
+      "scope": "independent_epochfix_healthy_path_proof",
+      "target_source_sha256": "beaf83a1c2d111cd99aec9ea9dff213193ddb4e03de3d07a2ae7a50f411c1e54",
+      "throw_site": "org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V@327:throw:1"
+    }
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-causal-context-bf8e6dba.jar",
+      "sha256": "bf8e6dbae07027dce750f15e3385c763f4894c2856056e2320bd85a54ed100c5"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/zk-campaign/ZOOKEEPER-02-requestpath-full.config.sites.json",
+      "sha256": "d47c9c092f144f6294c4b0e6820fe6fc7612ff8c81cf35c34e586df20e074ce4"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/zk-campaign/ZOOKEEPER-02-requestpath-full.config.sites.json",
+  "source_overlay_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/zookeeper-3.8.7-requestpath-lane2-overlay.json",
+  "source_overlay_receipt_sha256": "4312a5fcaff59f0b10b201673352093bd39f58e1997b3cbaaf9b3c4d50982c45",
+  "system": "zookeeper",
+  "target": {
+    "check_code": "if (session.owner == null) {\nsession.owner = owner;\n} else if (session.owner != owner) {\nthrow new KeeperException.SessionMovedException();",
+    "check_sites": [
+      "org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V@326:branch:4"
+    ],
+    "exception_class": "org.apache.zookeeper.KeeperException$SessionMovedException",
+    "function": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(long,java.lang.Object)",
+    "original_source_line": 323,
+    "site_id": "<org.apache.zookeeper.server.SessionTrackerImpl: void checkSession(long,java.lang.Object)>#u27",
+    "source_line": 327,
+    "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+    "throw_site": "org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V@327:throw:1"
+  }
+}

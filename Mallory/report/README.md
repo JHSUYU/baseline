@@ -63,6 +63,19 @@ no effective fault or with only target-losing faults remains visibly below
 that gate. `quality_counts` totals these categories for the original 102
 checks; calibration results never enter this table.
 
+A later causal precision review can supersede an earlier verified audit
+without changing its result or runtime. Reviews live in
+`data/mallory/quality_reviews/causal_precision_v2/`. The report reads only
+the cases listed in `index.json`, verifies the individual sidecar hash and
+its bindings to the exact campaign result and offline audit hashes, and
+checks the terminal status, duration, and strict target count. A valid
+`causal_precision_unverified` review removes the case from
+`high_quality_completed` while retaining its completed campaign, time,
+fault counts, and source review. A damaged or stale listed review is shown
+as `causal_precision_review_invalid` and cannot restore the old quality
+claim. These reviews distinguish exact post-fault target reach from an
+observed, time-respecting causal path from the applied door to that target.
+
 An older completed campaign can be marked `target_exercised_posthoc` only
 when a separate `posthoc-attestation.json` binds to the unchanged result
 hash, exact target sites, all trial catalogs, compiled target class hash,

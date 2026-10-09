@@ -1,0 +1,107 @@
+{
+  "agent_arg_property": "maven-surefire-plugin.argLine",
+  "agent_include": [
+    "org.apache.hadoop.hdfs.DFSInputStream",
+    "org.apache.hadoop.ipc.Server$RpcCall",
+    "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+    "org.apache.hadoop.hdfs.server.datanode.DataXceiver"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent-taskobserve-ordinal.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v1-63ff.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsMiniClusterTransformer",
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "surefire_argline",
+  "auto_promote_if_healthy": true,
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_seconds": 180,
+    "trials": 80
+  },
+  "case_id": "HDFS-01",
+  "cluster_test": "org.apache.hadoop.hdfs.TestPread#testPreadDFS",
+  "command": [
+    "mvn",
+    "-B",
+    "-ntp",
+    "-pl",
+    "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=TestPread#testPreadDFS",
+    "-Dtest.build.data={trial_dir}/hdfs-data",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "surefire:test"
+  ],
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/29ab038f754e3df6f38f94f38cee052b82b9601f255f347322fa422b45350fbc",
+  "core_release_sha256": "473ee1b0e60cc23bdb4c10acdd87936a579650c94bf2ddb28c01e199ddc5ccb7",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2",
+  "exception_class": "java.io.IOException",
+  "expected_target_class_sha256": "761459de0f1e7516e291f03dfb5843a1ab8504a8dca8920ac69dff6a45e1c2b6",
+  "explore_outside_closure": true,
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "require_named_node": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent-taskobserve-ordinal.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v1-63ff.jar",
+      "sha256": "63ff2cd4bc623f2b591e443cb1b9dc705cce6a2129238b523e205d89f6e9070b"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/HDFS-01/sites-v2-full.json",
+      "sha256": "68e1a7fad5a10f3188ab2866e7c4f20d02e6cfe3121475f2d4f6055950e4a729"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-client-3.4.3.jar",
+      "sha256": "c8c2a112840737e1de3261b30a452ac4cc2cc1fef6023ca4cbb6857315bc8f4a"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/HDFS-01/sites-v2-full.json",
+  "static_fault_locations": [
+    {
+      "class": "org.apache.hadoop.hdfs.DFSInputStream",
+      "line": 789,
+      "method": "readBuffer"
+    }
+  ],
+  "system": "hdfs",
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@517:branch:4",
+      "org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@517:branch:5"
+    ],
+    "exception_class": "java.io.EOFException",
+    "node": "hdfs-client",
+    "throw_site": "org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@518:throw:1"
+  },
+  "validated_recovery_exploration_interval": 5,
+  "validated_recovery_sites": [
+    {
+      "evidence": [
+        {
+          "sha256": "1047e10a540f20ba293d770ba2061dc1dd6483e084adf22af1482795f103632c",
+          "trial_result": "/users/ZhenyuLi/baseline/data/mallory/HDFS-01/pilots/retry/trials/r0001/result.json"
+        },
+        {
+          "sha256": "bacd8c315afbea608aa497f175c1af1aba0bfea5abee6c9fab611590df6a90c5",
+          "trial_result": "/users/ZhenyuLi/baseline/data/mallory/HDFS-01/pilots/retry/trials/r0002/result.json"
+        },
+        {
+          "sha256": "bace4a62b0e48c5768d7f8bb3269ab973a7f0a14ff4ba41405996560ecec20a9",
+          "trial_result": "/users/ZhenyuLi/baseline/data/mallory/HDFS-01/pilots/retry/trials/r0003/result.json"
+        }
+      ],
+      "site": "org.apache.hadoop.hdfs.DFSInputStream#readBuffer(Lorg/apache/hadoop/hdfs/ReaderStrategy;ILorg/apache/hadoop/hdfs/DFSUtilClient$CorruptedBlocks;)I@789:door:1"
+    }
+  ]
+}

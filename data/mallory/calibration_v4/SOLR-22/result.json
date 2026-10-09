@@ -1,0 +1,102 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-22",
+  "closure_coverage_ids_seen": 148,
+  "closure_edge_fingerprints_seen": 344,
+  "cluster_test": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
+  "coverage_ids_seen": 348,
+  "dispatch_attempt_ids": [
+    "20261009T162229-e3242dd2ba78"
+  ],
+  "duration_seconds": 17.778,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 300885,
+    "manifest_path": "evidence_archives/calibration_v4/SOLR-22.tar.manifest.json",
+    "manifest_sha256": "ab98f14b444fd9f3eed4312d58b5d0bdc4e15f338d7ec883d586c50779045b6b",
+    "path": "evidence_archives/calibration_v4/SOLR-22.tar.gz",
+    "sha256": "be664d4e30b8db8a48c95ac1d18b2dbab0b96bb4feca350afe36d6f3cc00b8a3"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 134,
+  "healthy_observed_door_events": 136,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T162229-e3242dd2ba78",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1"
+    ],
+    "eligible_doors_before_target": 134,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "d931a1769b441672d2b59e6536fd88d8d6680e5aedf021e468104a49c7db3b89",
+    "observed_target_class_sha256": "d931a1769b441672d2b59e6536fd88d8d6680e5aedf021e468104a49c7db3b89",
+    "reasons": [],
+    "site_catalog_sha256": "93c962c73d1ed1e46233ee7bfee9c6b8d463eb8948ed2c92068903e22e1a846a",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if ( (null != commit && false != commit.isDeleted())\n|| (null == commit && null != latestCommit && generation < latestCommit.getGeneration()) ) {\nthrow new IllegalStateException\n(\"Specified index generation is too old to be saved: \" + generation);",
+    "check_sites": [
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:2",
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:3",
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:4",
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:5"
+    ],
+    "exception_class": "java.lang.IllegalStateException",
+    "function": "org.apache.solr.core.IndexDeletionPolicyWrapper.getAndSaveCommitPoint(java.lang.Long)",
+    "original_source_line": 177,
+    "site_id": "<org.apache.solr.core.IndexDeletionPolicyWrapper: org.apache.lucene.index.IndexCommit getAndSaveCommitPoint(java.lang.Long)>#u28",
+    "source_line": 177,
+    "source_path": "solr/core/src/java/org/apache/solr/core/IndexDeletionPolicyWrapper.java",
+    "throw_site": "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@177:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T162229-e3242dd2ba78",
+      "duration_seconds": 17.778,
+      "eligible_doors_before_target": 134,
+      "novelty": {
+        "closure_coverage": 148,
+        "closure_edges": 344,
+        "coverage": 348
+      },
+      "observed_door_events": 136,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

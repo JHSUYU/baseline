@@ -1,0 +1,507 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-18",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.cloud.AliasIntegrationTest#testDeleteAliasWithExistingCollectionName",
+  "coverage_ids_seen": 268,
+  "dispatch_attempt_ids": [
+    "20261009T162128-796e046b311d"
+  ],
+  "duration_seconds": 20.586,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 116960,
+    "manifest_path": "evidence_archives/calibration_v4/SOLR-18.tar.manifest.json",
+    "manifest_sha256": "b9486b5898f896520890ee535878bba34ef1241eca68c84ad32fd01807fbd297",
+    "path": "evidence_archives/calibration_v4/SOLR-18.tar.gz",
+    "sha256": "779fb675bce583ec0c51c8d25a39e550d65d84f665758c3db5ddd8112c5f3ae0"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 95,
+  "healthy_observed_door_events": 95,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T162128-796e046b311d",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 95,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "11316fa5cf00d33d779e5ae96fbb04048e9a61070fb827641395589b84e2e8ad",
+    "observed_target_class_sha256": "11316fa5cf00d33d779e5ae96fbb04048e9a61070fb827641395589b84e2e8ad",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region"
+    ],
+    "site_catalog_sha256": "c3e9ecef1c179f20047e72e56ca77cdb74a06c580705de594606d323c6f58012",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 51,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "assert cmp != 0 || Arrays.equals(aliases.toJSON(), newAliases.toJSON()) : aliases + \" != \" + newAliases;",
+    "check_sites": [
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    ],
+    "exception_class": "java.lang.AssertionError",
+    "function": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager.setIfNewer(org.apache.solr.common.cloud.Aliases)",
+    "original_source_line": 2347,
+    "site_id": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean setIfNewer(org.apache.solr.common.cloud.Aliases)>#u42",
+    "source_line": 2347,
+    "source_path": "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java",
+    "throw_site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:360",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:32:1",
+      "seq": 360,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:362",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:32:1",
+      "seq": 362,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:364",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:32:1",
+      "seq": 364,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1036",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:85:1",
+      "seq": 1036,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1038",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:85:1",
+      "seq": 1038,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1040",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:85:1",
+      "seq": 1040,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1632",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:162:1",
+      "seq": 1632,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1634",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:162:1",
+      "seq": 1634,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1636",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:162:1",
+      "seq": 1636,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1684",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:165:1",
+      "seq": 1684,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1686",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:165:1",
+      "seq": 1686,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1688",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:165:1",
+      "seq": 1688,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1702",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:2",
+      "seq": 1702,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1704",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:2",
+      "seq": 1704,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1706",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:2",
+      "seq": 1706,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1727",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:171:1",
+      "seq": 1727,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1729",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:171:1",
+      "seq": 1729,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1731",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:171:1",
+      "seq": 1731,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1769",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:174:1",
+      "seq": 1769,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1771",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:174:1",
+      "seq": 1771,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1777",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:174:1",
+      "seq": 1777,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1797",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:3",
+      "seq": 1797,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1799",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:3",
+      "seq": 1799,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1801",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:3",
+      "seq": 1801,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1864",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:182:1",
+      "seq": 1864,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1867",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:182:1",
+      "seq": 1867,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1869",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:182:1",
+      "seq": 1869,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1882",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:182:2",
+      "seq": 1882,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1884",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:182:2",
+      "seq": 1884,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1886",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:182:2",
+      "seq": 1886,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1994",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:191:1",
+      "seq": 1994,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1996",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:191:1",
+      "seq": 1996,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:1998",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:191:1",
+      "seq": 1998,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2020",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:4",
+      "seq": 2020,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2022",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:4",
+      "seq": 2022,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2024",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:4",
+      "seq": 2024,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2091",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:203:1",
+      "seq": 2091,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2093",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:203:1",
+      "seq": 2093,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2095",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:203:1",
+      "seq": 2095,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2117",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:5",
+      "seq": 2117,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2119",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:5",
+      "seq": 2119,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2121",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:root:5",
+      "seq": 2121,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2151",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:210:1",
+      "seq": 2151,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2153",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:210:1",
+      "seq": 2153,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2155",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:210:1",
+      "seq": 2155,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2292",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:248:1",
+      "seq": 2292,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2294",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:248:1",
+      "seq": 2294,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2296",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:248:1",
+      "seq": 2296,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2518",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:296:1",
+      "seq": 2518,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2520",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:296:1",
+      "seq": 2520,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-18-r0000:2523",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z:030d459b-ca22-4d1f-859b-3c76ed538352:task:296:1",
+      "seq": 2523,
+      "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T162128-796e046b311d",
+      "duration_seconds": 20.586,
+      "eligible_doors_before_target": 95,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 268
+      },
+      "observed_door_events": 95,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

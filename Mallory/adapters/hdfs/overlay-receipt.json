@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "system": "hdfs",
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_patch": "none; isolated worktree is clean",
+  "source_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "build": {
+    "hdfs_client_class": {
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/target/classes/org/apache/hadoop/hdfs/DFSInputStream.class",
+      "sha256": "761459de0f1e7516e291f03dfb5843a1ab8504a8dca8920ac69dff6a45e1c2b6"
+    },
+    "namenode_class": {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.class",
+      "sha256": "57ae09910fa9f80f7c853ebea3d47cf6420789c630f18503a3a2714223a8024a"
+    },
+    "datanode_class": {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/DataXceiver.class",
+      "sha256": "00263a5a43015ec384d481160d8251fd72732755e163e39e27aecc634a88b0bb"
+    },
+    "hdfs_01_test_class": {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestPread.class",
+      "sha256": "6e4f46601a09af2090bbdca2700ce74879bcb00498906457c7d471190be01bd8"
+    }
+  },
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+  "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+  "adapter_jar": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+  "adapter_sha256": "63ff2cd4bc623f2b591e443cb1b9dc705cce6a2129238b523e205d89f6e9070b",
+  "adapter_transformer": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsMiniClusterTransformer",
+  "maven_command_template": [
+    "mvn", "-B", "-ntp", "-pl", "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=<TestClass#method>",
+    "-Dsurefire.failIfNoSpecifiedTests=false", "surefire:test"
+  ],
+  "maven_agent_transport": "surefire_argline",
+  "maven_agent_arg_property": "maven-surefire-plugin.argLine",
+  "site_file_template": "Mallory/adapters/hdfs/cases/<case-id>/sites.json",
+  "include_template": [
+    "<target class>",
+    "org.apache.hadoop.ipc.Server$RpcCall",
+    "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+    "org.apache.hadoop.hdfs.server.datanode.DataXceiver"
+  ],
+  "healthy_proof": "/tmp/mallory-hdfs-01-core-v2/trials/r0000/result.json",
+  "journal_healthy_proof": "/tmp/mallory-hdfs-09-journal-smoke/trials/r0000/result.json",
+  "data_transfer_correlation": {
+    "status": "not_claimed",
+    "reason": "BlockReaderRemote and DataXceiver expose socket peers, but the current adapter has no uniquely verified request/response sequence key across cached peers; DataNode readBlock doors are exploratory and are not inserted into the target closure"
+  },
+  "notes": "HDFS-01 seed passed with named NameNode doors in closure and named DataNode doors outside closure. This receipt describes the system overlay, not a completed case result."
+}

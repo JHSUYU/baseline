@@ -1,0 +1,379 @@
+{
+  "schema_version": 1,
+  "type": "source_only_hbase_invalid_seed_recommendations",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "scope": "Original-102 HBase cases selected for review; no new JUnit/fault trial run and no live config or global inventory changes. Source-only proposals need exact healthy runtime admission.",
+  "reviewed_ids": [
+    "HBASE-11",
+    "HBASE-12",
+    "HBASE-14",
+    "HBASE-15",
+    "HBASE-19",
+    "HBASE-20",
+    "HBASE-21",
+    "HBASE-22",
+    "HBASE-24",
+    "HBASE-29",
+    "HBASE-30",
+    "HBASE-31",
+    "HBASE-32",
+    "HBASE-33",
+    "HBASE-34",
+    "HBASE-35",
+    "HBASE-37"
+  ],
+  "cases": [
+    {
+      "case_id": "HBASE-11",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "source_line": 760,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "source_sha256": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03"
+      },
+      "original_selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-11/result.json",
+      "original_calibration_result_sha256": "e2bae9fc6e68c924b862021a458ed1873add839ceb8ae4bec097bbfcf70f7731",
+      "original_issue": "Expected selected DoNotRetryRegionException from deliberately disabled-region move.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "high",
+        "proposed_selector": "org.apache.hadoop.hbase.io.hfile.TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/io/hfile/TestBlockEvictionOnRegionMovement.java",
+        "test_method_line": 88,
+        "test_source_sha256": "82fd1b073c150b0d69215a897ac8aed6ecd9019671c22f7edf5db35e69379c76",
+        "source_reasoning": "Open-table Admin.move crosses client→master RPC and runs AssignmentManager.preTransitCheck with an online region. The test expects successful movement; unlike current test it does not intentionally move a disabled region.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial."
+      }
+    },
+    {
+      "case_id": "HBASE-12",
+      "calibration_status_at_review": "calibration_complete",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "source_line": 763,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "source_sha256": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03"
+      },
+      "original_selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-12/result.json",
+      "original_calibration_result_sha256": "e697a1b671256b73484fb1ad941cf89015ed77b22ac4a87069edd916aa0578ff",
+      "recommendation": {
+        "kind": "skip_already_calibrated",
+        "reason": "Already calibration_complete on selected TestRegionMove test; no new selector needed."
+      }
+    },
+    {
+      "case_id": "HBASE-14",
+      "calibration_status_at_review": "calibration_complete",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "source_line": 500,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "source_sha256": "5306e6d96d9e3838b595cfdb042c1aad0e33344a7bc17824b780f492ce9dfae2"
+      },
+      "original_selector": "org.apache.hadoop.hbase.master.assignment.TestMergeTableRegionsProcedure#testMergeTwoRegions",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-14/result.json",
+      "original_calibration_result_sha256": "9708850cd85cf1246ed4829c39c8b7397521ecd2960760ac0a76d4dc115dc76a",
+      "recommendation": {
+        "kind": "skip_already_calibrated",
+        "reason": "Already calibration_complete on selected TestMergeTableRegionsProcedure test; no new selector needed."
+      }
+    },
+    {
+      "case_id": "HBASE-15",
+      "calibration_status_at_review": "calibration_complete",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "source_line": 503,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "source_sha256": "5306e6d96d9e3838b595cfdb042c1aad0e33344a7bc17824b780f492ce9dfae2"
+      },
+      "original_selector": "org.apache.hadoop.hbase.master.assignment.TestMergeTableRegionsProcedure#testMergeTwoRegions",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-15/result.json",
+      "original_calibration_result_sha256": "446ca93b76e974c0dc5d7b1f3b01a5e57448c487e34ded5d9880f54745c384e3",
+      "recommendation": {
+        "kind": "skip_already_calibrated",
+        "reason": "Already calibration_complete on selected TestMergeTableRegionsProcedure test; no new selector needed."
+      }
+    },
+    {
+      "case_id": "HBASE-19",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "source_line": 135,
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "source_sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3"
+      },
+      "original_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-19/result.json",
+      "original_calibration_result_sha256": "e8e139248507b1f0bdf18ca159d1d34240e5a220f9d96a5ad673c459159e012e",
+      "original_issue": "Current test deliberately adds a column family with reopenRegions=false; selected HBaseIOException observed, and seed timed out.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "high",
+        "proposed_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java",
+        "test_method_line": 702,
+        "test_source_sha256": "eca1ba9410c4a42de82594fdb4b08f8515289ffe8225332f0699ed7f1233d17e",
+        "source_reasoning": "The MiniHBaseCluster fixture creates a table and changes only column-family compression with reopenRegions=false, preserving family count. Procedure submit/await and descriptor reads reach ModifyTableProcedure.preflightChecks without the selected family-count rejection.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial."
+      }
+    },
+    {
+      "case_id": "HBASE-20",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "source_line": 139,
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "source_sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3"
+      },
+      "original_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-20/result.json",
+      "original_calibration_result_sha256": "c0c91abd5825eaea83aa9749852279ec0058882ff3dda0865b4ef0da62ef2c87",
+      "original_issue": "Current test has expected coprocessor-change failure phase; seed timed out and first-pass target actor was not bound.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "high",
+        "proposed_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java",
+        "test_method_line": 702,
+        "test_source_sha256": "eca1ba9410c4a42de82594fdb4b08f8515289ffe8225332f0699ed7f1233d17e",
+        "source_reasoning": "The same positive test installs coprocessors in a separate allowed phase, then changes only compression while reopenRegions=false. The final preflight check should find unchanged coprocessor descriptors and avoid the selected rejection.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial."
+      }
+    },
+    {
+      "case_id": "HBASE-21",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "source_line": 133,
+        "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)",
+        "source_sha256": "ab2c75cf2b175f311f652c8ee8809b5d933b85b55f3f752002dd4b2d90b16280"
+      },
+      "original_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testRestoreSnapshotQuotaExceed",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-21/result.json",
+      "original_calibration_result_sha256": "47ee9078cfcecfdbb3f01dae83248872ee06b55ebb4353999f7f45ec51be0a8b",
+      "original_issue": "Original quota-exceed restore intentionally triggers selected QuotaExceededException.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "high",
+        "proposed_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testRestoreSnapshot",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+        "test_method_line": 666,
+        "test_source_sha256": "df107800c85dddf5ea8c5272d49c06f508dcd77840ddf700adebdfb27a0ccdd4",
+        "source_reasoning": "MiniHBaseCluster Admin calls create a four-region table under max-regions 10, split it to five, and restore its four-region snapshot. The master quota update should evaluate selected check with count below limit; the current quota-exceed test intentionally throws.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial."
+      }
+    },
+    {
+      "case_id": "HBASE-22",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "source_line": 172,
+        "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)",
+        "source_sha256": "ab2c75cf2b175f311f652c8ee8809b5d933b85b55f3f752002dd4b2d90b16280"
+      },
+      "original_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-22/result.json",
+      "original_calibration_result_sha256": "7c935a021dffc2066f8545467c6061d65a585971ac52dab6830efcc9f046fbaa",
+      "original_issue": "Original table-operations test intentionally exceeds namespace quota and triggers selected QuotaExceededException.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "high",
+        "proposed_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testDeleteTable",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+        "test_method_line": 241,
+        "test_source_sha256": "df107800c85dddf5ea8c5272d49c06f508dcd77840ddf700adebdfb27a0ccdd4",
+        "source_reasoning": "Admin creates two tables inside max-tables 3/max-regions 100 namespace, then deletes them. The normal create path updates table and region counts below limits; unlike the current table-operations test it has no deliberate quota-exceed phase.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial."
+      }
+    },
+    {
+      "case_id": "HBASE-24",
+      "calibration_status_at_review": "healthy_node_identity_missing",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs.java",
+        "source_line": 210,
+        "function": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs.startNewSubprocedure(java.lang.String)",
+        "source_sha256": "ba0ee569fccf2a69057860800bc05a2fe1db0d5a4b368c490485ee542b0c55b2"
+      },
+      "original_selector": "org.apache.hadoop.hbase.procedure.TestZKProcedure#testMultipleMembers",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-24/result.json",
+      "original_calibration_result_sha256": "bd46d242fefb6c70f1239af24dc46816125829326ce7aa11e102bd59fead241d",
+      "original_issue": "First-pass target reached but node identity missing.",
+      "recommendation": {
+        "kind": "actor_binding_gap",
+        "reason": "Original test reached target on MiniZKCluster procedure members, but the actor was unknown. Current 4-member procedure test is appropriate; adapter must name member/coordinator actors."
+      }
+    },
+    {
+      "case_id": "HBASE-29",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "source_line": 2263,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "source_sha256": "2e472a4c969be81260d397d75e3c7ddd9fe854d306f72cb4ef0b1289c43125c6"
+      },
+      "original_selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-29/result.json",
+      "original_calibration_result_sha256": "4e3db6fdc1b8c45d84f18f442ca73ff2c1f1c1641ea277b2bcb06fdebbfcd594",
+      "original_issue": "First-pass target reached but 100 MiB trace truncated.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "adapter_owned_pending",
+        "proposed_selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testMetaCacheMissTriggersRefresh",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "test_method_line": 516,
+        "test_source_sha256": "468c808e8c1da93b7478c733ee4ce4be6e17d98df7e9cfadacad7c92ac66defc",
+        "source_reasoning": "The two-RS replication fixture loads 100 rows and submits one WAL Entry through RegionReplicaSinkWriter.append. This schedules RegionReplicaReplayCallable RPCs, which invoke RSRpcServices.replay on a single encoded region; substantially smaller than truncated original 2-replica workload. Adapter owns bounded healthy calibration.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial."
+      }
+    },
+    {
+      "case_id": "HBASE-30",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "source_line": 2298,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "source_sha256": "2e472a4c969be81260d397d75e3c7ddd9fe854d306f72cb4ef0b1289c43125c6"
+      },
+      "original_selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-30/result.json",
+      "original_calibration_result_sha256": "a1178ad627aea2948da78ca3c3262621e1fd304f6036c5a68616d6e2b30ac638",
+      "original_issue": "First-pass target reached but 100 MiB trace truncated.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "adapter_owned_pending",
+        "proposed_selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testMetaCacheMissTriggersRefresh",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "test_method_line": 516,
+        "test_source_sha256": "468c808e8c1da93b7478c733ee4ce4be6e17d98df7e9cfadacad7c92ac66defc",
+        "source_reasoning": "Same single-entry replay path reaches RSRpcServices.replay operation status checks through RegionReplicaReplayCallable RPCs; valid table/replay should return SUCCESS without selected IOException. Adapter owns bounded healthy calibration.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial."
+      }
+    },
+    {
+      "case_id": "HBASE-31",
+      "calibration_status_at_review": "calibration_complete",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "source_line": 2011,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(long)",
+        "source_sha256": "2e472a4c969be81260d397d75e3c7ddd9fe854d306f72cb4ef0b1289c43125c6"
+      },
+      "original_selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-31/result.json",
+      "original_calibration_result_sha256": "a18371466b39f431fceb41e52f55e6d64896fb0891f7309ab79859d0c61d1a10",
+      "recommendation": {
+        "kind": "skip_already_calibrated",
+        "reason": "Already calibration_complete on selected TestRegionMove test; no new selector needed."
+      }
+    },
+    {
+      "case_id": "HBASE-32",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java",
+        "source_line": 136,
+        "function": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler.triggerFlushInPrimaryRegion(org.apache.hadoop.hbase.regionserver.HRegion)",
+        "source_sha256": "439a8078aadec70f1727f13204e128b79625c5786cfa920026fb4265a8285509"
+      },
+      "original_selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-32/result.json",
+      "original_calibration_result_sha256": "f120708de3e012116fc3d9284130dbe7734809969176115608df7ba440f7477c",
+      "original_issue": "Original many-replica test truncated before selected target could be established.",
+      "recommendation": {
+        "kind": "no_strong_nonthrowing_inner_guard_test",
+        "reason": "Selected branch is inside catch(IOException) from a flush RPC. The smaller TestRegionReplicaFailover#testSecondaryRegionWithNonEmptyRegion disables/re-enables a table but source does not guarantee the RPC throws and enters this catch. Existing source search found no direct test of triggerFlushInPrimaryRegion; no reliable selector can be promoted on source alone."
+      }
+    },
+    {
+      "case_id": "HBASE-33",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+        "source_line": 141,
+        "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+        "source_sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f"
+      },
+      "original_selector": "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-33/result.json",
+      "original_calibration_result_sha256": "8c06b8a835e92a8c18b75f2887b03078c8171533cfefef487cec3b90f4befb40",
+      "original_issue": "Original positive token creation does not reach nested missing-key guard.",
+      "recommendation": {
+        "kind": "no_existing_inner_guard_test",
+        "reason": "Selected zkWatcher.isAborted() guard is nested under missing allKeys entry. TestTokenAuthentication#testTokenCreation retrieves a token immediately after generating it from the same manager, so the key is present. Source search found no active cluster JUnit that creates this key-miss state then calls retrievePassword."
+      }
+    },
+    {
+      "case_id": "HBASE-34",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+        "source_line": 160,
+        "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+        "source_sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f"
+      },
+      "original_selector": "org.apache.hadoop.hbase.security.token.TestGenerateDelegationToken#testOnlyToken",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-34/result.json",
+      "original_calibration_result_sha256": "05b16d99ccea2e35556c74ee8c84a5f996c9d9fe3b3721ac478e5e2e19ac1f68",
+      "original_issue": "Current TestGenerateDelegationToken#testOnlyToken did not weave target; template/runner or workload mismatch pending.",
+      "recommendation": {
+        "kind": "source_only_alternate",
+        "priority": "medium",
+        "proposed_selector": "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java",
+        "test_method_line": 418,
+        "test_source_sha256": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e",
+        "source_reasoning": "The MiniZKCluster-backed TokenServer creates a live authentication key, generates a token, and directly calls AuthenticationTokenSecretManager.retrievePassword at line 424. That call evaluates the selected final masterKey-null guard with a known key and returns password.",
+        "runtime_requirement": "Run separate healthy MiniCluster/TokenServer JUnit; require actual JUnit count >0, exact named target, zero selected throw, and usable causal pretarget I/O doors before fault trial.",
+        "limitation": "This test uses MiniZKCluster and TokenServer rather than MiniHBaseCluster; direct test-thread retrievePassword reaches code but causal closure and named target remain unverified. @TestTemplate runner must execute both variants correctly."
+      }
+    },
+    {
+      "case_id": "HBASE-35",
+      "calibration_status_at_review": "healthy_seed_invalid",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/HBaseFsck.java",
+        "source_line": 2720,
+        "function": "org.apache.hadoop.hbase.util.HBaseFsck$3.visit(org.apache.hadoop.hbase.client.Result)",
+        "source_sha256": "eede67720ec29cfcfba04f397ed7b8496f155b8b711f51606435a1ead2a6c2a4"
+      },
+      "original_selector": "org.apache.hadoop.hbase.util.TestHBaseFsckReplication#test",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-35/result.json",
+      "original_calibration_result_sha256": "87a9d926d87f41bee4eb5c9839cdb4a14487cac433f72bd9f0a983d3a4f7cf59",
+      "original_issue": "First-pass target reached then timed out.",
+      "recommendation": {
+        "kind": "timeout_original_workload_reaches_target",
+        "reason": "Original TestHBaseFsckReplication#test reached target but timed out during full hbck over queued replication state. Only this hbase-server JUnit calls HbckTestingUtil.doFsck; smaller hbck tests use doHFileQuarantine/cleanReplicationBarrier and do not establish the same meta visitor path. Need bounded runner/timeout or purpose-built workload, not unsupported alternate."
+      }
+    },
+    {
+      "case_id": "HBASE-37",
+      "calibration_status_at_review": "healthy_node_identity_missing",
+      "target": {
+        "source_path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+        "source_line": 206,
+        "function": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker.getMasterInfoPort(org.apache.hadoop.hbase.zookeeper.ZKWatcher)",
+        "source_sha256": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987"
+      },
+      "original_selector": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+      "original_calibration_result_path": "data/mallory/calibration/HBASE-37/result.json",
+      "original_calibration_result_sha256": "ad9d6192508bde706947ef33961e1442217bb8b48ea2a807e7a28772775856fd",
+      "original_issue": "First-pass target reached but node identity missing.",
+      "recommendation": {
+        "kind": "actor_binding_gap",
+        "reason": "Original TestRSStatusPage#testStatusPage reached MasterAddressTracker.getMasterInfoPort but actor remained unknown. MiniHBaseCluster ZK/master path is present; an alternate JUnit would not by itself solve node binding."
+      }
+    }
+  ]
+}

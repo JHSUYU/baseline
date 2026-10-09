@@ -1,0 +1,79 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-16",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.cloud.SplitShardTest#doTest",
+  "coverage_ids_seen": 95,
+  "dispatch_attempt_ids": [
+    "20261009T155140-50576ab76786"
+  ],
+  "duration_seconds": 20.893,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 61530,
+    "manifest_path": "evidence_archives/calibration/SOLR-16.tar.manifest.json",
+    "manifest_sha256": "15e3d8918b766537233c333adb937ca87ce9dcd6436fcd01b19f1d79ce740d15",
+    "path": "evidence_archives/calibration/SOLR-16.tar.gz",
+    "sha256": "845896c5970b350533929986ce1964deb31e41c76fa3fc88731d6b83aac061aa"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_observed_door_events": 0,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T155140-50576ab76786",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (leaderZnodeStat == null)  {\n// the leader is not live anymore, fail the split!\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR, \"The shard leader node: \" + parentShardLeader.getNodeName() + \" is not live anymore!\");\n} else if (ephemeralOwner != leaderZnodeStat.getEphemeralOwner()) {\n// there's a new leader, fail the split!\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR,\n\"The zk session id for the shard leader node: \" + parentShardLeader.getNodeName() + \" has changed from \"\n+ ephemeralOwner + \" to \" + leaderZnodeStat.getEphemeralOwner() + \". This can cause data loss so we must abort the split\");",
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@536:branch:40"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.api.collections.SplitShardCmd.split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+    "site_id": "<org.apache.solr.cloud.api.collections.SplitShardCmd: boolean split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)>#u705",
+    "source_line": 543,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+    "throw_site": "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@543:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T155140-50576ab76786",
+      "duration_seconds": 20.893,
+      "eligible_doors_before_target": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 95
+      },
+      "observed_door_events": 0,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_target_missing",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 0
+    }
+  ]
+}

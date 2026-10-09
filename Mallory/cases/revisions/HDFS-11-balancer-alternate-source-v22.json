@@ -1,0 +1,48 @@
+{
+  "alternate_selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+  "case_id": "HDFS-11",
+  "compiled_test": {
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.class",
+    "sha256": "04eccf7c273c1d984226d712ff29adc6a27d94580dfc2aa7e12e11853d57ad3a"
+  },
+  "config": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v22/HDFS-11-balancer-healthy-v22.json",
+    "sha256": "538cf087b0a91380b143d2983147dc9feaa83f703e317f5a0530f7f2fcbc3991"
+  },
+  "original_selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+  "required_runtime_gates": [
+    "JUnit nonzero pass and no expected exact target exception",
+    "Named DataNode exact target",
+    "Unique SASL SEND/RECV tuple into target region",
+    "Named pretarget I/O door in frozen-5820 observed backward closure",
+    "No claim of stale Balancer cached-key state without key rotation/expiry evidence"
+  ],
+  "revision": "v22_balancer_existing_cluster_test_source_only",
+  "schema_version": 1,
+  "source_files": {
+    "balancer_helper_test": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancer.java",
+      "sha256": "a28781e73436795b0c785f41c9ecb9fda46b85f1ccf23b3655ca3343b695cde0"
+    },
+    "balancer_test": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+      "sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a"
+    },
+    "dispatcher": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/Dispatcher.java",
+      "sha256": "359e764825241098c3ef3dffa553110c30352c42eb7e5e94777ef6f0b2c59552"
+    },
+    "key_manager": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/KeyManager.java",
+      "sha256": "c5ccc0847287740bceac5c1ca7c1dfb09b42993fcb4eb32facae75f27d011ab2"
+    },
+    "target": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957"
+    }
+  },
+  "source_git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_only_not_counted_as_completed": true,
+  "source_path": "TestBalancerWithEncryptedTransfer.testEncryptedBalancer0 enables encryption and block tokens, calls TestBalancer.testBalancer0Internal; that creates MiniDFSCluster and runs Balancer. Dispatcher.PendingMove.dispatch uses KeyManager as the SASL DataEncryptionKeyFactory, and DataNode server handshake can invoke the exact BlockTokenSecretManager.retrieveDataEncryptionKey target.",
+  "status": "healthy_runtime_pending"
+}

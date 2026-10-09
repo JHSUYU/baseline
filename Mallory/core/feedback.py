@@ -39,10 +39,13 @@ def _fault_ids(plan: list[dict[str, Any]]) -> list[str]:
 
 def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             *, return_code: int | None, timed_out: bool,
-            allow_local_timeline_doors: bool = False) -> dict[str, Any]:
+            allow_local_timeline_doors: bool = False,
+            reject_coarse_roots: bool = False,
+            require_event_time_paths: bool = False) -> dict[str, Any]:
     events = trace.events
     truncated = [e for e in events if e.get("type") == "TRACE_TRUNCATED"]
-    graph = OccurrenceGraph(events)
+    graph = OccurrenceGraph(events, reject_coarse_roots=(
+        reject_coarse_roots or require_event_time_paths))
     expected = _fault_ids(plan)
     matched = [e for e in events if e.get("type") == "FAULT_MATCHED"
                and e.get("fault_id") in expected]
@@ -115,15 +118,28 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
     # for scheduling. No target occurrence means no dynamic closure.
     anchor_events = ([e for e in post_checks + post_throws if _named_node(e.get("node"))]
                      if expected else [e for e in checks + throws if _named_node(e.get("node"))])
-    anchors: dict[tuple[Any, Any, Any], dict[str, Any]] = {}
+    anchors: dict[tuple[Any, ...], dict[str, Any]] = {}
+    time_reachability = []
+    time_edges = set()
     for event in anchor_events:
         identity = (event.get("node"), event.get("epoch"), event.get("occurrence"))
+        if require_event_time_paths:
+            identity += (event.get("id"),)
         if identity not in anchors:
             address = event_address(event)
+            if require_event_time_paths:
+                reach = graph.backward_event_reachability(event, include_candidates=True)
+                time_reachability.append(reach)
+                time_edges.update(edge for path in reach.paths.values() for edge in path)
+                occurrences = sorted({key[0] for key in reach.cutoffs})
+            else:
+                occurrences = sorted(graph.backward_closure(address)) if address else []
             anchors[identity] = {"node": identity[0], "epoch": identity[1],
                                  "occurrence": identity[2], "anchor": address,
-                                 "closure_occurrences": sorted(graph.backward_closure(address))
-                                 if address else []}
+                                 "closure_occurrences": occurrences}
+            if require_event_time_paths:
+                anchors[identity]["anchor_event_id"] = event.get("id")
+                anchors[identity]["anchor_seq"] = event_seq(event)
     target_closures = list(anchors.values())
     anchor = target_closures[0]["anchor"] if target_closures else None
     closure = {occurrence for row in target_closures
@@ -132,7 +148,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
                   "evidence": e.evidence, "certainty": e.certainty,
                   "producer_event": e.producer_event,
                   "consumer_event": e.consumer_event}
-                 for e in sorted(graph.edges | graph.candidate_edges,
+                 for e in sorted(time_edges if require_event_time_paths else
+                                 graph.edges | graph.candidate_edges,
                                  key=lambda e: (e.source, e.target, e.kind))
                  if e.target in closure and e.source in closure]
 
@@ -181,7 +198,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
                             ids.add(coverage_definitions[ref])
                             seen_refs.add(ref)
             coverage.update(ids)
-            if event_address(e) in closure:
+            if (any(reach.witness(e) is not None for reach in time_reachability)
+                    if require_event_time_paths else event_address(e) in closure):
                 closure_coverage_set.update(ids)
             continue
         if e.get("coverage_id") is not None:
@@ -193,7 +211,9 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
         else:
             continue
         coverage.add(coverage_id)
-        if kind in {"BRANCH", "METHOD"} and event_address(e) in closure:
+        if (kind in {"BRANCH", "METHOD"} and
+                (any(reach.witness(e) is not None for reach in time_reachability)
+                 if require_event_time_paths else event_address(e) in closure)):
             closure_coverage_set.add(str(e.get("coverage_id") or
                                          f"{kind}:{e.get('site')}:{e.get('outcome', '')}"))
     closure_coverage = sorted(closure_coverage_set)
@@ -244,7 +264,9 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
         door = {"point": point, "fault_type": e.get("fault_type"),
                 "fault_types": e.get("fault_types"),
                 "exception_class": e.get("exception_class"),
-                "in_closure": event_address(e) in closure,
+                "in_closure": (any(reach.witness(e) is not None
+                                   for reach in time_reachability)
+                               if require_event_time_paths else event_address(e) in closure),
                 "site": e["site"], "event_id": e.get("id"),
                 "event_seq": event_seq(e)}
         if allow_local_timeline_doors:
@@ -253,6 +275,12 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             index = bisect_right(local_check_seqs.get(identity, []), event_seq(e))
             if index < len(rows) and event_seq(e) >= 0 and door["in_closure"]:
                 check = rows[index]
+                if require_event_time_paths and (
+                        not isinstance(e.get("thread_id"), int) or
+                        isinstance(e.get("thread_id"), bool) or
+                        e.get("thread_id") != check.get("thread_id")):
+                    doors.append(door)
+                    continue
                 door["local_timeline_evidence"] = {
                     "kind": "observed_local_timeline", "door_event_id": e.get("id"),
                     "door_seq": event_seq(e), "target_check_event_id": check.get("id"),
@@ -317,6 +345,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             "target_exception_candidate": target_exception_candidate,
             "target_anchor": anchor, "closure_occurrences": sorted(closure),
             "target_closures": target_closures,
+            "require_event_time_paths": require_event_time_paths,
+            "reject_coarse_roots": bool(reject_coarse_roots or require_event_time_paths),
             "last_fault_seq": last_fault_seq,
             "closure_edges": edge_rows, "graph": graph.summary(),
             "coverage_ids": sorted(coverage), "closure_coverage_ids": closure_coverage,

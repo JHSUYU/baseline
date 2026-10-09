@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-20",
+  "system": "hbase",
+  "calibration_only": true,
+  "cluster_test": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure",
+    "testModifyTableWithCoprocessorAndColumnFamilyPropertyChange"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/agent.jar",
+  "agent_transport": "java_tool_options",
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/cases/HBASE-20-alt/sites.json",
+  "agent_include": [
+    "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@138:branch:8"
+    ],
+    "throw_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@139:throw:1",
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "site_id": "<org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure: void preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)>#u55",
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+    "source_line": 139,
+    "original_source_line": 139,
+    "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+    "check_code": "if (isCoprocModified()) {\nthrow new HBaseIOException(\n\"Can not modify Coprocessor when table modification won't reopen regions\");"
+  },
+  "budget": {
+    "trials": 1,
+    "seconds": 720,
+    "max_faults_per_trial": 1,
+    "trial_timeout_seconds": 600
+  },
+  "mapping": {
+    "status": "alternate_existing_minicluster_test_pending_healthy_validation",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "agent_build": {
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "target_throw_kind": "athrow",
+    "compiled_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "compiled_class_sha256": "a8fa60a60a2d7731d02a3eb829b9ddfd6d3e67932f3e17b7f831b78211a0c4b1",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": false,
+    "verified_healthy_probe": null,
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+    "source_root_env": "MALLORY_HBASE_SOURCE_ROOT",
+    "distribution_root_env": "MALLORY_HBASE_DIST_ROOT",
+    "test_source_sha256": "eca1ba9410c4a42de82594fdb4b08f8515289ffe8225332f0699ed7f1233d17e",
+    "target_source_sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3",
+    "healthy_seed_verified": false,
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/lane2-receipt.json",
+    "system_receipt_sha256": "447e50189b96f844174c472de61e213cf6c7a652614894c3d8ae07b259d9eff0",
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration",
+    "original_selected_cluster_test": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+    "alternate_test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java"
+  },
+  "expected_target_class_sha256": "a8fa60a60a2d7731d02a3eb829b9ddfd6d3e67932f3e17b7f831b78211a0c4b1",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar",
+      "sha256": "12bd49f871c414f023e6f80dbb1ba1cb1a05f7cf24aa27c3462bd8b2033c1f9c"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "9b44bf693a8365dd01364cc1641208c0a481902116e316830260b3f71c8d4445"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/cases/HBASE-20-alt/sites.json",
+      "sha256": "219134007a8cc9ae1d64d9a5550ed35b06a64662e3926630ff7d27d10714aac4"
+    }
+  ],
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source"
+}

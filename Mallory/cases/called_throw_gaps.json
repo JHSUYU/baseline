@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "description": "Pinned compiled-artifact callsite map and offline agent probe verified; each target still requires healthy cluster runtime/catalog and logical-node attestation before fault campaigns.",
+  "site_ordinal_rule": "N is the one-based ordinal of every MethodInsnNode in the selected method, including unrelated calls.",
+  "cases": [
+    {
+      "case_id": "HDFS-09",
+      "class": "org.apache.hadoop.hdfs.qjournal.server.Journal",
+      "method": "checkRequest",
+      "descriptor": "(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V",
+      "guard_sites": [
+        "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@503:branch:4",
+        "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@505:branch:5"
+      ],
+      "target_call": {
+        "source_line": 504,
+        "instruction_sequence": 155,
+        "invocation_ordinal": 38,
+        "callee": "org/apache/hadoop/util/Preconditions#checkArgument(ZLjava/lang/Object;)V"
+      },
+      "proposed_callthrow_site": "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@504:callthrow:38",
+      "exception_class": "java.lang.IllegalArgumentException",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "target_source_sha256": "be5c67ce7564ad67b9b464d93956f0e855dd76df1253958412947c1abb2fd6f3",
+      "distribution_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+      "distribution_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+      "constructor_requires_post_super_scope": false,
+      "status": "compiled_artifact_probe_verified_runtime_pending"
+    },
+    {
+      "case_id": "HDFS-16",
+      "class": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo",
+      "method": "setGenerationStampAndVerifyReplicas",
+      "descriptor": "(J)Ljava/util/List;",
+      "guard_sites": [
+        "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#setGenerationStampAndVerifyReplicas(J)Ljava/util/List;@428:branch:1",
+        "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#setGenerationStampAndVerifyReplicas(J)Ljava/util/List;@428:branch:2"
+      ],
+      "target_call": {
+        "source_line": 428,
+        "instruction_sequence": 16,
+        "invocation_ordinal": 2,
+        "callee": "org/apache/hadoop/util/Preconditions#checkState(Z)V"
+      },
+      "proposed_callthrow_site": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#setGenerationStampAndVerifyReplicas(J)Ljava/util/List;@428:callthrow:2",
+      "exception_class": "java.lang.IllegalStateException",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
+      "target_source_sha256": "e5239480d42fdf56ff296e021e5507ed1f421b423879534a4322568ae1ff1d15",
+      "distribution_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+      "distribution_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+      "constructor_requires_post_super_scope": false,
+      "status": "compiled_artifact_probe_verified_runtime_pending"
+    },
+    {
+      "case_id": "HDFS-17",
+      "class": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo",
+      "method": "<init>",
+      "descriptor": "(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V",
+      "guard_sites": [
+        "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo#<init>(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V@2851:branch:1"
+      ],
+      "target_call": {
+        "source_line": 2851,
+        "instruction_sequence": 17,
+        "invocation_ordinal": 3,
+        "callee": "org/apache/hadoop/util/Preconditions#checkArgument(Z)V"
+      },
+      "proposed_callthrow_site": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo#<init>(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V@2851:callthrow:3",
+      "exception_class": "java.lang.IllegalArgumentException",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+      "target_source_sha256": "fa565bc350a839178ecd7be5a7d106f8e0a1d93c34052b54db38cf59ed4b698e",
+      "distribution_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+      "distribution_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+      "constructor_requires_post_super_scope": true,
+      "status": "compiled_artifact_probe_verified_runtime_pending"
+    },
+    {
+      "case_id": "HDFS-48",
+      "class": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory",
+      "method": "replaceChild",
+      "descriptor": "(Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INodeMap;)V",
+      "guard_sites": [
+        "org.apache.hadoop.hdfs.server.namenode.INodeDirectory#replaceChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INodeMap;)V@356:branch:2",
+        "org.apache.hadoop.hdfs.server.namenode.INodeDirectory#replaceChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INodeMap;)V@358:branch:3"
+      ],
+      "target_call": {
+        "source_line": 356,
+        "instruction_sequence": 59,
+        "invocation_ordinal": 11,
+        "callee": "org/apache/hadoop/util/Preconditions#checkState(Z)V"
+      },
+      "proposed_callthrow_site": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory#replaceChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INodeMap;)V@356:callthrow:11",
+      "exception_class": "java.lang.IllegalStateException",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+      "target_source_sha256": "39636bc2cd045b41aadc631ad0ed8edc7935235422d0cc6decde876392208f50",
+      "distribution_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+      "distribution_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+      "constructor_requires_post_super_scope": false,
+      "status": "compiled_artifact_probe_verified_runtime_pending"
+    },
+    {
+      "case_id": "HDFS-52",
+      "class": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver",
+      "method": "serializeSnapshotSection",
+      "descriptor": "(Ljava/io/OutputStream;)V",
+      "guard_sites": [
+        "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+      ],
+      "target_call": {
+        "source_line": 467,
+        "instruction_sequence": 187,
+        "invocation_ordinal": 43,
+        "callee": "org/apache/hadoop/util/Preconditions#checkState(Z)V"
+      },
+      "proposed_callthrow_site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:callthrow:43",
+      "exception_class": "java.lang.IllegalStateException",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+      "target_source_sha256": "860c4f156c16e8ec5f4df8557e088d875ed143ef9aaf9d38e5acbd2539ffd58e",
+      "distribution_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+      "distribution_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+      "constructor_requires_post_super_scope": false,
+      "status": "compiled_artifact_probe_verified_runtime_pending"
+    }
+  ]
+}

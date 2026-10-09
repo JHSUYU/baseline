@@ -1,0 +1,182 @@
+{
+  "cases": [
+    {
+      "adapter_path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v10-handshake-storage-task.jar",
+      "adapter_sha256": "1f65f6346288e92e514f6e815be35aea6d446cd0432a429fa130ad9aab581585",
+      "adapter_version": "v10",
+      "case_id": "HDFS-26",
+      "check_sites": [
+        "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@619:branch:3",
+        "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@620:branch:4"
+      ],
+      "compiled_target_class_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+      "compiled_test_class_sha256": "ce2a43bf2b3274d089db0c012497b5104a1e25f251e09485b1e1f6b014208952",
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+      "exception_class": "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException",
+      "first_pass": {
+        "actual_maven_return_code": 0,
+        "note": "Old exact target reached but actor identity was unknown",
+        "observed_door_events": 131,
+        "result_path": "data/mallory/calibration/HDFS-26/trials/r0000/result.json",
+        "result_sha256": "63028dcdeb745d529df860d2dc46497462a5dfbe1591b4aecbbc76540ffd112c",
+        "stdout_sha256": "cd84bb1baebe5e5855d98f60c910a932c1c975062b2e38ba6ca3f2f99a7787a9",
+        "target_identity_gaps": 6,
+        "target_reached": true,
+        "target_threw": false
+      },
+      "priority": 1,
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+      "source_review": "The existing rollback MiniDFSCluster creates previous and current DataNode block-pool VERSION directories and starts a DataNode with ROLLBACK. BlockPoolSliceStorage.doTransition calls doRollback; its previous VERSION file read precedes the selected layout-version/ctime guard. The v10 slice-receiver scope covers that synchronous nested call. Old healthy reached the exact guard without selected throw but had unknown actors; fresh named actor and observed-path audit remain required.",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "target_source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+      "test_source_sha256": "c5a5ea5ba53bc50950d7af3de48a058ecac81513fba3d231879fa36fe75cd808",
+      "throw_site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@626:throw:1"
+    },
+    {
+      "adapter_path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v11-recovery-task.jar",
+      "adapter_sha256": "d210764e9b7f812a52a56235794677047318648b35c659fe9fb0bf014c4670e7",
+      "adapter_version": "v11",
+      "case_id": "HDFS-30",
+      "check_sites": [
+        "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@582:branch:2"
+      ],
+      "compiled_target_class_sha256": "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88",
+      "compiled_test_class_sha256": "a6459e0fcf46aa304ef1569a36789dd6df21d21ca064d7fccb6e3d209662f943",
+      "current_inventory_selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+      "exception_class": "java.io.IOException",
+      "first_pass": {
+        "actual_maven_return_code": 0,
+        "note": "Old exact target reached but actor identity was unknown",
+        "observed_door_events": 133,
+        "result_path": "data/mallory/calibration/HDFS-30/trials/r0000/result.json",
+        "result_sha256": "da9e5d68abcad353d87df2c8ea3023b28b8dd4949ff41aa880441a61aa202f6a",
+        "stdout_sha256": "5cbcee89f27f6cac6f6058822d68b1a1c630fffe86f97dc26ca38d3bdd876465",
+        "target_identity_gaps": 2,
+        "target_reached": true,
+        "target_threw": false
+      },
+      "priority": 2,
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+      "source_review": "The existing 3-DataNode HA MiniDFSCluster test delays commitBlockSynchronization during lease recovery and changes the active NameNode. A DataNode BlockRecoveryWorker retrieves BPOfferService and checks whether it has an active NameNode. The v11 worker receiver scope plus concrete Runnable submit/claim can attach recovery I/O before the exact guard. The same JUnit is already staged for HDFS-29 at the preceding guard.",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+      "target_source_sha256": "928a3e6d159a47a2f8c88e1720211ddf7af62129a5ed2d5a9f133f7ada60499b",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java",
+      "test_source_sha256": "5815550fb06429b227cd7c632bf0fe1523d0417c7da0c37105ff1c43db5ec49a",
+      "throw_site": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@583:throw:1"
+    },
+    {
+      "adapter_path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v10-handshake-storage-task.jar",
+      "adapter_sha256": "1f65f6346288e92e514f6e815be35aea6d446cd0432a429fa130ad9aab581585",
+      "adapter_version": "v10",
+      "case_id": "HDFS-33",
+      "check_sites": [
+        "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:4",
+        "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:5"
+      ],
+      "compiled_target_class_sha256": "6ddba23351786ba9c6aba0e88bb4f9fb6feb9ade5bde23c66ae7c907d5aaa587",
+      "compiled_test_class_sha256": "1b4e6c614bdc1fa49142da0ff98ed5509e69cdc14b6e5b0334315cd593326e1e",
+      "current_inventory_selector": "org.apache.hadoop.hdfs.server.datanode.TestDataNodeHotSwapVolumes#testAddOneNewVolume",
+      "exception_class": "java.lang.AssertionError",
+      "first_pass": {
+        "actual_maven_return_code": 0,
+        "note": "Old exact target reached but actor identity was unknown",
+        "observed_door_events": 50,
+        "result_path": "data/mallory/calibration/HDFS-33/trials/r0000/result.json",
+        "result_sha256": "e7844cc3a2587792dccab5679870c391e3a338e5bf269dfe04fd714972cf5edd",
+        "stdout_sha256": "2e03d52b91bbfb59334d427158eec90d2d70cf04efc780f5e585bb8654d4ff5f",
+        "target_identity_gaps": 2,
+        "target_reached": true,
+        "target_threw": false
+      },
+      "priority": 3,
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.datanode.TestDataNodeHotSwapVolumes#testAddOneNewVolume",
+      "source_review": "The existing MiniDFSCluster test starts one DataNode, hot-adds a volume, creates blocks, and verifies block reports. DataStorage.VolumeBuilder.build checks that bpStorageMap contains metadata for each block pool. The v10 adapter scopes the concrete VolumeBuilder through its DataStorage owner; local storage preparation and volume reconfiguration precede the assertion. Old healthy reached the guard without selected AssertionError but had unknown actor.",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "target_source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java",
+      "test_source_sha256": "17d1e8a27b64ef0a76e189d792cbc8f9f4c52987e9859eb919d14be9cb36b678",
+      "throw_site": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:throw:1"
+    },
+    {
+      "adapter_path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v12-dn-sasl-handshake.jar",
+      "adapter_sha256": "8b1909a8c0abb368770a9ee02cd26885ac94121cfa8b2dd7981872fabf3320ed",
+      "adapter_version": "v12",
+      "case_id": "HDFS-14",
+      "check_sites": [
+        "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V@411:branch:1"
+      ],
+      "compiled_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+      "compiled_test_class_sha256": "04eccf7c273c1d984226d712ff29adc6a27d94580dfc2aa7e12e11853d57ad3a",
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+      "exception_class": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+      "first_pass": {
+        "actual_maven_return_code": 0,
+        "note": "HDFS-12/14 old parameterized method selector ran 0 JUnit tests",
+        "observed_door_events": 0,
+        "result_path": "data/mallory/calibration/HDFS-14/trials/r0000/result.json",
+        "result_sha256": "e00e007c3825c0522477d594b0c6af9c5d8bcdf2de2676a4a4bcb5c6f5d3840c",
+        "stdout_sha256": "b863c03b8553a1e8835212da4ffc4bc551c8153f409e03a34fe0ecf4be44f76e",
+        "target_identity_gaps": 0,
+        "target_reached": false,
+        "target_threw": false
+      },
+      "priority": 4,
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+      "source_review": "The existing nonparameterized balancer test enables encrypted data transfer and block tokens, starts a MiniDFSCluster, creates a file, adds a DataNode, and moves data. DataXceiver.checkAccess invokes the selected six-argument token verifier on a DataNode. The original TestEncryptedTransfer method selector executed zero tests; the balancer alternate has no source-level expected token rejection. Exact branch reach and zero selected throw are not yet observed.",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "target_source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+      "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+      "throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V@412:throw:1"
+    },
+    {
+      "adapter_path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v12-dn-sasl-handshake.jar",
+      "adapter_sha256": "8b1909a8c0abb368770a9ee02cd26885ac94121cfa8b2dd7981872fabf3320ed",
+      "adapter_version": "v12",
+      "case_id": "HDFS-12",
+      "check_sites": [
+        "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B@511:branch:2"
+      ],
+      "compiled_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+      "compiled_test_class_sha256": "04eccf7c273c1d984226d712ff29adc6a27d94580dfc2aa7e12e11853d57ad3a",
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient",
+      "exception_class": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+      "first_pass": {
+        "actual_maven_return_code": 0,
+        "note": "HDFS-12/14 old parameterized method selector ran 0 JUnit tests",
+        "observed_door_events": 0,
+        "result_path": "data/mallory/calibration/HDFS-12/trials/r0000/result.json",
+        "result_sha256": "1551ce9acac1f0782b1d1fca4609e6ff3d9fdeb8ff13d72660eb99abd5eb1809",
+        "stdout_sha256": "261f02958208433f34b5c7e8ce0f7f546871f9b19e75baecf10631f743446547",
+        "target_identity_gaps": 0,
+        "target_reached": false,
+        "target_threw": false
+      },
+      "priority": 5,
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+      "source_review": "The same encrypted balancer MiniDFSCluster moves blocks through DataTransfer. DataXceiver token validation invokes BlockTokenSecretManager.retrievePassword, whose missing-key guard is selected. The original TestEncryptedTransfer#testLongLivedClient deliberately shortens key lifetime and clears NameNode keys, so the nonparameterized balancer test is a cleaner candidate. Exact guard reach and zero selected throw remain unverified.",
+      "target_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "target_source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+      "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+      "throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B@514:throw:1"
+    }
+  ],
+  "exclusions": "Already completed/running/queued original IDs HDFS-01/07/08/09/10/15/16/17/21/23/25/27/28/35/39/40/43/49/50/52 and staged HDFS-11/22/29 were excluded. HDFS-30 shares a JUnit with staged HDFS-29 but is a distinct target site and has no new healthy attestation.",
+  "fixed_agent_path": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-safewriter-fd274b40.jar",
+  "fixed_agent_sha256": "fd274b401ec035797574e30bd52fb5e46bcfce11170578a7fd6c9ad0da8de348",
+  "frozen_core_release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+  "kind": "source_only_next_five_pending_hdfs_healthy_triage",
+  "reviewed_source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "schema_version": 1,
+  "selection_order": [
+    "HDFS-26",
+    "HDFS-30",
+    "HDFS-33",
+    "HDFS-14",
+    "HDFS-12"
+  ],
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "status": "source_only_no_new_jvm"
+}

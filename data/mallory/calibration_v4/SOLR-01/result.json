@@ -1,0 +1,99 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-01",
+  "closure_coverage_ids_seen": 8,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testAliasHandling",
+  "coverage_ids_seen": 293,
+  "dispatch_attempt_ids": [
+    "20261009T161959-28731241ad2d"
+  ],
+  "duration_seconds": 16.571,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 186225,
+    "manifest_path": "evidence_archives/calibration_v4/SOLR-01.tar.manifest.json",
+    "manifest_sha256": "342ea56f0868d37ce1d1188c6e66dcefe8046d44fe33bc93d5ad4e28e4e138ae",
+    "path": "evidence_archives/calibration_v4/SOLR-01.tar.gz",
+    "sha256": "e2c8f823edf355c4d3f49fe88eff4f4f0e63a197a3fc5af0d9fceab207fcafcc"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 155,
+  "healthy_observed_door_events": 161,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T161959-28731241ad2d",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "client"
+    ],
+    "eligible_doors_before_target": 155,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "612726481021e78ecf9cbdc32512dec951558658e6a645aa4b55e431cd965b7f",
+    "observed_target_class_sha256": "612726481021e78ecf9cbdc32512dec951558658e6a645aa4b55e431cd965b7f",
+    "reasons": [],
+    "site_catalog_sha256": "703004c366ba3db7e046b07454fb86606f56d2bce28315f0295a553aa7c7f03e",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "throw new RuntimeException(\"Tried fetching aliases using all the node names we knew of, i.e. \" + liveNodes +\". However, \"\n+ \"succeeded in obtaining the cluster state from none of them.\"\n+ \"If you think your Solr cluster is up and is accessible,\"\n+ \" you could try re-creating a new CloudSolrClient using a working\"\n+ \" solrUrl or zkHost.\");",
+    "check_sites": [
+      "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    ],
+    "exception_class": "java.lang.RuntimeException",
+    "function": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider.getAliases(boolean)",
+    "original_source_line": 267,
+    "site_id": "<org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider: java.util.Map getAliases(boolean)>#u93",
+    "source_line": 267,
+    "source_path": "solr/solrj/src/java/org/apache/solr/client/solrj/impl/BaseHttpClusterStateProvider.java",
+    "throw_site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@267:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "client"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T161959-28731241ad2d",
+      "duration_seconds": 16.571,
+      "eligible_doors_before_target": 155,
+      "novelty": {
+        "closure_coverage": 8,
+        "closure_edges": 0,
+        "coverage": 293
+      },
+      "observed_door_events": 161,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

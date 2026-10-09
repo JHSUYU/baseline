@@ -1,0 +1,28 @@
+{
+  "candidate_fault_door": "RpcServer.call @447 BlockingService.callBlockingMethod IOException, observed-path verification pending",
+  "case_id": "HBASE-16",
+  "config_path": "Mallory/adapters/hbase/pilot/HBASE-16-lane7-recovery-v1-healthy.json",
+  "config_sha256": "b554f91d32601d3c2bfa851b2c1f0c4521186094d1848a9d60a6ee8922ee81c6",
+  "fixed_core_release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+  "host": "node1",
+  "kind": "hbase16_existing_cluster_test_healthy_stage",
+  "lane": "hbase-lane7",
+  "prior_cross_case_audit": "data/mallory/calibration_v4/HBASE-17/offline-causal-audit.json",
+  "prior_cross_case_audit_sha256": "9379cd26abdf762d782b44d1d3cf4e6f7d236d2a8245a93813455efc68f8d4e8",
+  "prior_cross_case_coverage": [
+    "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@366:branch:3:TAKEN"
+  ],
+  "prior_cross_case_qualification": "HBASE-17 observes a nonthrowing HBASE-16 source branch on master0 but is not case-specific HBASE-16 target/path proof. Fresh healthy run required.",
+  "prior_cross_case_trial": "data/mallory/calibration_v4/HBASE-17/trials/r0000/result.json",
+  "prior_cross_case_trial_sha256": "e9c8839a54d710db4a2377a99ba2cff68bf4e43e7a780681fc701dfb8cf70cde",
+  "schema_version": 1,
+  "selected_existing_junit": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer#test",
+  "site_file_remote": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/cases/HBASE-16-recovery-v1/sites.json",
+  "site_sha256": "e3750f6fd8e0be4eba2189f8d6e4376a068dfd2ab1afd1dd7be6f861efe2691b",
+  "source_method_lines": "setUp @128 starts three RegionServers; test @143 calls moveAsync, aborts rs0, and waits for SCP/TRSP; no new test method",
+  "source_target_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+  "source_target_sha256": "7169b7e2c375ca43357037ecaed2f8238bf7af31fcf3a618ed75c9b1566ec3e8",
+  "source_test_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestReportRegionStateTransitionFromDeadServer.java",
+  "source_test_sha256": "8504846bad21b3cd4707471e4a3a37afa7a4c49d1996e787c47a1b8af027f359",
+  "status": "healthy_config_staged_not_run"
+}

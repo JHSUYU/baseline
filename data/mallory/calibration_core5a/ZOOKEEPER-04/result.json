@@ -1,0 +1,123 @@
+{
+  "calibration_only": true,
+  "case_id": "ZOOKEEPER-04",
+  "closure_coverage_ids_seen": 22,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.zookeeper.server.ConnectionMetricsTest#testRevalidateCount",
+  "coverage_ids_seen": 166,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 38.127,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 92,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_c35a988d90f84e44be15d42de3bc5fc2",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.zookeeper.server.ConnectionMetricsTest-mallory_0000_c35a988d90f84e44be15d42de3bc5fc2.xml",
+        "sha256": "b70e11f40defb9a411f6d9e79702e61b02027d946f66b536c5881320e93b7170"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "720e78db773fc3b1080c9b57ee966dfd8240687c10769cce8f937e0300942859",
+    "tests": 1
+  },
+  "healthy_local_timeline_doors": 1,
+  "healthy_observed_door_events": 109,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "zk2"
+    ],
+    "eligible_doors_before_target": 92,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+    "observed_target_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+    "reasons": [],
+    "site_catalog_sha256": "dd4ae937a62114e43356b95e0e0ad01b091a53c6ea553b77b4c921541345309f",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "zookeeper",
+  "target": {
+    "check_code": "throw new CloseRequestException(msg, ServerCnxn.DisconnectReason.CLIENT_ZXID_AHEAD);",
+    "check_sites": [
+      "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1434:branch:7"
+    ],
+    "exception_class": "org.apache.zookeeper.server.ServerCnxn$CloseRequestException",
+    "function": "org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)",
+    "nodes": [
+      "zk2"
+    ],
+    "site_id": "<org.apache.zookeeper.server.ZooKeeperServer: void processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)>#u97",
+    "source_line": 1444,
+    "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+    "throw_site": "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1444:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "zk2"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 38.127,
+      "eligible_doors_before_target": 92,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": 1,
+      "novelty": {
+        "closure_coverage": 22,
+        "closure_edges": 0,
+        "coverage": 166
+      },
+      "observed_door_events": 109,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

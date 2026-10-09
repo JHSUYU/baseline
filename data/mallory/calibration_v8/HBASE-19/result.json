@@ -1,0 +1,108 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-19",
+  "closure_coverage_ids_seen": 19,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+  "coverage_ids_seen": 140,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 41.398,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 46,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "3c1d7e8dde81484d9786fa5b77f00cebc05990d959ee72c236f35cd88607addb",
+    "stdout_sha256": "0c9fe1a51940470341ab67bd99017b733f0fd0381c2ec7d3c65a1eae7e07dc44",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "healthy_observed_door_events": 86,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "master0"
+    ],
+    "eligible_doors_before_target": 46,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "a8fa60a60a2d7731d02a3eb829b9ddfd6d3e67932f3e17b7f831b78211a0c4b1",
+    "observed_target_class_sha256": "a8fa60a60a2d7731d02a3eb829b9ddfd6d3e67932f3e17b7f831b78211a0c4b1",
+    "reasons": [],
+    "site_catalog_sha256": "1bc0127bf3dfba67bbb6f2976418624e7b960f8aa273f2565ba8342b775e92c5",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (\nthis.unmodifiedTableDescriptor.getColumnFamilyCount()\n!= this.modifiedTableDescriptor.getColumnFamilyCount()\n) {\nthrow new HBaseIOException(\n\"Cannot add or remove column families when this modification \" + \"won't reopen regions.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@133:branch:7"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+    "original_source_line": 135,
+    "site_id": "<org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure: void preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)>#u50",
+    "source_line": 135,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+    "throw_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@135:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "master0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 41.398,
+      "eligible_doors_before_target": 46,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 19,
+        "closure_edges": 0,
+        "coverage": 140
+      },
+      "observed_door_events": 86,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

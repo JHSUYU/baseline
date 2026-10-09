@@ -1,0 +1,107 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-33",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDataNodeHotSwapVolumes#testAddOneNewVolume",
+  "coverage_ids_seen": 158,
+  "dispatch_attempt_ids": [
+    "20261009T161652-f2f46d2c8189"
+  ],
+  "duration_seconds": 16.435,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 31,
+  "healthy_observed_door_events": 50,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T161652-f2f46d2c8189",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 31,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "6ddba23351786ba9c6aba0e88bb4f9fb6feb9ade5bde23c66ae7c907d5aaa587",
+    "observed_target_class_sha256": "6ddba23351786ba9c6aba0e88bb4f9fb6feb9ade5bde23c66ae7c907d5aaa587",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region"
+    ],
+    "site_catalog_sha256": "83fe583f5f31eb4e0a04b1c9e8dc28c4804d70e47d4d44bac90d274cb86e2cc9",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 2,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "assert bpStorage != null;",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:4",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:5"
+    ],
+    "exception_class": "java.lang.AssertionError",
+    "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder.build()",
+    "original_source_line": 259,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder: void build()>#u28",
+    "source_line": 259,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HDFS-33-r0000:304",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V:root:1",
+      "seq": 304,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-33-r0000:306",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V:root:1",
+      "seq": 306,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:5"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T161652-f2f46d2c8189",
+      "duration_seconds": 16.435,
+      "eligible_doors_before_target": 31,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 158
+      },
+      "observed_door_events": 50,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

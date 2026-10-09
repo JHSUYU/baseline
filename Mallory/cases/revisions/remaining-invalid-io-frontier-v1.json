@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "kind": "versioned_source_only_alternate_batch",
+  "status": "review_only_no_dispatch",
+  "base_checklist": "data/mallory/checklist102.json",
+  "base_checklist_sha256": "d7f7286377bcbfc5ea4e2535ca1f6f1ac0bff63d2f5c3f3d4c8b974ba34ec93e",
+  "base_inventory": "Mallory/cases/inventory.json",
+  "base_inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+  "selection_rule": "Only invalid terminal healthy calibrations with an existing smaller cluster JUnit and a concrete source-level pretarget RPC/I/O path. Excludes adapter-owned active HDFS17/52, HBASE01/34/35, SOLR09/14/18, ZK02/13, and cases whose issue is solely actor binding or JUnit runner selection.",
+  "candidate_count": 4,
+  "candidates": [
+    {
+      "case_id": "HDFS-50",
+      "priority": 1,
+      "system": "hdfs",
+      "cohort": "original_102",
+      "base_inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+        "source_sha256": "3391aca71a4b7350da952e9bae0a7d6d8e8568f6de1f419f8dce331e98fa60b7",
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature.addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)",
+        "line": 199,
+        "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature: org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)>#u38",
+        "exception_class": "org.apache.hadoop.hdfs.protocol.SnapshotException"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+        "source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+        "failure_status": "healthy_seed_invalid",
+        "calibration_result": "data/mallory/calibration/HDFS-50/result.json",
+        "calibration_result_sha256": "d6bef9e9372965bdc9d80884399341f9d426eaa3cf4a7ed887adfd9b13cfd86b"
+      },
+      "proposed_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+        "test_source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+        "test_method_line": 197,
+        "evidence_grade": "source_only_no_alternate_jvm_seed",
+        "pretarget_io_path": "TestSnapshotCommands.clusterSetUp at lines 45-51 starts MiniDFSCluster. testSnapshotCommandsWithURI lines 202-214 invokes FsShell -createSnapshot twice with distinct names sn1/sn2; the shell calls the NameNode snapshot RPC before DirectorySnapshottableFeature.addSnapshot.",
+        "why_nonthrowing_guard_is_plausible": "Two distinct names avoid the current testCreateSnapshot duplicate sn0 rejection while each addSnapshot must evaluate the selected duplicate-name guard.",
+        "remaining_uncertainty": "The exact target branch and named NN observed-path door require a new healthy trace."
+      },
+      "admission_gate": "Run isolated healthy MiniCluster JUnit first; require exact compiled target check, named actor, zero selected target throws, an observed causal I/O door before target, complete trace and strict passing JUnit before any fault trial."
+    },
+    {
+      "case_id": "HBASE-29",
+      "priority": 2,
+      "system": "hbase",
+      "cohort": "original_102",
+      "base_inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "source_sha256": "2e472a4c969be81260d397d75e3c7ddd9fe854d306f72cb4ef0b1289c43125c6",
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "line": 2263,
+        "site_id": "<org.apache.hadoop.hbase.regionserver.RSRpcServices: org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryResponse replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)>#u66",
+        "exception_class": "org.apache.hadoop.hbase.NotServingRegionException"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "source_sha256": "468c808e8c1da93b7478c733ee4ce4be6e17d98df7e9cfadacad7c92ac66defc",
+        "failure_status": "healthy_seed_invalid",
+        "calibration_result": "data/mallory/calibration/HBASE-29/result.json",
+        "calibration_result_sha256": "4e3db6fdc1b8c45d84f18f442ca73ff2c1f1c1641ea277b2bcb06fdebbfcd594"
+      },
+      "proposed_workload": {
+        "selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testMetaCacheMissTriggersRefresh",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "test_source_sha256": "468c808e8c1da93b7478c733ee4ce4be6e17d98df7e9cfadacad7c92ac66defc",
+        "test_method_line": 516,
+        "evidence_grade": "source_only_no_alternate_jvm_seed",
+        "pretarget_io_path": "TestRegionReplicaReplicationEndpoint#testMetaCacheMissTriggersRefresh at lines 516-559 starts the existing multi-RS MiniCluster, writes 100 rows, then calls RegionReplicaSinkWriter.append on a one-entry WAL edit at line 551. RegionReplicaReplicationEndpoint.java:503-520 submits RegionReplicaReplayCallable to a replica; its call at line 633 sends AdminService.replay RPC into the selected RSRpcServices.replay on an RS.",
+        "why_nonthrowing_guard_is_plausible": "The one-entry WAL request has one region name; replay loops over that entry at RSRpcServices.java:2260, so the mixed-region guard should evaluate false.",
+        "remaining_uncertainty": "The explicit SinkWriter call may still produce other background replay traffic; verify exact named RS occurrence and bounded trace. Earlier suggestion testRegionReplicaWithoutMemstoreReplication is weaker because it disables memstore replay."
+      },
+      "admission_gate": "Run isolated healthy MiniCluster JUnit first; require exact compiled target check, named actor, zero selected target throws, an observed causal I/O door before target, complete trace and strict passing JUnit before any fault trial."
+    },
+    {
+      "case_id": "HBASE-30",
+      "priority": 3,
+      "system": "hbase",
+      "cohort": "original_102",
+      "base_inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "source_sha256": "2e472a4c969be81260d397d75e3c7ddd9fe854d306f72cb4ef0b1289c43125c6",
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "line": 2298,
+        "site_id": "<org.apache.hadoop.hbase.regionserver.RSRpcServices: org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryResponse replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)>#u133",
+        "exception_class": "java.io.IOException"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "source_sha256": "468c808e8c1da93b7478c733ee4ce4be6e17d98df7e9cfadacad7c92ac66defc",
+        "failure_status": "healthy_seed_invalid",
+        "calibration_result": "data/mallory/calibration/HBASE-30/result.json",
+        "calibration_result_sha256": "a1178ad627aea2948da78ca3c3262621e1fd304f6036c5a68616d6e2b30ac638"
+      },
+      "proposed_workload": {
+        "selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testMetaCacheMissTriggersRefresh",
+        "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java",
+        "test_source_sha256": "468c808e8c1da93b7478c733ee4ce4be6e17d98df7e9cfadacad7c92ac66defc",
+        "test_method_line": 516,
+        "evidence_grade": "source_only_no_alternate_jvm_seed",
+        "pretarget_io_path": "TestRegionReplicaReplicationEndpoint#testMetaCacheMissTriggersRefresh at lines 516-559 starts the existing multi-RS MiniCluster, writes 100 rows, then calls RegionReplicaSinkWriter.append on a one-entry WAL edit at line 551. RegionReplicaReplicationEndpoint.java:503-520 submits RegionReplicaReplayCallable to a replica; its call at line 633 sends AdminService.replay RPC into the selected RSRpcServices.replay on an RS.",
+        "why_nonthrowing_guard_is_plausible": "The test entry has one Cell mutation. RSRpcServices.replay parses it, calls doReplayBatchOp and examines OperationStatus at RSRpcServices.java:2297; success should avoid the selected IOException.",
+        "remaining_uncertainty": "Confirm that the one-entry request actually yields a nonempty edits array and that the exact status guard executes on a named RS."
+      },
+      "admission_gate": "Run isolated healthy MiniCluster JUnit first; require exact compiled target check, named actor, zero selected target throws, an observed causal I/O door before target, complete trace and strict passing JUnit before any fault trial."
+    },
+    {
+      "case_id": "HDFS-39",
+      "priority": 4,
+      "system": "hdfs",
+      "cohort": "original_102",
+      "base_inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+        "source_sha256": "589519ed7c1511fe1738431992e62613d9d0c5e177ec2b4f9ce42f7086cb4a2f",
+        "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
+        "line": 132,
+        "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp: org.apache.hadoop.hdfs.protocol.LastBlockWithStatus appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)>#u96",
+        "exception_class": "org.apache.hadoop.ipc.RetriableException"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java",
+        "source_sha256": "6f757c4ad0ee9c275c58383334daf66594caba7cfa81af46617ceff554370d50",
+        "failure_status": "healthy_seed_invalid",
+        "calibration_result": "data/mallory/calibration/HDFS-39/result.json",
+        "calibration_result_sha256": "0b01424a6280d113bdaec6f254aad4d78d92d8e29f9dfd03dc4e71a2a6a15e43"
+      },
+      "proposed_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestFileAppend#testMultiAppend2",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java",
+        "test_source_sha256": "6f757c4ad0ee9c275c58383334daf66594caba7cfa81af46617ceff554370d50",
+        "test_method_line": 594,
+        "evidence_grade": "source_only_no_alternate_jvm_seed",
+        "pretarget_io_path": "TestFileAppend#testMultiAppend2 at lines 594-628 builds a three-DN MiniDFSCluster; fs.append with APPEND|NEW_BLOCK at lines 616-626 sends a DFSClient append RPC to the NameNode before FSDirAppendOp.appendFile evaluates the block state.",
+        "why_nonthrowing_guard_is_plausible": "The test writes and closes append blocks and waits for a restarted DataNode block report, avoiding the original rapid repeated-append pattern that emitted a transient RetriableException.",
+        "remaining_uncertainty": "The test still performs several appends, so exact selected guard reach and absence of a transient target throw need healthy validation."
+      },
+      "admission_gate": "Run isolated healthy MiniCluster JUnit first; require exact compiled target check, named actor, zero selected target throws, an observed causal I/O door before target, complete trace and strict passing JUnit before any fault trial."
+    }
+  ],
+  "screened_out_source_reasoning": [
+    {
+      "cases": [
+        "HBASE-19",
+        "HBASE-20"
+      ],
+      "reason": "Positive alternate uses direct in-process ModifyTableProcedure submission before preflight; no verified pretarget RPC/I/O door."
+    },
+    {
+      "cases": [
+        "HBASE-32"
+      ],
+      "reason": "Selected guard is inside an IOException catch; a normal smaller replica workload has no source-guaranteed entry to that catch."
+    },
+    {
+      "cases": [
+        "HBASE-23",
+        "HBASE-33",
+        "HDFS-13",
+        "HDFS-18"
+      ],
+      "reason": "Exact selected check lacks a proven active MiniCluster JUnit path; direct unit calls or a different overload do not suffice."
+    },
+    {
+      "cases": [
+        "HDFS-11",
+        "HDFS-12",
+        "HDFS-14",
+        "SOLR-10",
+        "SOLR-13",
+        "SOLR-31",
+        "SOLR-36",
+        "SOLR-37",
+        "SOLR-39",
+        "SOLR-40"
+      ],
+      "reason": "Current failure is zero tests or JUnit assumption gate; fix runner/selector execution before seeking a different workload."
+    },
+    {
+      "cases": [
+        "HBASE-24",
+        "HBASE-27",
+        "HBASE-28",
+        "HBASE-37",
+        "HDFS-23",
+        "HDFS-25",
+        "HDFS-26",
+        "HDFS-27",
+        "HDFS-28",
+        "HDFS-29",
+        "HDFS-30",
+        "HDFS-33",
+        "HDFS-35"
+      ],
+      "reason": "Current test already reaches the target but node identity is missing; a different test is not evidence for fixing the actor binding."
+    }
+  ]
+}

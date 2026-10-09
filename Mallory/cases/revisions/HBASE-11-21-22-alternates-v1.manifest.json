@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "kind": "review_only_combined_inventory_source_reference_snapshot",
+  "status": "review_only_not_dispatch_admitted",
+  "base_inventory": "Mallory/cases/inventory.json",
+  "base_inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+  "base_source_reference": "Mallory/dispatch/source_reference.json",
+  "base_source_reference_sha256": "e600ce9827adc7fdc9baf8cef1fca70bfcb616f39310a7053a50feab0d0b613d",
+  "inventory_snapshot": {
+    "path": "Mallory/cases/revisions/HBASE-11-21-22-alternates-v1.inventory.json",
+    "sha256": "75eb119d955a104449a883eb0a3df45bcbd61cddf108db3eb27a46b14852ace8",
+    "row_count": 102
+  },
+  "source_reference_snapshot": {
+    "path": "Mallory/cases/revisions/HBASE-11-21-22-alternates-v1.source-reference.json",
+    "sha256": "c50fc806436b84827292df2e5b8f5834feab01b4d15af2502ef1133bafb09995",
+    "root_fingerprints_unchanged": true
+  },
+  "source_root_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_root_fingerprint": "211136146806c868a7056e071018423cfa464aa69f446efc350a2253415fbafb",
+  "cases": [
+    {
+      "case_id": "HBASE-11",
+      "original_selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+      "original_test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+      "original_test_source_sha256": "50f65033ce822967d3dde237c26e60bbf0891bc9587c3dfa004886d55165ec7a",
+      "original_calibration_result": "data/mallory/calibration/HBASE-11/result.json",
+      "original_calibration_result_sha256": "e2bae9fc6e68c924b862021a458ed1873add839ceb8ae4bec097bbfcf70f7731",
+      "alternate_selector": "org.apache.hadoop.hbase.io.hfile.TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove",
+      "alternate_test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/io/hfile/TestBlockEvictionOnRegionMovement.java",
+      "alternate_test_source_sha256": "82fd1b073c150b0d69215a897ac8aed6ecd9019671c22f7edf5db35e69379c76",
+      "alternate_method_line": 88,
+      "target_source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+      "target_source_sha256": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03",
+      "target_class_sha256": "f6fd0445b9180846112fee6f36341c1c6d59b562974858f81d955bd4a0562545",
+      "target_check_sites": [
+        "org.apache.hadoop.hbase.master.assignment.AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V@759:branch:2"
+      ],
+      "target_throw_site": "org.apache.hadoop.hbase.master.assignment.AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V@760:throw:1",
+      "healthy_result": "data/mallory/calibration_v7/HBASE-11/result.json",
+      "healthy_result_sha256": "f187c99d13cc779658f7c80517a331c358c9b0fc678da42d70374763cd72be0f",
+      "offline_audit": "data/mallory/calibration_v7/HBASE-11/offline-causal-audit.json",
+      "offline_audit_sha256": "18b5899e38a872e7fca067a761b8ee7fc7e853763136e242d33a6663b872c181",
+      "calibration_receipt": "data/mallory/calibration_v7/HBASE-11/calibration-receipt.json",
+      "calibration_receipt_sha256": "8a5d5376984d9f9e18ef765aa6efee09f22a78b6411a22bf39a6d4b3a08b7541",
+      "junit_tests": 1,
+      "named_target_nodes": [
+        "master0"
+      ],
+      "target_threw": false,
+      "closure_edges": 74,
+      "observed_path_doors": 18,
+      "fault_trials_completed": 0
+    },
+    {
+      "case_id": "HBASE-21",
+      "original_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testRestoreSnapshotQuotaExceed",
+      "original_test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+      "original_test_source_sha256": "df107800c85dddf5ea8c5272d49c06f508dcd77840ddf700adebdfb27a0ccdd4",
+      "original_calibration_result": "data/mallory/calibration/HBASE-21/result.json",
+      "original_calibration_result_sha256": "47ee9078cfcecfdbb3f01dae83248872ee06b55ebb4353999f7f45ec51be0a8b",
+      "alternate_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testRestoreSnapshot",
+      "alternate_test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+      "alternate_test_source_sha256": "df107800c85dddf5ea8c5272d49c06f508dcd77840ddf700adebdfb27a0ccdd4",
+      "alternate_method_line": 666,
+      "target_source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+      "target_source_sha256": "ab2c75cf2b175f311f652c8ee8809b5d933b85b55f3f752002dd4b2d90b16280",
+      "target_class_sha256": "c770da546adccd2818ad28bc898e4f945e05326ac700e2796635050904369725",
+      "target_check_sites": [
+        "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceRegionCount(Lorg/apache/hadoop/hbase/TableName;I)V@128:branch:3"
+      ],
+      "target_throw_site": "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceRegionCount(Lorg/apache/hadoop/hbase/TableName;I)V@133:throw:1",
+      "healthy_result": "data/mallory/calibration_v8/HBASE-21/result.json",
+      "healthy_result_sha256": "00b65104eb93a011e15083c5e17a7bc7410da0211a69c141132c46dceab45537",
+      "offline_audit": "data/mallory/calibration_v8/HBASE-21/offline-causal-audit.json",
+      "offline_audit_sha256": "8ad9cde8b920491b390144963ee896b74be939977d995e6da344074b7cf6569a",
+      "calibration_receipt": "data/mallory/calibration_v8/HBASE-21/calibration-receipt.json",
+      "calibration_receipt_sha256": "6b668fe65112d04a1a126874f8c2c3153070570eeb194c1b2ccbb036d0e5d400",
+      "junit_tests": 1,
+      "named_target_nodes": [
+        "master1"
+      ],
+      "target_threw": false,
+      "closure_edges": 2,
+      "observed_path_doors": 1,
+      "fault_trials_completed": 0
+    },
+    {
+      "case_id": "HBASE-22",
+      "original_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
+      "original_test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+      "original_test_source_sha256": "df107800c85dddf5ea8c5272d49c06f508dcd77840ddf700adebdfb27a0ccdd4",
+      "original_calibration_result": "data/mallory/calibration/HBASE-22/result.json",
+      "original_calibration_result_sha256": "7c935a021dffc2066f8545467c6061d65a585971ac52dab6830efcc9f046fbaa",
+      "alternate_selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testDeleteTable",
+      "alternate_test_source": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java",
+      "alternate_test_source_sha256": "df107800c85dddf5ea8c5272d49c06f508dcd77840ddf700adebdfb27a0ccdd4",
+      "alternate_method_line": 241,
+      "target_source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+      "target_source_sha256": "ab2c75cf2b175f311f652c8ee8809b5d933b85b55f3f752002dd4b2d90b16280",
+      "target_class_sha256": "c770da546adccd2818ad28bc898e4f945e05326ac700e2796635050904369725",
+      "target_check_sites": [
+        "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceTableCount(Lorg/apache/hadoop/hbase/TableName;I)V@166:branch:4"
+      ],
+      "target_throw_site": "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceTableCount(Lorg/apache/hadoop/hbase/TableName;I)V@172:throw:1",
+      "healthy_result": "data/mallory/calibration_v8/HBASE-22/result.json",
+      "healthy_result_sha256": "5de953b9d3ab2d5b73d18fe63ff24903de6b176c9951660030de83e5bf94b799",
+      "offline_audit": "data/mallory/calibration_v8/HBASE-22/offline-causal-audit.json",
+      "offline_audit_sha256": "a3c1ca165e4b70ece04ec9539775b52f6faf9b83d7e915fcb1a3fa5371983cd2",
+      "calibration_receipt": "data/mallory/calibration_v8/HBASE-22/calibration-receipt.json",
+      "calibration_receipt_sha256": "0a8f9990ee319c7f0b7f4f6cac29d9cd7a62e3a2e8c7f9ae116825ba63563de4",
+      "junit_tests": 1,
+      "named_target_nodes": [
+        "master1"
+      ],
+      "target_threw": false,
+      "closure_edges": 260,
+      "observed_path_doors": 27,
+      "fault_trials_completed": 0
+    }
+  ],
+  "excluded_quality_negative_cases": [
+    "HBASE-19",
+    "HBASE-20"
+  ],
+  "admission_instruction": "Review the three changed rows and verify HBase source-equivalent worktree, target/test hashes and exact runtime sites. Dispatch only full configs pinned to this immutable snapshot. Global inventory/source_reference and raw calibrations remain unchanged; healthy calibration has zero fault trials."
+}

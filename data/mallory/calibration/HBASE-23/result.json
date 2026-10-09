@@ -1,0 +1,80 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-23",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hbase.procedure.TestZKProcedureControllers#testZKCoordinatorControllerWithSingleMemberCohort",
+  "coverage_ids_seen": 19,
+  "dispatch_attempt_ids": [
+    "20261009T163729-b062846f2779"
+  ],
+  "duration_seconds": 6.342,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 13724,
+    "manifest_path": "evidence_archives/calibration/HBASE-23.tar.manifest.json",
+    "manifest_sha256": "8eda1c1f82cc748b22d01bf35e691af9daf06bde743c3a5bd179560eb562996e",
+    "path": "evidence_archives/calibration/HBASE-23.tar.gz",
+    "sha256": "629900090bf0b3abc852eb1ce423a6657ef5d979aeb1ceee3077f042a6a76070"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_observed_door_events": 0,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T163729-b062846f2779",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (!ProtobufUtil.isPBMagicPrefix(dataFromMember)) {\nString msg =\n\"Failed to get data from finished node or data is illegally formatted: \" + znode;\nLOG.error(msg);\nthrow new IOException(msg);",
+    "check_sites": [
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@127:branch:5"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator.sendGlobalBarrierReached(org.apache.hadoop.hbase.procedure.Procedure,java.util.List)",
+    "original_source_line": 131,
+    "site_id": "<org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator: void sendGlobalBarrierReached(org.apache.hadoop.hbase.procedure.Procedure,java.util.List)>#u43",
+    "source_line": 131,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator.java",
+    "throw_site": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@131:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T163729-b062846f2779",
+      "duration_seconds": 6.342,
+      "eligible_doors_before_target": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 19
+      },
+      "observed_door_events": 0,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_target_missing",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 0
+    }
+  ]
+}

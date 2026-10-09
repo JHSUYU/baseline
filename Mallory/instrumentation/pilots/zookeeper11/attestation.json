@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "kind": "healthy_instrumentation_pilot",
+  "case_id": "ZOOKEEPER-11",
+  "counts_as_mallory_fuzz_result": false,
+  "test": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+  "source_root": "/users/ZhenyuLi/zk11-independent-unit",
+  "source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+  "source_status": "clean",
+  "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/zookeeper-3.8.7",
+  "compiled_artifact_equivalence": {
+    "inventory_distribution_jar": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",
+    "quorum_peer_class_sha256": "cdcb7a67d5905fef27a8e36824b5d504c8df2c907dfac1a3cb8af6e3abbb6052",
+    "quorum_peer_source_sha256": "72606c8b4f2d887a94555de2d5fd6ec213b33496da8469df73064d5dfbe4d651",
+    "test_class_sha256": "05cb4b39fee9ae7c48313d9d0cef08ce6e1b929f57ba480cf98cbe2af7fa8f85",
+    "test_source_sha256": "b115c5dc305e61916eba790beefba8b5072be0b54a02d53f45027fa36d333c01"
+  },
+  "agent_sha256": "801e385b87877eb0306688e17ac9d7c64dea06a8ff712ac868aa56d42a92f6d2",
+  "archived_evidence": {
+    "healthy_archive": "data/mallory/calibration/ZOOKEEPER-11/healthy-agent2.tar.gz",
+    "healthy_archive_sha256": "ffecb6423284e712336fed2492ff410e91ef41c9a7f2ce57d230860f2c1875e7",
+    "small_campaign_archive": "data/mallory/calibration/ZOOKEEPER-11/small-campaign.tar.gz",
+    "small_campaign_archive_sha256": "7b8fe0c5ee7db34bd4144a922f4c809e76b9cb6a41dfb8384125119c1d1c857e",
+    "small_campaign_status": "budget_exhausted",
+    "small_campaign_completed_trials": [0, 1, 2, 3],
+    "small_campaign_elapsed_seconds": 135.502,
+    "small_campaign_target_exception_candidates": 0
+  },
+  "receipt": {
+    "path": "Mallory/instrumentation/target/pilots/zk11-healthy-agent2/receipt.json",
+    "sha256": "716074f6a8abbd655d6c27366a0e770f9104aa77c9db39ffe2ad69b90864230a"
+  },
+  "trace": {
+    "events_path": "Mallory/instrumentation/target/pilots/zk11-healthy-agent2/events.jsonl",
+    "events_sha256": "66d2927fcfb09cfe5d489f320d93776ebe01ad313ca0ad13d89ddfcc71602734",
+    "catalog_path": "Mallory/instrumentation/target/pilots/zk11-healthy-agent2/catalog.jsonl",
+    "catalog_sha256": "117ce00bb74724b448d15fac3b48003aa74528aa6131fe85d5bfee767349046f",
+    "junit_log_sha256": "cc86a2a196f6592d1d271b6d519c09cfd05d4501ef08552342a9d0c5c7f2a5a0"
+  },
+  "junit_exit_code": 0,
+  "junit_tests_successful": 1,
+  "elapsed_seconds": 18.836,
+  "region_entries": 9,
+  "selected_check": {
+    "site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1169:branch:2",
+    "observed_count": 1,
+    "node": "zk0",
+    "epoch": 2,
+    "occurrence": "zk0:2:org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V:root:1",
+    "outcome": "FALLTHROUGH"
+  },
+  "selected_throw": {
+    "site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1175:throw:1",
+    "catalog_count": 1,
+    "observed_count": 0,
+    "exception_class": "java.io.IOException"
+  }
+}

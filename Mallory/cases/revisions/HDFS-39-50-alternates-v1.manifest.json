@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "kind": "review_only_combined_inventory_source_reference_snapshot",
+  "status": "review_only_not_dispatch_admitted",
+  "base_inventory": "Mallory/cases/inventory.json",
+  "base_inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+  "base_source_reference": "Mallory/dispatch/source_reference.json",
+  "base_source_reference_sha256": "e600ce9827adc7fdc9baf8cef1fca70bfcb616f39310a7053a50feab0d0b613d",
+  "inventory_snapshot": {
+    "path": "Mallory/cases/revisions/HDFS-39-50-alternates-v1.inventory.json",
+    "sha256": "f8baf06dedeba42ba2f8800ebdc84618b223f67c591900fec4c71c70e66de8a3",
+    "row_count": 102
+  },
+  "source_reference_snapshot": {
+    "path": "Mallory/cases/revisions/HDFS-39-50-alternates-v1.source-reference.json",
+    "sha256": "7ecceb7748fe14346bdbb8149ac007dbec4b81efeac77acaaa940893c8a68223",
+    "root_fingerprints_unchanged": true
+  },
+  "source_root_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_root_fingerprint": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+  "cases": [
+    {
+      "case_id": "HDFS-39",
+      "original_selector": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
+      "original_test_source_sha256": "6f757c4ad0ee9c275c58383334daf66594caba7cfa81af46617ceff554370d50",
+      "original_calibration_result": "data/mallory/calibration/HDFS-39/result.json",
+      "original_calibration_result_sha256": "0b01424a6280d113bdaec6f254aad4d78d92d8e29f9dfd03dc4e71a2a6a15e43",
+      "alternate_selector": "org.apache.hadoop.hdfs.TestFileAppend#testMultiAppend2",
+      "alternate_test_source": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java",
+      "alternate_test_source_sha256": "6f757c4ad0ee9c275c58383334daf66594caba7cfa81af46617ceff554370d50",
+      "target_source_sha256": "589519ed7c1511fe1738431992e62613d9d0c5e177ec2b4f9ce42f7086cb4a2f",
+      "target_class_sha256": "a10167f939f5fe912e83ce5b570a7053a9856e844a1706c0f40b8f8296a0a8c8",
+      "test_class_sha256": "44577a85864cebd7ffe488c628714f6ae60d1faba694c2014f9c9960fe4141a9",
+      "healthy_result": "data/mallory/calibration_v9/HDFS-39/result.json",
+      "healthy_result_sha256": "e8c2829395e31fbb965fd63d4d4f1ed902c0a06aad1ec8cc3547dc14bc04ef0e",
+      "offline_audit": "data/mallory/calibration_v9/HDFS-39/offline-causal-audit.json",
+      "offline_audit_sha256": "e5b4292710eb8baf8eafc34131dfdce31165d2e2b2af049ec22cf006d53196f2",
+      "junit_tests": 1,
+      "named_target_nodes": [
+        "hdfs-cluster-1/nn0"
+      ],
+      "target_threw": false,
+      "closure_edges": 34,
+      "observed_path_doors": 7,
+      "fault_trials_completed": 0
+    },
+    {
+      "case_id": "HDFS-50",
+      "original_selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+      "original_test_source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+      "original_calibration_result": "data/mallory/calibration/HDFS-50/result.json",
+      "original_calibration_result_sha256": "d6bef9e9372965bdc9d80884399341f9d426eaa3cf4a7ed887adfd9b13cfd86b",
+      "alternate_selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+      "alternate_test_source": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+      "alternate_test_source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+      "target_source_sha256": "3391aca71a4b7350da952e9bae0a7d6d8e8568f6de1f419f8dce331e98fa60b7",
+      "target_class_sha256": "33930de8f98942d102579e04f07f4fb4ddeaf5f3b98f1a53f1c8471c0bc105c3",
+      "test_class_sha256": "0f7f1d0b415b9d1e81f9b8fbeb7ba0405f7b5f65efc9917d3efb690733f1a260",
+      "healthy_result": "data/mallory/calibration_v9/HDFS-50/result.json",
+      "healthy_result_sha256": "fb4d363c0442ccd696936748c935ddfb8810a7b81fffc44081a00f3f5119d9ca",
+      "offline_audit": "data/mallory/calibration_v9/HDFS-50/offline-causal-audit.json",
+      "offline_audit_sha256": "b803b0cf5317d90c97ee240f9511ce8674960ff435cad2d1dd847c374294b44e",
+      "junit_tests": 1,
+      "named_target_nodes": [
+        "hdfs-cluster-1/nn0"
+      ],
+      "target_threw": false,
+      "closure_edges": 49,
+      "observed_path_doors": 13,
+      "fault_trials_completed": 0
+    }
+  ],
+  "admission_instruction": "Review both changed rows and validate source-equivalent HDFS worktree, class hashes and exact runtime sites. Then dispatch only newly generated campaign configs pinned to these snapshots. Original global inventory/source_reference and raw calibration evidence remain unchanged; healthy calibration is not a fault campaign."
+}

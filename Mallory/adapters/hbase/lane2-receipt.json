@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "system": "hbase",
+  "system_version": "2.6.6",
+  "host": "node1",
+  "lane_id": "hbase-lane2",
+  "status": "runner_ready_for_case_calibration",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_patch": null,
+  "source_verification": {
+    "method": "all_tracked_files_equal_to_clean_node0_commit",
+    "tracked_files": 6062,
+    "reference_digest": "211136146806c868a7056e071018423cfa464aa69f446efc350a2253415fbafb",
+    "node1_digest": "211136146806c868a7056e071018423cfa464aa69f446efc350a2253415fbafb"
+  },
+  "runtime_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime",
+  "trial_root_template": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/cases/<case-id>/trials/<trial-id>",
+  "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+  "runner": "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+  "agent_transport": "java_tool_options",
+  "adapter_transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+  "command_template": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-Xmx4g",
+    "-ea",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "<JUnit class>",
+    "<JUnit method>"
+  ],
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "artifacts": {
+    "agent_jar_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "adapter_jar_sha256": "12bd49f871c414f023e6f80dbb1ba1cb1a05f7cf24aa27c3462bd8b2033c1f9c",
+    "selected_junit_class_sha256": "9b44bf693a8365dd01364cc1641208c0a481902116e316830260b3f71c8d4445",
+    "junit_platform_launcher_jar_sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564",
+    "hbase_client_jar_sha256": "b3c9537a0c5f4b057134c59298b453ae207d2e6279be66d71c80da36d0d2de54",
+    "hbase_server_tests_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+  },
+  "concurrency_probe": {
+    "case_id": "HBASE-02",
+    "cluster_test": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+    "result_path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/healthy-probe-HBASE-02-v3/result.json",
+    "result_sha256": "8cc97e6e86ebd506f17775ed8cecb6bdc6901d03441367065eda5d943060fb52",
+    "status": "calibration_complete",
+    "duration_seconds": 35.281,
+    "junit": "found=1 succeeded=1 failed=0",
+    "exact_site_catalog_valid": true,
+    "target_class_hash_match": true,
+    "target_node": "client",
+    "target_region_present": true,
+    "eligible_doors_before_target": 49,
+    "target_closure_named_server": "rs0",
+    "target_closure_occurrences": 5,
+    "target_closure_edges": {"rpc": 4, "task": 4},
+    "concurrent_lane1": "HBASE-01 full campaign remained running throughout the probe",
+    "port_observation": "During the preceding HBASE-02 healthy probe, concurrent HBASE-01 and HBASE-02 JVMs had distinct temporary roots and disjoint listener port sets (18 and 11 listeners); no BindException was observed in either probe."
+  },
+  "calibration_scope": "Runner and HBASE-02 target identity verified. Each other HBase target still needs its own healthy site, node, and closure admission before fault trials."
+}

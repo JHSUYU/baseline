@@ -1,0 +1,55 @@
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/MalloryZkHooks.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/MalloryZkHooks.java
+@@ -220,13 +220,36 @@
+             ? "REQUEST:" + requestDigest(packet.getData())
+             : packet.getType() + ":" + packet.getZxid();
+         if (!sending) {
+-            if (packet.getType() == Leader.REQUEST)
++            if (packet.getType() == Leader.REQUEST
++                || packet.getType() == Leader.ACKEPOCH)
+                 LAST_RECEIVED.set(new ReceivedPacket(packet, correlation));
+             else LAST_RECEIVED.remove();
+         }
+         call(sending ? "send" : "receive",
+              new Class<?>[] {String.class, String.class, String.class, String.class},
+              TRANSPORT, correlation, port, sending ? WRITE_DOOR : READ_DOOR);
++    }
++
++    /** Continue only from the exact ACKEPOCH object read on this thread. */
++    public static Scope quorumAckEpochScope(QuorumPacket packet, long masterId) {
++        node(masterId);
++        ReceivedPacket received = LAST_RECEIVED.get();
++        LAST_RECEIVED.remove();
++        if (packet.getType() != Leader.ACKEPOCH || received == null
++            || received.packet != packet) return new Scope(null);
++        Object context = invoke("withCausalContext",
++            new Class<?>[] {String.class}, received.correlation);
++        AutoCloseable scope = context instanceof AutoCloseable ? (AutoCloseable) context : null;
++        String region = "zookeeper.leader.ackepoch";
++        try {
++            call("regionEnter", new Class<?>[] {String.class}, region);
++            return new Scope(scope, region);
++        } catch (RuntimeException | Error failure) {
++            if (scope != null) {
++                try { scope.close(); } catch (Exception closeFailure) { failure.addSuppressed(closeFailure); }
++            }
++            throw failure;
++        }
+     }
+ 
+     /** Continue from the exact QuorumPacket read into the leader's request queue. */
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerHandler.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerHandler.java
+@@ -546,7 +546,11 @@
+                 }
+                 ByteBuffer bbepoch = ByteBuffer.wrap(ackEpochPacket.getData());
+                 ss = new StateSummary(bbepoch.getInt(), ackEpochPacket.getZxid());
+-                learnerMaster.waitForEpochAck(this.getSid(), ss);
++                try (MalloryZkHooks.Scope malloryAckScope =
++                         MalloryZkHooks.quorumAckEpochScope(ackEpochPacket,
++                             MalloryZkHooks.masterId(learnerMaster))) {
++                    learnerMaster.waitForEpochAck(this.getSid(), ss);
++                }
+             }
+             peerLastZxid = ss.getLastZxid();
+ 

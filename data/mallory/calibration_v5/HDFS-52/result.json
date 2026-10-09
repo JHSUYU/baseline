@@ -1,0 +1,242 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-52",
+  "closure_coverage_ids_seen": 9,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot#testSaveLoadImage",
+  "coverage_ids_seen": 219,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 28.451,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 101,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_4b2b96a212064bf6bdd626f93048d536",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot-mallory_0000_4b2b96a212064bf6bdd626f93048d536.xml",
+        "sha256": "f6189a71b20c87663a0380b31f5e7ffbdb13a9905ae30bf4f41b9604eda94c42"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "0339875b94f9195d53438d6ee5d004a1f285a00765ef32f8a6a6998e0a06541a",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 115,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/nn0",
+      "hdfs-cluster-2/nn0",
+      "hdfs-cluster-3/nn0",
+      "hdfs-cluster-4/nn0",
+      "hdfs-cluster-5/nn0",
+      "hdfs-cluster-6/nn0"
+    ],
+    "eligible_doors_before_target": 101,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "d4d35e988749f4cc751eec6768cafa5bb60b06099d5d18cacf8c2bb7fec162e9",
+    "observed_target_class_sha256": "d4d35e988749f4cc751eec6768cafa5bb60b06099d5d18cacf8c2bb7fec162e9",
+    "reasons": [],
+    "site_catalog_sha256": "582963f255b6953f3342ce8311f3aa1bc00a8926fd04bba3368c0418d52d784e",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 14,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (i % FSImageFormatProtobuf.Saver.CHECK_CANCEL_INTERVAL == 0) {\ncontext.checkCancelled();\n}\n}\n}\nPreconditions.checkState(i == sm.getNumSnapshots());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    ],
+    "exception_class": "java.lang.IllegalStateException",
+    "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver.serializeSnapshotSection(java.io.OutputStream)",
+    "original_source_line": 467,
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver: void serializeSnapshotSection(java.io.OutputStream)>#u65",
+    "source_line": 467,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:callthrow:43"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/nn0",
+      "hdfs-cluster-2/nn0",
+      "hdfs-cluster-3/nn0",
+      "hdfs-cluster-4/nn0",
+      "hdfs-cluster-5/nn0",
+      "hdfs-cluster-6/nn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:21",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:1:1",
+      "seq": 21,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:22",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:2:1",
+      "seq": 22,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:577",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:3:1",
+      "seq": 577,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:589",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:4:1",
+      "seq": 589,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:1445",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:5:1",
+      "seq": 1445,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:1457",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:6:1",
+      "seq": 1457,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:2341",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:7:1",
+      "seq": 2341,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:2353",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:8:1",
+      "seq": 2353,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:2949",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:10:1",
+      "seq": 2949,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:2961",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:9:1",
+      "seq": 2961,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:3580",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:11:1",
+      "seq": 3580,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:3592",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:12:1",
+      "seq": 3592,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:4145",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:13:1",
+      "seq": 4145,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-52-r0000:4157",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V:hdfs-fsimage:14:1",
+      "seq": 4157,
+      "site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    }
+  ],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 28.451,
+      "eligible_doors_before_target": 101,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 9,
+        "closure_edges": 0,
+        "coverage": 219
+      },
+      "observed_door_events": 115,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

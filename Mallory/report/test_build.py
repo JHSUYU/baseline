@@ -5,12 +5,104 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from Mallory.report.build import (_causal_audit, _posthoc_attestation, _quality,
+from Mallory.report.build import (_causal_audit, _causal_precision_review,
+                                  _posthoc_attestation, _quality,
                                   _row, _source_gap, _source_review, build,
                                   markdown)
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_precision_sidecar_downgrades_only_matching_terminal_evidence(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results = root / "data" / "mallory"
+            case_id = "CASE-000"
+            case = {"case_id": case_id, "cohort": "original_102",
+                    "system": "example", "system_version": "1",
+                    "target": {"source_path": "X.java", "source_line": 10,
+                               "function": "X.check", "site_id": "X#u1",
+                               "check_code": "throw new E();", "target_exception": "E"},
+                    "workload": {"selected_selector": "TestX#test"},
+                    "eligibility": {"state": "mapped_test_pending_healthy_calibration",
+                                    "may_dispatch_healthy_seed": True}}
+            campaign = results / "cases" / case_id
+            campaign.mkdir(parents=True)
+            result = {"case_id": case_id, "status": "budget_exhausted",
+                      "healthy_seed_valid": True, "runtime_attestation": {"valid": True},
+                      "strict_injected_trials": 2, "strict_target_trials": 1,
+                      "fault_trials_completed": 2, "duration_seconds": 12.4}
+            result_path = campaign / "result.json"
+            result_path.write_text(json.dumps(result))
+            result_hash = hashlib.sha256(result_path.read_bytes()).hexdigest()
+            audit = {"schema_version": 1, "audit_kind": "offline_causal_quality",
+                     "case_id": case_id, "terminal_status": "budget_exhausted",
+                     "campaign_result_sha256": result_hash, "trial_count": 3,
+                     "archive_integrity_valid": True, "applied_fault_identity_valid": True,
+                     "target_claims_reverified": True, "guidance_consistent": True,
+                     "healthy_closure_proven": True, "healthy_observed_path_doors": 1,
+                     "healthy_closure_evidence_types": ["observed_graph_path"],
+                     "unknown_applied_faults": 0, "target_retained_fault_trials": 1,
+                     "report_gate_passed": True}
+            audit_path = campaign / "offline-causal-audit.json"
+            audit_path.write_text(json.dumps(audit))
+            audit_hash = hashlib.sha256(audit_path.read_bytes()).hexdigest()
+            self.assertEqual("target_exercised", _row(case, results)["quality_status"])
+
+            reviews = results / "quality_reviews" / "causal_precision_v2"
+            reviews.mkdir(parents=True)
+            receipt = {"schema_version": 2, "case_id": case_id,
+                       "classification": "causal_precision_unverified",
+                       "canonical_files_modified": False,
+                       "canonical_result": f"data/mallory/cases/{case_id}/result.json",
+                       "canonical_audit": f"data/mallory/cases/{case_id}/offline-causal-audit.json",
+                       "canonical_result_sha256": result_hash,
+                       "canonical_audit_sha256": audit_hash,
+                       "campaign_status": "budget_exhausted",
+                       "duration_seconds": 12.4, "fault_trials_completed": 2,
+                       "strict_postfault_target_trials": 1,
+                       "root_free_qualifying_trial_ids": [],
+                       "evidence_category": "root_intermediary_only"}
+            receipt_path = reviews / f"{case_id}.json"
+            receipt_path.write_text(json.dumps(receipt))
+            entry = {"case_id": case_id,
+                     "classification": "causal_precision_unverified",
+                     "sidecar": f"data/mallory/quality_reviews/causal_precision_v2/{case_id}.json",
+                     "sha256": hashlib.sha256(receipt_path.read_bytes()).hexdigest(),
+                     "result_sha256": result_hash, "audit_sha256": audit_hash}
+            (reviews / "index.json").write_text(json.dumps({
+                "schema_version": 2,
+                "review_status": "provisional_scientific_classification",
+                "weak_case_ids": [case_id], "cases": [entry]}))
+            row = _row(case, results)
+            self.assertEqual("completed_campaign", row["report_status"])
+            self.assertEqual("verified", row["causal_audit"])
+            self.assertEqual("causal_precision_unverified", row["quality_status"])
+            self.assertEqual(12.4, row["duration_seconds"])
+            self.assertEqual(1, row["strict_target_trials"])
+            self.assertEqual(("causal_precision_unverified", str(receipt_path)),
+                             _causal_precision_review(results, result_path, result))
+
+            receipt["evidence_category"] = "root_free_door_unmatched"
+            receipt_path.write_text(json.dumps(receipt))
+            entry["sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            (reviews / "index.json").write_text(json.dumps({
+                "schema_version": 2,
+                "review_status": "provisional_scientific_classification",
+                "weak_case_ids": [case_id], "cases": [entry]}))
+            self.assertEqual("causal_precision_unverified", _row(case, results)["quality_status"])
+
+            (reviews / "index.json").write_text(json.dumps({
+                "schema_version": 2,
+                "review_status": "provisional_scientific_classification",
+                "weak_case_ids": [], "cases": [entry]}))
+            self.assertEqual("causal_precision_review_invalid", _row(case, results)["quality_status"])
+
+            (reviews / "index.json").write_text(json.dumps({
+                "schema_version": 2,
+                "review_status": "provisional_scientific_classification",
+                "weak_case_ids": [case_id], "cases": [{**entry, "sha256": "0" * 64}]}))
+            self.assertEqual("causal_precision_review_invalid", _row(case, results)["quality_status"])
+
     def test_source_only_gap_is_separate_from_audited_workload_gap(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

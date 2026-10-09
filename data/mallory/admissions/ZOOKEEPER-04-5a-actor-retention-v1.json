@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-04",
+  "status": "no_proven_postfault_target_causality",
+  "pilot_result": "/users/ZhenyuLi/baseline/data/mallory/pilot_core5a/ZOOKEEPER-04/result.json",
+  "pilot_result_sha256": "485eab273a234401ee3cd15b5e4902c5f680cf58ffc138771feb9d80338493cd",
+  "original_offline_audit": "/users/ZhenyuLi/baseline/data/mallory/pilot_core5a/ZOOKEEPER-04/offline-causal-audit.json",
+  "original_offline_audit_sha256": "b030734872de236f3e4c6cdd936bc4b8d0f64c6e35098c9eef32da041e339277",
+  "original_audit_gate_passed": true,
+  "applied_fault_count": 6,
+  "proven_fault_count": 0,
+  "exact_same_occurrence_count": 0,
+  "time_respecting_observed_path_count": 0,
+  "faults": [
+    {
+      "trial_id": 1,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-04-r0001:637",
+      "fault_seq": 637,
+      "fault_site": "zookeeper.client.connect.read",
+      "fault_node": "zk2",
+      "fault_epoch": 0,
+      "fault_occurrence": "zk2:0:org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V:root:1",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0001:683"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 2,
+      "selection_reason": "bounded_exploration",
+      "fault_event_id": "ZOOKEEPER-04-r0002:535",
+      "fault_seq": 535,
+      "fault_site": "zookeeper.quorum.archive.writeRecord",
+      "fault_node": "zk2",
+      "fault_epoch": 0,
+      "fault_occurrence": "unscoped:zk2:0:root",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0002:799"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 3,
+      "selection_reason": "bounded_exploration",
+      "fault_event_id": "ZOOKEEPER-04-r0003:589",
+      "fault_seq": 589,
+      "fault_site": "zookeeper.quorum.archive.readRecord",
+      "fault_node": "zk2",
+      "fault_epoch": 0,
+      "fault_occurrence": "unscoped:zk2:0:root",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0003:805"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 4,
+      "selection_reason": "bounded_exploration",
+      "fault_event_id": "ZOOKEEPER-04-r0004:384",
+      "fault_seq": 384,
+      "fault_site": "zookeeper.quorum.archive.readRecord",
+      "fault_node": "zk1",
+      "fault_epoch": 0,
+      "fault_occurrence": "unscoped:zk1:0:root",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0004:604",
+        "ZOOKEEPER-04-r0004:930"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 5,
+      "selection_reason": "bounded_exploration",
+      "fault_event_id": "ZOOKEEPER-04-r0005:557",
+      "fault_seq": 557,
+      "fault_site": "zookeeper.quorum.archive.writeRecord",
+      "fault_node": "zk2",
+      "fault_epoch": 0,
+      "fault_occurrence": "unscoped:zk2:0:root",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0005:797"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 6,
+      "selection_reason": "bounded_exploration",
+      "fault_event_id": "ZOOKEEPER-04-r0006:404",
+      "fault_seq": 404,
+      "fault_site": "zookeeper.quorum.archive.writeRecord",
+      "fault_node": "zk3",
+      "fault_epoch": 0,
+      "fault_occurrence": "unscoped:zk3:0:root",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-04-r0006:582",
+        "ZOOKEEPER-04-r0006:920"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    }
+  ],
+  "supersedes_admission": "/users/ZhenyuLi/baseline/data/mallory/admissions/ZOOKEEPER-04-5a.json",
+  "supersedes_admission_sha256": "a88b773e06cb1c4be00d5ef40796370c3f0406c8b42c27312c0fdbb262493bab"
+}

@@ -1,0 +1,99 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-13",
+  "closure_coverage_ids_seen": 173,
+  "closure_edge_fingerprints_seen": 424,
+  "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestMergeTableRegionsProcedure#testMergeTwoRegions",
+  "coverage_ids_seen": 173,
+  "dispatch_attempt_ids": [
+    "20261009T162315-9b726938d828"
+  ],
+  "duration_seconds": 40.944,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 357647,
+    "manifest_path": "evidence_archives/calibration/HBASE-13.tar.manifest.json",
+    "manifest_sha256": "072ebc8a560899a3725e5d6dd8b7cb2340c60e29220105106f20f45e84940094",
+    "path": "evidence_archives/calibration/HBASE-13.tar.gz",
+    "sha256": "559ac6652c62be8903fc95a24163fb12fc9873dc3a06f3972eb09d9cf091148b"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 77,
+  "healthy_observed_door_events": 205,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T162315-9b726938d828",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "master0"
+    ],
+    "eligible_doors_before_target": 77,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "ca5b7ba50e5f9aaa6c38a9e5382b51515152e2530c6d8dbe248184310a18333a",
+    "observed_target_class_sha256": "ca5b7ba50e5f9aaa6c38a9e5382b51515152e2530c6d8dbe248184310a18333a",
+    "reasons": [],
+    "site_catalog_sha256": "25397fe7539d2db29f4e3f6f098e1835084856a88abe770e20efa5e8ba03516c",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (MetaTableAccessor.hasMergeRegions(env.getMasterServices().getConnection(), ri)) {\nString msg = \"Skip merging \" + regionNamesToLog + \", because a parent, \"\n+ RegionInfo.getShortNameToLog(ri) + \", has a merge qualifier \"\n+ \"(if a 'merge column' in parent, it was recently merged but still has outstanding \"\n+ \"references to its parents that must be cleared before it can participate in merge -- \"\n+ \"major compact it to hurry clearing of its references)\";\nLOG.warn(msg);\nthrow new MergeRegionException(msg);",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z@488:branch:6"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.exceptions.MergeRegionException",
+    "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+    "original_source_line": 495,
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure: boolean prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)>#u105",
+    "source_line": 495,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z@495:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "master0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T162315-9b726938d828",
+      "duration_seconds": 40.944,
+      "eligible_doors_before_target": 77,
+      "novelty": {
+        "closure_coverage": 173,
+        "closure_edges": 424,
+        "coverage": 173
+      },
+      "observed_door_events": 205,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

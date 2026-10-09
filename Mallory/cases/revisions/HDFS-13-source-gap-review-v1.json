@@ -1,0 +1,110 @@
+{
+  "case_id": "HDFS-13",
+  "conclusion": "Original MiniCluster JUnit passed but did not execute selected four-argument token check. The exercised DataXceiver validation uses storage-aware token overloads; TestBlockToken unit helper directly calls the four-argument overload but does not run MiniDFSCluster.",
+  "coverage_discriminator": {
+    "selected_token_four_argument_coverage_ids": 0,
+    "storage_aware_token_six_argument_coverage_ids": 2
+  },
+  "examined_existing_tests": [
+    {
+      "finding": "Executed original: six-argument storage-aware check observed; exact four-argument check absent.",
+      "selector": "TestBlockTokenWithDFS#testEnd2End",
+      "uses_mini_dfs_cluster": true
+    },
+    {
+      "finding": "Directly calls exact overload through helper on standalone token managers.",
+      "selector": "TestBlockToken#testBlockTokenSecretManagerLegacy",
+      "uses_mini_dfs_cluster": false
+    },
+    {
+      "finding": "Starts MiniCluster and retrieves token; no direct four-argument verification.",
+      "selector": "TestBlockToken#testBlockTokenInLastLocatedBlockLegacy",
+      "uses_mini_dfs_cluster": true
+    },
+    {
+      "finding": "Uses mock IPC DataNode server, not MiniDFSCluster.",
+      "selector": "TestBlockToken#testBlockTokenRpcLegacy",
+      "uses_mini_dfs_cluster": false
+    }
+  ],
+  "executed_original_junit": {
+    "campaign_result_path": "data/mallory/calibration/HDFS-13/result.json",
+    "campaign_result_sha256": "5cdc04513c6ddc730f0bfea813733fae857fc149f96d87e2790e0dd09d7fc06d",
+    "doors_observed": 120,
+    "exact_target_reached": false,
+    "exact_target_threw": false,
+    "junit_errors": 0,
+    "junit_failures": 0,
+    "junit_skipped": 0,
+    "junit_tests": 1,
+    "loaded_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+    "maven_return_code": 0,
+    "selector": "org.apache.hadoop.hdfs.server.blockmanagement.TestBlockTokenWithDFS#testEnd2End",
+    "site_catalog_sha256": "b9e894428447b7eea5a57aed406c26c48ebb704c164c3ab8a5ccf4f8552c893b",
+    "stdout_path": "data/mallory/calibration/HDFS-13/trials/r0000/stdout.log",
+    "stdout_sha256": "51ce1d7e1b602a6ca537eca5c101f17d549545bcf7b93633264636510acd5128",
+    "target_site_catalog_valid": true,
+    "trial_result_path": "data/mallory/calibration/HDFS-13/trials/r0000/result.json",
+    "trial_result_sha256": "362c454eca7ccdf457402931a3dcf7163d86c49bb00cc3e2260153be6f9f5e4d"
+  },
+  "limitation": "The search covers checked-in HDFS 3.4.3 Java call sites and selected existing JUnit sources. It does not prove that no custom workload could reach the check. No new JUnit was run. The existing runtime-audited no_suitable_cluster_test gate requires a valid zero-door healthy seed, which this target-missing run cannot provide.",
+  "original_config_path": "Mallory/cases/HDFS-13.json",
+  "original_config_sha256": "0255bdad9e0768a03d45a842285ea872ae437097123ca436e850d734808e261c",
+  "proof_tier": "source_review_plus_one_executed_original_junit",
+  "report_registration": "await_source_only_schema; do_not_write_runtime_source_gap_receipt",
+  "schema_version": 1,
+  "search_scope": "All checked-in Java call sites of BlockTokenSecretManager.checkAccess(Token,String,ExtendedBlock,AccessMode), BlockPoolTokenSecretManager forwarding overloads, DataXceiver token validation, and MiniCluster methods in TestBlockToken and TestBlockTokenWithDFS.",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_conclusion": "No identified existing MiniDFSCluster JUnit reaches selected four-argument Token check. DataXceiver transfer takes six-argument overload; direct selected-overload test is standalone.",
+  "source_evidence": [
+    {
+      "finding": "Original MiniCluster JUnit delegates to Balancer integration.",
+      "lines": "629-634",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/blockmanagement/TestBlockTokenWithDFS.java",
+      "sha256": "6f1bcf553da3930d339885c2228f4f66c157dd75671ee7fcfe6a722f5815fd0a"
+    },
+    {
+      "finding": "Four-argument Token check is called by standalone manager helper; separate MiniCluster test only retrieves token.",
+      "lines": "224-300,509-553",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java",
+      "sha256": "74ade79a80324d501f108d0fff7708de259bdb9c49b5e8447694e233b447de29"
+    },
+    {
+      "finding": "Data transfer calls storage-aware six-argument Token check.",
+      "lines": "1434-1454",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+      "sha256": "f3a782585c96578906f26a1d8264a2d135c9ce4fdf9d15e4da6e33b4bc7da796"
+    },
+    {
+      "finding": "Distinct four- and six-argument forwarding overloads.",
+      "lines": "113-138",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager.java",
+      "sha256": "00487e4b9841222306eea5ccb71a55036179d3f7087a7239169d869f92c6f058"
+    },
+    {
+      "finding": "Selected four-argument overload separate from six-argument overload.",
+      "lines": "398-434",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957"
+    },
+    {
+      "finding": "Other production checks use decoded identifier overload.",
+      "lines": "2503-2514,3572-3581",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4"
+    }
+  ],
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+  "status": "source_review_no_suitable_test",
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V@431:branch:1"
+    ],
+    "exception_class": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+    "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode)",
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+    "throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V@432:throw:1"
+  },
+  "type": "source_only_existing_cluster_test_review"
+}

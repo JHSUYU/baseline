@@ -1,0 +1,52 @@
+{
+  "case_id": "HBASE-16",
+  "files": {
+    "alternate_inventory": {
+      "path": "Mallory/cases/revisions/HBASE-16-recovery-v1.inventory.json",
+      "sha256": "7e84654e91f441349b2d96fa9ebe29d562f9848d7ad028bc385890b490056d26"
+    },
+    "healthy_audit": {
+      "path": "data/mallory/calibration_v16_lane7_recovery/HBASE-16/offline-causal-audit.json",
+      "sha256": "f6ee60b2a31b3e904f19472e1166851ce59c3464fd55e9a649d1a62c66fa45d0"
+    },
+    "healthy_collection_receipt": {
+      "path": "data/mallory/calibration_v16_lane7_recovery/HBASE-16/calibration-receipt.json",
+      "sha256": "f78d840def00a869d041a2a124c69d688c9cfad743261f3107c80a2907d3484b"
+    },
+    "healthy_config": {
+      "path": "Mallory/adapters/hbase/pilot/HBASE-16-lane7-recovery-v1-healthy.json",
+      "sha256": "b554f91d32601d3c2bfa851b2c1f0c4521186094d1848a9d60a6ee8922ee81c6"
+    },
+    "healthy_result": {
+      "path": "data/mallory/calibration_v16_lane7_recovery/HBASE-16/result.json",
+      "sha256": "c921b0099309aa3b8b8cc6d56ab8dcc84c848f6641e06510cf068240205c73df"
+    },
+    "original_inventory": {
+      "path": "Mallory/cases/inventory.json",
+      "sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47"
+    },
+    "pilot_config": {
+      "path": "Mallory/adapters/hbase/pilot/HBASE-16-lane7-recovery-v1-pilot3.json",
+      "sha256": "d22eaa463a1e0c8b3cd8e9e14807e0c812de38d1d79f2287edd78e8672703e58"
+    },
+    "promoted_config": {
+      "path": "Mallory/adapters/hbase/pilot/HBASE-16-lane7-recovery-v1-promoted.json",
+      "sha256": "7879828f6bafbf3180f0e6dadc6c82c48fb8fd4f38f9afda5e8bf970e36df609"
+    },
+    "promotion_tool": {
+      "path": "Mallory/dispatch/promote.py",
+      "sha256": "fd2ad5e458da65b782eb5857474a4ac432e6be94af56ac5bfa847e3972f2753b"
+    },
+    "source_reference": {
+      "path": "Mallory/dispatch/source_reference.json",
+      "sha256": "e600ce9827adc7fdc9baf8cef1fca70bfcb616f39310a7053a50feab0d0b613d"
+    }
+  },
+  "kind": "hbase16_versioned_existing_test_mapping",
+  "original_selector": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash#testRetryBackoff",
+  "reason": "Original JUnit deliberately triggers target HBaseIOException; selected existing three-RS MiniCluster test reaches same target branch cleanly and has an observed named causal path.",
+  "runtime_gate": "Full budget requires a strict named injected fault and postfault exact target reach in the bounded pilot; a matching exception still requires source review.",
+  "schema_version": 1,
+  "selected_selector": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer#test",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631"
+}

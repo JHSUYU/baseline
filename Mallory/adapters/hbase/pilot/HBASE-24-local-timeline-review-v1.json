@@ -1,0 +1,65 @@
+{
+  "case_id": "HBASE-24",
+  "duration_seconds": 7.745,
+  "interpretation": "Each named ZK data-read door is observed before the exact nonthrowing check in its own node, epoch, region occurrence and thread. This is temporal evidence only, not a causal graph edge or dataflow proof. A fresh opt-in 5a run is required for any 5a eligibility claim.",
+  "junit_status": "passed",
+  "kind": "observed_local_timeline_source_review",
+  "old_fixed_core_5820_audit": {
+    "healthy_closure_observed_edges": 0,
+    "healthy_observed_path_doors": 0,
+    "report_gate_passed": false
+  },
+  "opt_in_config_path": "Mallory/adapters/hbase/pilot/HBASE-24-lane9-5a-healthy.json",
+  "opt_in_config_sha256": "0393751f58ec6ff1da43c19cd395be691cf3518f805b58745cbcb3237127ce8f",
+  "same_occurrence_door_before_target_pairs": [
+    {
+      "door_event_id": "HBASE-24-r0000:71",
+      "door_seq": 71,
+      "epoch": 0,
+      "node": "zk-member:two",
+      "occurrence": "zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+      "target_check_event_id": "HBASE-24-r0000:83",
+      "target_check_seq": 83,
+      "target_outcome": "TAKEN",
+      "thread": "zk-event-processor-pool-0"
+    },
+    {
+      "door_event_id": "HBASE-24-r0000:73",
+      "door_seq": 73,
+      "epoch": 0,
+      "node": "zk-member:four",
+      "occurrence": "zk-member:four:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+      "target_check_event_id": "HBASE-24-r0000:82",
+      "target_check_seq": 82,
+      "target_outcome": "TAKEN",
+      "thread": "zk-event-processor-pool-0"
+    },
+    {
+      "door_event_id": "HBASE-24-r0000:74",
+      "door_seq": 74,
+      "epoch": 0,
+      "node": "zk-member:one",
+      "occurrence": "zk-member:one:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+      "target_check_event_id": "HBASE-24-r0000:79",
+      "target_check_seq": 79,
+      "target_outcome": "TAKEN",
+      "thread": "zk-event-processor-pool-0"
+    },
+    {
+      "door_event_id": "HBASE-24-r0000:76",
+      "door_seq": 76,
+      "epoch": 0,
+      "node": "zk-member:three",
+      "occurrence": "zk-member:three:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+      "target_check_event_id": "HBASE-24-r0000:84",
+      "target_check_seq": 84,
+      "target_outcome": "TAKEN",
+      "thread": "zk-event-processor-pool-0"
+    }
+  ],
+  "schema_version": 1,
+  "source_audit_sha256": "0e4ccfc10891041933c98846f26ef877e53b811ee3547c915d7e385332497afe",
+  "source_calibration": "data/mallory/calibration_v10/HBASE-24",
+  "source_result_sha256": "f476ded3128976fd1b827aab272b7ba3ee64869ec3e2ca2fe1539c0be947ef69",
+  "source_trace_gzip_sha256": "af2efb15a6fb20590fd17fc639b279bf74f7d1cd0da83715462a8b590c1e2601"
+}

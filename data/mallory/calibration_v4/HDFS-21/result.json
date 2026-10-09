@@ -1,0 +1,119 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-21",
+  "closure_coverage_ids_seen": 129,
+  "closure_edge_fingerprints_seen": 11,
+  "cluster_test": "org.apache.hadoop.hdfs.TestDFSInputStream#testSkipWithRemoteBlockReader",
+  "coverage_ids_seen": 261,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 20.005,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 1,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_b157e4527c1f496ab7fcceecf19f8969",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestDFSInputStream-mallory_0000_b157e4527c1f496ab7fcceecf19f8969.xml",
+        "sha256": "210c567c400b7837c7a3950a7aa2af0b12896ec9aafa58124b9b8eefce0fa9a2"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "4fa8171ac4d74cd8f82d5bb0ea87334f30221fb1578c1742571acbbd940120cf",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 44,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/dn0"
+    ],
+    "eligible_doors_before_target": 1,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0",
+    "observed_target_class_sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0",
+    "reasons": [],
+    "site_catalog_sha256": "52db521658b54f762bc8975cc9bc5d972c3f832d7f6680bbeb839062f6e42021",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (VersionUtil.compareVersions(nnVersion, minimumNameNodeVersion) < 0) {\nIncorrectVersionException ive = new IncorrectVersionException(\nminimumNameNodeVersion, nnVersion, \"NameNode\", \"DataNode\");\nLOG.warn(ive.getMessage());\nthrow ive;",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#checkNNVersion(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@286:branch:1"
+    ],
+    "exception_class": "org.apache.hadoop.hdfs.server.common.IncorrectVersionException",
+    "function": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor.checkNNVersion(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+    "original_source_line": 290,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.BPServiceActor: void checkNNVersion(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)>#u12",
+    "source_line": 290,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#checkNNVersion(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@290:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/dn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 20.005,
+      "eligible_doors_before_target": 1,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 129,
+        "closure_edges": 11,
+        "coverage": 261
+      },
+      "observed_door_events": 44,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

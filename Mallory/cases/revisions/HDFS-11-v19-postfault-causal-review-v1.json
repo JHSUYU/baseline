@@ -1,0 +1,104 @@
+{
+  "case_id": "HDFS-11",
+  "evidence_class": "ordered_continuation_with_source_supported_retry",
+  "fault_trial": {
+    "fault_applied_event": "HDFS-11-r0001:934",
+    "faulted_tuple": "127.0.0.1:33064->127.0.0.1:34085",
+    "faulted_tuple_send_recv": [
+      931,
+      935
+    ],
+    "faulted_tuple_target_checks": 0,
+    "junit": {
+      "errors": 0,
+      "failures": 0,
+      "tests": 2
+    },
+    "observed_graph_edges": [
+      [
+        992,
+        994,
+        "rpc"
+      ],
+      [
+        994,
+        995,
+        "region_parent"
+      ]
+    ],
+    "ordered_events": [
+      {
+        "node": "hdfs-client",
+        "seq": 934,
+        "thread": "Time-limited test",
+        "type": "FAULT_APPLIED"
+      },
+      {
+        "node": "hdfs-client",
+        "seq": 992,
+        "thread": "Time-limited test",
+        "type": "SEND"
+      },
+      {
+        "node": "hdfs-cluster-2/dn0",
+        "seq": 994,
+        "type": "RECV"
+      },
+      {
+        "node": "hdfs-cluster-2/dn0",
+        "seq": 995,
+        "type": "REGION_ENTER"
+      },
+      {
+        "node": "hdfs-cluster-2/dn0",
+        "seq": 998,
+        "type": "TARGET_CHECK"
+      }
+    ],
+    "result": "data/mallory/pilots_v19/HDFS-11/trials/r0001/result.json",
+    "result_sha256": "b0e46ef13afed9a9f511ff5dd2628d0c838e784c518050b08b96ec811c4783e8",
+    "retry_tuple": "127.0.0.1:47636->127.0.0.1:34085",
+    "site": "hdfs:sasl-first-response-read",
+    "trace_sha256": "1ed899fc88ac41071c92e20a09f80160267eef33074aa67ac0e8ec81faa6710b"
+  },
+  "finding": "The first injected client IOException is followed in the same JUnit test thread by a new SASL TCP connection whose uniquely paired DataNode receive leads to the exact target. The faulted TCP connection itself does not reach the target. No target InvalidEncryptionKeyException or new bug was observed.",
+  "limitation": "The trace does not contain an explicit DFSInputStream catch/retry event; shared client root occurrence alone does not prove that the IOException caused the new connection. This TestEncryptedTransfer workload does not establish the Balancer KeyManager stale-key state described by HDFS-11741.",
+  "pilot_audit_sha256": "4987e2422b27dbdb9408a2d585c44a2596fecf0dd10418dc9055e9cead631cb1",
+  "pilot_receipt_sha256": "32307db745fff9c106fc42ae8299f4fd647de5b16f019bf4c686111ae8b84f0f",
+  "schema_version": 1,
+  "source_contract": {
+    "client_key_cache": "DFSClient.newDataEncryptionKey fetches NameNode key only if null or expired.",
+    "client_read": "DFSInputStream.blockSeekTo catches IOException from getBlockReader inside a loop; InvalidEncryptionKeyException clears cached DEK, other IOException marks the chosen DN dead before continuing.",
+    "ipc": "Server.RpcCall.run invokes call at line 1246 in try/catch and serializes an error response when dispatch throws.",
+    "junit": "TestEncryptedTransfer.testEncryptedReadDefaultAlgorithmCipherSuite calls testEncryptedRead; that helper reads file content before checksum.",
+    "nn_key": "BlockTokenSecretManager.generateDataEncryptionKey uses currentKey; retrieveDataEncryptionKey looks up keyId in allKeys and throws InvalidEncryptionKeyException when absent.",
+    "nn_rpc": "NameNodeRpcServer.getDataEncryptionKey invokes BlockManager.generateDataEncryptionKey."
+  },
+  "source_files": {
+    "client_key_cache": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+      "sha256": "9842848993010359a5e35e52e32a5151bdc797bcc02d4d540ef5e83ad6284312"
+    },
+    "client_read": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java",
+      "sha256": "e61685e14fcda7c598fc76299cbdbd1677e2ef5c52c75a20d8cc4fa0f914d151"
+    },
+    "ipc": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Server.java",
+      "sha256": "786720814e5c295d9a94ef98b2db2f7e5c549928653793058d8466ab259e755a"
+    },
+    "junit": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java",
+      "sha256": "8272862b11d4a645ffa6029c3f1462a14dcfce7b873815fcccc949d74a4bc0a5"
+    },
+    "nn_key": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+      "sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957"
+    },
+    "nn_rpc": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+      "sha256": "5259c4a030d6905feb9245596719d6ba5fd2cc8f26c1aff457c8f5b8566ff377"
+    }
+  },
+  "status": "bounded_pilot_source_and_trace_review"
+}

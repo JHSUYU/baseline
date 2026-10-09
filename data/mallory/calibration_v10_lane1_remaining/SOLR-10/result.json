@@ -1,0 +1,91 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-10",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+  "coverage_ids_seen": 94,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 13.52,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 1,
+    "junit_log_sha256": "04816e8650b3482bab16d72521c427579566bb3c1fe1875f70bb9e23abe576b6",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=1 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "failed",
+    "stderr_sha256": "fd292ca06f83c21951124b1aa488b33cc8d1e853bec7aba6c54ab5d69e96d670",
+    "stdout_sha256": "c85929837a2d42faded16a8a42bdb82f6f4fa71d898d09db7a69fb90167ed979",
+    "tests": 1,
+    "wrapper_sha256": "bdf4403c4dacbabee0cde02e4549a11c5d34eb0216351627df687a7321541691"
+  },
+  "healthy_observed_door_events": 52,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (ra == null) {\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR, \"MaintainRoutedAlias called on non-routed alias\");",
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd#call(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)V@116:branch:2"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd.call(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+    "original_source_line": 117,
+    "site_id": "<org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd: void call(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)>#u28",
+    "source_line": 117,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/MaintainRoutedAliasCmd.java",
+    "throw_site": "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd#call(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)V@117:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 13.52,
+      "eligible_doors_before_target": 0,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 94
+      },
+      "observed_door_events": 52,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_junit_failed",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 0
+    }
+  ]
+}

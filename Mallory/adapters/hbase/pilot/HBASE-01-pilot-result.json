@@ -1,0 +1,125 @@
+{
+  "calibration_only": false,
+  "case_id": "HBASE-01",
+  "closure_coverage_ids_seen": 111,
+  "closure_edge_fingerprints_seen": 17,
+  "cluster_test": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+  "coverage_ids_seen": 250,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 98.309,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java:1104-1106",
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 2,
+  "healthy_eligible_doors": 52,
+  "healthy_observed_door_events": 54,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "client"
+    ],
+    "eligible_doors_before_target": 52,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+    "observed_target_class_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+    "reasons": [],
+    "site_catalog_sha256": "0ca0d34b89afb98b664bcc568f4b1e502491785067c654b31844943799d978a7",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "budget_exhausted",
+  "strict_injected_trials": 2,
+  "strict_target_trials": 2,
+  "system": "hbase",
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;@1104:branch:24"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.regionserver.RegionServerStoppedException",
+    "node": "client",
+    "throw_site": "org.apache.hadoop.hbase.client.ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;@1106:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "client"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 2,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 32.835,
+      "eligible_doors_before_target": 52,
+      "novelty": {
+        "closure_coverage": 73,
+        "closure_edges": 5,
+        "coverage": 220
+      },
+      "observed_door_events": 54,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 32.338,
+      "eligible_doors_before_target": 53,
+      "novelty": {
+        "closure_coverage": 21,
+        "closure_edges": 7,
+        "coverage": 14
+      },
+      "observed_door_events": 55,
+      "result": "trials/r0001/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 1
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 33.136,
+      "eligible_doors_before_target": 53,
+      "novelty": {
+        "closure_coverage": 17,
+        "closure_edges": 5,
+        "coverage": 16
+      },
+      "observed_door_events": 55,
+      "result": "trials/r0002/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 2
+    }
+  ]
+}

@@ -1,0 +1,113 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-27",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+  "coverage_ids_seen": 489,
+  "dispatch_attempt_ids": [
+    "20261009T163745-ee27284c6a38"
+  ],
+  "duration_seconds": 41.152,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 136255,
+    "manifest_path": "evidence_archives/calibration/HBASE-27.tar.manifest.json",
+    "manifest_sha256": "e3bfd0df52f3aab212a0e2f9021290b7132fa3c0b5139d9ff123904e431d9056",
+    "path": "evidence_archives/calibration/HBASE-27.tar.gz",
+    "sha256": "a01306199b13c5a144d1c54e846e2ae5c9fc6c60c0d29da09dad85f513af3ecc"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 25,
+  "healthy_observed_door_events": 25,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T163745-ee27284c6a38",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 25,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "c1a746ab4b1aeac4744da76363b330c950b03fbfda9dfdcac7f57f64eb76270b",
+    "observed_target_class_sha256": "c1a746ab4b1aeac4744da76363b330c950b03fbfda9dfdcac7f57f64eb76270b",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region"
+    ],
+    "site_catalog_sha256": "eb17166c566dab82a4426a202397474fe6f95298956e82c4e50a59ea7947ec85",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 2,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (this.stopped) {\nthrow new IOException(\"Received the shutdown message while waiting.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1052:branch:2"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)",
+    "original_source_line": 1053,
+    "site_id": "<org.apache.hadoop.hbase.regionserver.HRegionServer: void blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)>#u10",
+    "source_line": 1053,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1053:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HBASE-27-r0000:82",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V:root:1",
+      "seq": 82,
+      "site": "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1052:branch:2"
+    },
+    {
+      "epoch": 0,
+      "id": "HBASE-27-r0000:139",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V:root:1",
+      "seq": 139,
+      "site": "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1052:branch:2"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T163745-ee27284c6a38",
+      "duration_seconds": 41.152,
+      "eligible_doors_before_target": 25,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 489
+      },
+      "observed_door_events": 25,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

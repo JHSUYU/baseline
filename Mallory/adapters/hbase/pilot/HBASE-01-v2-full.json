@@ -1,0 +1,87 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.client.ConnectionImplementation",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "auto_promote_if_healthy": true,
+  "budget": {
+    "max_faults_per_trial": 10,
+    "seconds": 3600,
+    "trial_timeout_seconds": 300,
+    "trials": 80
+  },
+  "case_id": "HBASE-01",
+  "cluster_test": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.client.TestConnectionImplementation",
+    "testMetaLookupThreadPoolCreated"
+  ],
+  "core_release": {
+    "manifest": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf/manifest.json",
+    "manifest_sha256": "101e132c7513ac37650276d858da4b5cb766903e38be06158db2d4c472c0417f",
+    "release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf"
+  },
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "exact_check_location": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java:1104-1106",
+  "expected_target_class_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "require_site_catalog": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/adapter.jar",
+      "sha256": "cdbd1bda62dd23833e0f1bb62dd35fbfcff0f9dd1a1ec8fa982ba5cf722cb63f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/cases/HBASE-01/sites.json",
+      "sha256": "64c8def80af5a041df36638fb3c5d4fdfccbf1805bf34db7dd05ee9ea6a279ab"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "9b44bf693a8365dd01364cc1641208c0a481902116e316830260b3f71c8d4445"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/runtime/cases/HBASE-01/sites.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "system": "hbase",
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;@1104:branch:24"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.regionserver.RegionServerStoppedException",
+    "node": "client",
+    "throw_site": "org.apache.hadoop.hbase.client.ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;@1106:throw:1"
+  }
+}

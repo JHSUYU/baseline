@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "type": "source_only_hdfs_node_identity_audit",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "scope": "Read-only source/test/first-pass receipt audit; does not change adapter, live config, inventory, or dispatch eligibility.",
+  "case_count": 9,
+  "cases": [
+    {
+      "case_id": "HDFS-23",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "source_line": 401,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+        "method_line": 242,
+        "source_sha256": "316a5bb9ce1606349731bd2038739822874e5e41b480e75eb361891fd2e75f08"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-23/trials/r0000/result.json",
+        "result_sha256": "ddeb27725f759299345441e8ef4706f5ac1e921e179210297723e1a4e254b8e9",
+        "stdout_path": "data/mallory/calibration/HDFS-23/trials/r0000/stdout.log",
+        "stdout_sha256": "25d97d422fe6323f5224b22727b62a8bf017bbfb41d9bae15db9cbaacb0d6c91",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 8,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "DataNode.initStorage calls storage.recoverTransitionRead after BPServiceActor namespace handshake (DataNode.java:2258-2260); BlockPoolSliceStorage reads VERSION and checks block-pool ID during MiniDFSCluster startup.",
+      "binding_gap_kind": "existing_receiver_scope_rerun",
+      "receiver_and_lifecycle_hook": "DataStorage.loadBlockPoolSliceStorage obtains the concrete slice at DataStorage.java:456-464 before bpStorage.recoverTransitionRead. Existing adapter blockPoolStorageObtained registers that receiver with the DataStorage actor; blockPoolStorageEnter scopes doTransition. First-pass trace still recorded unknown actors; loaded adapter version and registration timing must be checked in the rerun. Recalibrate with pinned adapter and verify each target occurrence has dn index/epoch, not just class catalog.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-25",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "source_line": 186,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.datanode.StorageLocation,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+        "method_line": 242,
+        "source_sha256": "316a5bb9ce1606349731bd2038739822874e5e41b480e75eb361891fd2e75f08"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-25/trials/r0000/result.json",
+        "result_sha256": "76870648b65078819aa8ddd3c8b174e52de91106e704c2a1be683323eb3b7e66",
+        "stdout_path": "data/mallory/calibration/HDFS-25/trials/r0000/stdout.log",
+        "stdout_sha256": "2a2a25e2acb4e3cc7b7063f64e60fb555cf5297ade1f2ad3806c785fecc7ce30",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 6,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "MiniDFSCluster startup in TestDFSStartupVersions reads/version-checks DN block-pool storage files after NN handshake; the target is in loadStorageDirectory.",
+      "binding_gap_kind": "missing_exact_method_scope",
+      "receiver_and_lifecycle_hook": "BlockPoolSliceStorage.loadStorageDirectory evaluates the selected CTime guard at line184-187 after doTransition returns, so a scope wrapping only doTransition has already closed. The concrete bpStorage receiver can be registered at DataStorage.loadBlockPoolSliceStorage/getBlockPoolSliceStorage before recoverTransitionRead; wrap loadStorageDirectory itself with blockPoolStorageEnter or explicitly carry the owner scope through its whole call.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-26",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "source_line": 626,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+        "method_line": 139,
+        "source_sha256": "c5a5ea5ba53bc50950d7af3de48a058ecac81513fba3d231879fa36fe75cd808"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-26/trials/r0000/result.json",
+        "result_sha256": "63028dcdeb745d529df860d2dc46497462a5dfbe1591b4aecbbc76540ffd112c",
+        "stdout_path": "data/mallory/calibration/HDFS-26/trials/r0000/stdout.log",
+        "stdout_sha256": "cd84bb1baebe5e5855d98f60c910a932c1c975062b2e38ba6ca3f2f99a7787a9",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 6,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "TestDFSRollback creates current/previous VERSION directories and starts DataNodes with ROLLBACK (TestDFSRollback.java:160-215), causing local file reads before selected guard.",
+      "binding_gap_kind": "existing_enclosing_scope_rerun",
+      "receiver_and_lifecycle_hook": "BlockPoolSliceStorage.doTransition invokes doRollback for StartupOption.ROLLBACK (BlockPoolSliceStorage.java:375-380); current adapter wraps doTransition with blockPoolStorageEnter, and the slice can be registered from DataStorage before the call. If an independent async caller appears, also scope doRollback receiver; do not infer dn from bpid alone.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-27",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "source_line": 510,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doUpgrade(java.lang.String,org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,java.io.File,java.io.File,java.io.File,int,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.TestDatanodeLayoutUpgrade#testUpgradeToIdBasedLayout",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDatanodeLayoutUpgrade.java",
+        "method_line": 42,
+        "source_sha256": "a4b3e7726d2bfe345d624255c25db9d455aeef5c06549f1b2d5db967c468ea50"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-27/trials/r0000/result.json",
+        "result_sha256": "e059e8b7495f09297b24877f5bea9f2e7b2f42e1bbca5cdf188e32d90e10ef55",
+        "stdout_path": "data/mallory/calibration/HDFS-27/trials/r0000/stdout.log",
+        "stdout_sha256": "23fef140f6268fa273eaf54e349065e3f78baa1eb9a5a68e97a8b5557eae31c3",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 2,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "TestDatanodeLayoutUpgrade unpacks old DN layout archive, starts a 1-DN MiniDFSCluster in UPGRADE mode, then scans files; upgrade reads/writes VERSION and links block files before assertion.",
+      "binding_gap_kind": "async_receiver_scope_needed",
+      "receiver_and_lifecycle_hook": "BlockPoolSliceStorage.doUpgrade can enqueue an anonymous Callable; its 8-argument doUpgrade executes later on DataStorage executor (BlockPoolSliceStorage.java:445-511; DataStorage.java:452-482). Parent doTransition scope does not survive that worker thread. Register the concrete slice at DataStorage.getBlockPoolSliceStorage and scope the 8-argument doUpgrade receiver itself (or propagate task context with verified submit/claim).",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-28",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "source_line": 539,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getDatanodeID(java.lang.String)",
+        "source_sha256": "928a3e6d159a47a2f8c88e1720211ddf7af62129a5ed2d5a9f133f7ada60499b"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testLeaseRecoveryAfterFailover",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java",
+        "method_line": 276,
+        "source_sha256": "5815550fb06429b227cd7c632bf0fe1523d0417c7da0c37105ff1c43db5ec49a"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-28/trials/r0000/result.json",
+        "result_sha256": "2385387bc8d0ea0d93dbc0d097b76e6bc2345736f476d923871a1d311364e9ac",
+        "stdout_path": "data/mallory/calibration/HDFS-28/trials/r0000/stdout.log",
+        "stdout_sha256": "5679be8d410ed840b6fa7f31c88ac7164f308cb44574764a0f889b4406202912",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 5,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "TestPipelinesFailover starts a 3-DN HA MiniDFSCluster, writes/hflushes a block, fails over, then calls recoverLease; BPOfferService DNA_RECOVERBLOCK dispatches to the owning DN BlockRecoveryWorker.",
+      "binding_gap_kind": "missing_exact_method_scope",
+      "receiver_and_lifecycle_hook": "BlockRecoveryWorker has final datanode field (BlockRecoveryWorker.java:59-68), set when DataNode constructs it (DataNode.java:1952). Existing adapter scopes getActiveNamenodeForBP but not selected getDatanodeID. Wrap getDatanodeID with blockRecoveryEnter, which derives actor from the real worker.datanode; register DN at MiniDFSCluster.dataNodeStarting before recovery threads run.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-29",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "source_line": 578,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getActiveNamenodeForBP(java.lang.String)",
+        "source_sha256": "928a3e6d159a47a2f8c88e1720211ddf7af62129a5ed2d5a9f133f7ada60499b"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java",
+        "method_line": 328,
+        "source_sha256": "5815550fb06429b227cd7c632bf0fe1523d0417c7da0c37105ff1c43db5ec49a"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-29/trials/r0000/result.json",
+        "result_sha256": "02ea170cfb517e52c3a2ae34abd838ac6fc4e46546707f0b159f828ea7a2c181",
+        "stdout_path": "data/mallory/calibration/HDFS-29/trials/r0000/stdout.log",
+        "stdout_sha256": "8e53a0bee0d0c8ec8e4e683f37727a898fda0d19a9e094f225cc5ada660e6fa0",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 2,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization starts HA MiniDFSCluster, writes/hflushes a block, induces NN failover during recovery; BPOfferService receives DNA_RECOVERBLOCK and uses DN worker to find active NN.",
+      "binding_gap_kind": "existing_worker_scope_rerun",
+      "receiver_and_lifecycle_hook": "Selected BlockRecoveryWorker.getActiveNamenodeForBP already has blockRecoveryEnter in adapter source. That hook queries final worker.datanode, which MiniDFSCluster.dataNodeStarting registers as dn index/epoch. Recalibrate with current adapter and inspect exact node and recovery-task handoff; first-pass unknown actor does not justify new workload.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-30",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "source_line": 583,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getActiveNamenodeForBP(java.lang.String)",
+        "source_sha256": "928a3e6d159a47a2f8c88e1720211ddf7af62129a5ed2d5a9f133f7ada60499b"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java",
+        "method_line": 328,
+        "source_sha256": "5815550fb06429b227cd7c632bf0fe1523d0417c7da0c37105ff1c43db5ec49a"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-30/trials/r0000/result.json",
+        "result_sha256": "da9e5d68abcad353d87df2c8ea3023b28b8dd4949ff41aa880441a61aa202f6a",
+        "stdout_path": "data/mallory/calibration/HDFS-30/trials/r0000/stdout.log",
+        "stdout_sha256": "5cbcee89f27f6cac6f6058822d68b1a1c630fffe86f97dc26ca38d3bdd876465",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 2,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "The same HA recovery test drives NN heartbeat command, DN BlockRecoveryWorker lookup, and commitBlockSynchronization RPC across failover.",
+      "binding_gap_kind": "existing_worker_scope_rerun",
+      "receiver_and_lifecycle_hook": "Same receiver/lifecycle mapping as HDFS29, but selected check is activeNN==null after bpos lookup in getActiveNamenodeForBP. Keep actor as worker.datanode and verify target occurrence epoch after NN failover, rather than assigning the active NN as target actor.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-33",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "source_line": 259,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder.build()",
+        "source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.server.datanode.TestDataNodeHotSwapVolumes#testAddOneNewVolume",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java",
+        "method_line": 403,
+        "source_sha256": "17d1e8a27b64ef0a76e189d792cbc8f9f4c52987e9859eb919d14be9cb36b678"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-33/trials/r0000/result.json",
+        "result_sha256": "e7844cc3a2587792dccab5679870c391e3a338e5bf269dfe04fd714972cf5edd",
+        "stdout_path": "data/mallory/calibration/HDFS-33/trials/r0000/stdout.log",
+        "stdout_sha256": "2e03d52b91bbfb59334d427158eec90d2d70cf04efc780f5e585bb8654d4ff5f",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 2,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "TestDataNodeHotSwapVolumes starts MiniDFSCluster, adds a volume to running DN and writes 10 blocks; prepareVolume creates builder and build installs block-pool storage dirs after filesystem I/O.",
+      "binding_gap_kind": "existing_nested_receiver_scope_rerun",
+      "receiver_and_lifecycle_hook": "DataStorage.VolumeBuilder has a storage field (DataStorage.java:231-261). Existing adapter volumeBuilderEnter reads builder.storage; early MiniDFSCluster.dataNodeStarting and clusterBuilt register that DataStorage receiver to the DN. Recalibrate with current adapter; if unknown remains, verify receiver was registered before reconfiguration worker invokes build.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    },
+    {
+      "case_id": "HDFS-35",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "source_line": 752,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809"
+      },
+      "selected_existing_test": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+        "method_line": 242,
+        "source_sha256": "316a5bb9ce1606349731bd2038739822874e5e41b480e75eb361891fd2e75f08"
+      },
+      "first_healthy_seed": {
+        "result_path": "data/mallory/calibration/HDFS-35/trials/r0000/result.json",
+        "result_sha256": "9320bae4968e3ac6ab67b409863cc7d59fa9312bfa1abf60b0bad267ed099656",
+        "stdout_path": "data/mallory/calibration/HDFS-35/trials/r0000/stdout.log",
+        "stdout_sha256": "ebd1ddda601b8a8488ad794ce9e798153710c5b5827a6da7083acbe45123c230",
+        "junit": "1 test, 0 failures, 0 errors, 0 skipped",
+        "exact_target_reached": true,
+        "selected_target_threw": false,
+        "unknown_actor_occurrences": 12,
+        "fault_trials_run": 0
+      },
+      "pretarget_path": "TestDFSStartupVersions starts NN then DataNodes from versioned dirs, reading VERSION files and comparing cluster IDs during startup.",
+      "binding_gap_kind": "existing_data_storage_scope_rerun",
+      "receiver_and_lifecycle_hook": "Selected DataStorage.doTransition is already wrapped by dataStorageEnter. DataNode.initStorage calls storage.recoverTransitionRead(this,...) (DataNode.java:2258-2260); DataStorage receiver is registered at MiniDFSCluster.dataNodeStarting before daemon startup. Recalibrate with current adapter and verify exact DN index/epoch for every VERSION transition.",
+      "validation_gate": "Run a fresh isolated healthy MiniCluster seed with current pinned adapter; require exact target on named dn index and epoch, zero selected throw, and observed-path doors before fault trials. No source-only success claim."
+    }
+  ]
+}

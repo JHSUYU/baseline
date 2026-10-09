@@ -1,0 +1,108 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-16",
+  "closure_coverage_ids_seen": 96,
+  "closure_edge_fingerprints_seen": 71,
+  "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer#test",
+  "coverage_ids_seen": 140,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 49.479,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 110,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "8d01cba313d296fbf5d49fb28a4aba07292409530ab809314613482ddc1522cf",
+    "stdout_sha256": "91b2be495b3e7215874c5888693b81a3bb34ae57b5e5949137b309c39ce5fdf0",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "healthy_observed_door_events": 119,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "master0"
+    ],
+    "eligible_doors_before_target": 110,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "44a3c4265b4cc53ffbdf44670248bdb5948761b9bc75e33316b0f83d01cfde39",
+    "observed_target_class_sha256": "44a3c4265b4cc53ffbdf44670248bdb5948761b9bc75e33316b0f83d01cfde39",
+    "reasons": [],
+    "site_catalog_sha256": "d00c6166eb9fc56c2b631ef637ec87243b29e04994ec1082c3b0db5c935aca6d",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (regionNode.isInState(State.CLOSING)) {\n// This is possible, think the target RS crashes and restarts immediately, the close region\n// operation will return a NotServingRegionException soon, we can only recover after SCP takes\n// care of this RS. So here we throw an IOException to let upper layer to retry with backoff.\nsetNextState(RegionStateTransitionState.REGION_STATE_TRANSITION_CLOSE);\nthrow new HBaseIOException(\"Failed to close region\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@366:branch:3"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+    "original_source_line": 371,
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure: org.apache.hadoop.hbase.procedure2.StateMachineProcedure$Flow confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)>#u28",
+    "source_line": 371,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@371:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "master0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 49.479,
+      "eligible_doors_before_target": 110,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 96,
+        "closure_edges": 71,
+        "coverage": 140
+      },
+      "observed_door_events": 119,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

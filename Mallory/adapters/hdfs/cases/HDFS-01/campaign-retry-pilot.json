@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "case_id": "HDFS-01",
+  "system": "hdfs",
+  "cluster_test": "org.apache.hadoop.hdfs.TestPread#testPreadDFS",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "command": [
+    "mvn",
+    "-B",
+    "-ntp",
+    "-pl",
+    "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=TestPread#testPreadDFS",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "surefire:test"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent-taskobserve-ordinal.jar",
+  "expected_target_class_sha256": "761459de0f1e7516e291f03dfb5843a1ab8504a8dca8920ac69dff6a45e1c2b6",
+  "agent_transport": "surefire_argline",
+  "agent_arg_property": "maven-surefire-plugin.argLine",
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/HDFS-01/sites-retry-pilot.json",
+  "agent_include": [
+    "org.apache.hadoop.hdfs.DFSInputStream",
+    "org.apache.hadoop.ipc.Server$RpcCall",
+    "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+    "org.apache.hadoop.hdfs.server.datanode.DataXceiver"
+  ],
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsMiniClusterTransformer",
+    "auto.io.doors": false,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@517:branch:4",
+      "org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@517:branch:5"
+    ],
+    "throw_site": "org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@518:throw:1",
+    "exception_class": "java.io.EOFException",
+    "node": "hdfs-client"
+  },
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "exception_class": "java.io.IOException",
+  "require_named_node": true,
+  "auto_promote_if_healthy": true,
+  "explore_outside_closure": true,
+  "budget": {
+    "trials": 12,
+    "seconds": 360,
+    "max_faults_per_trial": 2,
+    "trial_timeout_seconds": 90
+  },
+  "static_fault_locations": [
+    {
+      "class": "org.apache.hadoop.hdfs.DFSInputStream",
+      "method": "readBuffer",
+      "line": 789
+    }
+  ]
+}

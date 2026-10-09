@@ -1,0 +1,43 @@
+{
+  "schema_version": 2,
+  "kind": "source_only_hdfs31_smaller_existing_mini_cluster_alternate",
+  "created_utc": "2026-10-09T20:02:00.684485+00:00",
+  "case_id": "HDFS-31",
+  "base_shortlist": {
+    "path": "Mallory/cases/revisions/HDFS-pending-exact-io-shortlist-v1.json",
+    "sha256": "9c76411f8a5c8182a9de2e19458899dbb810ad6416445e472ffdd2dd6955ed6f"
+  },
+  "original_selector": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+  "original_calibration": {
+    "path": "data/mallory/calibration/HDFS-31/result.json",
+    "sha256": "93f24571afa22b7e4f19eb83cc1e7c1bf2248617ed419b1246a33a15b3e915e8",
+    "status": "healthy_seed_invalid",
+    "reason": "prior first pass failed under old SafeWriter duplicate-class issue; target nonreach is inconclusive"
+  },
+  "prior_source_candidate": "org.apache.hadoop.hdfs.TestSetrepIncreasing#testSetrepIncreasing (ten DataNodes)",
+  "stronger_smaller_candidate": "org.apache.hadoop.hdfs.TestReplication#testBadBlockReportOnTransfer",
+  "target": {
+    "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+    "sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4",
+    "lines": "1829-1838,2830-2845,2895-2901",
+    "function": "DataNode.getBPOSForBlock / transferBlock / transferBlocks"
+  },
+  "test": {
+    "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestReplication.java",
+    "sha256": "c4eec1733d2b28e0d1309640e8c372097a56cd31cb7b35429bf209385df0aa55",
+    "lines": "221-274,319-325",
+    "function": "testBadBlockReportOnTransfer / helper"
+  },
+  "command_bridge": {
+    "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+    "sha256": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294",
+    "lines": "721-735",
+    "function": "BPOfferService.processCommandFromActive"
+  },
+  "source_path_argument": "This existing @Test starts a two-DataNode MiniDFSCluster, creates a one-replica file, deliberately corrupts the local block, and raises replication to two at TestReplication.java:229-254. NameNode sends DNA_TRANSFER in a heartbeat response; BPOfferService processes that command and calls DataNode.transferBlocks (BPOfferService.java:731), which invokes DataNode.transferBlock (DataNode.java:2900), whose first action is getBPOSForBlock at DataNode.java:2834. The selected null-BPOfferService guard @1833 executes before the later corrupted-block detection, so it should be nonthrowing on a registered pool. Test asserts subsequent corruption reporting; that error is distinct from the selected missing-BPOS IOException.",
+  "advantages": "Two DataNodes instead of ten. Explicit replication increase supplies a concrete NameNode-command to DataNode target path.",
+  "risks": "The helper loops until the block is marked corrupt, so a fault can hang; enforce bounded trial timeout. Healthy exact target, named DN binding, command ancestry, and selected-throw absence remain unverified.",
+  "admission_gate": "Run one isolated healthy JUnit under fixed SafeWriter agent; require Tests run>0, exact @1833 catalog/hit on named DN, zero selected IOException, complete trace, and a concrete pretarget NN heartbeat/command or DN I/O door before any fault trial.",
+  "jvm_runs_by_this_review": 0,
+  "shared_inventory_or_configs_changed": false
+}

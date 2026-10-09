@@ -1,0 +1,99 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-04",
+  "closure_coverage_ids_seen": 29,
+  "closure_edge_fingerprints_seen": 36,
+  "cluster_test": "org.apache.hadoop.hbase.mob.TestMobStoreScanner#testMobStoreScanner",
+  "coverage_ids_seen": 80,
+  "dispatch_attempt_ids": [
+    "20261009T161800-9947a901b224"
+  ],
+  "duration_seconds": 46.93,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 281839,
+    "manifest_path": "evidence_archives/calibration/HBASE-04.tar.manifest.json",
+    "manifest_sha256": "33908e2eab9551267212c592bbbcd1f6f454d5745f19036ac9917560c00c4470",
+    "path": "evidence_archives/calibration/HBASE-04.tar.gz",
+    "sha256": "f82a8060d47db2940872117e64dc063c88c9a8572e14e4e6c95954f631bc0055"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 187,
+  "healthy_observed_door_events": 205,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T161800-9947a901b224",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "client"
+    ],
+    "eligible_doors_before_target": 187,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "observed_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "reasons": [],
+    "site_catalog_sha256": "35cd19e34a4ee0698e82c71b25e28d80987101cf16ea46268455310400792d9c",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (!isTableEnabled(tableName)) {\nthrow new TableNotEnabledException(tableName.getNameAsString());",
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.HBaseAdmin#flushAsync(Lorg/apache/hadoop/hbase/TableName;Ljava/util/List;)Ljava/util/concurrent/Future;@1262:branch:1"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.TableNotEnabledException",
+    "function": "org.apache.hadoop.hbase.client.HBaseAdmin.flushAsync(org.apache.hadoop.hbase.TableName,java.util.List)",
+    "original_source_line": 1263,
+    "site_id": "<org.apache.hadoop.hbase.client.HBaseAdmin: java.util.concurrent.Future flushAsync(org.apache.hadoop.hbase.TableName,java.util.List)>#u8",
+    "source_line": 1263,
+    "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+    "throw_site": "org.apache.hadoop.hbase.client.HBaseAdmin#flushAsync(Lorg/apache/hadoop/hbase/TableName;Ljava/util/List;)Ljava/util/concurrent/Future;@1263:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "client"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T161800-9947a901b224",
+      "duration_seconds": 46.93,
+      "eligible_doors_before_target": 187,
+      "novelty": {
+        "closure_coverage": 29,
+        "closure_edges": 36,
+        "coverage": 80
+      },
+      "observed_door_events": 205,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

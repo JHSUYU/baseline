@@ -1,0 +1,45 @@
+{
+  "paths_sha256": {
+    "compact_agent": {
+      "path": "data/mallory/calibration/agent-builds/mallory-agent-coverage-ref-1ac1a88d.jar",
+      "sha256": "1ac1a88de5533fb5f9af1ebd5756a6b96aa7bfaaaad0fc2ca9999587981abb40"
+    },
+    "compatible_solr36_receipt": {
+      "path": "data/mallory/calibration_v21a_lane4/SOLR-36/result.json",
+      "sha256": "7e09b1d304c2da132beecea8154f29d364cdf182f9303d1200d3321687aac086"
+    },
+    "compatible_solr36_trace": {
+      "path": "data/mallory/calibration_v21a_lane4/SOLR-36/trials/r0000/events.jsonl.gz",
+      "sha256": "88675a4bb4818a6a4e9468af3fcb6900db6555e6a586e7f342c9ac9b25a71419"
+    },
+    "offline_validation": {
+      "path": "Mallory/cases/revisions/SOLR-37-compact-coverage-v1.validation.json",
+      "sha256": "e560f79d3af73286f41bbcd94dfdc7dffccfbf5407ea1b58469a14bfe7a0b50f"
+    },
+    "offline_validator": {
+      "path": "Mallory/cases/revisions/SOLR-37-compact-coverage-v1-validate.py",
+      "sha256": "1289fa3acc921c254352bc7445dbe3e402c2b8e47812e665de56878bccee44da"
+    },
+    "old_solr37_trace": {
+      "path": "data/mallory/calibration_v14a_config_lane1/SOLR-37/trials/r0000/events.jsonl.gz",
+      "sha256": "07caa144f93c1ecebc6815e848bd9ba37e4ee79cb373552cd39b0e01fe42d7e3"
+    },
+    "site_file": {
+      "path": "Mallory/adapters/solr/cases/SOLR-37/sites-v14.json",
+      "sha256": "e33e4fdbbc7d8221d4aff89bdd1a5495be07557b74df88a3de4d57200482f772"
+    },
+    "source_config": {
+      "path": "Mallory/adapters/solr/cases/SOLR-37/config-v14a-lane1-junit.json",
+      "sha256": "979018c53867bda815faaf4ea1bf527371e032f01197a69beb7bc27fad51df62"
+    },
+    "staged_config": {
+      "path": "Mallory/adapters/solr/cases/SOLR-37/config-v22-compact-coverage-healthy.json",
+      "sha256": "0159d98457334b32df877cbcb86849f563c1adf07114be16c9148b48aa59ff71"
+    }
+  },
+  "rationale": "Immutable compact agent replaces per-hit METHOD/BRANCH events with COVERAGE_DEF/SUMMARY while preserving target, door, region, and transport event probes; same Solr JUnit selector, site file, target, includes, method and branch coverage settings.",
+  "revision": "SOLR-37-compact-coverage-v1",
+  "run_gate": "Offhost source checkout and lane admission required; verify complete untruncated healthy trace and target/door/coverage summaries before promotion.",
+  "schema_version": 1,
+  "state": "staged_healthy_only_not_executed"
+}

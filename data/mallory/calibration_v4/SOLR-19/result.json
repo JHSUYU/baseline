@@ -1,0 +1,103 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-19",
+  "closure_coverage_ids_seen": 211,
+  "closure_edge_fingerprints_seen": 26,
+  "cluster_test": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+  "coverage_ids_seen": 420,
+  "dispatch_attempt_ids": [
+    "20261009T162151-3c342b01d0a6"
+  ],
+  "duration_seconds": 18.53,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 373477,
+    "manifest_path": "evidence_archives/calibration_v4/SOLR-19.tar.manifest.json",
+    "manifest_sha256": "85ffc88d0a199ac8ac3ed9fb2165c5c5d408cc4ef537a50a1655c82506c8216f",
+    "path": "evidence_archives/calibration_v4/SOLR-19.tar.gz",
+    "sha256": "3d35767e519bc7de6c3d31577a5d728589f81577a5c7ec55dec09e01b766bd75"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 114,
+  "healthy_observed_door_events": 126,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T162151-3c342b01d0a6",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1",
+      "node2",
+      "node3"
+    ],
+    "eligible_doors_before_target": 114,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "37257d27b322acfde871abcd268a99815f7b0a1ee0d984de582619884e3aff5a",
+    "observed_target_class_sha256": "37257d27b322acfde871abcd268a99815f7b0a1ee0d984de582619884e3aff5a",
+    "reasons": [],
+    "site_catalog_sha256": "cf25801b1b5bdd2d70234c0427ca5abe40ae8b6fd96484180f1a1edc56c59e2d",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (cd.getCloudDescriptor().getCoreNodeName() == null) {\nthrow new SolrException(ErrorCode.SERVER_ERROR, \"non legacy mode coreNodeName missing \" + parameters.toString());",
+    "check_sites": [
+      "org.apache.solr.core.CoreContainer#create(Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/Map;Z)Lorg/apache/solr/core/SolrCore;@1329:branch:5"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.core.CoreContainer.create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)",
+    "original_source_line": 1330,
+    "site_id": "<org.apache.solr.core.CoreContainer: org.apache.solr.core.SolrCore create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)>#u65",
+    "source_line": 1330,
+    "source_path": "solr/core/src/java/org/apache/solr/core/CoreContainer.java",
+    "throw_site": "org.apache.solr.core.CoreContainer#create(Ljava/lang/String;Ljava/nio/file/Path;Ljava/util/Map;Z)Lorg/apache/solr/core/SolrCore;@1330:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1",
+      "node2",
+      "node3"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T162151-3c342b01d0a6",
+      "duration_seconds": 18.53,
+      "eligible_doors_before_target": 114,
+      "novelty": {
+        "closure_coverage": 211,
+        "closure_edges": 26,
+        "coverage": 420
+      },
+      "observed_door_events": 126,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

@@ -110,6 +110,73 @@ def _causal_audit(result_path: Path, result: dict[str, Any]) -> str | None:
     return "verified" if valid else "invalid"
 
 
+def _causal_precision_review(results: Path, result_path: Path,
+                             result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Bind a superseding causal precision review to unchanged campaign evidence.
+
+    The review can lower a quality claim; it cannot promote a campaign.  A
+    listed but damaged review fails closed so a stale or truncated sidecar
+    cannot silently restore the old high-quality classification.
+    """
+    review_root = results / "quality_reviews" / "causal_precision_v2"
+    case_id = result.get("case_id")
+    expected_path = review_root / f"{case_id}.json"
+    receipt_path = str(expected_path)
+    index = _json(review_root / "index.json")
+    if index is None:
+        return ("invalid", receipt_path) if expected_path.is_file() else (None, None)
+    weak_ids = index.get("weak_case_ids")
+    if not isinstance(weak_ids, list) or case_id not in weak_ids:
+        return ("invalid", receipt_path) if expected_path.is_file() else (None, None)
+    entries = index.get("cases")
+    if (index.get("schema_version") != 2 or
+            index.get("review_status") != "provisional_scientific_classification" or
+            not all(isinstance(value, str) for value in weak_ids) or
+            len(weak_ids) != len(set(weak_ids)) or
+            not isinstance(entries, list)):
+        return "invalid", receipt_path
+    matching = [entry for entry in entries if isinstance(entry, dict) and
+                entry.get("case_id") == case_id]
+    if len(matching) != 1:
+        return "invalid", receipt_path
+    entry = matching[0]
+    receipt = _json(expected_path)
+    if receipt is None:
+        return "invalid", receipt_path
+    audit_path = result_path.with_name("offline-causal-audit.json")
+    if not audit_path.is_file():
+        return "invalid", receipt_path
+    result_hash = hashlib.sha256(result_path.read_bytes()).hexdigest()
+    audit_hash = hashlib.sha256(audit_path.read_bytes()).hexdigest()
+    receipt_hash = hashlib.sha256(expected_path.read_bytes()).hexdigest()
+    canonical_result = f"data/mallory/cases/{case_id}/result.json"
+    canonical_audit = f"data/mallory/cases/{case_id}/offline-causal-audit.json"
+    valid = (
+        entry.get("classification") == "causal_precision_unverified"
+        and entry.get("sidecar") == f"data/mallory/quality_reviews/causal_precision_v2/{case_id}.json"
+        and entry.get("sha256") == receipt_hash
+        and entry.get("result_sha256") == result_hash
+        and entry.get("audit_sha256") == audit_hash
+        and receipt.get("schema_version") == 2
+        and receipt.get("case_id") == case_id
+        and receipt.get("classification") == "causal_precision_unverified"
+        and receipt.get("canonical_files_modified") is False
+        and receipt.get("canonical_result") == canonical_result
+        and receipt.get("canonical_audit") == canonical_audit
+        and receipt.get("canonical_result_sha256") == result_hash
+        and receipt.get("canonical_audit_sha256") == audit_hash
+        and receipt.get("campaign_status") == result.get("status")
+        and receipt.get("duration_seconds") == result.get("duration_seconds")
+        and receipt.get("fault_trials_completed") == result.get("fault_trials_completed")
+        and receipt.get("strict_postfault_target_trials") == result.get("strict_target_trials")
+        and receipt.get("root_free_qualifying_trial_ids") == []
+        and receipt.get("evidence_category") in {
+            "coarse_root_origin_fault", "root_intermediary_only",
+            "root_free_door_unmatched"}
+    )
+    return ("causal_precision_unverified" if valid else "invalid"), receipt_path
+
+
 def _posthoc_attestation(result_path: Path, case: dict[str, Any],
                          result: dict[str, Any]) -> str | None:
     """Recognize a separate audit without changing the campaign's raw result."""
@@ -628,6 +695,8 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "report_status": initial_status,
         "quality_status": None,
         "causal_audit": None,
+        "causal_precision_review": None,
+        "causal_precision_receipt": None,
         "healthy_closure_evidence_types": None,
         "healthy_local_timeline_doors": None,
         "local_timeline_only": None,
@@ -692,6 +761,14 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["quality_status"] = "causal_audit_unproven"
         elif row["causal_audit"] != "verified":
             row["quality_status"] = "causal_audit_invalid"
+        else:
+            precision, receipt = _causal_precision_review(results, result_path, result)
+            row["causal_precision_review"] = precision
+            row["causal_precision_receipt"] = receipt
+            if precision == "causal_precision_unverified":
+                row["quality_status"] = precision
+            elif precision == "invalid":
+                row["quality_status"] = "causal_precision_review_invalid"
     if status in TERMINAL:
         row["report_status"] = "completed_campaign"
     elif status.startswith("healthy_"):
@@ -765,9 +842,11 @@ def markdown(report: dict[str, Any]) -> str:
              "`source_review_no_suitable_test` records a hash-checked source review, "
              "not a healthy-run causal audit. `Target after fault (generic)` can count "
              "another actor; local-timeline-only quality also requires a same-actor, "
-             "same-epoch, same-occurrence target check after an admitted fault door.", "",
-             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Quality | Causal audit | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source gap receipt | New bug |",
-             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |"]
+             "same-epoch, same-occurrence target check after an admitted fault door. "
+             "A SHA-bound causal precision review can supersede a previously verified "
+             "audit when every apparent path relies on actor-wide root aggregation.", "",
+             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Quality | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source gap receipt | New bug |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |"]
     for row in report["rows"]:
         location = f'{row["source_path"]}:{row["source_line"]}'
         values = [row["case_id"], row["system"], location, row["function"],
@@ -776,6 +855,7 @@ def markdown(report: dict[str, Any]) -> str:
                   row["campaign_cluster_test"], row["calibration_status"],
                   row["calibration_duration_seconds"], row["report_status"],
                   row["quality_status"], row["causal_audit"],
+                  row["causal_precision_review"],
                   ", ".join(row["healthy_closure_evidence_types"] or []),
                   row["healthy_local_timeline_doors"], row["posthoc_attestation"],
                   row["duration_seconds"], row["strict_injected_trials"],

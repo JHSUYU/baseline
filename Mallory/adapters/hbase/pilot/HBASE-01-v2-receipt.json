@@ -1,0 +1,64 @@
+{
+  "case_id": "HBASE-01",
+  "core_release": {
+    "manifest": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf/manifest.json",
+    "manifest_sha256": "101e132c7513ac37650276d858da4b5cb766903e38be06158db2d4c472c0417f",
+    "node1_verify_passed": true,
+    "release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf"
+  },
+  "full": {
+    "budget": {
+      "max_faults_per_trial": 10,
+      "seconds": 3600,
+      "trial_timeout_seconds": 300,
+      "trials": 80
+    },
+    "config_sha256": "93b7a78b3bc4e883c6dcc0bae3bddbfe5fde180613ba920783800e68959e778d",
+    "outcome": null,
+    "remote_path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/full-HBASE-01",
+    "tmux": "mallory-hbase01-v2-full"
+  },
+  "healthy": {
+    "duration_seconds": 29.924,
+    "named_in_closure_doors": 2,
+    "named_target_node": "client",
+    "observed_closure_edges": 5,
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/healthy-HBASE-01",
+    "result_sha256": "eb92eed85eda3044e86d409e724d1a52792605006ba4a95f52d997c2f7158031",
+    "target_identity_gaps": 0,
+    "valid": true
+  },
+  "host": "node1",
+  "pilot": {
+    "audit_passed": true,
+    "audit_sha256": "dc1ac8ff9089f4c0229d5779ab30bb404e433301b458f81d1a7654e0c187bbf8",
+    "exact_exception_trials": 0,
+    "fault_trials_completed": 2,
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane1-v2/pilot-HBASE-01",
+    "result_sha256": "dcd598a96065e04b80a91ad09006d9352de5c5667e95ef9c62b7c235faabd9e4",
+    "stable_effective_door": "client locateRegionInMeta@1062 ordinal1",
+    "strict_injected_target_retained_trials": 1,
+    "unmatched_nondeterminism": "Pilot r0001 planned rs0 RPC ordinal21 from healthy; target service RPC moved to rs1 and never matched exact point."
+  },
+  "runtime_artifacts": {
+    "adapter_jar_sha256": "cdbd1bda62dd23833e0f1bb62dd35fbfcff0f9dd1a1ec8fa982ba5cf722cb63f",
+    "agent_jar_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "junit_launcher_jar_sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564",
+    "selected_junit_class_sha256": "9b44bf693a8365dd01364cc1641208c0a481902116e316830260b3f71c8d4445",
+    "site_file_sha256": "64c8def80af5a041df36638fb3c5d4fdfccbf1805bf34db7dd05ee9ea6a279ab"
+  },
+  "schema_version": 1,
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_unchanged": true,
+  "status": "v2_full_running",
+  "target": {
+    "check_site": "org.apache.hadoop.hbase.client.ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;@1104:branch:24",
+    "class_bytecode_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+    "throw_site": "org.apache.hadoop.hbase.client.ConnectionImplementation#locateRegionInMeta(Lorg/apache/hadoop/hbase/TableName;[BZZI)Lorg/apache/hadoop/hbase/RegionLocations;@1106:throw:1"
+  },
+  "v1_archive": {
+    "canonical_result_sha256": "5b120971bc3dfc57dbc64d0b7a303e18ff262b1b38d82e47d15926dfc0bd9c29",
+    "offline_audit_sha256": "21978bb7e69cae743c24ebab5e37bfee06d38d89dc9cc02881248e114dd8ea63",
+    "report_gate_passed": false
+  }
+}

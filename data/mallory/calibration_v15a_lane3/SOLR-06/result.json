@@ -1,0 +1,114 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-06",
+  "closure_coverage_ids_seen": 153,
+  "closure_edge_fingerprints_seen": 32,
+  "cluster_test": "org.apache.solr.cloud.TestPullReplica#testCreateDelete",
+  "coverage_ids_seen": 254,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 16.17,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 204,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 0,
+    "junit_log_sha256": "539e115e171a35817468573786bd8a8b7415b8393978b4e1e12f76f80704bf88",
+    "marker": "MALLORY_TEST_RESULT run=2 failures=0 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "9b74a3d294f35673701d9ccc5f4465b7ea65919127f253701344bf9e8e1bcb63",
+    "stdout_sha256": "b355a5922ee9e0a0580606fe511a514cb5911ead3fc74de3ab9f6e7dfa5755d1",
+    "tests": 2,
+    "wrapper_sha256": "a16a7d0452de0666d53a6cb5b689acb9d2ba8d4463832e09216051e7ba5fcd72"
+  },
+  "healthy_observed_door_events": 274,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1",
+      "node2"
+    ],
+    "eligible_doors_before_target": 204,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "85400f2cd290c99e534607bcf6736f4a8a0031e7619a185785532ea6cc7a9d0e",
+    "observed_target_class_sha256": "85400f2cd290c99e534607bcf6736f4a8a0031e7619a185785532ea6cc7a9d0e",
+    "reasons": [],
+    "site_catalog_sha256": "a76b5cf79cca8ab36bfb424e65d47c3adbd17490e89079124e09e8d1fc244b6b",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "assert !(isLeader && replica.getType() == Type.PULL) : \"Pull replica became leader!\";",
+    "check_sites": [
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:branch:9",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:branch:10",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:branch:11"
+    ],
+    "exception_class": "java.lang.AssertionError",
+    "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
+    "original_source_line": 1315,
+    "site_id": "<org.apache.solr.cloud.ZkController: java.lang.String register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)>#u104",
+    "source_line": 1315,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+    "throw_site": "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1",
+      "node2"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.17,
+      "eligible_doors_before_target": 204,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 2,
+      "novelty": {
+        "closure_coverage": 153,
+        "closure_edges": 32,
+        "coverage": 254
+      },
+      "observed_door_events": 274,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

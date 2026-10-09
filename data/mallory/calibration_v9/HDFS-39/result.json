@@ -1,0 +1,119 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-39",
+  "closure_coverage_ids_seen": 79,
+  "closure_edge_fingerprints_seen": 32,
+  "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testMultiAppend2",
+  "coverage_ids_seen": 216,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 27.913,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 36,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_63f9aa5cb1714514aa5f58101c700a8f",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestFileAppend-mallory_0000_63f9aa5cb1714514aa5f58101c700a8f.xml",
+        "sha256": "e17affa52e140f1fef16ab206621ba70bed6d891dbc5d59dd3d50c8664c63533"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "4e1b052a8a83a1afee4408e39fa3bfd6e91bf7c80acdbb52a47977bd42055b0b",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 112,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/nn0"
+    ],
+    "eligible_doors_before_target": 36,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "a10167f939f5fe912e83ce5b570a7053a9856e844a1706c0f40b8f8296a0a8c8",
+    "observed_target_class_sha256": "a10167f939f5fe912e83ce5b570a7053a9856e844a1706c0f40b8f8296a0a8c8",
+    "reasons": [],
+    "site_catalog_sha256": "7916b3ee9b53730fb7ea4852725ac136b3583104657eefd8c948959e7a416c03",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) {\nthrow new RetriableException(\nnew NotReplicatedYetException(\"append: lastBlock=\"\n+ lastBlock + \" of src=\" + path\n+ \" is COMMITTED but not yet COMPLETE.\"));",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;@131:branch:12"
+    ],
+    "exception_class": "org.apache.hadoop.ipc.RetriableException",
+    "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
+    "original_source_line": 132,
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp: org.apache.hadoop.hdfs.protocol.LastBlockWithStatus appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)>#u96",
+    "source_line": 132,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;@132:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/nn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 27.913,
+      "eligible_doors_before_target": 36,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 79,
+        "closure_edges": 32,
+        "coverage": 216
+      },
+      "observed_door_events": 112,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

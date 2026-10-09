@@ -1,0 +1,122 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-14",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.cloud.SplitShardTest#doTest",
+  "coverage_ids_seen": 95,
+  "dispatch_attempt_ids": [
+    "20261009T155010-7b96c49bba21"
+  ],
+  "duration_seconds": 22.361,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 61852,
+    "manifest_path": "evidence_archives/calibration/SOLR-14.tar.manifest.json",
+    "manifest_sha256": "ead175032696ef9b88fad5336928b240f443cce8252a8ad9eb7a4e6cf64da205",
+    "path": "evidence_archives/calibration/SOLR-14.tar.gz",
+    "sha256": "8b714d43cee59bf15a12df65b8541446d2d9ff570532d02545b3bc2d8341626b"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_observed_door_events": 0,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T155010-7b96c49bba21",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 0,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": null,
+    "observed_target_class_sha256": "590ff068f83f4c7644891c19db9900911bf93a1a306de2f30c176568850ea93a",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region",
+      "no_injectable_door",
+      "target_class_hash_unpinned"
+    ],
+    "site_catalog_sha256": "49d5d42170f43eb8061b97ae3dc96214780aab7f94f3741accc9bffe4725f439",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 3,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (leaderZnodeStat == null)  {\n// we just got to know the leader but its live node is gone already!\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR, \"The shard leader node: \" + parentShardLeader.getNodeName() + \" is not live anymore!\");",
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@165:branch:5"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.api.collections.SplitShardCmd.split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+    "site_id": "<org.apache.solr.cloud.api.collections.SplitShardCmd: boolean split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)>#u110",
+    "source_line": 167,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+    "throw_site": "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@167:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "SOLR-14-r0000:149",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z:f60239fc-e865-426f-b676-532ce8563d15:task:61:1",
+      "seq": 149,
+      "site": "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@165:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-14-r0000:792",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z:f60239fc-e865-426f-b676-532ce8563d15:task:295:1",
+      "seq": 792,
+      "site": "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@165:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-14-r0000:879",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z:f60239fc-e865-426f-b676-532ce8563d15:task:305:1",
+      "seq": 879,
+      "site": "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@165:branch:5"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T155010-7b96c49bba21",
+      "duration_seconds": 22.361,
+      "eligible_doors_before_target": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 95
+      },
+      "observed_door_events": 0,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

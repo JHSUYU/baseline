@@ -1,0 +1,28 @@
+{
+  "agent_jar_sha256": "7415d7bf1ee4f64e423f2377be86a3af006e20b82dde7ab4e09c097011a9e816",
+  "agent_release_id": "159c74ec50d0703e85cfdfd1b06451e961fc180db04d568926b990aa5458db7a",
+  "causal_changes": [
+    "Parsed RpcConnection response RECV and response-ready TASK_SUBMIT use exact Call token context.",
+    "Accepted ProcedureCoordinator.pool.submit(Procedure) uses a per-submission Callable wrapper to pair TASK_SUBMIT/TASK_CLAIM; worker executes original Procedure.call."
+  ],
+  "files_sha256": {
+    "HBaseAdapterTransformer.java": "60ca093f6dddd7e0d07ff253175505c6e751c3e764320762edba6fb9272e55e0",
+    "HBaseHooks.java": "6f77dd858bfe27f42b6ecc3c823d3c0df42f955c8366ebc20749ae5c85fd2944",
+    "HBaseHooksTest.java": "45e7e6b5f9d56ca3127ae8d426828952ba3ae64893aa340fae2a0108bfa72e74",
+    "mallory-hbase-adapter.jar": "ab943e3fda02126261f99703cafeb4b6b0f71b6b5d645a29abb3498d43851cd1"
+  },
+  "hbase_compiled_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+  "limits": [
+    "No active HBase campaign uses this jar.",
+    "Require representative MiniCluster healthy traces and an event-time causal audit before fault promotion."
+  ],
+  "release_name": "future-token-handoffs-v1",
+  "schema_version": 1,
+  "status": "isolated_unpromoted_healthy_pilot_pending",
+  "tests": {
+    "errors": 0,
+    "failures": 0,
+    "hbase_hooks": 6,
+    "offline_transform": "ProcedureCoordinator.submitProcedure after accepted putIfAbsent; coordinatorCallable before ExecutorService.submit"
+  }
+}

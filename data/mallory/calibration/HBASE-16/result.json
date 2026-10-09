@@ -1,0 +1,97 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-16",
+  "closure_coverage_ids_seen": 5,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash#testRetryBackoff",
+  "coverage_ids_seen": 154,
+  "dispatch_attempt_ids": [
+    "20261009T162528-c2bfec50f7e3"
+  ],
+  "duration_seconds": 58.255,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 292272,
+    "manifest_path": "evidence_archives/calibration/HBASE-16.tar.manifest.json",
+    "manifest_sha256": "881529eacf53ecef72d39198e32d71976314cc7bf210e5fae22d8d371ba8a16d",
+    "path": "evidence_archives/calibration/HBASE-16.tar.gz",
+    "sha256": "5986c1779e4a994e40ed1a0f863c1cb40710743c0141a69e04fd1ac326252aab"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 85,
+  "healthy_observed_door_events": 128,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T162528-c2bfec50f7e3",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (regionNode.isInState(State.CLOSING)) {\n// This is possible, think the target RS crashes and restarts immediately, the close region\n// operation will return a NotServingRegionException soon, we can only recover after SCP takes\n// care of this RS. So here we throw an IOException to let upper layer to retry with backoff.\nsetNextState(RegionStateTransitionState.REGION_STATE_TRANSITION_CLOSE);\nthrow new HBaseIOException(\"Failed to close region\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@366:branch:3"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+    "original_source_line": 371,
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure: org.apache.hadoop.hbase.procedure2.StateMachineProcedure$Flow confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)>#u28",
+    "source_line": 371,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@371:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HBASE-16-r0000:8462",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;:root:1",
+      "seq": 8462,
+      "site": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@366:branch:3"
+    },
+    {
+      "epoch": 0,
+      "id": "HBASE-16-r0000:8465",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;:root:1",
+      "seq": 8465,
+      "site": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@371:throw:1"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T162528-c2bfec50f7e3",
+      "duration_seconds": 58.255,
+      "eligible_doors_before_target": 85,
+      "novelty": {
+        "closure_coverage": 5,
+        "closure_edges": 0,
+        "coverage": 154
+      },
+      "observed_door_events": 128,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_target_exception",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

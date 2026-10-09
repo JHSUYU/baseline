@@ -141,6 +141,160 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(feedback["graph"]["edges_by_kind"]["rpc"], 1)
         self.assertEqual(feedback["graph"]["edges_by_kind"]["region_parent"], 1)
 
+    def test_strict_graph_does_not_compose_handoffs_through_actor_wide_root(self):
+        # Each RPC is uniquely paired, but the two B events can be unrelated
+        # threads. The old actor/epoch root vertex falsely joins them.
+        events = (
+            event("SEND", 1, "A", "a", transport="rpc", correlation="c1", port="p"),
+            event("RECV", 2, "B", "unscoped:B:0:root", transport="rpc",
+                  correlation="c1", port="p", thread_id=41),
+            event("SEND", 3, "B", "unscoped:B:0:root", transport="rpc",
+                  correlation="c2", port="p", thread_id=42),
+            event("RECV", 4, "C", "c", transport="rpc", correlation="c2", port="p"),
+            event("TARGET_CHECK", 5, "C", "c", site="T"),
+        )
+        legacy = OccurrenceGraph(events)
+        strict = OccurrenceGraph(events, reject_coarse_roots=True)
+        self.assertIn(event_address(events[0]), legacy.backward_closure(event_address(events[4])))
+        self.assertEqual(strict.backward_closure(event_address(events[4])),
+                         {event_address(events[4])})
+        self.assertEqual(strict.gaps["coarse_root_edge_rejected"], 2)
+
+    def test_scoped_root_keeps_same_thread_segment_and_direct_region_parent(self):
+        root = "unscoped:B:0:root:thread:41:segment:2"
+        events = (
+            event("SEND", 1, "A", "a", transport="rpc", correlation="c1", port="p"),
+            event("RECV", 2, "B", root, transport="rpc", correlation="c1",
+                  port="p", thread_id=41, context="root"),
+            event("DOOR_OBSERVED", 3, "B", root, site="D", thread_id=41,
+                  context="root"),
+            event("REGION_ENTER", 4, "B", "b", parent_id=root, thread_id=41,
+                  context="root"),
+            event("TARGET_CHECK", 5, "B", "b", site="T", thread_id=41),
+        )
+        graph = OccurrenceGraph(events, reject_coarse_roots=True)
+        self.assertEqual(graph.summary()["edges_by_kind"], {"region_parent": 1, "rpc": 1})
+        self.assertIn(event_address(events[0]), graph.backward_closure(event_address(events[4])))
+        parent = next(edge for edge in graph.edges if edge.kind == "region_parent")
+        self.assertEqual(parent.producer_event, "e3")
+        self.assertEqual(parent.evidence, "scoped_root_same_thread")
+        self.assertEqual(graph.event_path(events[2], events[4]), (parent,))
+
+        wrong_thread = dict(events[3], thread_id=42)
+        unlinked = OccurrenceGraph(events[:3] + (wrong_thread,) + events[4:],
+                                   reject_coarse_roots=True)
+        self.assertEqual(unlinked.summary()["edges_by_kind"], {"rpc": 1})
+        self.assertEqual(unlinked.gaps["unmatched_parent"], 1)
+
+    def test_repeated_token_on_two_threads_cannot_join_handoffs(self):
+        def chain(first_occurrence, second_occurrence):
+            return (
+                event("SEND", 1, "A", "a", transport="rpc", correlation="c1", port="p"),
+                event("RECV", 2, "B", first_occurrence, transport="rpc",
+                      correlation="c1", port="p", context="token-x", thread_id=41),
+                event("SEND", 3, "B", second_occurrence, transport="rpc",
+                      correlation="c2", port="p", context="token-x", thread_id=42),
+                event("RECV", 4, "C", "c", transport="rpc", correlation="c2", port="p"),
+                event("TARGET_CHECK", 5, "C", "c", site="T"),
+            )
+        legacy = chain("unscoped:B:0:token-x", "unscoped:B:0:token-x")
+        self.assertIn(event_address(legacy[0]),
+                      OccurrenceGraph(legacy).backward_closure(event_address(legacy[4])))
+        strict_legacy = OccurrenceGraph(legacy, reject_coarse_roots=True)
+        self.assertEqual(strict_legacy.backward_closure(event_address(legacy[4])),
+                         {event_address(legacy[4])})
+        self.assertEqual(strict_legacy.gaps["unscoped_token_edge_rejected"], 2)
+
+        scoped = chain("unscoped:B:0:token-x:thread:41:segment:5",
+                       "unscoped:B:0:token-x:thread:42:segment:5")
+        strict_scoped = OccurrenceGraph(scoped, reject_coarse_roots=True)
+        self.assertEqual(strict_scoped.summary()["edges_by_kind"], {"rpc": 2})
+        self.assertNotIn(event_address(scoped[0]),
+                         strict_scoped.backward_closure(event_address(scoped[4])))
+
+    def test_event_time_path_rejects_response_after_target(self):
+        client = "unscoped:client:0:root:thread:21:segment:1"
+        events = (
+            event("DOOR_OBSERVED", 1, "rs", "rs-work", site="before", thread_id=11,
+                  door_ordinal=1, fault_type="EXCEPTION",
+                  exception_class="java.io.IOException"),
+            event("SEND", 2, "rs", "rs-work", transport="rpc", correlation="c1",
+                  port="response", thread_id=11),
+            event("RECV", 3, "client", client, transport="rpc", correlation="c1",
+                  port="response", thread_id=21, context="root"),
+            event("TASK_SUBMIT", 4, "client", client, correlation="task-1",
+                  thread_id=21, context="root"),
+            event("TASK_CLAIM", 5, "client", "client-work", correlation="task-1",
+                  thread_id=21),
+            event("TARGET_CHECK", 6, "client", "client-work", site="T", thread_id=21),
+            event("DOOR_OBSERVED", 7, "master", "master-work", site="late",
+                  thread_id=31, door_ordinal=1, fault_type="EXCEPTION",
+                  exception_class="java.io.IOException"),
+            event("SEND", 8, "master", "master-work", transport="rpc",
+                  correlation="c2", port="response", thread_id=31),
+            event("RECV", 9, "client", client, transport="rpc", correlation="c2",
+                  port="response", thread_id=21, context="root"),
+            event("TASK_SUBMIT", 10, "client", client, correlation="task-2",
+                  thread_id=21, context="root"),
+            event("TASK_CLAIM", 11, "client", "client-work", correlation="task-2",
+                  thread_id=21),
+        )
+        graph = OccurrenceGraph(events, reject_coarse_roots=True)
+        self.assertIn(event_address(events[6]),
+                      graph.backward_closure(event_address(events[5])))
+        witness = graph.event_path(events[0], events[5])
+        self.assertIsNotNone(witness)
+        self.assertEqual([edge.kind for edge in witness], ["rpc", "task"])
+        self.assertIsNone(graph.event_path(events[6], events[5]))
+        feedback = analyze(Trace(events), {"check_sites": ["T"], "throw_site": "T",
+                                          "exception_class": "java.io.IOException"}, [],
+                           return_code=0, timed_out=False,
+                           require_event_time_paths=True)
+        self.assertEqual([door["site"] for door in feedback["doors"]], ["before"])
+        self.assertNotIn(event_address(events[6]), feedback["closure_occurrences"])
+
+    def test_event_time_direct_local_order_requires_same_thread(self):
+        events = (
+            event("DOOR_OBSERVED", 1, "A", "region", site="D", thread_id=7),
+            event("TARGET_CHECK", 2, "A", "region", site="T", thread_id=7),
+            event("DOOR_OBSERVED", 3, "A", "region", site="too-late", thread_id=7),
+            event("DOOR_OBSERVED", 0, "A", "region", site="wrong-thread", thread_id=8),
+        )
+        graph = OccurrenceGraph(events, reject_coarse_roots=True)
+        self.assertEqual(graph.event_path(events[0], events[1], require_edge=False), ())
+        self.assertIsNone(graph.event_path(events[0], events[1], require_edge=True))
+        self.assertIsNone(graph.event_path(events[2], events[1], require_edge=False))
+        self.assertIsNone(graph.event_path(events[3], events[1], require_edge=False))
+
+    def test_event_time_path_rejects_inverted_edge_and_cross_thread_join(self):
+        inverted = (
+            event("DOOR_OBSERVED", 1, "A", "a", site="D", thread_id=1),
+            event("SEND", 5, "A", "a", transport="rpc", correlation="x",
+                  port="p", thread_id=1),
+            event("RECV", 3, "B", "b", transport="rpc", correlation="x",
+                  port="p", thread_id=2),
+            event("TARGET_CHECK", 6, "B", "b", site="T", thread_id=2),
+        )
+        graph = OccurrenceGraph(inverted)
+        self.assertIn(event_address(inverted[0]),
+                      graph.backward_closure(event_address(inverted[3])))
+        self.assertIsNone(graph.event_path(inverted[0], inverted[3]))
+
+        cross_thread = (
+            event("DOOR_OBSERVED", 1, "A", "a", site="D", thread_id=1),
+            event("SEND", 2, "A", "a", transport="rpc", correlation="x",
+                  port="p", thread_id=1),
+            event("RECV", 3, "B", "b", transport="rpc", correlation="x",
+                  port="p", thread_id=2),
+            event("TASK_SUBMIT", 4, "B", "b", correlation="task", thread_id=3),
+            event("TASK_CLAIM", 5, "C", "c", correlation="task", thread_id=4),
+            event("TARGET_CHECK", 6, "C", "c", site="T", thread_id=4),
+        )
+        graph = OccurrenceGraph(cross_thread)
+        self.assertIn(event_address(cross_thread[0]),
+                      graph.backward_closure(event_address(cross_thread[5])))
+        self.assertIsNone(graph.event_path(cross_thread[0], cross_thread[5]))
+
     def test_request_region_does_not_attach_to_response_receive(self):
         events = (
             event("RECV", 1, "NN", "unscoped:NN:0:c1", correlation="c1", port="request"),

@@ -1,0 +1,39 @@
+{
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+  "agent_jar_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+  "case_id": "HDFS-15",
+  "compiled_class": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.class",
+  "compiled_class_sha256": "9df857be765b890370cc5bd3f099f6bf670dff2b3911d5fc02b38a6dd1f9a3fb",
+  "corrected_calibration_config": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v13/HDFS-15-corrected-calibration.json",
+  "corrected_calibration_config_sha256": "67acedcd325f39b575dd660a531b105fd5149192640588b3e4ad282c18109454",
+  "corrected_site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v13/HDFS-15-corrected.sites.json",
+  "corrected_site_file_sha256": "fe3eec3a09094fa04732ba978d670706a1ac47fa52a4f9b2ee42555f62cea3ed",
+  "schema_version": 1,
+  "scope": "Offline bytecode transformation only; no JUnit, MiniCluster, target reach, node identity, or causal-path evidence.",
+  "selected_catalog_rows": [
+    {
+      "bytecode_sha256": "9df857be765b890370cc5bd3f099f6bf670dff2b3911d5fc02b38a6dd1f9a3fb",
+      "class_loader_id": "sun.misc.Launcher$AppClassLoader@75b84c92",
+      "class_name": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo",
+      "instrumented_sha256": "1db9668c388cd4801f3c4e2ba20afbe015e01f298b7dfdc45ba16244335089c7",
+      "line": 447,
+      "site": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#commitBlock(Lorg/apache/hadoop/hdfs/protocol/Block;)Ljava/util/List;@447:branch:2",
+      "type": "TARGET_CHECK"
+    },
+    {
+      "bytecode_sha256": "9df857be765b890370cc5bd3f099f6bf670dff2b3911d5fc02b38a6dd1f9a3fb",
+      "callee": "org.apache.hadoop.util.Preconditions#checkState(Z)V",
+      "class_loader_id": "sun.misc.Launcher$AppClassLoader@75b84c92",
+      "class_name": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo",
+      "exception_class": "java.lang.IllegalStateException",
+      "instrumented_sha256": "1db9668c388cd4801f3c4e2ba20afbe015e01f298b7dfdc45ba16244335089c7",
+      "line": 447,
+      "site": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#commitBlock(Lorg/apache/hadoop/hdfs/protocol/Block;)Ljava/util/List;@447:callthrow:13",
+      "type": "TARGET_THROW"
+    }
+  ],
+  "site_catalog": "/users/ZhenyuLi/baseline/data/mallory/calibration_v13_offline_audit/HDFS-15-corrected-sites.jsonl",
+  "site_catalog_sha256": "40709cb5338a009dce1f2f04e4e723563d0ca5dfa7bdf9547355acfd6be6702e",
+  "status": "woven_sites_verified_healthy_pending",
+  "type": "offline_compiled_class_site_catalog_proof"
+}

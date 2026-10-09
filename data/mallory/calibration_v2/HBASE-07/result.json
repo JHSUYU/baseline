@@ -1,0 +1,125 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-07",
+  "closure_coverage_ids_seen": 55,
+  "closure_edge_fingerprints_seen": 260,
+  "cluster_test": "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient#testRestoreSnapshot",
+  "coverage_ids_seen": 113,
+  "dispatch_attempt_ids": [
+    "20261009T170442-7fb0ac2db0ca"
+  ],
+  "dispatch_provenance": {
+    "attempt_id": "20261009T170442-7fb0ac2db0ca",
+    "case_config_sha256": "c86873c1406c4387ad8c2826d48efe11fea2344fafe6d21194841f90e69c6801",
+    "core_release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+    "host": "node1",
+    "spec_path": "/users/ZhenyuLi/baseline/data/mallory/dispatch/node1-v2/calibration/cases/HBASE-07/attempts/20261009T170442-7fb0ac2db0ca/spec.json",
+    "spec_sha256": "64de92a815648b98f422e0abf4320b0d2cf85cbeadd842d0a758ef4c27e23039"
+  },
+  "duration_seconds": 37.881,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 927490,
+    "manifest_path": "evidence_archives/calibration_v2/HBASE-07.tar.manifest.json",
+    "manifest_sha256": "133e29670afc67a3ce81c4afef0ccb8f3b89a2463513d0f1a5a81e161d002488",
+    "path": "evidence_archives/calibration_v2/HBASE-07.tar.gz",
+    "sha256": "feabba359c94fa757c3bb5fa85488ebcab3ad1ed8f8e6745e2ca4cb8faac6b69"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 666,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "5765c9d4c764c34322554168ccc31aa4a8844d7349f0218e083e0ded3bc296c0",
+    "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "healthy_observed_door_events": 772,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T170442-7fb0ac2db0ca",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "client"
+    ],
+    "eligible_doors_before_target": 666,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "observed_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "reasons": [],
+    "site_catalog_sha256": "f56c0d2204dd62d5387406fa222200fea6a877237e959cb0e83e6000be8e7af8",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (!isTableDisabled(tableName)) {\nthrow new TableNotDisabledException(tableName);",
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2787:branch:2"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.TableNotDisabledException",
+    "function": "org.apache.hadoop.hbase.client.HBaseAdmin.restoreSnapshot(java.lang.String,boolean,boolean)",
+    "original_source_line": 2788,
+    "site_id": "<org.apache.hadoop.hbase.client.HBaseAdmin: void restoreSnapshot(java.lang.String,boolean,boolean)>#u13",
+    "source_line": 2788,
+    "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+    "throw_site": "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2788:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "client"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T170442-7fb0ac2db0ca",
+      "duration_seconds": 37.881,
+      "eligible_doors_before_target": 666,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 55,
+        "closure_edges": 260,
+        "coverage": 113
+      },
+      "observed_door_events": 772,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "assertion_semantics": "Duplicate storage ID branches to assertion; the mapped and incoming DatanodeStorageInfo must be the same object to pass.",
+  "call_sites": [
+    {
+      "kind": "production",
+      "lines": "135,195",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java"
+    },
+    {
+      "kind": "direct_unit_test",
+      "lines": "101",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/blockmanagement/TestProvidedStorageMap.java"
+    }
+  ],
+  "case_id": "HDFS-18",
+  "conclusion": "Original secure alias-map MiniCluster test passed without selected injectStorage check. Direct TestProvidedStorageMap invokes injectStorage with mock objects, not a MiniDFSCluster duplicate-storage path.",
+  "examined_existing_tests": [
+    {
+      "finding": "Executed original: one-DN PROVIDED MiniCluster, exact assertion absent.",
+      "selector": "TestSecureAliasMap#testSecureConnectionToAliasMap",
+      "uses_mini_dfs_cluster": true
+    },
+    {
+      "finding": "Direct injectStorage on synthetic descriptor and mocked BlockManager.",
+      "selector": "TestProvidedStorageMap#testProvidedStorageMap",
+      "uses_mini_dfs_cluster": false
+    },
+    {
+      "finding": "Synthetic block reports on mocked NameNode state; no MiniCluster.",
+      "selector": "TestBlockManager#testSafeModeWithProvidedStorageBR",
+      "uses_mini_dfs_cluster": false
+    },
+    {
+      "finding": "MiniCluster path-handle test; no NN PROVIDED storage enable flag.",
+      "selector": "TestProvidedImpl#testProvidedReplicaWithPathHandle",
+      "uses_mini_dfs_cluster": true
+    }
+  ],
+  "executed_original_junit": {
+    "campaign_result_path": "data/mallory/calibration/HDFS-18/result.json",
+    "campaign_result_sha256": "188561df5fd04ad4fe21e3a35f714574ce1e3370a300cc6b7d7717810c7ad721",
+    "doors_observed": 17,
+    "exact_target_reached": false,
+    "exact_target_threw": false,
+    "junit_errors": 0,
+    "junit_failures": 0,
+    "junit_skipped": 0,
+    "junit_tests": 1,
+    "loaded_target_class_sha256": "92490814da7ef0c7121e699a86604f2edf8fe53a73c7534c5f06903b28a3607f",
+    "maven_return_code": 0,
+    "selector": "org.apache.hadoop.hdfs.server.aliasmap.TestSecureAliasMap#testSecureConnectionToAliasMap",
+    "site_catalog_sha256": "40264b1e157aa07ddc073ea9f19e33b4a29799b31f2c7f9ec416f1385b89df2c",
+    "stdout_path": "data/mallory/calibration/HDFS-18/trials/r0000/stdout.log",
+    "stdout_sha256": "a598623827d857b810df005e25650c408ae87e3f4ef4fc42df63d4a536877ae4",
+    "target_site_catalog_valid": true,
+    "trial_result_path": "data/mallory/calibration/HDFS-18/trials/r0000/result.json",
+    "trial_result_sha256": "2455bebd6c24c4fa2e42bd46027617e29be41784c6b3a7f381e14a8710d35663"
+  },
+  "limitation": "The search covers checked-in HDFS 3.4.3 Java call sites and selected existing JUnit sources. It does not prove that no custom workload could reach the check. No new JUnit was run. The existing runtime-audited no_suitable_cluster_test gate requires a valid zero-door healthy seed, which this target-missing run cannot provide.",
+  "original_config_path": "Mallory/cases/HDFS-18.json",
+  "original_config_sha256": "9ea11430c0c687756f28a256a1f37da30f69696c2cce8c764e1250b7236d5b26",
+  "proof_tier": "source_review_plus_one_executed_original_junit",
+  "report_registration": "await_source_only_schema; do_not_write_runtime_source_gap_receipt",
+  "schema_version": 1,
+  "search_scope": "Every checked-in Java injectStorage call site and test class enabling NN PROVIDED storage, plus separate provided-replica MiniCluster test.",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_conclusion": "No identified existing MiniDFSCluster JUnit reaches selected duplicate-storage assertion. Direct test uses synthetic descriptor and mocks; measured original MiniCluster run misses exact check.",
+  "source_evidence": [
+    {
+      "finding": "Selected assertion on duplicate storage ID.",
+      "lines": "519-538",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java",
+      "sha256": "df2b7b8d5eb514cbb39638304865888ae701dba67788e89afb63ff4e7f862588"
+    },
+    {
+      "finding": "Two production injectStorage call sites.",
+      "lines": "125-138,192-202",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java",
+      "sha256": "77ce4735b27502d117f3ceb83d3e7fbb30c0abb58bad9c6825e3ed18e231fb9a"
+    },
+    {
+      "finding": "Mock-based direct unit test calls injectStorage.",
+      "lines": "44-114",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/blockmanagement/TestProvidedStorageMap.java",
+      "sha256": "acda625a3d9708857cb47fa3dfc6fc58289acd7604c5a85822306eaf656dfad5"
+    },
+    {
+      "finding": "Original executed MiniCluster JUnit.",
+      "lines": "120-159",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java",
+      "sha256": "67919a1131d485c990397e1fe0c6768d8482f2435d7510f2bbf49dc1eb51d5dc"
+    },
+    {
+      "finding": "Provided-storage block-report test has synthetic nodes and BlockManager, not MiniDFSCluster.",
+      "lines": "1219-1266",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/blockmanagement/TestBlockManager.java",
+      "sha256": "7b4e5fa24fc18fb9e4b0887bd258fad7929de5a8d5f4b84cfd26870316a89bb8"
+    },
+    {
+      "finding": "Separate path-handle JUnit starts MiniCluster but fixture does not enable NN PROVIDED storage.",
+      "lines": "327-345,621-645",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/TestProvidedImpl.java",
+      "sha256": "40698020bbaf96bd879ab7eaedfcba249e19b5c0e6a837a8cfdc3cc71aeb51a5"
+    }
+  ],
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+  "status": "source_review_no_suitable_test",
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor#injectStorage(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;)V@537:branch:5",
+      "org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor#injectStorage(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;)V@537:branch:6"
+    ],
+    "exception_class": "java.lang.AssertionError",
+    "function": "org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor.injectStorage(org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo)",
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java",
+    "source_sha256": "df2b7b8d5eb514cbb39638304865888ae701dba67788e89afb63ff4e7f862588",
+    "throw_site": "org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor#injectStorage(Lorg/apache/hadoop/hdfs/server/blockmanagement/DatanodeStorageInfo;)V@537:throw:1"
+  },
+  "type": "source_only_existing_cluster_test_review"
+}

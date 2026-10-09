@@ -1,0 +1,186 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-35",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+  "coverage_ids_seen": 298,
+  "dispatch_attempt_ids": [
+    "20261009T161757-b90f0450b7e5"
+  ],
+  "duration_seconds": 35.419,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 123,
+  "healthy_observed_door_events": 145,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T161757-b90f0450b7e5",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 123,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f",
+    "observed_target_class_sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region"
+    ],
+    "site_catalog_sha256": "9d7a5b50726a0f7d888f26f8be95194f463a54afde7569312a54ed52006083a5",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 12,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (federationSupported\n&& !getClusterID().equals(nsInfo.getClusterID())) {\nthrow new IOException(\"Incompatible clusterIDs in \"\n+ sd.getRoot().getCanonicalPath() + \": namenode clusterID = \"\n+ nsInfo.getClusterID() + \"; datanode clusterID = \" + getClusterID());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+    "original_source_line": 752,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#u70",
+    "source_line": 752,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@752:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:96",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:1",
+      "seq": 96,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:2527",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:2",
+      "seq": 2527,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:2842",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:3",
+      "seq": 2842,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:3133",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:4",
+      "seq": 3133,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:3822",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:8",
+      "seq": 3822,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:4111",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:9",
+      "seq": 4111,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:4357",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:10",
+      "seq": 4357,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:4507",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:11",
+      "seq": 4507,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:4657",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:12",
+      "seq": 4657,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:4807",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:13",
+      "seq": 4807,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:5635",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:20",
+      "seq": 5635,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-35-r0000:5881",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:root:21",
+      "seq": 5881,
+      "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T161757-b90f0450b7e5",
+      "duration_seconds": 35.419,
+      "eligible_doors_before_target": 123,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 298
+      },
+      "observed_door_events": 145,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

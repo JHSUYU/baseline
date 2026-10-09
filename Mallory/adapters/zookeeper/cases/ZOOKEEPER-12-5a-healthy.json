@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-12",
+  "system": "zookeeper",
+  "calibration_only": true,
+  "cluster_test": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-connectpath-lane2",
+  "command": [
+    "mvn",
+    "-pl",
+    "zookeeper-server",
+    "-am",
+    "-Dtest=CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dmallory.test.dir={trial_dir}/test-data",
+    "test"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-causal-context-bf8e6dba.jar",
+  "agent_transport": "surefire_argline",
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/cases/ZOOKEEPER-12-5a-healthy.sites.json",
+  "agent_include": [
+    "org.apache.zookeeper.server.quorum.QuorumPeer"
+  ],
+  "agent_properties": {
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1193:branch:3"
+    ],
+    "throw_site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1197:throw:1",
+    "exception_class": "java.io.IOException",
+    "site_id": "<org.apache.zookeeper.server.quorum.QuorumPeer: void loadDataBase()>#u76",
+    "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+    "source_line": 1197,
+    "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+    "check_code": "if (acceptedEpoch < currentEpoch) {\nthrow new IOException(\"The accepted epoch, \"\n+ ZxidUtils.zxidToString(acceptedEpoch)\n+ \" is less than the current epoch, \"\n+ ZxidUtils.zxidToString(currentEpoch));",
+    "nodes": [
+      "zk0"
+    ]
+  },
+  "budget": {
+    "trials": 80,
+    "seconds": 3600,
+    "max_faults_per_trial": 6,
+    "trial_timeout_seconds": 180,
+    "trial_timeout_basis": "3x_historical_seed_plus_60s_capped_180_to_1200"
+  },
+  "mapping": {
+    "status": "standalone_target_attested_pending_fresh_core_seed",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",
+    "compiled_jar_sha256": "fd12731eecb5d3ace48fa25f0141f011bcb13273b5dca301ff15d5409bd52a91",
+    "compiled_class_sha256": "446279eb1dfdb4837aaf5e65f943b54a1138a068b1b83f69b5008d6b18cca717",
+    "node_identity_binding_verified": false,
+    "verified_healthy_probe": {
+      "scope": "standalone_existing_cluster_junit_calibration",
+      "evidence": "/users/ZhenyuLi/baseline/data/mallory/calibration/ZOOKEEPER-12/epoch-file-healthy-v1/attestation.json",
+      "evidence_sha256": "b8f2e133750ec6f6132712b58f2912faee5860ef850240d4c43c589001f582bf",
+      "target_class_sha256": "446279eb1dfdb4837aaf5e65f943b54a1138a068b1b83f69b5008d6b18cca717",
+      "target_check_site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1193:branch:3",
+      "target_throw_site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1197:throw:1"
+    },
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-connectpath-lane2",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin",
+    "source_root_env": "MALLORY_ZOOKEEPER_SOURCE_ROOT",
+    "distribution_root_env": "MALLORY_ZOOKEEPER_DIST_ROOT",
+    "test_source_sha256": "b115c5dc305e61916eba790beefba8b5072be0b54a02d53f45027fa36d333c01",
+    "target_source_sha256": "16d7e9723d16a984c65f3a971ea24fd8fb7381311d9db711b2bbc4970daa3270",
+    "healthy_seed_verified": false,
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-connectpath-lane2/zookeeper-server/target/classes",
+    "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java",
+    "target_class_relative": "zookeeper-server/target/classes/org/apache/zookeeper/server/quorum/QuorumPeer.class",
+    "agent_sha256": "bf8e6dbae07027dce750f15e3385c763f4894c2856056e2320bd85a54ed100c5"
+  },
+  "auto_promote_if_healthy": false,
+  "allow_local_timeline_doors": true,
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/5a35547d57dd66c29b15260f04cf52941b907e28bc07f0ceb0f1d4b3782c4040",
+  "agent_arg_property": "mallory.agent.arg",
+  "expected_target_class_sha256": "446279eb1dfdb4837aaf5e65f943b54a1138a068b1b83f69b5008d6b18cca717",
+  "source_overlay_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/zookeeper-3.8.7-connectpath-lane2-overlay.json",
+  "source_overlay_receipt_sha256": "90f907e3542464e71521371d2ec42ccf60fa7dae41ae53ebfbb14c2c8a67170c",
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-causal-context-bf8e6dba.jar",
+      "sha256": "bf8e6dbae07027dce750f15e3385c763f4894c2856056e2320bd85a54ed100c5"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/cases/ZOOKEEPER-12-5a-healthy.sites.json",
+      "sha256": "11f43cd415c871a77009951ddbde4feaceabf66632c95332685e22bf594aeae7"
+    }
+  ]
+}

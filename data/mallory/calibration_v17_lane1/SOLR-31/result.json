@@ -1,0 +1,92 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-31",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.cloud.ForceLeaderTest#testReplicasInLowerTerms",
+  "coverage_ids_seen": 83,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 13.862,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 1,
+    "junit_log_sha256": "603394a2caf897c98d08e5a890f55259a3ab0f4f67300858596af18292c72240",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=1 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "failed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "a351a410b33642858d41a231f7fab857ce6f23506f872db332330b46762e751f",
+    "tests": 1,
+    "wrapper_sha256": "ec686f1a32ff0c14bd0b650550c0c22cbbd40aff9089bdfb468d45fde40770d7"
+  },
+  "healthy_observed_door_events": 4,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (leader != null && leader.getState() == State.ACTIVE) {\nthrow new SolrException(ErrorCode.SERVER_ERROR,\n\"The shard already has an active leader. Force leader is not applicable. State: \" + slice);",
+    "check_sites": [
+      "org.apache.solr.handler.admin.CollectionsHandler#forceLeaderElection(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/handler/admin/CollectionsHandler;)V@1476:branch:2",
+      "org.apache.solr.handler.admin.CollectionsHandler#forceLeaderElection(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/handler/admin/CollectionsHandler;)V@1476:branch:3"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.handler.admin.CollectionsHandler.forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)",
+    "original_source_line": 1477,
+    "site_id": "<org.apache.solr.handler.admin.CollectionsHandler: void forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)>#u49",
+    "source_line": 1477,
+    "source_path": "solr/core/src/java/org/apache/solr/handler/admin/CollectionsHandler.java",
+    "throw_site": "org.apache.solr.handler.admin.CollectionsHandler#forceLeaderElection(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/handler/admin/CollectionsHandler;)V@1477:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 13.862,
+      "eligible_doors_before_target": 0,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 83
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_junit_failed",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 0
+    }
+  ]
+}

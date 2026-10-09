@@ -1,0 +1,217 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-01",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testAliasHandling",
+  "coverage_ids_seen": 55,
+  "dispatch_attempt_ids": [
+    "20261009T154836-8d15cbf5e17e"
+  ],
+  "duration_seconds": 17.342,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 107724,
+    "manifest_path": "evidence_archives/calibration/SOLR-01.tar.manifest.json",
+    "manifest_sha256": "a13e1a365c0841260f54ae2c885dd97a48f5009c0b2c21d71bfe6cfcc38d9a59",
+    "path": "evidence_archives/calibration/SOLR-01.tar.gz",
+    "sha256": "e2b3d6e6ac31cf39cae0be357be9d9de51641e6ee328afa0f951a1fe52647c95"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 80,
+  "healthy_observed_door_events": 80,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T154836-8d15cbf5e17e",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 80,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": null,
+    "observed_target_class_sha256": "612726481021e78ecf9cbdc32512dec951558658e6a645aa4b55e431cd965b7f",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region",
+      "target_class_hash_unpinned"
+    ],
+    "site_catalog_sha256": "1760fb527f7f2701b31d64ef004e4f01e3c18d52137562024c36d4f5117fa0f1",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 15,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "throw new RuntimeException(\"Tried fetching aliases using all the node names we knew of, i.e. \" + liveNodes +\". However, \"\n+ \"succeeded in obtaining the cluster state from none of them.\"\n+ \"If you think your Solr cluster is up and is accessible,\"\n+ \" you could try re-creating a new CloudSolrClient using a working\"\n+ \" solrUrl or zkHost.\");",
+    "check_sites": [
+      "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    ],
+    "exception_class": "java.lang.RuntimeException",
+    "function": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider.getAliases(boolean)",
+    "site_id": "<org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider: java.util.Map getAliases(boolean)>#u93",
+    "source_line": 267,
+    "source_path": "solr/solrj/src/java/org/apache/solr/client/solrj/impl/BaseHttpClusterStateProvider.java",
+    "throw_site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@267:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:358",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:1",
+      "seq": 358,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1003",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:9",
+      "seq": 1003,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1080",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:11",
+      "seq": 1080,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1271",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:13",
+      "seq": 1271,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1348",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:15",
+      "seq": 1348,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1422",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:17",
+      "seq": 1422,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1517",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:19",
+      "seq": 1517,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1815",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:21",
+      "seq": 1815,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1848",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:23",
+      "seq": 1848,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1943",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:25",
+      "seq": 1943,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:1976",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:27",
+      "seq": 1976,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:2073",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:29",
+      "seq": 2073,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:2168",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:31",
+      "seq": 2168,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:2264",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:33",
+      "seq": 2264,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "SOLR-01-r0000:2377",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;:root:35",
+      "seq": 2377,
+      "site": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider#getAliases(Z)Ljava/util/Map;@243:branch:5"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T154836-8d15cbf5e17e",
+      "duration_seconds": 17.342,
+      "eligible_doors_before_target": 80,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 55
+      },
+      "observed_door_events": 80,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

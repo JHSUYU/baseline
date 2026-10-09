@@ -1,0 +1,47 @@
+{
+  "adapter_jar": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v8-dn-scopes.jar",
+  "adapter_sha256": "d18a974c3cb576061fd089dd4c1cbdf028ace90b0b5b10809c5807fc62209d87",
+  "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+  "build": "mvn -q test package in isolated /tmp/mallory-hdfs-adapter-v8-build; exit 0",
+  "healthy_configs": [
+    {
+      "case_id": "HDFS-25",
+      "path": "Mallory/adapters/hdfs/cases/identity-v8/HDFS-25-healthy.json",
+      "sha256": "87a620148beef8ce7b61ff9c321aeda6948fc7d8e2aa899488abc20207f51a8c"
+    },
+    {
+      "case_id": "HDFS-27",
+      "path": "Mallory/adapters/hdfs/cases/identity-v8/HDFS-27-healthy.json",
+      "sha256": "9c66fdd0c8740a391791304d59d735f879f830b41109a89a17658b821f0a14d8"
+    },
+    {
+      "case_id": "HDFS-28",
+      "path": "Mallory/adapters/hdfs/cases/identity-v8/HDFS-28-healthy.json",
+      "sha256": "33705ae63b5e2e76a1cec199a1285a408d198ab3ec39ac1f37788ec9b17f171e"
+    }
+  ],
+  "hooks_source_sha256": "c33183fd753cda4acd897432ddb8a3e76c39d95e053b6083dc5ba674bbd894c7",
+  "live_v7_or_v2_artifacts_overwritten": false,
+  "offline_transform": [
+    {
+      "class": "BlockPoolSliceStorage",
+      "original_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+      "woven_bytes": 27651,
+      "woven_sha256": "742fff4c18a81a4b22bf75dc4813eac3b7c0a2c77860618fb669063298ad8613"
+    },
+    {
+      "class": "BlockRecoveryWorker",
+      "original_sha256": "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88",
+      "woven_bytes": 8017,
+      "woven_sha256": "f2f27410737975b3c8a61b10042204cb3f694cf850e0c4c2aaceee24f5a4575e"
+    }
+  ],
+  "schema_version": 1,
+  "status": "compiled_and_offline_woven_pending_healthy_calibration",
+  "transformer_source_sha256": "0af085aff65592b10da16ab49aed0879e61062d394ca6e22443f8bbc6804998b",
+  "validated_methods": [
+    "BlockPoolSliceStorage.loadStorageDirectory",
+    "BlockPoolSliceStorage.doUpgrade(String,StorageDirectory,NamespaceInfo,File,File,File,int,Configuration)",
+    "BlockRecoveryWorker.getDatanodeID(String)"
+  ]
+}

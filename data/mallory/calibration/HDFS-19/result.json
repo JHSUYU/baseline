@@ -1,0 +1,235 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-19",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.TestDFSFinalize#testFinalize",
+  "coverage_ids_seen": 231,
+  "dispatch_attempt_ids": [
+    "20261009T160957-23e08f770dde"
+  ],
+  "duration_seconds": 40.341,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 116,
+  "healthy_observed_door_events": 116,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T160957-23e08f770dde",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 116,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "0f2fe86dffc1e31ef2ce788d458aa5f9ee1a2038f0d0d7983917aaef35e38c2b",
+    "observed_target_class_sha256": "0f2fe86dffc1e31ef2ce788d458aa5f9ee1a2038f0d0d7983917aaef35e38c2b",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region"
+    ],
+    "site_catalog_sha256": "e0a07ec24b4ef3b5dd830938697ee3d06bdb758c04e6348544f3bf8e88146a4a",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 18,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "assert getBlockPoolId().equals(bp) :\n\"BP \" + getBlockPoolId() + \" received DNA_FINALIZE \" +\n\"for other block pool \" + bp;",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4",
+      "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    ],
+    "exception_class": "java.lang.AssertionError",
+    "function": "org.apache.hadoop.hdfs.server.datanode.BPOfferService.processCommandFromActive(org.apache.hadoop.hdfs.server.protocol.DatanodeCommand,java.net.InetSocketAddress)",
+    "original_source_line": 769,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.BPOfferService: boolean processCommandFromActive(org.apache.hadoop.hdfs.server.protocol.DatanodeCommand,java.net.InetSocketAddress)>#u97",
+    "source_line": 769,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@769:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:292",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:1",
+      "seq": 292,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:297",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:1",
+      "seq": 297,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3248",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:2",
+      "seq": 3248,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3253",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:2",
+      "seq": 3253,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3378",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:3",
+      "seq": 3378,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3383",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:3",
+      "seq": 3383,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3854",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:4",
+      "seq": 3854,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3859",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:4",
+      "seq": 3859,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3984",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:5",
+      "seq": 3984,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:3989",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:5",
+      "seq": 3989,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:4491",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:6",
+      "seq": 4491,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:4496",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:6",
+      "seq": 4496,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:4623",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:7",
+      "seq": 4623,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:4628",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:7",
+      "seq": 4628,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:5135",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:8",
+      "seq": 5135,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:5140",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:8",
+      "seq": 5140,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:5267",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:9",
+      "seq": 5267,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-19-r0000:5272",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z:root:9",
+      "seq": 5272,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T160957-23e08f770dde",
+      "duration_seconds": 40.341,
+      "eligible_doors_before_target": 116,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 231
+      },
+      "observed_door_events": 116,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

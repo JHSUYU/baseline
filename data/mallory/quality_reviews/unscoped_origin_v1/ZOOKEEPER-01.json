@@ -1,0 +1,73 @@
+{
+  "archive_sha256": null,
+  "canonical_audit": "data/mallory/cases/ZOOKEEPER-01/offline-causal-audit.json",
+  "canonical_result": "data/mallory/cases/ZOOKEEPER-01/result.json",
+  "canonical_results_changed": false,
+  "case": {
+    "applied_fault_doors": 78,
+    "case_id": "ZOOKEEPER-01",
+    "coarse_root_applied_doors": 78,
+    "coarse_root_applied_in_faulted_target_closure_trials": 40,
+    "coarse_root_applied_same_target_occurrence_trials": 0,
+    "coarse_root_applied_trials": 78,
+    "healthy_coarse_root_in_closure_doors": 80,
+    "healthy_in_closure_doors": 80,
+    "missing_applied_door_identity": 0,
+    "offline_causal_audit_sha256": "2cd237781b1e3259fa85cdd329c37f75e219d43de794af75f7b39f52cd61ef5d",
+    "result_sha256": "afd9316d1c35926ba057cf44e94d035ec167e1ae21a827ba65a29cf8563829a8",
+    "strict_target_retained_trials": 78,
+    "unscoped_applied_trials": 78
+  },
+  "examples": [
+    {
+      "door_event_id": "ZOOKEEPER-01-r0001:182",
+      "door_in_faulted_target_closure": false,
+      "epoch": 0,
+      "faulted_closure_edges": 0,
+      "node": "zk2",
+      "occurrence": "unscoped:zk2:0:root",
+      "site": "zookeeper.quorum.archive.writeRecord",
+      "target_anchor": "[\"zk2\",\"0\",\"zk2:1:org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V:zk-request:2:6:1\"]",
+      "trial_id": 1
+    },
+    {
+      "door_event_id": "ZOOKEEPER-01-r0002:216",
+      "door_in_faulted_target_closure": false,
+      "epoch": 0,
+      "faulted_closure_edges": 0,
+      "node": "zk1",
+      "occurrence": "unscoped:zk1:0:root",
+      "site": "zookeeper.quorum.archive.readRecord",
+      "target_anchor": "[\"zk2\",\"0\",\"zk2:1:org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V:zk-request:2:6:1\"]",
+      "trial_id": 2
+    },
+    {
+      "door_event_id": "ZOOKEEPER-01-r0003:243",
+      "door_in_faulted_target_closure": false,
+      "epoch": 0,
+      "faulted_closure_edges": 0,
+      "node": "zk2",
+      "occurrence": "unscoped:zk2:0:root",
+      "site": "zookeeper.quorum.archive.writeRecord",
+      "target_anchor": "[\"zk2\",\"0\",\"zk2:1:org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V:zk-request:2:6:1\"]",
+      "trial_id": 3
+    }
+  ],
+  "interpretation": "No strict fault trial has an exact applied door on a healthy observed path to the target that avoids coarse root occurrences. Post-fault target reach is verified, but the selected occurrence graph does not provide root-free fault-to-target attribution. Preserve canonical counts pending a scoped rerun or an explicitly justified alternative local-timeline proof.",
+  "method": "Read canonical offline-causal-audit target_retained trials; join exact observed door event ID to archived per-trial feedback doors; classify occurrence from trace_occurrence or point.occurrence; in_closure is archived target-backward-closure membership. Root occurrence means unscoped:<node>:<epoch>:root. Core target_reached is post-last-fault, but does not itself prove an event-level fault-to-target causal path.",
+  "provisional_eligibility": {
+    "criterion": "effective applied door exactly matches site,node,epoch,ordinal/hit of an in-closure healthy non-root door; exact target check is post-last-fault. Strong subset also requires same named non-root occurrence in faulted trace. This is healthy-path admission evidence, not an observed faulted-run path, since fault may alter that path.",
+    "faulted_nonroot_applied_door_in_target_closure_trials": [],
+    "healthy_nonroot_exact_point_candidate_trials": [],
+    "healthy_nonroot_exact_point_candidates": [],
+    "healthy_nonroot_observed_path_door_count": 0,
+    "healthy_nonroot_point_match_is_not_sufficient": true,
+    "healthy_root_free_observed_path_door_count": 0,
+    "no_causal_upgrade_from_root_only_trials": true,
+    "root_free_path_method": "Directed reachability from healthy door occurrence to an exact TARGET_CHECK anchor using only certainty=observed closure edges and excluding every unscoped:<node>:<epoch>:root vertex; then exact site,node,epoch,ordinal/hit match to applied door, with faulted occurrence non-root.",
+    "root_free_path_qualified_trials": [],
+    "strong_same_nonroot_occurrence_trials": []
+  },
+  "review_status": "needs_scientific_classification",
+  "schema_version": 1
+}

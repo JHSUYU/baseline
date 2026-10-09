@@ -1,0 +1,27 @@
+{
+  "alternate_selector": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
+  "case_id": "HDFS-32",
+  "config": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v23/HDFS-32-dfsadmin-healthy-v23.json",
+    "sha256": "895421f5d845efcdedf4fece66ff823fd88ff41ae57bb69381e24001e18c2877"
+  },
+  "jvm_launched": false,
+  "original_selector": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
+  "output_proposed": "data/mallory/calibration_v23/HDFS-32",
+  "required_runtime_gates": [
+    "JUnit >0 passes without selected target throw",
+    "exact @3819 check reached on named DN",
+    "observed DFSAdmin RPC request into target occurrence",
+    "named pretarget I/O door in frozen-5820 backward closure",
+    "complete untruncated trace"
+  ],
+  "schema_version": 1,
+  "source_git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_path": "Federated MiniDFSCluster stops bpid2 BPOfferService, DFSAdmin sends ClientDatanodeProtocol.deleteBlockPool to DN. DataNode.deleteBlockPool selected active-pool guard should evaluate false after refreshNamenodes; later no-force storage error is a different path, and the force call repeats the selected check.",
+  "source_review": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/cases/revisions/HDFS-pending-exact-io-shortlist-v1.json",
+    "sha256": "9c76411f8a5c8182a9de2e19458899dbb810ad6416445e472ffdd2dd6955ed6f"
+  },
+  "status": "source_backed_healthy_config_staged_no_jvm",
+  "version": "v23"
+}

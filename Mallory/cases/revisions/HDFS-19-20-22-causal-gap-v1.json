@@ -1,0 +1,92 @@
+{
+  "cases": [
+    {
+      "audit_gate_passed": false,
+      "case_id": "HDFS-19",
+      "disposition": "healthy_actor_named_but_no_observed_path_doors",
+      "final5820_audit": "/users/ZhenyuLi/baseline/data/mallory/calibration_v13_offline_audit/HDFS-19-v2-final5820.json",
+      "final5820_audit_sha256": "3a69968841df892808c7c687f38358dd72ff10f5134303b11473947e0edcdb6d",
+      "healthy_closure_observed_edges": 0,
+      "healthy_observed_path_doors": 0,
+      "healthy_trial_result": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-19/trials/r0000/result.json",
+      "healthy_trial_result_sha256": "1f749ad2c81b138dd67b4b20fd195812d670c235c40291fe651d6a2d2a81a759",
+      "original_target_check": [
+        "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4",
+        "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+      ],
+      "target_nodes": [
+        "hdfs-cluster-1/dn0",
+        "hdfs-cluster-2/dn0",
+        "hdfs-cluster-3/dn0",
+        "hdfs-cluster-4/dn0",
+        "hdfs-cluster-5/dn0"
+      ]
+    },
+    {
+      "audit_gate_passed": false,
+      "case_id": "HDFS-20",
+      "disposition": "healthy_actor_named_but_no_observed_path_doors",
+      "final5820_audit": "/users/ZhenyuLi/baseline/data/mallory/calibration_v13_offline_audit/HDFS-20-v2-final5820.json",
+      "final5820_audit_sha256": "9e2c848a9ca7899f091cd4ddd49759262e34b35c428cbbf6f9df2f2de59e51ee",
+      "healthy_closure_observed_edges": 0,
+      "healthy_observed_path_doors": 0,
+      "healthy_trial_result": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-20/trials/r0000/result.json",
+      "healthy_trial_result_sha256": "ab1f0d2d6db4640486a6df8406d682491e8712a34539ff39159c5310179f8f15",
+      "original_target_check": [
+        "org.apache.hadoop.hdfs.server.datanode.BPOfferService#updateActorStatesFromHeartbeat(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/NNHAStatusHeartbeat;)V@606:branch:11",
+        "org.apache.hadoop.hdfs.server.datanode.BPOfferService#updateActorStatesFromHeartbeat(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/NNHAStatusHeartbeat;)V@606:branch:12"
+      ],
+      "target_nodes": [
+        "hdfs-cluster-1/dn0",
+        "hdfs-cluster-1/dn1",
+        "hdfs-cluster-1/dn2"
+      ]
+    },
+    {
+      "audit_gate_passed": false,
+      "case_id": "HDFS-22",
+      "disposition": "healthy_actor_named_but_no_observed_path_doors",
+      "final5820_audit": "/users/ZhenyuLi/baseline/data/mallory/calibration_v13_offline_audit/HDFS-22-v2-final5820.json",
+      "final5820_audit_sha256": "2890a9a56647ec853980750888276fb4c99fd66d7c6fcf4170e7d15bb910d49d",
+      "healthy_closure_observed_edges": 0,
+      "healthy_observed_path_doors": 0,
+      "healthy_trial_result": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-22/trials/r0000/result.json",
+      "healthy_trial_result_sha256": "4717b6bae01ab3799ab5ebdb214863b77b2b9d9bdf973405b6c6791619c2858e",
+      "original_target_check": [
+        "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@392:branch:9"
+      ],
+      "target_nodes": [
+        "hdfs-cluster-1/dn0",
+        "hdfs-cluster-2/dn0"
+      ]
+    }
+  ],
+  "interpretation": "The old healthy traces prove named target actors but no observed I/O door in a causal ancestor. HDFS20 requires preserving the concrete heartbeat reply into updateActorStatesFromHeartbeat; HDFS19 additionally requires exact command queue submission/claim. HDFS22 shares a storage startup path with HDFS23 and has an unrun v10 handshake calibration. No edge is inferred from thread names or timing.",
+  "schema_version": 1,
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_evidence": [
+    {
+      "lines": [
+        703,
+        725,
+        738,
+        1434,
+        1485
+      ],
+      "meaning": "BPServiceActor sends a heartbeat, consumes HA status, and enqueues commands to a separate processing thread.",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+    },
+    {
+      "lines": [
+        662,
+        692,
+        721
+      ],
+      "meaning": "Queued actor command reaches active/standby dispatch and the selected BPOfferService check.",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "sha256": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294"
+    }
+  ],
+  "type": "hdfs_named_target_without_observed_causal_path"
+}

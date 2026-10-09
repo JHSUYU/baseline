@@ -1,0 +1,78 @@
+{
+  "artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-safewriter-fd274b40.jar",
+      "sha256": "fd274b401ec035797574e30bd52fb5e46bcfce11170578a7fd6c9ad0da8de348"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v21/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+      "sha256": "ee1c3879e0fd158d23a052089c77c51947e26fdaa21c6772d134af32bcc8b6e7"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.class",
+      "sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.class",
+      "sha256": "57ae09910fa9f80f7c853ebea3d47cf6420789c630f18503a3a2714223a8024a"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-common-project/hadoop-common/target/classes/org/apache/hadoop/ipc/Server$RpcCall.class",
+      "sha256": "7e2e359931d31543c8edd6bb873e7012b1f1380e285497740307231a23b2d25f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestEncryptedTransfer.class",
+      "sha256": "42f806336c4d9950824865f4f919783166ac9922f12c722d6e4cbcb4523a93fc"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v21/smoke/NameNodeRpcServer-v21.class",
+      "sha256": "8f8fe44c6e94595e24f60729ae7cb24d0dd30e0b67f570db89e30bad4dafbe51"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v21/smoke/exact-key-door-javap.txt",
+      "sha256": "d7ede318bd222b7cffe6cc22b4dc217433fa449842d2ba35817910130f6c78d7"
+    }
+  ],
+  "case_id": "HDFS-11",
+  "config": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v21/HDFS-11-exact-nn-key-issuance-pilot-v21.json",
+    "sha256": "1a33298147df9cacd7656bd7ad9733b7e62c7a64da9ab196b4c0f235bf9d445f"
+  },
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+  "limitation": "Method-entry IOException can suppress issuance and lose DN target reach. A post-fault target on a later RPC must be checked with exact time-respecting request-response and SASL edges; target reach alone is insufficient.",
+  "negative_prior": {
+    "finding": "Generic RpcCall ordinal shifted 14 to 11 and injection was unmatched.",
+    "pilot_receipt": "/users/ZhenyuLi/baseline/data/mallory/pilots_v20/HDFS-11/pilot-receipt.json",
+    "sha256": "546b9af06488e45870c7cb3c4b2ab4971505b76b3e4e76faf5153f140aa4ca0b"
+  },
+  "output_private": "/tmp/mallory-hdfs11-v21-exact-nn-pilot",
+  "purpose": "exact_method_entry_key_issuance_ioexception_pilot",
+  "runner": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/run_focused_io_pilot.py",
+    "sha256": "9c08960953d96ec570a864d0fa9fbd9f601c2320e8b9aafcaf89c7a5c8fd0cfa"
+  },
+  "schema_version": 1,
+  "selection": {
+    "bytecode_location": "entry before checkNNStartup",
+    "exception_class": "java.io.IOException",
+    "max_fault_trials": 1,
+    "max_faults_per_trial": 1,
+    "method": "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.getDataEncryptionKey()",
+    "method_declares_exception": true,
+    "require_healthy_observed_path": true,
+    "require_named_nn_actor": true,
+    "select_fresh_healthy_ordinal": true,
+    "site": "hdfs:nn-get-data-encryption-key"
+  },
+  "source_build_lock": "/tmp/mallory-lanes/hdfs-lane1.lock",
+  "source_git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_patch": {
+    "isolated_copy": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v21/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java",
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java",
+    "sha256": "6eba4b516547f5f51edafc9bea3c237d0f393d6962fa4f3e5c7a348ec0eddc6f"
+  },
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "status": "staged_for_bounded_admission_no_jvm_launched",
+  "trial_data": "{trial_dir}/hdfs-data",
+  "version": "v21"
+}

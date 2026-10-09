@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "type": "source_only_hdfs_invalid_seed_triage",
+  "cohort": "original_102_subset",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+  "source_root_revision": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "scope": "Read-only source mapping; no JUnit or fault campaign launched for proposed alternates. Existing calibration receipts remain authoritative.",
+  "audited_case_count": 10,
+  "source_only_alternate_count": 8,
+  "cases": [
+    {
+      "case_id": "HDFS-11",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "source_line": 555,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+        "source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+        "check_code": "if (key == null) {\nthrow new InvalidEncryptionKeyException(\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-11/trials/r0000/result.json",
+        "first_healthy_result_sha256": "c661f97bf3179303f8d1348b80707a7ee5119eadc79443a2956d0dc5f26e9868",
+        "observed_issue": "Original parameterized Surefire method selector ran zero JUnit tests despite Maven rc=0; no target events.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-11/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "c002ae12cdba07484eee7f7bea7ea9181cfce23f6bd0f6140930e31aabbd7c78"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+        "test_source_line": 37,
+        "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+        "pretarget_io_and_call_path": [
+          "TestBalancerWithEncryptedTransfer#setUpConf enables DFS_ENCRYPT_DATA_TRANSFER_KEY and DFS_BLOCK_ACCESS_TOKEN_ENABLE_KEY (lines 29-34).",
+          "testEncryptedBalancer0 delegates to TestBalancer#testBalancer0Internal; doTest builds MiniDFSCluster, adds DataNodes and performs balancer block movement (TestBalancer.java lines 671-705, 1080-1083).",
+          "Encrypted DataTransfer SASL server invokes BlockPoolTokenSecretManager.retrieveDataEncryptionKey from SaslDataTransferServer.java:278; the selected BlockTokenSecretManager guard checks the key map at 553-558."
+        ],
+        "calibration_risk": "Source path proves an encrypted MiniCluster transfer scenario, but whether the balancer invokes the exact key lookup with a named DataNode and usable pretarget door requires calibration."
+      }
+    },
+    {
+      "case_id": "HDFS-12",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "source_line": 514,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)",
+        "source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+        "check_code": "if (key == null) {\nthrow new InvalidToken(\"Can't re-compute password for \"\n+ identifier + \", since the required block key (keyID=\"\n+ identifier.getKeyId() + \") doesn't exist.\");"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-12/trials/r0000/result.json",
+        "first_healthy_result_sha256": "1551ce9acac1f0782b1d1fca4609e6ff3d9fdeb8ff13d72660eb99abd5eb1809",
+        "observed_issue": "Original parameterized Surefire method selector ran zero JUnit tests despite Maven rc=0; no target events.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-12/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "261f02958208433f34b5c7e8ce0f7f546871f9b19e75baecf10631f743446547"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+        "test_source_line": 37,
+        "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+        "pretarget_io_and_call_path": [
+          "TestBalancerWithEncryptedTransfer enables encrypted transfer and block tokens before testEncryptedBalancer0 (lines 29-38).",
+          "Balancer performs MiniDFSCluster block movement through DataTransfer; SaslDataTransferServer.buildServerPassword invokes BlockPoolTokenSecretManager.retrievePassword (SaslDataTransferServer.java:327-329).",
+          "The selected BlockTokenSecretManager.retrievePassword guard looks up the key at 509-516; a valid generated token should take the nonthrowing path."
+        ],
+        "calibration_risk": "Actual traversal of the selected method and named target actor is runtime pending."
+      }
+    },
+    {
+      "case_id": "HDFS-14",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "source_line": 412,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode,org.apache.hadoop.fs.StorageType[],java.lang.String[])",
+        "source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+        "check_code": "if (!MessageDigest.isEqual(retrievePassword(id), token.getPassword())) {\nthrow new InvalidToken(\"Block token with \" + id\n+ \" doesn't have the correct token password\");"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-14/trials/r0000/result.json",
+        "first_healthy_result_sha256": "e00e007c3825c0522477d594b0c6af9c5d8bcdf2de2676a4a4bcb5c6f5d3840c",
+        "observed_issue": "Original parameterized Surefire method selector ran zero JUnit tests despite Maven rc=0; no target events.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-14/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "b863c03b8553a1e8835212da4ffc4bc551c8153f409e03a34fe0ecf4be44f76e"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+        "test_source_line": 37,
+        "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+        "pretarget_io_and_call_path": [
+          "TestBalancerWithEncryptedTransfer enables block access tokens and performs encrypted block movement (lines 29-38).",
+          "DataXceiver.checkAccess delegates to BlockPoolTokenSecretManager.checkAccess with storage types/ids (DataXceiver.java:1440-1454); the token overload calls the selected checkAccess method and then compares the password (BlockTokenSecretManager.java:395-413).",
+          "Block transfer produces pretarget socket I/O between MiniDFSCluster DataNodes."
+        ],
+        "calibration_risk": "Exact six-argument overload and @412 branch need healthy catalog proof; balancer test has a 60-second JUnit timeout."
+      }
+    },
+    {
+      "case_id": "HDFS-18",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java",
+        "source_line": 537,
+        "function": "org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor.injectStorage(org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo)",
+        "source_sha256": "df2b7b8d5eb514cbb39638304865888ae701dba67788e89afb63ff4e7f862588",
+        "check_code": "assert storage == s : \"found \" + storage + \" expected \" + s;"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.server.aliasmap.TestSecureAliasMap#testSecureConnectionToAliasMap",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-18/trials/r0000/result.json",
+        "first_healthy_result_sha256": "2455bebd6c24c4fa2e42bd46027617e29be41784c6b3a7f381e14a8710d35663",
+        "observed_issue": "Original secure-alias-map test did not reach target; only direct TestProvidedStorageMap#testProvidedStorageMap exercises injectStorage with a duplicate storage object, using mock BlockManager/descriptor rather than MiniDFSCluster. No strong existing cluster JUnit found for duplicate-storage assertion.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-18/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "a598623827d857b810df005e25650c408ae87e3f4ef4fc42df63d4a536877ae4"
+      },
+      "alternate": {
+        "status": "no_strong_new_candidate",
+        "reason": "Original secure-alias-map test did not reach target; only direct TestProvidedStorageMap#testProvidedStorageMap exercises injectStorage with a duplicate storage object, using mock BlockManager/descriptor rather than MiniDFSCluster. No strong existing cluster JUnit found for duplicate-storage assertion."
+      }
+    },
+    {
+      "case_id": "HDFS-24",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "source_line": 424,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+        "check_code": "if (this.layoutVersion > DataNodeLayoutVersion.getCurrentLayoutVersion()\n|| this.cTime < nsInfo.getCTime()) {\ndoUpgrade(sd, nsInfo, callables, conf); // upgrade\nreturn true;\n}\n// layoutVersion == LAYOUT_VERSION && this.cTime > nsInfo.cTime\n// must shutdown\nthrow new IOException(\"Datanode state: LV = \" + this.getLayoutVersion()\n+ \" CTime = \" + this.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-24/trials/r0000/result.json",
+        "first_healthy_result_sha256": "143fe5927bef3aef0387bf712c6236b334bbbbb4d67534db42d5f4eefe186bf5",
+        "observed_issue": "Original TestDFSUpgrade#testUpgrade includes deliberate negative DataNode upgrade states and observed selected target throws; cannot use as clean healthy seed.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-24/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "50a17076ca8b8c7cefbad7a518e302fd4ba1f76d7b55b5676fdb76332efa78b3"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.TestDFSUpgradeFromImage#testUpgradeFromRel22Image",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.java",
+        "test_source_line": 296,
+        "test_source_sha256": "5b98a6ee667a9d2422b16bc53ab8bdfc36ba2acfae97fdeaea6aca101a98f951",
+        "pretarget_io_and_call_path": [
+          "TestDFSUpgradeFromImage#testUpgradeFromRel22Image unpacks a Hadoop 0.22 HDFS storage archive then runs upgradeAndVerify with 4 DataNodes (lines 296-299).",
+          "upgradeAndVerify starts a MiniDFSCluster with format(false) and StartupOption.UPGRADE, then waits for safe mode exit and reads files (lines 598-616).",
+          "BlockPoolSliceStorage.doTransition reads version properties and evaluates the selected LV/cTime terminal guard during DataNode storage upgrade (lines 396-426)."
+        ],
+        "calibration_risk": "The old archive must be available in test.cache.data; exact branch reach and nonthrow outcome need healthy calibration."
+      }
+    },
+    {
+      "case_id": "HDFS-31",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "source_line": 1835,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)",
+        "source_sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4",
+        "check_code": "if (bpos == null) {\nthrow new IOException(\"cannot locate OfferService thread for bp=\"+\nblock.getBlockPoolId());"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-31/trials/r0000/result.json",
+        "first_healthy_result_sha256": "2e9185fee57d75b15e76f9b9d61e8c6e3a9ce8b3ec56ee5385d664776fa1065e",
+        "observed_issue": "First healthy JUnit aborted with agent SafeWriter duplicate DataNode LinkageError before target reach (stdout.log:29). Independently, the chosen test corrupts a metadata file and directly invokes dn0.transferBlock (TestDiskError.java:239-282), so it lacks the desired natural NN-command pretarget path. A fixed-agent rerun of this original selector is still unverified.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-31/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "10e6a5865e21f43a21af9a7b0df56d204efad4d369e83e156fb6518819a3784d"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.TestSetrepIncreasing#testSetrepIncreasing",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSetrepIncreasing.java",
+        "test_source_line": 82,
+        "test_source_sha256": "2af73b1341306c11a851c8e3b55f51a09c8e5dfedd7460e5ee6f564572c9df52",
+        "pretarget_io_and_call_path": [
+          "TestSetrepIncreasing#testSetrepIncreasing starts a 10-DataNode MiniDFSCluster, writes an HDFS file at replication 3, and uses FsShell -setrep -w to raise replication to 7 (lines 38-83).",
+          "A NameNode DNA_TRANSFER command reaches BPOfferService.processCommandFromActive (BPOfferService.java:724-735), then DataNode.transferBlocks/transferBlock (DataNode.java:2833, 2895-2905).",
+          "DataNode.transferBlock immediately calls selected getBPOSForBlock before sending block data; a live block pool should take the nonthrowing branch."
+        ],
+        "calibration_risk": "The test is a heavier 10-DataNode workload; command arrival and exact target branch must be verified in a healthy run."
+      }
+    },
+    {
+      "case_id": "HDFS-32",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "source_line": 3822,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.deleteBlockPool(java.lang.String,boolean)",
+        "source_sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4",
+        "check_code": "if (blockPoolManager.get(blockPoolId) != null) {\nLOG.warn(\"The block pool {} is still running, cannot be deleted.\",\nblockPoolId);\nthrow new IOException(\n\"The block pool is still running. First do a refreshNamenodes to \" +\n\"shutdown the block pool service\");"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-32/trials/r0000/result.json",
+        "first_healthy_result_sha256": "124f0800f0eb1918cb8269cdd705c94814224ddfa9bd4388484e0939bfe39a13",
+        "observed_issue": "First healthy JUnit aborted with agent SafeWriter duplicate DataNode LinkageError before target reach (stdout.log:29). Source also intentionally calls dn1.deleteBlockPool on an active pool and catches the selected IOException (TestDeleteBlockPool.java:70-77), so this selector remains oracle-unfit if rerun with the fixed agent.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-32/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "e01e550c6401e1635629a599d25fdc46efb46ee0bf426fb209a0645081ab66be"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
+        "test_source_line": 142,
+        "test_source_sha256": "31467bca1249b93cae7ed984bac01d405cde8ec1409a9ef78fa0a0c469a3bb3a",
+        "pretarget_io_and_call_path": [
+          "TestDeleteBlockPool#testDfsAdminDeleteBlockPool builds a federated MiniDFSCluster, writes two files, and refreshes the DN namespace list to stop bpid2 (lines 143-170).",
+          "DFSAdmin -deleteBlockPool sends ClientDatanodeProtocol.deleteBlockPool through a DN RPC proxy (DFSAdmin.java:2691-2702); first no-force attempt expects a nonzero result because storage contains blocks, then force retry succeeds (test lines 174-185).",
+          "DataNode.deleteBlockPool evaluates the selected active-pool check before storage cleanup (DataNode.java:3814-3828); refreshed bpid2 should be absent."
+        ],
+        "calibration_risk": "The test intentionally handles a different no-force failure; selected target exception must remain absent and both RPC attempts must reach named DN in healthy calibration."
+      }
+    },
+    {
+      "case_id": "HDFS-34",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "source_line": 744,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+        "check_code": "if (!federationSupported &&\ngetNamespaceID() != nsInfo.getNamespaceID()) {\nthrow new IOException(\"Incompatible namespaceIDs in \"\n+ sd.getRoot().getCanonicalPath() + \": namenode namespaceID = \"\n+ nsInfo.getNamespaceID() + \"; datanode namespaceID = \"\n+ getNamespaceID());"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-34/trials/r0000/result.json",
+        "first_healthy_result_sha256": "29977f30f7e62b1dca27c31f43d6fa86b59fdf4ff985d52a826fd6a056b24418",
+        "observed_issue": "Original TestDFSStartupVersions#testVersions loops valid and invalid storage-version combinations and observed selected target throws.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-34/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "c3abf6bdaad2e74f5ee9e08043d41daf1adf8ee20019d366cc3ad1c2c01c79e4"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.TestDFSUpgradeFromImage#testUpgradeFromRel22Image",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.java",
+        "test_source_line": 296,
+        "test_source_sha256": "5b98a6ee667a9d2422b16bc53ab8bdfc36ba2acfae97fdeaea6aca101a98f951",
+        "pretarget_io_and_call_path": [
+          "TestDFSUpgradeFromImage#testUpgradeFromRel22Image unpacks a pre-federation versioned HDFS image and starts a 4-DataNode MiniDFSCluster in UPGRADE mode (lines 296-299, 598-616).",
+          "DataStorage.doTransition reads on-disk VERSION and evaluates the selected namespaceID check for layouts without federation (DataStorage.java:727-747).",
+          "Archive extraction and DataNode VERSION reads are concrete pretarget file I/O; a valid bundled image should have a matching namespaceID."
+        ],
+        "calibration_risk": "Need verify that this Hadoop-22 archive actually traverses the selected pre-federation branch and that the JUnit passes in this pinned build."
+      }
+    },
+    {
+      "case_id": "HDFS-37",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "source_line": 947,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+        "check_code": "if (!(prevInfo.getLayoutVersion() >=\nDataNodeLayoutVersion.getCurrentLayoutVersion()\n&& prevInfo.getCTime() <= nsInfo.getCTime())) {  // cannot rollback\nthrow new InconsistentFSStateException(sd.getRoot(),\n\"Cannot rollback to a newer state.\\nDatanode previous state: LV = \"\n+ prevInfo.getLayoutVersion() + \" CTime = \" + prevInfo.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ DataNodeLayoutVersion.getCurrentLayoutVersion() + \" CTime = \"\n+ nsInfo.getCTime());"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-37/trials/r0000/result.json",
+        "first_healthy_result_sha256": "bba63fb8ff839245c7f4f349297ceeceec5fffda5c3f54886afe7bcd64116aea",
+        "observed_issue": "Original TestDFSRollback#testRollback combines normal and deliberately incompatible previous VERSION states; selected target throws observed.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-37/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "bdc832b4740b0b0fd3c5c114fdf14a29edb5523e9e245845ec506fb53970e067"
+      },
+      "alternate": {
+        "status": "source_only_candidate_not_run",
+        "selector": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java",
+        "test_source_line": 987,
+        "test_source_sha256": "f60f8552ac841ec6d4f0572f9fc390c887a45a832422e8a56d0ddd4e49cd916b",
+        "pretarget_io_and_call_path": [
+          "TestFileTruncate#testUpgradeAndRestart writes an HDFS file, takes a snapshot, upgrades the cluster, truncates, and calls restartCluster(ROLLBACK) (lines 987-1045).",
+          "restartCluster(ROLLBACK) runs NameNode rollback, creates MiniDFSCluster with dnStartupOption(ROLLBACK), and starts DataNodes from stored dirs (lines 1343-1355).",
+          "DataStorage.doTransition calls selected doRollback on rollback option (DataStorage.java:724-728); doRollback reads previous VERSION and checks LV/cTime before renaming directories (lines 919-965)."
+        ],
+        "calibration_risk": "The test is broader than a minimal rollback test, but does not deliberately construct an incompatible previous version; exact guard reach and selected-throw absence need calibration."
+      }
+    },
+    {
+      "case_id": "HDFS-48",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+        "source_line": 356,
+        "function": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory.replaceChild(org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INodeMap)",
+        "source_sha256": "39636bc2cd045b41aadc631ad0ed8edc7935235422d0cc6decde876392208f50",
+        "check_code": "Preconditions.checkState(oldChild == children.get(i)\n|| oldChild == children.get(i).asReference().getReferredINode()\n.asReference().getReferredINode());"
+      },
+      "original_workload": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestRenameWithSnapshots#testRenameUndo_1",
+        "first_healthy_result_path": "data/mallory/calibration/HDFS-48/trials/r0000/result.json",
+        "first_healthy_result_sha256": "a064988312bfbe5c7ef478d310d1b00ba65fb7796da185f7cba8694a6505a11f",
+        "observed_issue": "Original v1 failure was agent SafeWriter duplicate-class LinkageError, not a workload mismatch; independent v2 healthy MiniCluster calibration passed with exact target reach and zero selected throws.",
+        "first_healthy_stdout_path": "data/mallory/calibration/HDFS-48/trials/r0000/stdout.log",
+        "first_healthy_stdout_sha256": "7c45149d8ba64ba25a3466c66c4c5c65ffdc09f5c1acf170a6db0d1fe9aded26"
+      },
+      "alternate": {
+        "status": "not_needed_fixed_agent_healthy_verified",
+        "reason": "Original v1 failure was agent SafeWriter duplicate-class LinkageError, not a workload mismatch; independent v2 healthy MiniCluster calibration passed with exact target reach and zero selected throws.",
+        "healthy_v2_receipt_path": "data/mallory/calibration/HDFS-48/callthrow-healthy-v2/calibration.json",
+        "healthy_v2_receipt_sha256": "94f16d001327986c47f6efce927db555da0201a208852ec4c2a49f427bce3943"
+      }
+    }
+  ]
+}

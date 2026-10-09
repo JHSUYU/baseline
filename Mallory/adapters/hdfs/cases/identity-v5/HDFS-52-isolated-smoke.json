@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "case_id": "HDFS-52",
+  "system": "hdfs",
+  "calibration_only": true,
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot#testSaveLoadImage",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+  "command": [
+    "mvn",
+    "-B",
+    "-ntp",
+    "-pl",
+    "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=TestFSImageWithSnapshot#testSaveLoadImage",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dtest.build.data={trial_dir}/hdfs-data",
+    "surefire:test"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+  "agent_transport": "surefire_argline",
+  "agent_arg_property": "maven-surefire-plugin.argLine",
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-52.sites.json",
+  "agent_include": [
+    "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver",
+    "org.apache.hadoop.ipc.Server$RpcCall",
+    "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+    "org.apache.hadoop.hdfs.server.datanode.DataXceiver"
+  ],
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v5-earlyfsn.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsMiniClusterTransformer",
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    ],
+    "throw_site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:callthrow:43",
+    "exception_class": "java.lang.IllegalStateException",
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver: void serializeSnapshotSection(java.io.OutputStream)>#u65",
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+    "source_line": 467,
+    "original_source_line": 467,
+    "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver.serializeSnapshotSection(java.io.OutputStream)",
+    "check_code": "if (i % FSImageFormatProtobuf.Saver.CHECK_CANCEL_INTERVAL == 0) {\ncontext.checkCancelled();\n}\n}\n}\nPreconditions.checkState(i == sm.getNumSnapshots());"
+  },
+  "budget": {
+    "trials": 80,
+    "seconds": 3600,
+    "max_faults_per_trial": 6,
+    "trial_timeout_seconds": 600,
+    "trial_timeout_basis": "system_default_pending_mallory_seed"
+  },
+  "mapping": {
+    "status": "preliminary_compiled_distribution_site",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+    "agent_build": {
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "target_throw_kind": "invocation_exception",
+    "compiled_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+    "compiled_class_sha256": "d4d35e988749f4cc751eec6768cafa5bb60b06099d5d18cacf8c2bb7fec162e9",
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke/hadoop-hdfs-project/hadoop-hdfs/target/classes",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": false,
+    "verified_healthy_probe": null,
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3",
+    "source_root_env": "MALLORY_HDFS_SOURCE_ROOT",
+    "distribution_root_env": "MALLORY_HDFS_DIST_ROOT",
+    "test_source_sha256": "3cd79ab341205b60360f269134bc7188538d7a6ca3a273a91e287d407520fe6a",
+    "target_source_sha256": "860c4f156c16e8ec5f4df8557e088d875ed143ef9aaf9d38e5acbd2539ffd58e",
+    "healthy_seed_verified": false,
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/overlay-receipt.json",
+    "system_receipt_sha256": "03650a28cfde7175ad65dd139ef2e203fb6fae95d95eb2db42abd601a3157ab4",
+    "identity_v4_smoke": "receiver and asynchronous handoff verification",
+    "identity_v5_smoke": "early namesystem identity during NameNode construction"
+  },
+  "expected_target_class_sha256": "d4d35e988749f4cc751eec6768cafa5bb60b06099d5d18cacf8c2bb7fec162e9",
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-52.sites.json",
+      "sha256": "d994300e919de87970e9e0255a03d6575a3fbadd7c29773eda7e7a58f06ee1bf"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v5-earlyfsn.jar",
+      "sha256": "a25a89de4ed992a2a7182ee6e879caf308cb6b38440995e73e58638d12e7dca0"
+    }
+  ],
+  "auto_promote_if_healthy": false,
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/29ab038f754e3df6f38f94f38cee052b82b9601f255f347322fa422b45350fbc"
+}

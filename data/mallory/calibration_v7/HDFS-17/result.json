@@ -1,0 +1,100 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-17",
+  "closure_coverage_ids_seen": 16,
+  "closure_edge_fingerprints_seen": 3,
+  "cluster_test": "org.apache.hadoop.hdfs.server.blockmanagement.TestRBWBlockInvalidation#testRWRShouldNotAddedOnDNRestart",
+  "coverage_ids_seen": 166,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 37.715,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 25,
+  "healthy_junit_validation": {
+    "errors": 1,
+    "failures": 0,
+    "report_suffix": "mallory_0000_6643f78cf8e44cdd8159020e196083bb",
+    "reports": [
+      {
+        "counts": {
+          "errors": 1,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.blockmanagement.TestRBWBlockInvalidation-mallory_0000_6643f78cf8e44cdd8159020e196083bb.xml",
+        "sha256": "af6ae2b8b2ab41dfea8ce77624f0a65da5a2cd6c057305f44dbe9b7d2f81126f"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "failed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "47932fb9392d1aa4d6f2a3f78932a80e0a92953d1b97b1ad273094e0eb4eb002",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 29,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "Preconditions.checkArgument(!storedBlock.isComplete());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo#<init>(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V@2851:branch:1"
+    ],
+    "exception_class": "java.lang.IllegalArgumentException",
+    "function": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo.<init>(org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo,org.apache.hadoop.hdfs.protocol.Block,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState)",
+    "original_source_line": 2851,
+    "site_id": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo: void <init>(org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo,org.apache.hadoop.hdfs.protocol.Block,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState)>#u10",
+    "source_line": 2851,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo#<init>(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V@2851:callthrow:3"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 37.715,
+      "eligible_doors_before_target": 25,
+      "junit_errors": 1,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 16,
+        "closure_edges": 3,
+        "coverage": 166
+      },
+      "observed_door_events": 29,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_junit_failed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

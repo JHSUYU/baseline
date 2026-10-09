@@ -1,0 +1,130 @@
+{
+  "archive_sha256": "b8b5352743b7d11e10bb5192b57ca3217313fe4ddef8bc026bd82ca46a1e29a4",
+  "canonical_audit": "data/mallory/cases/ZOOKEEPER-03/offline-causal-audit.json",
+  "canonical_result": "data/mallory/cases/ZOOKEEPER-03/result.json",
+  "canonical_results_changed": false,
+  "case": {
+    "applied_fault_doors": 131,
+    "case_id": "ZOOKEEPER-03",
+    "coarse_root_applied_doors": 128,
+    "coarse_root_applied_in_faulted_target_closure_trials": 67,
+    "coarse_root_applied_same_target_occurrence_trials": 0,
+    "coarse_root_applied_trials": 67,
+    "healthy_coarse_root_in_closure_doors": 19,
+    "healthy_in_closure_doors": 21,
+    "missing_applied_door_identity": 0,
+    "offline_causal_audit_sha256": "217db5e52fff4f185eeb5dc84f50234feb87b830b99469458d23d349885357de",
+    "result_sha256": "b81c9ff4b60c8c74305d0c2f7720082a37fc29fc9fb632b19fad182e61aa049c",
+    "strict_target_retained_trials": 69,
+    "unscoped_applied_trials": 69
+  },
+  "examples": [
+    {
+      "door_event_id": "ZOOKEEPER-03-r0001:208",
+      "door_in_faulted_target_closure": true,
+      "epoch": 1,
+      "faulted_closure_edges": 101,
+      "node": "zk2",
+      "occurrence": "unscoped:zk2:1:root",
+      "site": "zookeeper.quorum.archive.readRecord",
+      "target_anchor": "[\"zk2\",\"1\",\"zk2:1:org.apache.zookeeper.server.SessionTrackerImpl#setOwner(JLjava/lang/Object;)V:zk-request:2:3:1\"]",
+      "trial_id": 1
+    },
+    {
+      "door_event_id": "ZOOKEEPER-03-r0002:207",
+      "door_in_faulted_target_closure": true,
+      "epoch": 1,
+      "faulted_closure_edges": 112,
+      "node": "zk2",
+      "occurrence": "unscoped:zk2:1:root",
+      "site": "zookeeper.quorum.archive.readRecord",
+      "target_anchor": "[\"zk2\",\"1\",\"zk2:1:org.apache.zookeeper.server.SessionTrackerImpl#setOwner(JLjava/lang/Object;)V:zk-request:2:6:1\"]",
+      "trial_id": 2
+    },
+    {
+      "door_event_id": "ZOOKEEPER-03-r0002:356",
+      "door_in_faulted_target_closure": true,
+      "epoch": 0,
+      "faulted_closure_edges": 112,
+      "node": "zk5",
+      "occurrence": "unscoped:zk5:0:root",
+      "site": "zookeeper.quorum.archive.writeRecord",
+      "target_anchor": "[\"zk2\",\"1\",\"zk2:1:org.apache.zookeeper.server.SessionTrackerImpl#setOwner(JLjava/lang/Object;)V:zk-request:2:6:1\"]",
+      "trial_id": 2
+    }
+  ],
+  "interpretation": "No strict fault trial has an exact applied door on a healthy observed path to the target that avoids coarse root occurrences. Post-fault target reach is verified, but the selected occurrence graph does not provide root-free fault-to-target attribution. Preserve canonical counts pending a scoped rerun or an explicitly justified alternative local-timeline proof.",
+  "method": "Read canonical offline-causal-audit target_retained trials; join exact observed door event ID to archived per-trial feedback doors; classify occurrence from trace_occurrence or point.occurrence; in_closure is archived target-backward-closure membership. Root occurrence means unscoped:<node>:<epoch>:root. Core target_reached is post-last-fault, but does not itself prove an event-level fault-to-target causal path.",
+  "provisional_eligibility": {
+    "criterion": "effective applied door exactly matches site,node,epoch,ordinal/hit of an in-closure healthy non-root door; exact target check is post-last-fault. Strong subset also requires same named non-root occurrence in faulted trace. This is healthy-path admission evidence, not an observed faulted-run path, since fault may alter that path.",
+    "faulted_nonroot_applied_door_in_target_closure_trials": [],
+    "healthy_nonroot_exact_point_candidate_trials": [
+      37,
+      38
+    ],
+    "healthy_nonroot_exact_point_candidates": [
+      {
+        "doors": [
+          {
+            "applied_door_event_id": "ZOOKEEPER-03-r0037:201",
+            "applied_fault_event_ids": [
+              "ZOOKEEPER-03-r0037:203"
+            ],
+            "faulted_door_in_target_closure": false,
+            "faulted_nonroot": true,
+            "faulted_occurrence": "unscoped:zk1:1:zk-request:1:2",
+            "healthy_door_event_id": "ZOOKEEPER-03-r0000:201",
+            "healthy_occurrence": "unscoped:zk1:1:zk-request:1:2",
+            "point": {
+              "door_ordinal": 5,
+              "epoch": 1,
+              "node": "zk1",
+              "site": "zookeeper.quorum.archive.writeRecord"
+            },
+            "postfault_target_reverified": true,
+            "same_healthy_occurrence": true,
+            "trial_id": 37
+          }
+        ],
+        "trial_id": 37
+      },
+      {
+        "doors": [
+          {
+            "applied_door_event_id": "ZOOKEEPER-03-r0038:196",
+            "applied_fault_event_ids": [
+              "ZOOKEEPER-03-r0038:198"
+            ],
+            "faulted_door_in_target_closure": false,
+            "faulted_nonroot": true,
+            "faulted_occurrence": "unscoped:zk1:1:zk-connect:1:0:1",
+            "healthy_door_event_id": "ZOOKEEPER-03-r0000:196",
+            "healthy_occurrence": "unscoped:zk1:1:zk-connect:1:0:1",
+            "point": {
+              "door_ordinal": 1,
+              "epoch": 1,
+              "node": "zk1",
+              "site": "zookeeper.client.connect.read"
+            },
+            "postfault_target_reverified": true,
+            "same_healthy_occurrence": true,
+            "trial_id": 38
+          }
+        ],
+        "trial_id": 38
+      }
+    ],
+    "healthy_nonroot_observed_path_door_count": 2,
+    "healthy_nonroot_point_match_is_not_sufficient": true,
+    "healthy_root_free_observed_path_door_count": 0,
+    "no_causal_upgrade_from_root_only_trials": true,
+    "root_free_path_method": "Directed reachability from healthy door occurrence to an exact TARGET_CHECK anchor using only certainty=observed closure edges and excluding every unscoped:<node>:<epoch>:root vertex; then exact site,node,epoch,ordinal/hit match to applied door, with faulted occurrence non-root.",
+    "root_free_path_qualified_trials": [],
+    "strong_same_nonroot_occurrence_trials": [
+      37,
+      38
+    ]
+  },
+  "review_status": "needs_scientific_classification",
+  "schema_version": 1
+}

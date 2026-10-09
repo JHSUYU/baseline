@@ -26,6 +26,10 @@ class AuditTest(unittest.TestCase):
                  candidate_only_door_path: bool = False,
                  local_timeline_only: bool = False,
                  allow_local_timeline_doors: bool = False,
+                 reject_coarse_roots: bool = False,
+                 root_source: bool = False,
+                 require_event_time_paths: bool = False,
+                 late_response: bool = False,
                  fault_target_node: str | None = None,
                  fault_target_occurrence: str | None = None,
                  fault_door_site: str | None = None) -> Path:
@@ -34,7 +38,9 @@ class AuditTest(unittest.TestCase):
         target = {"check_sites": ["C#guard"], "throw_site": "C#throw",
                   "exception_class": "java.io.IOException"}
         config = {"case_id": "TEST-AUDIT", "target": target,
-                  "allow_local_timeline_doors": allow_local_timeline_doors}
+                  "allow_local_timeline_doors": allow_local_timeline_doors,
+                  "reject_coarse_roots": reject_coarse_roots,
+                  "require_event_time_paths": require_event_time_paths}
         (campaign / "config.json").write_text(json.dumps(config))
         point = {"site": "C#door", "node": "A", "epoch": 0, "door_ordinal": 1}
         fault = {"fault_id": "f1", "point": point, "fault_type": "EXCEPTION",
@@ -46,8 +52,9 @@ class AuditTest(unittest.TestCase):
         for trial_id in (0, 1):
             door_site = fault_door_site if trial_id and fault_door_site else "C#door"
             trial_fault = {**fault, "point": {**point, "site": door_site}}
+            source_occurrence = "unscoped:A:0:root" if root_source else "source"
             events = [
-                event("DOOR_OBSERVED", 1, "A", "source", site=door_site,
+                event("DOOR_OBSERVED", 1, "A", source_occurrence, site=door_site,
                       door_ordinal=1, hit=1, fault_type="EXCEPTION",
                       exception_class="java.io.IOException"),
             ]
@@ -61,14 +68,14 @@ class AuditTest(unittest.TestCase):
                            event("RECV", 5, "B", "target", transport="rpc",
                                  correlation="c2", port="request")]
             elif causal_handoff and not local_timeline_only:
-                events += [event("SEND", 2, "A", "source", transport="rpc",
+                events += [event("SEND", 20 if late_response else 2, "A", source_occurrence, transport="rpc",
                                  correlation="c1", port="request"),
-                           event("RECV", 3, "B", "target", transport="rpc",
+                           event("RECV", 21 if late_response else 3, "B", "target", transport="rpc",
                                  correlation="c1", port="request")]
             if trial_id:
-                events += [event("FAULT_MATCHED", 8, "A", "source", site=door_site,
+                events += [event("FAULT_MATCHED", 8, "A", source_occurrence, site=door_site,
                                  door_ordinal=1, fault_id="f1"),
-                           event("FAULT_APPLIED", 9, "A", "source", site=door_site,
+                           event("FAULT_APPLIED", 9, "A", source_occurrence, site=door_site,
                                  door_ordinal=1, fault_id="f1")]
             target_node = "A" if local_timeline_only else "B"
             target_occurrence = "source" if local_timeline_only else "target"
@@ -81,6 +88,10 @@ class AuditTest(unittest.TestCase):
                 events += [event("TARGET_THROW", 11, target_node, target_occurrence,
                                  site="C#throw",
                                  exception_class="java.io.IOException")]
+            if require_event_time_paths:
+                for row in events:
+                    row["thread_id"] = 11 if row["node"] == "A" else 22
+                events.sort(key=lambda row: row["seq"])
             trial = campaign / "trials" / f"r{trial_id:04d}"
             trial.mkdir(parents=True)
             raw = b"".join(json.dumps(e).encode() + b"\n" for e in events)
@@ -91,7 +102,9 @@ class AuditTest(unittest.TestCase):
             feedback = analyze(Trace(tuple(events)), {**target, "nodes": [target_node]}
                                if trial_id else target, plan,
                                return_code=1 if trial_id else 0, timed_out=False,
-                               allow_local_timeline_doors=allow_local_timeline_doors)
+                               allow_local_timeline_doors=allow_local_timeline_doors,
+                               reject_coarse_roots=reject_coarse_roots,
+                               require_event_time_paths=require_event_time_paths)
             coverage = set(feedback["coverage_ids"])
             closure = set(feedback["closure_coverage_ids"])
             edges = {digest([e["source"], e["target"], e["kind"], e["certainty"]])
@@ -152,6 +165,37 @@ class AuditTest(unittest.TestCase):
             self.assertFalse(bad["archive_integrity_valid"])
             self.assertFalse(bad["report_gate_passed"])
             self.assertIn("compressed trace SHA-256 mismatch", bad["trials"][1]["error"])
+
+    def test_future_strict_audit_rejects_actor_wide_root_path(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            campaign = self._archive(root, root_source=True,
+                                     reject_coarse_roots=True)
+            artifact = audit_campaign(campaign, root / "strict-root-audit.json")
+            self.assertTrue(artifact["archive_integrity_valid"])
+            self.assertTrue(artifact["guidance_consistent"])
+            self.assertTrue(artifact["reject_coarse_roots"])
+            self.assertEqual(artifact["healthy_observed_path_doors"], 0)
+            self.assertFalse(artifact["report_gate_passed"])
+            self.assertGreater(artifact["gap_counts"]["coarse_root_edge_rejected"], 0)
+
+    def test_event_time_audit_rejects_response_after_target(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            valid = self._archive(root / "valid", require_event_time_paths=True)
+            valid_audit = audit_campaign(valid, root / "valid-audit.json")
+            self.assertTrue(valid_audit["report_gate_passed"])
+            self.assertEqual(valid_audit["healthy_observed_path_doors"], 1)
+            self.assertEqual(valid_audit["healthy_event_time_path_sample"][0]
+                             ["target_check_seq"], 10)
+
+            late = self._archive(root / "late", require_event_time_paths=True,
+                                 late_response=True)
+            late_audit = audit_campaign(late, root / "late-audit.json")
+            self.assertTrue(late_audit["archive_integrity_valid"])
+            self.assertTrue(late_audit["guidance_consistent"])
+            self.assertEqual(late_audit["healthy_observed_path_doors"], 0)
+            self.assertFalse(late_audit["report_gate_passed"])
 
     def test_singleton_target_closure_cannot_pass_quality_gate(self):
         with tempfile.TemporaryDirectory() as directory:

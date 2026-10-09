@@ -1,0 +1,475 @@
+{
+  "schema_version": 1,
+  "kind": "read_only_next_15_original_pending_seed_cluster_test_triage",
+  "created_utc": "2026-10-09",
+  "inventory_reference": "Mallory/cases/inventory.json",
+  "inventory_reference_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+  "checklist_reference": "data/mallory/checklist102.json",
+  "checklist_reference_sha256": "d99497b8a4c42a211902f2756656df1195da476eaedf233b5fa1bb2bf2723e9c",
+  "selection_reason": "Seven original ZooKeeper checks with no checklist calibration plus eight HDFS invalid-seed checks not named in current HDFS active/staged lanes. HBase and Solr current staged/active work was excluded. This does not override newer adapter or dispatch receipts.",
+  "source_roots": {
+    "zookeeper": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/zookeeper-3.8.7",
+      "commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae"
+    },
+    "hdfs": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+      "commit": "9d50c6884666e794e45102260a4017bb31802e1b"
+    }
+  },
+  "shared_seed_bundles": [
+    [
+      "ZOOKEEPER-05",
+      "ZOOKEEPER-06",
+      "ZOOKEEPER-07"
+    ],
+    [
+      "HDFS-11",
+      "HDFS-12",
+      "HDFS-14"
+    ],
+    [
+      "HDFS-24",
+      "HDFS-34"
+    ],
+    [
+      "ZOOKEEPER-11",
+      "ZOOKEEPER-12"
+    ]
+  ],
+  "cases": [
+    {
+      "case_id": "ZOOKEEPER-11",
+      "priority": 1,
+      "likelihood": "high",
+      "system": "zookeeper",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "source_line": 1175,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "source_sha256": "72606c8b4f2d887a94555de2d5fd6ec213b33496da8469df73064d5dfbe4d651",
+        "exact_check_sites": [
+          "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1169:branch:2"
+        ],
+        "exact_throw_site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1175:throw:1"
+      },
+      "current_inventory_selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+      "proposed_existing_cluster_junit_selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+      "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java",
+      "test_source_method_line": 58,
+      "test_source_sha256": "b115c5dc305e61916eba790beefba8b5072be0b54a02d53f45027fa36d333c01",
+      "healthy_exact_guard_reach_assessment": "Same existing 3-peer epoch-file recovery test; prior clean-source pilot observed exact @1169 check once on named zk0, zero selected throws. Revalidate against current overlay bytecode.",
+      "pretarget_io_path": "ZKDatabase and currentEpoch/currentEpoch.tmp file reads before the target; prior pilot is not a fuzz result.",
+      "evidence_level": "previous_healthy_pilot",
+      "original_calibration_issue": null,
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note.",
+      "previous_pilot": {
+        "path": "Mallory/instrumentation/pilots/zookeeper11/attestation.json",
+        "sha256": "0cc3984463c841b11cba69bb35e7fed9248c9b5e94a15ef14a52007c169ed73d",
+        "limitation": "Clean-source instrumentation pilot only; current overlay and Mallory campaign require fresh healthy attestation."
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-12",
+      "priority": 2,
+      "likelihood": "medium",
+      "system": "zookeeper",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "source_line": 1197,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "source_sha256": "72606c8b4f2d887a94555de2d5fd6ec213b33496da8469df73064d5dfbe4d651",
+        "exact_check_sites": [
+          "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1193:branch:3"
+        ],
+        "exact_throw_site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1197:throw:1"
+      },
+      "current_inventory_selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+      "proposed_existing_cluster_junit_selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+      "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java",
+      "test_source_method_line": 58,
+      "test_source_sha256": "b115c5dc305e61916eba790beefba8b5072be0b54a02d53f45027fa36d333c01",
+      "healthy_exact_guard_reach_assessment": "Same 3-peer restart exercises accepted/current epoch loading after temp-file recovery. Exact @1197 guard reach remains unproven in current overlay.",
+      "pretarget_io_path": "acceptedEpoch/currentEpoch file reads and restart writes precede comparison.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": null,
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "ZOOKEEPER-04",
+      "priority": 3,
+      "likelihood": "medium",
+      "system": "zookeeper",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+        "source_line": 1441,
+        "function": "org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)",
+        "source_sha256": "3c883cc64beda7e14e446a6a9cd75791c7a2c12e0118dd41d99e9aedccad0631",
+        "exact_check_sites": [
+          "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1431:branch:7"
+        ],
+        "exact_throw_site": "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1441:throw:1"
+      },
+      "current_inventory_selector": "org.apache.zookeeper.server.ConnectionMetricsTest#testRevalidateCount",
+      "proposed_existing_cluster_junit_selector": "org.apache.zookeeper.server.ConnectionMetricsTest#testRevalidateCount",
+      "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/ConnectionMetricsTest.java",
+      "test_source_method_line": 53,
+      "test_source_sha256": "ce4b810b16bf026e348d17d5211cbac0dc1f5f8d4cd60033e16054ad80e34ebb",
+      "healthy_exact_guard_reach_assessment": "Three-peer client reconnects from a shut-down follower to another follower; processConnectRequest should evaluate lastZxidSeen versus server lastProcessedZxid on the new connect.",
+      "pretarget_io_path": "Client ConnectRequest serialization and follower socket read precede guard.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": null,
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "HDFS-32",
+      "priority": 4,
+      "likelihood": "medium",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "source_line": 3822,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.deleteBlockPool(java.lang.String,boolean)",
+        "source_sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.server.datanode.DataNode#deleteBlockPool(Ljava/lang/String;Z)V@3819:branch:1"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.server.datanode.DataNode#deleteBlockPool(Ljava/lang/String;Z)V@3822:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
+      "test_source_method_line": 142,
+      "test_source_sha256": "31467bca1249b93cae7ed984bac01d405cde8ec1409a9ef78fa0a0c469a3bb3a",
+      "healthy_exact_guard_reach_assessment": "Federated MiniDFSCluster refreshes DN namespaces and DFSAdmin sends deleteBlockPool RPC; target active-pool check should see stopped bpid2 and not throw. A separate no-force nonzero result is expected.",
+      "pretarget_io_path": "ClientDatanodeProtocol.deleteBlockPool request reaches named DataNode before selected check.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-32/trials/r0000/result.json",
+        "sha256": "124f0800f0eb1918cb8269cdd705c94814224ddfa9bd4388484e0939bfe39a13",
+        "issue": "First healthy JUnit aborted with agent SafeWriter duplicate DataNode LinkageError before target reach (stdout.log:29). Source also intentionally calls dn1.deleteBlockPool on an active pool and catches the selected IOException (TestDeleteBlockPool.java:70-77), so this selector remains oracle-unfit if rerun with the fixed agent."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "ZOOKEEPER-05",
+      "priority": 5,
+      "likelihood": "medium",
+      "system": "zookeeper",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java",
+        "source_line": 103,
+        "function": "org.apache.zookeeper.server.quorum.Follower.followLeader()",
+        "source_sha256": "2008eb36fd2a4e69f557f616f7449b0bd04ee4dd0fdc81786e0a4d9113e648e0",
+        "exact_check_sites": [
+          "org.apache.zookeeper.server.quorum.Follower#followLeader()V@99:branch:2"
+        ],
+        "exact_throw_site": "org.apache.zookeeper.server.quorum.Follower#followLeader()V@104:throw:1"
+      },
+      "current_inventory_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "proposed_existing_cluster_junit_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+      "test_source_method_line": 54,
+      "test_source_sha256": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc",
+      "healthy_exact_guard_reach_assessment": "Rolling three-peer restart causes a former follower to register with leader; compare returned epoch against persisted acceptedEpoch. Select a restart whose actor is follower.",
+      "pretarget_io_path": "FOLLOWERINFO send, LEADERINFO receive, and epoch-file state precede Follower.followLeader.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": null,
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "ZOOKEEPER-07",
+      "priority": 6,
+      "likelihood": "medium",
+      "system": "zookeeper",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+        "source_line": 525,
+        "function": "org.apache.zookeeper.server.quorum.Learner.registerWithLeader(int)",
+        "source_sha256": "3827ccefc4a632b3f37ebe5258f4c97c142211675a5a22801aac1ae2122cb830",
+        "exact_check_sites": [
+          "org.apache.zookeeper.server.quorum.Learner#registerWithLeader(I)J@518:branch:3"
+        ],
+        "exact_throw_site": "org.apache.zookeeper.server.quorum.Learner#registerWithLeader(I)J@528:throw:1"
+      },
+      "current_inventory_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "proposed_existing_cluster_junit_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+      "test_source_method_line": 54,
+      "test_source_sha256": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc",
+      "healthy_exact_guard_reach_assessment": "Same restart selects Learner.registerWithLeader on a restarting follower receiving LEADERINFO; decoded newEpoch should be at least acceptedEpoch.",
+      "pretarget_io_path": "Follower/leader socket handshake and persisted acceptedEpoch read precede guard.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": null,
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "ZOOKEEPER-06",
+      "priority": 7,
+      "likelihood": "medium",
+      "system": "zookeeper",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java",
+        "source_line": 1475,
+        "function": "org.apache.zookeeper.server.quorum.Leader.waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)",
+        "source_sha256": "32b759257765f1bb8c656ac84abd284eadcf97c9f911b4279cdd5f87d02d655f",
+        "exact_check_sites": [
+          "org.apache.zookeeper.server.quorum.Leader#waitForEpochAck(JLorg/apache/zookeeper/server/quorum/StateSummary;)V@1475:branch:3"
+        ],
+        "exact_throw_site": "org.apache.zookeeper.server.quorum.Leader#waitForEpochAck(JLorg/apache/zookeeper/server/quorum/StateSummary;)V@1479:throw:1"
+      },
+      "current_inventory_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "proposed_existing_cluster_junit_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+      "test_source_method_line": 54,
+      "test_source_sha256": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc",
+      "healthy_exact_guard_reach_assessment": "Same restart selects leader waitForEpochAck for a specific follower ACKEPOCH; healthy summary should not exceed follower summary.",
+      "pretarget_io_path": "ACKEPOCH send/receive and follower state summary precede guard.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": null,
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "HDFS-11",
+      "priority": 8,
+      "likelihood": "medium",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "source_line": 555,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+        "source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B@552:branch:1"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B@555:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+      "test_source_method_line": 37,
+      "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+      "healthy_exact_guard_reach_assessment": "Existing encrypted-balancer MiniDFSCluster enables encrypted data transfer and block tokens; server key lookup should find a live key. Original parameterized method selector ran zero JUnit tests.",
+      "pretarget_io_path": "Encrypted DataTransfer SASL handshake enters BlockTokenSecretManager.retrieveDataEncryptionKey on DataNode.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-11/trials/r0000/result.json",
+        "sha256": "c661f97bf3179303f8d1348b80707a7ee5119eadc79443a2956d0dc5f26e9868",
+        "issue": "Original parameterized Surefire method selector ran zero JUnit tests despite Maven rc=0; no target events."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "HDFS-12",
+      "priority": 9,
+      "likelihood": "medium",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "source_line": 514,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)",
+        "source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B@511:branch:2"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B@514:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+      "test_source_method_line": 37,
+      "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+      "healthy_exact_guard_reach_assessment": "Same encrypted-balancer MiniDFSCluster; server token password lookup should find a current key. Original parameterized method selector ran zero JUnit tests.",
+      "pretarget_io_path": "Balancer block movement opens encrypted DataTransfer socket and invokes retrievePassword.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-12/trials/r0000/result.json",
+        "sha256": "1551ce9acac1f0782b1d1fca4609e6ff3d9fdeb8ff13d72660eb99abd5eb1809",
+        "issue": "Original parameterized Surefire method selector ran zero JUnit tests despite Maven rc=0; no target events."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "HDFS-14",
+      "priority": 10,
+      "likelihood": "medium",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "source_line": 412,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode,org.apache.hadoop.fs.StorageType[],java.lang.String[])",
+        "source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V@411:branch:1"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V@412:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java",
+      "test_source_method_line": 37,
+      "test_source_sha256": "1ca2de6dbc8b41dabdf6d33d6711b579d9e3e3dddadf75e91f870aacb9865e1a",
+      "healthy_exact_guard_reach_assessment": "Same encrypted-balancer MiniDFSCluster; DataXceiver checks the six-argument token access overload during block movement. Original parameterized selector ran zero tests.",
+      "pretarget_io_path": "DataTransfer socket plus token exchange precede DataXceiver.checkAccess.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-14/trials/r0000/result.json",
+        "sha256": "e00e007c3825c0522477d594b0c6af9c5d8bcdf2de2676a4a4bcb5c6f5d3840c",
+        "issue": "Original parameterized Surefire method selector ran zero JUnit tests despite Maven rc=0; no target events."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "HDFS-37",
+      "priority": 11,
+      "likelihood": "low",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "source_line": 947,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.server.datanode.DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@940:branch:3",
+          "org.apache.hadoop.hdfs.server.datanode.DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@941:branch:4"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@947:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java",
+      "test_source_method_line": 987,
+      "test_source_sha256": "f60f8552ac841ec6d4f0572f9fc390c887a45a832422e8a56d0ddd4e49cd916b",
+      "healthy_exact_guard_reach_assessment": "Snapshot/truncate upgrade-and-restart test invokes DataNode rollback from real MiniDFSCluster without deliberately incompatible previous VERSION data; selected version guard could take healthy arm.",
+      "pretarget_io_path": "NameNode/DataNode restart plus DataStorage previous VERSION file reads precede doRollback.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-37/trials/r0000/result.json",
+        "sha256": "bba63fb8ff839245c7f4f349297ceeceec5fffda5c3f54886afe7bcd64116aea",
+        "issue": "Original TestDFSRollback#testRollback combines normal and deliberately incompatible previous VERSION states; selected target throws observed."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "HDFS-24",
+      "priority": 12,
+      "likelihood": "low",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "source_line": 424,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@414:branch:14"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@424:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.TestDFSUpgradeFromImage#testUpgradeFromRel22Image",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.java",
+      "test_source_method_line": 296,
+      "test_source_sha256": "5b98a6ee667a9d2422b16bc53ab8bdfc36ba2acfae97fdeaea6aca101a98f951",
+      "healthy_exact_guard_reach_assessment": "Bundled old-image upgrade test starts four-DN MiniDFSCluster in UPGRADE mode; selected BlockPoolSliceStorage version check could take healthy arm if archive is available.",
+      "pretarget_io_path": "Extracted storage archive and DataNode VERSION reads precede doTransition.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-24/trials/r0000/result.json",
+        "sha256": "143fe5927bef3aef0387bf712c6236b334bbbbb4d67534db42d5f4eefe186bf5",
+        "issue": "Original TestDFSUpgrade#testUpgrade includes deliberate negative DataNode upgrade states and observed selected target throws; cannot use as clean healthy seed."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note.",
+      "external_testdata_gate": "Verify bundled old-image archive exists in test.cache.data before spending a MiniCluster slot."
+    },
+    {
+      "case_id": "HDFS-34",
+      "priority": 13,
+      "likelihood": "low",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "source_line": 744,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@739:branch:5"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@744:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.TestDFSUpgradeFromImage#testUpgradeFromRel22Image",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.java",
+      "test_source_method_line": 296,
+      "test_source_sha256": "5b98a6ee667a9d2422b16bc53ab8bdfc36ba2acfae97fdeaea6aca101a98f951",
+      "healthy_exact_guard_reach_assessment": "Same old-image upgrade test may cover DataStorage namespaceID comparison on pre-federation layout; archive availability and branch reach require validation.",
+      "pretarget_io_path": "VERSION file read and storage transition precede guard.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-34/trials/r0000/result.json",
+        "sha256": "29977f30f7e62b1dca27c31f43d6fa86b59fdf4ff985d52a826fd6a056b24418",
+        "issue": "Original TestDFSStartupVersions#testVersions loops valid and invalid storage-version combinations and observed selected target throws."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note.",
+      "external_testdata_gate": "Verify bundled old-image archive exists in test.cache.data before spending a MiniCluster slot."
+    },
+    {
+      "case_id": "HDFS-31",
+      "priority": 14,
+      "likelihood": "low",
+      "system": "hdfs",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "source_line": 1835,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)",
+        "source_sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4",
+        "exact_check_sites": [
+          "org.apache.hadoop.hdfs.server.datanode.DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;@1833:branch:1"
+        ],
+        "exact_throw_site": "org.apache.hadoop.hdfs.server.datanode.DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;@1835:throw:1"
+      },
+      "current_inventory_selector": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+      "proposed_existing_cluster_junit_selector": "org.apache.hadoop.hdfs.TestSetrepIncreasing#testSetrepIncreasing",
+      "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSetrepIncreasing.java",
+      "test_source_method_line": 82,
+      "test_source_sha256": "2af73b1341306c11a851c8e3b55f51a09c8e5dfedd7460e5ee6f564572c9df52",
+      "healthy_exact_guard_reach_assessment": "Existing replication-increase MiniDFSCluster issues NN transfer commands to live DataNodes, potentially reaching getBPOSForBlock without selected failure. It starts ten DNs, so defer behind cheaper seeds.",
+      "pretarget_io_path": "NameNode DNA_TRANSFER command and DataNode block-transfer path precede getBPOSForBlock.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": {
+        "path": "data/mallory/calibration/HDFS-31/trials/r0000/result.json",
+        "sha256": "2e9185fee57d75b15e76f9b9d61e8c6e3a9ce8b3ec56ee5385d664776fa1065e",
+        "issue": "First healthy JUnit aborted with agent SafeWriter duplicate DataNode LinkageError before target reach (stdout.log:29). Independently, the chosen test corrupts a metadata file and directly invokes dn0.transferBlock (TestDiskError.java:239-282), so it lacks the desired natural NN-command pretarget path. A fixed-agent rerun of this original selector is still unverified."
+      },
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note."
+    },
+    {
+      "case_id": "ZOOKEEPER-10",
+      "priority": 15,
+      "likelihood": "low",
+      "system": "zookeeper",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java",
+        "source_line": 371,
+        "function": "org.apache.zookeeper.server.quorum.ObserverMaster.removeProposedPacket(long)",
+        "source_sha256": "b65e2d631026d6c9258e0392619d7387783bb0b657b72f03722248dee93a6f06",
+        "exact_check_sites": [
+          "org.apache.zookeeper.server.quorum.ObserverMaster#removeProposedPacket(J)Lorg/apache/zookeeper/server/quorum/QuorumPacket;@368:branch:3"
+        ],
+        "exact_throw_site": "org.apache.zookeeper.server.quorum.ObserverMaster#removeProposedPacket(J)Lorg/apache/zookeeper/server/quorum/QuorumPacket;@374:throw:1"
+      },
+      "current_inventory_selector": "org.apache.zookeeper.test.ObserverMasterTest#testInOrderCommits",
+      "proposed_existing_cluster_junit_selector": "org.apache.zookeeper.test.ObserverMasterTest#testInOrderCommits",
+      "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ObserverMasterTest.java",
+      "test_source_method_line": 213,
+      "test_source_sha256": "27c4fca7814b9339fd4212fafca77c4ed2234aae8f01fd288f73a594575d985d",
+      "healthy_exact_guard_reach_assessment": "ObserverMasterTest#testInOrderCommits is JUnit parameterized for true/false; only true enables ObserverMaster. It issues over 20,000 async writes and is costly.",
+      "pretarget_io_path": "Leader PROPOSAL/COMMIT packets through follower ObserverMaster queue precede removeProposedPacket.",
+      "evidence_level": "source_only",
+      "original_calibration_issue": null,
+      "admission_gate": "Run isolated healthy JUnit; require >0 actual tests, exact compiled check site on named actor, zero selected target throws, and a backward observed pretarget I/O door. No fault campaign is admitted from this source-only note.",
+      "parameterized_variant_requirement": "Only @ValueSource true enables ObserverMaster; generic method selector may run both true and false variants. Verify exact target belongs to true variant."
+    }
+  ],
+  "no_jvm_launched": true,
+  "global_inventory_changed": false
+}

@@ -1,0 +1,73 @@
+{
+  "archive_sha256": null,
+  "canonical_audit": "data/mallory/cases/HDFS-01/offline-causal-audit.json",
+  "canonical_result": "data/mallory/cases/HDFS-01/result.json",
+  "canonical_results_changed": false,
+  "case": {
+    "applied_fault_doors": 171,
+    "case_id": "HDFS-01",
+    "coarse_root_applied_doors": 169,
+    "coarse_root_applied_in_faulted_target_closure_trials": 0,
+    "coarse_root_applied_same_target_occurrence_trials": 0,
+    "coarse_root_applied_trials": 64,
+    "healthy_coarse_root_in_closure_doors": 0,
+    "healthy_in_closure_doors": 36,
+    "missing_applied_door_identity": 0,
+    "offline_causal_audit_sha256": "314a262f6246183f178f3c57f052a0ab86749ea31839bada1a8db9f034d62590",
+    "result_sha256": "a4e9830a52cab693d0cfba54cec9f573f17a9f3b5799a6c6b7bbef994a2b0701",
+    "strict_target_retained_trials": 64,
+    "unscoped_applied_trials": 64
+  },
+  "examples": [
+    {
+      "door_event_id": "HDFS-01-r0001:14347",
+      "door_in_faulted_target_closure": false,
+      "epoch": 0,
+      "faulted_closure_edges": 18,
+      "node": "hdfs-client",
+      "occurrence": "unscoped:hdfs-client:0:root",
+      "site": "org.apache.hadoop.hdfs.DFSInputStream#readBuffer(Lorg/apache/hadoop/hdfs/ReaderStrategy;ILorg/apache/hadoop/hdfs/DFSUtilClient$CorruptedBlocks;)I@789:door:1",
+      "target_anchor": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;:root:49\"]",
+      "trial_id": 1
+    },
+    {
+      "door_event_id": "HDFS-01-r0002:13234",
+      "door_in_faulted_target_closure": false,
+      "epoch": 0,
+      "faulted_closure_edges": 24,
+      "node": "hdfs-client",
+      "occurrence": "unscoped:hdfs-client:0:root",
+      "site": "org.apache.hadoop.hdfs.DFSInputStream#readBuffer(Lorg/apache/hadoop/hdfs/ReaderStrategy;ILorg/apache/hadoop/hdfs/DFSUtilClient$CorruptedBlocks;)I@789:door:1",
+      "target_anchor": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;:root:43\"]",
+      "trial_id": 2
+    },
+    {
+      "door_event_id": "HDFS-01-r0003:12920",
+      "door_in_faulted_target_closure": false,
+      "epoch": 0,
+      "faulted_closure_edges": 27,
+      "node": "hdfs-client",
+      "occurrence": "unscoped:hdfs-client:0:root",
+      "site": "org.apache.hadoop.hdfs.DFSInputStream#readBuffer(Lorg/apache/hadoop/hdfs/ReaderStrategy;ILorg/apache/hadoop/hdfs/DFSUtilClient$CorruptedBlocks;)I@789:door:1",
+      "target_anchor": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#fetchBlockAt(JJZ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;:root:37\"]",
+      "trial_id": 3
+    }
+  ],
+  "interpretation": "No strict fault trial has an exact applied door on a healthy observed path to the target that avoids coarse root occurrences. Post-fault target reach is verified, but the selected occurrence graph does not provide root-free fault-to-target attribution. Preserve canonical counts pending a scoped rerun or an explicitly justified alternative local-timeline proof.",
+  "method": "Read canonical offline-causal-audit target_retained trials; join exact observed door event ID to archived per-trial feedback doors; classify occurrence from trace_occurrence or point.occurrence; in_closure is archived target-backward-closure membership. Root occurrence means unscoped:<node>:<epoch>:root. Core target_reached is post-last-fault, but does not itself prove an event-level fault-to-target causal path.",
+  "provisional_eligibility": {
+    "criterion": "effective applied door exactly matches site,node,epoch,ordinal/hit of an in-closure healthy non-root door; exact target check is post-last-fault. Strong subset also requires same named non-root occurrence in faulted trace. This is healthy-path admission evidence, not an observed faulted-run path, since fault may alter that path.",
+    "faulted_nonroot_applied_door_in_target_closure_trials": [],
+    "healthy_nonroot_exact_point_candidate_trials": [],
+    "healthy_nonroot_exact_point_candidates": [],
+    "healthy_nonroot_observed_path_door_count": 36,
+    "healthy_nonroot_point_match_is_not_sufficient": true,
+    "healthy_root_free_observed_path_door_count": 36,
+    "no_causal_upgrade_from_root_only_trials": true,
+    "root_free_path_method": "Directed reachability from healthy door occurrence to an exact TARGET_CHECK anchor using only certainty=observed closure edges and excluding every unscoped:<node>:<epoch>:root vertex; then exact site,node,epoch,ordinal/hit match to applied door, with faulted occurrence non-root.",
+    "root_free_path_qualified_trials": [],
+    "strong_same_nonroot_occurrence_trials": []
+  },
+  "review_status": "needs_scientific_classification",
+  "schema_version": 1
+}

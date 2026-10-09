@@ -1,0 +1,56 @@
+{
+  "artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-safewriter-fd274b40.jar",
+      "sha256": "fd274b401ec035797574e30bd52fb5e46bcfce11170578a7fd6c9ad0da8de348"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v15/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+      "sha256": "d5294a3e06e50a64005d93743fa81fc34ded1c524a0b9fd1dc5ac11ad1d2b751"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.class",
+      "sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.class",
+      "sha256": "57ae09910fa9f80f7c853ebea3d47cf6420789c630f18503a3a2714223a8024a"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-common-project/hadoop-common/target/classes/org/apache/hadoop/ipc/Server$RpcCall.class",
+      "sha256": "7e2e359931d31543c8edd6bb873e7012b1f1380e285497740307231a23b2d25f"
+    }
+  ],
+  "case_id": "HDFS-11",
+  "config": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v20/HDFS-11-key-issuance-rpc-pilot-v20.json",
+    "sha256": "bd42cb17acfb3ea2f8ff4eff4b69ca8dff6c84e0a950cc6cb7b77f2c753eded6"
+  },
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+  "limitation": "RpcCall door is immediately before call dispatch; fault can suppress the key RPC and lose target reach. Neither target reach nor IOException alone reproduces stale Balancer KeyManager key state.",
+  "output_private": "/tmp/mallory-hdfs11-v20-key-rpc-pilot",
+  "purpose": "bounded_key_issuance_rpc_fault_pilot",
+  "runner": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/run_hdfs11_key_rpc_pilot.py",
+    "sha256": "41e3281ea45e9cd930f4f069155cb71ddf4e48c95c24470f1e0e77e73efd7957"
+  },
+  "schema_version": 1,
+  "selection": {
+    "door_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+    "max_fault_trials": 1,
+    "max_faults_per_trial": 1,
+    "require_in_closure": true,
+    "require_same_thread_occurrence": true,
+    "required_next_method": "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getDataEncryptionKey()Lorg/apache/hadoop/hdfs/security/token/block/DataEncryptionKey;",
+    "select_fresh_healthy_ordinal": true
+  },
+  "source_build_lock": "/tmp/mallory-lanes/hdfs-lane1.lock",
+  "source_git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_review": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/cases/revisions/HDFS-11-v19-postfault-causal-review-v1.json",
+    "sha256": "60d7d05a6e47756b7cb749b4edc74f2ed8d611ab0b898365998d2406d47aa8b8"
+  },
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "status": "ready_for_dispatch_admission_no_jvm_launched",
+  "trial_data": "{trial_dir}/hdfs-data"
+}

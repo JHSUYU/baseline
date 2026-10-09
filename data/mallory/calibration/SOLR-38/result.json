@@ -1,0 +1,106 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-38",
+  "closure_coverage_ids_seen": 81,
+  "closure_edge_fingerprints_seen": 8,
+  "cluster_test": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testAliasHandling",
+  "coverage_ids_seen": 112,
+  "dispatch_attempt_ids": [
+    "20261009T155357-4591727e4dbd"
+  ],
+  "duration_seconds": 15.672,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 81462,
+    "manifest_path": "evidence_archives/calibration/SOLR-38.tar.manifest.json",
+    "manifest_sha256": "6be859756cf29e68f50fe78be145aae7b64dc18fa169a758419812b041f32c61",
+    "path": "evidence_archives/calibration/SOLR-38.tar.gz",
+    "sha256": "3b61d26980fa2ddf2435192e9ac7191402e9e626965f0b627c716553a0e4f31a"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_observed_door_events": 0,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T155357-4591727e4dbd",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1",
+      "node3"
+    ],
+    "eligible_doors_before_target": 0,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": null,
+    "observed_target_class_sha256": "9826a092038a93be9eed0dece3abed39da5e6853b5292bf072b6a416e097615d",
+    "reasons": [
+      "no_injectable_door",
+      "target_class_hash_unpinned"
+    ],
+    "site_catalog_sha256": "4d94b3a9e2278d16548c81553ec89aa94b4af2250a5a06633b930d03fabfa08f",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_no_injectable_door",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if ((isLeader && !localIsLeader) || (isSubShardLeader && !localIsLeader)) {\nlog.error(\"ClusterState says we are the leader, but locally we don't think so\");\nthrow new SolrException(SolrException.ErrorCode.SERVICE_UNAVAILABLE,\n\"ClusterState says we are the leader (\" + zkController.getBaseUrl()\n+ \"/\" + req.getCore().getName() + \"), but locally we don't think so. Request came from \" + from);",
+    "check_sites": [
+      "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@1021:branch:17",
+      "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@1021:branch:18",
+      "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@1021:branch:19",
+      "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@1021:branch:20"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.update.processor.DistributedZkUpdateProcessor.doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)",
+    "site_id": "<org.apache.solr.update.processor.DistributedZkUpdateProcessor: void doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)>#u113",
+    "source_line": 1025,
+    "source_path": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java",
+    "throw_site": "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@1025:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1",
+      "node3"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T155357-4591727e4dbd",
+      "duration_seconds": 15.672,
+      "eligible_doors_before_target": 0,
+      "novelty": {
+        "closure_coverage": 81,
+        "closure_edges": 8,
+        "coverage": 112
+      },
+      "observed_door_events": 0,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

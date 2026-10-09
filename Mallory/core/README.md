@@ -173,3 +173,47 @@ an effective fault; another actor or occurrence can satisfy that count.
 Healthy-only calibration needs no post-fault proof. Frozen 5820 campaign
 results and releases remain unchanged; a separately versioned re-audit may
 change the quality gate for local-timeline-only cases.
+
+## Scoped root contexts for future campaigns
+
+Older agents emit the same `unscoped:<node>:<epoch>:root` occurrence for all
+threads and operations on one actor. Reused non-root context tokens can also
+merge unrelated threads. Two separately matched handoff edges can therefore
+join at an unscoped occurrence without an event-level link between them. For a
+new campaign, build the agent from the current instrumentation source and set
+`reject_coarse_roots: true` in a **new** case config and output directory.
+The new agent adds the JVM thread ID and a bounded segment number to every
+unscoped occurrence. It rotates the segment when a region ends or the actor/causal
+context changes. `REGION_ENTER` records the exact preceding scoped root as
+its parent; the graph accepts that parent only when a prior event belongs to
+the same named actor, epoch, JVM thread, and segment. The resulting edge
+records local program order, not data flow. Exact RPC/task/state matches
+remain separate graph edges. The strict graph rejects edges incident to the
+old actor-wide root or an unscoped token without thread/segment evidence,
+counting `coarse_root_edge_rejected` or `unscoped_token_edge_rejected` gaps.
+This option defaults to false for frozen campaigns; do not change a running
+campaign's config or reinterpret its saved feedback under another core.
+
+Migration is per case: pin a new core release and agent JAR by SHA, make a new
+config/output directory with `reject_coarse_roots: true`, run a healthy
+calibration to verify the exact target and eligible doors, then run bounded
+fault trials and audit them with that same core release. Preserve old trial
+archives and checklist rows as historical evidence; promote a new result only
+after the new audit passes. If the strict healthy graph loses all paths, add
+an explicit handoff hook or a separately justified local-timeline calibration.
+The current occurrence-level path gate does not establish that every handoff
+event precedes a target check within a shared region occurrence; response
+handoffs after the target still require a separate event-time path audit.
+
+For a further new campaign, `require_event_time_paths: true` enables that
+event-time audit and implies rejection of legacy unscoped aliases. It proves
+a door-to-check path only when each cross-occurrence edge has unique producer
+and consumer events in increasing trace sequence, and each step within an
+occurrence has an increasing sequence on the same JVM thread. The audit
+records up to ten exact door/check IDs and edge-event witnesses in
+`healthy_event_time_path_sample`. A direct same-occurrence door/check order
+has an empty-edge local witness and only qualifies through the separate
+`allow_local_timeline_doors` policy. New agents must emit numeric `thread_id`
+for this gate; older traces without it cannot pass. Compact coverage summaries
+emitted after a run have no per-hit event time, so this strict mode uses them
+for global coverage feedback but not proven pre-target closure coverage.

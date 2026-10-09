@@ -20,19 +20,50 @@ class Edge:
     certainty: str = "observed"
 
 
+@dataclass
+class EventTimeReachability:
+    """Backward proof windows for one exact target event.
+
+    A window is bounded by the next event on the same occurrence and JVM
+    thread. Crossing a graph edge consumes its exact producer/consumer IDs;
+    an occurrence alone never joins two unrelated events.
+    """
+
+    target: dict[str, Any]
+    cutoffs: dict[tuple[str, int, bool], int]
+    paths: dict[tuple[str, int, bool], tuple[Edge, ...]]
+
+    def witness(self, event: dict[str, Any], *, require_edge: bool = False
+                ) -> tuple[Edge, ...] | None:
+        address, seq, thread = event_address(event), event_seq(event), event.get("thread_id")
+        if (address is None or seq < 0 or seq >= event_seq(self.target) or
+                not isinstance(thread, int) or isinstance(thread, bool)):
+            return None
+        for crossed in ((True,) if require_edge else (False, True)):
+            key = (address, thread, crossed)
+            if seq <= self.cutoffs.get(key, -1):
+                return self.paths[key]
+        return None
+
+
 class OccurrenceGraph:
-    def __init__(self, events: tuple[dict[str, Any], ...]):
+    def __init__(self, events: tuple[dict[str, Any], ...], *,
+                 reject_coarse_roots: bool = False):
         self.events = events
+        self.reject_coarse_roots = reject_coarse_roots
         self.occurrences: set[str] = set()
         self.edges: set[Edge] = set()
         self.candidate_edges: set[Edge] = set()
         self.gaps: dict[str, int] = defaultdict(int)
+        self._events_by_id: dict[str, dict[str, Any]] = {}
+        self._time_cache: dict[tuple[str, bool], EventTimeReachability] = {}
         self._build()
 
     def _build(self) -> None:
         ids: dict[str, dict[str, Any]] = {}
         duplicate_ids: set[str] = set()
         region_by_occurrence: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        scoped_roots: dict[str, list[dict[str, Any]]] = defaultdict(list)
         handoff_by_token: dict[str, list[dict[str, Any]]] = defaultdict(list)
         for event in self.events:
             address = event_address(event)
@@ -40,6 +71,8 @@ class OccurrenceGraph:
                 self.occurrences.add(address)
             if event.get("type") == "REGION_ENTER" and isinstance(event.get("occurrence"), str):
                 region_by_occurrence[event["occurrence"]].append(event)
+            if (self._is_scoped_root(event) and event.get("type") != "REGION_ENTER"):
+                scoped_roots[str(event["occurrence"])].append(event)
             if event.get("type") in {"TASK_CLAIM", "RECV"} and event.get("correlation"):
                 handoff_by_token[str(event["correlation"])].append(event)
             event_id = event.get("id")
@@ -50,6 +83,7 @@ class OccurrenceGraph:
                     duplicate_ids.add(event_id)
                 else:
                     ids[event_id] = event
+        self._events_by_id = ids
 
         # Explicit parent identity is stronger than temporal order. parent_id
         # must resolve to a unique event in this trace.
@@ -60,7 +94,10 @@ class OccurrenceGraph:
             def same_actor_before(candidate: dict[str, Any]) -> bool:
                 return (candidate.get("node") == event.get("node") and
                         candidate.get("epoch") == event.get("epoch") and
-                        event_seq(candidate) < event_seq(event))
+                        event_seq(candidate) < event_seq(event) and
+                        (not self.reject_coarse_roots or
+                         candidate.get("thread_id") is not None and
+                         candidate.get("thread_id") == event.get("thread_id")))
 
             parent = ids.get(str(event["parent_id"]))
             if parent is not None and not same_actor_before(parent):
@@ -81,10 +118,23 @@ class OccurrenceGraph:
                                 "request" in str(candidate.get("port", "")).lower()]
                     matches = requests if len(requests) == 1 else matches
                 parent = matches[0] if len(matches) == 1 else None
+            if parent is None and self._is_scoped_root_id(event, event.get("parent_id")):
+                # The Java probe binds a root region to the bounded root
+                # segment of the same JVM thread. The latest event in that
+                # segment establishes local program order; an actor-wide
+                # legacy root is never eligible for this continuation.
+                matches = [candidate for candidate in scoped_roots.get(
+                    str(event["parent_id"]), [])
+                    if same_actor_before(candidate) and
+                    candidate.get("thread_id") == event.get("thread_id") and
+                    candidate.get("thread_id") is not None]
+                parent = max(matches, key=event_seq) if matches else None
             if parent is None:
                 self.gaps["unmatched_parent"] += 1
             else:
-                self._add(parent, event, "region_parent", "unique_parent_id_or_handoff_token")
+                evidence = ("scoped_root_same_thread" if self._is_scoped_root(parent)
+                            else "unique_parent_id_or_handoff_token")
+                self._add(parent, event, "region_parent", evidence)
 
         self._pair("SEND", "RECV", "rpc", ("transport", "correlation", "port"),
                    ("attempt", "half"), exclusive_consumers=True)
@@ -94,6 +144,14 @@ class OccurrenceGraph:
 
     def _add(self, producer: dict[str, Any], consumer: dict[str, Any], kind: str,
              evidence: str, *, certainty: str = "observed") -> None:
+        if self.reject_coarse_roots:
+            for endpoint in (producer, consumer):
+                if self._is_coarse_root(endpoint):
+                    self.gaps["coarse_root_edge_rejected"] += 1
+                    return
+                if self._is_legacy_unscoped(endpoint):
+                    self.gaps["unscoped_token_edge_rejected"] += 1
+                    return
         source, target = event_address(producer), event_address(consumer)
         if source is None or target is None:
             self.gaps[f"{kind}_missing_occurrence"] += 1
@@ -106,6 +164,50 @@ class OccurrenceGraph:
             return
         edge = Edge(source, target, kind, evidence, producer_id, consumer_id, certainty)
         (self.edges if certainty == "observed" else self.candidate_edges).add(edge)
+
+    @classmethod
+    def _is_coarse_root(cls, event: dict[str, Any]) -> bool:
+        occurrence = event.get("occurrence")
+        base = f"unscoped:{event.get('node')}:{event.get('epoch')}:root"
+        return (event.get("context") in (None, "root") and
+                isinstance(occurrence, str) and
+                (occurrence == base or occurrence.startswith(base + ":")) and
+                not cls._is_scoped_unscoped(event))
+
+    @classmethod
+    def _is_legacy_unscoped(cls, event: dict[str, Any]) -> bool:
+        occurrence = event.get("occurrence")
+        prefix = f"unscoped:{event.get('node')}:{event.get('epoch')}:"
+        return (isinstance(occurrence, str) and occurrence.startswith(prefix) and
+                not cls._is_scoped_unscoped(event))
+
+    @staticmethod
+    def _is_scoped_unscoped(event: dict[str, Any]) -> bool:
+        context = event.get("context")
+        thread_id = event.get("thread_id")
+        occurrence = event.get("occurrence")
+        if (not isinstance(context, str) or not context or
+                not isinstance(thread_id, int) or isinstance(thread_id, bool) or
+                not isinstance(occurrence, str)):
+            return False
+        prefix = (f"unscoped:{event.get('node')}:{event.get('epoch')}:"
+                  f"{context}:thread:{thread_id}:segment:")
+        return occurrence.startswith(prefix) and occurrence[len(prefix):].isdigit()
+
+    @staticmethod
+    def _is_scoped_root_id(event: dict[str, Any], occurrence: Any) -> bool:
+        thread_id = event.get("thread_id")
+        if (event.get("context") != "root" or not isinstance(thread_id, int)
+                or isinstance(thread_id, bool)):
+            return False
+        prefix = (f"unscoped:{event.get('node')}:{event.get('epoch')}:root:"
+                  f"thread:{thread_id}:segment:")
+        return (isinstance(occurrence, str) and occurrence.startswith(prefix)
+                and occurrence[len(prefix):].isdigit())
+
+    @classmethod
+    def _is_scoped_root(cls, event: dict[str, Any]) -> bool:
+        return cls._is_scoped_root_id(event, event.get("occurrence")) and cls._is_scoped_unscoped(event)
 
     def _pair(self, producer_type: str, consumer_type: str, kind: str,
               fields: tuple[str, ...], optional: tuple[str, ...] = (),
@@ -204,6 +306,73 @@ class OccurrenceGraph:
                     closure.add(parent)
                     pending.append(parent)
         return closure
+
+    def backward_event_reachability(self, target: dict[str, Any], *,
+                                    include_candidates: bool = False
+                                    ) -> EventTimeReachability:
+        """Prove paths ending before one TARGET_CHECK, using event IDs and order.
+
+        A direct same-occurrence/same-thread door has an empty-edge witness.
+        Audit callers require at least one edge for an observed graph path.
+        Older traces lacking numeric thread IDs cannot provide this proof.
+        """
+        target_id = target.get("id")
+        if not isinstance(target_id, str) or self._events_by_id.get(target_id) is not target:
+            return EventTimeReachability(target, {}, {})
+        cache_key = (target_id, include_candidates)
+        cached = self._time_cache.get(cache_key)
+        if cached is not None:
+            return cached
+        address, seq, thread = event_address(target), event_seq(target), target.get("thread_id")
+        if (address is None or seq < 0 or not isinstance(thread, int) or
+                isinstance(thread, bool)):
+            result = EventTimeReachability(target, {}, {})
+            self._time_cache[cache_key] = result
+            return result
+        incoming: dict[str, list[Edge]] = defaultdict(list)
+        for edge in self.edges | (self.candidate_edges if include_candidates else set()):
+            incoming[edge.target].append(edge)
+        for edges in incoming.values():
+            edges.sort(key=lambda edge: (edge.consumer_event, edge.producer_event))
+        first = (address, thread, False)
+        cutoffs = {first: seq}
+        paths: dict[tuple[str, int, bool], tuple[Edge, ...]] = {first: ()}
+        pending = [(first, seq)]
+        while pending:
+            current, cutoff = pending.pop()
+            if cutoffs[current] != cutoff:
+                continue
+            for edge in incoming.get(current[0], ()):
+                producer = self._events_by_id.get(edge.producer_event)
+                consumer = self._events_by_id.get(edge.consumer_event)
+                if producer is None or consumer is None:
+                    continue
+                p_seq, c_seq = event_seq(producer), event_seq(consumer)
+                p_thread, c_thread = producer.get("thread_id"), consumer.get("thread_id")
+                if (p_seq < 0 or c_seq < 0 or p_seq >= c_seq or c_seq > cutoff or
+                        not isinstance(p_thread, int) or isinstance(p_thread, bool) or
+                        c_thread != current[1] or event_address(producer) != edge.source or
+                        event_address(consumer) != edge.target):
+                    continue
+                previous = (edge.source, p_thread, True)
+                if p_seq > cutoffs.get(previous, -1):
+                    cutoffs[previous] = p_seq
+                    paths[previous] = (edge,) + paths[current]
+                    pending.append((previous, p_seq))
+        result = EventTimeReachability(target, cutoffs, paths)
+        self._time_cache[cache_key] = result
+        return result
+
+    def event_path(self, door: dict[str, Any], target: dict[str, Any], *,
+                   include_candidates: bool = False,
+                   require_edge: bool = True) -> tuple[Edge, ...] | None:
+        """Return a time-respecting witness, or None when no proof exists."""
+        door_id = door.get("id")
+        if not isinstance(door_id, str) or self._events_by_id.get(door_id) is not door:
+            return None
+        return self.backward_event_reachability(
+            target, include_candidates=include_candidates).witness(
+                door, require_edge=require_edge)
 
     def summary(self) -> dict[str, Any]:
         return {"occurrences": len(self.occurrences), "edges": len(self.edges),

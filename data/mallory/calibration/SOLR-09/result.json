@@ -1,0 +1,106 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-09",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup",
+  "coverage_ids_seen": 17,
+  "dispatch_attempt_ids": [
+    "20261009T154938-6d02f4b451a5"
+  ],
+  "duration_seconds": 15.625,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 39568,
+    "manifest_path": "evidence_archives/calibration/SOLR-09.tar.manifest.json",
+    "manifest_sha256": "a392fe2996576aefbbb0c606f200f0972775b4879418ba1b417a3538fa3c46a6",
+    "path": "evidence_archives/calibration/SOLR-09.tar.gz",
+    "sha256": "a9fcc55e3c2112058e959eca5442946dd3b7a033f7f8f1f5c225cca14a5b0f5f"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_observed_door_events": 0,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T154938-6d02f4b451a5",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 0,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": null,
+    "observed_target_class_sha256": "a76f7f732bd13437f37a44e4e0eaee13e053b0a6ae72b571bea1b3ec6b623c3b",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region",
+      "no_injectable_door",
+      "target_class_hash_unpinned"
+    ],
+    "site_catalog_sha256": "2f72820ee5880627656a33435ec66cd5edee08b947f27b073aa8d4315156c174",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 1,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (!callable.call())\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR,\n\"Could not remove replica : \" + collectionName + \"/\" + shard + \"/\" + replicaName);",
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V@277:branch:7"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd.deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)",
+    "site_id": "<org.apache.solr.cloud.api.collections.DeleteReplicaCmd: void deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)>#u118",
+    "source_line": 278,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/DeleteReplicaCmd.java",
+    "throw_site": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V@278:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "SOLR-09-r0000:278",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.solr.cloud.api.collections.DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V:48fd7b50-e2f2-4832-ba23-22fb64acf87f:task:119:1",
+      "seq": 278,
+      "site": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V@277:branch:7"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T154938-6d02f4b451a5",
+      "duration_seconds": 15.625,
+      "eligible_doors_before_target": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 17
+      },
+      "observed_door_events": 0,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

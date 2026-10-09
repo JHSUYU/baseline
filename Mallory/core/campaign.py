@@ -113,6 +113,10 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ValueError("validated_recovery_exploration_interval must be at least 2")
     if not isinstance(config.get("allow_local_timeline_doors", False), bool):
         raise ValueError("allow_local_timeline_doors must be boolean")
+    if not isinstance(config.get("reject_coarse_roots", False), bool):
+        raise ValueError("reject_coarse_roots must be boolean")
+    if not isinstance(config.get("require_event_time_paths", False), bool):
+        raise ValueError("require_event_time_paths must be boolean")
     breadth_interval = config.get("single_fault_breadth_interval")
     if breadth_interval is not None and (
             not isinstance(breadth_interval, int) or
@@ -432,7 +436,9 @@ def _run_trial(config: dict[str, Any], out: Path, trial_id: int,
         target = {**config["target"], **(target_binding or {})}
         feedback = analyze(trace, target, plan,
                            return_code=return_code, timed_out=timed_out,
-                           allow_local_timeline_doors=config.get("allow_local_timeline_doors", False))
+                           allow_local_timeline_doors=config.get("allow_local_timeline_doors", False),
+                           reject_coarse_roots=config.get("reject_coarse_roots", False),
+                           require_event_time_paths=config.get("require_event_time_paths", False))
     except TraceError as exc:
         trace_error = str(exc)
         feedback = {"status": "trace_invalid", "target_reached": False,

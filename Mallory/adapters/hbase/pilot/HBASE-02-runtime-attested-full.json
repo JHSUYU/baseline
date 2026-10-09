@@ -1,0 +1,151 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.client.ConnectionImplementation",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "auto_promote_if_healthy": true,
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_seconds": 300,
+    "trials": 80
+  },
+  "calibration_attestation": {
+    "class_loader_id": "sun.misc.Launcher$AppClassLoader@18b4aac2",
+    "healthy_causal_audit": {
+      "core_source_sha256": {
+        "audit.py": "6a367fab1412764b1535efb590f01bd23f1a8bb3500392b2fc4c95239f4a18b8",
+        "campaign.py": "9d6566cab4ccb3984d8143033cae66a3f1304b73700b3d5d287cd8ff6921f708",
+        "events.py": "588bef941723e5914ca7db587e0efd9c9bad87c40edda52312a0b58130ddd705",
+        "feedback.py": "0db49bf032ebdc8df38058c9aa3358092692dc030e8a1874c23b38f374cedf8f",
+        "graph.py": "45ccf0350e17b3e0dd3878d6beb0e6854cbe0d17471dfe576255a1c87399cff7"
+      },
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/calibration_v2/HBASE-02/offline-causal-audit.json",
+      "sha256": "2dbb163bb7b964d80dc4f59baceb5ec36dfcdf8a3bd804e169d1eae4a2bf84a6"
+    },
+    "healthy_junit": {
+      "log_sha256": "cf5d49b5007ef53f0d9dc3c78140e48e577beb1b068b0ff482d66e1e95172b02",
+      "runner": "hbase_direct_junit",
+      "tests_run": 1
+    },
+    "healthy_result_sha256": "69096e801d80e0361ea13217af4bf0363e66a4bbbb00f8639d07d2c6b09f59f3",
+    "identity_gaps": [],
+    "site_catalog_sha256": "27ba7ff2e1deb6fdd03f743d9bc9fcc2b0ad3e20067b5dfc79f350849b9d88a9",
+    "source_overlay_receipt_sha256": null,
+    "source_reference_digest": "211136146806c868a7056e071018423cfa464aa69f446efc350a2253415fbafb",
+    "target_nodes": [
+      "client"
+    ]
+  },
+  "calibration_only": false,
+  "case_id": "HBASE-02",
+  "cluster_test": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.client.TestConnectionImplementation",
+    "testMetaLookupThreadPoolCreated"
+  ],
+  "core_release": {
+    "manifest_sha256": "101e132c7513ac37650276d858da4b5cb766903e38be06158db2d4c472c0417f",
+    "release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf"
+  },
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/source",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "expected_target_class_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+  "mapping": {
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-client-2.6.6.jar",
+    "compiled_class_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-client-2.6.6.jar",
+    "compiled_jar_sha256": "b3c9537a0c5f4b057134c59298b453ae207d2e6279be66d71c80da36d0d2de54",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+    "distribution_root_env": "MALLORY_HBASE_DIST_ROOT",
+    "healthy_seed_verified": true,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": true,
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration",
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "source_root_env": "MALLORY_HBASE_SOURCE_ROOT",
+    "status": "runtime_attested",
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/lane2-receipt.json",
+    "system_receipt_sha256": "447e50189b96f844174c472de61e213cf6c7a652614894c3d8ae07b259d9eff0",
+    "target_source_sha256": "f00ec999b43227553f89ecb859ccfe28e4f901adb0f2f37552096d1f72261184",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a",
+    "verified_healthy_probe": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/calibration_v2/HBASE-02/trials/r0000/result.json"
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/adapter.jar",
+      "sha256": "cdbd1bda62dd23833e0f1bb62dd35fbfcff0f9dd1a1ec8fa982ba5cf722cb63f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "c82e7304119fc97d5ffdf87e2656f286735675e81f5236030db265c6e239a12f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/cases/HBASE-02/sites.json",
+      "sha256": "76dad94f551bb86ab52fd80b45d4368667a3a5f506c85bb36692e6ad3a3fb9b2"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/runtime/cases/HBASE-02/sites.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane8/source",
+  "system": "hbase",
+  "target": {
+    "check_code": "if (!tableName.equals(TableName.META_TABLE_NAME) && isTableDisabled(tableName)) {\nthrow new TableNotEnabledException(tableName.getNameAsString() + \" is disabled.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;@910:branch:1",
+      "org.apache.hadoop.hbase.client.ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;@910:branch:2"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.TableNotEnabledException",
+    "function": "org.apache.hadoop.hbase.client.ConnectionImplementation.relocateRegion(org.apache.hadoop.hbase.TableName,byte[],int)",
+    "original_source_line": 911,
+    "site_id": "<org.apache.hadoop.hbase.client.ConnectionImplementation: org.apache.hadoop.hbase.RegionLocations relocateRegion(org.apache.hadoop.hbase.TableName,byte[],int)>#u17",
+    "source_line": 911,
+    "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
+    "throw_site": "org.apache.hadoop.hbase.client.ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;@911:throw:1"
+  }
+}

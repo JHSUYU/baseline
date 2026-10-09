@@ -1,0 +1,53 @@
+{
+  "artifacts": {
+    "validation": {
+      "path": "Mallory/cases/revisions/SOLR-routed-alias-configset-auth-v1.validation.json",
+      "sha256": "64c7f5ed0dcb17e7faae00249fcf35205aa8ae43d16f677cee267b2aeecae524"
+    },
+    "validator": {
+      "path": "Mallory/cases/revisions/SOLR-routed-alias-configset-auth-v1-validate.py",
+      "sha256": "6d3329f176e9bb4651eab96c8f6321e7f3b8240ba3ccd28b14493620cad446e3"
+    }
+  },
+  "cases": {
+    "SOLR-10": {
+      "expected_isolated_lane_config_sha256": "3cb15da827f41a4279c21910b250f1480bb17a0021403b8cca253c3b823713ba",
+      "path": "Mallory/adapters/solr/cases/SOLR-10/config-v23-configset-auth-healthy.json",
+      "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+      "sha256": "7de60e9b97acc1a072985138123836d2632627b59077d7bfb7e51781bc2263c2"
+    },
+    "SOLR-13": {
+      "expected_isolated_lane_config_sha256": "305e736b6faff7d2c05bd4303133b57b84845bf68e81464790116b18e2e2a0b8",
+      "path": "Mallory/adapters/solr/cases/SOLR-13/config-v23-configset-auth-healthy.json",
+      "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation",
+      "sha256": "265a16bca563e5996d1160e97b38406e6157c840a862227e7281b7aef32639b6"
+    },
+    "SOLR-39": {
+      "expected_isolated_lane_config_sha256": "30b977f6007dd3655516cb6cee8babadde24415168d4510a43ed0dd3ff4c50fe",
+      "path": "Mallory/adapters/solr/cases/SOLR-39/config-v23-configset-auth-healthy.json",
+      "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+      "sha256": "1c3ac4c963eb3aada57678156d35003ce9159558ae32ef0330fe80311d1a9ffe"
+    },
+    "SOLR-40": {
+      "expected_isolated_lane_config_sha256": "4d8c5dff378f31ff3fa2fe4429e0057c087314856a65a96526dfbcd12be0daf1",
+      "path": "Mallory/adapters/solr/cases/SOLR-40/config-v23-configset-auth-healthy.json",
+      "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+      "sha256": "cfa8ae74ba9692e5ca40cd7a2bffb4b940b3cc65080552e9c8500d60e3a14950"
+    }
+  },
+  "first_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+  "isolated_lane_root_on_admission": "/users/ZhenyuLi/.mallory-worktrees/solr-routed-alias-v23",
+  "policy_option": "-Dsolr.disableConfigSetsCreateAuthChecks=true",
+  "priority_order": [
+    "SOLR-10",
+    "SOLR-39",
+    "SOLR-40",
+    "SOLR-13"
+  ],
+  "reason_first_selector": "Source method creates routed alias, indexes across new time collections, commits and deletes through alias (TimeRoutedAliasUpdateProcessorTest.java:132-209); this can exercise all four target paths, though per-case exact runtime reach remains unverified.",
+  "revision": "SOLR-routed-alias-configset-auth-v1",
+  "run_gate": "Dispatch must admit independent empty Solr lane, materialize and verify isolated source checkout, then run healthy-only JUnit. No full campaign or reporter promotion until JUnit passes, exact target checks are named, trace is complete, and audit passes.",
+  "schema_version": 1,
+  "source_only_reviews_remain_provisional": true,
+  "status": "staged_offline_only"
+}

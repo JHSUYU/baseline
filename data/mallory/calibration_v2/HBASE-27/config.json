@@ -1,0 +1,118 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.regionserver.HRegionServer",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 600,
+    "trial_timeout_seconds": 300,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "HBASE-27",
+  "cluster_test": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.TestClusterBootOrder",
+    "testBootRegionServerFirst"
+  ],
+  "core_release": {
+    "manifest_sha256": "101e132c7513ac37650276d858da4b5cb766903e38be06158db2d4c472c0417f",
+    "release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf"
+  },
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "expected_target_class_sha256": "c1a746ab4b1aeac4744da76363b330c950b03fbfda9dfdcac7f57f64eb76270b",
+  "mapping": {
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "compiled_class_sha256": "c1a746ab4b1aeac4744da76363b330c950b03fbfda9dfdcac7f57f64eb76270b",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "compiled_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+    "distribution_root_env": "MALLORY_HBASE_DIST_ROOT",
+    "healthy_seed_verified": false,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": false,
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration",
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "source_root_env": "MALLORY_HBASE_SOURCE_ROOT",
+    "status": "preliminary_compiled_distribution_site",
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/lane2-receipt.json",
+    "system_receipt_sha256": "447e50189b96f844174c472de61e213cf6c7a652614894c3d8ae07b259d9eff0",
+    "target_source_sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "7ac0843f5cc522b4494fa2570f91ba334b70492da8bf73c58ea4d3baf9f0c630",
+    "verified_healthy_probe": null
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/adapter.jar",
+      "sha256": "cdbd1bda62dd23833e0f1bb62dd35fbfcff0f9dd1a1ec8fa982ba5cf722cb63f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/cases/HBASE-27/sites.json",
+      "sha256": "16ce0ddba46801be65667cf6a5602422e31cbec8e8054e24d026a198f6a17eaf"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "c82e7304119fc97d5ffdf87e2656f286735675e81f5236030db265c6e239a12f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/cases/HBASE-27/sites.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source",
+  "system": "hbase",
+  "target": {
+    "check_code": "if (this.stopped) {\nthrow new IOException(\"Received the shutdown message while waiting.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1052:branch:2"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)",
+    "original_source_line": 1053,
+    "site_id": "<org.apache.hadoop.hbase.regionserver.HRegionServer: void blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)>#u10",
+    "source_line": 1053,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1053:throw:1"
+  }
+}

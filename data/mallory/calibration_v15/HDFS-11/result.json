@@ -1,0 +1,119 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-11",
+  "closure_coverage_ids_seen": 2,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+  "coverage_ids_seen": 211,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 21.94,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 32,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_2d75893469bc4485acd15319040deaa3",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 2
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestEncryptedTransfer-mallory_0000_2d75893469bc4485acd15319040deaa3.xml",
+        "sha256": "fc06f313ae9c501dae01e13f9498967aa5acabb0c1076cabf44ad3e75e6a0c91"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "05efadab79b4550298c80cae29db7db7821cb286a1265b63f8a48db7b0ab92cb",
+    "tests": 2
+  },
+  "healthy_observed_door_events": 63,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-2/dn0"
+    ],
+    "eligible_doors_before_target": 32,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+    "observed_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+    "reasons": [],
+    "site_catalog_sha256": "6699ff1a99079ce7e160929473c6850e4e03bacacd86054c46f18c742e79d89d",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (key == null) {\nthrow new InvalidEncryptionKeyException(\"Can't re-compute encryption key\"\n+ \" for nonce, since the required block key (keyID=\" + keyId\n+ \") doesn't exist. Current key: \" + currentKey.getKeyId());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B@552:branch:1"
+    ],
+    "exception_class": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException",
+    "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+    "original_source_line": 555,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrieveDataEncryptionKey(int,byte[])>#u20",
+    "source_line": 555,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B@555:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-2/dn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 21.94,
+      "eligible_doors_before_target": 32,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 2,
+      "novelty": {
+        "closure_coverage": 2,
+        "closure_edges": 0,
+        "coverage": 211
+      },
+      "observed_door_events": 63,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

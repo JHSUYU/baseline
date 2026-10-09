@@ -1,0 +1,92 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-40",
+  "closure_coverage_ids_seen": 77,
+  "closure_edge_fingerprints_seen": 18,
+  "cluster_test": "org.apache.hadoop.hdfs.TestFileAppend#testFailedAppendBlockRejection",
+  "coverage_ids_seen": 204,
+  "dispatch_attempt_ids": [
+    "20261009T161946-fba2d1ca5511"
+  ],
+  "duration_seconds": 17.284,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 22,
+  "healthy_observed_door_events": 63,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T161946-fba2d1ca5511",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/nn0"
+    ],
+    "eligible_doors_before_target": 22,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "a10167f939f5fe912e83ce5b570a7053a9856e844a1706c0f40b8f8296a0a8c8",
+    "observed_target_class_sha256": "a10167f939f5fe912e83ce5b570a7053a9856e844a1706c0f40b8f8296a0a8c8",
+    "reasons": [],
+    "site_catalog_sha256": "4692ccf32893888061f9816423ce3d705a2cab8affee16a084823862bc906772",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (lastBlock.getBlockUCState() == BlockUCState.COMMITTED) {\nthrow new RetriableException(\nnew NotReplicatedYetException(\"append: lastBlock=\"\n+ lastBlock + \" of src=\" + path\n+ \" is COMMITTED but not yet COMPLETE.\"));\n} else if (lastBlock.isComplete()\n&& !blockManager.isSufficientlyReplicated(lastBlock)) {\nthrow new IOException(\"append: lastBlock=\" + lastBlock + \" of src=\"\n+ path + \" is not sufficiently replicated yet.\");",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;@131:branch:12"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
+    "original_source_line": 138,
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp: org.apache.hadoop.hdfs.protocol.LastBlockWithStatus appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)>#u111",
+    "source_line": 138,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp#appendFile(Lorg/apache/hadoop/hdfs/server/namenode/FSNamesystem;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/FSPermissionChecker;Ljava/lang/String;Ljava/lang/String;ZZ)Lorg/apache/hadoop/hdfs/protocol/LastBlockWithStatus;@138:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/nn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T161946-fba2d1ca5511",
+      "duration_seconds": 17.284,
+      "eligible_doors_before_target": 22,
+      "novelty": {
+        "closure_coverage": 77,
+        "closure_edges": 18,
+        "coverage": 204
+      },
+      "observed_door_events": 63,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

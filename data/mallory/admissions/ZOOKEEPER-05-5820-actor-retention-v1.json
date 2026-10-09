@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-05",
+  "status": "postfault_target_causality_proven",
+  "pilot_result": "/users/ZhenyuLi/baseline/data/mallory/pilot_core5820/ZOOKEEPER-05/result.json",
+  "pilot_result_sha256": "83207b803bc4bd1b0a0ed05ea22732c3f7e30d22054140fa96422199e7251b7a",
+  "original_offline_audit": "/users/ZhenyuLi/baseline/data/mallory/pilot_core5820/ZOOKEEPER-05/offline-causal-audit.json",
+  "original_offline_audit_sha256": "6b1527799bff3d53588a1abb7c146f8a13535307e21e7b81879d7e397be9053c",
+  "original_audit_gate_passed": true,
+  "applied_fault_count": 6,
+  "proven_fault_count": 2,
+  "exact_same_occurrence_count": 0,
+  "time_respecting_observed_path_count": 2,
+  "faults": [
+    {
+      "trial_id": 1,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-05-r0001:111",
+      "fault_seq": 111,
+      "fault_site": "zookeeper.quorum.archive.readRecord",
+      "fault_node": "zk1",
+      "fault_epoch": 1,
+      "fault_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-05-r0001:135",
+        "ZOOKEEPER-05-r0001:183",
+        "ZOOKEEPER-05-r0001:251",
+        "ZOOKEEPER-05-r0001:256"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 2,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-05-r0002:240",
+      "fault_seq": 240,
+      "fault_site": "zookeeper.quorum.archive.writeRecord",
+      "fault_node": "zk2",
+      "fault_epoch": 1,
+      "fault_occurrence": "unscoped:zk2:1:root",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-05-r0002:271"
+      ],
+      "observed_path": [
+        {
+          "kind": "rpc",
+          "producer_event": "ZOOKEEPER-05-r0002:260",
+          "consumer_event": "ZOOKEEPER-05-r0002:263",
+          "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+          "target": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+        }
+      ],
+      "postfault_target_causality_proven": true
+    },
+    {
+      "trial_id": 3,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-05-r0003:199",
+      "fault_seq": 199,
+      "fault_site": "zookeeper.quorum.archive.writeRecord",
+      "fault_node": "zk3",
+      "fault_epoch": 1,
+      "fault_occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-05-r0003:236",
+        "ZOOKEEPER-05-r0003:237"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 4,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-05-r0004:182",
+      "fault_seq": 182,
+      "fault_site": "zookeeper.quorum.archive.readRecord",
+      "fault_node": "zk2",
+      "fault_epoch": 1,
+      "fault_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-05-r0004:204",
+        "ZOOKEEPER-05-r0004:283",
+        "ZOOKEEPER-05-r0004:292"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 5,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-05-r0005:120",
+      "fault_seq": 120,
+      "fault_site": "zookeeper.quorum.archive.writeRecord",
+      "fault_node": "zk1",
+      "fault_epoch": 1,
+      "fault_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-05-r0005:142",
+        "ZOOKEEPER-05-r0005:206",
+        "ZOOKEEPER-05-r0005:273",
+        "ZOOKEEPER-05-r0005:276"
+      ],
+      "observed_path": [],
+      "postfault_target_causality_proven": false
+    },
+    {
+      "trial_id": 6,
+      "selection_reason": "dynamic_closure",
+      "fault_event_id": "ZOOKEEPER-05-r0006:117",
+      "fault_seq": 117,
+      "fault_site": "zookeeper.quorum.archive.writeRecord",
+      "fault_node": "zk3",
+      "fault_epoch": 0,
+      "fault_occurrence": "unscoped:zk3:0:root",
+      "later_exact_check_event_ids": [],
+      "later_any_check_event_ids": [
+        "ZOOKEEPER-05-r0006:137",
+        "ZOOKEEPER-05-r0006:186",
+        "ZOOKEEPER-05-r0006:277",
+        "ZOOKEEPER-05-r0006:279"
+      ],
+      "observed_path": [
+        {
+          "kind": "rpc",
+          "producer_event": "ZOOKEEPER-05-r0006:131",
+          "consumer_event": "ZOOKEEPER-05-r0006:132",
+          "source": "[\"zk3\",\"0\",\"unscoped:zk3:0:root\"]",
+          "target": "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+        }
+      ],
+      "postfault_target_causality_proven": true
+    }
+  ]
+}

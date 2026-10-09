@@ -243,6 +243,7 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
     healthy_local_timeline_doors = 0
     healthy_local_timeline_sites: set[str] = set()
     healthy_local_timeline_evidence_sample: list[dict[str, Any]] = []
+    healthy_event_time_path_sample: list[dict[str, Any]] = []
     healthy_target_reached = False
     healthy_target_nonthrowing = False
     for entry in sorted(summary.get("trials", []), key=lambda row: row["trial_id"]):
@@ -267,7 +268,10 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                                  return_code=result.get("return_code"),
                                  timed_out=bool(result.get("timed_out")),
                                  allow_local_timeline_doors=config.get(
-                                     "allow_local_timeline_doors", False))
+                                     "allow_local_timeline_doors", False),
+                                 reject_coarse_roots=config.get("reject_coarse_roots", False),
+                                 require_event_time_paths=config.get(
+                                     "require_event_time_paths", False))
             old = result.get("feedback", {})
             if trial_id == 0:
                 healthy_closure_observed_edges = sum(
@@ -287,31 +291,61 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                     str(door["site"]) for door in recomputed.get("doors", [])
                     if "local_timeline_evidence" in door and isinstance(door.get("site"), str)}
                 healthy_local_timeline_evidence_sample = local_evidence[:10]
-                graph = OccurrenceGraph(trace.events)
-                # Exclude the anchor itself: a qualifying door must have a
-                # nonempty, entirely observed causal path into the target.
+                graph = OccurrenceGraph(
+                    trace.events,
+                    reject_coarse_roots=(config.get("reject_coarse_roots", False) or
+                                         config.get("require_event_time_paths", False)))
+                # The future gate binds each door to an exact target check
+                # through ordered event IDs. Legacy audits retain their
+                # original occurrence-level meaning.
+                event_time_gate = bool(config.get("require_event_time_paths", False))
                 observed_ancestors = set()
-                for target_row in recomputed.get("target_closures", []):
-                    anchor = target_row.get("anchor")
-                    if anchor:
-                        observed_ancestors.update(
-                            graph.backward_closure(anchor, include_candidates=False) - {anchor})
-                door_addresses: dict[tuple[Any, ...], list[str | None]] = {}
+                if not event_time_gate:
+                    for target_row in recomputed.get("target_closures", []):
+                        anchor = target_row.get("anchor")
+                        if anchor:
+                            observed_ancestors.update(
+                                graph.backward_closure(anchor, include_candidates=False) - {anchor})
+                door_events: dict[tuple[Any, ...], list[dict[str, Any]]] = {}
                 for event in trace.events:
                     if event.get("type") != "DOOR_OBSERVED":
                         continue
                     key = (event.get("id"), event.get("site"), event.get("seq"),
                            event.get("node"), event.get("epoch"))
-                    door_addresses.setdefault(key, []).append(event_address(event))
-                healthy_observed_path_doors = sum(
-                    bool(door.get("in_closure")) and
-                    _named(door.get("point", {}).get("node")) and
-                    len(addresses := door_addresses.get((
-                        door.get("event_id"), door.get("site"), door.get("event_seq"),
-                        door.get("point", {}).get("node"),
-                        door.get("point", {}).get("epoch")), [])) == 1 and
-                    addresses[0] in observed_ancestors
-                    for door in recomputed.get("doors", []))
+                    door_events.setdefault(key, []).append(event)
+                target_events = [event for event in trace.events
+                                 if event.get("type") == "TARGET_CHECK" and
+                                 _named(event.get("node")) and
+                                 _target_match(event, target, throwing=False)]
+                for door in recomputed.get("doors", []):
+                    if (not door.get("in_closure") or
+                            not _named(door.get("point", {}).get("node"))):
+                        continue
+                    key = (door.get("event_id"), door.get("site"), door.get("event_seq"),
+                           door.get("point", {}).get("node"),
+                           door.get("point", {}).get("epoch"))
+                    matches = door_events.get(key, [])
+                    if len(matches) != 1:
+                        continue
+                    if event_time_gate:
+                        for check in target_events:
+                            witness = graph.event_path(matches[0], check, require_edge=True)
+                            if witness is None:
+                                continue
+                            healthy_observed_path_doors += 1
+                            if len(healthy_event_time_path_sample) < 10:
+                                healthy_event_time_path_sample.append({
+                                    "door_event_id": matches[0].get("id"),
+                                    "target_check_event_id": check.get("id"),
+                                    "door_seq": event_seq(matches[0]),
+                                    "target_check_seq": event_seq(check),
+                                    "edges": [{"producer_event": edge.producer_event,
+                                               "consumer_event": edge.consumer_event,
+                                               "kind": edge.kind}
+                                              for edge in witness]})
+                            break
+                    elif event_address(matches[0]) in observed_ancestors:
+                        healthy_observed_path_doors += 1
             faults = _audit_faults(trace.events, plan)
             applied_events = [e for e in trace.events if e.get("type") == "FAULT_APPLIED"]
             unknown_applied += sum(not _named(e.get("node")) for e in applied_events)
@@ -419,11 +453,15 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
               "healthy_closure_observed_edges": healthy_closure_observed_edges,
               "healthy_closure_included_named_doors": healthy_closure_included_named_doors,
               "healthy_observed_path_doors": healthy_observed_path_doors,
+              "healthy_event_time_path_sample": healthy_event_time_path_sample,
               "healthy_local_timeline_doors": healthy_local_timeline_doors,
               "healthy_local_timeline_sites": sorted(healthy_local_timeline_sites),
               "healthy_local_timeline_evidence_sample": healthy_local_timeline_evidence_sample,
               "healthy_closure_evidence_types": healthy_closure_evidence_types,
               "allow_local_timeline_doors": allow_local_timeline,
+              "reject_coarse_roots": bool(config.get("reject_coarse_roots", False) or
+                                          config.get("require_event_time_paths", False)),
+              "require_event_time_paths": bool(config.get("require_event_time_paths", False)),
               "local_timeline_only": local_timeline_only,
               "same_actor_target_required": same_actor_target_required,
               "same_actor_target_gate_passed": same_actor_target_gate_passed,

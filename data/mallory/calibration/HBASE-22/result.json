@@ -1,0 +1,80 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-22",
+  "closure_coverage_ids_seen": 84,
+  "closure_edge_fingerprints_seen": 423,
+  "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
+  "coverage_ids_seen": 85,
+  "dispatch_attempt_ids": [
+    "20261009T163646-f0d12548e830"
+  ],
+  "duration_seconds": 39.299,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 293651,
+    "manifest_path": "evidence_archives/calibration/HBASE-22.tar.manifest.json",
+    "manifest_sha256": "fe0847e80fd562a24e358248371bbf3f9350d02050a19da6ddbebb32e45e0fe2",
+    "path": "evidence_archives/calibration/HBASE-22.tar.gz",
+    "sha256": "ad2c7fea52e2cc70a5d66bdcbb27bfea0c2f695aeb8c5b71ae85dee651955451"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 76,
+  "healthy_observed_door_events": 193,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T163646-f0d12548e830",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (\n(currentStatus.getRegionCount() + numRegions) > TableNamespaceManager.getMaxRegions(nspdesc)\n) {\nthrow new QuotaExceededException(\n\"The table \" + table.getNameAsString() + \" is not allowed to have \" + numRegions\n+ \" regions. The total number of regions permitted is only \"\n+ TableNamespaceManager.getMaxRegions(nspdesc) + \", while current region count is \"\n+ currentStatus.getRegionCount()\n+ \". This may be transient, please retry later if there are any\"\n+ \" ongoing split operations in the namespace.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceTableCount(Lorg/apache/hadoop/hbase/TableName;I)V@166:branch:4"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.quotas.QuotaExceededException",
+    "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)",
+    "original_source_line": 172,
+    "site_id": "<org.apache.hadoop.hbase.namespace.NamespaceStateManager: void checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)>#u54",
+    "source_line": 172,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+    "throw_site": "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceTableCount(Lorg/apache/hadoop/hbase/TableName;I)V@172:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T163646-f0d12548e830",
+      "duration_seconds": 39.299,
+      "eligible_doors_before_target": 76,
+      "novelty": {
+        "closure_coverage": 84,
+        "closure_edges": 423,
+        "coverage": 85
+      },
+      "observed_door_events": 193,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_target_exception",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

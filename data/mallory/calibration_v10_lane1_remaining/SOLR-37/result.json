@@ -1,0 +1,92 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-37",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
+  "coverage_ids_seen": 143,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 13.663,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 7,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 1,
+    "junit_log_sha256": "66d7c09d64a9e06a07ef37a2d0f16c7ee756364b768ae525101c7345c87354da",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=1 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "failed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "48ed2afffccaaac7c055b836580f7cc1d52828f5c3b25087be1f516d78985a82",
+    "tests": 1,
+    "wrapper_sha256": "649e4698768d1921202a17a571f5384251de312e0c9ec8e3b4bd964a52030c52"
+  },
+  "healthy_observed_door_events": 20,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (mySlice.getRange() != null && !mySlice.getRange().isSubsetOf(parentRange)) {\nthrow new SolrException(SolrException.ErrorCode.SERVICE_UNAVAILABLE,\n\"Request says it is coming from parent shard leader but parent hash range is not superset of my range\");",
+    "check_sites": [
+      "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@994:branch:9",
+      "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@994:branch:10"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.update.processor.DistributedZkUpdateProcessor.doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)",
+    "original_source_line": 995,
+    "site_id": "<org.apache.solr.update.processor.DistributedZkUpdateProcessor: void doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)>#u56",
+    "source_line": 995,
+    "source_path": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java",
+    "throw_site": "org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V@995:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 13.663,
+      "eligible_doors_before_target": 7,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 143
+      },
+      "observed_door_events": 20,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_junit_failed",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 0
+    }
+  ]
+}

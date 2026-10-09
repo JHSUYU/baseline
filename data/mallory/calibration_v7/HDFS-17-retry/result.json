@@ -1,0 +1,119 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-17",
+  "closure_coverage_ids_seen": 16,
+  "closure_edge_fingerprints_seen": 3,
+  "cluster_test": "org.apache.hadoop.hdfs.server.blockmanagement.TestRBWBlockInvalidation#testRWRShouldNotAddedOnDNRestart",
+  "coverage_ids_seen": 167,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 19.749,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 25,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_fb0fdb88bac3440ea2926cde5bb0c311",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.blockmanagement.TestRBWBlockInvalidation-mallory_0000_fb0fdb88bac3440ea2926cde5bb0c311.xml",
+        "sha256": "0535ebd4c9ff14afb3019216e54dd49af23cba1327517b0230305f02f3010922"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "442a935a168907f9e771f0c1d4a602a6d76ee818726a19364edd3b590c057904",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 29,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/nn0"
+    ],
+    "eligible_doors_before_target": 25,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "ebd430a4e4a39cc20963829686039977a1f5d89f1cd557bc1076408f0cfe2ca7",
+    "observed_target_class_sha256": "ebd430a4e4a39cc20963829686039977a1f5d89f1cd557bc1076408f0cfe2ca7",
+    "reasons": [],
+    "site_catalog_sha256": "bbd311281d90479b8eaf91f3a7bdecc9438b980c0e38f5823359f378cc59be73",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "Preconditions.checkArgument(!storedBlock.isComplete());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo#<init>(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V@2851:branch:1"
+    ],
+    "exception_class": "java.lang.IllegalArgumentException",
+    "function": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo.<init>(org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo,org.apache.hadoop.hdfs.protocol.Block,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState)",
+    "original_source_line": 2851,
+    "site_id": "<org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo: void <init>(org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo,org.apache.hadoop.hdfs.protocol.Block,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState)>#u10",
+    "source_line": 2851,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo#<init>(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockInfo;Lorg/apache/hadoop/hdfs/protocol/Block;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$ReplicaState;)V@2851:callthrow:3"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/nn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 19.749,
+      "eligible_doors_before_target": 25,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 16,
+        "closure_edges": 3,
+        "coverage": 167
+      },
+      "observed_door_events": 29,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

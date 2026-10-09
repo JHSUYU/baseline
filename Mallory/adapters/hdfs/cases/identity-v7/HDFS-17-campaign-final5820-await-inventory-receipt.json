@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "case_id": "HDFS-17",
+  "dispatch_ready": false,
+  "campaign_config": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-v7/HDFS-17-campaign-final5820-await-inventory.json",
+    "sha256": "3d22fe87e91bcbab132c8d537e9d788db35aff09fb3d305123bf6b1dd8f31b6a"
+  },
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "compiled_target_class": {
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager$StatefulBlockInfo.class",
+    "sha256": "ebd430a4e4a39cc20963829686039977a1f5d89f1cd557bc1076408f0cfe2ca7"
+  },
+  "compiled_test_class": {
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/server/blockmanagement/TestRBWBlockInvalidation.class",
+    "sha256": "c578d87d360bac56b88457678de7038fc47912b4c648c292618ce8f6203d5f7f"
+  },
+  "test_source": {
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/blockmanagement/TestRBWBlockInvalidation.java",
+    "sha256": "368ab1f49bc45bcad2a615c05a5bb4ee911a758f2f2b0479775b0a97feed8b6a"
+  },
+  "junit_selector": "org.apache.hadoop.hdfs.server.blockmanagement.TestRBWBlockInvalidation#testRWRShouldNotAddedOnDNRestart",
+  "healthy_junit": {
+    "log_sha256": "442a935a168907f9e771f0c1d4a602a6d76ee818726a19364edd3b590c057904",
+    "runner": "surefire",
+    "tests_run": 1
+  },
+  "healthy_result": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v7/HDFS-17-retry/result.json",
+    "sha256": "cc6f1cf74a7f3669512b22c57852f15c3aab94c78a5de8eccd7702f14afce37d"
+  },
+  "healthy_trial": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v7/HDFS-17-retry/trials/r0000/result.json",
+    "sha256": "b3fe6af8b2f04c6eb2c74cef87126e7d99a410fca33dd907b96a3927f9cf8f58"
+  },
+  "site_catalog": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v7/HDFS-17-retry/trials/r0000/sites.jsonl",
+    "sha256": "bbd311281d90479b8eaf91f3a7bdecc9438b980c0e38f5823359f378cc59be73"
+  },
+  "audit": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v7/HDFS-17-retry/offline-causal-audit.json",
+    "sha256": "20de55ef5a623dbc84c752fcafefb6746aaf862ea06d19d7f4f07f685e4fdf75",
+    "report_gate_passed": true,
+    "healthy_observed_path_doors": 1
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-17.sites.json",
+      "sha256": "7d9a9c7b486628150f81b85e56a01f8ffcc152ec4309b3755a980e7b903be354"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v7-format-blockqueue.jar",
+      "sha256": "8ed9fe7d0ed830eb2f91bcd70360c76e5c6d0ec55c048a62eeef4adf2beb4712"
+    }
+  ],
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_basis": "system_default_pending_mallory_seed",
+    "trial_timeout_seconds": 180,
+    "trials": 80
+  },
+  "admission_blocker": "Versioned inventory/source-reference workload update required before dispatch."
+}

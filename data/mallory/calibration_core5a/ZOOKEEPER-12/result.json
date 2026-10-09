@@ -1,0 +1,123 @@
+{
+  "calibration_only": true,
+  "case_id": "ZOOKEEPER-12",
+  "closure_coverage_ids_seen": 9,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+  "coverage_ids_seen": 196,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 40.875,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 313,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_ac5f0ba78746452dadbe51ba875e88d8",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest-mallory_0000_ac5f0ba78746452dadbe51ba875e88d8.xml",
+        "sha256": "fdd121e6544fab49175d1dd3e4d0ca2ead852222c69efada8703d2e188f95b85"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "f443f004a0e89d398b90c95a169a03ab1d407d94813a25ba90c8581f4914bb31",
+    "tests": 1
+  },
+  "healthy_local_timeline_doors": 5,
+  "healthy_observed_door_events": 446,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "zk0"
+    ],
+    "eligible_doors_before_target": 313,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "446279eb1dfdb4837aaf5e65f943b54a1138a068b1b83f69b5008d6b18cca717",
+    "observed_target_class_sha256": "446279eb1dfdb4837aaf5e65f943b54a1138a068b1b83f69b5008d6b18cca717",
+    "reasons": [],
+    "site_catalog_sha256": "35b54bca7387d57333c02977185dcf615fc09c400ec9c80f3a87258368166af1",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "zookeeper",
+  "target": {
+    "check_code": "if (acceptedEpoch < currentEpoch) {\nthrow new IOException(\"The accepted epoch, \"\n+ ZxidUtils.zxidToString(acceptedEpoch)\n+ \" is less than the current epoch, \"\n+ ZxidUtils.zxidToString(currentEpoch));",
+    "check_sites": [
+      "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1193:branch:3"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+    "nodes": [
+      "zk0"
+    ],
+    "site_id": "<org.apache.zookeeper.server.quorum.QuorumPeer: void loadDataBase()>#u76",
+    "source_line": 1197,
+    "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+    "throw_site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1197:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "zk0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 40.875,
+      "eligible_doors_before_target": 313,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": 5,
+      "novelty": {
+        "closure_coverage": 9,
+        "closure_edges": 0,
+        "coverage": 196
+      },
+      "observed_door_events": 446,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

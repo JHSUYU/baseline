@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "kind": "versioned_hdfs_adapter_build_receipt",
+  "purpose": "Bind DataXceiver encrypted SASL handshake to its concrete registered DataNode before readBlock.",
+  "patch": "Mallory/adapters/hdfs/patches/hdfs11-v12-datanode-sasl-scope.patch",
+  "patch_sha256": "428023d1397182225602859f42f91b04a21790c21cee8c6b5f55adc1312c885d",
+  "patch_reverse_check": "git apply --reverse --check succeeded against current canonical adapter source",
+  "source": "Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java",
+  "source_sha256": "c8e6e44f8a3282e4674a76bc166fa02cdac5b06c8dbef5410fffd92ca8d33460",
+  "isolated_build_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v12/Mallory/adapters/hdfs",
+  "build_command": "mvn -B -ntp test package",
+  "build_result": "BUILD SUCCESS; no adapter project tests exist",
+  "build_agent_sha256": "fd274b401ec035797574e30bd52fb5e46bcfce11170578a7fd6c9ad0da8de348",
+  "versioned_jar": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v12-dn-sasl-handshake.jar",
+  "versioned_jar_sha256": "8b1909a8c0abb368770a9ee02cd26885ac94121cfa8b2dd7981872fabf3320ed",
+  "offline_transform_smoke": "Compiled Hadoop 3.4.3 DataXceiver.class transformed; both run()V and readBlock(...) contain HdfsHooks.datanodeEnter. No MiniDFSCluster runtime was launched.",
+  "live_jar_unchanged": {
+    "path": "Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+    "sha256": "63ff2cd4bc623f2b591e443cb1b9dc705cce6a2129238b523e205d89f6e9070b"
+  }
+}

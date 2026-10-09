@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "case_id": "SOLR-15",
+  "system": "solr",
+  "calibration_only": true,
+  "cluster_test": "org.apache.solr.cloud.SplitShardTest#doTest",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/solr",
+  "command": [
+    "python3",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/solr/run_pilot.py",
+    "SOLR-15",
+    "--source",
+    "/users/ZhenyuLi/.mallory-worktrees/solr",
+    "--distribution",
+    "/users/ZhenyuLi/.baseline-deps/solr-8.11.4",
+    "--output",
+    "{trial_dir}",
+    "--campaign",
+    "--timeout",
+    "163"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+  "agent_transport": "java_tool_options",
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/cases/SOLR-15.sites.json",
+  "agent_include": [
+    "org.apache.solr.cloud.api.collections.SplitShardCmd"
+  ],
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/target/mallory-solr-adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.solr.SolrTransformer",
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@536:branch:40"
+    ],
+    "throw_site": "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@538:throw:1",
+    "exception_class": "org.apache.solr.common.SolrException",
+    "site_id": "<org.apache.solr.cloud.api.collections.SplitShardCmd: boolean split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)>#u686",
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+    "source_line": 538,
+    "original_source_line": 538,
+    "function": "org.apache.solr.cloud.api.collections.SplitShardCmd.split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+    "check_code": "if (leaderZnodeStat == null)  {\n// the leader is not live anymore, fail the split!\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR, \"The shard leader node: \" + parentShardLeader.getNodeName() + \" is not live anymore!\");"
+  },
+  "budget": {
+    "trials": 80,
+    "seconds": 3600,
+    "max_faults_per_trial": 6,
+    "trial_timeout_seconds": 193,
+    "trial_timeout_basis": "3x_historical_seed_plus_60s_capped_180_to_1200"
+  },
+  "mapping": {
+    "status": "preliminary_compiled_distribution_site",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-core-8.11.4.jar",
+    "agent_build": {
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "target_throw_kind": "athrow",
+    "compiled_jar_sha256": "e83db498c6af8f3eca14483ab42fd9fe30bbf795ceacab3b4d5eaa66f2461536",
+    "compiled_class_sha256": "590ff068f83f4c7644891c19db9900911bf93a1a306de2f30c176568850ea93a",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-core-8.11.4.jar",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": false,
+    "verified_healthy_probe": null,
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4",
+    "source_root_env": "MALLORY_SOLR_SOURCE_ROOT",
+    "distribution_root_env": "MALLORY_SOLR_DIST_ROOT",
+    "test_source_sha256": "decc7968002ca73c787318012f3356a72b681f85c3e2873d5f2326465320daad",
+    "target_source_sha256": "995355f882947b528cedf9b7b38032f334afec74b5226d217f3f7828f2fb34f3",
+    "healthy_seed_verified": false,
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration",
+    "door_status": "auto_io_doors_pending_healthy_calibration"
+  },
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/solr",
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/cases/SOLR-15.sites.json",
+      "sha256": "6fee4e32151404a93c38c56b38d18d38afbe71327640ba1ffeb381ea9e6ffc86"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/target/mallory-solr-adapter.jar",
+      "sha256": "4bc11fd007f1f7851476089c92bf3997fc6d8debe090e8e40b52b9439b52ebe3"
+    }
+  ]
+}

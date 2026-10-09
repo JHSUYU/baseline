@@ -1,0 +1,139 @@
+{
+  "case_id": "SOLR-39",
+  "disabled_or_blocked_reason": {
+    "annotation": "RoutedAliasUpdateProcessorTest.java:64 has @AwaitsFix(SOLR-13696); LuceneTestCase.java:276-280 declares @Inherited and @TestGroup(enabled=false), so normal selection disables subclasses unless tests.awaitsfix=true. The abstract base alone has @Ignore at line 65. TimeRoutedAliasUpdateProcessorTest also has @BadApple at line 73.",
+    "opt_in_run": "v10 config explicitly sets MALLORY_SOLR_AWAITSFIX=1 and runner translates it to -Dtests.awaitsfix=true; JUnit ran one test, ignored=0, and failed during createConfigSet, before target."
+  },
+  "inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+  "prior_attempt": {
+    "junit_failure": "Can't create a configset with an unauthenticated request from a trusted baseConfigSet",
+    "junit_failures": 1,
+    "junit_ignored": 0,
+    "junit_receipt_path": "data/mallory/calibration_v10_lane1_remaining/SOLR-39/trials/r0000/junit-receipt.json",
+    "junit_receipt_sha256": "22b7090914b6a5ce2316fe795d9e90968e052e16ef14b1b7f417dab6c1c95047",
+    "junit_status": "failed",
+    "junit_tests": 1,
+    "pilot_target_check_count": 0,
+    "pilot_target_throw_count": 0,
+    "positive_target_reach_evidence": false,
+    "result_path": "data/mallory/calibration_v10_lane1_remaining/SOLR-39/result.json",
+    "result_sha256": "16f470617c68cb88fcca8b15efe978b0269499511606cdcf20bfb85ac9cde484"
+  },
+  "receipt_tier_assessment": {
+    "permanent_no_test_claim_justified": false,
+    "reason": "No investigated existing selector both executes to a healthy terminal and reaches the routed update check under the unmodified checkout/harness. The intended test methods exist and their setup failure is potentially repairable; this is a current fixture/execution gap, not source-level guard infeasibility. Do not promote a full calibration or assert target reach from these failed v10 trials.",
+    "source_only_no_executable_test_justified_for_unmodified_checkout": true
+  },
+  "revision": "SOLR-39-source-review-no-suitable-test-v1",
+  "schema_version": 1,
+  "source_hashes": {
+    "alias_test": {
+      "path": "solr/core/src/test/org/apache/solr/cloud/AliasIntegrationTest.java",
+      "sha256": "00569b061c1ff45a69c6a2ba3abbc006e00dbcfaf78bd22f2ac5353ca0752215"
+    },
+    "api_test": {
+      "path": "solr/core/src/test/org/apache/solr/cloud/CollectionsAPISolrJTest.java",
+      "sha256": "1fcace81777cc78b78080a222f16fe723eb3b16437057cbea3443beae2a85866"
+    },
+    "base_test": {
+      "path": "solr/core/src/test/org/apache/solr/update/processor/RoutedAliasUpdateProcessorTest.java",
+      "sha256": "cc3014835270a1f73611f69ce8e738c84b93d3db420889880c912ff32827a4a2"
+    },
+    "category_test": {
+      "path": "solr/core/src/test/org/apache/solr/update/processor/CategoryRoutedAliasUpdateProcessorTest.java",
+      "sha256": "62e9da51758e96e22ef73c33f802c0f3deb6b60fa9320682742d801523a7f025"
+    },
+    "concurrent_test": {
+      "path": "solr/core/src/test/org/apache/solr/cloud/ConcurrentCreateRoutedAliasTest.java",
+      "sha256": "cf79a40de03f5cc4b6260b02ba79856f409f9af4735a3461cfccdb996477d8fd"
+    },
+    "create_test": {
+      "path": "solr/core/src/test/org/apache/solr/cloud/CreateRoutedAliasTest.java",
+      "sha256": "8dcb100f19f9b601a30ee0c996eb6a3a1555ee0e505d68beb951b0e6c513747a"
+    },
+    "dimensional_test": {
+      "path": "solr/core/src/test/org/apache/solr/update/processor/DimensionalRoutedAliasUpdateProcessorTest.java",
+      "sha256": "e14a771d25256a5b6386a70c661efe89481f146c1cd124088f32a3fc492c3e1f"
+    },
+    "lucene_annotation": {
+      "path": "lucene/test-framework/src/java/org/apache/lucene/util/LuceneTestCase.java",
+      "sha256": "d17e64885444d3798cd37eb8817e635ad8cebeaed086a4c14004f945c7df0fa6"
+    },
+    "maintain": {
+      "path": "solr/core/src/java/org/apache/solr/cloud/api/collections/MaintainRoutedAliasCmd.java",
+      "sha256": "d9943be304693226243d34e7cc0ae47df26b621c8293b6e8aabe6941c0469db7"
+    },
+    "processor": {
+      "path": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+      "sha256": "6ed4337435f68d00ba85d7b05eeb324cea9a14298c34cabd137756d682f24590"
+    },
+    "routed": {
+      "path": "solr/core/src/java/org/apache/solr/cloud/api/collections/RoutedAlias.java",
+      "sha256": "f422a5ef312e2e52f375cdbea30b711514cfdce35025bdc0af361144a1774a79"
+    },
+    "time_test": {
+      "path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java",
+      "sha256": "727cc38dd0fd0d42e641724b08d96b00e0e9d8ab492d23cbc572284824079d37"
+    }
+  },
+  "source_path_dependency": "RoutedAliasUpdateProcessor.processDelete and processCommit call lookupShardLeadersOfCollections at RoutedAliasUpdateProcessor.java:193-203. The line-246 guard checks the alias collection list before distributing delete/commit. An ordinary alias create request alone does not instantiate this processor for a routed update.",
+  "source_review_status": "source_review_no_suitable_test_current_environment",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "source_suitable_but_currently_blocked": [
+    "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+    "org.apache.solr.update.processor.CategoryRoutedAliasUpdateProcessorTest#test",
+    "org.apache.solr.update.processor.DimensionalRoutedAliasUpdateProcessorTest#testTimeCat"
+  ],
+  "target": {
+    "check_code": "if (collections == null) {\nthrow RoutedAlias.newAliasMustExistException(getAliasName());",
+    "check_sites": [
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;@246:branch:1"
+    ],
+    "function": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections()",
+    "source_line": 247,
+    "source_path": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+    "source_sha256": "6ed4337435f68d00ba85d7b05eeb324cea9a14298c34cabd137756d682f24590",
+    "throw_site": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;@247:throw:1"
+  },
+  "test_search": {
+    "candidate_families": [
+      {
+        "files": [
+          "time_test",
+          "category_test",
+          "dimensional_test",
+          "base_test"
+        ],
+        "finding": "Only source family found that both creates a routed alias and sends routed document updates. Base class has inherited @AwaitsFix at line 64; all functional methods call createConfigSet at base lines 108-143. Base @Ignore applies to abstract base itself; do not infer subclasses were ignored in v10."
+      },
+      {
+        "files": [
+          "create_test"
+        ],
+        "finding": "Enabled SolrCloudTestCase methods create/update routed aliases but contain no SolrClient.add, UpdateRequest.add, or commit to a routed alias; cannot reach add/commit update guards."
+      },
+      {
+        "files": [
+          "concurrent_test"
+        ],
+        "finding": "Own @AwaitsFix at line 37; worker only invokes createTimeRoutedAlias; no routed document update."
+      },
+      {
+        "files": [
+          "api_test"
+        ],
+        "finding": "testRenameCollection creates catAlias at line 903 then tests rename/alias metadata; no document add/commit to catAlias."
+      },
+      {
+        "files": [
+          "alias_test"
+        ],
+        "finding": "testClusterStateProviderAPI sets router.foo metadata at lines 328-336 and reads alias state; test() adds to simple and non-routed aliases in a different isolated JUnit method. No valid routed update in one selector."
+      }
+    ],
+    "false_positive_scope": "Other token hits in ShardSplitTest, TestCollectionAPI, ReindexCollectionTest, TestHashPartitioner, TestClusterStateMutator, TestDistribIDF, and CollectionAdminRequestRequiredParamsTest refer to shard routers, alias metadata, or request parameter validation, not a cluster routed-alias document update.",
+    "query": "routed alias class names and createTimeRoutedAlias/createCategoryRoutedAlias/createDimensionalRoutedAlias, router.type/router.field/router.start, MAINTAINROUTEDALIAS, RoutedAliasUpdateProcessor",
+    "scope": "All Java tests under solr/core/src/test and solr/solrj/src/test in pinned Solr 8.11.4 source"
+  },
+  "why_enabled_alternatives_fail": "TimeRoutedAliasUpdateProcessorTest#test calls solrClient.commit(alias) at line 139 after a routed add, but createConfigSet at line 112 fails first in v10. Enabled CreateRoutedAliasTest contains no routed commit/delete; CollectionsAPISolrJTest only manipulates alias metadata."
+}

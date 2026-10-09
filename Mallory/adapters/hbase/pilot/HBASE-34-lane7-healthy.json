@@ -1,0 +1,128 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 900,
+    "trial_timeout_seconds": 600,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "HBASE-34",
+  "cluster_test": "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.security.token.TestTokenAuthentication",
+    "testTokenCreation"
+  ],
+  "core_release": {
+    "manifest_sha256": "101e132c7513ac37650276d858da4b5cb766903e38be06158db2d4c472c0417f",
+    "release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf"
+  },
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/source",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "expected_target_class_sha256": "29ff2466145be015e2c1cb5af8ce145367b40dc5ef5209d84fb86c79381172f0",
+  "mapping": {
+    "adapter_sha256": "5f83ae1146141c3559073c13fd5b9b952f09af87e4c9d83d2288fbd2c4fd2827",
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "compiled_class_sha256": "29ff2466145be015e2c1cb5af8ce145367b40dc5ef5209d84fb86c79381172f0",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "compiled_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+    "distribution_root_env": "MALLORY_HBASE_DIST_ROOT",
+    "healthy_seed_verified": false,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": false,
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration",
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "source_root_env": "MALLORY_HBASE_SOURCE_ROOT",
+    "status": "preliminary_alternate_existing_minicluster_test",
+    "system_receipt": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/staging-receipt-v2.json",
+    "system_receipt_sha256": "4b3870478693c75f5760a409b9ad907626213601675ea8e208949ce3039309c4",
+    "target_source_sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e",
+    "verified_healthy_probe": null
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/adapter.jar",
+      "sha256": "5f83ae1146141c3559073c13fd5b9b952f09af87e4c9d83d2288fbd2c4fd2827"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "c82e7304119fc97d5ffdf87e2656f286735675e81f5236030db265c6e239a12f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/cases/HBASE-34/sites.json",
+      "sha256": "b8e1c5670e3251c91058595ef38426f162e589de5a99bda57aa75153f779bbaa"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/cases/HBASE-34/sites.json",
+  "source_equivalence_receipt": {
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/source-equivalence.json",
+    "sha256": "bd975b668087a01d0ed601984adb595090e02c07f7e8f67f99c3baffbc04a734",
+    "tree_sha256": "f0fc03bf89169c4859f171da60fc9200422b4b3d570cf58853f46bf75c2360e7"
+  },
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/source",
+  "system": "hbase",
+  "target": {
+    "check_code": "if (masterKey == null) {\nthrow new InvalidToken(\"Unknown master key for token (id=\" + identifier.getKeyId() + \")\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@159:branch:7"
+    ],
+    "exception_class": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+    "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+    "original_source_line": 160,
+    "site_id": "<org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)>#u89",
+    "source_line": 160,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+    "throw_site": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@160:throw:1"
+  }
+}

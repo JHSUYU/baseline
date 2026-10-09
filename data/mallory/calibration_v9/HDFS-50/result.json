@@ -1,0 +1,119 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-50",
+  "closure_coverage_ids_seen": 106,
+  "closure_edge_fingerprints_seen": 49,
+  "cluster_test": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+  "coverage_ids_seen": 201,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 17.396,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 32,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_4ec1319c01394cdc94aa94f4b93dffda",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestSnapshotCommands-mallory_0000_4ec1319c01394cdc94aa94f4b93dffda.xml",
+        "sha256": "2a3bf70afbdafda785e9741f3579fdc6d033a96ed4728b5eb23ab2e54fb22d5b"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "f8b00f7be6ae45c606f211c7dc882e3dc5788b894a25a4d7c411b1509d144123",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 51,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/nn0"
+    ],
+    "eligible_doors_before_target": 32,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "33930de8f98942d102579e04f07f4fb4ddeaf5f3b98f1a53f1c8471c0bc105c3",
+    "observed_target_class_sha256": "33930de8f98942d102579e04f07f4fb4ddeaf5f3b98f1a53f1c8471c0bc105c3",
+    "reasons": [],
+    "site_catalog_sha256": "8ec853ba9876297e6f97c7e75891c6684a38ba12161a08d09505a2d8cc805714",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (i >= 0) {\nthrow new SnapshotException(\"Failed to add snapshot: there is already a \"\n+ \"snapshot with the same name \\\"\" + Snapshot.getSnapshotName(s) + \"\\\".\");",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;@197:branch:2"
+    ],
+    "exception_class": "org.apache.hadoop.hdfs.protocol.SnapshotException",
+    "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature.addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)",
+    "original_source_line": 199,
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature: org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)>#u38",
+    "source_line": 199,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;@199:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/nn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.396,
+      "eligible_doors_before_target": 32,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 106,
+        "closure_edges": 49,
+        "coverage": 201
+      },
+      "observed_door_events": 51,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-11",
+  "system": "zookeeper",
+  "cluster_test": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+  "cwd": "/users/ZhenyuLi/zk11-independent-unit/zookeeper-server",
+  "command": ["python3", "/users/ZhenyuLi/baseline/Mallory/instrumentation/pilots/zookeeper11/run_trial.py"],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+  "agent_transport": "java_tool_options",
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/instrumentation/pilots/zookeeper11/sites.json",
+  "agent_include": ["org.apache.zookeeper.server.quorum.QuorumPeer"],
+  "agent_properties": {
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": ["org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1169:branch:2"],
+    "throw_site": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1175:throw:1",
+    "exception_class": "java.io.IOException"
+  },
+  "exact_check_location": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java:1169 (loadDataBase), throw at 1175",
+  "budget": {"trials": 3, "seconds": 180, "max_faults_per_trial": 2, "trial_timeout_seconds": 120},
+  "require_named_node": true,
+  "require_site_catalog": true,
+  "explore_outside_closure": true,
+  "fault_types": ["EXCEPTION"],
+  "candidate_replays": 1
+}

@@ -1,0 +1,73 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-13",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.server.blockmanagement.TestBlockTokenWithDFS#testEnd2End",
+  "coverage_ids_seen": 245,
+  "dispatch_attempt_ids": [
+    "20261009T160743-3a3b1901b3c7"
+  ],
+  "duration_seconds": 19.245,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 120,
+  "healthy_observed_door_events": 120,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T160743-3a3b1901b3c7",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (!MessageDigest.isEqual(retrievePassword(id), token.getPassword())) {\nthrow new InvalidToken(\"Block token with \" + id\n+ \" doesn't have the correct token password\");",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V@431:branch:1"
+    ],
+    "exception_class": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+    "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode)",
+    "original_source_line": 432,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: void checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode)>#u40",
+    "source_line": 432,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#checkAccess(Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V@432:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T160743-3a3b1901b3c7",
+      "duration_seconds": 19.245,
+      "eligible_doors_before_target": 120,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 245
+      },
+      "observed_door_events": 120,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_target_missing",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 0
+    }
+  ]
+}

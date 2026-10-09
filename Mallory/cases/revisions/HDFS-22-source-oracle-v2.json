@@ -1,0 +1,85 @@
+{
+  "case_id": "HDFS-22",
+  "earlier_guard_source": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+  "earlier_guard_source_line": 744,
+  "earlier_guard_source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+  "healthy_output_archive_manifest": "/users/ZhenyuLi/baseline/data/mallory/evidence_archives/source_reviews/HDFS-22/healthy-v15-surefire-output.manifest.json",
+  "healthy_output_archive_manifest_sha256": "84bb593539fcf2d75423d7851f41317568cf59dd87d35bc11114a49cb168955b",
+  "healthy_source_observation": "For testCase=3, the preserved healthy Surefire output logs an expected Incompatible namespaceIDs IOException from DataStorage.doTransition:744. DataStorage checks namespace ID for pre-federation layout before the selected BlockPoolSliceStorage.doTransition:396 check. The healthy selected target check appears only on cluster-2/dn0 epochs 0,1,2,6,7,8,18.",
+  "healthy_target_checks": [
+    {
+      "epoch": 0,
+      "node": "hdfs-cluster-1/dn0",
+      "outcome": "TAKEN",
+      "seq": 74
+    },
+    {
+      "epoch": 0,
+      "node": "hdfs-cluster-2/dn0",
+      "outcome": "TAKEN",
+      "seq": 2565
+    },
+    {
+      "epoch": 1,
+      "node": "hdfs-cluster-2/dn0",
+      "outcome": "TAKEN",
+      "seq": 2776
+    },
+    {
+      "epoch": 2,
+      "node": "hdfs-cluster-2/dn0",
+      "outcome": "TAKEN",
+      "seq": 2963
+    },
+    {
+      "epoch": 6,
+      "node": "hdfs-cluster-2/dn0",
+      "outcome": "TAKEN",
+      "seq": 3387
+    },
+    {
+      "epoch": 7,
+      "node": "hdfs-cluster-2/dn0",
+      "outcome": "TAKEN",
+      "seq": 3593
+    },
+    {
+      "epoch": 8,
+      "node": "hdfs-cluster-2/dn0",
+      "outcome": "TAKEN",
+      "seq": 3781
+    },
+    {
+      "epoch": 18,
+      "node": "hdfs-cluster-2/dn0",
+      "outcome": "TAKEN",
+      "seq": 4581
+    }
+  ],
+  "healthy_trace_sha256": "d2061324baab9b7d13f0d61f33cb5457cb09f59225741c9b63f45c3bfc1fb73b",
+  "kind": "HDFS-22_existing_test_source_oracle_review_v2",
+  "namespace_mismatch_variant_indices": [
+    3,
+    4,
+    5,
+    9,
+    10,
+    11,
+    15,
+    16,
+    17
+  ],
+  "schema_version": 1,
+  "source_stage_sha256": "94b9997ace58bd738d62d206c2fe1316802aef66e9147ca82b44b570f00a47b4",
+  "supersedes": "/users/ZhenyuLi/baseline/Mallory/cases/revisions/HDFS-22-source-oracle-v1.json",
+  "supersedes_sha256": "04062ebb35b780c959a99c3b100088c314a39ebdd5ccca277fcd255e2896f286",
+  "target_guard_oracle": "BlockPoolSliceStorage.doTransition throws IOException for getNamespaceID() != nsInfo.getNamespaceID(). A throw for an intentionally incompatible variant alone is expected behavior.",
+  "target_source": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+  "target_source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+  "test_selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+  "test_source": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+  "test_source_sha256": "316a5bb9ce1606349731bd2038739822874e5e41b480e75eb361891fd2e75f08",
+  "test_variant_count": 20,
+  "triage_requirement": "For each exact selected BlockPoolSliceStorage throw after injection, preserve the trial-specific Surefire output, identify testCase/version tuple, compare with healthy earlier DataStorage validation and test isVersionCompatible expectation, and inspect whether the injected fault caused legitimate protection or violated a correctness contract. Do not classify by IOException text or node epoch alone.",
+  "version_compatibility_oracle": "testVersions catches startup exceptions, then asserts cluster.isDataNodeUp() equals isVersionCompatible(nameNodeVersion, versions[i]); isVersionCompatible returns false immediately when namespace IDs differ."
+}

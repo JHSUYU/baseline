@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "review_kind": "source_and_existing_healthy_evidence_only",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_sha256": {
+    "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java": "f00ec999b43227553f89ecb859ccfe28e4f901adb0f2f37552096d1f72261184",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator.java": "7f1ebc383086f82c98d0460d7c0504d5fd59e590176b65931c3061bcdac947b7",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs.java": "ba0ee569fccf2a69057860800bc05a2fe1db0d5a4b368c490485ee542b0c55b2",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java": "50f65033ce822967d3dde237c26e60bbf0891bc9587c3dfa004886d55165ec7a",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/io/hfile/TestBlockEvictionOnRegionMovement.java": "82fd1b073c150b0d69215a897ac8aed6ecd9019671c22f7edf5db35e69379c76",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedureControllers.java": "740279e86e599dd64a09e698e62aa0373bcd0fecb609dc4d337c54b067034b5a",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestProcedureManager.java": "35dee7363efa0ade2a906fb1b75bc1ab1396ae48c02ff75db0b18f676d6cd135",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/SimpleMasterProcedureManager.java": "c2fc355d8791a3a4132f398f13101b85de1b8d05e7fad852a9f8ddf48ea52505",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/SimpleRSProcedureManager.java": "71946ea7b13b97f5121d342fc2d15e1505383b0b414c423b0aabbf8bb8b08848"
+  },
+  "cases": [
+    {
+      "case_id": "HBASE-02",
+      "exact_guard": "ConnectionImplementation.relocateRegion @910 branches 1/2; @911 TableNotEnabledException when non-META table is disabled",
+      "selected_cluster_test": "TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+      "source_path": "TestConnectionImplementation.java:1179-1193 creates an enabled table and calls relocateRegion; ConnectionImplementation.java:906-914 checks table state before locateRegion",
+      "precondition_review": "Healthy selected test supplies the enabled-table false outcome. Its setup may disable a stale table only before deleting and recreating it; it does not deliberately call relocateRegion on a disabled table.",
+      "expected_actor": "client",
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v2/HBASE-02",
+        "result_sha256": "d98cad03ad76e4655674f7013d957333c58c0afa40e923a066cbf8bcc2d07245",
+        "audit_sha256": "2dbb163bb7b964d80dc4f59baceb5ec36dfcdf8a3bd804e169d1eae4a2bf84a6",
+        "junit": "passed",
+        "exact_target_checks": 2,
+        "exact_target_throws": 0,
+        "target_node": "client",
+        "observed_path_doors": 1,
+        "causal_audit_passed": true
+      },
+      "recommendation": "Keep selected test; it has an audited named target and one observed-path fault door. A class-only TableNotEnabledException is insufficient to classify a fault result."
+    },
+    {
+      "case_id": "HBASE-10",
+      "exact_guard": "AssignmentManager.preTransitCheck @755 branch 1; @757 HBaseIOException when regionNode already has a procedure",
+      "selected_cluster_test": "TestRegionMove#testDisableAndMove",
+      "source_path": "TestRegionMove.java:76-125 starts a two-RS MiniCluster, unassigns/assigns and moves a region; AssignmentManager.java:753-757 checks an existing procedure",
+      "precondition_review": "The test exercises assignment operations but does not deliberately overlap two procedures on one region. Healthy selected checks take the nonthrowing path; a fault could change that state.",
+      "expected_actor": "master0",
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v2/HBASE-10",
+        "result_sha256": "6ecb211ddd7baafa6772fb3bbb84e9d399c87e2c2d5dbc0f41094753e9516df1",
+        "audit_sha256": "53624ab9c55715d13cde55e62ac731921fd7c59cdbaf16e20d1cc694f27193d8",
+        "junit": "passed",
+        "exact_target_checks": 4,
+        "exact_target_throws": 0,
+        "target_node": "master0",
+        "observed_path_doors": 4,
+        "causal_audit_passed": true
+      },
+      "recommendation": "Keep selected test for the current campaign; source and audited healthy trace reach the exact guard with a named master."
+    },
+    {
+      "case_id": "HBASE-11",
+      "exact_guard": "AssignmentManager.preTransitCheck @759 branch 2; @760 DoNotRetryRegionException when region state is outside expectedStates",
+      "original_cluster_test": "TestRegionMove#testDisableAndMove",
+      "source_path": "TestRegionMove.java:105-115 intentionally unassigns then moves a region and catches DoNotRetryRegionException; AssignmentManager.java:759-760 throws for unexpected state",
+      "original_seed": {
+        "path": "data/mallory/calibration/HBASE-11/result.json",
+        "result_sha256": "e2bae9fc6e68c924b862021a458ed1873add839ceb8ae4bec097bbfcf70f7731",
+        "status": "healthy_target_exception"
+      },
+      "selected_alternate": "TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove",
+      "alternate_source_path": "TestBlockEvictionOnRegionMovement.java:87-115 creates a table and moves an assigned region between two RSs without expecting an exception",
+      "expected_actor": "master0",
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v7/HBASE-11",
+        "result_sha256": "f187c99d13cc779658f7c80517a331c358c9b0fc678da42d70374763cd72be0f",
+        "audit_sha256": "18b5899e38a872e7fca067a761b8ee7fc7e853763136e242d33a6663b872c181",
+        "junit": "passed",
+        "exact_target_checks": 1,
+        "exact_target_throws": 0,
+        "target_node": "master0",
+        "observed_path_doors": 18,
+        "causal_audit_passed": true
+      },
+      "recommendation": "Use the already calibrated alternate. The original test's expected exception invalidates a fault-free target-exception oracle."
+    },
+    {
+      "case_id": "HBASE-12",
+      "exact_guard": "AssignmentManager.preTransitCheck @762 branch 3; @763 DoNotRetryIOException when table is disabled",
+      "selected_cluster_test": "TestRegionMove#testDisableAndMove",
+      "source_path": "TestRegionMove.java:117-125 disables the table then attempts a move and catches DoNotRetryIOException; AssignmentManager.java:762-763 checks the disabled state",
+      "precondition_review": "The JUnit contains an expected DoNotRetryIOException phase. In the audited healthy run, the selected @762 check was reached twice on master0 but its exact @763 ATHROW was not seen. The caught exception may originate elsewhere; source alone does not establish its throw site. This creates a class-only oracle confound, not an observed exact-site exception.",
+      "expected_actor": "master0",
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v2/HBASE-12",
+        "result_sha256": "0bd56d2f62c8fe3452fd393d2cc1def2ce567baea7c55dcafac84a3f998f80cd",
+        "audit_sha256": "dab35f7b13d5efab8180691d6356e0a955443e30d559eba6f87b977aef3c71ef",
+        "junit": "passed",
+        "exact_target_checks": 2,
+        "exact_target_throws": 0,
+        "target_node": "master0",
+        "observed_path_doors": 2,
+        "causal_audit_passed": true
+      },
+      "source_backed_alternate_unverified": "TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove takes a normal Admin.move path through preTransitCheck with an enabled table; its exact @762 branch and door closure require a separate healthy calibration.",
+      "recommendation": "The existing calibrated seed is usable only with exact @763 ATHROW oracle and fault/target identity checks. Prefer the normal-move alternate for a future fresh calibration if the expected-exception phase obscures diagnosis."
+    },
+    {
+      "case_id": "HBASE-23",
+      "exact_guard": "ZKProcedureCoordinator.sendGlobalBarrierReached @127 branch 5; @131 IOException when an already present member-completion znode has nonempty data without PB magic",
+      "selected_cluster_test": "TestZKProcedureControllers#testZKCoordinatorControllerWithSingleMemberCohort",
+      "source_path": "TestZKProcedureControllers.java:213 calls sendGlobalBarrierReached before sendMemberCompleted at 217; ZKProcedureCoordinator.java:119-131 scans existing completion children synchronously",
+      "precondition_review": "The selected JUnit cannot put its member-completion znode in place before this method's scan in its explicit sequence. A later ZooKeeper callback checks payload format at ZKProcedureCoordinator.java:211, which is a different guard. Its old healthy result has no target or JUnit trace and cannot establish runtime identity.",
+      "expected_actor": "zk-coordinator:<coordinator name>; adapter registers this actor in its constructor and enters its scope at selected methods",
+      "old_seed": {
+        "path": "data/mallory/calibration/HBASE-23/result.json",
+        "result_sha256": "f25d637eacd2fb19a4e217b81edce9864c5f2d17a618b61a78eefb2abb8bc38b",
+        "status": "healthy_target_missing",
+        "exact_target_checks": 0,
+        "observed_path_doors": 0
+      },
+      "existing_alternate_source_candidate": {
+        "selector": "TestProcedureManager#testSimpleProcedureManager",
+        "source_path": "TestProcedureManager.java:37-66 starts MiniHBaseCluster with two RSs and calls Admin.execProcedureWithReturn; SimpleMasterProcedureManager.java:66-115 uses ZKProcedureCoordinator; SimpleRSProcedureManager.java:249-251 returns nonempty SIMPLE_DATA; ZKProcedureMemberRpcs.java:265-278 writes PB-prefixed completion data",
+        "limits": "The finished child must race the coordinator's synchronous watchAndCheckExists loop to reach @127. This is source-plausible, not runtime-validated. A fresh healthy run must observe the exact @127 branch on the named zk-coordinator and an observed-path fault door before promotion."
+      },
+      "recommendation": "Replace the selected direct-controller test only after bounded calibration of TestProcedureManager#testSimpleProcedureManager. Do not infer exact @127 coverage from a method call or from the callback's separate PB check."
+    }
+  ]
+}

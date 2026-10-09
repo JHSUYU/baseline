@@ -1,0 +1,457 @@
+{
+  "schema_version": 2,
+  "kind": "read_only_zookeeper_original_pending_admission_source_inventory",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/zookeeper-3.8.7",
+  "source_commit": "9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae",
+  "inventory_reference": "Mallory/cases/inventory.json",
+  "inventory_reference_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+  "scope": "ZOOKEEPER-04 through ZOOKEEPER-12 only. Completed/running ZK01-03 and ZK13 excluded. No JVM launched and no live config, result, or global inventory changed.",
+  "ranking_policy": "Prefer prior demonstrated exact healthy guard and smaller shared MiniCluster workloads; defer parameterized high-write ObserverMaster test. Shared JUnit bundles: ZK05/06/07 and ZK11/12.",
+  "admission_queue": [
+    "ZOOKEEPER-11",
+    "ZOOKEEPER-12",
+    "ZOOKEEPER-04",
+    "ZOOKEEPER-05",
+    "ZOOKEEPER-07",
+    "ZOOKEEPER-06",
+    "ZOOKEEPER-10"
+  ],
+  "no_suitable_existing_cluster_test_identified": [
+    "ZOOKEEPER-08",
+    "ZOOKEEPER-09"
+  ],
+  "case_count": 9,
+  "cases": [
+    {
+      "case_id": "ZOOKEEPER-11",
+      "priority": 1,
+      "eligibility_recommendation": "admit_healthy_calibration_only",
+      "source_evidence_level": "prior_clean_source_pilot_plus_source_review",
+      "likelihood": "high",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "source_line": 1175,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "source_sha256": "72606c8b4f2d887a94555de2d5fd6ec213b33496da8469df73064d5dfbe4d651",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1169:branch:2"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1175:throw:1"
+      },
+      "existing_cluster_junit_selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+      "test_source": {
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java",
+        "sha256": "b115c5dc305e61916eba790beefba8b5072be0b54a02d53f45027fa36d333c01",
+        "relevant_lines": [
+          58
+        ]
+      },
+      "healthy_guard_reach_reason": "The 3-peer test restarts after planting old currentEpoch plus currentEpoch.tmp; prior clean-source pilot observed the exact QuorumPeer guard once on named zk0 with no selected throw. Revalidate after current overlay instrumentation.",
+      "pretarget_io_path": "ZKDatabase/snapshot load and currentEpoch/currentEpoch.tmp file reads.",
+      "qualification_risk": "Previous pilot is not a Mallory fuzz run.",
+      "required_runtime_gate": "Run healthy selected JUnit, require actual JUnit count >0, exact current compiled site on named peer, zero selected throw, and observed pretarget I/O in this occurrence closure. Re-resolve site IDs if overlay shifts source lines.",
+      "prior_pilot": {
+        "path": "Mallory/instrumentation/pilots/zookeeper11/attestation.json",
+        "sha256": "0cc3984463c841b11cba69bb35e7fed9248c9b5e94a15ef14a52007c169ed73d",
+        "counts_as_fuzz_result": false
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-12",
+      "priority": 2,
+      "eligibility_recommendation": "admit_healthy_calibration_only",
+      "source_evidence_level": "source_only",
+      "likelihood": "medium",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "source_line": 1197,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "source_sha256": "72606c8b4f2d887a94555de2d5fd6ec213b33496da8469df73064d5dfbe4d651",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1193:branch:3"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V@1197:throw:1"
+      },
+      "existing_cluster_junit_selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+      "test_source": {
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java",
+        "sha256": "b115c5dc305e61916eba790beefba8b5072be0b54a02d53f45027fa36d333c01",
+        "relevant_lines": [
+          58
+        ]
+      },
+      "healthy_guard_reach_reason": "Same restart reads accepted/current epoch files and should compare them after temp-file recovery; exact @1197 guard has no separate runtime attestation.",
+      "pretarget_io_path": "acceptedEpoch and currentEpoch file reads plus restart write.",
+      "qualification_risk": "Shared test with ZK11; target reach remains source-only.",
+      "required_runtime_gate": "Run healthy selected JUnit, require actual JUnit count >0, exact current compiled site on named peer, zero selected throw, and observed pretarget I/O in this occurrence closure. Re-resolve site IDs if overlay shifts source lines."
+    },
+    {
+      "case_id": "ZOOKEEPER-04",
+      "priority": 3,
+      "eligibility_recommendation": "admit_healthy_calibration_only",
+      "source_evidence_level": "source_only",
+      "likelihood": "medium",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+        "source_line": 1441,
+        "function": "org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)",
+        "source_sha256": "3c883cc64beda7e14e446a6a9cd75791c7a2c12e0118dd41d99e9aedccad0631",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1431:branch:7"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1441:throw:1"
+      },
+      "existing_cluster_junit_selector": "org.apache.zookeeper.server.ConnectionMetricsTest#testRevalidateCount",
+      "test_source": {
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/ConnectionMetricsTest.java",
+        "sha256": "ce4b810b16bf026e348d17d5211cbac0dc1f5f8d4cd60033e16054ad80e34ebb",
+        "relevant_lines": [
+          53
+        ]
+      },
+      "healthy_guard_reach_reason": "Three-peer test reconnects the same client session from one follower to another; the receiving server should process a ConnectRequest and compare client/server zxids.",
+      "pretarget_io_path": "Client ConnectRequest socket send and follower receive/revalidation.",
+      "qualification_risk": "No preceding write before reconnect, so branch reach is plausible but fault usefulness may be limited.",
+      "required_runtime_gate": "Run healthy selected JUnit, require actual JUnit count >0, exact current compiled site on named peer, zero selected throw, and observed pretarget I/O in this occurrence closure. Re-resolve site IDs if overlay shifts source lines."
+    },
+    {
+      "case_id": "ZOOKEEPER-05",
+      "priority": 4,
+      "eligibility_recommendation": "admit_healthy_calibration_only",
+      "source_evidence_level": "source_only",
+      "likelihood": "medium",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java",
+        "source_line": 103,
+        "function": "org.apache.zookeeper.server.quorum.Follower.followLeader()",
+        "source_sha256": "2008eb36fd2a4e69f557f616f7449b0bd04ee4dd0fdc81786e0a4d9113e648e0",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.Follower#followLeader()V@99:branch:2"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.Follower#followLeader()V@104:throw:1"
+      },
+      "existing_cluster_junit_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "test_source": {
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+        "sha256": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc",
+        "relevant_lines": [
+          54
+        ]
+      },
+      "healthy_guard_reach_reason": "Three-peer rolling restart re-registers a follower and compares returned leader epoch with persisted acceptedEpoch.",
+      "pretarget_io_path": "FOLLOWERINFO send, LEADERINFO receive, acceptedEpoch file read.",
+      "qualification_risk": "Select a restarting follower, not a peer elected leader.",
+      "required_runtime_gate": "Run healthy selected JUnit, require actual JUnit count >0, exact current compiled site on named peer, zero selected throw, and observed pretarget I/O in this occurrence closure. Re-resolve site IDs if overlay shifts source lines."
+    },
+    {
+      "case_id": "ZOOKEEPER-07",
+      "priority": 5,
+      "eligibility_recommendation": "admit_healthy_calibration_only",
+      "source_evidence_level": "source_only",
+      "likelihood": "medium",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+        "source_line": 525,
+        "function": "org.apache.zookeeper.server.quorum.Learner.registerWithLeader(int)",
+        "source_sha256": "3827ccefc4a632b3f37ebe5258f4c97c142211675a5a22801aac1ae2122cb830",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.Learner#registerWithLeader(I)J@518:branch:3"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.Learner#registerWithLeader(I)J@528:throw:1"
+      },
+      "existing_cluster_junit_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "test_source": {
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+        "sha256": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc",
+        "relevant_lines": [
+          54
+        ]
+      },
+      "healthy_guard_reach_reason": "Same restart receives LEADERINFO inside Learner.registerWithLeader and compares decoded epoch with acceptedEpoch.",
+      "pretarget_io_path": "Leader/follower socket handshake and epoch file read.",
+      "qualification_risk": "Observe target after LEADERINFO decode; pre-decode I/O faults may lose target.",
+      "required_runtime_gate": "Run healthy selected JUnit, require actual JUnit count >0, exact current compiled site on named peer, zero selected throw, and observed pretarget I/O in this occurrence closure. Re-resolve site IDs if overlay shifts source lines."
+    },
+    {
+      "case_id": "ZOOKEEPER-06",
+      "priority": 6,
+      "eligibility_recommendation": "admit_healthy_calibration_only",
+      "source_evidence_level": "source_only",
+      "likelihood": "medium",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java",
+        "source_line": 1475,
+        "function": "org.apache.zookeeper.server.quorum.Leader.waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)",
+        "source_sha256": "32b759257765f1bb8c656ac84abd284eadcf97c9f911b4279cdd5f87d02d655f",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.Leader#waitForEpochAck(JLorg/apache/zookeeper/server/quorum/StateSummary;)V@1475:branch:3"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.Leader#waitForEpochAck(JLorg/apache/zookeeper/server/quorum/StateSummary;)V@1479:throw:1"
+      },
+      "existing_cluster_junit_selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+      "test_source": {
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+        "sha256": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc",
+        "relevant_lines": [
+          54
+        ]
+      },
+      "healthy_guard_reach_reason": "Same restart sends ACKEPOCH to leader, which compares follower StateSummary with its leader summary.",
+      "pretarget_io_path": "ACKEPOCH send/receive, leader summary state.",
+      "qualification_risk": "Pair follower SID, leader SID and connection attempt.",
+      "required_runtime_gate": "Run healthy selected JUnit, require actual JUnit count >0, exact current compiled site on named peer, zero selected throw, and observed pretarget I/O in this occurrence closure. Re-resolve site IDs if overlay shifts source lines."
+    },
+    {
+      "case_id": "ZOOKEEPER-10",
+      "priority": 7,
+      "eligibility_recommendation": "admit_healthy_calibration_only",
+      "source_evidence_level": "source_only",
+      "likelihood": "low",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java",
+        "source_line": 371,
+        "function": "org.apache.zookeeper.server.quorum.ObserverMaster.removeProposedPacket(long)",
+        "source_sha256": "b65e2d631026d6c9258e0392619d7387783bb0b657b72f03722248dee93a6f06",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.ObserverMaster#removeProposedPacket(J)Lorg/apache/zookeeper/server/quorum/QuorumPacket;@368:branch:3"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.ObserverMaster#removeProposedPacket(J)Lorg/apache/zookeeper/server/quorum/QuorumPacket;@374:throw:1"
+      },
+      "existing_cluster_junit_selector": "org.apache.zookeeper.test.ObserverMasterTest#testInOrderCommits",
+      "test_source": {
+        "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ObserverMasterTest.java",
+        "sha256": "27c4fca7814b9339fd4212fafca77c4ed2234aae8f01fd288f73a594575d985d",
+        "relevant_lines": [
+          213
+        ]
+      },
+      "healthy_guard_reach_reason": "Parameterized JUnit has true/false variants; only true enables ObserverMaster. The method performs more than 20,000 asynchronous writes, so it is the costliest pending seed.",
+      "pretarget_io_path": "Leader PROPOSAL/COMMIT socket packets through Follower.processPacket and ObserverMaster queue.",
+      "qualification_risk": "A generic method selector may run both variants; require exact true-variant target provenance.",
+      "required_runtime_gate": "Run healthy selected JUnit, require actual JUnit count >0, exact current compiled site on named peer, zero selected throw, and observed pretarget I/O in this occurrence closure. Re-resolve site IDs if overlay shifts source lines.",
+      "parameter_variant": "@ParameterizedTest @ValueSource(true,false); target expected only in true variant."
+    },
+    {
+      "case_id": "ZOOKEEPER-08",
+      "priority": null,
+      "eligibility_recommendation": "retain_no_mapped_cluster_test",
+      "source_evidence_level": "source_exclusion_of_inspected_near_misses",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerSessionTracker.java",
+        "source_line": 174,
+        "function": "org.apache.zookeeper.server.quorum.LearnerSessionTracker.checkSession(long,java.lang.Object)",
+        "source_sha256": "98f3708f1679964736af5c7ed840d8dd000b320471e04958303deea16a3a8731",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.LearnerSessionTracker#checkSession(JLjava/lang/Object;)V@173:branch:2"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.LearnerSessionTracker#checkSession(JLjava/lang/Object;)V@174:throw:1"
+      },
+      "existing_cluster_junit_selector": null,
+      "reason_no_suitable_test_identified": "Normal follower chain is FollowerRequestProcessor \u2192 CommitProcessor \u2192 FinalRequestProcessor, with no PrepRequestProcessor; leader uses LeaderSessionTracker. ReadOnlyZooKeeperServer does use LearnerSessionTracker and PrepRequestProcessor, but normal read requests with a local session return when localSessionTracker.checkSession succeeds, before the selected line-173 global-session guard. Existing ReadOnlyModeTest global reconnect is refused in validateSession before reads. No active cluster JUnit found that exercises UnknownSessionException from the local tracker followed by a known global session on this learner.",
+      "inspected_near_misses": [
+        {
+          "selector": "org.apache.zookeeper.test.SessionTrackerCheckTest#testLearnerSessionTracker",
+          "source": {
+            "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/SessionTrackerCheckTest.java",
+            "sha256": "6c1f6175a967cc2003873e5de49f562b6efd82cf923161d4abaab533074b2f1c",
+            "relevant_lines": [
+              75,
+              78,
+              83,
+              114,
+              119
+            ]
+          },
+          "limitation": "Constructs LearnerSessionTracker directly; not a cluster workload or pretarget cross-node I/O."
+        },
+        {
+          "selector": "org.apache.zookeeper.server.MultiOpSessionUpgradeTest#ephemeralCreateMultiOpTest",
+          "source": {
+            "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/MultiOpSessionUpgradeTest.java",
+            "sha256": "6769e7d822dbf85f7b0e91f0cbead83cafe3e6b2d9d72bb8b55f1634b4734023",
+            "relevant_lines": [
+              54,
+              59,
+              64,
+              65
+            ]
+          },
+          "limitation": "Quorum workload but follower request chain has no PrepRequestProcessor; no source path to selected learner inner guard."
+        },
+        {
+          "selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testReadOnlyClient",
+          "source": {
+            "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
+            "sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e",
+            "relevant_lines": [
+              115,
+              169,
+              213,
+              247
+            ]
+          },
+          "limitation": "Read-only local session normal path bypasses selected fallback guard."
+        }
+      ],
+      "required_reopen_gate": "Only revise to dispatchable if a specific cluster JUnit and current compiled target occurrence with named actor, no throw and pretarget I/O are demonstrated."
+    },
+    {
+      "case_id": "ZOOKEEPER-09",
+      "priority": null,
+      "eligibility_recommendation": "retain_no_mapped_cluster_test",
+      "source_evidence_level": "source_exclusion_of_inspected_near_misses",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerSessionTracker.java",
+        "source_line": 191,
+        "function": "org.apache.zookeeper.server.quorum.LearnerSessionTracker.setOwner(long,java.lang.Object)",
+        "source_sha256": "98f3708f1679964736af5c7ed840d8dd000b320471e04958303deea16a3a8731",
+        "expected_compiled_check_sites_from_current_inventory": [
+          "org.apache.zookeeper.server.quorum.LearnerSessionTracker#setOwner(JLjava/lang/Object;)V@190:branch:2"
+        ],
+        "expected_compiled_throw_site_from_current_inventory": "org.apache.zookeeper.server.quorum.LearnerSessionTracker#setOwner(JLjava/lang/Object;)V@191:throw:1"
+      },
+      "existing_cluster_junit_selector": null,
+      "reason_no_suitable_test_identified": "The selected line-190 guard executes only after localSessionTracker.setOwner throws SessionExpiredException. Normal ReadOnlyZooKeeperServer createSession is marked local and its freshly created local session is owned successfully; ordinary follower has no PrepRequestProcessor to call ZooKeeperServer.setOwner. MultiOpSessionUpgradeTest runs a quorum but does not establish this exact learner owner-fallback path. No active cluster JUnit found for a missing local owner plus known global session.",
+      "inspected_near_misses": [
+        {
+          "selector": "org.apache.zookeeper.test.SessionTrackerCheckTest#testLearnerSessionTracker",
+          "source": {
+            "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/SessionTrackerCheckTest.java",
+            "sha256": "6c1f6175a967cc2003873e5de49f562b6efd82cf923161d4abaab533074b2f1c",
+            "relevant_lines": [
+              75,
+              78,
+              83,
+              114,
+              119
+            ]
+          },
+          "limitation": "Constructs LearnerSessionTracker directly; not a cluster workload or pretarget cross-node I/O."
+        },
+        {
+          "selector": "org.apache.zookeeper.server.MultiOpSessionUpgradeTest#ephemeralCreateMultiOpTest",
+          "source": {
+            "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/MultiOpSessionUpgradeTest.java",
+            "sha256": "6769e7d822dbf85f7b0e91f0cbead83cafe3e6b2d9d72bb8b55f1634b4734023",
+            "relevant_lines": [
+              54,
+              59,
+              64,
+              65
+            ]
+          },
+          "limitation": "Quorum workload but follower request chain has no PrepRequestProcessor; no source path to selected learner inner guard."
+        },
+        {
+          "selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testReadOnlyClient",
+          "source": {
+            "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
+            "sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e",
+            "relevant_lines": [
+              115,
+              169,
+              213,
+              247
+            ]
+          },
+          "limitation": "Read-only local session normal path bypasses selected fallback guard."
+        }
+      ],
+      "required_reopen_gate": "Only revise to dispatchable if a specific cluster JUnit and current compiled target occurrence with named actor, no throw and pretarget I/O are demonstrated."
+    }
+  ],
+  "additional_source_evidence": {
+    "learner_tracker": {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerSessionTracker.java",
+      "sha256": "98f3708f1679964736af5c7ed840d8dd000b320471e04958303deea16a3a8731",
+      "relevant_lines": [
+        163,
+        166,
+        173,
+        174,
+        180,
+        183,
+        190,
+        191
+      ]
+    },
+    "follower_server": {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/FollowerZooKeeperServer.java",
+      "sha256": "140d0720c0f5f6dbd01b3ec6904ce3d97c77bad941c4e9509b79d56978a41a43",
+      "relevant_lines": [
+        70,
+        74
+      ]
+    },
+    "read_only_server": {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ReadOnlyZooKeeperServer.java",
+      "sha256": "4df96bf0d3e99ad184933e4483c555f8955e7205070d6604e4861e94e581fd7d",
+      "relevant_lines": [
+        65,
+        69,
+        89,
+        122,
+        126
+      ]
+    },
+    "read_only_processor": {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ReadOnlyRequestProcessor.java",
+      "sha256": "fbbcb6350fe99a6d37e09aa49b253d779f37195c4367629b0abbf1dc30f0d473",
+      "relevant_lines": [
+        72,
+        94,
+        101
+      ]
+    },
+    "prep_processor": {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/PrepRequestProcessor.java",
+      "sha256": "b3ba5e779f99cc972d5fcde6090c43814d1695405a1da9f108257baae24ddd5d",
+      "relevant_lines": [
+        586,
+        913,
+        928
+      ]
+    },
+    "zookeeper_server": {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+      "sha256": "3c883cc64beda7e14e446a6a9cd75791c7a2c12e0118dd41d99e9aedccad0631",
+      "relevant_lines": [
+        1032,
+        1033
+      ]
+    },
+    "direct_tracker_test": {
+      "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/SessionTrackerCheckTest.java",
+      "sha256": "6c1f6175a967cc2003873e5de49f562b6efd82cf923161d4abaab533074b2f1c",
+      "relevant_lines": [
+        75,
+        78,
+        83,
+        114,
+        119
+      ]
+    },
+    "quorum_upgrade_near_miss": {
+      "path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/MultiOpSessionUpgradeTest.java",
+      "sha256": "6769e7d822dbf85f7b0e91f0cbead83cafe3e6b2d9d72bb8b55f1634b4734023",
+      "relevant_lines": [
+        54,
+        59,
+        64,
+        65
+      ]
+    },
+    "read_only_test": {
+      "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java",
+      "sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e",
+      "relevant_lines": [
+        115,
+        169,
+        213,
+        247
+      ]
+    }
+  },
+  "no_jvm_launched": true,
+  "global_inventory_changed": false
+}

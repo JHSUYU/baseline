@@ -1,0 +1,114 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-07",
+  "closure_coverage_ids_seen": 291,
+  "closure_edge_fingerprints_seen": 27,
+  "cluster_test": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+  "coverage_ids_seen": 459,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 23.374,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 156,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 0,
+    "junit_log_sha256": "46b24440d633233c80a1335db1378a864ee1becec16ba3f1d1443111526b3211",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=0 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "9a8570a531e43aeab709b8a85c4284237ed2e751810406efc0080a7bec82011f",
+    "tests": 1,
+    "wrapper_sha256": "baa6f7184a598558b163454064a43ce86e53d6bef5ea3bfc914e81a5551a6dce"
+  },
+  "healthy_observed_door_events": 232,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1",
+      "node2",
+      "node3"
+    ],
+    "eligible_doors_before_target": 156,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "85400f2cd290c99e534607bcf6736f4a8a0031e7619a185785532ea6cc7a9d0e",
+    "observed_target_class_sha256": "85400f2cd290c99e534607bcf6736f4a8a0031e7619a185785532ea6cc7a9d0e",
+    "reasons": [],
+    "site_catalog_sha256": "74c16fe7a03c7eabf25daaa3e21171164c86de4746067009f68dce62bd2d6163",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (core == null) {\nthrow new SolrException(ErrorCode.SERVICE_UNAVAILABLE, \"SolrCore is no longer available to register\");",
+    "check_sites": [
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1325:branch:12"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
+    "original_source_line": 1326,
+    "site_id": "<org.apache.solr.cloud.ZkController: java.lang.String register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)>#u113",
+    "source_line": 1326,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+    "throw_site": "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1326:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1",
+      "node2",
+      "node3"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 23.374,
+      "eligible_doors_before_target": 156,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 291,
+        "closure_edges": 27,
+        "coverage": 459
+      },
+      "observed_door_events": 232,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-04",
+  "system": "hbase",
+  "calibration_only": true,
+  "cluster_test": "org.apache.hadoop.hbase.mob.TestMobStoreScanner#testMobStoreScanner",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.mob.TestMobStoreScanner",
+    "testMobStoreScanner"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/agent.jar",
+  "agent_transport": "java_tool_options",
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/cases/HBASE-04/sites.json",
+  "agent_include": [
+    "org.apache.hadoop.hbase.client.HBaseAdmin",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.HBaseAdmin#flushAsync(Lorg/apache/hadoop/hbase/TableName;Ljava/util/List;)Ljava/util/concurrent/Future;@1262:branch:1"
+    ],
+    "throw_site": "org.apache.hadoop.hbase.client.HBaseAdmin#flushAsync(Lorg/apache/hadoop/hbase/TableName;Ljava/util/List;)Ljava/util/concurrent/Future;@1263:throw:1",
+    "exception_class": "org.apache.hadoop.hbase.TableNotEnabledException",
+    "site_id": "<org.apache.hadoop.hbase.client.HBaseAdmin: java.util.concurrent.Future flushAsync(org.apache.hadoop.hbase.TableName,java.util.List)>#u8",
+    "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+    "source_line": 1263,
+    "original_source_line": 1263,
+    "function": "org.apache.hadoop.hbase.client.HBaseAdmin.flushAsync(org.apache.hadoop.hbase.TableName,java.util.List)",
+    "check_code": "if (!isTableEnabled(tableName)) {\nthrow new TableNotEnabledException(tableName.getNameAsString());"
+  },
+  "budget": {
+    "trials": 1,
+    "seconds": 480,
+    "max_faults_per_trial": 1,
+    "trial_timeout_seconds": 300
+  },
+  "mapping": {
+    "status": "preliminary_compiled_distribution_site",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-client-2.6.6.jar",
+    "agent_build": {
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "target_throw_kind": "athrow",
+    "compiled_jar_sha256": "b3c9537a0c5f4b057134c59298b453ae207d2e6279be66d71c80da36d0d2de54",
+    "compiled_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-client-2.6.6.jar",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": false,
+    "verified_healthy_probe": null,
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+    "source_root_env": "MALLORY_HBASE_SOURCE_ROOT",
+    "distribution_root_env": "MALLORY_HBASE_DIST_ROOT",
+    "test_source_sha256": "6753e8134429a446fd13bc08540bba164d22445644a65c520d78825e606b9520",
+    "target_source_sha256": "2cfbe453b9ddbe6669c17d93b77f9a43ff9bd3bd2ab47ff9ad6f3b82ee5d06d0",
+    "healthy_seed_verified": false,
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/lane2-receipt.json",
+    "system_receipt_sha256": "447e50189b96f844174c472de61e213cf6c7a652614894c3d8ae07b259d9eff0",
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration"
+  },
+  "expected_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar",
+      "sha256": "12bd49f871c414f023e6f80dbb1ba1cb1a05f7cf24aa27c3462bd8b2033c1f9c"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "9b44bf693a8365dd01364cc1641208c0a481902116e316830260b3f71c8d4445"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/cases/HBASE-04/sites.json",
+      "sha256": "033e8cb4aac93e23fadde24b056155f3899bf5e0e91e95a06452f619862c9c83"
+    }
+  ],
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source"
+}

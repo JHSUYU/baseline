@@ -1,0 +1,99 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-10",
+  "closure_coverage_ids_seen": 264,
+  "closure_edge_fingerprints_seen": 267,
+  "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+  "coverage_ids_seen": 294,
+  "dispatch_attempt_ids": [
+    "20261009T162114-b96c84a594ed"
+  ],
+  "duration_seconds": 37.637,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 397755,
+    "manifest_path": "evidence_archives/calibration/HBASE-10.tar.manifest.json",
+    "manifest_sha256": "6ff83a741a4cbbefa7eba74015e256c5df2921a4f7886d99abe21db70a59afb4",
+    "path": "evidence_archives/calibration/HBASE-10.tar.gz",
+    "sha256": "e90294ceef181e5b7ffd1cfc76f13918c1b169972c9b13d5ea3656849ed62f9e"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 178,
+  "healthy_observed_door_events": 178,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T162114-b96c84a594ed",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "master0"
+    ],
+    "eligible_doors_before_target": 178,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "f6fd0445b9180846112fee6f36341c1c6d59b562974858f81d955bd4a0562545",
+    "observed_target_class_sha256": "f6fd0445b9180846112fee6f36341c1c6d59b562974858f81d955bd4a0562545",
+    "reasons": [],
+    "site_catalog_sha256": "0d315af8b642a2afbbe710ed61edd9474967ba03fc0a37324cbceefbb47b0c96",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (regionNode.getProcedure() != null) {\nthrow new HBaseIOException(\nregionNode + \" is currently in transition; pid=\" + regionNode.getProcedure().getProcId());",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V@755:branch:1"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+    "original_source_line": 757,
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.AssignmentManager: void preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])>#u15",
+    "source_line": 757,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V@757:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "master0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T162114-b96c84a594ed",
+      "duration_seconds": 37.637,
+      "eligible_doors_before_target": 178,
+      "novelty": {
+        "closure_coverage": 264,
+        "closure_edges": 267,
+        "coverage": 294
+      },
+      "observed_door_events": 178,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

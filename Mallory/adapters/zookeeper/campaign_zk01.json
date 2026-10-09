@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-01",
+  "system": "zookeeper",
+  "cluster_test": "org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest#testCloseSessionWhileUpgradeOnLeader",
+  "exact_check_location": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java:317",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/zookeeper",
+  "command": [
+    "mvn",
+    "-pl",
+    "zookeeper-server",
+    "-am",
+    "-Dtest=SessionUpgradeQuorumTest#testCloseSessionWhileUpgradeOnLeader",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "test"
+  ],
+  "agent_transport": "surefire_argline",
+  "agent_arg_property": "mallory.agent.arg",
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/bin/mallory-agent.jar",
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/bin/zk01-healthy-v2/sites.json",
+  "agent_include": [
+    "org.apache.zookeeper.server.SessionTrackerImpl"
+  ],
+  "agent_properties": {
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.maps": true,
+    "auto.io.doors": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V@319:branch:2"
+    ],
+    "throw_site": "org.apache.zookeeper.server.SessionTrackerImpl#checkSession(JLjava/lang/Object;)V@320:throw:1",
+    "exception_class": "org.apache.zookeeper.KeeperException$SessionExpiredException"
+  },
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "exception_class": "java.io.IOException",
+  "budget": {
+    "trials": 80,
+    "seconds": 7200,
+    "max_faults_per_trial": 10,
+    "trial_timeout_seconds": 180
+  },
+  "require_site_catalog": true,
+  "require_named_node": true,
+  "explore_outside_closure": true,
+  "candidate_replays": 2,
+  "max_queue": 5000
+}

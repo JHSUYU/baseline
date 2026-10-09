@@ -1,0 +1,1690 @@
+{
+  "calibration_only": false,
+  "case_id": "SOLR-05",
+  "closure_coverage_ids_seen": 160,
+  "closure_edge_fingerprints_seen": 194,
+  "cluster_test": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+  "coverage_ids_seen": 278,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 1684.093,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 80,
+  "healthy_eligible_doors": 104,
+  "healthy_observed_door_events": 117,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1"
+    ],
+    "eligible_doors_before_target": 104,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "85400f2cd290c99e534607bcf6736f4a8a0031e7619a185785532ea6cc7a9d0e",
+    "observed_target_class_sha256": "85400f2cd290c99e534607bcf6736f4a8a0031e7619a185785532ea6cc7a9d0e",
+    "reasons": [],
+    "site_catalog_sha256": "e8d4b0e85ff9370187f9b4669b05413c250f895c7f70e7a764660ed8fd6f75d9",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "budget_exhausted",
+  "strict_injected_trials": 54,
+  "strict_target_trials": 34,
+  "system": "solr",
+  "target": {
+    "check_code": "if (replica == null) {\nthrow new SolrException(ErrorCode.SERVER_ERROR, \"Error registering SolrCore, replica is removed from clusterstate\");",
+    "check_sites": [
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1273:branch:4"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
+    "node": "node1",
+    "site_id": "<org.apache.solr.cloud.ZkController: java.lang.String register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)>#u43",
+    "source_line": 1274,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+    "throw_site": "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1274:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 53,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.98,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 160,
+        "closure_edges": 10,
+        "coverage": 275
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.039,
+      "eligible_doors_before_target": 109,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 114,
+      "result": "trials/r0001/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 1
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 62.25,
+      "eligible_doors_before_target": 115,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 115,
+      "result": "trials/r0002/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 2
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.288,
+      "eligible_doors_before_target": 108,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 113,
+      "result": "trials/r0003/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 3
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.038,
+      "eligible_doors_before_target": 64,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0004/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 4
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.192,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 6,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0005/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 5
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.697,
+      "eligible_doors_before_target": 110,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 110,
+      "result": "trials/r0006/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 6
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.288,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0007/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 7
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.039,
+      "eligible_doors_before_target": 103,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 1
+      },
+      "observed_door_events": 118,
+      "result": "trials/r0008/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 8
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 61.904,
+      "eligible_doors_before_target": 115,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 115,
+      "result": "trials/r0009/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 9
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.886,
+      "eligible_doors_before_target": 72,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 6,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0010/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 10
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.088,
+      "eligible_doors_before_target": 64,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0011/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 11
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.188,
+      "eligible_doors_before_target": 72,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 6,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0012/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 12
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.94,
+      "eligible_doors_before_target": 64,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0013/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 13
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.24,
+      "eligible_doors_before_target": 105,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 110,
+      "result": "trials/r0014/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 14
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.14,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0015/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 15
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 18.145,
+      "eligible_doors_before_target": 118,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 118,
+      "result": "trials/r0016/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 16
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.087,
+      "eligible_doors_before_target": 60,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0017/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 17
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 12.019,
+      "eligible_doors_before_target": 74,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 2
+      },
+      "observed_door_events": 74,
+      "result": "trials/r0018/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 18
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.692,
+      "eligible_doors_before_target": 108,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 113,
+      "result": "trials/r0019/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 19
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.189,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0020/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 20
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.037,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0021/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 21
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 20.257,
+      "eligible_doors_before_target": 62,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0022/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 22
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.895,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 8,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0023/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 23
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.155,
+      "eligible_doors_before_target": 113,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 6,
+        "coverage": 0
+      },
+      "observed_door_events": 118,
+      "result": "trials/r0024/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 24
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 43.821,
+      "eligible_doors_before_target": 75,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 75,
+      "result": "trials/r0025/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 25
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.29,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 6,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0026/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 26
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 13.137,
+      "eligible_doors_before_target": 73,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 73,
+      "result": "trials/r0027/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 27
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 12.641,
+      "eligible_doors_before_target": 72,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 72,
+      "result": "trials/r0028/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 28
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 9.53,
+      "eligible_doors_before_target": 43,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 43,
+      "result": "trials/r0029/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 29
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.81,
+      "eligible_doors_before_target": 64,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0030/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 30
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.151,
+      "eligible_doors_before_target": 60,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0031/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 31
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 12.987,
+      "eligible_doors_before_target": 68,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 68,
+      "result": "trials/r0032/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 32
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.559,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0033/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 33
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 62.025,
+      "eligible_doors_before_target": 110,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 115,
+      "result": "trials/r0034/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 34
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.806,
+      "eligible_doors_before_target": 105,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 118,
+      "result": "trials/r0035/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 35
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.06,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 8,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0036/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 36
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.071,
+      "eligible_doors_before_target": 105,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 110,
+      "result": "trials/r0037/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 37
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.131,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0038/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 38
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.111,
+      "eligible_doors_before_target": 100,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 113,
+      "result": "trials/r0039/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 39
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.067,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0040/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 40
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.999,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0041/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 41
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.128,
+      "eligible_doors_before_target": 118,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 118,
+      "result": "trials/r0042/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 42
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.028,
+      "eligible_doors_before_target": 114,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 114,
+      "result": "trials/r0043/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 43
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.874,
+      "eligible_doors_before_target": 72,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0044/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 44
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.086,
+      "eligible_doors_before_target": 114,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 114,
+      "result": "trials/r0045/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 45
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.284,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0046/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 46
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.026,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0047/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 47
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.9,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0048/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 48
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.839,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0049/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 49
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.031,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0050/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 50
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.029,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0051/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 51
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 41.102,
+      "eligible_doors_before_target": 105,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 110,
+      "result": "trials/r0052/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 52
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.079,
+      "eligible_doors_before_target": 72,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0053/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 53
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.13,
+      "eligible_doors_before_target": 111,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 118,
+      "result": "trials/r0054/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 54
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.877,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0055/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 55
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 62.027,
+      "eligible_doors_before_target": 110,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 115,
+      "result": "trials/r0056/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 56
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.77,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0057/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 57
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.818,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0058/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 58
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.994,
+      "eligible_doors_before_target": 110,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 110,
+      "result": "trials/r0059/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 59
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.884,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0060/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 60
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 13.771,
+      "eligible_doors_before_target": 74,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 74,
+      "result": "trials/r0061/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 61
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.482,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0062/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 62
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.834,
+      "eligible_doors_before_target": 117,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0063/result.json",
+      "selection_reason": "bounded_exploration",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 63
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.975,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 12,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0064/result.json",
+      "selection_reason": "bounded_exploration",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 64
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.922,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0065/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 65
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.88,
+      "eligible_doors_before_target": 63,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0066/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 66
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.681,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0067/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 67
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.746,
+      "eligible_doors_before_target": 60,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0068/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 68
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 18.842,
+      "eligible_doors_before_target": 105,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 4,
+        "coverage": 0
+      },
+      "observed_door_events": 118,
+      "result": "trials/r0069/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 69
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.892,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 6,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0070/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 70
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.031,
+      "eligible_doors_before_target": 100,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 113,
+      "result": "trials/r0071/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 71
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 19.741,
+      "eligible_doors_before_target": 60,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0072/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 72
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 15.825,
+      "eligible_doors_before_target": 114,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 114,
+      "result": "trials/r0073/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 73
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 19.867,
+      "eligible_doors_before_target": 104,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 6,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0074/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 74
+    },
+    {
+      "all_faults_applied": false,
+      "all_faults_effective": false,
+      "all_faults_matched": false,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.892,
+      "eligible_doors_before_target": 62,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0075/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "fault_unmatched",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 75
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 17.84,
+      "eligible_doors_before_target": 112,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 117,
+      "result": "trials/r0076/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 76
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 55.88,
+      "eligible_doors_before_target": 47,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 47,
+      "result": "trials/r0077/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 77
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.673,
+      "eligible_doors_before_target": 97,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 110,
+      "result": "trials/r0078/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 78
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 13.072,
+      "eligible_doors_before_target": 73,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 73,
+      "result": "trials/r0079/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 79
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 62.472,
+      "eligible_doors_before_target": 102,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 2,
+        "coverage": 0
+      },
+      "observed_door_events": 115,
+      "result": "trials/r0080/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "workload_failed_other",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 80
+    }
+  ]
+}

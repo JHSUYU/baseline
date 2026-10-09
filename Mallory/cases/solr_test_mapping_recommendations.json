@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "scope": "21 original Solr inventory candidates",
+  "basis": "source audit only; no JVM execution or calibrated target reach claimed",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "cases": [
+    {
+      "case_id": "SOLR-01",
+      "recommended_selector": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testAliasHandling",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testRouting"
+      ],
+      "source_evidence": "CloudHttp2SolrClientTest.java:197-249; BaseHttpClusterStateProvider.java:241-267",
+      "reason": "HTTP backed CloudHttp2SolrClient resolves aliases during alias queries; successful LISTALIASES returns before exhaustion throw.",
+      "caveat": "Observe client actor; a node-only probe misses this client-side target."
+    },
+    {
+      "case_id": "SOLR-05",
+      "recommended_selector": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.AddReplicaTest#test"
+      ],
+      "source_evidence": "AddReplicaTest.java:59-76; ZkController.java:1265-1274",
+      "reason": "Creates initial and additional replicas; registration checks that each is still present in cluster state.",
+      "caveat": "Asynchronous replica registration needs node actor coverage."
+    },
+    {
+      "case_id": "SOLR-06",
+      "recommended_selector": "org.apache.solr.cloud.TestPullReplica#testCreateDelete",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.TestPullReplica#testAddDocs"
+      ],
+      "source_evidence": "TestPullReplica.java:129-183; ZkController.java:1310-1315",
+      "reason": "Creates six PULL replicas and asserts none is elected leader, directly exercising register assertion.",
+      "caveat": "@Repeat(iterations=2) deliberately yields two successful JUnit runs; preserve repetitions."
+    },
+    {
+      "case_id": "SOLR-07",
+      "recommended_selector": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.AddReplicaTest#test",
+        "org.apache.solr.cloud.TestPullReplica#testCreateDelete"
+      ],
+      "source_evidence": "AddReplicaTest.java:59-76; ZkController.java:1317-1326",
+      "reason": "Initial and added NRT/TLOG/PULL cores enter register; a healthy core is nonnull at the check.",
+      "caveat": "Register happens in embedded nodes; wait for async startup and select node actor."
+    },
+    {
+      "case_id": "SOLR-09",
+      "recommended_selector": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.DeleteReplicaTest#deleteLiveReplicaTest"
+      ],
+      "source_evidence": "DeleteReplicaTest.java:149-167; DeleteReplicaCmd.java:275-283",
+      "reason": "Deletes a leader replica, so synchronous deleteCore waits for core removal and checks callable result.",
+      "caveat": "Deletion may invoke callback asynchronously before command completes."
+    },
+    {
+      "case_id": "SOLR-10",
+      "recommended_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "medium",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation"
+      ],
+      "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:110-139; MaintainRoutedAliasCmd.java:108-121",
+      "reason": "Creates a time-routed alias and adds documents; maintenance command parses its routed alias metadata.",
+      "caveat": "May need command actor coverage; preserve alias maintenance timing."
+    },
+    {
+      "case_id": "SOLR-13",
+      "recommended_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testSliceRouting"
+      ],
+      "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:284-302; RoutedAlias.java:343-354",
+      "reason": "Explicitly calls addOneDocSynchCreation for two aliases, making synchronous collection creation and alias observation likely.",
+      "caveat": "Preemptive background work coexists with the synchronous first creation."
+    },
+    {
+      "case_id": "SOLR-14",
+      "recommended_selector": "org.apache.solr.cloud.SplitShardTest#doTest",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.SplitShardTest#testSplitFuzz"
+      ],
+      "source_evidence": "SplitShardTest.java:77-92; SplitShardCmd.java:163-167",
+      "reason": "Runs a valid shard split; first live-node znode check has a nonnull healthy result.",
+      "caveat": "Prior no_usable_cluster_test historical label does not prove this selector misses the guard."
+    },
+    {
+      "case_id": "SOLR-15",
+      "recommended_selector": "org.apache.solr.cloud.SplitShardTest#doTest",
+      "recommendation": "operation_selector_only_no_healthy_guard_seed",
+      "healthy_guard_reachability": "source_infeasible_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [],
+      "source_evidence": "SplitShardTest.java:77-92; SplitShardCmd.java:519-543",
+      "reason": "A valid split reaches the outer owner check but cannot reach the nested null check without entering a branch that throws.",
+      "caveat": "Mapped B40 is nested below owner-null-or-changed predicate; do not classify as missing test."
+    },
+    {
+      "case_id": "SOLR-16",
+      "recommended_selector": "org.apache.solr.cloud.SplitShardTest#doTest",
+      "recommendation": "operation_selector_only_no_healthy_guard_seed",
+      "healthy_guard_reachability": "source_infeasible_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [],
+      "source_evidence": "SplitShardTest.java:77-92; SplitShardCmd.java:519-543",
+      "reason": "A valid split reaches the outer owner check but cannot reach the nested changed-owner check without entering a branch that throws.",
+      "caveat": "Case JSON check_sites names @536:branch:40, the same null check as SOLR-15, while inventory target_guard names #B41 for the changed-owner throw at line 543. Both inner checks are unreachable in a nonthrowing run; reconcile this mismatch before calibration."
+    },
+    {
+      "case_id": "SOLR-18",
+      "recommended_selector": "org.apache.solr.cloud.AliasIntegrationTest#testDeleteAliasWithExistingCollectionName",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.AliasIntegrationTest#testClusterStateProviderAPI"
+      ],
+      "source_evidence": "AliasIntegrationTest.java:439-478,283-321; ZkStateReader.java:2337-2349",
+      "reason": "Creates and modifies aliases in an embedded cloud; alias watch updates can compare ZK versions in setIfNewer.",
+      "caveat": "Assert is evaluated only when Java assertions are enabled."
+    },
+    {
+      "case_id": "SOLR-19",
+      "recommended_selector": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.AddReplicaTest#test"
+      ],
+      "source_evidence": "AddReplicaTest.java:59-76; CoreContainer.java:1325-1334",
+      "reason": "Creates initial and additional cores in cloud mode, exercising the nonlegacy coreNodeName precondition.",
+      "caveat": "Check is conditional on nonlegacy cloud mode."
+    },
+    {
+      "case_id": "SOLR-21",
+      "recommended_selector": "org.apache.solr.cloud.api.collections.CollectionReloadTest#testReloadedLeaderStateAfterZkSessionLoss",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [],
+      "source_evidence": "CollectionReloadTest.java:48-74; CoreContainer.java:1763-1765",
+      "reason": "Reloads a collection core, then expires its ZK session; cloud reload looks up the replica before the assertion.",
+      "caveat": "Assertion requires Java assertions enabled."
+    },
+    {
+      "case_id": "SOLR-22",
+      "recommended_selector": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "plausible_healthy_guard",
+      "confidence": "medium",
+      "alternate_cluster_selectors": [],
+      "source_evidence": "TestPullReplica.java:218-266; IndexFetcher.java:340-353; ReplicationHandler.java:655-670; IndexDeletionPolicyWrapper.java:170-184",
+      "reason": "Adds and commits documents to PULL replicas, which fetch the leader file list with a generation and call getAndSaveCommitPoint.",
+      "caveat": "Reach depends on a replication fetch using a nonnegative generation; verify by trace."
+    },
+    {
+      "case_id": "SOLR-31",
+      "recommended_selector": "org.apache.solr.cloud.ForceLeaderTest#testReplicasInLowerTerms",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [],
+      "source_evidence": "ForceLeaderTest.java:71-124; CollectionsHandler.java:1473-1479",
+      "reason": "Brings down the leader and explicitly calls FORCELEADER after asserting no active leader.",
+      "caveat": "ForceLeaderTest#test is @Ignore; retain testReplicasInLowerTerms."
+    },
+    {
+      "case_id": "SOLR-34",
+      "recommended_selector": "org.apache.solr.search.TestCoordinatorRole#testSimple",
+      "recommendation": "operation_selector_only_no_healthy_guard_seed",
+      "healthy_guard_reachability": "source_infeasible_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.search.TestCoordinatorRole#testMultiCollectionMultiNode"
+      ],
+      "source_evidence": "TestCoordinatorRole.java:76-115; CoordinatorHttpSolrCall.java:113-149",
+      "reason": "The coordinator query creates a synthetic collection, but the mapped createException check is entered only when syntheticColl remains null after creation; both outcomes of that nested check throw.",
+      "caveat": "Check site @139:branch:6 is inside post-create syntheticColl == null. A nonthrowing request cannot evaluate it."
+    },
+    {
+      "case_id": "SOLR-36",
+      "recommended_selector": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "plausible_healthy_guard",
+      "confidence": "medium",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitStaticIndexReplication"
+      ],
+      "source_evidence": "ShardSplitTest.java:100-114; DistributedZkUpdateProcessor.java:983-989",
+      "reason": "Runs multiple shard-split scenarios; parent-to-subshard updates can evaluate the active-state defensive check.",
+      "caveat": "Requires FROMLEADER with DISTRIB_FROM_PARENT on a local subshard leader; trace exact guard."
+    },
+    {
+      "case_id": "SOLR-37",
+      "recommended_selector": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "plausible_healthy_guard",
+      "confidence": "medium",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitStaticIndexReplication"
+      ],
+      "source_evidence": "ShardSplitTest.java:100-114,675-715; DistributedZkUpdateProcessor.java:983-996",
+      "reason": "Runs split scenarios including custom ranges; valid child range is tested against parent range.",
+      "caveat": "Requires same parent-to-subshard path as SOLR-36; trace exact guard."
+    },
+    {
+      "case_id": "SOLR-38",
+      "recommended_selector": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testAliasHandling",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "plausible_healthy_guard",
+      "confidence": "medium",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testRouting"
+      ],
+      "source_evidence": "CloudHttp2SolrClientTest.java:197-205,254-300; DistributedZkUpdateProcessor.java:1021-1026",
+      "reason": "Updates collections through the HTTP cloud client, invoking distributed update defensive checks; stable leadership takes nonthrowing path.",
+      "caveat": "This selector is broad, not a direct leader-transition test; verify exact B20 coverage."
+    },
+    {
+      "case_id": "SOLR-39",
+      "recommended_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testSliceRouting"
+      ],
+      "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:110-139,175-176; RoutedAliasUpdateProcessor.java:193-201,243-249",
+      "reason": "Creates a routed alias then commits and deletes through it; processCommit/processDelete invoke lookupShardLeadersOfCollections.",
+      "caveat": "Alias must remain visible while distributed commit/delete runs."
+    },
+    {
+      "case_id": "SOLR-40",
+      "recommended_selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+      "recommendation": "retain_recorded_selector",
+      "healthy_guard_reachability": "likely_healthy_guard",
+      "confidence": "high",
+      "alternate_cluster_selectors": [
+        "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testSliceRouting"
+      ],
+      "source_evidence": "TimeRoutedAliasUpdateProcessorTest.java:110-139; RoutedAliasUpdateProcessor.java:98-123,129-135",
+      "reason": "Adds through a time-routed alias; wrap reads alias metadata through getAliasProps before creating the processor.",
+      "caveat": "Processor construction occurs on a core carrying routed alias metadata."
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "kind": "immutable_inventory_source_reference_proposal",
+  "case_id": "HDFS-50",
+  "status": "review_only_not_dispatch_admitted",
+  "cohort": "original_102",
+  "base": {
+    "inventory_path": "Mallory/cases/inventory.json",
+    "inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+    "source_reference_path": "Mallory/dispatch/source_reference.json",
+    "source_reference_sha256": "e600ce9827adc7fdc9baf8cef1fca70bfcb616f39310a7053a50feab0d0b613d",
+    "hdfs_source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+    "hdfs_source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+    "hdfs_source_fingerprint": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+    "original_selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+    "original_test_source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f"
+  },
+  "proposed": {
+    "inventory_row": {
+      "case_id": "HDFS-50",
+      "system": "hdfs",
+      "system_version": "3.4.3",
+      "cohort": "original_102",
+      "target": {
+        "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature: org.apache.hadoop.hdfs.server.namenode.snapshot.Snapshot addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)>#u38",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+        "source_line": 199,
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature.addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)",
+        "check_code": "if (i >= 0) {\nthrow new SnapshotException(\"Failed to add snapshot: there is already a \"\n+ \"snapshot with the same name \\\"\" + Snapshot.getSnapshotName(s) + \"\\\".\");",
+        "target_guard": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;#B2",
+        "target_throw": "org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;#L199",
+        "target_exception": "org.apache.hadoop.hdfs.protocol.SnapshotException",
+        "source_line_text": "+ \"snapshot with the same name \\\"\" + Snapshot.getSnapshotName(s) + \"\\\".\");",
+        "source_sha256": "3391aca71a4b7350da952e9bae0a7d6d8e8568f6de1f419f8dce331e98fa60b7",
+        "runtime_mapping": {
+          "check_sites": [
+            "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;@197:branch:2"
+          ],
+          "throw_site": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature#addSnapshot(Lorg/apache/hadoop/hdfs/server/namenode/INodeDirectory;Lorg/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/namenode/LeaseManager;J)Lorg/apache/hadoop/hdfs/server/namenode/snapshot/Snapshot;@199:throw:1",
+          "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes",
+          "compiled_class_sha256": "33930de8f98942d102579e04f07f4fb4ddeaf5f3b98f1a53f1c8471c0bc105c3",
+          "selected_source_line": 199,
+          "exception_class": "org.apache.hadoop.hdfs.protocol.SnapshotException"
+        }
+      },
+      "workload": {
+        "selector_source": "validated_existing_cluster_alternate",
+        "recorded_selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+        "recorded_selector_status": "oracle_unfit_expected_duplicate_snapshot_exception",
+        "healthy_pilot_attestation": "data/mallory/calibration_v9/HDFS-50/result.json",
+        "mapping_evidence": "The alternate MiniDFSCluster test issues FsShell createSnapshot RPCs with distinct names sn1 and sn2. Final healthy seed passed one JUnit, observed the exact named nn0 target without selected SnapshotException, and offline audit found 49 causal closure edges and 13 observed-path doors.",
+        "source_oracle_warning": "The recorded testCreateSnapshot creates sn0 twice and expects the selected duplicate-name SnapshotException; retain it only as historical invalid healthy calibration.",
+        "alternate_test_candidates": [
+          {
+            "raw": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+            "simple_class": "TestSnapshotCommands",
+            "method": "testSnapshotCommandsWithURI",
+            "parameter_variant": null,
+            "class": "org.apache.hadoop.hdfs.TestSnapshotCommands",
+            "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+            "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+            "source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+            "method_line": 197,
+            "has_junit_annotation": true,
+            "test_like": true,
+            "cluster_fixture_markers_in_test_source": [
+              "MiniDFSCluster"
+            ],
+            "resolution": "test_method_found_and_healthy_runtime_attested"
+          }
+        ],
+        "alternate_mapping_evidence": null,
+        "candidates": [
+          {
+            "raw": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+            "simple_class": "TestSnapshotCommands",
+            "method": "testCreateSnapshot",
+            "parameter_variant": null,
+            "class": "org.apache.hadoop.hdfs.TestSnapshotCommands",
+            "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+            "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+            "source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+            "method_line": 100,
+            "has_junit_annotation": true,
+            "test_like": true,
+            "cluster_fixture_markers_in_test_source": [
+              "MiniDFSCluster"
+            ],
+            "resolution": "test_method_found"
+          },
+          {
+            "raw": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+            "simple_class": "TestSnapshotCommands",
+            "method": "testSnapshotCommandsWithURI",
+            "parameter_variant": null,
+            "class": "org.apache.hadoop.hdfs.TestSnapshotCommands",
+            "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+            "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+            "source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+            "method_line": 197,
+            "has_junit_annotation": true,
+            "test_like": true,
+            "cluster_fixture_markers_in_test_source": [
+              "MiniDFSCluster"
+            ],
+            "resolution": "test_method_found_and_healthy_runtime_attested"
+          }
+        ],
+        "selected_selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+        "test_class": "org.apache.hadoop.hdfs.TestSnapshotCommands",
+        "test_method": "testSnapshotCommandsWithURI",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java",
+        "parameter_variant_note": null
+      },
+      "eligibility": {
+        "state": "ready_for_healthy_seed",
+        "may_attempt_seed": true,
+        "cluster_and_target_reach_verified_for_mallory": true,
+        "historical_status_is_not_eligibility": true,
+        "bytecode_mapping_status": "unique_compiled_site",
+        "may_dispatch_healthy_seed": true,
+        "mapping_gaps": []
+      },
+      "build": {
+        "tool": "maven",
+        "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2",
+        "module": "hadoop-hdfs-project/hadoop-hdfs",
+        "cwd_relative_to_source_root": ".",
+        "argv": [
+          "mvn",
+          "-B",
+          "-ntp",
+          "-pl",
+          "hadoop-hdfs-project/hadoop-hdfs",
+          "-Dtest=TestSnapshotCommands#testSnapshotCommandsWithURI",
+          "-Dsurefire.failIfNoSpecifiedTests=false",
+          "-Dtest.build.data={trial_dir}/hdfs-data",
+          "surefire:test"
+        ],
+        "agent_arg_property": "maven-surefire-plugin.argLine",
+        "selector_scope": "selected_method",
+        "precondition": "Pinned clean HDFS 3.4.3 source plus compiled DirectorySnapshottableFeature and TestSnapshotCommands hashes; Surefire runs one JUnit test.",
+        "tool_available_on_inventory_host": true,
+        "validated_by_execution": true
+      },
+      "provenance": {
+        "selection_file": "data/crashfuzz/selection102.json",
+        "historical_result_file": "data/crashfuzz/checklist102.json",
+        "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+        "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+        "source_root_env": "MALLORY_HDFS_SOURCE_ROOT",
+        "distribution_root": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3",
+        "distribution_root_env": "MALLORY_HDFS_DIST_ROOT",
+        "source_file_exists": true,
+        "historical_seed_seconds": 12.156,
+        "historical_crashfuzz_status": "quality_complete",
+        "historical_crashfuzz_test": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+        "historical_exclusion_reason": null
+      }
+    },
+    "full_inventory_sha256_after_row_replacement": "7e8f472ea87eb61fa0322679f00cd9c6d74582960022d2f26d6280b8ef893e85",
+    "source_reference_delta": {
+      "field": "inventory_sha256",
+      "from": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+      "to": "7e8f472ea87eb61fa0322679f00cd9c6d74582960022d2f26d6280b8ef893e85",
+      "hdfs_root_commit_unchanged": "9d50c6884666e794e45102260a4017bb31802e1b",
+      "hdfs_root_fingerprint_unchanged": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+      "new_test_path_already_in_pinned_root_paths": true
+    },
+    "full_source_reference_sha256_after_delta": "e2898acbd7621c68f26a385b4219364af5c5f6058d3f8e265c5dd2d0b0980114",
+    "isolated_worktree": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2",
+    "target_class_file": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.class",
+      "sha256": "33930de8f98942d102579e04f07f4fb4ddeaf5f3b98f1a53f1c8471c0bc105c3"
+    },
+    "test_class_file": {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestSnapshotCommands.class",
+      "sha256": "0f7f1d0b415b9d1e81f9b8fbeb7ba0405f7b5f65efc9917d3efb690733f1a260"
+    },
+    "test_source_sha256": "5f098c97e77788ab84701bc39187be17728cdcabe77f3e9b916e4cf0d16ae48f",
+    "healthy_config": {
+      "path": "data/mallory/calibration_v9/HDFS-50/config.json",
+      "sha256": "697710b6cb4811700c2d467344f862c8693a2330151dd4cc2bb817f3019a6fff",
+      "calibration_only": true
+    }
+  },
+  "calibration_history": [
+    {
+      "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+      "result": "data/mallory/calibration/HDFS-50/result.json",
+      "result_sha256": "d6bef9e9372965bdc9d80884399341f9d426eaa3cf4a7ed887adfd9b13cfd86b",
+      "finding": "JUnit passed but deliberately repeated snapshot name sn0; exact selected SnapshotException was observed in the healthy run.",
+      "fault_trials_completed": 0
+    },
+    {
+      "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testSnapshotCommandsWithURI",
+      "result": "data/mallory/calibration_v9/HDFS-50/result.json",
+      "result_sha256": "fb4d363c0442ccd696936748c935ddfb8810a7b81fffc44081a00f3f5119d9ca",
+      "audit": "data/mallory/calibration_v9/HDFS-50/offline-causal-audit.json",
+      "audit_sha256": "b803b0cf5317d90c97ee240f9511ce8674960ff435cad2d1dd847c374294b44e",
+      "site_catalog_sha256": "8ec853ba9876297e6f97c7e75891c6684a38ba12161a08d09505a2d8cc805714",
+      "finding": "Exactly one JUnit passed; named nn0 exact target, zero selected throws, 49 causal closure edges, 13 observed-path doors. Healthy calibration only.",
+      "fault_trials_completed": 0
+    }
+  ],
+  "admission_instruction": "Review and apply this row to a separately versioned inventory, regenerate source_reference with its inventory_sha256 updated after verifying pinned root fingerprint, then pin a separate campaign config to the accepted snapshots. No fault campaign has run for the alternate."
+}

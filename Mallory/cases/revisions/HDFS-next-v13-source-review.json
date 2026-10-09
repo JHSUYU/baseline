@@ -1,0 +1,124 @@
+{
+  "cases": [
+    {
+      "case_id": "HDFS-08",
+      "compiled_target_class_sha256": "48f3e0c2d0daad3633b1b43baebce42db2d5c9e102846a5153cd22b63548ee71",
+      "fresh_calibration_config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v13/HDFS-08-calibration.json",
+      "fresh_calibration_config_sha256": "5cfa26af53d1bebcfda6460b6e7793340489d14994d626bb5980eb29f8563557",
+      "previous_audit_guidance_consistent": false,
+      "previous_audit_observed_path_doors": 24,
+      "previous_audit_path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-08/offline-causal-audit.json",
+      "previous_audit_sha256": "1f649949fa93b516cc2b5f26f466bcbcb19a23aeaf8922b5d286a15ad0f93fa8",
+      "previous_healthy_result_path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-08/trials/r0000/result.json",
+      "previous_healthy_result_sha256": "abdb53358fd58b217947e557c345b4fa41379ca15fef6deb9ac2e9981aff06c7",
+      "previous_target_nodes": [
+        "hdfs-journal-cluster-1/jn0",
+        "hdfs-journal-cluster-1/jn1",
+        "hdfs-journal-cluster-1/jn2"
+      ],
+      "previous_target_reached": true,
+      "previous_target_threw": false,
+      "source_review": "MiniJournalCluster: write an edit segment, replace QJM writer, recover the unfinalized segment; Journal.checkRequest compares IPC epoch to the promised epoch.",
+      "status": "staged_fresh_healthy_only",
+      "target_check_sites": [
+        "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@486:branch:1"
+      ],
+      "target_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+      "target_source_sha256": "be5c67ce7564ad67b9b464d93956f0e855dd76df1253958412947c1abb2fd6f3",
+      "target_throw_site": "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@489:throw:1",
+      "test_selector": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testChangeWritersLogsInSync",
+      "test_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java",
+      "test_source_sha256": "340524ae6724f9406798b43b8c69c7208affb85051809d50186caa7a8f126eb6"
+    },
+    {
+      "case_id": "HDFS-16",
+      "compiled_target_class_sha256": "9df857be765b890370cc5bd3f099f6bf670dff2b3911d5fc02b38a6dd1f9a3fb",
+      "fresh_calibration_config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v13/HDFS-16-calibration.json",
+      "fresh_calibration_config_sha256": "c68c4da6369c400c7dfb2b28dd5194405a07ca101d2b6a2775f0f09535e63d92",
+      "previous_audit_guidance_consistent": false,
+      "previous_audit_observed_path_doors": 5,
+      "previous_audit_path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-16/offline-causal-audit.json",
+      "previous_audit_sha256": "4a8712e25b782712d8dcb27f6aabe4620f1006481651bdb117aa0026ed3dbcf7",
+      "previous_healthy_result_path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-16/trials/r0000/result.json",
+      "previous_healthy_result_sha256": "9bcfa30d5dd9ff15df179c5327dd2c7e211a0d2fec77cf04edba69020644d913",
+      "previous_target_nodes": [
+        "hdfs-cluster-1/nn0"
+      ],
+      "previous_target_reached": true,
+      "previous_target_threw": false,
+      "source_review": "Two-DataNode MiniDFSCluster: disable one heartbeat, re-register that DataNode, and update pipeline twice through NameNode RPC; BlockInfo checks under-construction state.",
+      "status": "staged_fresh_healthy_only",
+      "target_check_sites": [
+        "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#setGenerationStampAndVerifyReplicas(J)Ljava/util/List;@428:branch:1",
+        "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#setGenerationStampAndVerifyReplicas(J)Ljava/util/List;@428:branch:2"
+      ],
+      "target_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
+      "target_source_sha256": "e5239480d42fdf56ff296e021e5507ed1f421b423879534a4322568ae1ff1d15",
+      "target_throw_site": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo#setGenerationStampAndVerifyReplicas(J)Ljava/util/List;@428:callthrow:2",
+      "test_selector": "org.apache.hadoop.hdfs.TestClientProtocolForPipelineRecovery#testUpdatePipeLineAfterDNReg",
+      "test_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java",
+      "test_source_sha256": "ff29b7feaf7722ccfe582be76d26117e610344fd6151987bfae704a27e1a45b8"
+    },
+    {
+      "case_id": "HDFS-23",
+      "compiled_target_class_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+      "fresh_calibration_config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v13/HDFS-23-v10-calibration.json",
+      "fresh_calibration_config_sha256": "ba0f022683fc57b87a70d2684934c3ffad60a8be18ea860a53c472beba88eecd",
+      "previous_audit_guidance_consistent": null,
+      "previous_audit_observed_path_doors": null,
+      "previous_audit_path": null,
+      "previous_audit_sha256": null,
+      "previous_healthy_result_path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-23/trials/r0000/result.json",
+      "previous_healthy_result_sha256": "ddeb27725f759299345441e8ef4706f5ac1e921e179210297723e1a4e254b8e9",
+      "previous_target_nodes": [
+        "unknown"
+      ],
+      "previous_target_reached": true,
+      "previous_target_threw": false,
+      "source_review": "Version-matrix MiniDFSCluster startup reads DataNode block-pool VERSION after namespace handshake; old exact target was reached but actor was unknown.",
+      "status": "staged_fresh_healthy_only",
+      "target_check_sites": [
+        "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@398:branch:10"
+      ],
+      "target_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "target_source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+      "target_throw_site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@401:throw:1",
+      "test_selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+      "test_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+      "test_source_sha256": "316a5bb9ce1606349731bd2038739822874e5e41b480e75eb361891fd2e75f08"
+    },
+    {
+      "case_id": "HDFS-35",
+      "compiled_target_class_sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f",
+      "fresh_calibration_config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v13/HDFS-35-v10-calibration.json",
+      "fresh_calibration_config_sha256": "9eca70f4663b6292477a5c04f57c6c4f7cca6f5f200987e80d82349f1bb2ab7f",
+      "previous_audit_guidance_consistent": null,
+      "previous_audit_observed_path_doors": null,
+      "previous_audit_path": null,
+      "previous_audit_sha256": null,
+      "previous_healthy_result_path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-35/trials/r0000/result.json",
+      "previous_healthy_result_sha256": "9320bae4968e3ac6ab67b409863cc7d59fa9312bfa1abf60b0bad267ed099656",
+      "previous_target_nodes": [
+        "unknown"
+      ],
+      "previous_target_reached": true,
+      "previous_target_threw": false,
+      "source_review": "Same version-matrix startup reaches DataStorage cluster-ID guard; old target actor was unknown; v10 receiver/handshake hooks need proof.",
+      "status": "staged_fresh_healthy_only",
+      "target_check_sites": [
+        "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7"
+      ],
+      "target_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "target_source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+      "target_throw_site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@752:throw:1",
+      "test_selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+      "test_source_path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java",
+      "test_source_sha256": "316a5bb9ce1606349731bd2038739822874e5e41b480e75eb361891fd2e75f08"
+    }
+  ],
+  "core_release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+  "no_full_campaign_admitted": true,
+  "schema_version": 1,
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "type": "hdfs_next_case_source_review"
+}

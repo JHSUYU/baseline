@@ -1,0 +1,405 @@
+{
+  "cases": [
+    {
+      "case_id": "HBASE-16",
+      "evidence": [
+        {
+          "duration_seconds": 58.255,
+          "healthy_eligible_doors": 85,
+          "result_path": "data/mallory/calibration/HBASE-16/result.json",
+          "result_sha256": "baea62bd3ad2280af5c68003eb2e7b283e9b19857c64a8e193cb3fba5d33ca1e",
+          "status": "healthy_seed_invalid",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash#testRetryBackoff",
+      "source_review": {
+        "candidate_io": "Admin.move client-to-master RPC and master-to-RS close RPC; require an observed door before the exact guard in a fresh healthy run.",
+        "classification": "alternate_existing_cluster_test",
+        "likely_actor": "master0 procedure worker",
+        "original_issue": "testRetryBackoff deliberately kills a region server and waits for procedure backoff; its healthy trial already raised the selected HBaseIOException. This is expected recovery behavior, so selected exception alone is not a bug.",
+        "priority": "medium",
+        "proposed_selectors": [
+          {
+            "selector": "org.apache.hadoop.hbase.io.hfile.TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove",
+            "source_chain": "MiniZKCluster plus two-RS MiniHBaseCluster; Admin.move at test line 107 calls AssignmentManager.move, which creates TransitRegionStateProcedure.move at AssignmentManager.java:869. Normal close-response handling invokes confirmClosed, so the State.CLOSING branch can be observed without deliberately inducing backoff.",
+            "test_method_line": 88,
+            "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/io/hfile/TestBlockEvictionOnRegionMovement.java",
+            "test_source_sha256": "82fd1b073c150b0d69215a897ac8aed6ecd9019671c22f7edf5db35e69379c76"
+          },
+          {
+            "selector": "org.apache.hadoop.hbase.master.assignment.TestTransitRegionStateProcedure#testRecoveryAndDoubleExecutionMove",
+            "source_chain": "Three-RS MiniCluster and explicit TransitRegionStateProcedure.move; procedure restart makes this a heavier fallback.",
+            "test_method_line": 105,
+            "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestTransitRegionStateProcedure.java",
+            "test_source_sha256": "c0736c714792c2a8b24b25d28dbc9a1b6a808d9d74bd7441d6a9522880d2e3c3"
+          }
+        ],
+        "runtime_gate": "JUnit pass; exact confirmClosed @366 branch on named master; no selected @371 throw; fixed-core observed-path door and source/class SHA."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@366:branch:3"
+        ],
+        "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+        "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+        "source_line": 371,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+        "source_sha256": "7169b7e2c375ca43357037ecaed2f8238bf7af31fcf3a618ed75c9b1566ec3e8",
+        "throw_site": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@371:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-19",
+      "evidence": [
+        {
+          "audit_gate_passed": false,
+          "duration_seconds": 41.398,
+          "healthy_eligible_doors": 46,
+          "healthy_observed_path_doors": 0,
+          "healthy_trial_status": null,
+          "offline_causal_audit_path": "data/mallory/calibration_v8/HBASE-19/offline-causal-audit.json",
+          "offline_causal_audit_sha256": "cac4d06c07aca87c1efb47af42be6da8ca3224ea03b41573204fee59ad8af909",
+          "result_path": "data/mallory/calibration_v8/HBASE-19/result.json",
+          "result_sha256": "12dca70f4f8a9e5ec8b9ce659cd96f2baff14302e3220566c65a4978b7e71058",
+          "status": "calibration_complete",
+          "version": "calibration_v8"
+        },
+        {
+          "duration_seconds": 236.933,
+          "healthy_eligible_doors": 176,
+          "result_path": "data/mallory/calibration/HBASE-19/result.json",
+          "result_sha256": "e8e139248507b1f0bdf18ca159d1d34240e5a220f9d96a5ad673c459159e012e",
+          "status": "healthy_seed_invalid",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+      "source_review": {
+        "candidate_io": "The needed remote Admin.modifyTable(descriptor,false) path is absent from existing selected MiniCluster tests.",
+        "classification": "no_suitable_existing_cluster_test",
+        "likely_actor": "master procedure test scope",
+        "original_issue": "Versioned Xerial MiniCluster calibration reached the guard cleanly, but its direct Procedure construction has zero observed-path doors and fixed-core audit gate false.",
+        "priority": "none",
+        "proposed_selectors": [],
+        "runtime_gate": "Preserve negative calibration; do not promote or write a new workload under the existing-test-only rule."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@133:branch:7"
+        ],
+        "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "source_line": 135,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "source_sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3",
+        "throw_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@135:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-20",
+      "evidence": [
+        {
+          "audit_gate_passed": false,
+          "duration_seconds": 41.136,
+          "healthy_eligible_doors": 46,
+          "healthy_observed_path_doors": 0,
+          "healthy_trial_status": null,
+          "offline_causal_audit_path": "data/mallory/calibration_v8/HBASE-20/offline-causal-audit.json",
+          "offline_causal_audit_sha256": "5aa2b2cbddfb7c8886e03f08d95c88093227c50dab3e31035e0c4e75441f8b67",
+          "result_path": "data/mallory/calibration_v8/HBASE-20/result.json",
+          "result_sha256": "ebe920d6295c99758018928e101d0f1f72aef98a913a72057ac3f39a99df8776",
+          "status": "calibration_complete",
+          "version": "calibration_v8"
+        },
+        {
+          "duration_seconds": 236.733,
+          "healthy_eligible_doors": 176,
+          "result_path": "data/mallory/calibration/HBASE-20/result.json",
+          "result_sha256": "c0c91abd5825eaea83aa9749852279ec0058882ff3dda0865b4ef0da62ef2c87",
+          "status": "healthy_seed_invalid",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+      "source_review": {
+        "candidate_io": "No existing remote Admin.modifyTable(descriptor,false) JUnit exercises this exact coprocessor guard with a causal RPC path.",
+        "classification": "no_suitable_existing_cluster_test",
+        "likely_actor": "master procedure test scope",
+        "original_issue": "Same direct ModifyTableProcedure route as HBASE-19; zero observed-path doors and fixed-core audit gate false.",
+        "priority": "none",
+        "proposed_selectors": [],
+        "runtime_gate": "Preserve negative calibration; do not promote or write a new workload under the existing-test-only rule."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@138:branch:8"
+        ],
+        "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "source_line": 139,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "source_sha256": "186e34a72dcffdbe853abaa0068ca0af6e899f44e28005710301688bbbdaf7b3",
+        "throw_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@139:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-23",
+      "evidence": [
+        {
+          "duration_seconds": 6.342,
+          "healthy_eligible_doors": 0,
+          "result_path": "data/mallory/calibration/HBASE-23/result.json",
+          "result_sha256": "f25d637eacd2fb19a4e217b81edce9864c5f2d17a618b61a78eefb2abb8bc38b",
+          "status": "healthy_seed_invalid",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.procedure.TestZKProcedureControllers#testZKCoordinatorControllerWithSingleMemberCohort",
+      "source_review": {
+        "candidate_io": "ZKUtil.watchAndCheckExists and ZKUtil.getData in sendGlobalBarrierReached; getData executes only after the reached child exists.",
+        "classification": "no_reliable_existing_target_selector",
+        "likely_actor": "zk-coordinator:<name> if constructed and registered",
+        "original_issue": "Selected TestZKProcedureControllers calls sendGlobalBarrierReached at test line 213 before it calls sendMemberCompleted at line 217. The exact guard @127 requires an already present reached-child znode, so it was not observed in the 6.342-second healthy seed.",
+        "priority": "low",
+        "proposed_selectors": [],
+        "runtime_gate": "Require an existing MiniZKCluster test that creates a reached child before or during this method; none of the direct test invocations found by source scan has that order."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@127:branch:5"
+        ],
+        "exception_class": "java.io.IOException",
+        "function": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator.sendGlobalBarrierReached(org.apache.hadoop.hbase.procedure.Procedure,java.util.List)",
+        "source_line": 131,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator.java",
+        "source_sha256": "7f1ebc383086f82c98d0460d7c0504d5fd59e590176b65931c3061bcdac947b7",
+        "throw_site": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@131:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-27",
+      "evidence": [
+        {
+          "audit_gate_passed": false,
+          "duration_seconds": 37.793,
+          "healthy_eligible_doors": 0,
+          "healthy_observed_path_doors": 0,
+          "healthy_trial_status": null,
+          "offline_causal_audit_path": "data/mallory/calibration_v2/HBASE-27/offline-causal-audit.json",
+          "offline_causal_audit_sha256": "a9201c0827b24217a92f6ab3524e399993732fcc9ff03ed1fc81b19b992e44b3",
+          "result_path": "data/mallory/calibration_v2/HBASE-27/result.json",
+          "result_sha256": "88bcf6110bec9d5443ee3227c93b73cef671800ef081c024423e10a329b73852",
+          "status": "healthy_no_injectable_door",
+          "version": "calibration_v2"
+        },
+        {
+          "duration_seconds": 41.152,
+          "healthy_eligible_doors": 25,
+          "result_path": "data/mallory/calibration/HBASE-27/result.json",
+          "result_sha256": "e64f80af4e4a6706571015572c2e687b1e42cc7b945ca7081f0b09dc2a574778",
+          "status": "healthy_node_identity_missing",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+      "source_review": {
+        "candidate_io": "ZKNodeTracker.blockUntilAvailable is the preceding wait; the selected branch reads local stopped state after the wait.",
+        "classification": "target_reached_no_observed_path_door",
+        "likely_actor": "rs0 startup thread",
+        "original_issue": "Fresh fixed-core v3 calibration passed JUnit and reached the check on named rs0 without selected throw, but causal audit found zero observed-path doors.",
+        "priority": "low",
+        "proposed_selectors": [
+          {
+            "selector": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+            "source_chain": "MiniDFS plus MiniZK and LocalHBaseCluster start RS before master, so the RS waits in blockAndCheckIfStopped.",
+            "test_method_line": 103,
+            "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestClusterBootOrder.java",
+            "test_source_sha256": "7ac0843f5cc522b4494fa2570f91ba334b70492da8bf73c58ea4d3baf9f0c630"
+          }
+        ],
+        "runtime_gate": "Do not promote until a real named pretarget door enters this exact observed path; inject-and-lose-target is not an effective trial."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1052:branch:2"
+        ],
+        "exception_class": "java.io.IOException",
+        "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)",
+        "source_line": 1053,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+        "source_sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+        "throw_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1053:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-28",
+      "evidence": [
+        {
+          "duration_seconds": 34.025,
+          "healthy_eligible_doors": 25,
+          "result_path": "data/mallory/calibration/HBASE-28/result.json",
+          "result_sha256": "182c0e1871b8a426982e64c19e078c828581631bb735a6f8f45fe4be67074451",
+          "status": "healthy_node_identity_missing",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.TestInfoServers#testInfoServersRedirect",
+      "source_review": {
+        "candidate_io": "InfoServer bind occurs after the selected guard, so it is not a pretarget influence on the address predicate.",
+        "classification": "configuration_local_predicate",
+        "likely_actor": "rs0 or master0 startup thread",
+        "original_issue": "Initial calibration reached @2482 but target actor was unknown. The branch checks configured bind address, normally 0.0.0.0, with Addressing.isLocalAddress; network exception injection cannot change that configuration value and may exit before the guard.",
+        "priority": "low",
+        "proposed_selectors": [
+          {
+            "selector": "org.apache.hadoop.hbase.TestInfoServers#testInfoServersRedirect",
+            "source_chain": "BeforeAll starts MiniCluster and info servers; test reads the master and RS HTTP endpoints.",
+            "test_method_line": 84,
+            "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java",
+            "test_source_sha256": "7b0d83c60833a5427396477fed836873b6d58b297cb656867008a221d0e2067e"
+          }
+        ],
+        "runtime_gate": "Treat as static candidate with weak fault relevance. Named actor alone does not establish an injectable causal frontier."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2482:branch:3"
+        ],
+        "exception_class": "java.io.IOException",
+        "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.putUpWebUI()",
+        "source_line": 2487,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+        "source_sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+        "throw_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2487:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-32",
+      "evidence": [
+        {
+          "duration_seconds": 63.213,
+          "healthy_eligible_doors": 3369,
+          "result_path": "data/mallory/calibration/HBASE-32/result.json",
+          "result_sha256": "f120708de3e012116fc3d9284130dbe7734809969176115608df7ba440f7477c",
+          "status": "healthy_seed_invalid",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+      "source_review": {
+        "candidate_io": "FlushRegionCallable RPC to primary and client table-disabled lookup in catch. A caught RPC IOException is normally rethrown at @136 for enabled tables, so target exception may be designed propagation rather than a new bug.",
+        "classification": "tentative_alternate_existing_cluster_test",
+        "likely_actor": "secondary rs worker",
+        "original_issue": "Original 60-region x 10-replica healthy seed truncated the trace before reaching a usable exact target. The selected guard @130 is inside the IOException catch and may remain dormant in a passing alternate run.",
+        "priority": "medium_low",
+        "proposed_selectors": [
+          {
+            "selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testSecondaryRegionWithNonEmptyRegion",
+            "source_chain": "Three-RS MiniCluster with three replicas, 1,000 rows, then disable/re-enable. Reopening a secondary calls HRegionServer.triggerFlushInPrimaryRegion and schedules RegionReplicaFlushHandler; much smaller than original 60-region x 10-replica test.",
+            "test_method_line": 119,
+            "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java",
+            "test_source_sha256": "22909412f4d72ff81db40b58d2e7e0d414df5580261de7631a218e30cd684d35"
+          }
+        ],
+        "runtime_gate": "Require passing JUnit, exact @130 branch reached without @136 throw, named rs, and observed-path door before any full fuzz; avoid promoting on mere catalog presence."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V@130:branch:6"
+        ],
+        "exception_class": "java.io.IOException",
+        "function": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler.triggerFlushInPrimaryRegion(org.apache.hadoop.hbase.regionserver.HRegion)",
+        "source_line": 136,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java",
+        "source_sha256": "439a8078aadec70f1727f13204e128b79625c5786cfa920026fb4265a8285509",
+        "throw_site": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V@136:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-33",
+      "evidence": [
+        {
+          "duration_seconds": 7.148,
+          "healthy_eligible_doors": 0,
+          "result_path": "data/mallory/calibration/HBASE-33/result.json",
+          "result_sha256": "8c06b8a835e92a8c18b75f2887b03078c8171533cfefef487cec3b90f4befb40",
+          "status": "healthy_seed_invalid",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation",
+      "source_review": {
+        "candidate_io": "Key watcher refresh is only invoked after allKeys miss; existing direct test does not arrange the miss. The server token-authentication test body is commented out because shaded RPC does not support it.",
+        "classification": "no_existing_inner_guard_selector",
+        "likely_actor": "TokenServer secret-manager process if separately bound",
+        "original_issue": "TestTokenAuthentication#testTokenCreation generates a token and immediately retrieves its password. generateToken uses the current key, so allKeys.get(keyId) normally succeeds and the inner zkWatcher.isAborted guard @139 is bypassed; old seed target missing.",
+        "priority": "none",
+        "proposed_selectors": [],
+        "runtime_gate": "Existing-test-only rule: do not synthesize unknown key or report missing-key exception as bug."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@139:branch:3"
+        ],
+        "exception_class": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+        "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+        "source_line": 141,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+        "source_sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f",
+        "throw_site": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@141:throw:1"
+      }
+    },
+    {
+      "case_id": "HBASE-35",
+      "evidence": [
+        {
+          "duration_seconds": 187.605,
+          "healthy_eligible_doors": 58,
+          "result_path": "data/mallory/calibration/HBASE-35/result.json",
+          "result_sha256": "87a9d926d87f41bee4eb5c9839cdb4a14487cac433f72bd9f0a983d3a4f7cf59",
+          "status": "healthy_seed_invalid",
+          "version": "calibration"
+        }
+      ],
+      "original_selector": "org.apache.hadoop.hbase.util.TestHBaseFsckReplication#test",
+      "source_review": {
+        "candidate_io": "HBaseFsck meta table scan and RegionServer RPCs precede the duplicate-entry map check.",
+        "classification": "tentative_alternate_existing_cluster_test",
+        "likely_actor": "hbck client utility with target callback; may need explicit client actor binding",
+        "original_issue": "Original TestHBaseFsckReplication test runs doFsck three times and timed out after 187.605 seconds although the target was reached. One-pass MOB test may reduce hbck work, but source alone cannot bound its duration.",
+        "priority": "medium",
+        "proposed_selectors": [
+          {
+            "selector": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+            "source_chain": "One-RS MiniCluster; test line 122 calls HbckTestingUtil.doHFileQuarantine once. That calls HBaseFsck.exec, which runs onlineHbck at HBaseFsck.java:3748 and loadMetaEntries at line 675.",
+            "test_method_line": 102,
+            "test_source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/util/TestHBaseFsckMOB.java",
+            "test_source_sha256": "f922df109453c4241086f5cd76975529bd8423673d952dab8b192f3685f53d2f"
+          }
+        ],
+        "runtime_gate": "Verify selected JUnit, exact @2715 branch and dormant @2720 throw, named target region, and fixed-core observed-path door. If > budget, retain timeout evidence rather than mark complete."
+      },
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2715:branch:10"
+        ],
+        "exception_class": "java.io.IOException",
+        "function": "org.apache.hadoop.hbase.util.HBaseFsck$3.visit(org.apache.hadoop.hbase.client.Result)",
+        "source_line": 2720,
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/HBaseFsck.java",
+        "source_sha256": "eede67720ec29cfcfba04f397ed7b8496f155b8b711f51606435a1ead2a6c2a4",
+        "throw_site": "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2720:throw:1"
+      }
+    }
+  ],
+  "kind": "source_only_hbase_pending_triage",
+  "related_negative_source_audit": {
+    "path": "Mallory/cases/revisions/HBASE-19-20-remote-modify-gap-v1.json",
+    "sha256": "c7ffbec4ce4ac722c4126cd41aa04855fc248a04d933328bdb4d484a7af9bbb0"
+  },
+  "schema_version": 1,
+  "scope": "Nine original-102 HBase checks not in active full campaigns or prepared lane7/lane8; no JVM trial, no global inventory/config/agent changes. All positive proposals require a new fixed-core healthy admission.",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6"
+}

@@ -1,0 +1,130 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-24",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hbase.procedure.TestZKProcedure#testMultipleMembers",
+  "coverage_ids_seen": 29,
+  "dispatch_attempt_ids": [
+    "20261009T163737-c5d150004813"
+  ],
+  "duration_seconds": 6.142,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 17952,
+    "manifest_path": "evidence_archives/calibration/HBASE-24.tar.manifest.json",
+    "manifest_sha256": "730434dcff762954fe2e65917d4e04599c75c3c01a9e1ff0dfa854739a811573",
+    "path": "evidence_archives/calibration/HBASE-24.tar.gz",
+    "sha256": "cc72ef47c5dd6cc5c5d3ccbd26f1291167691a9f39bd1dc1e3e977b8ef68e10f"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_observed_door_events": 0,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T163737-c5d150004813",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 0,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "845ed06384339ccc65b1d33c38d75a7265f4245c4b4871454a6662c24814f48b",
+    "observed_target_class_sha256": "845ed06384339ccc65b1d33c38d75a7265f4245c4b4871454a6662c24814f48b",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region",
+      "no_injectable_door"
+    ],
+    "site_catalog_sha256": "7c1c1f61adab3b9bd9c8f24902b391fc1a2f6758a2604b6a2fff016def0a5142",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 4,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (!ProtobufUtil.isPBMagicPrefix(data)) {\nString msg =\n\"Data in for starting procedure \" + opName + \" is illegally formatted (no pb magic). \"\n+ \"Killing the procedure: \" + Bytes.toString(data);\nLOG.error(msg);\nthrow new IllegalArgumentException(msg);",
+    "check_sites": [
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@205:branch:2"
+    ],
+    "exception_class": "java.lang.IllegalArgumentException",
+    "function": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs.startNewSubprocedure(java.lang.String)",
+    "original_source_line": 210,
+    "site_id": "<org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs: void startNewSubprocedure(java.lang.String)>#u55",
+    "source_line": 210,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs.java",
+    "throw_site": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@210:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HBASE-24-r0000:75",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:2",
+      "seq": 75,
+      "site": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@205:branch:2"
+    },
+    {
+      "epoch": 0,
+      "id": "HBASE-24-r0000:76",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+      "seq": 76,
+      "site": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@205:branch:2"
+    },
+    {
+      "epoch": 0,
+      "id": "HBASE-24-r0000:79",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:3",
+      "seq": 79,
+      "site": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@205:branch:2"
+    },
+    {
+      "epoch": 0,
+      "id": "HBASE-24-r0000:80",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:4",
+      "seq": 80,
+      "site": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@205:branch:2"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T163737-c5d150004813",
+      "duration_seconds": 6.142,
+      "eligible_doors_before_target": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 29
+      },
+      "observed_door_events": 0,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

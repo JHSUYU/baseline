@@ -1,0 +1,120 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-27",
+  "closure_coverage_ids_seen": 5,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.TestDatanodeLayoutUpgrade#testUpgradeToIdBasedLayout",
+  "coverage_ids_seen": 157,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 18.126,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 1,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_2025ba5f00be47438aeed03ac1e7bc76",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestDatanodeLayoutUpgrade-mallory_0000_2025ba5f00be47438aeed03ac1e7bc76.xml",
+        "sha256": "dbf62e2a4d7c280320214e49fd8d432594c981838f01e2df4b2fdc366a5990c0"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "02d92d0b9119cb299f9b6fb1aa9c9d2faa31d786c6e0c2b4c40fc438bda58811",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 1017,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/dn0"
+    ],
+    "eligible_doors_before_target": 1,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+    "observed_target_class_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+    "reasons": [],
+    "site_catalog_sha256": "434ca17d2b6902b8231e817896747737d515cd208f486f919817f7b3a423c8dc",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "assert this.namespaceID == nsInfo.getNamespaceID()\n: \"Data-node and name-node layout versions must be the same.\";",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doUpgrade(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V@510:branch:1",
+      "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doUpgrade(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V@510:branch:2"
+    ],
+    "exception_class": "java.lang.AssertionError",
+    "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doUpgrade(java.lang.String,org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,java.io.File,java.io.File,java.io.File,int,org.apache.hadoop.conf.Configuration)",
+    "original_source_line": 510,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: void doUpgrade(java.lang.String,org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,java.io.File,java.io.File,java.io.File,int,org.apache.hadoop.conf.Configuration)>#u19",
+    "source_line": 510,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doUpgrade(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V@510:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/dn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 18.126,
+      "eligible_doors_before_target": 1,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 5,
+        "closure_edges": 0,
+        "coverage": 157
+      },
+      "observed_door_events": 1017,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

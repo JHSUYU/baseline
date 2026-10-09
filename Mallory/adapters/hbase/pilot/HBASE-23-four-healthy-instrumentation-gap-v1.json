@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-23",
+  "classification": "instrumentation_gap",
+  "selector": "org.apache.hadoop.hbase.procedure.TestProcedureManager#testSimpleProcedureManager",
+  "exact_check": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@127:branch:5",
+  "core_release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+  "healthy_seeds": [
+    {
+      "cohort": "v12",
+      "duration_seconds": 32.210,
+      "junit": "passed 1/1",
+      "exact_check_reached": false,
+      "audit_gate": false,
+      "observed_path_doors": 0,
+      "receipt_sha256": "b611e2cb8342d917ca3d2034bce97519b4da2f9e1160217dce475486b40814a5"
+    },
+    {
+      "cohort": "v13",
+      "duration_seconds": 35.272,
+      "junit": "passed 1/1",
+      "exact_check_reached": true,
+      "exact_check_node": "zk-coordinator:ms1105.utah.cloudlab.us,34741,1791576298006",
+      "exact_check_event": "HBASE-23-r0000:1684",
+      "exact_check_outcome": "nonthrowing",
+      "audit_gate": false,
+      "observed_path_doors": 0,
+      "receipt_sha256": "ca4c8271ecd1d755af9079f3f87a3985cf16efcb1b146e549ca5e722f9178fbc"
+    },
+    {
+      "cohort": "v14",
+      "duration_seconds": 35.717,
+      "junit": "passed 1/1",
+      "exact_check_reached": false,
+      "audit_gate": false,
+      "observed_path_doors": 0,
+      "receipt_sha256": "3e2ffc97d244918f88f09aa192428f60f91db71b81b853b4626682a652d4b85c"
+    },
+    {
+      "cohort": "v15",
+      "duration_seconds": 35.477,
+      "junit": "passed 1/1",
+      "exact_check_reached": false,
+      "audit_gate": false,
+      "observed_path_doors": 0,
+      "receipt_sha256": "43b89e0b1b55587db4277ce6687e10dd857bd81c7087c6f9fba1f8621f577004"
+    }
+  ],
+  "causal_evidence": {
+    "target_region_enter_event": "HBASE-23-r0000:1673",
+    "target_region_parent_id": "root",
+    "target_thread": "(ms1105.utah.cloudlab.us,34741,1791576298006)-proc-coordinator-pool-0",
+    "target_closure_occurrences": 1,
+    "target_closure_edges": 0,
+    "target_closure_observed_doors": 0,
+    "source_submit": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ProcedureCoordinator.java:166 pool.submit(proc)",
+    "source_worker": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/Procedure.java:189 call()",
+    "missing_hook": "No exact per-Procedure TASK_SUBMIT at accepted pool submission and TASK_CLAIM at worker call; the observed target region begins at root."
+  },
+  "decision": "The existing MiniCluster test can reach the named exact check. Its causal path from an observed fault door is unproven; do not promote to fault trials or count the case as fuzz-complete. Preserve all four raw seeds."
+}

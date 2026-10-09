@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-16",
+  "system": "hbase",
+  "calibration_only": true,
+  "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash#testRetryBackoff",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash",
+    "testRetryBackoff"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/agent.jar",
+  "agent_transport": "java_tool_options",
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/cases/HBASE-16.sites.json",
+  "agent_include": [
+    "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": true,
+    "coverage.methods": true,
+    "coverage.branches": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "target": {
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@366:branch:3"
+    ],
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@371:throw:1",
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure: org.apache.hadoop.hbase.procedure2.StateMachineProcedure$Flow confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)>#u28",
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+    "source_line": 371,
+    "original_source_line": 371,
+    "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+    "check_code": "if (regionNode.isInState(State.CLOSING)) {\n// This is possible, think the target RS crashes and restarts immediately, the close region\n// operation will return a NotServingRegionException soon, we can only recover after SCP takes\n// care of this RS. So here we throw an IOException to let upper layer to retry with backoff.\nsetNextState(RegionStateTransitionState.REGION_STATE_TRANSITION_CLOSE);\nthrow new HBaseIOException(\"Failed to close region\");"
+  },
+  "budget": {
+    "trials": 80,
+    "seconds": 3600,
+    "max_faults_per_trial": 6,
+    "trial_timeout_seconds": 285,
+    "trial_timeout_basis": "3x_historical_seed_plus_60s_capped_180_to_1200"
+  },
+  "mapping": {
+    "status": "preliminary_compiled_distribution_site",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "agent_build": {
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar"
+    },
+    "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "target_throw_kind": "athrow",
+    "compiled_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "compiled_class_sha256": "44a3c4265b4cc53ffbdf44670248bdb5948761b9bc75e33316b0f83d01cfde39",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": false,
+    "verified_healthy_probe": null,
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+    "source_root_env": "MALLORY_HBASE_SOURCE_ROOT",
+    "distribution_root_env": "MALLORY_HBASE_DIST_ROOT",
+    "test_source_sha256": "facc95fb4679c0f680f4a92ba892bb6952b0446a3dbc00f1123deec6ec9812af",
+    "target_source_sha256": "7169b7e2c375ca43357037ecaed2f8238bf7af31fcf3a618ed75c9b1566ec3e8",
+    "healthy_seed_verified": false,
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/lane2-receipt.json",
+    "system_receipt_sha256": "447e50189b96f844174c472de61e213cf6c7a652614894c3d8ae07b259d9eff0",
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration"
+  },
+  "expected_target_class_sha256": "44a3c4265b4cc53ffbdf44670248bdb5948761b9bc75e33316b0f83d01cfde39",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/agent.jar",
+      "sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/adapter.jar",
+      "sha256": "12bd49f871c414f023e6f80dbb1ba1cb1a05f7cf24aa27c3462bd8b2033c1f9c"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "9b44bf693a8365dd01364cc1641208c0a481902116e316830260b3f71c8d4445"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/cases/HBASE-16.sites.json",
+      "sha256": "e3750f6fd8e0be4eba2189f8d6e4376a068dfd2ab1afd1dd7be6f861efe2691b"
+    }
+  ],
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2/source"
+}

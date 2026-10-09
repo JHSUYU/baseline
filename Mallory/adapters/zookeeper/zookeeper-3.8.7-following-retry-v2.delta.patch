@@ -1,0 +1,201 @@
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java
+@@ -53,6 +53,7 @@
+         this.self = Objects.requireNonNull(self);
+         this.fzk = Objects.requireNonNull(zk);
+         this.zk = zk;
++        MalloryZkHooks.registerPeerReceiver(this, self);
+     }
+ 
+     @Override
+@@ -70,7 +71,7 @@
+      * @throws InterruptedException
+      */
+     void followLeader() throws InterruptedException {
+-        MalloryZkHooks.node(self.getMyId());
++        MalloryZkHooks.nodePeer(self);
+         self.end_fle = Time.currentElapsedTime();
+         long electionTimeTaken = self.end_fle - self.start_fle;
+         self.setElectionTimeTaken(electionTimeTaken);
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/MalloryZkHooks.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/MalloryZkHooks.java
+@@ -12,6 +12,7 @@
+ import java.security.MessageDigest;
+ import java.security.NoSuchAlgorithmException;
+ import java.util.ArrayDeque;
++import java.util.IdentityHashMap;
+ import java.util.Map;
+ import java.util.WeakHashMap;
+ import java.util.concurrent.ConcurrentHashMap;
+@@ -35,13 +36,35 @@
+     private static final Map<Request, ArrayDeque<String>> TASK_TOKENS = new WeakHashMap<>();
+     private static final AtomicLong NEXT_TASK = new AtomicLong();
+     private static final AtomicLong NEXT_CLIENT = new AtomicLong();
++    private static final AtomicLong NEXT_FOLLOWING_RETRY = new AtomicLong();
++    private static final Map<QuorumPeer, Integer> PEER_EPOCHS = new IdentityHashMap<>();
++    private static final Map<QuorumPeer, FollowingRetry> FOLLOWING_RETRIES = new IdentityHashMap<>();
++    private static final String FOLLOWING_REGION = "zookeeper.peer.following";
++    private static final String FOLLOWING_RETRY_SITE = "zookeeper.peer.following.retry";
+     private static final ThreadLocal<ReceivedPacket> LAST_RECEIVED = new ThreadLocal<>();
+ 
+     private MalloryZkHooks() { }
+ 
++    private static final class FollowingRetry {
++        final QuorumPeer peer;
++        final Thread thread;
++        final long sid;
++        final int epoch;
++        final String token;
++        FollowingRetry(QuorumPeer peer, Thread thread, long sid, int epoch, String token) {
++            this.peer = peer;
++            this.thread = thread;
++            this.sid = sid;
++            this.epoch = epoch;
++            this.token = token;
++        }
++    }
++
+     static void startPeer(QuorumPeer peer) {
+-        EPOCHS.computeIfAbsent(peer.getMyId(), ignored -> new AtomicInteger(-1)).incrementAndGet();
+-        node(peer.getMyId());
++        int epoch = EPOCHS.computeIfAbsent(peer.getMyId(),
++            ignored -> new AtomicInteger(-1)).incrementAndGet();
++        synchronized (PEER_EPOCHS) { PEER_EPOCHS.put(peer, epoch); }
++        nodePeer(peer);
+     }
+ 
+     public static void node(long sid) {
+@@ -63,6 +86,74 @@
+ 
+     public static void registerPeerReceiver(Object receiver, long sid) {
+         registerTracker(receiver, sid);
++    }
++
++    private static Integer lifecycleEpoch(QuorumPeer peer) {
++        synchronized (PEER_EPOCHS) { return PEER_EPOCHS.get(peer); }
++    }
++
++    /** Bind from the exact QuorumPeer run, even if another peer has the same sid. */
++    public static void nodePeer(QuorumPeer peer) {
++        if (peer == null) return;
++        Integer epoch = lifecycleEpoch(peer);
++        if (epoch != null) call("setNode",
++            new Class<?>[] {String.class, int.class}, "zk" + peer.getMyId(), epoch);
++    }
++
++    public static void registerPeerReceiver(Object receiver, QuorumPeer peer) {
++        if (receiver == null || peer == null) return;
++        Integer epoch = lifecycleEpoch(peer);
++        if (epoch != null) call("registerNode",
++            new Class<?>[] {Object.class, String.class, int.class},
++            receiver, "zk" + peer.getMyId(), epoch);
++    }
++
++    /** Enter one concrete FOLLOWING attempt before its follower is constructed. */
++    public static Scope followingScope(QuorumPeer peer) {
++        if (peer == null || Thread.currentThread() != peer)
++            throw new IllegalStateException("FOLLOWING hook must run on its exact QuorumPeer thread");
++        long sid = peer.getMyId();
++        Integer epoch = lifecycleEpoch(peer);
++        if (epoch == null) throw new IllegalStateException("QuorumPeer lifecycle epoch is not registered");
++        nodePeer(peer);
++        FollowingRetry retry;
++        synchronized (FOLLOWING_RETRIES) { retry = FOLLOWING_RETRIES.remove(peer); }
++        call("regionEnter", new Class<?>[] {String.class}, FOLLOWING_REGION);
++        try {
++            if (retry != null && retry.peer == peer && retry.thread == Thread.currentThread()
++                && retry.sid == sid && retry.epoch == epoch) {
++                call("taskObserve", new Class<?>[] {String.class, String.class},
++                     retry.token, FOLLOWING_RETRY_SITE);
++            }
++            return new Scope(null, FOLLOWING_REGION);
++        } catch (RuntimeException | Error failure) {
++            call("regionExit", new Class<?>[] {String.class}, FOLLOWING_REGION);
++            throw failure;
++        }
++    }
++
++    /** Submit only a caught exception's successor on this exact peer/thread/epoch. */
++    public static void followingRetrySubmit(QuorumPeer peer) {
++        if (peer == null || Thread.currentThread() != peer) return;
++        long sid = peer.getMyId();
++        Integer epoch = lifecycleEpoch(peer);
++        if (epoch == null) return;
++        nodePeer(peer);
++        String token = "zk-following-retry:" + sid + ":" + epoch + ":"
++            + Thread.currentThread().getId() + ":"
++            + Integer.toUnsignedString(System.identityHashCode(peer)) + ":"
++            + NEXT_FOLLOWING_RETRY.incrementAndGet();
++        synchronized (FOLLOWING_RETRIES) {
++            FOLLOWING_RETRIES.put(peer, new FollowingRetry(peer, Thread.currentThread(),
++                                                  sid, epoch, token));
++        }
++        call("taskSubmit", new Class<?>[] {String.class, String.class},
++             token, FOLLOWING_RETRY_SITE);
++    }
++
++    public static void clearFollowingRetry(QuorumPeer peer) {
++        synchronized (FOLLOWING_RETRIES) { FOLLOWING_RETRIES.remove(peer); }
++        synchronized (PEER_EPOCHS) { PEER_EPOCHS.remove(peer); }
+     }
+ 
+     static long masterId(LearnerMaster master) {
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Observer.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Observer.java
+@@ -86,6 +86,7 @@
+     Observer(QuorumPeer self, ObserverZooKeeperServer observerZooKeeperServer) {
+         this.self = self;
+         this.zk = observerZooKeeperServer;
++        MalloryZkHooks.registerPeerReceiver(this, self);
+     }
+ 
+     @Override
+@@ -101,7 +102,7 @@
+      * @throws Exception
+      */
+     void observeLeader() throws Exception {
+-        MalloryZkHooks.node(self.getMyId());
++        MalloryZkHooks.nodePeer(self);
+         zk.registerJMX(new ObserverBean(this, zk), self.jmxLocalPeerBean);
+         long connectTime = 0;
+         boolean completedSync = false;
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java
+@@ -1534,16 +1534,19 @@
+                     }
+                     break;
+                 case FOLLOWING:
+-                    try {
+-                        LOG.info("FOLLOWING");
+-                        setFollower(makeFollower(logFactory));
+-                        follower.followLeader();
+-                    } catch (Exception e) {
+-                        LOG.warn("Unexpected exception", e);
+-                    } finally {
+-                        follower.shutdown();
+-                        setFollower(null);
+-                        updateServerState();
++                    try (MalloryZkHooks.Scope malloryFollowing = MalloryZkHooks.followingScope(this)) {
++                        try {
++                            LOG.info("FOLLOWING");
++                            setFollower(makeFollower(logFactory));
++                            follower.followLeader();
++                        } catch (Exception e) {
++                            MalloryZkHooks.followingRetrySubmit(this);
++                            LOG.warn("Unexpected exception", e);
++                        } finally {
++                            follower.shutdown();
++                            setFollower(null);
++                            updateServerState();
++                        }
+                     }
+                     break;
+                 case LEADING:
+@@ -1565,6 +1568,7 @@
+                 }
+             }
+         } finally {
++            MalloryZkHooks.clearFollowingRetry(this);
+             LOG.warn("QuorumPeer main thread exited");
+             MBeanRegistry instance = MBeanRegistry.getInstance();
+             instance.unregister(jmxQuorumBean);

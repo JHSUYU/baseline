@@ -1,0 +1,1420 @@
+{
+  "case_id": "HDFS-10",
+  "dispatch_attempt_id": "20261009T171644-f933859dd76f",
+  "elapsed_seconds": 14.996,
+  "events_evidence": {
+    "gzip_bytes": 37898,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "4dd0a5cbaf26eccc52d61d02309df5a733dff84d9aca4dcd95e79b70bc35ff79",
+    "raw_bytes": 856308,
+    "raw_path": null,
+    "raw_sha256": "1eedfc8557cdc42c206301a593577a15e82148c6a3b62ffc7688dee67190c2cd"
+  },
+  "events_sha256": "1eedfc8557cdc42c206301a593577a15e82148c6a3b62ffc7688dee67190c2cd",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": true,
+    "all_faults_matched": true,
+    "applied_fault_ids": [
+      "f15bb787914a2fbf46aa3"
+    ],
+    "closure_coverage_ids": [
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkFormatted()V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkFormatted()V@529:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@486:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@490:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@497:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@503:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@503:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@505:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkSync(ZLjava/lang/String;[Ljava/lang/Object;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkSync(ZLjava/lang/String;[Ljava/lang/Object;)V@543:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@517:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@517:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@637:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@638:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@645:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@655:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@660:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@661:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getTriedJournalSyncerStartedwithnsId()Z",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#heartbeat(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#isFormatted()Z",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@401:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@405:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@408:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@423:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@428:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@432:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@439:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@440:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@455:branch:9:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@460:branch:10:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#purgePaxosDecision(J)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#purgePaxosDecision(J)V@706:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@570:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@570:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@574:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@589:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@607:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@607:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#updateHighestWrittenTxId(J)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V@1311:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#getHostInetAddress()Ljava/net/InetAddress;",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1281:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1285:branch:2:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1298:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1236:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1251:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponse(Ljava/nio/ByteBuffer;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponseFields(Lorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#toString()Ljava/lang/String;"
+    ],
+    "closure_edges": [
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:696",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:691",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:804",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:799",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:953",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:948",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1072",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1067",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1196",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1191",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1358",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1353",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:857",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:852",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:22:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:997",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:992",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1113",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1108",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1250",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1245",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1402",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1395",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:763",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:758",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:900",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:894",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1028",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1023",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1155",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1150",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1304",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1299",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1446",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1441",
+        "source": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:728",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:726",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:848",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:846",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:813",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-10-r0016:804",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:21:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:988",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:986",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1104",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1102",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1241",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1239",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1205",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-10-r0016:1196",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:30:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1393",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1391",
+        "source": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:866",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-10-r0016:857",
+        "source": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:22:0\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1019",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1017",
+        "source": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1146",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1144",
+        "source": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1295",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1293",
+        "source": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1259",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-10-r0016:1250",
+        "source": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:31:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1437",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1435",
+        "source": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:795",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:793",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:944",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:942",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:909",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-10-r0016:900",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:23:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1063",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1061",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1187",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1185",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1349",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1347",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1313",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-10-r0016:1304",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+        "target": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:32:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-10-r0016:1481",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-10-r0016:1479",
+        "source": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]",
+        "target": "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]"
+      }
+    ],
+    "closure_occurrences": [
+      "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:21:0:1\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:30:0:1\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+      "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+      "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1\"]",
+      "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:31:0:1\"]",
+      "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:22:0\"]",
+      "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+      "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+      "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+      "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:23:0:1\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:32:0:1\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+      "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+    ],
+    "coverage_ids": [
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#<init>(Lorg/apache/hadoop/conf/Configuration;Ljava/io/File;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Lorg/apache/hadoop/hdfs/server/common/StorageErrorReporter;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#<init>(Lorg/apache/hadoop/conf/Configuration;Ljava/io/File;Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Lorg/apache/hadoop/hdfs/server/common/StorageErrorReporter;)V@175:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#abortCurSegment()V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#abortCurSegment()V@379:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkFormatted()V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkFormatted()V@529:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkFormatted()V@529:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@486:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@490:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@497:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@503:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@503:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@505:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkSync(ZLjava/lang/String;[Ljava/lang/Object;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkSync(ZLjava/lang/String;[Ljava/lang/Object;)V@543:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@517:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@517:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#close()V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#createCache()Lorg/apache/hadoop/hdfs/qjournal/server/JournaledEditsCache;",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#createCache()Lorg/apache/hadoop/hdfs/qjournal/server/JournaledEditsCache;@181:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@637:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@638:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@645:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@655:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@660:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#finalizeLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJ)V@661:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#format(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Z)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#format(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Z)V@252:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getCurrentLagTxns()J",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getHighestWrittenTxId()J",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getJournalId()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getLastJournalTimestamp()J",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getLastPromisedEpoch()J",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getLastWriterEpoch()J",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getMetrics()Lorg/apache/hadoop/hdfs/qjournal/server/JournalMetrics;",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getStorage()Lorg/apache/hadoop/hdfs/qjournal/server/JNStorage;",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#getTriedJournalSyncerStartedwithnsId()Z",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#heartbeat(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#isFormatted()Z",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@401:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@405:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@408:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@423:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@428:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@432:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@439:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@440:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@455:branch:9:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#journal(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JJI[B)V@460:branch:10:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#newEpoch(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;J)Lorg/apache/hadoop/hdfs/qjournal/protocol/QJournalProtocolProtos$NewEpochResponseProto;",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#newEpoch(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;J)Lorg/apache/hadoop/hdfs/qjournal/protocol/QJournalProtocolProtos$NewEpochResponseProto;@347:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#newEpoch(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;J)Lorg/apache/hadoop/hdfs/qjournal/protocol/QJournalProtocolProtos$NewEpochResponseProto;@360:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#purgePaxosDecision(J)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#purgePaxosDecision(J)V@706:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#refreshCachedData()V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#scanStorageForLatestEdits()Lorg/apache/hadoop/hdfs/server/namenode/FileJournalManager$EditLogFile;",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#scanStorageForLatestEdits()Lorg/apache/hadoop/hdfs/server/namenode/FileJournalManager$EditLogFile;@222:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#scanStorageForLatestEdits()Lorg/apache/hadoop/hdfs/server/namenode/FileJournalManager$EditLogFile;@222:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#scanStorageForLatestEdits()Lorg/apache/hadoop/hdfs/server/namenode/FileJournalManager$EditLogFile;@229:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@570:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@570:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@574:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@589:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@607:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#startLogSegment(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;JI)V@607:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#updateHighestWrittenTxId(J)V",
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#updateLastPromisedEpoch(J)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;I)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;II)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;IILorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/RPC$RpcKind;[BLorg/apache/hadoop/tracing/Span;Lorg/apache/hadoop/ipc/CallerContext;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V@1311:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#getHostInetAddress()Ljava/net/InetAddress;",
+      "org.apache.hadoop.ipc.Server$RpcCall#getRemoteUser()Lorg/apache/hadoop/security/UserGroupInformation;",
+      "org.apache.hadoop.ipc.Server$RpcCall#isOpen()Z",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1281:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1285:branch:2:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1298:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Object;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1236:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1251:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponse(Ljava/nio/ByteBuffer;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponseFields(Lorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#toString()Ljava/lang/String;"
+    ],
+    "doors": [
+      {
+        "event_id": "HDFS-10-r0016:24",
+        "event_seq": 24,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:6b1057f146e44a0b831cbee6f66de51e:1:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:32",
+        "event_seq": 32,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:6b1057f146e44a0b831cbee6f66de51e:0:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:36",
+        "event_seq": 36,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:6b1057f146e44a0b831cbee6f66de51e:2:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:207",
+        "event_seq": 207,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:c3694887f7e94c95a5a82489bfb02a30:5:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:210",
+        "event_seq": 210,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:c3694887f7e94c95a5a82489bfb02a30:3:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:215",
+        "event_seq": 215,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:c3694887f7e94c95a5a82489bfb02a30:4:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:270",
+        "event_seq": 270,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:4cfe34981b8043309031776ccb662f26:7:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:286",
+        "event_seq": 286,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:4cfe34981b8043309031776ccb662f26:6:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:288",
+        "event_seq": 288,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:4cfe34981b8043309031776ccb662f26:8:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:321",
+        "event_seq": 321,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:9:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:384",
+        "event_seq": 384,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:10:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:447",
+        "event_seq": 447,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:11:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:510",
+        "event_seq": 510,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:12:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:535",
+        "event_seq": 535,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:13:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:560",
+        "event_seq": 560,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:14:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:585",
+        "event_seq": 585,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:15:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:623",
+        "event_seq": 623,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:16:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:661",
+        "event_seq": 661,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:17:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:699",
+        "event_seq": 699,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:740",
+        "event_seq": 740,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:19:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:766",
+        "event_seq": 766,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:807",
+        "event_seq": 807,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:860",
+        "event_seq": 860,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:22:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:903",
+        "event_seq": 903,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:956",
+        "event_seq": 956,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1000",
+        "event_seq": 1000,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1031",
+        "event_seq": 1031,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1075",
+        "event_seq": 1075,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1116",
+        "event_seq": 1116,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1158",
+        "event_seq": 1158,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1199",
+        "event_seq": 1199,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1253",
+        "event_seq": 1253,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0"
+      },
+      {
+        "event_id": "HDFS-10-r0016:1307",
+        "event_seq": 1307,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "hdfs-journal-cluster-1/jn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0"
+      }
+    ],
+    "eligible_doors_before_target": 33,
+    "event_count": 1493,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 0,
+      "candidate_edges_by_kind": {},
+      "edges": 40,
+      "edges_by_kind": {
+        "region_parent": 6,
+        "rpc": 34
+      },
+      "gaps": {
+        "rpc_missing_occurrence": 36
+      },
+      "occurrences": 46
+    },
+    "last_fault_seq": 742,
+    "matched_fault_ids": [
+      "f15bb787914a2fbf46aa3"
+    ],
+    "observed_door_events": 36,
+    "pairing_order_valid": true,
+    "qualified_target_throw_evidence": [
+      {
+        "epoch": 0,
+        "exception_class": "java.io.IOException",
+        "id": "HDFS-10-r0016:878",
+        "node": "hdfs-journal-cluster-1/jn1",
+        "occurrence": "hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1",
+        "seq": 878,
+        "site": "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@520:throw:1"
+      }
+    ],
+    "status": "target_exception_candidate",
+    "target_anchor": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:21:0:1\"]",
+    "target_closures": [
+      {
+        "anchor": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:21:0:1\"]",
+        "closure_occurrences": [
+          "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:21:0:1\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn0",
+        "occurrence": "hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:21:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1\"]",
+        "closure_occurrences": [
+          "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:22:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn1",
+        "occurrence": "hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:23:0:1\"]",
+        "closure_occurrences": [
+          "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:23:0:1\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn2",
+        "occurrence": "hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:23:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:30:0:1\"]",
+        "closure_occurrences": [
+          "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:30:0:1\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn0",
+        "occurrence": "hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:30:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:31:0:1\"]",
+        "closure_occurrences": [
+          "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:31:0:1\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn1",
+        "occurrence": "hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:31:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:32:0:1\"]",
+        "closure_occurrences": [
+          "[\"hdfs-client\",\"0\",\"unscoped:hdfs-client:0:root\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:18:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:21:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:24:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:27:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:30:0\"]",
+          "[\"hdfs-journal-cluster-1/jn0\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn0:0:5e355baca7d743858fec3a951b93b028:33:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:25:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:28:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:31:0\"]",
+          "[\"hdfs-journal-cluster-1/jn1\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn1:0:5e355baca7d743858fec3a951b93b028:34:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:32:0:1\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:20:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:23:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:26:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:29:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:32:0\"]",
+          "[\"hdfs-journal-cluster-1/jn2\",\"0\",\"unscoped:hdfs-journal-cluster-1/jn2:0:5e355baca7d743858fec3a951b93b028:35:0\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn2",
+        "occurrence": "hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:32:0:1"
+      }
+    ],
+    "target_exception_candidate": true,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [
+      {
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn0",
+        "occurrence": "hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:21:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn0",
+        "occurrence": "hdfs-journal-cluster-1/jn0:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:30:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn1",
+        "occurrence": "hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn1",
+        "occurrence": "hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:31:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn2",
+        "occurrence": "hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:23:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn2",
+        "occurrence": "hdfs-journal-cluster-1/jn2:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:32:0:1"
+      }
+    ],
+    "target_reached": true,
+    "target_region_present": true,
+    "target_threw": true,
+    "target_throw_evidence": [
+      {
+        "epoch": 0,
+        "exception_class": "java.io.IOException",
+        "id": "HDFS-10-r0016:878",
+        "node": "hdfs-journal-cluster-1/jn1",
+        "occurrence": "hdfs-journal-cluster-1/jn1:0:org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V:5e355baca7d743858fec3a951b93b028:22:0:1",
+        "seq": 878,
+        "site": "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@520:throw:1"
+      }
+    ],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "892b0895a5782508f1c5f4197266c6bde470236c1ef32c762f93289ee3d1e2de",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0016_0f79828eb87445428f5865f241e02b8e",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager-mallory_0016_0f79828eb87445428f5865f241e02b8e.xml",
+        "sha256": "b8e9ed5444572bf33c8ebd463ab307c27f6d5a30cb269d6bbcc3eb776f52a815"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "c6ddfe54afcf71a7a57c00eced0ec27e57d5b3d49b3654863b266723387606fb",
+    "tests": 1
+  },
+  "novelty": {
+    "closure_coverage": 0,
+    "closure_edges": 39,
+    "coverage": 0
+  },
+  "plan": [
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "f15bb787914a2fbf46aa3",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "door_ordinal": 7,
+        "epoch": 0,
+        "node": "hdfs-journal-cluster-1/jn1",
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      }
+    }
+  ],
+  "return_code": 0,
+  "schema_version": 1,
+  "selection_reason": "dynamic_closure",
+  "site_catalog_sha256": "889df2c8c11bc17bf133678c375b8d027927269d104de26684574afa1e911d57",
+  "site_catalog_validation": {
+    "catalog_rows": 7,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "48f3e0c2d0daad3633b1b43baebce42db2d5c9e102846a5153cd22b63548ee71",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "48f3e0c2d0daad3633b1b43baebce42db2d5c9e102846a5153cd22b63548ee71"
+    ],
+    "observed_target_class_sha256": "48f3e0c2d0daad3633b1b43baebce42db2d5c9e102846a5153cd22b63548ee71",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.hadoop.hdfs.qjournal.server.Journal",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791566422.9220257,
+  "stderr_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 0,
+    "raw_path": "stderr.log",
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 1764,
+    "raw_path": "stdout.log",
+    "raw_sha256": "c6ddfe54afcf71a7a57c00eced0ec27e57d5b3d49b3654863b266723387606fb"
+  },
+  "stdout_sha256": "c6ddfe54afcf71a7a57c00eced0ec27e57d5b3d49b3654863b266723387606fb",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 16
+}

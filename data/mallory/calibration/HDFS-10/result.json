@@ -1,0 +1,96 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-10",
+  "closure_coverage_ids_seen": 51,
+  "closure_edge_fingerprints_seen": 42,
+  "cluster_test": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testSingleWriter",
+  "coverage_ids_seen": 84,
+  "dispatch_attempt_ids": [
+    "20261009T160715-37da8630dd20"
+  ],
+  "duration_seconds": 11.112,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 33,
+  "healthy_observed_door_events": 36,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T160715-37da8630dd20",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-journal-cluster-1/jn0",
+      "hdfs-journal-cluster-1/jn1",
+      "hdfs-journal-cluster-1/jn2"
+    ],
+    "eligible_doors_before_target": 33,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "48f3e0c2d0daad3633b1b43baebce42db2d5c9e102846a5153cd22b63548ee71",
+    "observed_target_class_sha256": "48f3e0c2d0daad3633b1b43baebce42db2d5c9e102846a5153cd22b63548ee71",
+    "reasons": [],
+    "site_catalog_sha256": "889df2c8c11bc17bf133678c375b8d027927269d104de26684574afa1e911d57",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (reqInfo.getEpoch() != lastWriterEpoch.get()) {\nthrow new IOException(\"IPC's epoch \" + reqInfo.getEpoch() +\n\" is not the current writer epoch  \" +\nlastWriterEpoch.get() + \" ; journal id: \" + journalId);",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@517:branch:1"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hdfs.qjournal.server.Journal.checkWriteRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)",
+    "original_source_line": 520,
+    "site_id": "<org.apache.hadoop.hdfs.qjournal.server.Journal: void checkWriteRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)>#u23",
+    "source_line": 520,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+    "throw_site": "org.apache.hadoop.hdfs.qjournal.server.Journal#checkWriteRequest(Lorg/apache/hadoop/hdfs/qjournal/protocol/RequestInfo;)V@520:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-journal-cluster-1/jn0",
+      "hdfs-journal-cluster-1/jn1",
+      "hdfs-journal-cluster-1/jn2"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T160715-37da8630dd20",
+      "duration_seconds": 11.112,
+      "eligible_doors_before_target": 33,
+      "novelty": {
+        "closure_coverage": 51,
+        "closure_edges": 42,
+        "coverage": 84
+      },
+      "observed_door_events": 36,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

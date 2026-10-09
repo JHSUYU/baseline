@@ -1,0 +1,131 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-52",
+  "closure_coverage_ids_seen": 67,
+  "closure_edge_fingerprints_seen": 28,
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot#testSaveLoadImage",
+  "coverage_ids_seen": 257,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 28.946,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 365,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_5f51db4c8f774e04a37472047e810158",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot-mallory_0000_5f51db4c8f774e04a37472047e810158.xml",
+        "sha256": "bb92d75dc00a8fe36c6e757362f769e8cba7997040de35b096f6f5c394f1e259"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "82393b9d011fbf29c62e1bc026f0fa9f184b2ce2fde234f5298ee91f56424792",
+    "tests": 1
+  },
+  "healthy_observed_door_events": 387,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-cluster-1/nn0",
+      "hdfs-cluster-2/nn0",
+      "hdfs-cluster-3/nn0",
+      "hdfs-cluster-4/nn0",
+      "hdfs-cluster-5/nn0",
+      "hdfs-cluster-6/nn0",
+      "hdfs-cluster-7/nn0"
+    ],
+    "eligible_doors_before_target": 365,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "d4d35e988749f4cc751eec6768cafa5bb60b06099d5d18cacf8c2bb7fec162e9",
+    "observed_target_class_sha256": "d4d35e988749f4cc751eec6768cafa5bb60b06099d5d18cacf8c2bb7fec162e9",
+    "reasons": [],
+    "site_catalog_sha256": "9b750d3c227411a4f0fa23e371c9e0f6e4c9c02e1fffb8857d51ee144dd54c00",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (i % FSImageFormatProtobuf.Saver.CHECK_CANCEL_INTERVAL == 0) {\ncontext.checkCancelled();\n}\n}\n}\nPreconditions.checkState(i == sm.getNumSnapshots());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:branch:5"
+    ],
+    "exception_class": "java.lang.IllegalStateException",
+    "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver.serializeSnapshotSection(java.io.OutputStream)",
+    "original_source_line": 467,
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver: void serializeSnapshotSection(java.io.OutputStream)>#u65",
+    "source_line": 467,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver#serializeSnapshotSection(Ljava/io/OutputStream;)V@467:callthrow:43"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-cluster-1/nn0",
+      "hdfs-cluster-2/nn0",
+      "hdfs-cluster-3/nn0",
+      "hdfs-cluster-4/nn0",
+      "hdfs-cluster-5/nn0",
+      "hdfs-cluster-6/nn0",
+      "hdfs-cluster-7/nn0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 28.946,
+      "eligible_doors_before_target": 365,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 67,
+        "closure_edges": 28,
+        "coverage": 257
+      },
+      "observed_door_events": 387,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

@@ -1,0 +1,125 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-14",
+  "closure_coverage_ids_seen": 112,
+  "closure_edge_fingerprints_seen": 150,
+  "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestMergeTableRegionsProcedure#testMergeTwoRegions",
+  "coverage_ids_seen": 173,
+  "dispatch_attempt_ids": [
+    "20261009T170808-31d7601aa514"
+  ],
+  "dispatch_provenance": {
+    "attempt_id": "20261009T170808-31d7601aa514",
+    "case_config_sha256": "a8211a9accaaba352212f6c3cf9d9e37e2d4d2632fb62355bc9d17de59aafe09",
+    "core_release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf",
+    "host": "node1",
+    "spec_path": "/users/ZhenyuLi/baseline/data/mallory/dispatch/node1-v2/calibration/cases/HBASE-14/attempts/20261009T170808-31d7601aa514/spec.json",
+    "spec_sha256": "442306aaddc63e6a9c274aa16bfa8967c09d48d04b4ea59fcd035ae88f8f3700"
+  },
+  "duration_seconds": 39.343,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "evidence_archive": {
+    "bytes": 350145,
+    "manifest_path": "evidence_archives/calibration_v2/HBASE-14.tar.manifest.json",
+    "manifest_sha256": "a52573c38880315cbde36752d9c5a96fb7fdc51222f07b756fe2001c06036fc0",
+    "path": "evidence_archives/calibration_v2/HBASE-14.tar.gz",
+    "sha256": "f6de4bcc89ef5dc1ca3f280596fff1ceb520a6ce2b78cc307162cf88dd2acb9b"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 79,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "4a11ac758d2a5863ecb08b31f1aa7928d663815145df5089c9331ad194771477",
+    "stdout_sha256": "5373511ccf3617d19bd093815069986469d041664ca265facbc0a669a1f007fb",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "healthy_observed_door_events": 206,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": "20261009T170808-31d7601aa514",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "master0"
+    ],
+    "eligible_doors_before_target": 79,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "ca5b7ba50e5f9aaa6c38a9e5382b51515152e2530c6d8dbe248184310a18333a",
+    "observed_target_class_sha256": "ca5b7ba50e5f9aaa6c38a9e5382b51515152e2530c6d8dbe248184310a18333a",
+    "reasons": [],
+    "site_catalog_sha256": "8d19df0476ef2f84db24e7dc28974f25e238b36f687089b6b660e8f4b57fad6c",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (state == null) {\nthrow new UnknownRegionException(\nRegionInfo.getShortNameToLog(ri) + \" UNKNOWN (Has it been garbage collected?)\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z@498:branch:7"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.UnknownRegionException",
+    "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+    "original_source_line": 500,
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure: boolean prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)>#u119",
+    "source_line": 500,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure#prepareMergeRegion(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;)Z@500:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "master0"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T170808-31d7601aa514",
+      "duration_seconds": 39.343,
+      "eligible_doors_before_target": 79,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 112,
+        "closure_edges": 150,
+        "coverage": 173
+      },
+      "observed_door_events": 206,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

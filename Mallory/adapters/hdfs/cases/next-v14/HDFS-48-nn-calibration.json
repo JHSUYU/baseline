@@ -1,0 +1,122 @@
+{
+  "agent_arg_property": "maven-surefire-plugin.argLine",
+  "agent_include": [
+    "org.apache.hadoop.hdfs.server.namenode.INodeDirectory",
+    "org.apache.hadoop.ipc.Server$RpcCall",
+    "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+    "org.apache.hadoop.hdfs.server.datanode.DataXceiver"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-safewriter-fd274b40.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsMiniClusterTransformer",
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "surefire_argline",
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_basis": "system_default_pending_mallory_seed",
+    "trial_timeout_seconds": 600,
+    "trials": 80
+  },
+  "calibration_only": true,
+  "calibration_variant": "nn_only_lane3_v14",
+  "case_id": "HDFS-48",
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestRenameWithSnapshots#testRenameUndo_1",
+  "command": [
+    "mvn",
+    "-B",
+    "-ntp",
+    "-pl",
+    "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=TestRenameWithSnapshots#testRenameUndo_1",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dtest.build.data={trial_dir}/hdfs-data",
+    "surefire:test"
+  ],
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+  "expected_target_class_sha256": "232f9db67f1b60193619a1c44907f58db0a4877e82d132824a564598c2deabcb",
+  "mapping": {
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-safewriter-fd274b40.jar",
+      "command": [
+        "mvn",
+        "-B",
+        "-ntp",
+        "clean",
+        "package"
+      ],
+      "isolated_build_root": "/tmp/mallory-agent-safewriter.T7dvLd",
+      "sha256": "fd274b401ec035797574e30bd52fb5e46bcfce11170578a7fd6c9ad0da8de348",
+      "source_root": "/users/ZhenyuLi/baseline/Mallory/instrumentation",
+      "tests": "16 passed, including old-writer-red/new-writer-green recursive class-load regression"
+    },
+    "agent_sha256": "fd274b401ec035797574e30bd52fb5e46bcfce11170578a7fd6c9ad0da8de348",
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke/hadoop-hdfs-project/hadoop-hdfs/target/classes",
+    "compiled_class_sha256": "232f9db67f1b60193619a1c44907f58db0a4877e82d132824a564598c2deabcb",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+    "compiled_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3",
+    "distribution_root_env": "MALLORY_HDFS_DIST_ROOT",
+    "healthy_seed_verified": false,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+    "node_identity_binding_configured": true,
+    "node_identity_binding_verified": false,
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+    "source_root_env": "MALLORY_HDFS_SOURCE_ROOT",
+    "status": "preliminary_compiled_distribution_site",
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/overlay-receipt.json",
+    "system_receipt_sha256": "03650a28cfde7175ad65dd139ef2e203fb6fae95d95eb2db42abd601a3157ab4",
+    "target_source_sha256": "39636bc2cd045b41aadc631ad0ed8edc7935235422d0cc6decde876392208f50",
+    "target_throw_kind": "invocation_exception",
+    "test_source_sha256": "58c382b17db4855ebc3e105feb72232c086126e3ecb8a71dc8919d5967c8af00",
+    "verified_healthy_probe": null
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/agent-builds/mallory-agent-safewriter-fd274b40.jar",
+      "sha256": "fd274b401ec035797574e30bd52fb5e46bcfce11170578a7fd6c9ad0da8de348"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-48.sites.json",
+      "sha256": "4261aba65d728b54ce7e30c57d7bdc131b9a0dccff313d90f58eea1512746746"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+      "sha256": "63ff2cd4bc623f2b591e443cb1b9dc705cce6a2129238b523e205d89f6e9070b"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-48.sites.json",
+  "source_equivalence": {
+    "git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+    "new_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+    "old_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+    "target_source_sha256": "39636bc2cd045b41aadc631ad0ed8edc7935235422d0cc6decde876392208f50",
+    "test_source_sha256": "58c382b17db4855ebc3e105feb72232c086126e3ecb8a71dc8919d5967c8af00"
+  },
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-idv4-smoke",
+  "system": "hdfs",
+  "target": {
+    "check_code": "Preconditions.checkState(oldChild == children.get(i)\n|| oldChild == children.get(i).asReference().getReferredINode()\n.asReference().getReferredINode());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.namenode.INodeDirectory#replaceChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INodeMap;)V@356:branch:2",
+      "org.apache.hadoop.hdfs.server.namenode.INodeDirectory#replaceChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INodeMap;)V@358:branch:3"
+    ],
+    "exception_class": "java.lang.IllegalStateException",
+    "function": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory.replaceChild(org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INodeMap)",
+    "nodes": [
+      "hdfs-cluster-1/nn0"
+    ],
+    "original_source_line": 356,
+    "site_id": "<org.apache.hadoop.hdfs.server.namenode.INodeDirectory: void replaceChild(org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INodeMap)>#u27",
+    "source_line": 356,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory#replaceChild(Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INode;Lorg/apache/hadoop/hdfs/server/namenode/INodeMap;)V@356:callthrow:11"
+  }
+}

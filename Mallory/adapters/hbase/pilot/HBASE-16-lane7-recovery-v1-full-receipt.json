@@ -1,0 +1,89 @@
+{
+  "adapter_sha256": "5f83ae1146141c3559073c13fd5b9b952f09af87e4c9d83d2288fbd2c4fd2827",
+  "admission_basis": "one independent clean named healthy target with 20 observed-path doors; two strict named applied pilot faults retaining exact target; fixed-5820 healthy/pilot audits pass; no exact target throw observed",
+  "agent_sha256": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_seconds": 300,
+    "trials": 80
+  },
+  "case_id": "HBASE-16",
+  "compiled_target_class_sha256": "44a3c4265b4cc53ffbdf44670248bdb5948761b9bc75e33316b0f83d01cfde39",
+  "core_release": {
+    "manifest_sha256": "101e132c7513ac37650276d858da4b5cb766903e38be06158db2d4c472c0417f",
+    "release_id": "5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf"
+  },
+  "files": {
+    "alternate_inventory": {
+      "path": "Mallory/cases/revisions/HBASE-16-recovery-v1.inventory.json",
+      "sha256": "7e84654e91f441349b2d96fa9ebe29d562f9848d7ad028bc385890b490056d26"
+    },
+    "full_config": {
+      "path": "Mallory/adapters/hbase/pilot/HBASE-16-lane7-recovery-v1-full.json",
+      "sha256": "20b920ef4fb1485afba8660d18e391f235c001668664a578bdf5b2fd899ae01c"
+    },
+    "full_worker": {
+      "path": "Mallory/adapters/hbase/pilot/HBASE-16-lane7-recovery-v1-full.sh",
+      "sha256": "f41ed6fb1289ac656c63b520bde15bbb3a882986b195f40d7679b04503df3017"
+    },
+    "healthy_receipt": {
+      "path": "data/mallory/calibration_v16_lane7_recovery/HBASE-16/calibration-receipt.json",
+      "sha256": "f78d840def00a869d041a2a124c69d688c9cfad743261f3107c80a2907d3484b"
+    },
+    "mapping_revision": {
+      "path": "Mallory/cases/revisions/HBASE-16-recovery-v1.revision.json",
+      "sha256": "913397c95e1f8d4c023c01c970eecea2c5a50e9f57d1ff589e8f0b0a48317543"
+    },
+    "pilot_audit": {
+      "path": "data/mallory/pilot_v16_lane7_recovery/HBASE-16/offline-causal-audit.json",
+      "sha256": "9f535f842b05c919480614bfa6f467cafd80efd1f28d432d883a26f055d60dca"
+    },
+    "pilot_receipt": {
+      "path": "data/mallory/pilot_v16_lane7_recovery/HBASE-16/pilot-receipt.json",
+      "sha256": "49e8c3a651cfb39f3f8f5fb21ef83a2e04200091becfa37a6824fd5583cc618c"
+    },
+    "source_reference": {
+      "path": "Mallory/dispatch/source_reference.json",
+      "sha256": "e600ce9827adc7fdc9baf8cef1fca70bfcb616f39310a7053a50feab0d0b613d"
+    }
+  },
+  "host": "node1",
+  "kind": "hbase16_full_campaign_admission",
+  "lane": "hbase-lane7",
+  "output_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/full-HBASE-16-recovery-v1",
+  "pilot_validated_recovery_sites": [
+    {
+      "evidence": [
+        {
+          "sha256": "283b009646fcc8b2718cc63536291b6bb94c3aa56b63552259e2d6d651cd233f",
+          "trial_result": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/pilot-HBASE-16-recovery-v1-3/trials/r0002/result.json"
+        },
+        {
+          "sha256": "24f1a26fbadf31ea29a6d28a66b0eebb69b14e33fd1b5371c5e6a93c8b3dafff",
+          "trial_result": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/pilot-HBASE-16-recovery-v1-3/trials/r0003/result.json"
+        }
+      ],
+      "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+    }
+  ],
+  "schema_version": 1,
+  "selected_existing_junit": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer#test",
+  "site_sha256": "e3750f6fd8e0be4eba2189f8d6e4376a068dfd2ab1afd1dd7be6f861efe2691b",
+  "source_target_sha256": "7169b7e2c375ca43357037ecaed2f8238bf7af31fcf3a618ed75c9b1566ec3e8",
+  "source_test_sha256": "8504846bad21b3cd4707471e4a3a37afa7a4c49d1996e787c47a1b8af027f359",
+  "status": "ready_for_resource_admission",
+  "target": {
+    "check_code": "if (regionNode.isInState(State.CLOSING)) {\n// This is possible, think the target RS crashes and restarts immediately, the close region\n// operation will return a NotServingRegionException soon, we can only recover after SCP takes\n// care of this RS. So here we throw an IOException to let upper layer to retry with backoff.\nsetNextState(RegionStateTransitionState.REGION_STATE_TRANSITION_CLOSE);\nthrow new HBaseIOException(\"Failed to close region\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@366:branch:3"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+    "original_source_line": 371,
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure: org.apache.hadoop.hbase.procedure2.StateMachineProcedure$Flow confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)>#u28",
+    "source_line": 371,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure#confirmClosed(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;)Lorg/apache/hadoop/hbase/procedure2/StateMachineProcedure$Flow;@371:throw:1"
+  }
+}

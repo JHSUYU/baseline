@@ -1,0 +1,108 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-21",
+  "closure_coverage_ids_seen": 25,
+  "closure_edge_fingerprints_seen": 2,
+  "cluster_test": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testRestoreSnapshot",
+  "coverage_ids_seen": 93,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 48.871,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 164,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "c1a05e247b12d8f4480b7d9aaad735346b3b80399a2db021722980218adcb394",
+    "stdout_sha256": "5373511ccf3617d19bd093815069986469d041664ca265facbc0a669a1f007fb",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "healthy_observed_door_events": 261,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "master1"
+    ],
+    "eligible_doors_before_target": 164,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "c770da546adccd2818ad28bc898e4f945e05326ac700e2796635050904369725",
+    "observed_target_class_sha256": "c770da546adccd2818ad28bc898e4f945e05326ac700e2796635050904369725",
+    "reasons": [],
+    "site_catalog_sha256": "27030a7f0788a3185ff275c73ddd0f6b9ddf48974e4d76927379e2b46930e466",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (\n(currentStatus.getRegionCount() - regionCountOfTable + incr)\n> TableNamespaceManager.getMaxRegions(nspdesc)\n) {\nthrow new QuotaExceededException(\"The table \" + name.getNameAsString()\n+ \" region count cannot be updated as it would exceed maximum number \"\n+ \"of regions allowed in the namespace.  The total number of regions permitted is \"\n+ TableNamespaceManager.getMaxRegions(nspdesc));",
+    "check_sites": [
+      "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceRegionCount(Lorg/apache/hadoop/hbase/TableName;I)V@128:branch:3"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.quotas.QuotaExceededException",
+    "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)",
+    "original_source_line": 133,
+    "site_id": "<org.apache.hadoop.hbase.namespace.NamespaceStateManager: void checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)>#u30",
+    "source_line": 133,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+    "throw_site": "org.apache.hadoop.hbase.namespace.NamespaceStateManager#checkAndUpdateNamespaceRegionCount(Lorg/apache/hadoop/hbase/TableName;I)V@133:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "master1"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 48.871,
+      "eligible_doors_before_target": 164,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 25,
+        "closure_edges": 2,
+        "coverage": 93
+      },
+      "observed_door_events": 261,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

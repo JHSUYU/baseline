@@ -1,0 +1,130 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-28",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testLeaseRecoveryAfterFailover",
+  "coverage_ids_seen": 205,
+  "dispatch_attempt_ids": [
+    "20261009T161505-6d5a7f9cc6b4"
+  ],
+  "duration_seconds": 21.983,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 79,
+  "healthy_observed_door_events": 129,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": "20261009T161505-6d5a7f9cc6b4",
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [],
+    "eligible_doors_before_target": 79,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88",
+    "observed_target_class_sha256": "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88",
+    "reasons": [
+      "no_named_target_actor",
+      "no_named_target_region"
+    ],
+    "site_catalog_sha256": "30109eb580fef401d4004c4c3023680037a2d27503b912daaabc796bfadd7bec",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 5,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_node_identity_missing",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (bpos == null) {\nthrow new IOException(\"No block pool offer service for bpid=\" + bpid);",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getDatanodeID(java.lang.String)",
+    "original_source_line": 539,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker: org.apache.hadoop.hdfs.protocol.DatanodeID getDatanodeID(java.lang.String)>#u12",
+    "source_line": 539,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@539:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [
+    {
+      "epoch": 0,
+      "id": "HDFS-28-r0000:2765",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;:root:3",
+      "seq": 2765,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-28-r0000:2772",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;:root:2",
+      "seq": 2772,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-28-r0000:2775",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;:root:1",
+      "seq": 2775,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-28-r0000:2824",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;:root:4",
+      "seq": 2824,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1"
+    },
+    {
+      "epoch": 0,
+      "id": "HDFS-28-r0000:2955",
+      "node": "unknown",
+      "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;:root:5",
+      "seq": 2955,
+      "site": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1"
+    }
+  ],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": "20261009T161505-6d5a7f9cc6b4",
+      "duration_seconds": 21.983,
+      "eligible_doors_before_target": 79,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 205
+      },
+      "observed_door_events": 129,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}
