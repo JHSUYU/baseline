@@ -71,6 +71,10 @@ plan that never matches is inconclusive. Keep one fault maximum, one JUnit,
 no automatic expansion or full campaign, a fresh output, and the same
 SHA-pinned source, adapter, agent, sites, and JUnit. This is a proposal only;
 dispatch must grant a fresh lane/resource gate before any JVM run.
+`pilot-plan-node2-lane3.json`, `pilot-node2-lane3.json`, and
+`run_node2_lane3_exact_timeout_pilot.sh` stage that exact replay. The runner
+calls one JUnit trial directly and cannot select another door from a campaign
+queue. `manifest-pilot-node2-lane3.json` pins its inputs by SHA-256.
 
 The postfault audit must observe `FAULT_MATCHED` and `FAULT_APPLIED` for that
 exact site/node/epoch/ordinal, with the fault on the same thread and
