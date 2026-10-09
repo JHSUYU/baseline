@@ -1,0 +1,113 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-22",
+  "closure_coverage_ids_seen": 220,
+  "closure_edge_fingerprints_seen": 292,
+  "cluster_test": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
+  "coverage_ids_seen": 462,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 21.204,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 263,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 0,
+    "junit_log_sha256": "c4d573b38d47c47ebd12346adc9253d71126263930a202e218acbe3e30ad5eb2",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=0 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "50fcacac7254c2505dfa2fd29e8ed1d1e1e51ce574d5d1b2aef3161e4ea3086e",
+    "tests": 1,
+    "wrapper_sha256": "e83f727a0546e2c42e1c9e689e21c9855a07acfe1823960cf99e3f73f0b5910a"
+  },
+  "healthy_observed_door_events": 339,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1"
+    ],
+    "eligible_doors_before_target": 263,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "d931a1769b441672d2b59e6536fd88d8d6680e5aedf021e468104a49c7db3b89",
+    "observed_target_class_sha256": "d931a1769b441672d2b59e6536fd88d8d6680e5aedf021e468104a49c7db3b89",
+    "reasons": [],
+    "site_catalog_sha256": "56286fe13a3a95a4203950da2e6bc7248b20399776ce9d55145eb110fb76357a",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if ( (null != commit && false != commit.isDeleted())\n|| (null == commit && null != latestCommit && generation < latestCommit.getGeneration()) ) {\nthrow new IllegalStateException\n(\"Specified index generation is too old to be saved: \" + generation);",
+    "check_sites": [
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:2",
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:3",
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:4",
+      "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@175:branch:5"
+    ],
+    "exception_class": "java.lang.IllegalStateException",
+    "function": "org.apache.solr.core.IndexDeletionPolicyWrapper.getAndSaveCommitPoint(java.lang.Long)",
+    "original_source_line": 177,
+    "site_id": "<org.apache.solr.core.IndexDeletionPolicyWrapper: org.apache.lucene.index.IndexCommit getAndSaveCommitPoint(java.lang.Long)>#u28",
+    "source_line": 177,
+    "source_path": "solr/core/src/java/org/apache/solr/core/IndexDeletionPolicyWrapper.java",
+    "throw_site": "org.apache.solr.core.IndexDeletionPolicyWrapper#getAndSaveCommitPoint(Ljava/lang/Long;)Lorg/apache/lucene/index/IndexCommit;@177:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 21.204,
+      "eligible_doors_before_target": 263,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "novelty": {
+        "closure_coverage": 220,
+        "closure_edges": 292,
+        "coverage": 462
+      },
+      "observed_door_events": 339,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

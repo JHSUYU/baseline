@@ -1,0 +1,51 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-19",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyTableWithCoprocessorAndColumnFamilyPropertyChange",
+  "coverage_ids_seen": 0,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 0.0,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": null,
+  "healthy_junit_validation": null,
+  "healthy_observed_door_events": null,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "running",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (\nthis.unmodifiedTableDescriptor.getColumnFamilyCount()\n!= this.modifiedTableDescriptor.getColumnFamilyCount()\n) {\nthrow new HBaseIOException(\n\"Cannot add or remove column families when this modification \" + \"won't reopen regions.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@133:branch:7"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.HBaseIOException",
+    "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+    "original_source_line": 135,
+    "site_id": "<org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure: void preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)>#u50",
+    "source_line": 135,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+    "throw_site": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure#preflightChecks(Lorg/apache/hadoop/hbase/master/procedure/MasterProcedureEnv;Ljava/lang/Boolean;)V@135:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": []
+}

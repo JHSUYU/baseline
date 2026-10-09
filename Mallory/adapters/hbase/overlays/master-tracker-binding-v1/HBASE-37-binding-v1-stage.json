@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-37",
+  "kind": "source_only_overlay_preflight",
+  "source_version": "hbase-2.6.6",
+  "healthy_or_full_run_started": false,
+  "source_review": {
+    "cluster_test": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+    "call_chain": "TestRSStatusPage.testStatusPage -> HMaster.getActiveMasterInfoPort -> ActiveMasterManager.getActiveMasterInfoPort -> MasterAddressTracker.getMasterInfoPort(ZKWatcher)",
+    "selected_guard": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I@205:branch:1",
+    "selected_throw": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I@206:throw:1",
+    "guard_semantics": "A null result from ZKUtil.getData reaches the selected guard; ActiveMasterManager catches the resulting exception and returns port 0. A successful existing test may cover the nonthrowing guard outcome.",
+    "previous_calibration": "data/mallory/calibration/HBASE-37/result.json: exact target reached but unknown actor; healthy_node_identity_missing; no valid graph path",
+    "source_sha256": {
+      "ActiveMasterManager.java": "edcf8ec32db64ceac9147dcb00fefc36ff5b92f499e37e9256f0ec8552252fde",
+      "HMaster.java": "6d47807a0bf39b6cf48677bd8acbd7eaf0bc0a6a148a04d013573cefa4b4deb1",
+      "MasterAddressTracker.java": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987",
+      "TestRSStatusPage.java": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b"
+    }
+  },
+  "overlay": {
+    "source_sha256": {
+      "Mallory/adapters/hbase/overlays/master-tracker-binding-v1/pom.xml": "78114911ddc5ef6bc6239f0cf121664785dbe9a7e22aa021d85f49f5dc1399af",
+      "Mallory/adapters/hbase/overlays/master-tracker-binding-v1/src/main/java/edu/uva/liftlab/mallory/hbase/masterbinding/MasterTrackerHooks.java": "7eb2f3fb7c72d5453efab1e5062714bb7ab22c5fb4105bacc2f4ceba8e9d129f",
+      "Mallory/adapters/hbase/overlays/master-tracker-binding-v1/src/main/java/edu/uva/liftlab/mallory/hbase/masterbinding/MasterTrackerTransformer.java": "8fd545f5e400f54bf3f9b62bb1dd7c37950a1d006d25dcb8d3f3ec4d6fbe3526",
+      "Mallory/adapters/hbase/overlays/master-tracker-binding-v1/src/test/java/edu/uva/liftlab/mallory/hbase/masterbinding/MasterTrackerHooksTest.java": "c591f1acfb11de470a9abf4de00489e11fb8b83058801402ba536990c23f6048",
+      "Mallory/adapters/hbase/overlays/master-tracker-binding-v1/src/test/java/edu/uva/liftlab/mallory/hbase/masterbinding/MasterTrackerTransformerTest.java": "8c58924b7477ca125bd866d2539a568fe50baa1cc6ed5cdaae66685b7544aef1"
+    },
+    "jar_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/master-tracker-binding-v1/releases/ab0d9d13c6dc1073/adapter.jar",
+    "jar_sha256": "ab0d9d13c6dc1073d27d844398408d4614e820ba901a52b52f701eb131ee193e",
+    "config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/master-tracker-binding-v1/HBASE-37-binding-v1-healthy.json",
+    "config_sha256": "67a699b20c630a041539c715c0a503dc5504c3efe02b8749f56a832da71489f0",
+    "site_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-37-lane7.sites.json",
+    "site_sha256": "919fa75af87596ff765a6514acb6c21600b84f9a691cefa0c93e9cdae35aa9fa",
+    "tests": "mvn -q -Dmallory.hbase.server.jar=/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar test package; 4 tests, 0 failures/errors",
+    "agent_release": {
+      "source_path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "node1_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/agent-38658059f36552f5.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    "core_release": {
+      "release_id": "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+      "manifest_sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8"
+    },
+    "existing_adapter_unchanged": true,
+    "node1_sync_required": true,
+    "node1_sync": {
+      "overlay_jar_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/master-tracker-binding-ab0d9d13.jar",
+      "agent_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/agent-38658059f36552f5.jar",
+      "must_verify_all_runtime_artifact_sha_before_jvm": true
+    }
+  },
+  "admission": {
+    "resource_owner": "dispatch",
+    "run": "strict healthy only; no injected fault",
+    "required": "Selected JUnit pass 1/0/0; exact @205 TARGET_CHECK on named master actor without @206 throw; numeric thread-id and event-time causal path from an observed pretarget I/O door to same target occurrence; reject coarse unscoped root and zero-path results",
+    "on_failure": "Record negative healthy result; do not mark HBASE-37 complete or start full fuzz."
+  }
+}

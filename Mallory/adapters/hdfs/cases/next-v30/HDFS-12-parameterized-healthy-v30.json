@@ -1,0 +1,120 @@
+{
+  "agent_arg_property": "maven-surefire-plugin.argLine",
+  "agent_include": [
+    "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager",
+    "org.apache.hadoop.ipc.Server$RpcCall",
+    "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+    "org.apache.hadoop.hdfs.server.datanode.DataXceiver"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v29/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsMiniClusterTransformer",
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "surefire_argline",
+  "auto_promote_if_healthy": false,
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_basis": "method_wildcard_parameterized_cluster_healthy_pending",
+    "trial_timeout_seconds": 1200,
+    "trials": 80
+  },
+  "calibration_only": true,
+  "candidate_replays": 0,
+  "case_id": "HDFS-12",
+  "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient",
+  "command": [
+    "mvn",
+    "-B",
+    "-ntp",
+    "-pl",
+    "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=TestEncryptedTransfer#testLongLivedClient*",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dtest.build.data={trial_dir}/hdfs-data",
+    "surefire:test"
+  ],
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "expected_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+  "mapping": {
+    "adapter_sha256": "943e7b88732c575dbf35478134bb53822950d5d3f0c5fcb921333023e2227963",
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "manifest": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/manifest.json",
+      "manifest_sha256": "093e23873f42b67ceb7f80c553f78fdc9b54820c5a2e43a2092f8d8dc65bc67a",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+      "source_root": "/users/ZhenyuLi/baseline/Mallory/instrumentation"
+    },
+    "agent_sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+    "calibration_revision": "v30_parameterized_exact_method_healthy_only",
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes",
+    "compiled_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+    "compiled_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3",
+    "distribution_root_env": "MALLORY_HDFS_DIST_ROOT",
+    "healthy_seed_verified": false,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+    "node_identity_binding_configured": true,
+    "node_identity_binding_verified": false,
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+    "source_root_env": "MALLORY_HDFS_SOURCE_ROOT",
+    "status": "preliminary_compiled_distribution_site",
+    "target_source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "8272862b11d4a645ffa6029c3f1462a14dcfce7b873815fcccc949d74a4bc0a5",
+    "verified_healthy_probe": null
+  },
+  "reject_coarse_roots": true,
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-12.sites.json",
+      "sha256": "cbf59d857a221e228bc5a4781aa02c0a71bffb6133aa6ecf221b9b41f4cbf613"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v29/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+      "sha256": "943e7b88732c575dbf35478134bb53822950d5d3f0c5fcb921333023e2227963"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/manifest.json",
+      "sha256": "093e23873f42b67ceb7f80c553f78fdc9b54820c5a2e43a2092f8d8dc65bc67a"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-12.sites.json",
+  "source_equivalence": {
+    "compiled_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+    "compiled_test_class_sha256": "42f806336c4d9950824865f4f919783166ac9922f12c722d6e4cbcb4523a93fc",
+    "git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+    "new_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+    "old_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+    "target_source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+    "test_source_sha256": "8272862b11d4a645ffa6029c3f1462a14dcfce7b873815fcccc949d74a4bc0a5"
+  },
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (key == null) {\nthrow new InvalidToken(\"Can't re-compute password for \"\n+ identifier + \", since the required block key (keyID=\"\n+ identifier.getKeyId() + \") doesn't exist.\");",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B@511:branch:2"
+    ],
+    "exception_class": "org.apache.hadoop.security.token.SecretManager$InvalidToken",
+    "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)",
+    "original_source_line": 514,
+    "site_id": "<org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager: byte[] retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)>#u37",
+    "source_line": 514,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+    "throw_site": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B@514:throw:1"
+  }
+}

@@ -291,16 +291,19 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                     str(door["site"]) for door in recomputed.get("doors", [])
                     if "local_timeline_evidence" in door and isinstance(door.get("site"), str)}
                 healthy_local_timeline_evidence_sample = local_evidence[:10]
-                graph = OccurrenceGraph(
-                    trace.events,
-                    reject_coarse_roots=(config.get("reject_coarse_roots", False) or
-                                         config.get("require_event_time_paths", False)))
+                # Invalid healthy seeds with no exact target have no closure
+                # to verify. Match feedback's explicit target-absent fast path.
+                graph = (None if recomputed["graph"].get("analysis_skipped") ==
+                         "healthy_target_absent" else OccurrenceGraph(
+                             trace.events,
+                             reject_coarse_roots=(config.get("reject_coarse_roots", False) or
+                                                  config.get("require_event_time_paths", False))))
                 # The future gate binds each door to an exact target check
                 # through ordered event IDs. Legacy audits retain their
                 # original occurrence-level meaning.
                 event_time_gate = bool(config.get("require_event_time_paths", False))
                 observed_ancestors = set()
-                if not event_time_gate:
+                if not event_time_gate and graph is not None:
                     for target_row in recomputed.get("target_closures", []):
                         anchor = target_row.get("anchor")
                         if anchor:
@@ -327,7 +330,7 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                     matches = door_events.get(key, [])
                     if len(matches) != 1:
                         continue
-                    if event_time_gate:
+                    if event_time_gate and graph is not None:
                         for check in target_events:
                             witness = graph.event_path(matches[0], check, require_edge=True)
                             if witness is None:

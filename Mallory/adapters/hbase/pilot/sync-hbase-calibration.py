@@ -23,6 +23,7 @@ REMOTE_ROOT = Path("/users/ZhenyuLi/.mallory-worktrees/hbase")
 KEY = Path("/users/ZhenyuLi/.ssh/id_ed25519_nodes")
 RELEASE_5820 = REPO / "Mallory/dispatch/releases/5820a32d4af4216ee42da4c3c2e402fc52fd6746a1bd9188f3cfaaefa7cc37bf/manifest.json"
 RELEASE_5A = REPO / "Mallory/dispatch/releases/5a35547d57dd66c29b15260f04cf52941b907e28bc07f0ceb0f1d4b3782c4040/manifest.json"
+RELEASE_FA5F = REPO / "Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f/manifest.json"
 LANES = {
     "lane1-next": {"cohort": "v9", "cases": ("HBASE-14",),
                    "source_suffix": ""},
@@ -48,6 +49,20 @@ LANES = {
                       "root_lane": "lane9-next", "source_suffix": "-alt-5820-repeat02"},
     "lane9-next-r3": {"cohort": "v15", "cases": ("HBASE-23",),
                       "root_lane": "lane9-next", "source_suffix": "-alt-5820-repeat03"},
+    "lane9-next-h35-v1": {"cohort": "v16", "cases": ("HBASE-35",),
+                          "root_lane": "lane9-next", "source_suffix": "-mob-hbck-v1"},
+    "lane9-next-h35-v2": {"cohort": "v17", "cases": ("HBASE-35",),
+                          "root_lane": "lane9-next", "source_suffix": "-mob-hbck-v2"},
+    "lane9-next-h35-v3": {"cohort": "v18", "cases": ("HBASE-35",),
+                          "root_lane": "lane9-next", "source_suffix": "-mob-hbck-v3"},
+    "lane9-next-h32-v1": {"cohort": "v19", "cases": ("HBASE-32",),
+                          "root_lane": "lane9-next", "source_suffix": "-secondary-kill-v1"},
+    "lane9-next-h07-handoff": {"cohort": "v20", "cases": ("HBASE-07",),
+                               "root_lane": "lane9-next", "source_suffix": "-handoff-fa5f-v1",
+                               "release": RELEASE_FA5F},
+    "lane9-next-h23-handoff": {"cohort": "v21", "cases": ("HBASE-23",),
+                               "root_lane": "lane9-next", "source_suffix": "-handoff-fa5f-v1",
+                               "release": RELEASE_FA5F},
 }
 CORE_AUDIT_FILES = ("audit.py", "events.py", "graph.py", "feedback.py", "campaign.py")
 

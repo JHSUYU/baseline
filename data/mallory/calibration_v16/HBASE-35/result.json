@@ -1,0 +1,89 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-35",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 0,
+  "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+  "coverage_ids_seen": 0,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 3.184,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=0 succeeded=0 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "no_tests",
+    "stderr_sha256": "840e6043e8507fb88b921046bbdfdb66feb46bd1a1a5ad1622bd7eae5afa2ad6",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "succeeded": 0,
+    "tests": 0
+  },
+  "healthy_observed_door_events": 0,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": null,
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_seed_invalid",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (previous == null) {\nregionInfoMap.put(hri.getEncodedName(), new HbckRegionInfo(m));\n} else if (previous.getMetaEntry() == null) {\nprevious.setMetaEntry(m);\n} else {\nthrow new IOException(\"Two entries in hbase:meta are same \" + previous);",
+    "check_sites": [
+      "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2715:branch:10"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hbase.util.HBaseFsck$3.visit(org.apache.hadoop.hbase.client.Result)",
+    "original_source_line": 2720,
+    "site_id": "<org.apache.hadoop.hbase.util.HBaseFsck$3: boolean visit(org.apache.hadoop.hbase.client.Result)>#u88",
+    "source_line": 2720,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/HBaseFsck.java",
+    "throw_site": "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2720:throw:1"
+  },
+  "target_binding": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": false,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 3.184,
+      "eligible_doors_before_target": 0,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "no_tests",
+      "junit_tests": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 0,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "healthy_no_tests",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 0
+    }
+  ]
+}

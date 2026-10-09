@@ -12,6 +12,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /** Hadoop 3.4.3 MiniDFSCluster aliases and IPC request handoffs. */
@@ -22,6 +23,7 @@ public final class HdfsHooks {
   private static final AtomicInteger BLOCK_TASKS = new AtomicInteger();
   private static final AtomicInteger STORAGE_UPGRADE_TASKS = new AtomicInteger();
   private static final AtomicInteger BLOCK_RECOVERY_TASKS = new AtomicInteger();
+  private static final AtomicInteger BALANCER_TASKS = new AtomicInteger();
   private static final Map<Object, String> CLUSTER_NAMES = new IdentityHashMap<Object, String>();
   private static final Map<Object, Map<Integer, Integer>> NN_EPOCHS =
       new IdentityHashMap<Object, Map<Integer, Integer>>();
@@ -38,10 +40,17 @@ public final class HdfsHooks {
       new IdentityHashMap<Object, String>();
   private static final Map<Object, String> BLOCK_RECOVERY_TASK_TOKENS =
       new IdentityHashMap<Object, String>();
+  private static final Map<Object, String> BALANCER_TASK_TOKENS =
+      new IdentityHashMap<Object, String>();
   private static final ThreadLocal<Object> ACTOR_DATANODE = new ThreadLocal<Object>();
   private static final ThreadLocal<Boolean> CREATING_NAMENODE = new ThreadLocal<Boolean>();
   private static final ThreadLocal<ResponseConsumerScope> RESPONSE_CONSUMER =
       new ThreadLocal<ResponseConsumerScope>();
+  // A completed RPC Call can rethrow the same RemoteException through more
+  // than one ATHROW in getRpcResponse. Emit one receive per delivered Call.
+  // Call has object identity; weak keys keep completed calls reclaimable.
+  private static final Map<Object, Object> RECEIVED_RPC_ERRORS =
+      new WeakHashMap<Object, Object>();
   private static final ThreadLocal<Deque<String>> SASL_CLIENT_CONNECTIONS =
       new ThreadLocal<Deque<String>>();
   private static final String SASL_TRANSPORT = "hdfs-data-sasl";
@@ -439,11 +448,92 @@ public final class HdfsHooks {
       if (thrown != error || error == null ||
           !"org.apache.hadoop.ipc.RemoteException".equals(error.getClass().getName()) ||
           !Boolean.TRUE.equals(field(call, "done"))) return;
-      Probe.receive("hadoop-ipc", correlationFromConnection(connection, call), "response",
+      String correlation = correlationFromConnection(connection, call);
+      if (correlation == null) return;
+      synchronized (RECEIVED_RPC_ERRORS) {
+        if (RECEIVED_RPC_ERRORS.get(call) == error) return;
+        RECEIVED_RPC_ERRORS.put(call, error);
+      }
+      Probe.receive("hadoop-ipc", correlation, "response",
           "org.apache.hadoop.ipc.Client#getRpcResponse.error");
     } catch (ReflectiveOperationException ignored) {
       // Missing identity is a graph gap. Never infer a reply from timing.
     }
+  }
+
+  /** A KeyManager belongs to the Balancer client that constructed it. */
+  public static void balancerKeyManagerConstructed(Object manager) {
+    Probe.registerCurrentNode(manager);
+    try {
+      Object updater = field(manager, "blockKeyUpdater");
+      if (updater != null) Probe.registerCurrentNode(updater);
+    } catch (ReflectiveOperationException ignored) {
+      // No updater exists when block tokens are disabled.
+    }
+  }
+
+  /** The concrete updater object crosses from Balancer startup to its daemon. */
+  public static void balancerKeyUpdaterSubmitted(Object manager) {
+    try {
+      Object updater = field(manager, "blockKeyUpdater");
+      if (updater == null) return;
+      String token;
+      synchronized (HdfsHooks.class) {
+        token = "hdfs-balancer-key-updater:" + BALANCER_TASKS.incrementAndGet();
+        BALANCER_TASK_TOKENS.put(updater, token);
+      }
+      try (Probe.NodeScope node = Probe.withRegisteredNode(manager)) {
+        Probe.taskSubmit(token, "hdfs-balancer-key-updater");
+      }
+    } catch (ReflectiveOperationException ignored) {
+      // A missing owner is an identity gap, not a synthetic handoff.
+    }
+  }
+
+  public static BalancerTaskScope balancerKeyUpdaterEnter(Object updater) {
+    Probe.NodeScope node = Probe.withRegisteredNode(updater);
+    String token;
+    synchronized (HdfsHooks.class) {
+      token = BALANCER_TASK_TOKENS.remove(updater);
+    }
+    Probe.ContextScope task = token == null ? null :
+        Probe.taskClaim(token, "hdfs-balancer-key-updater");
+    return new BalancerTaskScope(node, task);
+  }
+
+  /** A PendingMove is submitted by the Balancer client to its move executor.
+   * This explicit class-owned actor does not depend on the executor thread name.
+   */
+  public static void balancerMoveSubmitted(Object move) {
+    if (move == null) return;
+    String token;
+    synchronized (HdfsHooks.class) {
+      token = "hdfs-balancer-move:" + BALANCER_TASKS.incrementAndGet();
+      BALANCER_TASK_TOKENS.put(move, token);
+    }
+    try (Probe.NodeScope node = Probe.withNode("hdfs-client", 0)) {
+      Probe.taskSubmit(token, "hdfs-balancer-move");
+    }
+  }
+
+  public static BalancerTaskScope balancerMoveEnter(Object move) {
+    Probe.NodeScope node = Probe.withNode("hdfs-client", 0);
+    String token;
+    synchronized (HdfsHooks.class) {
+      token = BALANCER_TASK_TOKENS.remove(move);
+    }
+    Probe.ContextScope task = token == null ? null :
+        Probe.taskClaim(token, "hdfs-balancer-move");
+    return new BalancerTaskScope(node, task);
+  }
+
+  /** Scope one DFSInputStream block-selection retry loop to its real caller.
+   * The same invocation consumes an RPC error and may issue a later key RPC.
+   */
+  public static ClientOperationScope clientBlockSeekEnter(Object stream) {
+    Probe.NodeScope node = Probe.withNode("hdfs-client", 0);
+    Probe.regionEnter("org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo");
+    return new ClientOperationScope(node);
   }
 
   /** Bound the continuation of a synchronous RPC reply to its caller method. */
@@ -849,6 +939,34 @@ public final class HdfsHooks {
       if (closed) return;
       closed = true;
       task.close();
+      node.close();
+    }
+  }
+
+  public static final class BalancerTaskScope implements AutoCloseable {
+    private final Probe.NodeScope node;
+    private final Probe.ContextScope task;
+    private boolean closed;
+    private BalancerTaskScope(Probe.NodeScope node, Probe.ContextScope task) {
+      this.node = node;
+      this.task = task;
+    }
+    @Override public void close() {
+      if (closed) return;
+      closed = true;
+      if (task != null) task.close();
+      node.close();
+    }
+  }
+
+  public static final class ClientOperationScope implements AutoCloseable {
+    private final Probe.NodeScope node;
+    private boolean closed;
+    private ClientOperationScope(Probe.NodeScope node) { this.node = node; }
+    @Override public void close() {
+      if (closed) return;
+      closed = true;
+      Probe.regionExit("org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo");
       node.close();
     }
   }

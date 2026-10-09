@@ -123,6 +123,80 @@ public final class HdfsMiniClusterTransformer implements ClassFileTransformer {
             "(Ljava/lang/String;Ljava/lang/String;)V", false));
         method.instructions.insertBefore(method.instructions.getFirst(), hook);
         changed = true;
+      } else if (name.equals("org/apache/hadoop/hdfs/server/balancer/KeyManager")
+          && method.name.equals("<init>")) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+          if (instruction.getOpcode() != Opcodes.RETURN) continue;
+          InsnList hook = new InsnList();
+          hook.add(new VarInsnNode(Opcodes.ALOAD, 0));
+          hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS,
+              "balancerKeyManagerConstructed", "(Ljava/lang/Object;)V", false));
+          method.instructions.insertBefore(instruction, hook);
+          changed = true;
+        }
+      } else if (name.equals("org/apache/hadoop/hdfs/server/balancer/KeyManager")
+          && method.name.equals("startBlockKeyUpdater") && method.desc.equals("()V")) {
+        InsnList hook = new InsnList();
+        hook.add(new VarInsnNode(Opcodes.ALOAD, 0));
+        hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS,
+            "balancerKeyUpdaterSubmitted", "(Ljava/lang/Object;)V", false));
+        method.instructions.insertBefore(method.instructions.getFirst(), hook);
+        changed = true;
+      } else if (name.equals("org/apache/hadoop/hdfs/server/balancer/KeyManager$BlockKeyUpdater")
+          && method.name.equals("run") && method.desc.equals("()V")) {
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+          if (!(instruction instanceof MethodInsnNode)) continue;
+          MethodInsnNode call = (MethodInsnNode) instruction;
+          if (call.getOpcode() != Opcodes.INVOKEINTERFACE
+              || !call.owner.equals("org/apache/hadoop/hdfs/server/protocol/NamenodeProtocol")
+              || !call.name.equals("getBlockKeys")
+              || !call.desc.equals("()Lorg/apache/hadoop/hdfs/security/token/block/ExportedBlockKeys;"))
+            continue;
+          InsnList hook = new InsnList();
+          hook.add(new LdcInsnNode("hdfs:balancer-refresh-block-keys"));
+          hook.add(new LdcInsnNode("java.io.IOException"));
+          hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "beforeDoor",
+              "(Ljava/lang/String;Ljava/lang/String;)V", false));
+          method.instructions.insertBefore(instruction, hook);
+          changed = true;
+        }
+        wrap(method, HOOKS, "balancerKeyUpdaterEnter",
+            "(Ljava/lang/Object;)L" + HOOKS + "$BalancerTaskScope;",
+            HOOKS + "$BalancerTaskScope", true);
+        changed = true;
+      } else if (name.equals("org/apache/hadoop/hdfs/server/balancer/Dispatcher")
+          && method.name.equals("executePendingMove")
+          && method.desc.equals("(Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove;)V")) {
+        // There is an early return when no move executor can be allocated.
+        // Submit only at the actual executor handoff, so this token cannot
+        // represent a move that the caller decided to skip.
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+          if (!(instruction instanceof MethodInsnNode)) continue;
+          MethodInsnNode call = (MethodInsnNode) instruction;
+          if (call.getOpcode() != Opcodes.INVOKEINTERFACE
+              || !call.owner.equals("java/util/concurrent/ExecutorService")
+              || !call.name.equals("execute")
+              || !call.desc.equals("(Ljava/lang/Runnable;)V")) continue;
+          InsnList hook = new InsnList();
+          hook.add(new VarInsnNode(Opcodes.ALOAD, 1));
+          hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS,
+              "balancerMoveSubmitted", "(Ljava/lang/Object;)V", false));
+          method.instructions.insertBefore(instruction, hook);
+          changed = true;
+        }
+      } else if (name.equals("org/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove")
+          && method.name.equals("dispatch") && method.desc.equals("()V")) {
+        wrap(method, HOOKS, "balancerMoveEnter",
+            "(Ljava/lang/Object;)L" + HOOKS + "$BalancerTaskScope;",
+            HOOKS + "$BalancerTaskScope", true);
+        changed = true;
+      } else if (name.equals("org/apache/hadoop/hdfs/DFSInputStream")
+          && method.name.equals("blockSeekTo")
+          && method.desc.equals("(J)Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;")) {
+        wrap(method, HOOKS, "clientBlockSeekEnter",
+            "(Ljava/lang/Object;)L" + HOOKS + "$ClientOperationScope;",
+            HOOKS + "$ClientOperationScope", true);
+        changed = true;
       } else if (name.equals("org/apache/hadoop/hdfs/qjournal/MiniJournalCluster$Builder")
           && method.name.equals("build")
           && method.desc.equals("()Lorg/apache/hadoop/hdfs/qjournal/MiniJournalCluster;")) {
@@ -481,6 +555,11 @@ public final class HdfsMiniClusterTransformer implements ClassFileTransformer {
         || name.equals("org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$1")
         || name.equals("org/apache/hadoop/hdfs/server/datanode/DataStorage$VolumeBuilder")
         || name.equals("org/apache/hadoop/hdfs/server/datanode/DataXceiver")
+        || name.equals("org/apache/hadoop/hdfs/server/balancer/KeyManager")
+        || name.equals("org/apache/hadoop/hdfs/server/balancer/KeyManager$BlockKeyUpdater")
+        || name.equals("org/apache/hadoop/hdfs/server/balancer/Dispatcher")
+        || name.equals("org/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove")
+        || name.equals("org/apache/hadoop/hdfs/DFSInputStream")
         || name.equals("org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferClient")
         || name.equals("org/apache/hadoop/hdfs/protocol/datatransfer/sasl/SaslDataTransferServer")
         || name.startsWith("org/apache/hadoop/hdfs/") && name.contains("/Test"));

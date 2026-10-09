@@ -1,0 +1,69 @@
+{
+  "agent_path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+  "focused_tests": {
+    "command": [
+      "mvn",
+      "-B",
+      "-ntp",
+      "-Dtest=HdfsHeartbeatBridgeTest",
+      "-Dmallory.hadoop.classes=/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes",
+      "test",
+      "package"
+    ],
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "suite": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsHeartbeatBridgeTest",
+    "tests": 3,
+    "workdir": "/users/ZhenyuLi/.mallory-worktrees/hdfs-heartbeat-v1/Mallory/adapters/hdfs"
+  },
+  "hadoop_source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "hadoop_version": "3.4.3",
+  "required_joins": [
+    "completed IPC response to decoded HeartbeatResponse.haStatus for HDFS-20",
+    "completed blockReport IPC response to decoded DatanodeCommand for HDFS-19",
+    "successful BlockingQueue.put Runnable to processQueue Runnable.run for HDFS-19"
+  ],
+  "schema_version": 1,
+  "sha256": {
+    "adapter_base": {
+      "HdfsHooks.java": "7a8d2b1171b7e48701e9493fbb3a238ae60902e3eddf62e16e2880fdc9f31458",
+      "HdfsMiniClusterTransformer.java": "84afd5b37dda7a90354f86c9c713150d1c0490524b912ef77fdbb57be0571495"
+    },
+    "adapter_compiled_classes": {
+      "HdfsHooks$DatanodeReplyScope.class": "991270fe2a65053520212562c87f908133d5908d07aedc1100b7965766248096",
+      "HdfsHooks.class": "3c440eda5e44972615242f767c6c5a197ebf7c70f744f73fd5c648de60b7c547",
+      "HdfsMiniClusterTransformer.class": "10b68589cc6ed42ab69db7be5b68f60c06bef2324fff51c0543b7809d7be233f"
+    },
+    "adapter_release_jar": "6a5f04cafbb7085b24c3cc87091e3f23f92a3c767f0ca4def38254fa87b92b2b",
+    "adapter_staged_overlay": {
+      "HdfsHooks.java": "44a96b86dfe3040ba27d717bde551cfec4ef2f350bb61a0522d95a4ba3fb6402",
+      "HdfsMiniClusterTransformer.java": "d9b8ed107c81ef33f013144142d7cd4f3918099b34e6138ed7a9a3da3e9a8659"
+    },
+    "agent": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+    "focused_test_report": "6af9cd3e26959d2a265ef97bf2d4ab5d77388d5317aec597815b09980f209f64",
+    "focused_test_source": "f1dccbaac1ff6f87ab31e4bcbbf4d91fbb965b6accbeb2168f55990ddaae2672",
+    "hadoop_compiled_classes": {
+      "org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.class": "9e793595f9b84613bdee8c0350625ae6b01bb5af48dc49e9a7b30fe88227911d",
+      "org/apache/hadoop/hdfs/server/datanode/BPOfferService.class": "0f2fe86dffc1e31ef2ce788d458aa5f9ee1a2038f0d0d7983917aaef35e38c2b",
+      "org/apache/hadoop/hdfs/server/datanode/BPServiceActor$CommandProcessingThread.class": "12a18caf0c1c814b583451db7d2c116a31cbb3d55a523c5c72ff070f2786ded3",
+      "org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0"
+    },
+    "hadoop_sources": {
+      "org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.java": "07f1cc59498881a424ec2e6c5837a6299d73dc93417cd1e4da327d172d2f0f98",
+      "org/apache/hadoop/hdfs/server/datanode/BPOfferService.java": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294",
+      "org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833",
+      "org/apache/hadoop/hdfs/server/protocol/HeartbeatResponse.java": "331de2cc0556c23e4ee907ec65aed8274c95a67026be2cc0de332c782bdcebfc"
+    },
+    "patch": "5e82a20e0d1b78d481f539cdbd10404257498ab1624f836a1dc8b991e91882fc",
+    "site_files": {
+      "HDFS-19": "59bd4bb446f9a5750c775805fd655e5ad83253617a9a651694dc5e670fbf294c",
+      "HDFS-20": "5eaa0c71e27649d4c27e867e452497fc1b865bf6af5f1e7fb41abd6367426ead"
+    },
+    "test_sources": {
+      "org/apache/hadoop/hdfs/TestDFSFinalize.java": "9fb047e65d310ba610210a831788a0e77b7c011b14c856dc4e7425d20177dad9",
+      "org/apache/hadoop/hdfs/server/namenode/ha/TestStandbyIsHot.java": "3cb3055ba42142aba5f89ee9473c0329ae7815ef5e60346253bcd2bfaf352fa2"
+    }
+  },
+  "validation_status": "isolated_adapter_build_and_focused_tests_passed_healthy_junit_pending"
+}

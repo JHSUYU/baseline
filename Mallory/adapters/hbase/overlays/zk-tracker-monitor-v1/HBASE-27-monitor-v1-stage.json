@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-27",
+  "kind": "source_only_overlay_preflight",
+  "healthy_or_full_run_started": false,
+  "source_version": "hbase-2.6.6",
+  "source_review": {
+    "cluster_test": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+    "selected_guard": "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1052:branch:2",
+    "guard_semantics": "This guard executes when blockUntilAvailable(timeout,false) returns null. A normal nodeCreated callback with nonnull data wakes the waiter and bypasses the guard. nodeDeleted writes null without notifying; if that callback occurs while the same tracker has a waiter, its monitor release precedes the waiter reacquisition and may lead to this guard. stop notifies but already-stopped outcomes are expected shutdown, not evidence of a new bug.",
+    "admission_rule": "Healthy replay must show an actual named same-tracker callback publication and unique claim before the exact target check, with an observed graph path from a prepublication ZK I/O door. If no callback publication or claim appears, preserve the no-path result; do not infer a temporal edge from thread names, a shared watcher, or a normal nonnull nodeCreated notification.",
+    "healthy_v2_result_sha256": "88bcf6110bec9d5443ee3227c93b73cef671800ef081c024423e10a329b73852",
+    "healthy_v2_status": "healthy_no_injectable_door; JUnit passed; named rs0 target reached twice; zero observed pretarget path doors",
+    "source_files": {
+      "ZKNodeTracker.java": "c30ebadfb0e12252ff9c0d6fcf056dd53dea7253744e230eddfefaad9a1dc1c3",
+      "HRegionServer.java": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+      "TestClusterBootOrder.java": "7ac0843f5cc522b4494fa2570f91ba334b70492da8bf73c58ea4d3baf9f0c630"
+    }
+  },
+  "overlay": {
+    "source_sha256": {
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/HBASE-27-monitor-v1-healthy.json": "39117696e2105e3a309b51eb6678f91f2ecf3a373169ac3e7a4e93d99e7c1e27",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/HBASE-27-monitor-v1.sites.json": "04a3b1ffe92c8fe35bb7d24e275dc8b0973cd9f284eef4840eaffa25543ca69c",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/pom.xml": "01d90002a963b9f8080da03ceafb06789fe174c045503a7e25ba456f3270ba54",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/src/main/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorHooks.java": "f37ff297f859e02e732c2a8dc50b92d6e2604c9eebcd010fff2e011e795210d1",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/src/main/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorTransformer.java": "cf65166d2d029512b0da522cd9b04136967aba1017e34b167114df167ed33a57",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/src/test/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorHooksTest.java": "0ac91955d3fc470544d87a4cbc5f39eb52e4d7cdc2d9566d9d1ebfcb921ad021",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/src/test/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorTransformerTest.java": "a11860410ec13326f45e2928622fbf4e92422259183ca9e402f7697c38676bce",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/src/test/java/org/apache/hadoop/hbase/zookeeper/ZKListener.java": "6acc96e87ddec0ea62d9195cdd75d2ce1c9638d0e8791224da99aaf65c6bf777",
+      "Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/src/test/java/org/apache/hadoop/hbase/zookeeper/ZKNodeTracker.java": "16948944609f51ba770f35bd581a9b5723e477a2cc7388e0a3409759f898b9e0"
+    },
+    "jar_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/releases/6705bdf484607cd5/adapter.jar",
+    "jar_sha256": "6705bdf484607cd500038e17e171093c4f7c777ca3fa94467cae732bb99e879c",
+    "config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/HBASE-27-monitor-v1-healthy.json",
+    "site_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/HBASE-27-monitor-v1.sites.json",
+    "node1_sync_required": true,
+    "agent_core_unchanged": false,
+    "existing_adapter_unchanged": true,
+    "tests": "mvn -q package -Dmallory.hbase.zookeeper.jar=/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-zookeeper-2.6.6.jar; 6 tests, 0 failures/errors",
+    "core_adapter_load_order": "core MalloryTransformer, existing HBaseAdapterTransformer, overlay TrackerMonitorTransformer",
+    "agent_release": {
+      "source_path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "node1_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/agent-38658059f36552f5.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+      "reason": "Thread-scoped unscoped occurrences and numeric thread_id are required by strict event-time graph audit; inherited SHA 07c23d emits coarse roots."
+    },
+    "core_release": {
+      "release_id": "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+      "manifest_path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f/manifest.json",
+      "manifest_sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8"
+    },
+    "node1_sync": {
+      "agent_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/agent-38658059f36552f5.jar",
+      "overlay_jar_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/zk-tracker-monitor-6705bdf4.jar",
+      "site_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/cases/HBASE-27-monitor-v1/sites.json",
+      "must_verify_sha_before_jvm": true
+    }
+  }
+}

@@ -1,0 +1,87 @@
+{
+  "case_id": "HBASE-35",
+  "classification": "instrumentation_gap",
+  "future_hook_design": "Preserve the exact QueueingFuture completion token through the scanner result that was actually consumed, and scope MetaTableAccessor visitor.visit(data) to that token. Pair by real Future/Result or scanner cache identity and clear on scanner close; reject missing/ambiguous identity. Do not create an edge solely from temporal proximity or actor-wide root.",
+  "gate": "A fresh healthy trace must show named, event-time door\u2192RPC/scanner task\u2192visitor target path before fault admission.",
+  "healthy_evidence": {
+    "audit_sha256": "99d9b2743bd9952bcc1bb6971c9cac68734f53b6d4b2f5c72a8c1f0761b396d9",
+    "directory": "data/mallory/calibration_v18/HBASE-35",
+    "duration_seconds": 41.16,
+    "junit": "found=1 succeeded=1 failed=0",
+    "observed_path_doors": 0,
+    "result_sha256": "c44e05f654a95c6ed9f4c02ade4160376289b5d7479316fc4cd0996ffa0fd9e5",
+    "target_check": "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2715:branch:10",
+    "target_event_seqs": [
+      7566,
+      7583,
+      7600,
+      7617
+    ],
+    "target_nodes": [
+      "client"
+    ]
+  },
+  "observed_chain": [
+    {
+      "actor": "rs0",
+      "event": "SEND",
+      "seq": 7540,
+      "site": "hbase:RpcServer.call:completion",
+      "token": "task:401"
+    },
+    {
+      "actor": "client",
+      "event": "RECV",
+      "seq": 7542,
+      "site": "hbase:RpcConnection.readResponse",
+      "token": "task:401"
+    },
+    {
+      "actor": "client",
+      "event": "TASK_SUBMIT",
+      "seq": 7543,
+      "site": "hbase:RpcConnection.response-ready",
+      "token": "task:402"
+    },
+    {
+      "actor": "client",
+      "event": "TASK_CLAIM",
+      "seq": 7544,
+      "site": "hbase:AbstractRpcClient.callBlockingMethod",
+      "token": "task:402"
+    },
+    {
+      "actor": "client",
+      "event": "TASK_SUBMIT",
+      "seq": 7545,
+      "site": "hbase:QueueingFuture.complete",
+      "token": "task:400"
+    },
+    {
+      "actor": "client",
+      "event": "TASK_CLAIM",
+      "seq": 7546,
+      "site": "hbase:ResultBoundedCompletionService.result",
+      "token": "task:400"
+    },
+    {
+      "actor": "client",
+      "event": "REGION_ENTER",
+      "parent_id": "root",
+      "seq": 7547,
+      "site": "HBaseFsck$3.visit"
+    },
+    {
+      "actor": "client",
+      "event": "TARGET_CHECK",
+      "seq": 7566,
+      "site": "HBaseFsck$3.visit@2715:branch:10"
+    }
+  ],
+  "schema_version": 1,
+  "source_path": [
+    "MetaTableAccessor.scanMeta: scanner.next() at hbase-client/src/main/java/org/apache/hadoop/hbase/MetaTableAccessor.java:843 then visitor.visit(data) at :846",
+    "HBaseFsck.loadMetaEntries passes visitor at hbase-server/src/main/java/org/apache/hadoop/hbase/util/HBaseFsck.java:2748",
+    "Current HBaseHooks.scannerResultReceived closes Probe.taskClaim immediately at HBaseHooks.java:320-322; it cannot parent the later visitor invocation."
+  ]
+}

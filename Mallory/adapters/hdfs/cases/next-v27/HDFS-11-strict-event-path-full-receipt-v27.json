@@ -1,0 +1,83 @@
+{
+  "adapter_sha256": "54b32a612efe64f68094bada37d04776df0b973bd79b07cff6cfb0bacf1e850a",
+  "agent_sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_basis": "2x_v27_observed_healthy_time_plus_fault_retry_room_capped_1200",
+    "trial_timeout_seconds": 1200,
+    "trials": 80
+  },
+  "canonical_terminal_output": "/users/ZhenyuLi/baseline/data/mallory/cases/HDFS-11",
+  "case_id": "HDFS-11",
+  "compiled_target_class_sha256": "350e35993314d4ce0dd4e32d150d7160e0923429f77154a2012eb47e0002860f",
+  "compiled_test_class_sha256": "42f806336c4d9950824865f4f919783166ac9922f12c722d6e4cbcb4523a93fc",
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+  "core_release_manifest_sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8",
+  "focused_fault_pilot": {
+    "archive_manifest_sha256": "322574f25540b36fff6ff66d11c2c826cc9821375234727f805c8dca811fa4dd",
+    "effective_exact_NN_IOException": true,
+    "offline_audit_sha256": "e1022f62f480a7a9597606934d61ac316c37b847109f172bc90d3e8233d4cd7a",
+    "pilot_receipt_sha256": "67ce2798a8ec742e26af251c742c8ac8ad67b0ed3ee9e9cb4384e3c5642c6d7a",
+    "postfault_named_DN_target": true,
+    "result_sha256": "dcb4d11093c99fa40782ec4f816eb21e8b5c9159adbd57aefdb2eb2057dd7a00",
+    "selected_target_exception": false,
+    "strict_event_time_path": true,
+    "strict_fault_to_target_audit_sha256": "9d53f5a2706ea1987f1aa2b06ae1cb53a388bde789ff04b3446f1484306c3808",
+    "trial_result_path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v27/HDFS-11/trials/r0001/result.json",
+    "trial_result_sha256": "6fae64ba9dca39960087deb7721edd1ed90ea668ad053824644507f7df3986cd"
+  },
+  "formal_healthy": {
+    "archive_manifest_sha256": "3b6b41e4129787aad663470bf930c4cad090d80400ce731f55e42740d4f8935b",
+    "config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v27/HDFS-11-strict-event-path-healthy-v27.json",
+    "config_sha256": "1f465f52f4bc5e15cfa20e02d4a863c8618cf86bd0313f1491a9a3eafb16902b",
+    "healthy_observed_path_doors": 8,
+    "junit_tests": 2,
+    "named_target_nodes": [
+      "hdfs-cluster-2/dn0"
+    ],
+    "offline_audit_sha256": "98872b9a0500668da8e3b733c966ea393180d97977a87b651df85a47d8849984",
+    "result_path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v27/HDFS-11/result.json",
+    "result_sha256": "84bf0667e965114ca84447f565a5e32d685fc291a1b526b90ef952c502c70d8e",
+    "strict_event_time_audit_passed": true,
+    "trial_result_sha256": "17932143234e49d952d44de47d6a47b12a2fed33a751316411dd5c2282d55054"
+  },
+  "inventory_sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47",
+  "kind": "HDFS-11_v27_strict_event_path_full_campaign_promotion",
+  "lane": "node0/hdfs-lane1",
+  "launch_gate": "Dispatch independent preflight on hashes, frozen core, source/build lock, disk reserve, and output absence. Terminal private output must be SHA-archived and final fa5f audit passed before canonical publication.",
+  "limitation": "The v27 pilot validates an exact NN IOException to post-fault DN check path; it has no selected InvalidEncryptionKeyException and is not itself a bug finding. The healthy causal path supports the named NN getDataEncryptionKey typed door. No DN typed fault door before target was observed.",
+  "output_private": "/tmp/mallory-hdfs11-v27-full",
+  "promotion": {
+    "explore_outside_closure": false,
+    "formal_promote_config_sha256": "c481f24a672a4e13cf9c8cd27f8deab087bab116c66f37ba836873e0a4c65141",
+    "full_config_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v27/HDFS-11-strict-event-path-full-v27.json",
+    "full_config_sha256": "b71bdaa9e6b765e677f88f196ea724c728b4986a42e1169a7c40e0c2ad797118",
+    "reject_coarse_roots": true,
+    "require_event_time_paths": true,
+    "single_fault_breadth_interval": 6,
+    "validated_recovery_exploration_interval": 5,
+    "validated_recovery_site": "hdfs:nn-get-data-encryption-key"
+  },
+  "schema_version": 1,
+  "sites_sha256": "ad4904cae42ff4b8badccf9b0e48989b16110507df21365e2a5414e810f5bff6",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_reference_sha256": "e600ce9827adc7fdc9baf8cef1fca70bfcb616f39310a7053a50feab0d0b613d",
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "status": "staged_awaiting_dispatch_lane1",
+  "system": "hdfs",
+  "target_source_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+  "test_command": [
+    "mvn",
+    "-B",
+    "-ntp",
+    "-pl",
+    "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite*",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dtest.build.data={trial_dir}/hdfs-data",
+    "surefire:test"
+  ],
+  "test_selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+  "test_source_sha256": "8272862b11d4a645ffa6029c3f1462a14dcfce7b873815fcccc949d74a4bc0a5"
+}

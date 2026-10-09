@@ -23,6 +23,7 @@ public final class SolrTransformer implements ClassFileTransformer {
   private static final String CLIENT_ZK = "org/apache/solr/client/solrj/impl/ZkClientClusterStateProvider";
   private static final String STATE_READER = "org/apache/solr/common/cloud/ZkStateReader";
   private static final String OVERSEER = "org/apache/solr/cloud/api/collections/OverseerCollectionMessageHandler";
+  private static final String OVERSEER_TASK_PROCESSOR = "org/apache/solr/cloud/OverseerTaskProcessor";
   private static final String ALIASES = "org/apache/solr/common/cloud/ZkStateReader$AliasesManager";
   private static final String POOL = "org/apache/solr/common/util/ExecutorUtil$MDCAwareThreadPoolExecutor";
 
@@ -31,7 +32,8 @@ public final class SolrTransformer implements ClassFileTransformer {
       ProtectionDomain protectionDomain, byte[] classfileBuffer) {
     if (!ZK.equals(className) && !FILTER.equals(className) && !CLIENT_STATE.equals(className)
         && !CLIENT_ZK.equals(className)
-        && !OVERSEER.equals(className) && !ALIASES.equals(className)
+        && !OVERSEER.equals(className) && !OVERSEER_TASK_PROCESSOR.equals(className)
+        && !ALIASES.equals(className)
         && !HTTP1.equals(className) && !HTTP2.equals(className) && !POOL.equals(className)) return null;
     try {
       ClassReader reader = new ClassReader(classfileBuffer);
@@ -62,6 +64,10 @@ public final class SolrTransformer implements ClassFileTransformer {
           if (OVERSEER.equals(className) && "processMessage".equals(name))
             return scoped(method, "beginOverseer", "endOverseer", false,
                 className, access, descriptor);
+          if (OVERSEER_TASK_PROCESSOR.equals(className) && "run".equals(name)
+              && "()V".equals(descriptor) && (access & Opcodes.ACC_STATIC) == 0)
+            return scoped(method, "beginOverseerTaskProcessor", "endOverseerTaskProcessor",
+                false, className, access, descriptor);
           if (ALIASES.equals(className) && ("setIfNewer".equals(name)
               || "process".equals(name) || "update".equals(name)
               || "applyModificationAndExportToZk".equals(name)))

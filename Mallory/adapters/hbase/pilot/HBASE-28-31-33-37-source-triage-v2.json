@@ -1,0 +1,95 @@
+{
+  "schema_version": 2,
+  "kind": "source_only_tail_triage",
+  "system": "hbase",
+  "version": "2.6.6",
+  "cases": [
+    {
+      "case_id": "HBASE-28",
+      "classification": "configuration_local_predicate",
+      "source_reason": "HRegionServer.putUpWebUI @2482 checks Addressing.isLocalAddress(InetAddress.getByName(addr)) where addr comes from hbase.regionserver.info.bindAddress or hbase.master.info.bindAddress (default 0.0.0.0). The InfoServer bind and HTTP workload occur after this guard; an I/O exception at the resolution call exits before the selected predicate rather than changing the configured address. Existing TestInfoServers#testInfoServersRedirect exercises startup and pages, but does not supply an I/O-influenced address.",
+      "next_gate": "Only revisit if an existing passing cluster test demonstrably supplies a dynamic bind address and yields an observed pretarget fault door; otherwise retain a source-reviewed static false-positive label.",
+      "sources": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+          "sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java",
+          "sha256": "7b0d83c60833a5427396477fed836873b6d58b297cb656867008a221d0e2067e"
+        }
+      ]
+    },
+    {
+      "case_id": "HBASE-31",
+      "classification": "ready_for_full_immutable_candidate",
+      "source_reason": "RSRpcServices.throwOnWrongStartCode compares the request start code with the receiving RegionServer instance and throws ServiceException(DoNotRetryIOException) on mismatch. Existing TestRegionMove#testDisableAndMove exercises unassign/move through a two-RS MiniCluster. The v2 healthy run passed JUnit, reached the exact nonthrowing guard on named rs0/rs1, and its frozen causal audit proves eight named pretarget observed-path doors and sixteen closure edges.",
+      "next_gate": "Dispatch may run staged HBASE-31-runtime-attested-full.json after independent artifact and lane checks; require matched fault plus same target occurrence to retain, and source/replay review any mismatch exception.",
+      "sources": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+          "sha256": "2e472a4c969be81260d397d75e3c7ddd9fe854d306f72cb4ef0b1289c43125c6"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+          "sha256": "50f65033ce822967d3dde237c26e60bbf0891bc9587c3dfa004886d55165ec7a"
+        }
+      ],
+      "evidence": {
+        "offline_audit_path": "data/mallory/calibration_v2/HBASE-31/offline-causal-audit.json",
+        "offline_audit_sha256": "4cc649e9491938b8d0b0a3cde828c2f6e6017cb35abe1a483e8e743cff37c5bf",
+        "full_config_path": "Mallory/adapters/hbase/pilot/HBASE-31-runtime-attested-full.json",
+        "full_config_sha256": "bf03aa144fea0072da9fca11519d751901259ff239d642f8984d5e77936831e7"
+      }
+    },
+    {
+      "case_id": "HBASE-33",
+      "classification": "no_suitable_existing_inner_guard_test",
+      "source_reason": "AuthenticationTokenSecretManager.retrievePassword checks zkWatcher.isAborted only after allKeys.get(keyId) misses. The selected TestTokenAuthentication#testTokenCreation generates a token from currentKey and immediately retrieves that token, so the map hit normally bypasses the selected inner guard. The token-authentication RPC test body in the same class is commented out; TestZKSecretWatcher rotates keys but does not call retrievePassword.",
+      "next_gate": "Do not synthesize an unknown key or claim a healthy target reach; under the existing-cluster-test-only rule, mark no suitable test if no other existing test reaches this exact inner guard.",
+      "sources": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+          "sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java",
+          "sha256": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestZKSecretWatcher.java",
+          "sha256": "0d167ad407429d103f249fac97f6e61420b354c662bd3b6bbdc98ef74495123d"
+        }
+      ]
+    },
+    {
+      "case_id": "HBASE-37",
+      "classification": "existing_test_target_chain_unverified",
+      "source_reason": "TestRSStatusPage#testStatusPage calls HMaster.getActiveMasterInfoPort, which delegates to ActiveMasterManager.getActiveMasterInfoPort and static MasterAddressTracker.getMasterInfoPort(ZKWatcher). The selected guard throws when ZKUtil.getData returns null. The old calibration had an unknown actor; current lane7 healthy config is staged with the watcher-based node binding. An exception injected at the read itself bypasses the null check, so retained faults should target an earlier causal write or callback only after an observed path is proven.",
+      "next_gate": "Run staged HBASE-37-lane7-healthy.json only after lane admission; require JUnit pass, named watcher owner, exact @205 guard without @206 throw, and at least one observed pretarget path door before full fuzz.",
+      "sources": [
+        {
+          "path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+          "sha256": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987"
+        },
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ActiveMasterManager.java",
+          "sha256": "edcf8ec32db64ceac9147dcb00fefc36ff5b92f499e37e9256f0ec8552252fde"
+        },
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java",
+          "sha256": "6d47807a0bf39b6cf48677bd8acbd7eaf0bc0a6a148a04d013573cefa4b4deb1"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java",
+          "sha256": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b"
+        }
+      ],
+      "evidence": {
+        "healthy_config_path": "Mallory/adapters/hbase/pilot/HBASE-37-lane7-healthy.json",
+        "healthy_config_sha256": "b82b9679cd76d8335e5cfa6dfe21b9f23c4e8c8d9e56f2f02043fcb093012a20"
+      }
+    }
+  ],
+  "cluster_jvm_launched": false
+}

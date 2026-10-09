@@ -74,7 +74,16 @@ checks the terminal status, duration, and strict target count. A valid
 fault counts, and source review. A damaged or stale listed review is shown
 as `causal_precision_review_invalid` and cannot restore the old quality
 claim. These reviews distinguish exact post-fault target reach from an
-observed, time-respecting causal path from the applied door to that target.
+observed root-free occurrence path from the admitted healthy door to the
+target. That historical criterion admitted 23 rows. Their archived traces
+lack numeric JVM `thread_id`, so the newer `fa5f3bde` event-time gate cannot
+retroactively prove exact event order on the path. SHA-bound
+`data/mallory/quality_reviews/event_time_v1/` sidecars document the timing
+gap; `data/mallory/quality_reviews/faulted_path_v1/` then checks whether each
+applied fault has an observed continuation to the later target. Cases without
+that evidence are labeled `faulted_path_unverified`, retaining their original
+trial counts and time. A new terminal case stays `causal_precision_pending`
+until a SHA-bound precision review is available.
 
 An older completed campaign can be marked `target_exercised_posthoc` only
 when a separate `posthoc-attestation.json` binds to the unchanged result

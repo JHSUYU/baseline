@@ -245,6 +245,37 @@ public class SolrHooksTest {
     assertEquals("unknown", Probe.currentNode());
   }
 
+  @Test public void overseerQueueThreadUsesRegisteredReaderAndRestoresScope() throws Exception {
+    String name = "org/apache/solr/cloud/OverseerTaskProcessor";
+    InputStream input = getClass().getClassLoader().getResourceAsStream(name + ".class");
+    assertNotNull(input);
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    byte[] chunk = new byte[4096];
+    for (int read; (read = input.read(chunk)) != -1;) output.write(chunk, 0, read);
+    byte[] woven = new SolrTransformer().transform(getClass().getClassLoader(), name, null,
+        null, output.toByteArray());
+    assertNotNull(woven);
+    Class<?> processor = new ChildLoader(getClass().getClassLoader()).define(woven);
+    Object reader = new Object();
+    Probe.registerNode(reader, "node2", 3);
+    Object instance = processor.getConstructor(Object.class, boolean.class)
+        .newInstance(reader, false);
+    processor.getMethod("run").invoke(instance);
+    assertEquals("node2", processor.getField("observedNode").get(instance));
+    assertEquals(3, processor.getField("observedEpoch").get(instance));
+    assertEquals("unknown", Probe.currentNode());
+    Object failing = processor.getConstructor(Object.class, boolean.class)
+        .newInstance(reader, true);
+    try {
+      processor.getMethod("run").invoke(failing);
+      fail("expected the fixture's exception");
+    } catch (java.lang.reflect.InvocationTargetException expected) {
+      assertTrue(expected.getCause() instanceof IllegalStateException);
+    }
+    assertEquals("node2", processor.getField("observedNode").get(failing));
+    assertEquals("unknown", Probe.currentNode());
+  }
+
   @Test public void transformedAliasesWatcherRestoresScopeAfterReturnAndThrow() throws Exception {
     String name = "org/apache/solr/common/cloud/ZkStateReader$AliasesManager";
     InputStream input = getClass().getClassLoader().getResourceAsStream(name + ".class");

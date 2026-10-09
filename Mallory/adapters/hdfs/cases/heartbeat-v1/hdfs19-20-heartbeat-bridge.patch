@@ -1,0 +1,326 @@
+--- a/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
++++ b/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
+@@ -24,6 +24,7 @@
+   private static final AtomicInteger STORAGE_UPGRADE_TASKS = new AtomicInteger();
+   private static final AtomicInteger BLOCK_RECOVERY_TASKS = new AtomicInteger();
+   private static final AtomicInteger BALANCER_TASKS = new AtomicInteger();
++  private static final AtomicInteger COMMAND_TASKS = new AtomicInteger();
+   private static final Map<Object, String> CLUSTER_NAMES = new IdentityHashMap<Object, String>();
+   private static final Map<Object, Map<Integer, Integer>> NN_EPOCHS =
+       new IdentityHashMap<Object, Map<Integer, Integer>>();
+@@ -41,6 +42,14 @@
+   private static final Map<Object, String> BLOCK_RECOVERY_TASK_TOKENS =
+       new IdentityHashMap<Object, String>();
+   private static final Map<Object, String> BALANCER_TASK_TOKENS =
++      new IdentityHashMap<Object, String>();
++  // All three maps use object identity: equal-looking replies and queue actions
++  // are not interchangeable. Each entry is consumed at the corresponding hook.
++  private static final Map<Object, String> DATANODE_REPLY_TOKENS =
++      new IdentityHashMap<Object, String>();
++  private static final Map<Object, String> DATANODE_COMMAND_TOKENS =
++      new IdentityHashMap<Object, String>();
++  private static final Map<Object, String> DATANODE_COMMAND_TASKS =
+       new IdentityHashMap<Object, String>();
+   private static final ThreadLocal<Object> ACTOR_DATANODE = new ThreadLocal<Object>();
+   private static final ThreadLocal<Boolean> CREATING_NAMENODE = new ThreadLocal<Boolean>();
+@@ -419,6 +428,7 @@
+     String correlation = correlationFromConnection(connection, call);
+     ResponseConsumerScope consumer = RESPONSE_CONSUMER.get();
+     if (consumer != null && correlation != null) {
++      consumer.lastResponseCorrelation = correlation;
+       Object actor = consumer.actor;
+       if (actor != null) {
+         try (Probe.NodeScope node = Probe.withRegisteredNode(actor)) {
+@@ -552,6 +562,7 @@
+   public static final class ResponseConsumerScope implements AutoCloseable {
+     private final ResponseConsumerScope previous;
+     private final Object actor;
++    private String lastResponseCorrelation;
+     private final Deque<Probe.ContextScope> responses = new ArrayDeque<Probe.ContextScope>();
+     private ResponseConsumerScope(ResponseConsumerScope previous, Object actor) {
+       this.previous = previous;
+@@ -561,6 +572,117 @@
+       while (!responses.isEmpty()) responses.pop().close();
+       if (previous == null) RESPONSE_CONSUMER.remove();
+       else RESPONSE_CONSUMER.set(previous);
++    }
++  }
++
++  /** Bind the decoded heartbeat value to the one completed IPC reply in this call. */
++  public static void heartbeatResponseProduced(Object response) {
++    ResponseConsumerScope consumer = RESPONSE_CONSUMER.get();
++    if (response == null || consumer == null || consumer.lastResponseCorrelation == null) return;
++    try {
++      Object status = field(response, "haStatus");
++      Object commands = field(response, "commands");
++      synchronized (HdfsHooks.class) {
++        if (status != null) DATANODE_REPLY_TOKENS.put(status, consumer.lastResponseCorrelation);
++        if (commands != null) {
++          DATANODE_REPLY_TOKENS.put(commands, consumer.lastResponseCorrelation);
++          if (commands instanceof Object[]) {
++            for (Object command : (Object[]) commands)
++              if (command != null)
++                DATANODE_COMMAND_TOKENS.put(command, consumer.lastResponseCorrelation);
++          }
++        }
++      }
++    } catch (ReflectiveOperationException ignored) {
++      // Missing decoded-object identity remains an observed graph gap.
++    }
++  }
++
++  /** A block/cache report returns a concrete decoded command, possibly null. */
++  public static void datanodeCommandProduced(Object command) {
++    ResponseConsumerScope consumer = RESPONSE_CONSUMER.get();
++    if (command == null || consumer == null || consumer.lastResponseCorrelation == null) return;
++    synchronized (HdfsHooks.class) {
++      DATANODE_COMMAND_TOKENS.put(command, consumer.lastResponseCorrelation);
++    }
++  }
++
++  public static DatanodeReplyScope heartbeatStatusEnter(Object offer, Object status) {
++    String reply;
++    synchronized (HdfsHooks.class) {
++      reply = DATANODE_REPLY_TOKENS.remove(status);
++    }
++    return datanodeReplyEnter(offer, reply);
++  }
++
++  public static DatanodeReplyScope datanodeCommandEnter(Object offer, Object command) {
++    String reply;
++    synchronized (HdfsHooks.class) {
++      reply = DATANODE_COMMAND_TOKENS.remove(command);
++    }
++    return datanodeReplyEnter(offer, reply);
++  }
++
++  private static DatanodeReplyScope datanodeReplyEnter(Object offer, String reply) {
++    Probe.NodeScope node = offerEnter(offer);
++    Probe.ContextScope context = reply == null ? null : Probe.withCausalContext(reply);
++    return new DatanodeReplyScope(node, context);
++  }
++
++  /** Publish the exact action token before put can expose it to the worker.
++   * A failed put has no matching claim and therefore forms no graph edge.
++   */
++  public static void datanodeCommandSubmitted(Object worker, Object action, Object source) {
++    if (action == null) return;
++    String reply = null;
++    synchronized (HdfsHooks.class) {
++      if (source != null) reply = DATANODE_REPLY_TOKENS.remove(source);
++      if (reply == null && source instanceof List && ((List<?>) source).size() == 1)
++        reply = DATANODE_COMMAND_TOKENS.get(((List<?>) source).get(0));
++      if (reply == null && source != null)
++        reply = DATANODE_COMMAND_TOKENS.get(source);
++    }
++    Probe.NodeScope node = datanodeCommandWorkerNode(worker);
++    Probe.ContextScope context = reply == null ? null : Probe.withCausalContext(reply);
++    try {
++      String token = "hdfs-datanode-command:" + COMMAND_TASKS.incrementAndGet();
++      synchronized (HdfsHooks.class) { DATANODE_COMMAND_TASKS.put(action, token); }
++      Probe.taskSubmit(token, "hdfs-datanode-command-queue");
++    } finally {
++      if (context != null) context.close();
++      node.close();
++    }
++  }
++
++  /** Claim the exact Runnable returned by the command queue. */
++  public static DatanodeReplyScope datanodeCommandTaskEnter(Object worker, Object action) {
++    Probe.NodeScope node = datanodeCommandWorkerNode(worker);
++    String token;
++    synchronized (HdfsHooks.class) { token = DATANODE_COMMAND_TASKS.remove(action); }
++    Probe.ContextScope context = token == null ? null :
++        Probe.taskClaim(token, "hdfs-datanode-command-queue");
++    return new DatanodeReplyScope(node, context);
++  }
++
++  private static Probe.NodeScope datanodeCommandWorkerNode(Object worker) {
++    try {
++      Object actor = field(worker, "actor");
++      return Probe.withRegisteredNode(field(actor, "dn"));
++    } catch (ReflectiveOperationException failure) {
++      return Probe.withNode("unknown", 0);
++    }
++  }
++
++  public static final class DatanodeReplyScope implements AutoCloseable {
++    private final Probe.NodeScope node;
++    private final Probe.ContextScope context;
++    private DatanodeReplyScope(Probe.NodeScope node, Probe.ContextScope context) {
++      this.node = node;
++      this.context = context;
++    }
++    @Override public void close() {
++      if (context != null) context.close();
++      node.close();
+     }
+   }
+ 
+--- a/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
++++ b/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
+@@ -310,10 +310,76 @@
+             "(Ljava/lang/Object;)L" + PROBE + "$NodeScope;", PROBE + "$NodeScope", true);
+         changed = true;
+       } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/BPOfferService")
+-          && (method.name.equals("processCommandFromActive")
+-              || method.name.equals("updateActorStatesFromHeartbeat"))) {
+-        wrap(method, HOOKS, "offerEnter",
+-            "(Ljava/lang/Object;)L" + PROBE + "$NodeScope;", PROBE + "$NodeScope", true);
++          && method.name.equals("processCommandFromActive")) {
++        wrapOfferReply(method, "datanodeCommandEnter", 1);
++        changed = true;
++      } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/BPOfferService")
++          && method.name.equals("updateActorStatesFromHeartbeat")) {
++        wrapOfferReply(method, "heartbeatStatusEnter", 2);
++        changed = true;
++      } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/BPServiceActor$CommandProcessingThread")
++          && method.name.equals("enqueue")) {
++        int joins = 0;
++        for (AbstractInsnNode instruction : method.instructions.toArray()) {
++          if (!(instruction instanceof MethodInsnNode)) continue;
++          MethodInsnNode call = (MethodInsnNode) instruction;
++          if (call.getOpcode() != Opcodes.INVOKEINTERFACE
++              || !call.owner.equals("java/util/concurrent/BlockingQueue")
++              || !call.name.equals("put")
++              || !call.desc.equals("(Ljava/lang/Object;)V")) continue;
++          // Save exactly the Runnable passed to put. Publish its token before
++          // put exposes it to a concurrent worker; an interrupted put leaves
++          // an unmatched submission, which cannot form a graph edge.
++          int actionLocal = method.maxLocals++;
++          InsnList submit = new InsnList();
++          submit.add(new InsnNode(Opcodes.DUP));
++          submit.add(new VarInsnNode(Opcodes.ASTORE, actionLocal));
++          submit.add(new VarInsnNode(Opcodes.ALOAD, 0));
++          submit.add(new VarInsnNode(Opcodes.ALOAD, actionLocal));
++          submit.add(new VarInsnNode(Opcodes.ALOAD, 1));
++          submit.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS,
++              "datanodeCommandSubmitted", "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)V", false));
++          method.instructions.insertBefore(instruction, submit);
++          joins++;
++        }
++        if (joins != 1) throw new IllegalStateException("Expected one HDFS command enqueue put");
++        changed = true;
++      } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/BPServiceActor$CommandProcessingThread")
++          && method.name.equals("processQueue")) {
++        int joins = 0;
++        for (AbstractInsnNode instruction : method.instructions.toArray()) {
++          if (!(instruction instanceof MethodInsnNode)) continue;
++          MethodInsnNode call = (MethodInsnNode) instruction;
++          if (call.getOpcode() != Opcodes.INVOKEINTERFACE
++              || !call.owner.equals("java/lang/Runnable")
++              || !call.name.equals("run") || !call.desc.equals("()V")) continue;
++          AbstractInsnNode previous = instruction.getPrevious();
++          if (!(previous instanceof VarInsnNode) || previous.getOpcode() != Opcodes.ALOAD)
++            throw new IllegalStateException("HDFS command Runnable is not in a local");
++          aroundCommandCall(method, instruction, ((VarInsnNode) previous).var);
++          joins++;
++        }
++        if (joins != 1) throw new IllegalStateException("Expected one HDFS command queue claim");
++        changed = true;
++      } else if (name.equals("org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB")
++          && (method.name.equals("sendHeartbeat") || method.name.equals("blockReport")
++              || method.name.equals("cacheReport"))) {
++        String hookName = method.name.equals("sendHeartbeat") ?
++            "heartbeatResponseProduced" : "datanodeCommandProduced";
++        int returns = 0;
++        for (AbstractInsnNode instruction : method.instructions.toArray()) {
++          if (instruction.getOpcode() != Opcodes.ARETURN) continue;
++          InsnList hook = new InsnList();
++          hook.add(new InsnNode(Opcodes.DUP));
++          hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS, hookName,
++              "(Ljava/lang/Object;)V", false));
++          method.instructions.insertBefore(instruction, hook);
++          returns++;
++        }
++        if (returns < 1) throw new IllegalStateException("HDFS reply decoder has no return");
++        wrap(method, HOOKS, "responseConsumerEnter",
++            "(Ljava/lang/Object;)L" + HOOKS + "$ResponseConsumerScope;",
++            HOOKS + "$ResponseConsumerScope", true);
+         changed = true;
+       } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/DataStorage")
+           && method.name.equals("getBlockPoolSliceStorage")) {
+@@ -536,7 +602,9 @@
+         || name.equals("org/apache/hadoop/ipc/Client")
+         || name.equals("org/apache/hadoop/ipc/Client$Connection")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BPServiceActor")
++        || name.equals("org/apache/hadoop/hdfs/server/datanode/BPServiceActor$CommandProcessingThread")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BPOfferService")
++        || name.equals("org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/DataStorage")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage$1")
+@@ -600,6 +668,35 @@
+     entry.add(new VarInsnNode(Opcodes.ASTORE, scopeLocal));
+     entry.add(start);
+     method.instructions.insertBefore(method.instructions.getFirst(), entry);
++    for (AbstractInsnNode instruction : method.instructions.toArray()) {
++      int opcode = instruction.getOpcode();
++      if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN)
++        method.instructions.insertBefore(instruction, close(scopeLocal, scopeType));
++    }
++    LabelNode end = new LabelNode();
++    LabelNode handler = new LabelNode();
++    method.instructions.add(end);
++    method.instructions.add(handler);
++    method.instructions.add(new VarInsnNode(Opcodes.ASTORE, thrownLocal));
++    method.instructions.add(close(scopeLocal, scopeType));
++    method.instructions.add(new VarInsnNode(Opcodes.ALOAD, thrownLocal));
++    method.instructions.add(new InsnNode(Opcodes.ATHROW));
++    method.tryCatchBlocks.add(new TryCatchBlockNode(start, end, handler, "java/lang/Throwable"));
++  }
++
++  private static void wrapOfferReply(MethodNode method, String enter, int argumentLocal) {
++    int scopeLocal = method.maxLocals++;
++    int thrownLocal = method.maxLocals++;
++    LabelNode start = new LabelNode();
++    InsnList entry = new InsnList();
++    entry.add(new VarInsnNode(Opcodes.ALOAD, 0));
++    entry.add(new VarInsnNode(Opcodes.ALOAD, argumentLocal));
++    entry.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS, enter,
++        "(Ljava/lang/Object;Ljava/lang/Object;)L" + HOOKS + "$DatanodeReplyScope;", false));
++    entry.add(new VarInsnNode(Opcodes.ASTORE, scopeLocal));
++    entry.add(start);
++    method.instructions.insertBefore(method.instructions.getFirst(), entry);
++    String scopeType = HOOKS + "$DatanodeReplyScope";
+     for (AbstractInsnNode instruction : method.instructions.toArray()) {
+       int opcode = instruction.getOpcode();
+       if (opcode >= Opcodes.IRETURN && opcode <= Opcodes.RETURN)
+@@ -730,6 +827,37 @@
+     method.tryCatchBlocks.add(new TryCatchBlockNode(start, end, handler, "java/lang/Throwable"));
+   }
+ 
++  private static void aroundCommandCall(MethodNode method, AbstractInsnNode call,
++                                        int actionLocal) {
++    int scopeLocal = method.maxLocals++;
++    int thrownLocal = method.maxLocals++;
++    LabelNode start = new LabelNode();
++    LabelNode end = new LabelNode();
++    LabelNode handler = new LabelNode();
++    LabelNode after = new LabelNode();
++    String scopeType = HOOKS + "$DatanodeReplyScope";
++    InsnList entry = new InsnList();
++    entry.add(new VarInsnNode(Opcodes.ALOAD, 0));
++    entry.add(new VarInsnNode(Opcodes.ALOAD, actionLocal));
++    entry.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS, "datanodeCommandTaskEnter",
++        "(Ljava/lang/Object;Ljava/lang/Object;)L" + scopeType + ";", false));
++    entry.add(new VarInsnNode(Opcodes.ASTORE, scopeLocal));
++    entry.add(start);
++    method.instructions.insertBefore(call, entry);
++    InsnList suffix = new InsnList();
++    suffix.add(end);
++    suffix.add(close(scopeLocal, scopeType));
++    suffix.add(new JumpInsnNode(Opcodes.GOTO, after));
++    suffix.add(handler);
++    suffix.add(new VarInsnNode(Opcodes.ASTORE, thrownLocal));
++    suffix.add(close(scopeLocal, scopeType));
++    suffix.add(new VarInsnNode(Opcodes.ALOAD, thrownLocal));
++    suffix.add(new InsnNode(Opcodes.ATHROW));
++    suffix.add(after);
++    method.instructions.insert(call, suffix);
++    method.tryCatchBlocks.add(new TryCatchBlockNode(start, end, handler, "java/lang/Throwable"));
++  }
++
+   private static final class ResolvingWriter extends ClassWriter {
+     private final ClassLoader loader;
+     private final ClassNode transforming;

@@ -1,0 +1,113 @@
+{
+  "case_id": "HBASE-32",
+  "classification": "no_suitable_existing_cluster_test_found",
+  "entry_condition": {
+    "description": "Only a nondefault replica with replica replication enabled, wait-for-primary-flush enabled, and memstore replication submits RegionReplicaFlushHandler.",
+    "source": "HRegionServer.java:2779-2804"
+  },
+  "exact_target": {
+    "check_site": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V@130:branch:6",
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java",
+    "function": "RegionReplicaFlushHandler.triggerFlushInPrimaryRegion(HRegion)",
+    "required_precondition": "The secondary handler must receive an IOException from rpcRetryingCallerFactory.callWithRetries(FlushRegionCallable). Successful primary flush does not execute the @130 catch guard. The nonthrowing arm requires TableNotFoundException or a disabled table.",
+    "source_lines": "RegionReplicaFlushHandler.java:120-137",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V@136:throw:1"
+  },
+  "next_action": "Do not promote HBASE-32 to fault campaign from this selector. Revisit only if a checked-in cluster test with controlled primary-flush failure is identified or the method supports seed generation without healthy target reach.",
+  "old_calibration": {
+    "exact_target_checks": 0,
+    "junit_passed": true,
+    "jvm_duration_seconds": 66.693,
+    "result_path": "data/mallory/calibration_v19/HBASE-32/result.json",
+    "result_sha256": "a164b17c98f4098b40438393dccb3a256229984e362c949e5c17b7d67a9e21a7",
+    "status": "healthy_seed_invalid",
+    "trial_status": "healthy_target_missing",
+    "wall_elapsed_seconds_approx": 487
+  },
+  "reviewed_tests": [
+    {
+      "evidence": "data/mallory/calibration_v19/HBASE-32/result.json",
+      "observation": "MiniCluster with three region servers aborts a secondary and recovers it. Real healthy run enters target method 56 times but has no exact @130 check because primary flush succeeds.",
+      "result_sha256": "a164b17c98f4098b40438393dccb3a256229984e362c949e5c17b7d67a9e21a7",
+      "selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testSecondaryRegionKill",
+      "source": "TestRegionReplicaFailover.java:202-238"
+    },
+    {
+      "reason": "Aborts the primary server and checks recovery; does not deliberately reopen a secondary while forcing its FlushRegionCallable to return IOException.",
+      "selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testPrimaryRegionKill",
+      "source": "TestRegionReplicaFailover.java:138-194"
+    },
+    {
+      "reason": "Stops one server and waits for successful replica redistribution; no controlled failing FlushRegionCallable and no assertion of selected catch arm.",
+      "selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicasWithRestartScenarios#testWhenRestart",
+      "source": "TestRegionReplicasWithRestartScenarios.java:118-136"
+    },
+    {
+      "reason": "Fixture sets wait-for-primary-flush=false, so HRegionServer bypasses RegionReplicaFlushHandler.",
+      "selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaWaitForPrimaryFlushConf#testSecondaryReplicaReadEnabled",
+      "source": "TestRegionReplicaWaitForPrimaryFlushConf.java:59-91"
+    },
+    {
+      "reason": "Exercises Admin flush error against a nonexistent family, not the secondary RegionReplicaFlushHandler call path.",
+      "selector": "org.apache.hadoop.hbase.client.TestFlushFromClient#testAsyncFlushRegionWithNonExistingFamily",
+      "source": "TestFlushFromClient.java:200-209"
+    }
+  ],
+  "runtime_evidence": {
+    "audit_stop_intent_sha256": "a3ad4315c43127b3b6042a394ecf068dd9e361a300b171366dc6922d2872d53e",
+    "exact_target_checks": 0,
+    "healthy_trial": "data/mallory/calibration_v19/HBASE-32",
+    "junit_marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "junit_receipt_sha256": "6e81f7357c08b7031a19f2556300357cdcb025792e31f882a9bca8a87f8f5cc4",
+    "jvm_duration_seconds": 66.693,
+    "offline_audit": "optional audit stopped after SHA-bound target absence to avoid quadratic frozen-core work; no full/fault admission",
+    "result_status": "healthy_seed_invalid",
+    "trace_event_count": 177966,
+    "trace_sha256": "981f2d337eb40e7f552cf7c06a5f85ca0685cd0efab9cab5c761e3c4288f21b1",
+    "trial_status": "healthy_target_missing",
+    "wall_elapsed_seconds_approx": 487
+  },
+  "schema_version": 1,
+  "scope": "Pinned HBase 2.6.6 checked-in existing cluster tests; no new workload was written. This review found no existing selected MiniCluster method that deliberately makes the primary flush RPC fail while a secondary RegionReplicaFlushHandler processes the error and the JUnit still passes.",
+  "search_scope": [
+    "rg RegionReplicaFlushHandler/triggerFlushInPrimaryRegion/REGION_REPLICA_WAIT_FOR_PRIMARY_FLUSH_CONF_KEY in hbase-server and hbase-client test trees",
+    "rg flushRegion/FlushRegionCallable and Mockito IOException injection in test trees",
+    "Source read of all named candidate methods and target entry/catch guards"
+  ],
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_file_sha256": {
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java": "439a8078aadec70f1727f13204e128b79625c5786cfa920026fb4265a8285509",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestFlushFromClient.java": "e34f6fa43f43b1f3f63a746daa84b536d82d77af28d3aa93183deba622d8f860",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java": "22909412f4d72ff81db40b58d2e7e0d414df5580261de7631a218e30cd684d35",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaWaitForPrimaryFlushConf.java": "e0f09f0ac2e9d4dcd59d2a850689ad8226dcfae6b5f713eafc34a9a0dfd41fbf",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicasWithRestartScenarios.java": "076cb19c611058a39df5f3467435049f957f8d66ebe40b37af7116c7e07c5b43"
+  },
+  "source_refs": [
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+      "sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023"
+    },
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java",
+      "sha256": "439a8078aadec70f1727f13204e128b79625c5786cfa920026fb4265a8285509"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestFlushFromClient.java",
+      "sha256": "e34f6fa43f43b1f3f63a746daa84b536d82d77af28d3aa93183deba622d8f860"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java",
+      "sha256": "22909412f4d72ff81db40b58d2e7e0d414df5580261de7631a218e30cd684d35"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaWaitForPrimaryFlushConf.java",
+      "sha256": "e0f09f0ac2e9d4dcd59d2a850689ad8226dcfae6b5f713eafc34a9a0dfd41fbf"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicasWithRestartScenarios.java",
+      "sha256": "076cb19c611058a39df5f3467435049f957f8d66ebe40b37af7116c7e07c5b43"
+    }
+  ],
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6"
+}

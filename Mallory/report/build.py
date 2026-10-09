@@ -172,9 +172,117 @@ def _causal_precision_review(results: Path, result_path: Path,
         and receipt.get("root_free_qualifying_trial_ids") == []
         and receipt.get("evidence_category") in {
             "coarse_root_origin_fault", "root_intermediary_only",
-            "root_free_door_unmatched"}
+            "root_free_door_unmatched", "faulted_path_unverified"}
     )
     return ("causal_precision_unverified" if valid else "invalid"), receipt_path
+
+
+def _faulted_path_review(results: Path, result_path: Path,
+                         result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Verify an explicit, immutable review of faulted-run continuation.
+
+    Older traces can establish a named, ordered same-region continuation,
+    which is labeled as local timeline evidence. Thread-name equality alone
+    is never a positive proof. Unreviewed terminal runs remain pending.
+    """
+    case_id = result.get("case_id")
+    root = results / "quality_reviews" / "faulted_path_v1"
+    locations = [root, root / "terminal_delta_4"]
+    found = []
+    for location in locations:
+        index = _json(location / "index.json")
+        if index is None:
+            if (location / f"{case_id}.json").is_file():
+                return "invalid", str(location / f"{case_id}.json")
+            continue
+        rows = index.get("rows")
+        if not isinstance(rows, list):
+            return "invalid", str(location / "index.json")
+        matches = [row for row in rows if isinstance(row, dict) and
+                   row.get("case_id") == case_id]
+        if matches:
+            found.extend((location, index, row) for row in matches)
+    if not found:
+        return None, None
+    if len(found) != 1:
+        return "invalid", str(found[0][0] / "index.json")
+    location, index, entry = found[0]
+    ops = Path(__file__).resolve().parents[1] / "ops"
+    audit_source = ops / "audit_faulted_precision.py"
+    if (not audit_source.is_file() or
+            index.get("source_sha256", index.get("frozen_audit_source_sha256")) !=
+            hashlib.sha256(audit_source.read_bytes()).hexdigest()):
+        return "invalid", str(location / "index.json")
+    if location.name == "terminal_delta_4":
+        wrapper = ops / "audit_faulted_precision_delta.py"
+        if (not wrapper.is_file() or index.get("wrapper_source_sha256") !=
+                hashlib.sha256(wrapper.read_bytes()).hexdigest()):
+            return "invalid", str(location / "index.json")
+    receipt_path = location / f"{case_id}.json"
+    receipt = _json(receipt_path)
+    config_path = result_path.with_name("config.json")
+    audit_path = result_path.with_name("offline-causal-audit.json")
+    if receipt is None or not config_path.is_file() or not audit_path.is_file():
+        return "invalid", str(receipt_path)
+    result_hash = hashlib.sha256(result_path.read_bytes()).hexdigest()
+    audit_hash = hashlib.sha256(audit_path.read_bytes()).hexdigest()
+    config_hash = hashlib.sha256(config_path.read_bytes()).hexdigest()
+    receipt_hash = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+    classification = entry.get("classification")
+    positive = classification == "legacy_faulted_region_evidence"
+    negative = classification == "faulted_path_unverified"
+    recommendation = ("retain_legacy_faulted_region_evidence" if positive
+                      else "downgrade_to_faulted_path_unverified")
+    trials = receipt.get("trials")
+    counts = ("strict_target_trials", "same_region_continuation_trials",
+              "same_actor_named_thread_order_trials",
+              "ordered_root_free_region_path_trials")
+    count_match = all(entry.get(key) == receipt.get(key) for key in counts)
+    valid_trials = (
+        isinstance(trials, list)
+        and len(trials) == result.get("strict_target_trials")
+        and len({row.get("trial_id") for row in trials if isinstance(row, dict)}) == len(trials)
+        and all(isinstance(row, dict)
+                and isinstance(row.get("trial_result_sha256"), str)
+                and len(row["trial_result_sha256"]) == 64
+                and isinstance(row.get("raw_trace_sha256"), str)
+                and len(row["raw_trace_sha256"]) == 64
+                and isinstance(row.get("applied_event_ids"), list)
+                and row["applied_event_ids"]
+                and isinstance(row.get("postfault_target_check_count"), int)
+                and row["postfault_target_check_count"] > 0
+                for row in trials)
+        and sum(row.get("same_region_continuation") is True for row in trials)
+            == receipt.get("same_region_continuation_trials")
+        and sum(row.get("ordered_root_free_region_path") is True for row in trials)
+            == receipt.get("ordered_root_free_region_path_trials")
+    )
+    valid = (
+        index.get("schema_version") == 1
+        and receipt.get("schema_version") == 1
+        and case_id in index.get("cohort", [])
+        and entry.get("review_sha256") == receipt_hash
+        and receipt.get("case_id") == case_id
+        and (positive or negative)
+    )
+    valid = (valid and count_match and valid_trials
+             and receipt.get("classification") == classification
+             and entry.get("recommended_quality_status") == recommendation
+             and receipt.get("recommended_quality_status") == recommendation
+             and receipt.get("canonical_result_sha256") == result_hash
+             and receipt.get("canonical_audit_sha256") == audit_hash
+             and receipt.get("canonical_config_sha256") == config_hash
+             and entry.get("canonical_result_sha256", result_hash) == result_hash
+             and entry.get("canonical_audit_sha256", audit_hash) == audit_hash
+             and receipt.get("strict_target_trials") == result.get("strict_target_trials")
+             and ((positive and receipt.get("same_region_continuation_trials", 0) > 0
+                   and receipt.get("root_free_occurrence_path_trials", 0) > 0)
+                  or (negative and receipt.get("same_region_continuation_trials") == 0
+                      and receipt.get("root_free_occurrence_path_trials") == 0
+                      and receipt.get("ordered_root_free_region_path_trials") == 0)))
+    if not valid:
+        return "invalid", str(receipt_path)
+    return ("observed_local_timeline" if positive else "faulted_path_unverified"), str(receipt_path)
 
 
 def _posthoc_attestation(result_path: Path, case: dict[str, Any],
@@ -769,6 +877,16 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 row["quality_status"] = precision
             elif precision == "invalid":
                 row["quality_status"] = "causal_precision_review_invalid"
+            else:
+                precision, receipt = _faulted_path_review(results, result_path, result)
+                row["causal_precision_review"] = precision
+                row["causal_precision_receipt"] = receipt
+                if precision in {"observed_local_timeline", "faulted_path_unverified"}:
+                    row["quality_status"] = precision
+                elif precision == "invalid":
+                    row["quality_status"] = "causal_precision_review_invalid"
+                else:
+                    row["quality_status"] = "causal_precision_pending"
     if status in TERMINAL:
         row["report_status"] = "completed_campaign"
     elif status.startswith("healthy_"):
@@ -818,8 +936,7 @@ def build(inventory_path: Path, results: Path) -> dict[str, Any]:
         "calibration_counts": dict(Counter(row["calibration_status"] for row in rows
                                            if row["calibration_status"] is not None)),
         "quality_counts": dict(quality_counts),
-        "high_quality_completed": (quality_counts["target_exercised"] +
-                                   quality_counts["target_exercised_posthoc"]),
+        "high_quality_completed": quality_counts["observed_local_timeline"],
         "rows": rows,
         "known_issue_controls": control_rows,
     }
@@ -834,7 +951,7 @@ def _cell(value: Any) -> str:
 def markdown(report: dict[str, Any]) -> str:
     lines = ["# Mallory check results", "",
              f'{report["high_quality_completed"]} of 102 original checks have verified '
-             'post-fault target exercise. '
+             'fault-to-target continuation. '
              f'{report["counts"].get("completed_campaign", 0)} campaigns are terminal; '
              'a terminal campaign may still fail a quality gate.', "",
              "Rows are generated from `Mallory/cases/inventory.json` and "
@@ -843,8 +960,11 @@ def markdown(report: dict[str, Any]) -> str:
              "not a healthy-run causal audit. `Target after fault (generic)` can count "
              "another actor; local-timeline-only quality also requires a same-actor, "
              "same-epoch, same-occurrence target check after an admitted fault door. "
-             "A SHA-bound causal precision review can supersede a previously verified "
-             "audit when every apparent path relies on actor-wide root aggregation.", "",
+             "A SHA-bound faulted-path review is required for high-quality status. "
+             "`observed_local_timeline` means an ordered same-region continuation "
+             "in a legacy trace, not an inter-region path. Terminal runs without a "
+             "positive review remain pending; unsupported paths retain their raw "
+             "results under an unverified label.", "",
              "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Quality | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source gap receipt | New bug |",
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |"]
     for row in report["rows"]:

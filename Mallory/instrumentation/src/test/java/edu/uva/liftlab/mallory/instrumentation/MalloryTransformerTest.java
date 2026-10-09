@@ -30,6 +30,49 @@ public final class MalloryTransformerTest {
       "edu.uva.liftlab.mallory.instrumentation.fixture.CallGuardOperation";
   private static final String SELF_MERGE_FIXTURE =
       "edu.uva.liftlab.mallory.instrumentation.fixture.SelfMergeOperation";
+  private static final String DATANODE_DUPLICATE_FIXTURE =
+      "org.apache.hadoop.hdfs.server.datanode.DataNode";
+
+  @Test public void transformsDataNodeWithoutEagerDuplicateClassDefinition() throws Exception {
+    AgentConfig config = new AgentConfig();
+    config.includes.add(DATANODE_DUPLICATE_FIXTURE.replace('.', '/'));
+    MalloryTransformer transformer = new MalloryTransformer(config);
+    final int[] duplicateDefinitionAttempts = {0};
+    ClassLoader loader = new ClassLoader(MalloryTransformerTest.class.getClassLoader()) {
+      private boolean transforming;
+      @Override protected Class<?> loadClass(String name, boolean resolve)
+          throws ClassNotFoundException {
+        if (!DATANODE_DUPLICATE_FIXTURE.equals(name)) return super.loadClass(name, resolve);
+        synchronized (getClassLoadingLock(name)) {
+          if (transforming) {
+            duplicateDefinitionAttempts[0]++;
+            throw new LinkageError("attempted duplicate DataNode definition during transform");
+          }
+          Class<?> loaded = findLoadedClass(name);
+          if (loaded == null) {
+            byte[] original;
+            try { original = readResource(name.replace('.', '/') + ".class"); }
+            catch (Exception failure) { throw new ClassNotFoundException(name, failure); }
+            transforming = true;
+            byte[] changed;
+            try { changed = transformer.transform(this, name.replace('.', '/'), null, null, original); }
+            finally { transforming = false; }
+            assertNotNull("resource-based hierarchy lookup must preserve DataNode probes", changed);
+            loaded = defineClass(name, changed, 0, changed.length);
+          }
+          if (resolve) resolveClass(loaded);
+          return loaded;
+        }
+      }
+    };
+    Class<?> dataNode = loader.loadClass(DATANODE_DUPLICATE_FIXTURE);
+    Object instance = dataNode.newInstance();
+    assertSame(instance, dataNode.getMethod("choose", boolean.class).invoke(instance, true));
+    assertTrue(dataNode.getMethod("choose", boolean.class).invoke(instance, false)
+        instanceof ArrayList);
+    assertEquals("transformer must not eager-load a second DataNode", 0,
+        duplicateDefinitionAttempts[0]);
+  }
 
   @Test public void computesFramesWithoutLoadingClassBeingTransformed() throws Exception {
     final AgentConfig config = new AgentConfig();
@@ -89,6 +132,12 @@ public final class MalloryTransformerTest {
       assertEquals(IllegalStateException.class, expected.getCause().getClass());
     }
     List<JsonObject> events = readEvents(healthy);
+    for (JsonObject event : events) {
+      String type = event.get("type").getAsString();
+      if (type.startsWith("COVERAGE_")) continue; // Aggregate rows have no single event thread.
+      assertEquals("every healthy causal event needs a numeric thread identity",
+          Thread.currentThread().getId(), event.get("thread_id").getAsLong());
+    }
     assertTrue(hasType(events, "COVERAGE_SUMMARY"));
     assertTrue(hasType(events, "TARGET_CHECK"));
     assertTrue(hasType(events, "TARGET_THROW"));
@@ -120,6 +169,11 @@ public final class MalloryTransformerTest {
       assertEquals(java.io.IOException.class, expected.getCause().getClass());
     }
     List<JsonObject> faultedEvents = readEvents(faulted);
+    for (JsonObject event : faultedEvents) {
+      if (event.get("type").getAsString().startsWith("COVERAGE_")) continue;
+      assertEquals("fault matching and application need a numeric thread identity",
+          Thread.currentThread().getId(), event.get("thread_id").getAsLong());
+    }
     assertNotNull(firstType(faultedEvents, "FAULT_MATCHED"));
     assertNotNull(firstType(faultedEvents, "FAULT_APPLIED"));
     assertEquals("f-1", firstType(faultedEvents, "FAULT_APPLIED").get("fault_id").getAsString());

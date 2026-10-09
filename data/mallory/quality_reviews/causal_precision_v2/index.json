@@ -65,6 +65,14 @@
       "sidecar": "data/mallory/quality_reviews/causal_precision_v2/HDFS-07.json"
     },
     {
+      "audit_sha256": "cc4b4a571efc52d1aa374b7050962d03fb5a84316ec0794605c57f569a0ca651",
+      "case_id": "HDFS-22",
+      "classification": "causal_precision_unverified",
+      "result_sha256": "252cec750dcdbd854cbabeeb539e87a3395c0380e22a2761d6e1dd90bf72c9ec",
+      "sha256": "7f0018223145113d5226cfb5453ead4f9b02db2851c5768900ca757930e8904d",
+      "sidecar": "data/mallory/quality_reviews/causal_precision_v2/HDFS-22.json"
+    },
+    {
       "audit_sha256": "b86651680694aa3eea454beb03d4ce71faa1a4afe40008cdf558f0dc805a5ccb",
       "case_id": "HDFS-40",
       "classification": "causal_precision_unverified",
@@ -95,6 +103,14 @@
       "result_sha256": "2a3408f72f7d962246eaa76118ded4cb3766bcb500e3567242120e8cd8e56315",
       "sha256": "53f9d62a63ad12b578a3e6100b76428c1153ce8a82dad7d0881fb7e3effcb377",
       "sidecar": "data/mallory/quality_reviews/causal_precision_v2/HDFS-50.json"
+    },
+    {
+      "audit_sha256": "ef4398ec166c67ead30b5ca46fa5e613c5b7574ff168ec6e098ae028b660488a",
+      "case_id": "SOLR-19",
+      "classification": "causal_precision_unverified",
+      "result_sha256": "d82611a488f12310e08727c4aaa5ee13054de556d3df6bd450fdc2278674297e",
+      "sha256": "c6ab48b17adf1a9373e2b4b6fec7609b88f408298d832d73b9b8c8154dbcb647",
+      "sidecar": "data/mallory/quality_reviews/causal_precision_v2/SOLR-19.json"
     },
     {
       "audit_sha256": "5211e931133ab87ce395aae8faeb997992681371e2a3702428c8048970e55ba9",
@@ -142,7 +158,9 @@
     "A non-root healthy door is insufficient when every observed path to the target traverses an actor-wide root occurrence.",
     "Root-free reachability uses only certainty=observed directed closure edges and excludes every unscoped:<node>:<epoch>:root vertex.",
     "Seven additional campaigns have no exact admitted healthy root-free door match in any strict target-retained fault trial; HBASE-18 faulted closure joins through actor-wide root.",
-    "SOLR-31 replay was reviewed before canonical promotion; sidecar binds the source result/audit hashes and the intended canonical copies."
+    "SOLR-31 replay was reviewed before canonical promotion; sidecar binds the source result/audit hashes and the intended canonical copies.",
+    "HDFS-22 has matching healthy root-free NN-to-DN doors, but no observed faulted applied occurrence-to-postfault DN target path; terminal metrics remain intact.",
+    "SOLR-19 precision scan is SHA-bound to the terminal replay; legacy root closure has no root-free healthy path or local occurrence witness."
   ],
   "positive_replay_ids": [
     "SOLR-36"
@@ -158,10 +176,12 @@
     "HBASE-21",
     "HDFS-01",
     "HDFS-07",
+    "HDFS-22",
     "HDFS-40",
     "HDFS-43",
     "HDFS-49",
     "HDFS-50",
+    "SOLR-19",
     "SOLR-31",
     "ZOOKEEPER-01",
     "ZOOKEEPER-02",

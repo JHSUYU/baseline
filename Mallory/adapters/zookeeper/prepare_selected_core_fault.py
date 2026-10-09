@@ -12,8 +12,9 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def prepare(healthy: Path, output: Path, *, trials: int, seconds: int) -> None:
-    if trials < 1 or seconds < 1:
+def prepare(healthy: Path, output: Path, *, trials: int, seconds: int,
+            max_faults_per_trial: int = 6) -> None:
+    if trials < 1 or seconds < 1 or max_faults_per_trial < 1:
         raise ValueError("fault budget must be positive")
     result_path = healthy / "result.json"
     audit_path = healthy / "offline-causal-audit.json"
@@ -65,7 +66,7 @@ def prepare(healthy: Path, output: Path, *, trials: int, seconds: int) -> None:
     config["calibration_only"] = False
     config["auto_promote_if_healthy"] = True
     config["budget"].update(trials=trials, seconds=seconds,
-                            max_faults_per_trial=6)
+                            max_faults_per_trial=max_faults_per_trial)
     config["mapping"].update(
         status="runtime_attested_healthy_seed",
         healthy_seed_verified=True,
@@ -96,6 +97,8 @@ if __name__ == "__main__":
     parser.add_argument("output_config", type=Path)
     parser.add_argument("--trials", type=int, required=True)
     parser.add_argument("--seconds", type=int, required=True)
+    parser.add_argument("--max-faults-per-trial", type=int, default=6)
     args = parser.parse_args()
     prepare(args.healthy_campaign, args.output_config,
-            trials=args.trials, seconds=args.seconds)
+            trials=args.trials, seconds=args.seconds,
+            max_faults_per_trial=args.max_faults_per_trial)

@@ -1,0 +1,55 @@
+  public void executePendingMove(org.apache.hadoop.hdfs.server.balancer.Dispatcher$PendingMove);
+    Code:
+       0: aload_1
+       1: invokestatic  #433                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove.access$3000:(Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove;)Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode$StorageGroup;
+       4: invokestatic  #437                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode$StorageGroup.access$300:(Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode$StorageGroup;)Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode;
+       7: astore_2
+       8: aload_2
+       9: invokevirtual #441                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode.getMoveExecutor:()Ljava/util/concurrent/ExecutorService;
+      12: astore_3
+      13: aload_3
+      14: ifnonnull     38
+      17: aload_0
+      18: getfield      #170                // Field moverThreadAllocator:Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$Allocator;
+      21: invokevirtual #444                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$Allocator.allocate:()I
+      24: istore        4
+      26: iload         4
+      28: ifle          38
+      31: aload_2
+      32: iload         4
+      34: invokevirtual #447                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode.initMoveExecutor:(I)Ljava/util/concurrent/ExecutorService;
+      37: astore_3
+      38: aload_3
+      39: ifnonnull     86
+      42: getstatic     #349                // Field LOG:Lorg/slf4j/Logger;
+      45: new           #271                // class java/lang/StringBuilder
+      48: dup
+      49: invokespecial #272                // Method java/lang/StringBuilder."<init>":()V
+      52: ldc_w         #449                // String No mover threads available: skip moving
+      55: invokevirtual #278                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      58: aload_1
+      59: invokevirtual #359                // Method java/lang/StringBuilder.append:(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+      62: invokevirtual #291                // Method java/lang/StringBuilder.toString:()Ljava/lang/String;
+      65: invokeinterface #452,  2          // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;)V
+      70: aload_2
+      71: aload_1
+      72: invokevirtual #456                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode.removePendingBlock:(Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove;)Z
+      75: pop
+      76: aload_1
+      77: invokestatic  #460                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove.access$3100:(Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove;)Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode;
+      80: aload_1
+      81: invokevirtual #456                // Method org/apache/hadoop/hdfs/server/balancer/Dispatcher$DDatanode.removePendingBlock:(Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove;)Z
+      84: pop
+      85: return
+      86: aload_3
+      87: aload_1
+      88: dup
+      89: invokevirtual #464                // Method java/lang/Object.getClass:()Ljava/lang/Class;
+      92: pop
+      93: invokedynamic #480,  0            // InvokeDynamic #0:run:(Lorg/apache/hadoop/hdfs/server/balancer/Dispatcher$PendingMove;)Ljava/lang/Runnable;
+      98: aload_1
+      99: invokestatic  #486                // Method edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.balancerMoveSubmitted:(Ljava/lang/Object;)V
+     102: invokeinterface #490,  2          // InterfaceMethod java/util/concurrent/ExecutorService.execute:(Ljava/lang/Runnable;)V
+     107: return
+
+  public boolean dispatchAndCheckContinue() throws java.lang.InterruptedException;

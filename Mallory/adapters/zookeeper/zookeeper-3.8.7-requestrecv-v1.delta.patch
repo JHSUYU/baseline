@@ -1,0 +1,28 @@
+--- a/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/MalloryZkHooks.java
++++ b/zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/MalloryZkHooks.java
+@@ -224,9 +224,22 @@
+                 LAST_RECEIVED.set(new ReceivedPacket(packet, correlation));
+             else LAST_RECEIVED.remove();
+         }
+-        call(sending ? "send" : "receive",
+-             new Class<?>[] {String.class, String.class, String.class, String.class},
+-             TRANSPORT, correlation, port, sending ? WRITE_DOOR : READ_DOOR);
++        if (!sending && packet.getType() == Leader.REQUEST) {
++            // Mallory scoped REQUEST receive: retain the physical packet's
++            // correlation for this RECV only, then restore the prior context.
++            Object context = invoke("withCausalContext",
++                new Class<?>[] {String.class}, correlation);
++            try (Scope receiveScope = new Scope(
++                    context instanceof AutoCloseable ? (AutoCloseable) context : null)) {
++                call("receive",
++                     new Class<?>[] {String.class, String.class, String.class, String.class},
++                     TRANSPORT, correlation, port, READ_DOOR);
++            }
++        } else {
++            call(sending ? "send" : "receive",
++                 new Class<?>[] {String.class, String.class, String.class, String.class},
++                 TRANSPORT, correlation, port, sending ? WRITE_DOOR : READ_DOOR);
++        }
+     }
+ 
+     /** Continue from the exact QuorumPacket read into the leader's request queue. */

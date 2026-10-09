@@ -6,12 +6,76 @@ import unittest
 from pathlib import Path
 
 from Mallory.report.build import (_causal_audit, _causal_precision_review,
+                                  _faulted_path_review,
                                   _posthoc_attestation, _quality,
                                   _row, _source_gap, _source_review, build,
                                   markdown)
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_faulted_path_receipt_requires_canonical_hashes_and_region_proof(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data" / "mallory"
+            campaign = results / "cases" / "CASE-000"
+            campaign.mkdir(parents=True)
+            result = {"case_id": "CASE-000", "strict_target_trials": 1}
+            result_path = campaign / "result.json"
+            result_path.write_text(json.dumps(result))
+            audit_path = campaign / "offline-causal-audit.json"
+            audit_path.write_text("{}")
+            config_path = campaign / "config.json"
+            config_path.write_text("{}")
+            digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            root = results / "quality_reviews" / "faulted_path_v1"
+            root.mkdir(parents=True)
+            receipt = {"schema_version": 1, "case_id": "CASE-000",
+                       "classification": "legacy_faulted_region_evidence",
+                       "recommended_quality_status": "retain_legacy_faulted_region_evidence",
+                       "canonical_result_sha256": digest(result_path),
+                       "canonical_audit_sha256": digest(audit_path),
+                       "canonical_config_sha256": digest(config_path),
+                       "strict_target_trials": 1,
+                       "same_region_continuation_trials": 1,
+                       "root_free_occurrence_path_trials": 1,
+                       "same_actor_named_thread_order_trials": 1,
+                       "ordered_root_free_region_path_trials": 0,
+                       "trials": [{"trial_id": 1, "trial_result_sha256": "a" * 64,
+                                   "raw_trace_sha256": "b" * 64,
+                                   "applied_event_ids": ["CASE-000-r0001:1"],
+                                   "postfault_target_check_count": 1,
+                                   "same_region_continuation": True,
+                                   "ordered_root_free_region_path": False}]}
+            receipt_path = root / "CASE-000.json"
+            receipt_path.write_text(json.dumps(receipt))
+            entry = {"case_id": "CASE-000",
+                     "classification": "legacy_faulted_region_evidence",
+                     "recommended_quality_status": "retain_legacy_faulted_region_evidence",
+                     "review_sha256": digest(receipt_path),
+                     "strict_target_trials": 1,
+                     "same_region_continuation_trials": 1,
+                     "same_actor_named_thread_order_trials": 1,
+                     "ordered_root_free_region_path_trials": 0}
+            audit_source = Path(__file__).resolve().parents[1] / "ops" / "audit_faulted_precision.py"
+            source_hash = digest(audit_source)
+            (root / "index.json").write_text(json.dumps({
+                "schema_version": 1, "cohort": ["CASE-000"], "rows": [entry],
+                "source_sha256": source_hash}))
+            self.assertEqual(("observed_local_timeline", str(receipt_path)),
+                             _faulted_path_review(results, result_path, result))
+            receipt["same_region_continuation_trials"] = 0
+            receipt_path.write_text(json.dumps(receipt))
+            self.assertEqual("invalid", _faulted_path_review(
+                results, result_path, result)[0])
+            receipt["same_region_continuation_trials"] = 1
+            receipt_path.write_text(json.dumps(receipt))
+            entry["review_sha256"] = digest(receipt_path)
+            (root / "index.json").write_text(json.dumps({
+                "schema_version": 1, "cohort": ["CASE-000"], "rows": [entry],
+                "source_sha256": source_hash}))
+            config_path.write_text('{"changed": true}')
+            self.assertEqual("invalid", _faulted_path_review(
+                results, result_path, result)[0])
+
     def test_precision_sidecar_downgrades_only_matching_terminal_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -46,7 +110,7 @@ class ReportEvidenceTest(unittest.TestCase):
             audit_path = campaign / "offline-causal-audit.json"
             audit_path.write_text(json.dumps(audit))
             audit_hash = hashlib.sha256(audit_path.read_bytes()).hexdigest()
-            self.assertEqual("target_exercised", _row(case, results)["quality_status"])
+            self.assertEqual("causal_precision_pending", _row(case, results)["quality_status"])
 
             reviews = results / "quality_reviews" / "causal_precision_v2"
             reviews.mkdir(parents=True)
@@ -83,6 +147,15 @@ class ReportEvidenceTest(unittest.TestCase):
                              _causal_precision_review(results, result_path, result))
 
             receipt["evidence_category"] = "root_free_door_unmatched"
+            receipt_path.write_text(json.dumps(receipt))
+            entry["sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            (reviews / "index.json").write_text(json.dumps({
+                "schema_version": 2,
+                "review_status": "provisional_scientific_classification",
+                "weak_case_ids": [case_id], "cases": [entry]}))
+            self.assertEqual("causal_precision_unverified", _row(case, results)["quality_status"])
+
+            receipt["evidence_category"] = "faulted_path_unverified"
             receipt_path.write_text(json.dumps(receipt))
             entry["sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
             (reviews / "index.json").write_text(json.dumps({

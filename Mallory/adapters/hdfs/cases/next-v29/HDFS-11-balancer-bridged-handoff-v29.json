@@ -1,0 +1,74 @@
+{
+  "artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v29/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java",
+      "sha256": "7a8d2b1171b7e48701e9493fbb3a238ae60902e3eddf62e16e2880fdc9f31458"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v29/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java",
+      "sha256": "98886c4ff83d3a9dd766f43752f3e2bc2c0ecfbd69c8e0668342abe57bd41441"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v29/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+      "sha256": "943e7b88732c575dbf35478134bb53822950d5d3f0c5fcb921333023e2227963"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs11-v29/bytecode/org/apache/hadoop/hdfs/server/balancer/Dispatcher.class",
+      "sha256": "9c81054b4216a0bbfbf37b38fadc3476c9b21182799cbae42328d730c22d938d"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/Dispatcher.java",
+      "sha256": "359e764825241098c3ef3dffa553110c30352c42eb7e5e94777ef6f0b2c59552"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/balancer/KeyManager.java",
+      "sha256": "c5ccc0847287740bceac5c1ca7c1dfb09b42993fcb4eb32facae75f27d011ab2"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.class",
+      "sha256": "04eccf7c273c1d984226d712ff29adc6a27d94580dfc2aa7e12e11853d57ad3a"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v29/Dispatcher.executePendingMove.javap.txt",
+      "sha256": "3ac4be9b94d7e9475e3abd09fdb60c33a7828299b3cb124599ba52a22b74d9fc"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v29/HDFS-11-balancer-actual-executor-handoff-v29.json",
+      "sha256": "d2687ddc28cf5271ea35de6363cdcacbced975d08a399d84f06fcd1986c64c66"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v29/HDFS-11-balancer-bridged-healthy-v29.json",
+      "sha256": "a971213a3c0f9c509feb295070bce4eafc432fe73ac339ca0d577ad904ac6df9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v29/run_hdfs11_balancer_bridged_healthy_v29.sh",
+      "sha256": "d9c362046919e7ea1eaffd20c1781831fd5df9d4b9c41f3b4f946f3df3319d33"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    }
+  ],
+  "case_id": "HDFS-11",
+  "config": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v29/HDFS-11-balancer-bridged-healthy-v29.json",
+    "sha256": "a971213a3c0f9c509feb295070bce4eafc432fe73ac339ca0d577ad904ac6df9"
+  },
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+  "limitation": "Healthy-only. No full campaign until a causal relevant faulted trial retains target; a disconnected updater door is a measurement gap.",
+  "output_private": "/tmp/mallory-hdfs11-v29-balancer-bridged-healthy",
+  "revision": "v29_balancer_actual_executor_handoff_healthy",
+  "schema_version": 1,
+  "source_build_lock": "/tmp/mallory-lanes/hdfs-lane1.lock",
+  "source_git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_review_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v29/HDFS-11-balancer-actual-executor-handoff-v29.json",
+  "source_review_receipt_sha256": "d2687ddc28cf5271ea35de6363cdcacbced975d08a399d84f06fcd1986c64c66",
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs",
+  "status": "staged_healthy_only_no_jvm",
+  "strict_gates": [
+    "selected existing Balancer JUnit passes and target is named DataNode",
+    "actual KeyManager updater and PendingMove submit/claim events are observed",
+    "exact updater getBlockKeys IOException door is named and its position relative to DN target is measured",
+    "fa5f event-time path to target is verified without synthetic shared-state read-from edge"
+  ]
+}

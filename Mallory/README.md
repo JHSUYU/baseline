@@ -58,6 +58,24 @@ a named I/O fault point with an observed causal path to the target, or a
 separately labeled local temporal relation when the optional rule is enabled;
 candidate state edges cannot prove either relation.
 
+When a fault-free trace has no event at the exact configured target site, the
+core records its oracle result, global coverage and observed doors without
+building an irrelevant occurrence graph. The feedback graph is explicitly
+marked `analysis_skipped: healthy_target_absent`; zero edge counters in that
+record are not a claim that the trace contains no communication. The raw trace
+is retained, and offline audit applies the same rule to this invalid seed.
+
+The first 23 completed checks passed an earlier gate requiring a root-free
+healthy path and a target check after an effective fault. Their archived agent
+traces lack numeric JVM `thread_id`, so the later `fa5f3bde` event-time gate
+cannot retroactively prove a same-thread path. SHA-bound reviews in
+`data/mallory/quality_reviews/event_time_v1/` and
+`data/mallory/quality_reviews/faulted_path_v1/` separate a healthy path from
+an observed fault-to-target continuation. The checklist labels cases without
+the latter `faulted_path_unverified`; this is an evidence gap, not proof that
+the fault had no effect or that no bug exists. New terminal cases require a
+SHA-bound positive precision review before they count as high quality.
+
 For checks whose I/O door and target lie in one region occurrence, an optional
 local-timeline rule accepts a named door observed before the exact check in
 that same occurrence. The audit labels this evidence separately from a path

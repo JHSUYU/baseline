@@ -78,6 +78,15 @@ public final class SolrHooks {
 
   public static void endOverseer() { end("overseer"); }
 
+  /** Queue reads and executor submissions belong to the overseer's registered server. */
+  public static void beginOverseerTaskProcessor(Object processor) {
+    Object reader = field(processor, "zkStateReader");
+    SCOPES.get().push(new Scope("overseer_task_processor",
+        Probe.withRegisteredNode(reader), null));
+  }
+
+  public static void endOverseerTaskProcessor() { end("overseer_task_processor"); }
+
   /** ZooKeeper watcher callbacks can run outside the initiating request thread. */
   public static void beginAliasesManager(Object manager) {
     SCOPES.get().push(new Scope("aliases", Probe.withRegisteredNode(manager), null));

@@ -4,25 +4,25 @@
   "original_selection_count": 102,
   "known_issue_control_count": 2,
   "counts": {
-    "completed_campaign": 39,
-    "pending_seed": 50,
+    "completed_campaign": 45,
+    "pending_seed": 45,
     "no_suitable_cluster_test": 3,
-    "source_review_no_suitable_test": 3,
-    "in_progress": 2,
+    "source_review_no_suitable_test": 4,
     "source_infeasible_healthy_guard": 3,
     "no_mapped_cluster_test": 2
   },
   "calibration_counts": {
-    "calibration_complete": 45,
-    "healthy_seed_invalid": 27,
+    "calibration_complete": 46,
+    "healthy_seed_invalid": 26,
     "healthy_no_injectable_door": 1,
     "healthy_node_identity_missing": 13
   },
   "quality_counts": {
-    "target_exercised": 23,
-    "causal_precision_unverified": 16
+    "observed_local_timeline": 3,
+    "faulted_path_unverified": 24,
+    "causal_precision_unverified": 18
   },
-  "high_quality_completed": 23,
+  "high_quality_completed": 3,
   "rows": [
     {
       "case_id": "HBASE-01",
@@ -47,10 +47,10 @@
       "calibration_duration_seconds": null,
       "calibration_history": [],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "observed_local_timeline",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "observed_local_timeline",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HBASE-01.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -152,11 +152,11 @@
       "target_exception": "org.apache.hadoop.hbase.TableNotEnabledException",
       "cluster_test": "org.apache.hadoop.hbase.mob.TestMobStoreScanner#testMobStoreScanner",
       "calibration_cluster_test": "org.apache.hadoop.hbase.mob.TestMobStoreScanner#testMobStoreScanner",
-      "campaign_cluster_test": null,
+      "campaign_cluster_test": "org.apache.hadoop.hbase.mob.TestMobStoreScanner#testMobStoreScanner",
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
-      "result_path": null,
+      "result_path": "data/mallory/cases/HBASE-04/result.json",
       "calibration_path": "data/mallory/calibration_v5/HBASE-04/result.json",
       "calibration_status": "calibration_complete",
       "calibration_duration_seconds": 43.392,
@@ -183,28 +183,30 @@
           "duration_seconds": 43.392
         }
       ],
-      "report_status": "pending_seed",
-      "quality_status": null,
-      "causal_audit": null,
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
-      "healthy_closure_evidence_types": null,
-      "healthy_local_timeline_doors": null,
+      "report_status": "completed_campaign",
+      "quality_status": "faulted_path_unverified",
+      "causal_audit": "verified",
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/terminal_delta_4/HBASE-04.json",
+      "healthy_closure_evidence_types": [
+        "observed_graph_path"
+      ],
+      "healthy_local_timeline_doors": 0,
       "local_timeline_only": null,
       "same_actor_target_trials": null,
       "posthoc_attestation": null,
-      "campaign_status": null,
-      "duration_seconds": null,
-      "fault_trials_completed": null,
-      "strict_injected_trials": null,
-      "strict_target_trials": null,
-      "target_reached_trials": null,
-      "exact_exception_trials": null,
-      "coverage_ids_seen": null,
-      "closure_coverage_ids_seen": null,
-      "closure_edge_fingerprints_seen": null,
-      "target_node_named": null,
-      "source_review_status": null,
+      "campaign_status": "budget_exhausted",
+      "duration_seconds": 3541.544,
+      "fault_trials_completed": 80,
+      "strict_injected_trials": 76,
+      "strict_target_trials": 76,
+      "target_reached_trials": 80,
+      "exact_exception_trials": 0,
+      "coverage_ids_seen": 81,
+      "closure_coverage_ids_seen": 32,
+      "closure_edge_fingerprints_seen": 2828,
+      "target_node_named": true,
+      "source_review_status": "not_reviewed",
       "source_review_receipt": null,
       "source_review_classification": null,
       "source_gap_receipt": null,
@@ -228,9 +230,9 @@
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
       "result_path": "data/mallory/cases/HBASE-07/result.json",
-      "calibration_path": "data/mallory/calibration_v3/HBASE-07/result.json",
+      "calibration_path": "data/mallory/calibration_v20/HBASE-07/result.json",
       "calibration_status": "calibration_complete",
-      "calibration_duration_seconds": 40.092,
+      "calibration_duration_seconds": 40.596,
       "calibration_history": [
         {
           "version": 1,
@@ -252,6 +254,13 @@
           "status": "calibration_complete",
           "cluster_test": "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient#testRestoreSnapshot",
           "duration_seconds": 40.092
+        },
+        {
+          "version": 20,
+          "path": "data/mallory/calibration_v20/HBASE-07/result.json",
+          "status": "calibration_complete",
+          "cluster_test": "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient#testRestoreSnapshot",
+          "duration_seconds": 40.596
         }
       ],
       "report_status": "completed_campaign",
@@ -328,10 +337,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HBASE-08.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -433,11 +442,11 @@
       "target_exception": "org.apache.hadoop.hbase.client.DoNotRetryRegionException",
       "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
       "calibration_cluster_test": "org.apache.hadoop.hbase.io.hfile.TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove",
-      "campaign_cluster_test": null,
+      "campaign_cluster_test": "org.apache.hadoop.hbase.io.hfile.TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove",
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
-      "result_path": null,
+      "result_path": "data/mallory/cases/HBASE-11/result.json",
       "calibration_path": "data/mallory/calibration_v7/HBASE-11/result.json",
       "calibration_status": "calibration_complete",
       "calibration_duration_seconds": 28.01,
@@ -457,28 +466,30 @@
           "duration_seconds": 28.01
         }
       ],
-      "report_status": "pending_seed",
-      "quality_status": null,
-      "causal_audit": null,
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
-      "healthy_closure_evidence_types": null,
-      "healthy_local_timeline_doors": null,
+      "report_status": "completed_campaign",
+      "quality_status": "faulted_path_unverified",
+      "causal_audit": "verified",
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/terminal_delta_4/HBASE-11.json",
+      "healthy_closure_evidence_types": [
+        "observed_graph_path"
+      ],
+      "healthy_local_timeline_doors": 0,
       "local_timeline_only": null,
       "same_actor_target_trials": null,
       "posthoc_attestation": null,
-      "campaign_status": null,
-      "duration_seconds": null,
-      "fault_trials_completed": null,
-      "strict_injected_trials": null,
-      "strict_target_trials": null,
-      "target_reached_trials": null,
-      "exact_exception_trials": null,
-      "coverage_ids_seen": null,
-      "closure_coverage_ids_seen": null,
-      "closure_edge_fingerprints_seen": null,
-      "target_node_named": null,
-      "source_review_status": null,
+      "campaign_status": "budget_exhausted",
+      "duration_seconds": 2141.691,
+      "fault_trials_completed": 80,
+      "strict_injected_trials": 46,
+      "strict_target_trials": 35,
+      "target_reached_trials": 69,
+      "exact_exception_trials": 0,
+      "coverage_ids_seen": 262,
+      "closure_coverage_ids_seen": 101,
+      "closure_edge_fingerprints_seen": 4608,
+      "target_node_named": true,
+      "source_review_status": "not_reviewed",
       "source_review_receipt": null,
       "source_review_classification": null,
       "source_gap_receipt": null,
@@ -773,11 +784,11 @@
       "target_exception": "org.apache.hadoop.hbase.HBaseIOException",
       "cluster_test": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash#testRetryBackoff",
       "calibration_cluster_test": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash#testRetryBackoff",
-      "campaign_cluster_test": null,
+      "campaign_cluster_test": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer#test",
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
-      "result_path": null,
+      "result_path": "data/mallory/cases/HBASE-16/result.json",
       "calibration_path": "data/mallory/calibration/HBASE-16/result.json",
       "calibration_status": "healthy_seed_invalid",
       "calibration_duration_seconds": 58.255,
@@ -790,28 +801,30 @@
           "duration_seconds": 58.255
         }
       ],
-      "report_status": "pending_seed",
-      "quality_status": null,
-      "causal_audit": null,
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
-      "healthy_closure_evidence_types": null,
-      "healthy_local_timeline_doors": null,
+      "report_status": "completed_campaign",
+      "quality_status": "faulted_path_unverified",
+      "causal_audit": "verified",
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/terminal_delta_4/HBASE-16.json",
+      "healthy_closure_evidence_types": [
+        "observed_graph_path"
+      ],
+      "healthy_local_timeline_doors": 0,
       "local_timeline_only": null,
       "same_actor_target_trials": null,
       "posthoc_attestation": null,
-      "campaign_status": null,
-      "duration_seconds": null,
-      "fault_trials_completed": null,
-      "strict_injected_trials": null,
-      "strict_target_trials": null,
-      "target_reached_trials": null,
-      "exact_exception_trials": null,
-      "coverage_ids_seen": null,
-      "closure_coverage_ids_seen": null,
-      "closure_edge_fingerprints_seen": null,
-      "target_node_named": null,
-      "source_review_status": null,
+      "campaign_status": "budget_exhausted",
+      "duration_seconds": 3636.509,
+      "fault_trials_completed": 73,
+      "strict_injected_trials": 65,
+      "strict_target_trials": 63,
+      "target_reached_trials": 71,
+      "exact_exception_trials": 0,
+      "coverage_ids_seen": 145,
+      "closure_coverage_ids_seen": 99,
+      "closure_edge_fingerprints_seen": 4762,
+      "target_node_named": true,
+      "source_review_status": "not_reviewed",
       "source_review_receipt": null,
       "source_review_classification": null,
       "source_gap_receipt": null,
@@ -855,10 +868,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HBASE-17.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -1181,10 +1194,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HBASE-22.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -1524,10 +1537,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HBASE-29.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -1590,10 +1603,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HBASE-30.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -1694,15 +1707,15 @@
       "check_code": "if (\nex instanceof TableNotFoundException\n|| connection.isTableDisabled(region.getRegionInfo().getTable())\n) {\nreturn;\n}\nthrow ex;",
       "target_exception": "java.io.IOException",
       "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
-      "calibration_cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+      "calibration_cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testSecondaryRegionKill",
       "campaign_cluster_test": null,
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
       "result_path": null,
-      "calibration_path": "data/mallory/calibration/HBASE-32/result.json",
+      "calibration_path": "data/mallory/calibration_v19/HBASE-32/result.json",
       "calibration_status": "healthy_seed_invalid",
-      "calibration_duration_seconds": 63.213,
+      "calibration_duration_seconds": 66.693,
       "calibration_history": [
         {
           "version": 1,
@@ -1710,9 +1723,16 @@
           "status": "healthy_seed_invalid",
           "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
           "duration_seconds": 63.213
+        },
+        {
+          "version": 19,
+          "path": "data/mallory/calibration_v19/HBASE-32/result.json",
+          "status": "healthy_seed_invalid",
+          "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testSecondaryRegionKill",
+          "duration_seconds": 66.693
         }
       ],
-      "report_status": "pending_seed",
+      "report_status": "source_review_no_suitable_test",
       "quality_status": null,
       "causal_audit": null,
       "causal_precision_review": null,
@@ -1736,7 +1756,7 @@
       "source_review_status": null,
       "source_review_receipt": null,
       "source_review_classification": null,
-      "source_gap_receipt": null,
+      "source_gap_receipt": "data/mallory/source_gaps/HBASE-32/receipt.json",
       "new_bug": null
     },
     {
@@ -1865,15 +1885,15 @@
       "check_code": "if (previous == null) {\nregionInfoMap.put(hri.getEncodedName(), new HbckRegionInfo(m));\n} else if (previous.getMetaEntry() == null) {\nprevious.setMetaEntry(m);\n} else {\nthrow new IOException(\"Two entries in hbase:meta are same \" + previous);",
       "target_exception": "java.io.IOException",
       "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckReplication#test",
-      "calibration_cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckReplication#test",
+      "calibration_cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
       "campaign_cluster_test": null,
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
       "result_path": null,
-      "calibration_path": "data/mallory/calibration/HBASE-35/result.json",
-      "calibration_status": "healthy_seed_invalid",
-      "calibration_duration_seconds": 187.605,
+      "calibration_path": "data/mallory/calibration_v18/HBASE-35/result.json",
+      "calibration_status": "calibration_complete",
+      "calibration_duration_seconds": 41.16,
       "calibration_history": [
         {
           "version": 1,
@@ -1881,6 +1901,27 @@
           "status": "healthy_seed_invalid",
           "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckReplication#test",
           "duration_seconds": 187.605
+        },
+        {
+          "version": 16,
+          "path": "data/mallory/calibration_v16/HBASE-35/result.json",
+          "status": "healthy_seed_invalid",
+          "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+          "duration_seconds": 3.184
+        },
+        {
+          "version": 17,
+          "path": "data/mallory/calibration_v17/HBASE-35/result.json",
+          "status": "healthy_seed_invalid",
+          "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+          "duration_seconds": 44.17
+        },
+        {
+          "version": 18,
+          "path": "data/mallory/calibration_v18/HBASE-35/result.json",
+          "status": "calibration_complete",
+          "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+          "duration_seconds": 41.16
         }
       ],
       "report_status": "pending_seed",
@@ -2108,10 +2149,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-08.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -2167,10 +2208,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-09.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -2226,10 +2267,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-10.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -2272,9 +2313,9 @@
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
       "result_path": null,
-      "calibration_path": "data/mallory/calibration_v18/HDFS-11/result.json",
+      "calibration_path": "data/mallory/calibration_v27/HDFS-11/result.json",
       "calibration_status": "calibration_complete",
-      "calibration_duration_seconds": 22.202,
+      "calibration_duration_seconds": 21.162,
       "calibration_history": [
         {
           "version": 1,
@@ -2303,6 +2344,20 @@
           "status": "calibration_complete",
           "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
           "duration_seconds": 22.202
+        },
+        {
+          "version": 22,
+          "path": "data/mallory/calibration_v22/HDFS-11/result.json",
+          "status": "calibration_complete",
+          "cluster_test": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+          "duration_seconds": 31.675
+        },
+        {
+          "version": 27,
+          "path": "data/mallory/calibration_v27/HDFS-11/result.json",
+          "status": "calibration_complete",
+          "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+          "duration_seconds": 21.162
         }
       ],
       "report_status": "pending_seed",
@@ -2536,10 +2591,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-15.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -2595,10 +2650,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-16.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -2675,10 +2730,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-17.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -2947,10 +3002,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-21.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -3019,26 +3074,28 @@
           "duration_seconds": 38.361
         }
       ],
-      "report_status": "in_progress",
-      "quality_status": null,
-      "causal_audit": null,
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
-      "healthy_closure_evidence_types": null,
-      "healthy_local_timeline_doors": null,
+      "report_status": "completed_campaign",
+      "quality_status": "causal_precision_unverified",
+      "causal_audit": "verified",
+      "causal_precision_review": "causal_precision_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/causal_precision_v2/HDFS-22.json",
+      "healthy_closure_evidence_types": [
+        "observed_graph_path"
+      ],
+      "healthy_local_timeline_doors": 0,
       "local_timeline_only": null,
       "same_actor_target_trials": null,
       "posthoc_attestation": null,
-      "campaign_status": "running",
-      "duration_seconds": 2230.656,
-      "fault_trials_completed": 58,
-      "strict_injected_trials": 50,
-      "strict_target_trials": 39,
-      "target_reached_trials": 44,
+      "campaign_status": "budget_exhausted",
+      "duration_seconds": 3115.625,
+      "fault_trials_completed": 80,
+      "strict_injected_trials": 69,
+      "strict_target_trials": 55,
+      "target_reached_trials": 63,
       "exact_exception_trials": 0,
       "coverage_ids_seen": 213,
       "closure_coverage_ids_seen": 80,
-      "closure_edge_fingerprints_seen": 594,
+      "closure_edge_fingerprints_seen": 804,
       "target_node_named": true,
       "source_review_status": "not_reviewed",
       "source_review_receipt": null,
@@ -3077,10 +3134,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-23.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -3193,10 +3250,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-25.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -3309,10 +3366,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-27.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -3368,10 +3425,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-28.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -3775,26 +3832,28 @@
           "duration_seconds": 35.419
         }
       ],
-      "report_status": "in_progress",
-      "quality_status": null,
-      "causal_audit": null,
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
-      "healthy_closure_evidence_types": null,
-      "healthy_local_timeline_doors": null,
+      "report_status": "completed_campaign",
+      "quality_status": "faulted_path_unverified",
+      "causal_audit": "verified",
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/terminal_delta_4/HDFS-35.json",
+      "healthy_closure_evidence_types": [
+        "observed_graph_path"
+      ],
+      "healthy_local_timeline_doors": 0,
       "local_timeline_only": null,
       "same_actor_target_trials": null,
       "posthoc_attestation": null,
-      "campaign_status": "running",
-      "duration_seconds": 1633.819,
-      "fault_trials_completed": 43,
-      "strict_injected_trials": 32,
-      "strict_target_trials": 30,
-      "target_reached_trials": 41,
+      "campaign_status": "budget_exhausted",
+      "duration_seconds": 3068.611,
+      "fault_trials_completed": 80,
+      "strict_injected_trials": 66,
+      "strict_target_trials": 62,
+      "target_reached_trials": 76,
       "exact_exception_trials": 0,
       "coverage_ids_seen": 304,
       "closure_coverage_ids_seen": 118,
-      "closure_edge_fingerprints_seen": 668,
+      "closure_edge_fingerprints_seen": 1423,
       "target_node_named": true,
       "source_review_status": "not_reviewed",
       "source_review_receipt": null,
@@ -3897,10 +3956,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-39.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -4305,10 +4364,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/HDFS-52.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -4420,10 +4479,10 @@
       "calibration_duration_seconds": null,
       "calibration_history": [],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/SOLR-05.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -4500,10 +4559,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "observed_local_timeline",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "observed_local_timeline",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/SOLR-06.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -4566,10 +4625,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "observed_local_timeline",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "observed_local_timeline",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/SOLR-07.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
@@ -5045,11 +5104,11 @@
       "target_exception": "org.apache.solr.common.SolrException",
       "cluster_test": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
       "calibration_cluster_test": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
-      "campaign_cluster_test": null,
+      "campaign_cluster_test": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
-      "result_path": null,
+      "result_path": "data/mallory/cases/SOLR-19/result.json",
       "calibration_path": "data/mallory/calibration_v4/SOLR-19/result.json",
       "calibration_status": "calibration_complete",
       "calibration_duration_seconds": 18.53,
@@ -5069,28 +5128,30 @@
           "duration_seconds": 18.53
         }
       ],
-      "report_status": "pending_seed",
-      "quality_status": null,
-      "causal_audit": null,
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
-      "healthy_closure_evidence_types": null,
-      "healthy_local_timeline_doors": null,
+      "report_status": "completed_campaign",
+      "quality_status": "causal_precision_unverified",
+      "causal_audit": "verified",
+      "causal_precision_review": "causal_precision_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/causal_precision_v2/SOLR-19.json",
+      "healthy_closure_evidence_types": [
+        "observed_graph_path"
+      ],
+      "healthy_local_timeline_doors": 0,
       "local_timeline_only": null,
       "same_actor_target_trials": null,
       "posthoc_attestation": null,
-      "campaign_status": null,
-      "duration_seconds": null,
-      "fault_trials_completed": null,
-      "strict_injected_trials": null,
-      "strict_target_trials": null,
-      "target_reached_trials": null,
-      "exact_exception_trials": null,
-      "coverage_ids_seen": null,
-      "closure_coverage_ids_seen": null,
-      "closure_edge_fingerprints_seen": null,
-      "target_node_named": null,
-      "source_review_status": null,
+      "campaign_status": "budget_exhausted",
+      "duration_seconds": 1869.955,
+      "fault_trials_completed": 80,
+      "strict_injected_trials": 49,
+      "strict_target_trials": 37,
+      "target_reached_trials": 59,
+      "exact_exception_trials": 0,
+      "coverage_ids_seen": 730,
+      "closure_coverage_ids_seen": 372,
+      "closure_edge_fingerprints_seen": 906,
+      "target_node_named": true,
+      "source_review_status": "not_reviewed",
       "source_review_receipt": null,
       "source_review_classification": null,
       "source_gap_receipt": null,
@@ -5387,10 +5448,10 @@
         }
       ],
       "report_status": "completed_campaign",
-      "quality_status": "target_exercised",
+      "quality_status": "faulted_path_unverified",
       "causal_audit": "verified",
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
+      "causal_precision_review": "faulted_path_unverified",
+      "causal_precision_receipt": "data/mallory/quality_reviews/faulted_path_v1/SOLR-36.json",
       "healthy_closure_evidence_types": [
         "observed_graph_path"
       ],
