@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-10",
+  "review_type": "source_only_fault_window",
+  "status": "full_held_source_precondition_gap",
+  "selected_target": {
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+    "function": "AssignmentManager.preTransitCheck",
+    "check_line": 755,
+    "throw_line": 757,
+    "predicate": "regionNode.getProcedure() != null",
+    "exception": "org.apache.hadoop.hbase.HBaseIOException"
+  },
+  "current_workload": {
+    "test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+    "file": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+    "finding": "The test waits for admin.unassign to return at line 105 before either move call. The subsequent moves deliberately fail on the closed-region and disabled-table checks; it does not submit a concurrent second transition while the first region procedure is active."
+  },
+  "source_findings": [
+    {
+      "location": "AssignmentManager.java:839-854; ProcedureSyncWait.java:130-170; MasterRpcServices.java:1756-1785",
+      "finding": "The server sets the region procedure and then waits until the procedure finishes before returning an UnassignRegion response. A failure at the existing RpcServer.call@447 door occurs before callBlockingMethod and before procedure creation. A response fault occurs after the synchronous wait. Neither point makes a retry observe the prior procedure still running."
+    },
+    {
+      "location": "HMaster.java:2380-2405; ServerManager.java:748-757",
+      "finding": "For a successful move, HMaster sets the procedure before the default warmup RPC and before submitProcedure. However, ServerManager.sendRegionWarmup catches and logs IOException, so an IOException injected into that warmup RPC does not escape to the Admin client or force a retry. HMaster then waits on future.get before returning the MoveRegion response."
+    },
+    {
+      "location": "RpcServer.java:438-447",
+      "finding": "The current typed server fault door is before service method dispatch. It cannot by itself affect an already-created procedure for that request."
+    },
+    {
+      "location": "TestCloseAnOpeningRegion.java:105-137",
+      "finding": "This existing MiniCluster test deliberately starts a second move while the first transition is blocked. It is a source-only alternative for reaching the target predicate, but the second background thread may produce the selected HBaseIOException even without injection. It must pass a fresh selected-exception-free healthy oracle before use, and no eligibility is claimed here."
+    }
+  ],
+  "pilot_observation": {
+    "path": "data/mallory/pilots/HBASE-10-client-scoped-v2",
+    "result_sha256": "a63e79cc93129f23da7f1012cd4808fdfc772e5b93b3750ecc799f69a3e844c0",
+    "precision_receipt_sha256": "c6a10af999676213bcd728d53f7dbf2eaff744babb9f2b8ce28058ebf4d030ec",
+    "fault_trials": 1,
+    "effective_faults": 1,
+    "strict_fault_to_target_event_path": true,
+    "selected_exception_trials": 0,
+    "interpretation": "The injected UnassignRegion fault caused a correlated client retry and reached the exact target check, but the selected exception did not occur. The strict causal path alone does not establish the target predicate."
+  },
+  "source_sha256": {
+    "AssignmentManager.java": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03",
+    "ProcedureSyncWait.java": "5fce868790d457e4c20d704d06d6727546570f79f9781e8ed1db68039db6bd12",
+    "HMaster.java": "6d47807a0bf39b6cf48677bd8acbd7eaf0bc0a6a148a04d013573cefa4b4deb1",
+    "MasterRpcServices.java": "2d2c7350c99435f9dfd961a4c35c832ecb55008cb381a9c0b6ad1a18a2bf1e34",
+    "ServerManager.java": "7c543c72892509fbb88c4b3d02576325b146d19dac90612b4e9daaf4b3c08a98",
+    "RpcServer.java": "23795d7a0c3c948933fd60f61a99fd0c4274723062f6d52261a621e2a07a9f04",
+    "TestRegionMove.java": "50f65033ce822967d3dde237c26e60bbf0891bc9587c3dfa004886d55165ec7a",
+    "TestCloseAnOpeningRegion.java": "5b94e44e525521176f316e0afdfc4f8ad34d9452ddb453f288a99a0cdcfbe500"
+  },
+  "next_gate": "Keep the staged 80/3600/max3 full campaign held. Identify an existing MiniCluster test and typed I/O fault point that can create a procedure-active retry while a fault-free healthy run has no selected throw, then run a fresh healthy and bounded strict postfault pilot before reconsidering full admission."
+}
