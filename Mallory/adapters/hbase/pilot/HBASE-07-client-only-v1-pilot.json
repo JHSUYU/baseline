@@ -1,0 +1,176 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.client.HBaseAdmin",
+    "org.apache.hadoop.hbase.ipc.RpcServer",
+    "org.apache.hadoop.hbase.client.HBaseAdmin$74"
+  ],
+  "agent_jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/agent-handoff-v1.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/adapter-handoff-v1.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "auto_promote_if_healthy": true,
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 720,
+    "trial_timeout_seconds": 600,
+    "trials": 1
+  },
+  "calibration_attestation": {
+    "class_loader_id": "sun.misc.Launcher$AppClassLoader@18b4aac2",
+    "healthy_causal_audit": {
+      "core_release_id": "96dd5cda2fe8e3f67130c8232fb98fa316a1eeac9a2ff3237075d7d8fe95538d",
+      "core_release_manifest_path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/96dd5cda2fe8e3f67130c8232fb98fa316a1eeac9a2ff3237075d7d8fe95538d/manifest.json",
+      "core_release_manifest_sha256": "3bfce4e226663fdaddbbbeb1d56d5a53f2741d7ff6ce2a042798492ce1fb0fdb",
+      "core_source_sha256": {
+        "audit.py": "a72df9d7805f2577bcaefc8b12d47905063b937206b237376ae63ded730727d7",
+        "campaign.py": "a1dce95dfe8bbc2fcef01aae16240fbd4f72804d770c341f54e66ec648d529c1",
+        "events.py": "db6b5ca756fe13d804e4356fdf01ef1924913b9977b5444797544f85cc98bd34",
+        "feedback.py": "cfc335c6cb929e18a19664aff6a49955efe15453537156f24f761d68e83de964",
+        "graph.py": "d712040ee432ddca0e84b6ee7a22fe8da58e0755b8b8437e61ad28164b979f08"
+      },
+      "path": "data/mallory/calibration_v28/HBASE-07/offline-causal-audit.json",
+      "sha256": "2f1636943d6fede10859292043d9346c55ec136d8f659dcb4bf5776d089afc1c"
+    },
+    "healthy_junit": {
+      "log_sha256": "363b0efb86e6fa8641033d58656fdd835034d1ea0e0877faa056eb8d61c2998e",
+      "runner": "hbase_direct_junit",
+      "tests_run": 1
+    },
+    "healthy_result_sha256": "36845148cf7269e3daaadf3a07fe40d281cdd4858c31e21fa0c8cfe0f7b1cbb6",
+    "identity_gaps": [],
+    "site_catalog_sha256": "b3ccbaae2bc271ace2a177041c47ff1d3a755f7f963cd853ec65d1cf1b171f02",
+    "source_overlay_receipt_sha256": null,
+    "source_reference_digest": "211136146806c868a7056e071018423cfa464aa69f446efc350a2253415fbafb",
+    "target_nodes": [
+      "client"
+    ]
+  },
+  "calibration_only": false,
+  "case_id": "HBASE-07",
+  "cluster_test": "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient#testRestoreSnapshot",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/classes:/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/adapter-handoff-v1.jar:/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/junit-platform-launcher.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient",
+    "testRestoreSnapshot"
+  ],
+  "core_release": {
+    "manifest_sha256": "3bfce4e226663fdaddbbbeb1d56d5a53f2741d7ff6ce2a042798492ce1fb0fdb",
+    "release_id": "96dd5cda2fe8e3f67130c8232fb98fa316a1eeac9a2ff3237075d7d8fe95538d"
+  },
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/source",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "expected_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+  "mapping": {
+    "adapter_sha256": "ab943e3fda02126261f99703cafeb4b6b0f71b6b5d645a29abb3498d43851cd1",
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation"
+    },
+    "agent_sha256": "7415d7bf1ee4f64e423f2377be86a3af006e20b82dde7ab4e09c097011a9e816",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-client-2.6.6.jar",
+    "compiled_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-client-2.6.6.jar",
+    "compiled_jar_sha256": "b3c9537a0c5f4b057134c59298b453ae207d2e6279be66d71c80da36d0d2de54",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6",
+    "distribution_root_env": "MALLORY_HBASE_DIST_ROOT",
+    "future_adapter_manifest_sha256": "53da49afd28aae9c81a062b3815d5a2c1cbe6d37b1d9a609d083a7fb7f5b68f1",
+    "future_core_event_time": true,
+    "healthy_seed_verified": true,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "node_identity_binding_configured": false,
+    "node_identity_binding_verified": true,
+    "previous_fa5f_healthy_result_sha256": "b295b2a92403b9c7bd3b9f5cdb59bc2c8a73885377b4b1ff8aadfb6cfc09f78a",
+    "previous_fa5f_pilot_result_sha256": "1ea58caf24d353496ccfb457077a70dbc5b7199465e6d0ac5e779ec9d72774dc",
+    "replay_identity_policy": "future_opt_in_occurrence_hit_v2_duplicate_point_fail_closed; fresh healthy required",
+    "runner_status": "direct_junit_runner_pending_per_case_healthy_calibration",
+    "site_scope": "Only HBaseAdmin$74 getCompletedSnapshots explicit client door; auto I/O fault doors disabled, HBase adapter RPC SEND/RECV hooks unchanged.",
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "source_root_env": "MALLORY_HBASE_SOURCE_ROOT",
+    "stable_door_expected_site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1",
+    "stable_door_loaded_class_sha256": "34cab92eed3b7f547a9f791d0be468efa899812e4006be3b7b498fdbd0292d57",
+    "stable_door_proposal_sha256": "0990440e32fce885617007f5933bcbe23526ae09d919e73d6e02e7fe114f1cee",
+    "stable_door_source_preflight_sha256": "fba4f4ec9bdc9a1b6894453839499f9880b54326938cc12504d021289e2140d9",
+    "status": "runtime_attested",
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/lane2-receipt.json",
+    "system_receipt_sha256": "447e50189b96f844174c472de61e213cf6c7a652614894c3d8ae07b259d9eff0",
+    "target_source_sha256": "2cfbe453b9ddbe6669c17d93b77f9a43ff9bd3bd2ab47ff9ad6f3b82ee5d06d0",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "d1a17f575b4801c5207aecba6d7780d2e12ee536ee1ba6f85f397bce5f6da729",
+    "verified_healthy_probe": "data/mallory/calibration_v28/HBASE-07/trials/r0000/result.json",
+    "verified_healthy_receipt_sha256": "5f51c91602e8889c6cb10a8a5670343050c7bd5e7d71aed8d0f3cee272cdce90"
+  },
+  "replay_identity_mode": "occurrence_hit",
+  "replay_identity_sites": [
+    "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+  ],
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/agent-handoff-v1.jar",
+      "sha256": "7415d7bf1ee4f64e423f2377be86a3af006e20b82dde7ab4e09c097011a9e816"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/adapter-handoff-v1.jar",
+      "sha256": "ab943e3fda02126261f99703cafeb4b6b0f71b6b5d645a29abb3498d43851cd1"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+      "sha256": "c82e7304119fc97d5ffdf87e2656f286735675e81f5236030db265c6e239a12f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/junit-platform-launcher.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/cases/HBASE-07-client-only-v1/sites.json",
+      "sha256": "db5902f32e7562545e780784dd07e4fdd3e24e54471e83f85a3dbea8ba61f32d"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/cases/HBASE-07-client-only-v1/sites.json",
+  "source_equivalence_receipt": {
+    "path": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/source-equivalence.json",
+    "sha256": "2ea562733b0c924585d4f50c4c50f0a5470d7ec294ea9e9917baa38f5499f067",
+    "tree_sha256": "f0fc03bf89169c4859f171da60fc9200422b4b3d570cf58853f46bf75c2360e7"
+  },
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/source",
+  "system": "hbase",
+  "target": {
+    "check_code": "if (!isTableDisabled(tableName)) {\nthrow new TableNotDisabledException(tableName);",
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2787:branch:2"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.TableNotDisabledException",
+    "function": "org.apache.hadoop.hbase.client.HBaseAdmin.restoreSnapshot(java.lang.String,boolean,boolean)",
+    "original_source_line": 2788,
+    "site_id": "<org.apache.hadoop.hbase.client.HBaseAdmin: void restoreSnapshot(java.lang.String,boolean,boolean)>#u13",
+    "source_line": 2788,
+    "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+    "throw_site": "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2788:throw:1"
+  }
+}
