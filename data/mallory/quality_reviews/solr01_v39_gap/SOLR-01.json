@@ -1,0 +1,28 @@
+{
+  "case_id": "SOLR-01",
+  "classification": "healthy_direct_listaliases_door_after_exact_retry_guard",
+  "config_sha256": "2021a43a8aeb995f73c925bf1cf16948f065146632a4a0be194126870b4cf854",
+  "fault_trials_authorized_by_this_receipt": false,
+  "first_guard_door_pair": {
+    "check_id": "SOLR-01-r0000:417",
+    "door_id": "SOLR-01-r0000:418",
+    "node": "client",
+    "thread_id": 22
+  },
+  "full_campaign_promoted": false,
+  "gzip_trace_sha256": "eded4561aa7d808851a91be78f51665742946b1d73e8ac15876f07481413d807",
+  "healthy_result_sha256": "5724577ef7044bf4854444a05167a82df14c3489812747bdb4b63daba316c71f",
+  "healthy_same_invocation_postdoor_exact_checks": 0,
+  "named_caught_io_door_count": 15,
+  "named_exact_check_count": 15,
+  "offline_audit_sha256": "8e37d7ba4d07a2c229efdceb38c48af9dbb2e7a11e042ad126a6a08f67a13f88",
+  "pilot_result_sha256": "35abc7ab75280bbed39bda286a61fb6a9ee6e5e750600af218e800c5db691c5e",
+  "raw_trace_bytes": 1134369,
+  "raw_trace_sha256": "afb17f1fa3a304cfaac3ee6fa1d633aa5779b2d9425f32096ee231b09d8951a0",
+  "schema_version": 1,
+  "source_finding": "The exact @243 loop guard executes before the LISTALIASES process call in each healthy invocation. IOException from that call is caught and can cause a later loop iteration, but the healthy trace has one successful attempt per invocation and thus no post-door target check or strict observed path. A fault pilot is not promoted from this healthy seed.",
+  "source_snapshot_sha256": "46cb8a48f5465c8643c028376868b13ebf25512e65f4c2a2e67bea38ac791fae",
+  "strict_door_target_path_pairs": 0,
+  "sync_receipt_sha256": "74d0a453d612d3098299837b5f5d7fb6c057ea87e7b77da8d8d4b6f4bd892009",
+  "trial_result_sha256": "d574d3f320ea871138aa85fc2567757cf80741580e206b9c93c1bf26ea0592ec"
+}
