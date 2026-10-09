@@ -1,0 +1,132 @@
+{
+  "cases": [
+    {
+      "build": {
+        "agent_arg_property": "maven-surefire-plugin.argLine",
+        "argv": [
+          "mvn",
+          "-B",
+          "-ntp",
+          "-pl",
+          "hadoop-hdfs-project/hadoop-hdfs",
+          "-Dtest=TestDFSUpgrade#testUpgrade",
+          "-Dsurefire.failIfNoSpecifiedTests=false",
+          "surefire:test"
+        ],
+        "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8",
+        "cwd_relative_to_source_root": ".",
+        "module": "hadoop-hdfs-project/hadoop-hdfs",
+        "precondition": "isolated source has pinned compiled classes and test-classes",
+        "selector_scope": "selected_method",
+        "tool": "maven",
+        "tool_available_on_inventory_host": true,
+        "validated_by_execution": false
+      },
+      "case_id": "HDFS-24",
+      "cohort": "original_102",
+      "eligibility": {
+        "bytecode_mapping_status": "unique_compiled_site",
+        "cluster_and_target_reach_verified_for_mallory": false,
+        "historical_status_is_not_eligibility": true,
+        "mapping_gaps": [],
+        "may_attempt_seed": true,
+        "may_dispatch_healthy_seed": true,
+        "state": "ready_for_healthy_seed"
+      },
+      "provenance": {
+        "distribution_root": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3",
+        "distribution_root_env": "MALLORY_HDFS_DIST_ROOT",
+        "historical_crashfuzz_status": "quality_complete",
+        "historical_crashfuzz_test": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+        "historical_exclusion_reason": null,
+        "historical_result_file": "data/crashfuzz/checklist102.json",
+        "historical_seed_seconds": 42.263,
+        "selection_file": "data/crashfuzz/selection102.json",
+        "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+        "source_file_exists": true,
+        "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+        "source_root_env": "MALLORY_HDFS_SOURCE_ROOT"
+      },
+      "system": "hdfs",
+      "system_version": "3.4.3",
+      "target": {
+        "check_code": "if (this.layoutVersion > DataNodeLayoutVersion.getCurrentLayoutVersion()\n|| this.cTime < nsInfo.getCTime()) {\ndoUpgrade(sd, nsInfo, callables, conf); // upgrade\nreturn true;\n}\n// layoutVersion == LAYOUT_VERSION && this.cTime > nsInfo.cTime\n// must shutdown\nthrow new IOException(\"Datanode state: LV = \" + this.getLayoutVersion()\n+ \" CTime = \" + this.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());",
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "runtime_mapping": {
+          "check_sites": [
+            "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@414:branch:14"
+          ],
+          "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes",
+          "compiled_class_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+          "exception_class": "java.io.IOException",
+          "selected_source_line": 424,
+          "throw_site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@424:throw:1"
+        },
+        "site_id": "<org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage: boolean doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)>#u137",
+        "source_line": 424,
+        "source_line_text": "+ nsInfo.getLayoutVersion() + \" CTime = \" + nsInfo.getCTime());",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+        "target_exception": "java.io.IOException",
+        "target_guard": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#B15",
+        "target_throw": "org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z#L424"
+      },
+      "workload": {
+        "alternate_mapping_evidence": null,
+        "alternate_test_candidates": [],
+        "candidates": [
+          {
+            "class": "org.apache.hadoop.hdfs.TestDFSUpgrade",
+            "cluster_fixture_markers_in_test_source": [
+              "MiniDFSCluster"
+            ],
+            "has_junit_annotation": true,
+            "method": "testUpgrade",
+            "method_line": 225,
+            "parameter_variant": null,
+            "raw": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+            "resolution": "test_method_found",
+            "selector": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+            "simple_class": "TestDFSUpgrade",
+            "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java",
+            "source_sha256": "38088f4b0ab70265a9734ae1f8949005551577486a0ad7e35c9578f4d41c3520",
+            "test_like": true
+          },
+          {
+            "class": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate",
+            "cluster_fixture_markers_in_test_source": [
+              "MiniDFSCluster"
+            ],
+            "has_junit_annotation": true,
+            "method": "testUpgradeAndRestart",
+            "method_line": 987,
+            "parameter_variant": null,
+            "raw": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart",
+            "resolution": "test_method_found_verified_healthy_v3",
+            "selector": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart",
+            "simple_class": "TestFileTruncate",
+            "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java",
+            "source_sha256": "f60f8552ac841ec6d4f0572f9fc390c887a45a832422e8a56d0ddd4e49cd916b",
+            "test_like": true
+          }
+        ],
+        "healthy_pilot_attestation": null,
+        "mapping_evidence": null,
+        "original_selector": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+        "original_test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java",
+        "parameter_variant_note": null,
+        "recorded_selector": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+        "recorded_selector_status": null,
+        "selected_selector": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart",
+        "selector_source": "versioned_existing_cluster_alternate_v3",
+        "source_oracle_warning": null,
+        "test_class": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate",
+        "test_method": "testUpgradeAndRestart",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java"
+      }
+    }
+  ],
+  "count": 1,
+  "revision": "HDFS-24-v3-existing-cluster-alternate",
+  "schema_version": 1
+}

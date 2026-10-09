@@ -1,0 +1,122 @@
+{
+  "audit_report_gate_passed": true,
+  "audit_same_actor_target_trials": 0,
+  "case_id": "HDFS-24",
+  "config_sha256": "25c30266c08f53f3fd005ba6104ba2ebe092ee2eac956d18f7c0d01223f315e8",
+  "duration_seconds": 76.423,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 2,
+  "fault_trials_with_unique_event_time_retry_rpc_target_path": 2,
+  "healthy_seed_valid": true,
+  "kind": "bounded_one_fault_pilot",
+  "limitations": [
+    "No selected target IOException in healthy or either fault trial.",
+    "Pilot validates fault-to-target retry continuity only; no bug claim.",
+    "Full campaign not launched by this receipt."
+  ],
+  "max_faults_per_trial": 1,
+  "new_bug": false,
+  "raw_archive": "/users/ZhenyuLi/baseline/data/mallory/pilots/HDFS-24-v3-exact-retry",
+  "raw_archive_manifest_sha256": "0af9e3ba5240bda3f0e875eea130e0c7cfa658b8f51b7ef909cc0c6a253c18e2",
+  "raw_audit_sha256": "298431c1cf3d04c3d2da75f36a15763bc42930036c95d3dd75baa67afa6e0d7a",
+  "raw_result_sha256": "50d1ed8ecd9e939e49dec9919cba4bf074bbd84346618ac7caaec6823a30ee62",
+  "same_actor_metric_scope": "local_timeline_and_exact_occurrence_only; cross-RPC retry is proven by independent verifier",
+  "schema_version": 1,
+  "source_retry": {
+    "fault_call_line": 260,
+    "inner_io_catch_lines": [
+      265,
+      266
+    ],
+    "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+    "retry_sleep_line": 270,
+    "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+  },
+  "status": "validated_retry_rpc_path_no_target_exception",
+  "system": "hdfs",
+  "target_source": {
+    "check_line": 414,
+    "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+    "sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+    "throw_line": 424
+  },
+  "trial_witnesses": [
+    {
+      "actor": {
+        "epoch": 0,
+        "node": "hdfs-cluster-2/dn0",
+        "thread_id": 566
+      },
+      "event_ids": {
+        "door": "HDFS-24-r0001:380",
+        "fault_applied": "HDFS-24-r0001:382",
+        "fault_matched": "HDFS-24-r0001:381",
+        "region_enter": "HDFS-24-r0001:724",
+        "request_recv": "HDFS-24-r0001:720",
+        "request_send": "HDFS-24-r0001:719",
+        "response_recv": "HDFS-24-r0001:723",
+        "response_send": "HDFS-24-r0001:722",
+        "retry_door": "HDFS-24-r0001:718",
+        "target_check": "HDFS-24-r0001:725"
+      },
+      "event_seqs": {
+        "fault_applied": 382,
+        "region_enter": 724,
+        "request_recv": 720,
+        "request_send": 719,
+        "response_recv": 723,
+        "response_send": 722,
+        "retry_door": 718,
+        "target_check": 725
+      },
+      "junit_receipt_sha256": "381de4e965b2e658f0706065ef08614ee13fa6d37f0b9cac528d32542ddb587c",
+      "plan_sha256": "f50a3b560cd85def3c57c692ea76877f503c4b62bc072e56dcd072422bba1854",
+      "result_sha256": "d58827a8ed5af9e18e930e2b169c419d2f06a2013fd0ec202197c54a361782a8",
+      "rpc_token": "f5a9fa866ef1474f84eef25eda34b5f2:121:0",
+      "trace_gzip_sha256": "b97b3111c15219665ec889f7bf7dcd5f2ddcccec5eaf95728cbe4471cb6011c3",
+      "trace_uncompressed_sha256": "fdb294d4b8c75257947fd6c1c22d06ccdecf2e3eefa7fb68e8ac3b91a2b0177b",
+      "trial": "r0001"
+    },
+    {
+      "actor": {
+        "epoch": 0,
+        "node": "hdfs-cluster-2/dn1",
+        "thread_id": 602
+      },
+      "event_ids": {
+        "door": "HDFS-24-r0002:379",
+        "fault_applied": "HDFS-24-r0002:381",
+        "fault_matched": "HDFS-24-r0002:380",
+        "region_enter": "HDFS-24-r0002:717",
+        "request_recv": "HDFS-24-r0002:708",
+        "request_send": "HDFS-24-r0002:707",
+        "response_recv": "HDFS-24-r0002:711",
+        "response_send": "HDFS-24-r0002:710",
+        "retry_door": "HDFS-24-r0002:706",
+        "target_check": "HDFS-24-r0002:718"
+      },
+      "event_seqs": {
+        "fault_applied": 381,
+        "region_enter": 717,
+        "request_recv": 708,
+        "request_send": 707,
+        "response_recv": 711,
+        "response_send": 710,
+        "retry_door": 706,
+        "target_check": 718
+      },
+      "junit_receipt_sha256": "71123dfe6f6fbae9ce12a24bf6eee032821b0c1f91360df614372448888d6a08",
+      "plan_sha256": "2f791324b687000c496a6f4340cb7d5e4453a553ed2faa80f66d5d37e67bc657",
+      "result_sha256": "b0c070ff0a2ff1a67f358a5ffe793481530348d41c466c33dbdc8096caefb536",
+      "rpc_token": "3de21f84307c48c49d65f8a16d3a2c33:119:0",
+      "trace_gzip_sha256": "33e4891e1ee02ac6f2a2e0fae5e57a475b7f6525c77ebe5cea9a1e9070a2989e",
+      "trace_uncompressed_sha256": "23dff45bc7b6658169c3e327e56182d4e546ea81fd7422e26c2ac12a14dda257",
+      "trial": "r0002"
+    }
+  ],
+  "verifier_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/io-version-retry-v3-owner-binding/verify_hdfs24_retry_v3.py",
+  "verifier_sha256": "aa06f7067997a3ea7c6a9323ab07b78f04fcae98b8698f9785a851ae6709abb4",
+  "witness_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/io-version-retry-v3-owner-binding/HDFS-24-v3-retry-witness.json",
+  "witness_sha256": "5c9bc9f87043f3cce995f2248fa88e5730a65cac5879ab55d37a226977e0f05f",
+  "workload": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart"
+}

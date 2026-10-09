@@ -1,0 +1,98 @@
+--- a/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
++++ b/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
+@@ -44,6 +44,7 @@
+       new IdentityHashMap<Object, String>();
+   private static final ThreadLocal<Object> ACTOR_DATANODE = new ThreadLocal<Object>();
+   private static final ThreadLocal<Boolean> CREATING_NAMENODE = new ThreadLocal<Boolean>();
++  private static final ThreadLocal<Object> STARTING_DATANODE_CLUSTER = new ThreadLocal<Object>();
+   private static final ThreadLocal<ResponseConsumerScope> RESPONSE_CONSUMER =
+       new ThreadLocal<ResponseConsumerScope>();
+   // A completed RPC Call can rethrow the same RemoteException through more
+@@ -103,6 +104,10 @@
+   /** Register a DN before its daemon starts; Builder.build returns too late for startup checks. */
+   public static synchronized void dataNodeStarting(Object dn, Object cluster) {
+     if (dn == null || cluster == null) return;
++    // The constructor-side hook runs before BlockPoolManager.refreshNamenodes
++    // starts BPServiceActor. The later MiniDFSCluster hook must not advance its
++    // epoch a second time for the same concrete DataNode.
++    if (DN_OBJECT_EPOCHS.containsKey(dn)) return;
+     String prefix = CLUSTER_NAMES.get(cluster);
+     if (prefix == null) {
+       prefix = "hdfs-cluster-" + CLUSTERS.incrementAndGet();
+@@ -128,6 +133,28 @@
+     } catch (ReflectiveOperationException failure) {
+       throw new IllegalStateException("HDFS early DataNode registration failed", failure);
+     }
++  }
++
++  /** Scope the MiniDFSCluster invocation that constructs one or more DataNodes. */
++  public static DataNodeConstructionScope dataNodeConstructionEnter(Object cluster) {
++    Object previous = STARTING_DATANODE_CLUSTER.get();
++    STARTING_DATANODE_CLUSTER.set(cluster);
++    return new DataNodeConstructionScope(previous);
++  }
++
++  public static final class DataNodeConstructionScope implements AutoCloseable {
++    private final Object previous;
++    private DataNodeConstructionScope(Object previous) { this.previous = previous; }
++    @Override public void close() {
++      if (previous == null) STARTING_DATANODE_CLUSTER.remove();
++      else STARTING_DATANODE_CLUSTER.set(previous);
++    }
++  }
++
++  /** Called just before refreshNamenodes starts the first BPServiceActor. */
++  public static void dataNodeBeforeRefresh(Object dn) {
++    Object cluster = STARTING_DATANODE_CLUSTER.get();
++    if (cluster != null) dataNodeStarting(dn, cluster);
+   }
+ 
+   /** Called on Builder.build's successful return, after all MiniCluster services exist. */
+--- a/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
++++ b/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
+@@ -69,6 +69,10 @@
+         }
+       } else if (name.equals("org/apache/hadoop/hdfs/MiniDFSCluster")
+           && method.name.equals("startDataNodes")) {
++        wrap(method, HOOKS, "dataNodeConstructionEnter",
++            "(Ljava/lang/Object;)L" + HOOKS + "$DataNodeConstructionScope;",
++            HOOKS + "$DataNodeConstructionScope", true);
++        changed = true;
+         for (AbstractInsnNode instruction : method.instructions.toArray()) {
+           if (!(instruction instanceof MethodInsnNode)) continue;
+           MethodInsnNode call = (MethodInsnNode) instruction;
+@@ -79,6 +83,26 @@
+           hook.add(new VarInsnNode(Opcodes.ALOAD, 0));
+           hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS, "dataNodeStarting",
+               "(Ljava/lang/Object;Ljava/lang/Object;)V", false));
++          method.instructions.insertBefore(instruction, hook);
++          changed = true;
++        }
++      } else if (name.equals("org/apache/hadoop/hdfs/MiniDFSCluster")
++          && method.name.equals("restartDataNode")) {
++        wrap(method, HOOKS, "dataNodeConstructionEnter",
++            "(Ljava/lang/Object;)L" + HOOKS + "$DataNodeConstructionScope;",
++            HOOKS + "$DataNodeConstructionScope", true);
++        changed = true;
++      } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/DataNode")
++          && method.name.equals("startDataNode")) {
++        for (AbstractInsnNode instruction : method.instructions.toArray()) {
++          if (!(instruction instanceof MethodInsnNode)) continue;
++          MethodInsnNode call = (MethodInsnNode) instruction;
++          if (!call.owner.equals("org/apache/hadoop/hdfs/server/datanode/BlockPoolManager")
++              || !call.name.equals("refreshNamenodes")) continue;
++          InsnList hook = new InsnList();
++          hook.add(new VarInsnNode(Opcodes.ALOAD, 0));
++          hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS, "dataNodeBeforeRefresh",
++              "(Ljava/lang/Object;)V", false));
+           method.instructions.insertBefore(instruction, hook);
+           changed = true;
+         }
+@@ -555,6 +579,7 @@
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker$1")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/DataStorage$VolumeBuilder")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/DataXceiver")
++        || name.equals("org/apache/hadoop/hdfs/server/datanode/DataNode")
+         || name.equals("org/apache/hadoop/hdfs/server/balancer/KeyManager")
+         || name.equals("org/apache/hadoop/hdfs/server/balancer/KeyManager$BlockKeyUpdater")
+         || name.equals("org/apache/hadoop/hdfs/server/balancer/Dispatcher")

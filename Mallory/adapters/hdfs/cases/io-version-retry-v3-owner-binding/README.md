@@ -1,0 +1,11 @@
+# HDFS-24 early DataNode identity binding
+
+The v2 fault-free `TestFileTruncate#testUpgradeAndRestart` run completed in 23.002 seconds, passed one JUnit test, reached `BlockPoolSliceStorage.doTransition@414` six times on named DataNodes, and had no selected throw. Its frozen causal audit found three NN RPC response doors on a strict path to the target. The desired `BPServiceActor.retrieveNamespaceInfo@260` retry door, however, fired under `node=unknown` before DataNode registration; it was not a valid injection point.
+
+The startup order explains this identity gap. `MiniDFSCluster.startDataNodes` invokes `DataNode.instantiateDataNode`, whose constructor invokes `startDataNode`. That method calls `BlockPoolManager.refreshNamenodes`, which starts `BPServiceActor`, before `MiniDFSCluster` reaches its existing hook ahead of `runDatanodeDaemon`. The existing registration hook therefore arrives after the actor's first namespace request. `MiniDFSCluster.restartDataNode` likewise calls `DataNode.createDataNode`, which starts the daemon before returning.
+
+The isolated v3 patch scopes the MiniDFSCluster construction call, then registers the concrete DataNode immediately before `BlockPoolManager.refreshNamenodes`. It uses the same cluster prefix, `dataNodes.size()` index, and epoch map as the existing hook. The later hook skips an already registered object, avoiding an artificial epoch increment. A construction scope restores its prior thread-local value on normal and exceptional exits. Direct non-MiniCluster DataNode construction remains unbound rather than guessed.
+
+The patch was applied only in `/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-hdfs24-v3`, built against numeric-thread agent `38658059f365...`; isolated Maven tests passed. `VerifyOwnerHook.java` transformed the real Hadoop 3.4.3 `DataNode.class` and `MiniDFSCluster.class` (the same SHA-256 bytes on node0/node2), ran ASM structural frame checks, and found exactly one pre-refresh hook in `DataNode.startDataNode` and construction scopes in the six `startDataNodes` and six `restartDataNode` overloads. This is bytecode proof only. A fresh healthy MiniCluster trace must show a named pretarget retry door and strict observed path before any fault trial.
+
+Do not reinterpret the v2 unknown-actor doors as named. Preserve its raw archive and receipt separately.
