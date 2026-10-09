@@ -20,6 +20,29 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_solr37_retry_source_finding_replays_and_rejects_rehashed_claim(self):
+        from Mallory.report.build import _solr37_retry_source_review
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory/quality_reviews/solr37_retry_gap"
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            target = results / "quality_reviews/solr37_retry_gap"
+            target.mkdir(parents=True)
+            for name in ("index.json", "SOLR-37.json"):
+                shutil.copy2(source / name, target / name)
+            self.assertEqual(_solr37_retry_source_review(results, "SOLR-37")[0],
+                             "source_review_no_configured_retry")
+            receipt_path = target / "SOLR-37.json"
+            receipt = json.loads(receipt_path.read_text())
+            receipt["pilot_time_respecting_fault_to_target_paths"] = 1
+            receipt_path.write_text(json.dumps(receipt))
+            index_path = target / "index.json"
+            index = json.loads(index_path.read_text())
+            index["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index))
+            self.assertEqual(_solr37_retry_source_review(results, "SOLR-37")[0],
+                             "invalid_fault_model_receipt")
+
     def test_zk06_retry_gap_requires_same_packet_raw_lineage(self):
         from Mallory.report.build import _zk06_retry_guard_gap
         baseline = Path(__file__).resolve().parents[2]
