@@ -1,0 +1,270 @@
+{
+  "auto_campaign_promotion": false,
+  "bridge": {
+    "adapter_jar": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-v1/release/mallory-hdfs-adapter.jar",
+      "sha256": "6a5f04cafbb7085b24c3cc87091e3f23f92a3c767f0ca4def38254fa87b92b2b"
+    },
+    "hooks_source": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-v1/overlay/HdfsHooks.java",
+      "sha256": "44a96b86dfe3040ba27d717bde551cfec4ef2f350bb61a0522d95a4ba3fb6402"
+    },
+    "preflight": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-v1/preflight.json",
+      "sha256": "6d627c1c7059bfb3f1d445036753aef05bf9eb7c6fc91e97d3d04c473594fca7"
+    },
+    "status": "staged_source_only_not_cluster_calibrated",
+    "transformer_source": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-v1/overlay/HdfsMiniClusterTransformer.java",
+      "sha256": "d9b8ed107c81ef33f013144142d7cd4f3918099b34e6138ed7a9a3da3e9a8659"
+    }
+  },
+  "cases": [
+    {
+      "assessment": "TestDFSFinalize builds matching NN/DN block-pool IDs, calls finalizeCluster and triggers block reports. The decoded DNA_FINALIZE command reaches BPOfferService.processCommandFromActive @768 and the equality assertion falls through; prior named-DN trial confirmed zero @769 throws.",
+      "case_id": "HDFS-19",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-door-v1/HDFS-19-healthy-only.json",
+        "sha256": "b85758c3e18f6e9772db571f64c49dfc6414a9190218441ece1a5df24084a8fe"
+      },
+      "door": {
+        "callee_throws": "java.io.IOException",
+        "catch": "BPServiceActor.offerService catches IOException at 786-788 and keeps its service loop alive",
+        "causal_join": "successful blockReport reply -> decoded concrete FinalizeCommand -> command queue submit/claim -> target",
+        "retention_scope": "A one-shot failure on an initial pre-finalization report should leave later explicit finalizeCluster/triggerBlockReports phases available. A failure on the only command-bearing forced report may consume forceFullBr and suppress that phase; target retention requires a bounded pilot after healthy admission.",
+        "site": "BPServiceActor.blockReport(long):423 -> DatanodeProtocolClientSideTranslatorPB.blockReport"
+      },
+      "door_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class",
+        "sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0"
+      },
+      "door_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+        "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+      },
+      "junit": {
+        "compiled_class": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestDFSFinalize.class",
+          "sha256": "407bd4ee4f06124c524159e7523c0fbdda570f828d14d11c9b632916c8f13865"
+        },
+        "source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java",
+          "sha256": "9fb047e65d310ba610210a831788a0e77b7c011b14c856dc4e7425d20177dad9"
+        }
+      },
+      "listed_selector": "org.apache.hadoop.hdfs.TestDFSFinalize#testFinalize",
+      "prior_v2_healthy": {
+        "graph_edges_by_kind": {
+          "rpc": 70,
+          "task": 1
+        },
+        "in_closure_door_count": 0,
+        "junit": {
+          "errors": 0,
+          "failures": 0,
+          "report_suffix": "mallory_0000_ababf834d9f14fc7b3577fa04273573e",
+          "reports": [
+            {
+              "counts": {
+                "errors": 0,
+                "failures": 0,
+                "skipped": 0,
+                "tests": 1
+              },
+              "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestDFSFinalize-mallory_0000_ababf834d9f14fc7b3577fa04273573e.xml",
+              "sha256": "d488a9caf31fbf469746c8fcc2ff3956e196b02b4af81dd9074866d87d46f75a"
+            }
+          ],
+          "runner": "surefire_xml",
+          "schema_version": 1,
+          "skipped": 0,
+          "status": "passed",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "ad7aca0b109ee3be592279643a8fd68c94ea248615b1c9ae6679ca519a482f49",
+          "tests": 1
+        },
+        "result": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-19/result.json",
+          "sha256": "f8edef1b4adfa8f8d53ae1a99a1fb90b7e13aa0e8860b2b2e903a5ea9243137f"
+        },
+        "site_catalog": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-19/trials/r0000/sites.jsonl",
+          "sha256": "e0a07ec24b4ef3b5dd830938697ee3d06bdb758c04e6348544f3bf8e88146a4a"
+        },
+        "stdout": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-19/trials/r0000/stdout.log",
+          "sha256": "ad7aca0b109ee3be592279643a8fd68c94ea248615b1c9ae6679ca519a482f49"
+        },
+        "target_nodes": [
+          "hdfs-cluster-1/dn0",
+          "hdfs-cluster-2/dn0",
+          "hdfs-cluster-3/dn0",
+          "hdfs-cluster-4/dn0",
+          "hdfs-cluster-5/dn0"
+        ],
+        "target_reached": true,
+        "target_threw": false,
+        "trial": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-19/trials/r0000/result.json",
+          "sha256": "1f749ad2c81b138dd67b4b20fd195812d670c235c40291fe651d6a2d2a81a759"
+        }
+      },
+      "rpc_translator_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.class",
+        "sha256": "9e793595f9b84613bdee8c0350625ae6b01bb5af48dc49e9a7b30fe88227911d"
+      },
+      "rpc_translator_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.java",
+        "sha256": "07f1cc59498881a424ec2e6c5837a6299d73dc93417cd1e4da327d172d2f0f98"
+      },
+      "site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-door-v1/HDFS-19.sites.json",
+        "sha256": "72e417f53794f13f2a26136c0c8e5d47b3bcbb5da157e0ef2df8677a3c6408b3"
+      },
+      "status": "source_only_healthy_probe_pending_dispatch",
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:4",
+          "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@768:branch:5"
+        ],
+        "compiled_class": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPOfferService.class",
+          "sha256": "0f2fe86dffc1e31ef2ce788d458aa5f9ee1a2038f0d0d7983917aaef35e38c2b"
+        },
+        "source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+          "sha256": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294"
+        },
+        "throw_site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#processCommandFromActive(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z@769:throw:1"
+      }
+    },
+    {
+      "assessment": "TestStandbyIsHot runs a three-DN HA MiniDFSCluster, transitions NN0 active, writes and replicates data, and triggers heartbeats. Each active NN heartbeat supplies a nonregressing txid; prior named-DN trial confirmed @606 reached with zero selected throws.",
+      "case_id": "HDFS-20",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-door-v1/HDFS-20-healthy-only.json",
+        "sha256": "ddd91b377d70641ae24372ba9f1278259b55c1dcaca80eb59e4cf79f52cb921d"
+      },
+      "door": {
+        "callee_throws": "java.io.IOException",
+        "catch": "BPServiceActor.offerService catches IOException at 786-788, sleeps at most one second, and retries the service loop",
+        "causal_join": "successful heartbeat RPC response -> decoded NNHAStatusHeartbeat -> target",
+        "retention_scope": "A one-shot heartbeat RPC exception leaves later heartbeats and the active status check possible within the JUnit, subject to the 60-second test timeout; exact postfault target retention requires a bounded pilot.",
+        "site": "BPServiceActor.sendHeartBeat(boolean):563 -> DatanodeProtocolClientSideTranslatorPB.sendHeartbeat"
+      },
+      "door_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class",
+        "sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0"
+      },
+      "door_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+        "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+      },
+      "junit": {
+        "compiled_class": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/server/namenode/ha/TestStandbyIsHot.class",
+          "sha256": "719b821829f433629565b2955d6ec9b289dd9907fc3fe9b9de1c5d85d4929d71"
+        },
+        "source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestStandbyIsHot.java",
+          "sha256": "3cb3055ba42142aba5f89ee9473c0329ae7815ef5e60346253bcd2bfaf352fa2"
+        }
+      },
+      "listed_selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestStandbyIsHot#testStandbyIsHot",
+      "prior_v2_healthy": {
+        "graph_edges_by_kind": {
+          "rpc": 97
+        },
+        "in_closure_door_count": 0,
+        "junit": {
+          "errors": 0,
+          "failures": 0,
+          "report_suffix": "mallory_0000_60f52de64fd84b36bfc8274ad5507d62",
+          "reports": [
+            {
+              "counts": {
+                "errors": 0,
+                "failures": 0,
+                "skipped": 0,
+                "tests": 1
+              },
+              "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.namenode.ha.TestStandbyIsHot-mallory_0000_60f52de64fd84b36bfc8274ad5507d62.xml",
+              "sha256": "f85efa180f33f6baa417d75d6ea481ba4cb24466809b25dc6e0653b5b2153591"
+            }
+          ],
+          "runner": "surefire_xml",
+          "schema_version": 1,
+          "skipped": 0,
+          "status": "passed",
+          "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stdout_sha256": "2252259c4dd12c8e182a1b4e83ac8cea0c8358dd25b8564be1dddf89b65300e2",
+          "tests": 1
+        },
+        "result": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-20/result.json",
+          "sha256": "941383a83299bfc47877f2cf43c56e1620edc243ec0a521f3e6cd9345ac2463b"
+        },
+        "site_catalog": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-20/trials/r0000/sites.jsonl",
+          "sha256": "d4d4c2f31554acabbfee97f2c820833bf2ffc73be112eb5dea19baff8f24bac4"
+        },
+        "stdout": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-20/trials/r0000/stdout.log",
+          "sha256": "2252259c4dd12c8e182a1b4e83ac8cea0c8358dd25b8564be1dddf89b65300e2"
+        },
+        "target_nodes": [
+          "hdfs-cluster-1/dn0",
+          "hdfs-cluster-1/dn1",
+          "hdfs-cluster-1/dn2"
+        ],
+        "target_reached": true,
+        "target_threw": false,
+        "trial": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HDFS-20/trials/r0000/result.json",
+          "sha256": "ab1f0d2d6db4640486a6df8406d682491e8712a34539ff39159c5310179f8f15"
+        }
+      },
+      "rpc_translator_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.class",
+        "sha256": "9e793595f9b84613bdee8c0350625ae6b01bb5af48dc49e9a7b30fe88227911d"
+      },
+      "rpc_translator_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.java",
+        "sha256": "07f1cc59498881a424ec2e6c5837a6299d73dc93417cd1e4da327d172d2f0f98"
+      },
+      "site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/heartbeat-door-v1/HDFS-20.sites.json",
+        "sha256": "19d064a5eb221bbdbbe33053a534a44eaffa6591734cbef4fdd10c0e73dd2091"
+      },
+      "status": "source_only_healthy_probe_pending_dispatch",
+      "target": {
+        "check_sites": [
+          "org.apache.hadoop.hdfs.server.datanode.BPOfferService#updateActorStatesFromHeartbeat(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/NNHAStatusHeartbeat;)V@606:branch:11",
+          "org.apache.hadoop.hdfs.server.datanode.BPOfferService#updateActorStatesFromHeartbeat(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/NNHAStatusHeartbeat;)V@606:branch:12"
+        ],
+        "compiled_class": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPOfferService.class",
+          "sha256": "0f2fe86dffc1e31ef2ce788d458aa5f9ee1a2038f0d0d7983917aaef35e38c2b"
+        },
+        "source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+          "sha256": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294"
+        },
+        "throw_site": "org.apache.hadoop.hdfs.server.datanode.BPOfferService#updateActorStatesFromHeartbeat(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Lorg/apache/hadoop/hdfs/server/protocol/NNHAStatusHeartbeat;)V@606:throw:1"
+      }
+    }
+  ],
+  "checklist": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/checklist102.json",
+    "sha256": "4595c964076d8411da1ee71a637af133f9b39d293ab7d734198b23b6515fe9cb"
+  },
+  "core_release_manifest": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f/manifest.json",
+    "sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8"
+  },
+  "no_new_jvm_or_fault_trials": true,
+  "schema_version": 1,
+  "scope": "source_only_existing_junit_healthy_seed_and_typed_io_door",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2"
+}
