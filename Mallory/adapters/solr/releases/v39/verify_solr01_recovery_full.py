@@ -54,14 +54,18 @@ def witness(events: list[dict], fault: dict, plan_fault: dict,
     def same(event: dict) -> bool:
         return all(event.get(key) == fault.get(key) for key in identity)
     doors = [event for event in events if event.get("type") == "DOOR_OBSERVED"
-             and same(event)]
+             and same(event) and event.get("fault_type") == "EXCEPTION"
+             and event.get("exception_class") == "java.io.IOException"]
     matched = [event for event in events if event.get("type") == "FAULT_MATCHED"
-               and same(event) and event.get("fault_id") == fault.get("fault_id")
-               and event.get("fault_type") == "EXCEPTION"
-               and event.get("exception_class") == "java.io.IOException"]
+               and event.get("fault_id") == fault.get("fault_id")]
     applied = [event for event in events if event.get("type") == "FAULT_APPLIED"
-               and same(event) and event.get("fault_id") == fault.get("fault_id")]
+               and event.get("fault_id") == fault.get("fault_id")]
     if len(doors) != 1 or len(matched) != 1 or len(applied) != 1:
+        return []
+    if (not same(matched[0]) or not same(applied[0]) or
+            any(event.get("fault_type") != "EXCEPTION" or
+                event.get("exception_class") != "java.io.IOException"
+                for event in (matched[0], applied[0]))):
         return []
     door, match = doors[0], matched[0]
     if not (door["seq"] < match["seq"] < fault["seq"]):

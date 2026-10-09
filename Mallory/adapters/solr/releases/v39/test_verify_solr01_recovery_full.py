@@ -19,7 +19,8 @@ class RecoveryChainTest(unittest.TestCase):
                      "point": {"site": SITE, "node": "client", "epoch": 0,
                                "door_ordinal": 14}}
         self.events = [
-            {**common, "type": "DOOR_OBSERVED", "seq": 1, "id": "d1"},
+            {**common, "type": "DOOR_OBSERVED", "seq": 1, "id": "d1",
+             "fault_type": "EXCEPTION", "exception_class": "java.io.IOException"},
             {**common, "type": "FAULT_MATCHED", "seq": 2, "id": "m2",
              "fault_id": "f1", "fault_type": "EXCEPTION",
              "exception_class": "java.io.IOException"},
