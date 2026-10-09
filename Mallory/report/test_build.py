@@ -20,6 +20,38 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_hbase12_legacy_archive_preserves_expected_exception_caveat(self):
+        from Mallory.report.build import _hbase12_legacy_review
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        names = (
+            "cases/HBASE-12/result.json",
+            "cases/HBASE-12/config.json",
+            "cases/HBASE-12/offline-causal-audit.json",
+            "cases/HBASE-12/legacy-preservation-receipt.json",
+            "quality_reviews/hbase12_legacy_lane8/index.json",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "data/mallory"
+            for name in names:
+                dest = root / name
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source / name, dest)
+            archive = root / "evidence_archives/campaign_legacy_lane8/HBASE-12.tar.gz"
+            archive.parent.mkdir(parents=True)
+            archive.symlink_to(source / "evidence_archives/campaign_legacy_lane8/HBASE-12.tar.gz")
+            result_path = root / "cases/HBASE-12/result.json"
+            result = json.loads(result_path.read_text())
+            self.assertEqual(_hbase12_legacy_review(root, result_path, result)[0],
+                             "expected_exception_oracle_confounded")
+            result["exact_exception_trials"] = 1
+            result_path.write_text(json.dumps(result))
+            index_path = root / "quality_reviews/hbase12_legacy_lane8/index.json"
+            index = json.loads(index_path.read_text())
+            index["result_sha256"] = hashlib.sha256(result_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index))
+            self.assertEqual(_hbase12_legacy_review(root, result_path, result)[0], "invalid")
+
     def test_zookeeper_independent_reviews_bind_sources_and_prior_receipts(self):
         from Mallory.report.build import _zk_independent_source_review
         baseline = Path(__file__).resolve().parents[2]

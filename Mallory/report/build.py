@@ -2806,6 +2806,31 @@ def _hbase02_offhost_review(results: Path, result_path: Path,
     return ("faulted_path_unverified" if check.returncode == 0 else "invalid"), str(index_path)
 
 
+def _hbase12_legacy_review(results: Path, result_path: Path,
+                          result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Rehash the lane8 archive and keep its expected-exception oracle caveat."""
+    if result.get("case_id") != "HBASE-12":
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    verifier = baseline / "Mallory/report/verify_hbase12_legacy.py"
+    index_path = results / "quality_reviews/hbase12_legacy_lane8/index.json"
+    index = _json(index_path)
+    if (not isinstance(index, dict)
+            or result_path.resolve() != (results / "cases/HBASE-12/result.json").resolve()
+            or not verifier.is_file()
+            or index.get("verifier_sha256") != hashlib.sha256(verifier.read_bytes()).hexdigest()):
+        return "invalid", str(index_path)
+    try:
+        check = subprocess.run(
+            ["python3", str(verifier), "--data-root", str(results),
+             "--baseline", str(baseline)],
+            cwd=baseline, capture_output=True, text=True, timeout=90)
+    except (OSError, subprocess.TimeoutExpired):
+        return "invalid", str(index_path)
+    return ("expected_exception_oracle_confounded" if check.returncode == 0
+            else "invalid"), str(index_path)
+
+
 def _solr38_39_source_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Recheck the source-backed typed-I/O gap against pinned prior runs."""
     if case_id not in {"SOLR-38", "SOLR-39"}:
@@ -3275,6 +3300,19 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = "invalid_result"
             row["quality_status"] = None
             row["result_error"] = "HBASE-02 offhost archive or negative review mismatch"
+    if case_id == "HBASE-12":
+        precision, receipt = _hbase12_legacy_review(results, result_path, result)
+        row["causal_precision_review"] = precision
+        row["causal_precision_receipt"] = receipt
+        if precision == "expected_exception_oracle_confounded":
+            row["quality_status"] = precision
+            row["source_review_classification"] = precision
+            row["source_review_receipt"] = str(result_path.with_name(
+                "legacy-preservation-receipt.json"))
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "HBASE-12 archive or expected-exception review mismatch"
     return row
 
 
