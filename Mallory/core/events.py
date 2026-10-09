@@ -70,4 +70,4 @@ def event_address(event: dict[str, Any]) -> str | None:
 
 def event_seq(event: dict[str, Any]) -> int:
     value = event.get("seq")
-    return value if isinstance(value, int) else -1
+    return value if isinstance(value, int) and not isinstance(value, bool) else -1

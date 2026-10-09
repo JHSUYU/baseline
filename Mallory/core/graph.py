@@ -136,11 +136,95 @@ class OccurrenceGraph:
                             else "unique_parent_id_or_handoff_token")
                 self._add(parent, event, "region_parent", evidence)
 
+        self._add_nested_program_order(ids)
         self._pair("SEND", "RECV", "rpc", ("transport", "correlation", "port"),
                    ("attempt", "half"), exclusive_consumers=True)
         self._pair("TASK_SUBMIT", "TASK_CLAIM", "task", ("correlation",),
                    ("attempt",), exclusive_consumers=True)
         self._pair("STATE_WRITE", "STATE_READ", "state", ("object", "key", "version"))
+
+    def _add_nested_program_order(self, ids: dict[str, dict[str, Any]]) -> None:
+        """Bridge an event in a live parent region to a direct child entry.
+
+        The parent-entry edge alone cannot carry an event that happens later
+        in the parent. Use the last event on that exact occurrence and JVM
+        thread before the child enters. The explicit parent occurrence and a
+        well-formed enter/exit stack prove that the parent is still active.
+        """
+        groups: dict[tuple[str, str, int], list[dict[str, Any]]] = defaultdict(list)
+        invalid_groups: set[tuple[str, str, int]] = set()
+        invalid_region_addresses: set[str] = set()
+        enter_counts: dict[str, int] = defaultdict(int)
+        for event in self.events:
+            address = event_address(event)
+            if event.get("type") == "REGION_ENTER" and address is not None:
+                enter_counts[address] += 1
+            thread = event.get("thread_id")
+            if not isinstance(thread, int) or isinstance(thread, bool):
+                if event.get("type") in {"REGION_ENTER", "REGION_EXIT"} and address:
+                    invalid_region_addresses.add(address)
+                continue
+            node, epoch = event.get("node"), event.get("epoch")
+            if not isinstance(node, str) or epoch is None:
+                continue
+            group = (str(event["node"]), str(event["epoch"]), thread)
+            if address is None:
+                if event.get("type") in {"REGION_ENTER", "REGION_EXIT"}:
+                    invalid_groups.add(group)
+                continue
+            seq = event.get("seq")
+            if not isinstance(seq, int) or isinstance(seq, bool) or seq < 0:
+                if event.get("type") in {"REGION_ENTER", "REGION_EXIT"}:
+                    invalid_groups.add(group)
+                continue
+            groups[group].append(event)
+
+        for group, rows in groups.items():
+            if group in invalid_groups:
+                continue
+            rows.sort(key=event_seq)
+            if any(event_seq(left) == event_seq(right)
+                   for left, right in zip(rows, rows[1:])):
+                self.gaps["program_order_ambiguous_sequence"] += 1
+                continue
+            # Each frame holds the enter and the latest event in that region.
+            stack: list[list[dict[str, Any]]] = []
+            for event in rows:
+                kind = event.get("type")
+                address = event_address(event)
+                if kind == "REGION_EXIT":
+                    if (not stack or event_address(stack[-1][0]) != address or
+                            event.get("region") != stack[-1][0].get("region")):
+                        self.gaps["program_order_unbalanced_region"] += 1
+                        break
+                    stack.pop()
+                elif kind == "REGION_ENTER":
+                    if stack and event.get("parent_id") != stack[-1][0].get("occurrence"):
+                        self.gaps["program_order_unbalanced_region"] += 1
+                        break
+                    if stack and enter_counts[address] == 1:
+                        parent_enter, producer = stack[-1]
+                        parent_address = event_address(parent_enter)
+                        producer_id = producer.get("id")
+                        consumer_id = event.get("id")
+                        if (parent_address != address and
+                                enter_counts[parent_address] == 1 and
+                                parent_address not in invalid_region_addresses and
+                                address not in invalid_region_addresses and
+                                isinstance(parent_enter.get("region"), str) and
+                                parent_enter["region"] and
+                                isinstance(event.get("region"), str) and event["region"] and
+                                producer is not parent_enter and
+                                producer.get("region") == parent_enter["region"] and
+                                isinstance(producer_id, str) and ids.get(producer_id) is producer and
+                                isinstance(consumer_id, str) and ids.get(consumer_id) is event):
+                            self._add(producer, event, "program_order",
+                                      "same_thread_direct_nested_region")
+                    stack.append([event, event])
+                elif stack and address == event_address(stack[-1][0]):
+                    parent_enter = stack[-1][0]
+                    if event.get("region") == parent_enter.get("region"):
+                        stack[-1][1] = event
 
     def _add(self, producer: dict[str, Any], consumer: dict[str, Any], kind: str,
              evidence: str, *, certainty: str = "observed") -> None:
