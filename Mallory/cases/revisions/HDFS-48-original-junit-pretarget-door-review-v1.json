@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "receipt_kind": "read_only_source_and_archived_runtime_door_review",
+  "case_id": "HDFS-48",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "selector": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestRenameWithSnapshots#testRenameUndo_1",
+  "target": {
+    "class": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory",
+    "method": "replaceChild(INode,INode,INodeMap)",
+    "source_line": 356,
+    "condition": "oldChild must be the installed child or its doubly referred inode",
+    "exception": "java.lang.IllegalStateException",
+    "healthy_named_actor": "hdfs-cluster-1/nn0"
+  },
+  "disposition": "no_source_backed_target_retaining_pretarget_file_or_rpc_exception_door_for_original_junit_and_current_instrumentation",
+  "scope_of_disposition": "The original MiniCluster JUnit is suitable for reaching the exact check in a healthy run. This receipt concerns fault-injection suitability: no pre-target file/RPC exception point is presently supported by source and archived behavior as both causally relevant and target-retaining. This is not a claim that no future workload or fault model can reach the check.",
+  "source_findings": [
+    {
+      "kind": "direct_test_setup_target",
+      "location": "TestRenameWithSnapshots.java:1351-1360",
+      "fact": "The test replaces /dir2 with a Mockito spy via root.replaceChild in the JUnit thread before issuing hdfs.rename. The setup invocation is hdfs-client, so it cannot substitute for the selected named NameNode target."
+    },
+    {
+      "kind": "in_memory_namenode_target",
+      "location": "FSDirRenameOp.java:203-233, 640-690; INodeDirectory.java:351-399",
+      "fact": "The NameNode rename path constructs RenameOperation and may call replaceChild4ReferenceWithName, which calls replaceChild. The relevant interval manipulates in-memory namespace references and quota structures; no file write or nested RPC precedes that check within this interval."
+    },
+    {
+      "kind": "rpc_door_aborts_handler",
+      "location": "Server.java:1235-1254",
+      "fact": "The observed RpcCall.run door is immediately before Server.call(...). An injected IOException enters the surrounding Throwable catch and becomes an RPC error response; the rename handler and its replaceChild target are not entered for that request."
+    },
+    {
+      "kind": "edit_log_io_after_target",
+      "location": "FSNamesystem.java:3300-3330; FSDirRenameOp.java:203-233, 505-525",
+      "fact": "The deprecated rename used by hdfs.rename reaches FSDirRenameOp.renameToInt first. FSNamesystem.logSync is conditional on successful rename and occurs after the rename operation. FSDirRenameOp.logRename likewise follows unprotectedRenameTo. Neither is a pre-target file I/O door."
+    },
+    {
+      "kind": "test_does_not_retry_aborted_setup_or_rename_rpc",
+      "location": "TestRenameWithSnapshots.java:1339-1361",
+      "fact": "The method issues mkdir, createFile, snapshot, and rename in sequence without a catch/retry around these calls. The selected rename is expected to return false, not throw an injected IOException. Earlier RPC errors generally abort this JUnit before the NameNode target."
+    }
+  ],
+  "archived_runtime": {
+    "healthy_result_path": "data/mallory/calibration_v14_node0/HDFS-48/result.json",
+    "healthy_result_sha256": "2bd670b4845e4964fa12bbd4301cece66306eb2a094d963dc712b729ce7c8291",
+    "healthy_trial_result_path": "data/mallory/calibration_v14_node0/HDFS-48/trials/r0000/result.json",
+    "healthy_trial_result_sha256": "fa888832d9e8ff62bf173399aa58366f819972163d8e8c92db562dac398a4dde",
+    "healthy_events_path": "data/mallory/calibration_v14_node0/HDFS-48/trials/r0000/events.jsonl.gz",
+    "healthy_events_sha256": "ad92a81ea1aa9830d2a7ca26d5f101c8410e60db48d1d1c0c9c7deac6505fe3e",
+    "healthy_causal_audit_path": "data/mallory/calibration_v14_node0/HDFS-48/offline-causal-audit.json",
+    "healthy_causal_audit_sha256": "030a108aa026595e982b6747c38e830710daaebb24dbce726ca3af7b262fbb0e",
+    "healthy_junit": "Surefire 1 test, 0 failures, 0 errors; named nn0 target reached without target throw",
+    "healthy_audited_observed_path_doors": 11,
+    "healthy_observed_door_site_count": 1,
+    "healthy_observed_door_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+    "healthy_order_example": "hdfs-client setup target at event 2587; nn0 rename target at event 2788; RpcCall door events 2601 and earlier are pre-target; all 27 eligible healthy doors use the same outer call site",
+    "pilot_decision_path": "Mallory/cases/revisions/HDFS-48-nn-v14.pilot-decision-v2.json",
+    "pilot_decision_sha256": "85fe5a679bddada84ca0d59aa228eb6de1da97bbfde11fe2abafb18dc8f34c7a",
+    "pilot_result_path": "data/mallory/pilots_v14/HDFS-48-nn-only/result.json",
+    "pilot_result_sha256": "43d9e70438bd944480f2c0084618cd0d9d443fd5f4e50dd24fded3b27c6dfed8",
+    "pilot_effective_trials": 10,
+    "pilot_postfault_named_target_trials": 0,
+    "pilot_exact_exception_trials": 0
+  },
+  "apparently_plausible_but_rejected_doors": [
+    {
+      "site": "Server$RpcCall.run@1246:door:1",
+      "reason": "Pre-target and audited, but exception aborts Server.call before the NameNode rename target; all ten effective pilot injections lost that target."
+    },
+    {
+      "site": "FSNamesystem.renameTo -> FSEditLog.logSync",
+      "reason": "File I/O is after successful rename; the selected original test expects unsuccessful rename, so this is not a pre-target selected-path door."
+    },
+    {
+      "site": "DFSOutputStream/DataNode data-transfer I/O during earlier createFile",
+      "reason": "Potentially earlier in wall-clock order, but not observed as a target-closure door in this healthy instrumented run and not source-proven to preserve the test after injected exception. No config is promoted on this speculation."
+    }
+  ],
+  "source_integrity": {
+    "INodeDirectory.java": {
+      "sha256": "39636bc2cd045b41aadc631ad0ed8edc7935235422d0cc6decde876392208f50",
+      "range": "348-399",
+      "range_sha256": "2d38e5d51c40615968a30edfbf4868eb03a4d5fe9264241a1b3032766c7a0916"
+    },
+    "FSDirRenameOp.java": {
+      "sha256": "aeb3505380b89896c921642c25e71050717ed185004ec3b1cb220b10b7a41277",
+      "ranges": {"200-240": "a0617962f26ed2795771e81db6a4b5078bb157694e8940c6d27c3b806bb708c0", "640-690": "ac2859e09dcd5f84e0793e62c8751a9065671f43fb1f0a86274765d33ae41b85"}
+    },
+    "FSNamesystem.java": {
+      "sha256": "4443993aa68c4505be454532d390600dab19777b88dca5863eb548121102069d",
+      "range": "3300-3330",
+      "range_sha256": "a328b8199a38e64409bbac92236390b9fa9a3f5508f7325b0b9d64804d89743a"
+    },
+    "Server.java": {
+      "sha256": "786720814e5c295d9a94ef98b2db2f7e5c549928653793058d8466ab259e755a",
+      "range": "1235-1254",
+      "range_sha256": "b23f958bac9b0bdc43f82fcfa7cd679e1e56c84de716314ef01e8afb0c171faf"
+    },
+    "TestRenameWithSnapshots.java": {
+      "sha256": "58c382b17db4855ebc3e105feb72232c086126e3ecb8a71dc8919d5967c8af00",
+      "range": "1336-1365",
+      "range_sha256": "1fe13409927584443717df19aed13389c2b9ee1bc28cea6b675aeba0bbed6a02"
+    }
+  },
+  "next_action_if_revisited": "Choose an existing MiniCluster JUnit with source-backed retry or recovery that consumes a pre-target I/O exception and still reaches nn0 replaceChild, or extend the fault model beyond pre-target I/O exceptions. First run a fresh healthy target/actor/observed-path gate; then a bounded target-retention pilot. Do not reinterpret this outer-RPC pilot's zero target retention as a new bug.",
+  "new_healthy_config_staged": false,
+  "jvm_launched_for_this_review": false
+}
