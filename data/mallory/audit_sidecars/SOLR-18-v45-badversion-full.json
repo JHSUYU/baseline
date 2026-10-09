@@ -1,0 +1,3917 @@
+{
+  "campaign_result_sha256": "1fbbddc206fb31713c175f38fb9602cca53a18f2ea80c6ab23dd268c65c8ce1a",
+  "canonical_quality_claim": false,
+  "case_id": "SOLR-18",
+  "causality_limit": "The caught exception and event path establish a same-invocation recovery execution; a counterfactual effect on the later guard is not established.",
+  "classification": "terminal_badversion_recovery_precision_proven",
+  "config_sha256": "08e7dd68ac2b02a77a3f60240f4a1386efb2dae76186bf151be38dfc7dbb08dc",
+  "core_graph_sha256": "b3375c52d8f69f52420b3e374cfc9c6a6aeec0d9f7182df63284d52b0140477d",
+  "effective_fault_trials": [
+    1,
+    2,
+    4,
+    5,
+    15,
+    16,
+    17,
+    18,
+    20,
+    22,
+    23,
+    24,
+    27,
+    28,
+    29,
+    30,
+    31,
+    33,
+    35,
+    36,
+    38,
+    42,
+    43,
+    45,
+    46,
+    48,
+    52,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    64
+  ],
+  "effective_target_trials": [
+    1,
+    2,
+    4,
+    5,
+    15,
+    16,
+    17,
+    18,
+    20,
+    22,
+    23,
+    24,
+    27,
+    28,
+    29,
+    30,
+    31,
+    33,
+    35,
+    36,
+    38,
+    42,
+    43,
+    45,
+    46,
+    48,
+    52,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    64
+  ],
+  "exact_target_exception_candidate_trials": [],
+  "fault_trials_completed": 65,
+  "new_bug_confirmed": false,
+  "offline_audit_gate": false,
+  "offline_audit_sha256": "43eb8dae3d3a26aec0738bf4fc475832719a951fb5604ae2041963f9c9e495b1",
+  "schema_version": 1,
+  "source_sha256": "83e14eadfcc4896ff05f9ac77706fdb683e0c181caeee21802f8861f68ac373d",
+  "strict_multi_fault_recovery_trials": [
+    15,
+    29,
+    30
+  ],
+  "strict_recovery_trials": [
+    1,
+    2,
+    4,
+    5,
+    15,
+    29,
+    30
+  ],
+  "strict_single_fault_recovery_trials": [
+    1,
+    2,
+    4,
+    5
+  ],
+  "sync_receipt_sha256": "0cf012563d80a719ba5a5d57edb6ab32f43ea3a0d44161c3f9f88d354283f495",
+  "test_source_sha256": "00569b061c1ff45a69c6a2ba3abbc006e00dbcfaf78bd22f2ac5353ca0752215",
+  "trials": [
+    {
+      "all_exact_faults_have_strict_recovery_chain": true,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "501c5a3c5c6cdedbac6dd4507d15d515a33c163b454f6a2c5b2531f9e732ae49",
+      "events_raw_bytes": 733876,
+      "events_raw_sha256": "133ceb67b6ced2fbbd372755d79b702892d3a1349faff11b279150a14c0ee2c4",
+      "exact_badversion_plans": 1,
+      "junit_status": "passed",
+      "plan_size": 1,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0001:772",
+            "apply_enter": "SOLR-18-r0001:769",
+            "apply_exit": "SOLR-18-r0001:791",
+            "door": "SOLR-18-r0001:770",
+            "matched": "SOLR-18-r0001:771",
+            "set_if_newer": "SOLR-18-r0001:774",
+            "target_check": "SOLR-18-r0001:775",
+            "update": "SOLR-18-r0001:773"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0001:773",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0001:772"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0001:774",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0001:773"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 1,
+      "trial_result_sha256": "ddf85fa74fb51a81ad9d2d020b73a93b3f28e9d1ac3c36f80f30144cb76074b7"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": true,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "4437e58ed9e043f2bb8495b078688691fae45cbf9c79f68d721eb289b89543d0",
+      "events_raw_bytes": 736929,
+      "events_raw_sha256": "9bee38f250a259d76e15bcea089183b2e9f6acae3b2925ba51d5e16ae2909457",
+      "exact_badversion_plans": 1,
+      "junit_status": "passed",
+      "plan_size": 1,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:a43d8241-5d36-4180-aa85-bf110136d86b:task:201:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0002:552",
+            "apply_enter": "SOLR-18-r0002:549",
+            "apply_exit": "SOLR-18-r0002:572",
+            "door": "SOLR-18-r0002:550",
+            "matched": "SOLR-18-r0002:551",
+            "set_if_newer": "SOLR-18-r0002:554",
+            "target_check": "SOLR-18-r0002:555",
+            "update": "SOLR-18-r0002:553"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0002:553",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0002:552"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0002:554",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0002:553"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 2,
+      "trial_result_sha256": "85ca51d3bdaa90e01ce51c5d22b32f165122eb43b1abff1d3eef48a205f57440"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "bb190caaa0431d09bdc251aa3e6c36d30979cd8f8eb0599da3a4030073cbaa5d",
+      "events_raw_bytes": 725714,
+      "events_raw_sha256": "a948eab72250ac5105a754bc20b0837bd76de5d091f5b54d33215a4ffed2d22f",
+      "exact_badversion_plans": 1,
+      "junit_status": "passed",
+      "plan_size": 1,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 3,
+      "trial_result_sha256": "a3ff5d93b71d67e526edeab2c96cf3982a128333c1693bfab30661fcbd0e913d"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": true,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "81f8a221c698b6f89b6616537a63b9419476d467879337030c2d557886f6b039",
+      "events_raw_bytes": 727337,
+      "events_raw_sha256": "1f8f75bbeb7f0e33aaf56d0c2ad3b66f75cb05d3ad4367d593ee35a38e470c8c",
+      "exact_badversion_plans": 1,
+      "junit_status": "passed",
+      "plan_size": 1,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7da963ec-0d71-443d-bd7f-87ea310a4012:task:171:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0004:423",
+            "apply_enter": "SOLR-18-r0004:420",
+            "apply_exit": "SOLR-18-r0004:440",
+            "door": "SOLR-18-r0004:421",
+            "matched": "SOLR-18-r0004:422",
+            "set_if_newer": "SOLR-18-r0004:425",
+            "target_check": "SOLR-18-r0004:426",
+            "update": "SOLR-18-r0004:424"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0004:424",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0004:423"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0004:425",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0004:424"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 181,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 4,
+      "trial_result_sha256": "3b30cfa85755557bb25cfc2dbc0b4b67525e0b3a34780385c72913a9584291a7"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": true,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "b8427d81d8ba482373a14de2a1b910f24d66ec6519bfa9b9a296de48bfdf1762",
+      "events_raw_bytes": 728070,
+      "events_raw_sha256": "06836c5ee0959d16d7d9f49ce949a2fb8adf8d2362d3b19c2a53210426326d5f",
+      "exact_badversion_plans": 1,
+      "junit_status": "passed",
+      "plan_size": 1,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:aa4911d1-4968-4122-8a82-009dcf771ded:task:163:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0005:373",
+            "apply_enter": "SOLR-18-r0005:370",
+            "apply_exit": "SOLR-18-r0005:387",
+            "door": "SOLR-18-r0005:371",
+            "matched": "SOLR-18-r0005:372",
+            "set_if_newer": "SOLR-18-r0005:375",
+            "target_check": "SOLR-18-r0005:376",
+            "update": "SOLR-18-r0005:374"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0005:374",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0005:373"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0005:375",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0005:374"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 5,
+      "trial_result_sha256": "9bb4cd8b7dbc77ea18480bc5e20264a0e79071d90d314cc30d7e00e50ffe0578"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "e728c75cdec419e67f1cd2782045f009d398981476942cf6413518a9cfd92b5c",
+      "events_raw_bytes": 739984,
+      "events_raw_sha256": "ee0e54427c4502679c8225fb57cd361c0cc0a8be9847e84d548ad15ea460fd68",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 6,
+      "trial_result_sha256": "e0fa7762730d5dd7c61993091426f4d3c00f8cb8f018b012f9335f17d0a5f597"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "c7f2b1e4dd0ed302daa466143c3680b7a38ef748baffdec6a21ce7b2be2614cb",
+      "events_raw_bytes": 726104,
+      "events_raw_sha256": "5073937695a79790cf59d9b0d833af45d3c8241c76597f2b799d445d5364468a",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 7,
+      "trial_result_sha256": "3b3b822a985a1706073d2d36d609398282f18b6e49c7bf306b1f952af9ab4c2c"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "12b5c93ad1f19a96b41bd1d52e2d6b462f0d64d979314982093de2af6605c714",
+      "events_raw_bytes": 717955,
+      "events_raw_sha256": "835a7417877e61ecf130698690b24c73837fd0dfab85e2e4c9809905913ea864",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 8,
+      "trial_result_sha256": "69053e714df858b666c7dfd6adc5c0228cb2748b5e49e54f37664eae0b0bc09d"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "a08b342941db037e7c602422e0a55586cb51bbca6e0c7f9a58cf8eb6f1d0ed0d",
+      "events_raw_bytes": 718584,
+      "events_raw_sha256": "e6d9756c9ffbcb04318ba0a82676e92e275338dbeb4fd768d03ffa021c22745e",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 9,
+      "trial_result_sha256": "c1514b00a01e4e534bb0afdfaee129d8b88089a8b185f9768193dc668c41696c"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "dfe35527f419774b272b2fbe92d87ce27f25665caf19d4573b5d1659955af594",
+      "events_raw_bytes": 735236,
+      "events_raw_sha256": "829e7d46aade81fa29a4111b0cab3cf7cc0679e0aac89140d8f5706cc649a279",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 10,
+      "trial_result_sha256": "1879510567ebcb006ea345b590915873876fc8b4721eace39d7ed4194f5837d1"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "98d5577d9459b643a728cdc50be68f9eaa57c915b2c5ecb9f48b2f6a0f00953d",
+      "events_raw_bytes": 717349,
+      "events_raw_sha256": "7ac945680247cfd43556c67f2eea5326a861c678f456adba681b94f2bbdc0f28",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 11,
+      "trial_result_sha256": "5b132aeb5e8a2d3caecb6c188e5fb3c99379a701f60e123e9dae4447a38356ac"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "164bd5246c144a20bcd118c47b594a31ca6906bbe19dfe204a33464ccaf5cd9e",
+      "events_raw_bytes": 733814,
+      "events_raw_sha256": "e0b465f9f707b9ae4617b935796ea9ffeb68a052f1a308703ad3c5ee7ee4858a",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 12,
+      "trial_result_sha256": "4541e2816dfa5e82c5bfb3b0fe2c98634425b604232ac7307f32d8af1d2852c9"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "919c5529f40db4b5ad6363ca670e9969b14200863e6fc531b51c7a6559a3e027",
+      "events_raw_bytes": 727630,
+      "events_raw_sha256": "048e8ac34cb1ba5e95c9ca13f1d559fde66eb27d24dc4e0b3717110453f86162",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 13,
+      "trial_result_sha256": "5abbaf6afcd83e56be1d5021912afc874c40362ded120b3ce1148b27520f1790"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "db17e7aa0e7000b4360607ecd529265060f96bc43edf02f3cf2f4836b203d550",
+      "events_raw_bytes": 717762,
+      "events_raw_sha256": "e592042d9e2ce9df91841902db5ab114186037556eb3ffd7b987f130e24813c5",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 14,
+      "trial_result_sha256": "30e83994e72f76ef360192fd3a003be99c1076a95d4ab62004ab3fa6e6a1b7e4"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": true,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "df08511db9ff3bf457915a1054f4c9a30557316fd98d110c5d2a58b8b91c5b70",
+      "events_raw_bytes": 751664,
+      "events_raw_sha256": "917768349dfc39809dc50012e911cf0b27939b9913064e073dbe74d85936dce1",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7811c0a7-d1aa-4686-ad74-ad59b9f80535:task:172:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0015:425",
+            "apply_enter": "SOLR-18-r0015:422",
+            "apply_exit": "SOLR-18-r0015:442",
+            "door": "SOLR-18-r0015:423",
+            "matched": "SOLR-18-r0015:424",
+            "set_if_newer": "SOLR-18-r0015:427",
+            "target_check": "SOLR-18-r0015:428",
+            "update": "SOLR-18-r0015:426"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0015:426",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0015:425"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0015:427",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0015:426"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7811c0a7-d1aa-4686-ad74-ad59b9f80535:task:192:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0015:517",
+            "apply_enter": "SOLR-18-r0015:514",
+            "apply_exit": "SOLR-18-r0015:537",
+            "door": "SOLR-18-r0015:515",
+            "matched": "SOLR-18-r0015:516",
+            "set_if_newer": "SOLR-18-r0015:519",
+            "target_check": "SOLR-18-r0015:520",
+            "update": "SOLR-18-r0015:518"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0015:518",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0015:517"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0015:519",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0015:518"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 181,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 15,
+      "trial_result_sha256": "253563fe94c33ac8382ff9ca0116299a714b56ef97fde85c1ebbfece70318e8b"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "2bd76fa80555a8558af4760992c8ccfcd2f486b019a99f0e5759587c807ec37a",
+      "events_raw_bytes": 746403,
+      "events_raw_sha256": "e82c4dc997ee8f2fa6616544bd3833027c09f1126fab19a68149e0d730ab03dc",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7e9b0c41-18eb-4a73-8672-22ef4acaf525:task:172:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0016:435",
+            "apply_enter": "SOLR-18-r0016:422",
+            "apply_exit": "SOLR-18-r0016:455",
+            "door": "SOLR-18-r0016:433",
+            "matched": "SOLR-18-r0016:434",
+            "set_if_newer": "SOLR-18-r0016:437",
+            "target_check": "SOLR-18-r0016:438",
+            "update": "SOLR-18-r0016:436"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0016:436",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0016:435"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0016:437",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0016:436"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 16,
+      "trial_result_sha256": "08d458411ab62e6893499276524ddd15de5da852eef695652c12128be3afbad8"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "3e80fc6ff088ef06e649c66d8022f249edaf9f85e78c92f6efe148fc729500e4",
+      "events_raw_bytes": 752522,
+      "events_raw_sha256": "bebecd8babdabc0c68758a733425470ca5b4f5cedfc96c0463ff690079ced369",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:3e7b6db2-9e85-4dd8-9bd8-35bfc3b72864:task:170:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0017:431",
+            "apply_enter": "SOLR-18-r0017:418",
+            "apply_exit": "SOLR-18-r0017:449",
+            "door": "SOLR-18-r0017:429",
+            "matched": "SOLR-18-r0017:430",
+            "set_if_newer": "SOLR-18-r0017:433",
+            "target_check": "SOLR-18-r0017:434",
+            "update": "SOLR-18-r0017:432"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0017:432",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0017:431"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0017:433",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0017:432"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0017:795",
+            "apply_enter": "SOLR-18-r0017:792",
+            "apply_exit": "SOLR-18-r0017:810",
+            "door": "SOLR-18-r0017:793",
+            "matched": "SOLR-18-r0017:794",
+            "set_if_newer": "SOLR-18-r0017:797",
+            "target_check": "SOLR-18-r0017:798",
+            "update": "SOLR-18-r0017:796"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0017:796",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0017:795"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0017:797",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0017:796"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 17,
+      "trial_result_sha256": "434a20f5ad9c95e6f2861e52ae9d402b7f7fa5023ada4d2c603630c98a1b4b7b"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "853b7e65efe48e308faf34d6677f178a4cbea262a127c9a8c0c99abd2fb86033",
+      "events_raw_bytes": 754238,
+      "events_raw_sha256": "8554211a4d8563f315cf3e8cbb50aa54e5b9557b509f8ac5db6e8a4ae603669f",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:112cefbf-6cb0-4f2a-aa05-f9c08333f3b1:task:172:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0018:435",
+            "apply_enter": "SOLR-18-r0018:422",
+            "apply_exit": "SOLR-18-r0018:451",
+            "door": "SOLR-18-r0018:433",
+            "matched": "SOLR-18-r0018:434",
+            "set_if_newer": "SOLR-18-r0018:437",
+            "target_check": "SOLR-18-r0018:438",
+            "update": "SOLR-18-r0018:436"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0018:436",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0018:435"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0018:437",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0018:436"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 177,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:112cefbf-6cb0-4f2a-aa05-f9c08333f3b1:task:201:1",
+          "door_ordinal": 6,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0018:573",
+            "apply_enter": "SOLR-18-r0018:570",
+            "apply_exit": "SOLR-18-r0018:589",
+            "door": "SOLR-18-r0018:571",
+            "matched": "SOLR-18-r0018:572",
+            "set_if_newer": "SOLR-18-r0018:575",
+            "target_check": "SOLR-18-r0018:576",
+            "update": "SOLR-18-r0018:574"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0018:574",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0018:573"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0018:575",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0018:574"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 18,
+      "trial_result_sha256": "a5a953dc2861a0c25919d2e50e210c5919dd06432ab20b389d4342b9188ff432"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "4ac90a37a2f5ebb6e6d8d437ffd05fdc61a3b1a7458c685f1999e969f20ca391",
+      "events_raw_bytes": 728623,
+      "events_raw_sha256": "f4f41532f2e9545f343f9e4f4c349fdb60e9ba3fd3a304db5c9420e5e38978ea",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 19,
+      "trial_result_sha256": "1737c2ad0ccdfc0fab46e8b2deb4df97ddb1d3c6a38506fdae1515e40c8b611a"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "fb827e7a81dab501eea767d852624e9870bc9ccf3ba61c4c4c225edaeaaa9e02",
+      "events_raw_bytes": 754676,
+      "events_raw_sha256": "93e94088c6eff9c441168ba201559a4382f66b34c6d8b70c1da5d76c96dd5dfe",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:c4e32b19-4cfd-43af-9110-0c75c3842f2a:task:171:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0020:433",
+            "apply_enter": "SOLR-18-r0020:420",
+            "apply_exit": "SOLR-18-r0020:453",
+            "door": "SOLR-18-r0020:431",
+            "matched": "SOLR-18-r0020:432",
+            "set_if_newer": "SOLR-18-r0020:435",
+            "target_check": "SOLR-18-r0020:436",
+            "update": "SOLR-18-r0020:434"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0020:434",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0020:433"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0020:435",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0020:434"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:c4e32b19-4cfd-43af-9110-0c75c3842f2a:task:200:1",
+          "door_ordinal": 7,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0020:580",
+            "apply_enter": "SOLR-18-r0020:567",
+            "apply_exit": "SOLR-18-r0020:595",
+            "door": "SOLR-18-r0020:578",
+            "matched": "SOLR-18-r0020:579",
+            "set_if_newer": "SOLR-18-r0020:582",
+            "target_check": "SOLR-18-r0020:583",
+            "update": "SOLR-18-r0020:581"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0020:581",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0020:580"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0020:582",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0020:581"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 20,
+      "trial_result_sha256": "11b96cf5168cdba7148c5aa96a64c6618d56b999a7f5839d6d676a1529ebd6c9"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "dede46bb72f067b40b5669c275287d7f952ba2faa1e6ab94ca12750614f60924",
+      "events_raw_bytes": 735524,
+      "events_raw_sha256": "9c7bc64e8b5bbd5f5988f62e2fab7379f83852dde5bbe34a32abac02ba78a6ca",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 21,
+      "trial_result_sha256": "e90dffd2442604294e90a98fc528702764fec6dc0a59a7b641e0812da8928f25"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "006977d95d64b1a4f38f6cfddac28ba27acb274b0520b7274d64d8b3ff93f2f1",
+      "events_raw_bytes": 771691,
+      "events_raw_sha256": "d6e4a5d27146b6e4967bd89e7288730f2e3f7adc1c07aed57e6b7c1a6b0ebaa1",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:cdb829be-aea6-42f2-91b9-630295848777:task:172:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0022:435",
+            "apply_enter": "SOLR-18-r0022:422",
+            "apply_exit": "SOLR-18-r0022:454",
+            "door": "SOLR-18-r0022:433",
+            "matched": "SOLR-18-r0022:434",
+            "set_if_newer": "SOLR-18-r0022:437",
+            "target_check": "SOLR-18-r0022:438",
+            "update": "SOLR-18-r0022:436"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0022:436",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0022:435"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0022:437",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0022:436"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 177,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:cdb829be-aea6-42f2-91b9-630295848777:task:201:1",
+          "door_ordinal": 8,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0022:593",
+            "apply_enter": "SOLR-18-r0022:570",
+            "apply_exit": "SOLR-18-r0022:609",
+            "door": "SOLR-18-r0022:591",
+            "matched": "SOLR-18-r0022:592",
+            "set_if_newer": "SOLR-18-r0022:595",
+            "target_check": "SOLR-18-r0022:596",
+            "update": "SOLR-18-r0022:594"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0022:594",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0022:593"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0022:595",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0022:594"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 22,
+      "trial_result_sha256": "fd0c4a5975d8ed372aca3963a43bc9ffb49d350cdb1ac81c5a984fa4c57dc907"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "df6c2c965ec6aa7202ee6568b8e6f61f83d7324f76c56eb9983d323d03267426",
+      "events_raw_bytes": 781145,
+      "events_raw_sha256": "b0bafc20e4c96837c239ce7b328f22ac8951c44f6cc656de959040371a99fc9f",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:6b847f1f-f73b-4a8c-ad32-1eee6b107605:task:171:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0023:433",
+            "apply_enter": "SOLR-18-r0023:420",
+            "apply_exit": "SOLR-18-r0023:447",
+            "door": "SOLR-18-r0023:431",
+            "matched": "SOLR-18-r0023:432",
+            "set_if_newer": "SOLR-18-r0023:435",
+            "target_check": "SOLR-18-r0023:436",
+            "update": "SOLR-18-r0023:434"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0023:434",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0023:433"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0023:435",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0023:434"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 177,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:6b847f1f-f73b-4a8c-ad32-1eee6b107605:task:201:1",
+          "door_ordinal": 8,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0023:592",
+            "apply_enter": "SOLR-18-r0023:569",
+            "apply_exit": "SOLR-18-r0023:612",
+            "door": "SOLR-18-r0023:590",
+            "matched": "SOLR-18-r0023:591",
+            "set_if_newer": "SOLR-18-r0023:594",
+            "target_check": "SOLR-18-r0023:595",
+            "update": "SOLR-18-r0023:593"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0023:593",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0023:592"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0023:594",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0023:593"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0023:831",
+            "apply_enter": "SOLR-18-r0023:828",
+            "apply_exit": "SOLR-18-r0023:854",
+            "door": "SOLR-18-r0023:829",
+            "matched": "SOLR-18-r0023:830",
+            "set_if_newer": "SOLR-18-r0023:833",
+            "target_check": "SOLR-18-r0023:834",
+            "update": "SOLR-18-r0023:832"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0023:832",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0023:831"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0023:833",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0023:832"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 23,
+      "trial_result_sha256": "ed3a6a2746b2b78e23b009b9876c56c4ac7e7ede289cee04df2e89e8156e8d16"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "caa9d33b73be5aa94c9653b0d94fb5f2f8a2d48287df9e15c2c51e7af40d3b45",
+      "events_raw_bytes": 772168,
+      "events_raw_sha256": "26390ecb051bfd07e3f7f23ff4a1cae07d51e47c7a7daf59b33aaf19b59ca6e0",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:abde7c19-fe5d-4090-b59e-d4dc3ecf8a8e:task:172:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0024:435",
+            "apply_enter": "SOLR-18-r0024:422",
+            "apply_exit": "SOLR-18-r0024:454",
+            "door": "SOLR-18-r0024:433",
+            "matched": "SOLR-18-r0024:434",
+            "set_if_newer": "SOLR-18-r0024:437",
+            "target_check": "SOLR-18-r0024:438",
+            "update": "SOLR-18-r0024:436"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0024:436",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0024:435"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0024:437",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0024:436"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:abde7c19-fe5d-4090-b59e-d4dc3ecf8a8e:task:201:1",
+          "door_ordinal": 9,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0024:601",
+            "apply_enter": "SOLR-18-r0024:568",
+            "apply_exit": "SOLR-18-r0024:620",
+            "door": "SOLR-18-r0024:599",
+            "matched": "SOLR-18-r0024:600",
+            "set_if_newer": "SOLR-18-r0024:603",
+            "target_check": "SOLR-18-r0024:604",
+            "update": "SOLR-18-r0024:602"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0024:602",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0024:601"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0024:603",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0024:602"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 181,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 24,
+      "trial_result_sha256": "7887e2f7c890486bfd8be99787cf33b1aaf036a7f8e5ce920018cfa850d917f7"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "203d6d3d4107ca058c72374e26e06d8a11425c1707b40dc3565976b4024a233d",
+      "events_raw_bytes": 731528,
+      "events_raw_sha256": "d6573ea3e01c80b9fb5570cd90dfc2358540a819ecfd2dbd77c493e3f3171c94",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 25,
+      "trial_result_sha256": "d8f2495f2432fa99e8c6d8f62f3601575b80d08bfbcf5a008a331e27fe7eb93a"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "cb573b7fa63e9cd36478efdac98aa18f026ebfe1953eec5722406166e1b6c303",
+      "events_raw_bytes": 726369,
+      "events_raw_sha256": "c0d36c6f1e24de7f210a93aa72a489c51a9601fbd71e228e772fa61824aa961b",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 26,
+      "trial_result_sha256": "ec7fcda6ad67c9927a7c324c3d74cf6f47254312de26767182284f517477d2b6"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "9b725ae3b3bca8eec20e74242c07ee4525fa1bbdd12c6be1c251431046c82459",
+      "events_raw_bytes": 758818,
+      "events_raw_sha256": "781bf6c92f7ecbd2be9ffc0f95796d025fc3863315c3a893552e5a8f37505840",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:abd2b8c3-62a7-4a65-ac7f-5f4a578d7ed8:task:170:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0027:441",
+            "apply_enter": "SOLR-18-r0027:418",
+            "apply_exit": "SOLR-18-r0027:460",
+            "door": "SOLR-18-r0027:439",
+            "matched": "SOLR-18-r0027:440",
+            "set_if_newer": "SOLR-18-r0027:443",
+            "target_check": "SOLR-18-r0027:444",
+            "update": "SOLR-18-r0027:442"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0027:442",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0027:441"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0027:443",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0027:442"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 27,
+      "trial_result_sha256": "a4dac9bea9c4d63f74218d40ad73bf76bdd8f229b1187505d97c7dd8585f1aff"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "f510298df319f50b2a893638cb913ac7a0dbe2eb604b5c73322d790284f54d4e",
+      "events_raw_bytes": 762812,
+      "events_raw_sha256": "1434bdc975572e33741dc13b06e9b144caa5d65e397416296d61a65712ef9d56",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:d47cb0df-1628-43c8-ad59-f7b63794e483:task:172:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0028:445",
+            "apply_enter": "SOLR-18-r0028:422",
+            "apply_exit": "SOLR-18-r0028:463",
+            "door": "SOLR-18-r0028:443",
+            "matched": "SOLR-18-r0028:444",
+            "set_if_newer": "SOLR-18-r0028:447",
+            "target_check": "SOLR-18-r0028:448",
+            "update": "SOLR-18-r0028:446"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0028:446",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0028:445"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0028:447",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0028:446"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0028:809",
+            "apply_enter": "SOLR-18-r0028:806",
+            "apply_exit": "SOLR-18-r0028:831",
+            "door": "SOLR-18-r0028:807",
+            "matched": "SOLR-18-r0028:808",
+            "set_if_newer": "SOLR-18-r0028:811",
+            "target_check": "SOLR-18-r0028:812",
+            "update": "SOLR-18-r0028:810"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0028:810",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0028:809"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0028:811",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0028:810"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 28,
+      "trial_result_sha256": "94c0dec2ccb86d01cc6a5d514da193a01a2ebaf14b0a511491e562dc719a8a3b"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": true,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "962aabbbf790c4badf65f7419e8cc2472e032bf1919220ca6cce1450e1b01da0",
+      "events_raw_bytes": 751900,
+      "events_raw_sha256": "3664020aa1a9900352184a3104e6452b2051527539847667caa828dfe98334f2",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:598b72a3-f57d-42ee-83d5-6f06ebe6df9d:task:171:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0029:423",
+            "apply_enter": "SOLR-18-r0029:420",
+            "apply_exit": "SOLR-18-r0029:442",
+            "door": "SOLR-18-r0029:421",
+            "matched": "SOLR-18-r0029:422",
+            "set_if_newer": "SOLR-18-r0029:425",
+            "target_check": "SOLR-18-r0029:426",
+            "update": "SOLR-18-r0029:424"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0029:424",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0029:423"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0029:425",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0029:424"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 177,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:598b72a3-f57d-42ee-83d5-6f06ebe6df9d:task:190:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0029:513",
+            "apply_enter": "SOLR-18-r0029:510",
+            "apply_exit": "SOLR-18-r0029:527",
+            "door": "SOLR-18-r0029:511",
+            "matched": "SOLR-18-r0029:512",
+            "set_if_newer": "SOLR-18-r0029:515",
+            "target_check": "SOLR-18-r0029:516",
+            "update": "SOLR-18-r0029:514"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0029:514",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0029:513"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0029:515",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0029:514"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:598b72a3-f57d-42ee-83d5-6f06ebe6df9d:task:200:1",
+          "door_ordinal": 6,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0029:570",
+            "apply_enter": "SOLR-18-r0029:567",
+            "apply_exit": "SOLR-18-r0029:583",
+            "door": "SOLR-18-r0029:568",
+            "matched": "SOLR-18-r0029:569",
+            "set_if_newer": "SOLR-18-r0029:572",
+            "target_check": "SOLR-18-r0029:573",
+            "update": "SOLR-18-r0029:571"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0029:571",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0029:570"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0029:572",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0029:571"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 29,
+      "trial_result_sha256": "cca0ac330ac4d1cc46e6202498bf583c7148464281dce958670ddc342ef83e06"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": true,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "e12b8f0df3177bb4dd0d746813fcd7fb6a607ccef1f89c64f2bbf98eb27d1863",
+      "events_raw_bytes": 766753,
+      "events_raw_sha256": "ac3b6cff4f9afee78d56352de231090f2fb213e655cbbcdb92bca37e625ba7b2",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:40c64e1b-a3a0-4c2a-9645-dd249221cedc:task:171:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0030:423",
+            "apply_enter": "SOLR-18-r0030:420",
+            "apply_exit": "SOLR-18-r0030:440",
+            "door": "SOLR-18-r0030:421",
+            "matched": "SOLR-18-r0030:422",
+            "set_if_newer": "SOLR-18-r0030:425",
+            "target_check": "SOLR-18-r0030:426",
+            "update": "SOLR-18-r0030:424"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:424",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0030:423"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:425",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0030:424"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:40c64e1b-a3a0-4c2a-9645-dd249221cedc:task:190:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0030:513",
+            "apply_enter": "SOLR-18-r0030:510",
+            "apply_exit": "SOLR-18-r0030:533",
+            "door": "SOLR-18-r0030:511",
+            "matched": "SOLR-18-r0030:512",
+            "set_if_newer": "SOLR-18-r0030:515",
+            "target_check": "SOLR-18-r0030:516",
+            "update": "SOLR-18-r0030:514"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:514",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0030:513"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:515",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0030:514"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:40c64e1b-a3a0-4c2a-9645-dd249221cedc:task:200:1",
+          "door_ordinal": 6,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0030:570",
+            "apply_enter": "SOLR-18-r0030:567",
+            "apply_exit": "SOLR-18-r0030:584",
+            "door": "SOLR-18-r0030:568",
+            "matched": "SOLR-18-r0030:569",
+            "set_if_newer": "SOLR-18-r0030:572",
+            "target_check": "SOLR-18-r0030:573",
+            "update": "SOLR-18-r0030:571"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:571",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0030:570"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:572",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0030:571"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0030:813",
+            "apply_enter": "SOLR-18-r0030:810",
+            "apply_exit": "SOLR-18-r0030:834",
+            "door": "SOLR-18-r0030:811",
+            "matched": "SOLR-18-r0030:812",
+            "set_if_newer": "SOLR-18-r0030:815",
+            "target_check": "SOLR-18-r0030:816",
+            "update": "SOLR-18-r0030:814"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:814",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0030:813"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0030:815",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0030:814"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 30,
+      "trial_result_sha256": "5f605fa07a515648bccf159d64a486385be7413b3cddd93976c1de34a45b04d3"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "1db9910ab127c6665577a6528ddbb1203b2fa5b25524e7dfac497db5bd5f9aee",
+      "events_raw_bytes": 763029,
+      "events_raw_sha256": "1e6096588573ab9689f7b4983a55186999306bc7775a91177f725c599faa3d58",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:74ae33ed-604f-4448-bce4-81ecc9c5d44d:task:172:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0031:445",
+            "apply_enter": "SOLR-18-r0031:422",
+            "apply_exit": "SOLR-18-r0031:457",
+            "door": "SOLR-18-r0031:443",
+            "matched": "SOLR-18-r0031:444",
+            "set_if_newer": "SOLR-18-r0031:447",
+            "target_check": "SOLR-18-r0031:448",
+            "update": "SOLR-18-r0031:446"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0031:446",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0031:445"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0031:447",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0031:446"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 177,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:74ae33ed-604f-4448-bce4-81ecc9c5d44d:task:201:1",
+          "door_ordinal": 7,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0031:582",
+            "apply_enter": "SOLR-18-r0031:579",
+            "apply_exit": "SOLR-18-r0031:600",
+            "door": "SOLR-18-r0031:580",
+            "matched": "SOLR-18-r0031:581",
+            "set_if_newer": "SOLR-18-r0031:584",
+            "target_check": "SOLR-18-r0031:585",
+            "update": "SOLR-18-r0031:583"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0031:583",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0031:582"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0031:584",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0031:583"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 31,
+      "trial_result_sha256": "b5b09969bb68f0d610d5646760051723dd1e0506e19d91fe31370b6bc3a50c7e"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "fcb6b6e201287ea7c78dac9ff2b8b44c60dacb5e8aefac4cca98a4035ccbb839",
+      "events_raw_bytes": 732944,
+      "events_raw_sha256": "0ba09d95c0425556ad0242450e56452fd45b4a7cb81fd89b720a3f9a8dd1f386",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 32,
+      "trial_result_sha256": "2262d57a134bde24b1f6e5e6c260fb8a4d224db66daca109cec317b065346f97"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "b967d4de4a55a160c76dbf782f085ee92aec68c3e1c2cea4beef57151dc07c4a",
+      "events_raw_bytes": 771685,
+      "events_raw_sha256": "997854984ffcfd8a8bd538b280ae72ba0434280c4ab79ac70f41ba5918ba2f5e",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:ed92e468-c11e-483d-a693-765b4155503b:task:171:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0033:443",
+            "apply_enter": "SOLR-18-r0033:420",
+            "apply_exit": "SOLR-18-r0033:463",
+            "door": "SOLR-18-r0033:441",
+            "matched": "SOLR-18-r0033:442",
+            "set_if_newer": "SOLR-18-r0033:445",
+            "target_check": "SOLR-18-r0033:446",
+            "update": "SOLR-18-r0033:444"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0033:444",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0033:443"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0033:445",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0033:444"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:ed92e468-c11e-483d-a693-765b4155503b:task:200:1",
+          "door_ordinal": 8,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0033:591",
+            "apply_enter": "SOLR-18-r0033:578",
+            "apply_exit": "SOLR-18-r0033:611",
+            "door": "SOLR-18-r0033:589",
+            "matched": "SOLR-18-r0033:590",
+            "set_if_newer": "SOLR-18-r0033:593",
+            "target_check": "SOLR-18-r0033:594",
+            "update": "SOLR-18-r0033:592"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0033:592",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0033:591"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0033:593",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0033:592"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 33,
+      "trial_result_sha256": "1725e63777c88a726e14adfe0b421ef91f2ceb08db9703b04e771ffe00572c2d"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "e4ceb58d0ce4935f0028455f56ad276b044cca603b596224dbfbdd86366287a1",
+      "events_raw_bytes": 729425,
+      "events_raw_sha256": "49549a4c2f5addafcdab77b6dd53c33631387c61aa327c7a130ea211877ffaf7",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 34,
+      "trial_result_sha256": "5a3acc04563768a0a943b79f54c92215e2b42169e90e0bf2d3be3a01da75e87d"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "d0376d8b02ee31d951997dd0b868d996da0c71ef822da23cdc69cf86b16a602f",
+      "events_raw_bytes": 770880,
+      "events_raw_sha256": "c7aea9a134460981a54983abf611090f31cb7c4cf93a31f525b7f193cc604e00",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7600afd0-f912-4799-8bdd-6a2259068789:task:171:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0035:443",
+            "apply_enter": "SOLR-18-r0035:420",
+            "apply_exit": "SOLR-18-r0035:461",
+            "door": "SOLR-18-r0035:441",
+            "matched": "SOLR-18-r0035:442",
+            "set_if_newer": "SOLR-18-r0035:445",
+            "target_check": "SOLR-18-r0035:446",
+            "update": "SOLR-18-r0035:444"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0035:444",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0035:443"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0035:445",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0035:444"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7600afd0-f912-4799-8bdd-6a2259068789:task:200:1",
+          "door_ordinal": 9,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0035:601",
+            "apply_enter": "SOLR-18-r0035:578",
+            "apply_exit": "SOLR-18-r0035:617",
+            "door": "SOLR-18-r0035:599",
+            "matched": "SOLR-18-r0035:600",
+            "set_if_newer": "SOLR-18-r0035:603",
+            "target_check": "SOLR-18-r0035:604",
+            "update": "SOLR-18-r0035:602"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0035:602",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0035:601"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0035:603",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0035:602"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 181,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 35,
+      "trial_result_sha256": "76d959116325b0f7e56179c431faffb8f60c19ac6a94737ee670e02124f7da7c"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "62e62ae899bf524494c5721244a9af2a9b9f5e31683bb8d620ab0023fbfd3291",
+      "events_raw_bytes": 764244,
+      "events_raw_sha256": "4526402dcecb146636e9ebd23eeea05571757b0c94f44156fc6217e462f35fc0",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:18dcf9dd-5ebe-4211-a7a9-6202304285b4:task:172:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0036:425",
+            "apply_enter": "SOLR-18-r0036:422",
+            "apply_exit": "SOLR-18-r0036:441",
+            "door": "SOLR-18-r0036:423",
+            "matched": "SOLR-18-r0036:424",
+            "set_if_newer": "SOLR-18-r0036:427",
+            "target_check": "SOLR-18-r0036:428",
+            "update": "SOLR-18-r0036:426"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0036:426",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0036:425"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0036:427",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0036:426"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 177,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:18dcf9dd-5ebe-4211-a7a9-6202304285b4:task:191:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0036:516",
+            "apply_enter": "SOLR-18-r0036:513",
+            "apply_exit": "SOLR-18-r0036:534",
+            "door": "SOLR-18-r0036:514",
+            "matched": "SOLR-18-r0036:515",
+            "set_if_newer": "SOLR-18-r0036:518",
+            "target_check": "SOLR-18-r0036:519",
+            "update": "SOLR-18-r0036:517"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0036:517",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0036:516"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0036:518",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0036:517"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:18dcf9dd-5ebe-4211-a7a9-6202304285b4:task:201:1",
+          "door_ordinal": 7,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0036:583",
+            "apply_enter": "SOLR-18-r0036:570",
+            "apply_exit": "SOLR-18-r0036:599",
+            "door": "SOLR-18-r0036:581",
+            "matched": "SOLR-18-r0036:582",
+            "set_if_newer": "SOLR-18-r0036:585",
+            "target_check": "SOLR-18-r0036:586",
+            "update": "SOLR-18-r0036:584"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0036:584",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0036:583"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0036:585",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0036:584"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 36,
+      "trial_result_sha256": "c1f965a6cf1dad98558bee919d07964f6e8fb194019f2a48b873ee8ec271970b"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "2e5d064d0317b42fdec88e45168c49fd1575d8b0b1f5a29ab6d160c9dbcfc318",
+      "events_raw_bytes": 734249,
+      "events_raw_sha256": "ce5be6b6cc2341e1160f7a67ba9d594531baf895d1d0621a37058321dc86a2b7",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 37,
+      "trial_result_sha256": "2f47487c847f562340d8aeb60f0caf1a4e055c8e41852ba869e09965335f6f0b"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "4a28ae487154225b47cebdd4b5e02f45da7a65715b0c699658e997bbca65a2ce",
+      "events_raw_bytes": 770349,
+      "events_raw_sha256": "f0fc71dc46761a48ec17f48a3b1b2d5c7b853d7f0c54226d31c7da20736d452e",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:f1cf0322-2dac-420c-a161-ba2d86be14d2:task:172:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0038:425",
+            "apply_enter": "SOLR-18-r0038:422",
+            "apply_exit": "SOLR-18-r0038:444",
+            "door": "SOLR-18-r0038:423",
+            "matched": "SOLR-18-r0038:424",
+            "set_if_newer": "SOLR-18-r0038:427",
+            "target_check": "SOLR-18-r0038:428",
+            "update": "SOLR-18-r0038:426"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0038:426",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0038:425"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0038:427",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0038:426"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:f1cf0322-2dac-420c-a161-ba2d86be14d2:task:191:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0038:515",
+            "apply_enter": "SOLR-18-r0038:512",
+            "apply_exit": "SOLR-18-r0038:533",
+            "door": "SOLR-18-r0038:513",
+            "matched": "SOLR-18-r0038:514",
+            "set_if_newer": "SOLR-18-r0038:517",
+            "target_check": "SOLR-18-r0038:518",
+            "update": "SOLR-18-r0038:516"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0038:516",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0038:515"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0038:517",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0038:516"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:f1cf0322-2dac-420c-a161-ba2d86be14d2:task:201:1",
+          "door_ordinal": 8,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0038:592",
+            "apply_enter": "SOLR-18-r0038:569",
+            "apply_exit": "SOLR-18-r0038:611",
+            "door": "SOLR-18-r0038:590",
+            "matched": "SOLR-18-r0038:591",
+            "set_if_newer": "SOLR-18-r0038:594",
+            "target_check": "SOLR-18-r0038:595",
+            "update": "SOLR-18-r0038:593"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0038:593",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0038:592"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0038:594",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0038:593"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 38,
+      "trial_result_sha256": "91b638083cb0592a87de1e7e6f167f7d13a698f97f640017ebd0f035f489e8cc"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "cd3e5a1ea49181eb39143875fb270355e7b69e1b23a6b93db5ade86ba6f181c2",
+      "events_raw_bytes": 725538,
+      "events_raw_sha256": "e486e8aa5d2c40a6730aac9b4bc01031cde17c74cc28f124e08751ad9292b2ab",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 39,
+      "trial_result_sha256": "5b5c8e63d9baa31f18eea724c8ab873cb2c4bf8af962c0242af499dd2ce206d3"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "2fe6c13bb6dfa165a7be84e7a035ca3bd4c513ebcadeee02126c31322ebd0579",
+      "events_raw_bytes": 725188,
+      "events_raw_sha256": "1814b61d568727e3255dc810ba19da693e812ef7081fa4709f37cc63db2f6656",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 40,
+      "trial_result_sha256": "d66434f3ac1f7cfaec802aecb75065646f4a3ae1b789904e4dbc432dc35823c5"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "2c31fc2857d793d5d1db006e9eee0c0607f06dc1c6db5e3f0a534d85226d0f3f",
+      "events_raw_bytes": 729203,
+      "events_raw_sha256": "131e0598220bddb6af6983c5cf2c0a661e223bc860f3140b3b340db4534ce3ce",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 41,
+      "trial_result_sha256": "7ee95dbe1c6df9bfc5fb8c6577c3c76d1fbc14f4c1e43b376783038d25a24b6e"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "054967e68293271386dfef2c988ca2437fca9f39d61172077157f6afd917b586",
+      "events_raw_bytes": 747950,
+      "events_raw_sha256": "c59cb58f66880e546590a9a544e6c3666d66612929aa5c3a70a655525c0950c2",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:6b94c878-ff83-4b04-89aa-03c92a5ddbb3:task:172:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0042:445",
+            "apply_enter": "SOLR-18-r0042:422",
+            "apply_exit": "SOLR-18-r0042:464",
+            "door": "SOLR-18-r0042:443",
+            "matched": "SOLR-18-r0042:444",
+            "set_if_newer": "SOLR-18-r0042:447",
+            "target_check": "SOLR-18-r0042:448",
+            "update": "SOLR-18-r0042:446"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0042:446",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0042:445"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0042:447",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0042:446"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:6b94c878-ff83-4b04-89aa-03c92a5ddbb3:task:191:1",
+          "door_ordinal": 6,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0042:534",
+            "apply_enter": "SOLR-18-r0042:531",
+            "apply_exit": "SOLR-18-r0042:554",
+            "door": "SOLR-18-r0042:532",
+            "matched": "SOLR-18-r0042:533",
+            "set_if_newer": "SOLR-18-r0042:536",
+            "target_check": "SOLR-18-r0042:537",
+            "update": "SOLR-18-r0042:535"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0042:535",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0042:534"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0042:536",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0042:535"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 42,
+      "trial_result_sha256": "2917719471799c597cc7dc664081f4871d5f21a5f2b5ddabf09369f38dba6815"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "d83d5dfd892e3cad7ff8e565291f98c84e99ca828aeb93df2e696c480300cb10",
+      "events_raw_bytes": 757962,
+      "events_raw_sha256": "ae390def316d748139391c5b5cd8fd6c3dfeef4f95db9a2ed29754ccb86d9fd5",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:51688527-75f5-4173-b6cf-80b98c0d9a6d:task:171:1",
+          "door_ordinal": 5,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0043:453",
+            "apply_enter": "SOLR-18-r0043:420",
+            "apply_exit": "SOLR-18-r0043:471",
+            "door": "SOLR-18-r0043:451",
+            "matched": "SOLR-18-r0043:452",
+            "set_if_newer": "SOLR-18-r0043:455",
+            "target_check": "SOLR-18-r0043:456",
+            "update": "SOLR-18-r0043:454"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0043:454",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0043:453"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0043:455",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0043:454"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 43,
+      "trial_result_sha256": "59680ddde47813bcf5a45ab7d7539debeae9f766bbbf963cfd5338a44d5f222e"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "0959e7286f76d5cc78b011a550a2975f3ec6d188b6a56e64b72dc4bd75ee8c0a",
+      "events_raw_bytes": 726976,
+      "events_raw_sha256": "5856343cceddd39d1aeeed8354b48ca2a8f3b66c98f0379fde0465856db97eb9",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 44,
+      "trial_result_sha256": "c2e4b1115aab0ae5e77722adf8edbeb03f84c9905e29c35dd188e541812a88f8"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "5a2203f59a6c7c15b5065f4fbc161d4bb54277e1c0df9bb02fcad40a2ce47499",
+      "events_raw_bytes": 771309,
+      "events_raw_sha256": "3dbd8f2822ae8ee9d615bca3978e896c7208f979019c415aff13b62aa3024a2a",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:73d30b96-98fb-43ac-8118-e2d20e5eae05:task:170:1",
+          "door_ordinal": 5,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0045:451",
+            "apply_enter": "SOLR-18-r0045:418",
+            "apply_exit": "SOLR-18-r0045:471",
+            "door": "SOLR-18-r0045:449",
+            "matched": "SOLR-18-r0045:450",
+            "set_if_newer": "SOLR-18-r0045:453",
+            "target_check": "SOLR-18-r0045:454",
+            "update": "SOLR-18-r0045:452"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0045:452",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0045:451"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0045:453",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0045:452"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:73d30b96-98fb-43ac-8118-e2d20e5eae05:task:199:1",
+          "door_ordinal": 8,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0045:589",
+            "apply_enter": "SOLR-18-r0045:586",
+            "apply_exit": "SOLR-18-r0045:609",
+            "door": "SOLR-18-r0045:587",
+            "matched": "SOLR-18-r0045:588",
+            "set_if_newer": "SOLR-18-r0045:591",
+            "target_check": "SOLR-18-r0045:592",
+            "update": "SOLR-18-r0045:590"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0045:590",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0045:589"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0045:591",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0045:590"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 45,
+      "trial_result_sha256": "423960b5edf11e494d5ad044f629221d0154d8a9c7a0c9ebadd3775437530341"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "e06df5f5ea8cfd6d3e5c10406da197a7d9155b47ef756d8f98ea668ae1e5dc4f",
+      "events_raw_bytes": 778748,
+      "events_raw_sha256": "54a20c2a698d942bba9d2fc360424f30dae58e87fe115083dadff3df73912e15",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:614b2e5d-2682-450f-83d2-867259c284a3:task:172:1",
+          "door_ordinal": 5,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0046:455",
+            "apply_enter": "SOLR-18-r0046:422",
+            "apply_exit": "SOLR-18-r0046:474",
+            "door": "SOLR-18-r0046:453",
+            "matched": "SOLR-18-r0046:454",
+            "set_if_newer": "SOLR-18-r0046:457",
+            "target_check": "SOLR-18-r0046:458",
+            "update": "SOLR-18-r0046:456"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0046:456",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0046:455"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0046:457",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0046:456"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:614b2e5d-2682-450f-83d2-867259c284a3:task:201:1",
+          "door_ordinal": 8,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0046:591",
+            "apply_enter": "SOLR-18-r0046:588",
+            "apply_exit": "SOLR-18-r0046:611",
+            "door": "SOLR-18-r0046:589",
+            "matched": "SOLR-18-r0046:590",
+            "set_if_newer": "SOLR-18-r0046:593",
+            "target_check": "SOLR-18-r0046:594",
+            "update": "SOLR-18-r0046:592"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0046:592",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0046:591"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0046:593",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0046:592"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0046:826",
+            "apply_enter": "SOLR-18-r0046:823",
+            "apply_exit": "SOLR-18-r0046:847",
+            "door": "SOLR-18-r0046:824",
+            "matched": "SOLR-18-r0046:825",
+            "set_if_newer": "SOLR-18-r0046:828",
+            "target_check": "SOLR-18-r0046:829",
+            "update": "SOLR-18-r0046:827"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0046:827",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0046:826"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0046:828",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0046:827"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 46,
+      "trial_result_sha256": "689e6b543bf14059d0ef3d3197ecd77ca73f871e4a617b5581372ef63bc76991"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "bcd36e43efa24a6aa4b4a25780e3bc40f669d19b393c9af7a8e050b05e74840a",
+      "events_raw_bytes": 726694,
+      "events_raw_sha256": "4a1222658377d52422d5c61979d123af22f37c0aa210367a0549cb06ac0b355d",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 47,
+      "trial_result_sha256": "f531cd857ca0bb6a2fa8f0d25d62b3ac42c25b8e9dc6f64ebf7e8cd230352b34"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "9d5a76b1f1526d524dc1380b02500f6f85b1f14ef1dce1cdbfe0a9f948162dc9",
+      "events_raw_bytes": 771486,
+      "events_raw_sha256": "e451df0ae1bc7a762b47ee6160eb98b859e571089807fcf4fe6e6bf93f4dac2c",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:81b0a7cc-da77-4d17-bd11-9d04c059304c:task:171:1",
+          "door_ordinal": 5,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0048:453",
+            "apply_enter": "SOLR-18-r0048:420",
+            "apply_exit": "SOLR-18-r0048:471",
+            "door": "SOLR-18-r0048:451",
+            "matched": "SOLR-18-r0048:452",
+            "set_if_newer": "SOLR-18-r0048:455",
+            "target_check": "SOLR-18-r0048:456",
+            "update": "SOLR-18-r0048:454"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0048:454",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0048:453"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0048:455",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0048:454"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:81b0a7cc-da77-4d17-bd11-9d04c059304c:task:190:1",
+          "door_ordinal": 7,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0048:543",
+            "apply_enter": "SOLR-18-r0048:540",
+            "apply_exit": "SOLR-18-r0048:561",
+            "door": "SOLR-18-r0048:541",
+            "matched": "SOLR-18-r0048:542",
+            "set_if_newer": "SOLR-18-r0048:545",
+            "target_check": "SOLR-18-r0048:546",
+            "update": "SOLR-18-r0048:544"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0048:544",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0048:543"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0048:545",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0048:544"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 180,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 48,
+      "trial_result_sha256": "c048358e828f7aaa9500792022493d617a42de1989920c62b355dd90ff3fe699"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "6fefaef6fd4d2eb7f97aff14c628ff620fc80064da695fa0d9bee208ddb0149d",
+      "events_raw_bytes": 735308,
+      "events_raw_sha256": "898195b43b0f67d6103ef3e71adf97b600dd106ec4360d106593c646f1b4a5cc",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 49,
+      "trial_result_sha256": "d2fe7cc6441a191d3fcc10dd38abb68b5e7580a502d8d3619622a06a4977d70a"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "025cc48ba45299ab712b4623d5117f5becff3a86c84f78d6edd233bb6b244c03",
+      "events_raw_bytes": 719697,
+      "events_raw_sha256": "436531f866129623025311253223b46d864ffadecc953f302fc3cf7eae5969bf",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 50,
+      "trial_result_sha256": "cce9ac7b772ac57462d0b173c0491111542066a736861bf3e86ff5be35b13519"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "ce4e4d7ece0678300abac8364ab722fb8ed7c713aace37342367cf3fae514691",
+      "events_raw_bytes": 728456,
+      "events_raw_sha256": "f94700b3e92bc0ff4bdce2aa009eeaaa2ddb4ea1a916e306b5029584e449f497",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 51,
+      "trial_result_sha256": "643d63d6080013c58e50729faf1f4677666841dd3fe3d0f0982a4915fa20b1fc"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "708345c77463e59797176c5e7ef450d89110e16070ee30cc62dced6cd9cddf8f",
+      "events_raw_bytes": 771859,
+      "events_raw_sha256": "8664175b1f757a0458a1d7b70f68687694b851fba8464cd875bad34c409503c0",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7f9a0a6d-00a4-449f-83f4-4437ff88fccf:task:171:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0052:443",
+            "apply_enter": "SOLR-18-r0052:420",
+            "apply_exit": "SOLR-18-r0052:463",
+            "door": "SOLR-18-r0052:441",
+            "matched": "SOLR-18-r0052:442",
+            "set_if_newer": "SOLR-18-r0052:445",
+            "target_check": "SOLR-18-r0052:446",
+            "update": "SOLR-18-r0052:444"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0052:444",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0052:443"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0052:445",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0052:444"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 177,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:7f9a0a6d-00a4-449f-83f4-4437ff88fccf:task:191:1",
+          "door_ordinal": 6,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0052:535",
+            "apply_enter": "SOLR-18-r0052:532",
+            "apply_exit": "SOLR-18-r0052:555",
+            "door": "SOLR-18-r0052:533",
+            "matched": "SOLR-18-r0052:534",
+            "set_if_newer": "SOLR-18-r0052:537",
+            "target_check": "SOLR-18-r0052:538",
+            "update": "SOLR-18-r0052:536"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0052:536",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0052:535"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0052:537",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0052:536"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 1,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0052:819",
+            "apply_enter": "SOLR-18-r0052:816",
+            "apply_exit": "SOLR-18-r0052:840",
+            "door": "SOLR-18-r0052:817",
+            "matched": "SOLR-18-r0052:818",
+            "set_if_newer": "SOLR-18-r0052:821",
+            "target_check": "SOLR-18-r0052:822",
+            "update": "SOLR-18-r0052:820"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0052:820",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0052:819"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0052:821",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0052:820"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 52,
+      "trial_result_sha256": "74eccb3eaf8d63d36635e45a579b2cc2d3ec657ab32ca629cfc05fd34ce83907"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "7712e88eeefe1ca3931be8595eeeef378baba28693a63badedef464f66245451",
+      "events_raw_bytes": 725761,
+      "events_raw_sha256": "9f904ce9498d6f6b77e5d5a2d3209e4f9b81943a7326ff3f642fc1bf47184234",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 53,
+      "trial_result_sha256": "fd2d7729eedeb6f1d11afb65c1467358f2c1560039d75313f2ca08176089f4af"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "818bbc07a4beb1096ccaa3be6f895fba18faa10eff1f8ba571cccb399e34854b",
+      "events_raw_bytes": 717992,
+      "events_raw_sha256": "5cd9a691840e4a85dfdbe9fcf2aa1f8939d0483e0364175e7382321a408aa7b9",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 54,
+      "trial_result_sha256": "4a1c75bd216e3ced4ff56251ef270fc035a17ae69b24151dc06f4198ddd7cd96"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "8c2773dc291362faff4a87f8b34c09ecc627aa8e54eb224a0bfd4e8696145297",
+      "events_raw_bytes": 718001,
+      "events_raw_sha256": "41c059035eecbe47487697503a159bf36bdc8b8c9e1c42b6969c8f85e88db7fb",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 55,
+      "trial_result_sha256": "d36149502079b92dc32c6bf8e7139978d1aaa5c18f032377213e8007de945785"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "c68fb57bf5ec6de879ddf8c7cd4703fe2198ec4dac18422a7be9c3b2561aaad9",
+      "events_raw_bytes": 750707,
+      "events_raw_sha256": "fa263e84ab03c2ed6d1fafe49a06c122b2904712f6a694fde96c5fc3e53452a3",
+      "exact_badversion_plans": 2,
+      "junit_status": "passed",
+      "plan_size": 2,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0056:796",
+            "apply_enter": "SOLR-18-r0056:783",
+            "apply_exit": "SOLR-18-r0056:813",
+            "door": "SOLR-18-r0056:794",
+            "matched": "SOLR-18-r0056:795",
+            "set_if_newer": "SOLR-18-r0056:798",
+            "target_check": "SOLR-18-r0056:799",
+            "update": "SOLR-18-r0056:797"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0056:797",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0056:796"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0056:798",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0056:797"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 56,
+      "trial_result_sha256": "bab1ce9487dda3d83c46f97ee8752f4744aba7483901ec70685b5e4f99c2c3f7"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "e87e33f97ca224ddb7ea4d87ec6a02f003c63e71ca0726663e3f14aaa346438d",
+      "events_raw_bytes": 743631,
+      "events_raw_sha256": "eca17b7f536c301d632fd1efb2856cafe3ec54f889e66ea4cbb332d6222e882e",
+      "exact_badversion_plans": 3,
+      "junit_status": "passed",
+      "plan_size": 3,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0057:776",
+            "apply_enter": "SOLR-18-r0057:753",
+            "apply_exit": "SOLR-18-r0057:796",
+            "door": "SOLR-18-r0057:774",
+            "matched": "SOLR-18-r0057:775",
+            "set_if_newer": "SOLR-18-r0057:778",
+            "target_check": "SOLR-18-r0057:779",
+            "update": "SOLR-18-r0057:777"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0057:777",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0057:776"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0057:778",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0057:777"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 57,
+      "trial_result_sha256": "22ba3128ea39b2e1d859611b9f4046fa4ebda91261334eb8fc3f2a7bda80c44c"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "6704448bc3265e3946d3ca340b37b9560690c1267f5f069a126c2e25e43b8a7e",
+      "events_raw_bytes": 759828,
+      "events_raw_sha256": "36649defe29522153a5211f574228f5ac924d96925d3a4ecc8e45c0338063263",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0058:806",
+            "apply_enter": "SOLR-18-r0058:773",
+            "apply_exit": "SOLR-18-r0058:824",
+            "door": "SOLR-18-r0058:804",
+            "matched": "SOLR-18-r0058:805",
+            "set_if_newer": "SOLR-18-r0058:808",
+            "target_check": "SOLR-18-r0058:809",
+            "update": "SOLR-18-r0058:807"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0058:807",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0058:806"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0058:808",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0058:807"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 58,
+      "trial_result_sha256": "b7036edd37a3bff90004d8235c0f9d98afde596b0eb519efb219fc9c3e8b9a28"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "1ffca3b72a39f6e4824d998debe76e01ccfe54188ed05c809bfbc8fa4affd68b",
+      "events_raw_bytes": 761602,
+      "events_raw_sha256": "f8ff258ed2832f185d76f4b538fdfe0c88b1626904513be30110600821536f44",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 5,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0059:800",
+            "apply_enter": "SOLR-18-r0059:757",
+            "apply_exit": "SOLR-18-r0059:821",
+            "door": "SOLR-18-r0059:798",
+            "matched": "SOLR-18-r0059:799",
+            "set_if_newer": "SOLR-18-r0059:802",
+            "target_check": "SOLR-18-r0059:803",
+            "update": "SOLR-18-r0059:801"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0059:801",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0059:800"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0059:802",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0059:801"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 59,
+      "trial_result_sha256": "71c4fcfc72522a7cdb92b83fe2129e622fa633222292c414333e7dded16c275d"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "0f25c64fe8fc524b13f7404006aafe543dd2d581a44b77156f7b0a8781355743",
+      "events_raw_bytes": 766078,
+      "events_raw_sha256": "ea762d6fb6c0382bad8b157936212a0c0fe12d6b94019145eb11a6d8ef2c15b6",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 6,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0060:803",
+            "apply_enter": "SOLR-18-r0060:750",
+            "apply_exit": "SOLR-18-r0060:822",
+            "door": "SOLR-18-r0060:801",
+            "matched": "SOLR-18-r0060:802",
+            "set_if_newer": "SOLR-18-r0060:805",
+            "target_check": "SOLR-18-r0060:806",
+            "update": "SOLR-18-r0060:804"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0060:804",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0060:803"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0060:805",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0060:804"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 60,
+      "trial_result_sha256": "f08ea6fabc780fd6973edab2ab08bb52526cf45f54c945e18b1566957a2d0082"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "dc03284be028d5ec761f8a96fcaeddfbb6ed6f600ea0327550d1a48bee0e3866",
+      "events_raw_bytes": 752206,
+      "events_raw_sha256": "6429a0eb08f6b19183c383b4c9f9d5420d2d6e63ecd90810907e72bff199c07d",
+      "exact_badversion_plans": 4,
+      "junit_status": "passed",
+      "plan_size": 4,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:ddeb3b49-05f7-4dd1-96e0-ea173597688a:task:172:1",
+          "door_ordinal": 3,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0061:435",
+            "apply_enter": "SOLR-18-r0061:422",
+            "apply_exit": "SOLR-18-r0061:449",
+            "door": "SOLR-18-r0061:433",
+            "matched": "SOLR-18-r0061:434",
+            "set_if_newer": "SOLR-18-r0061:437",
+            "target_check": "SOLR-18-r0061:438",
+            "update": "SOLR-18-r0061:436"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0061:436",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0061:435"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0061:437",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0061:436"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 181,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0061:786",
+            "apply_enter": "SOLR-18-r0061:773",
+            "apply_exit": "SOLR-18-r0061:806",
+            "door": "SOLR-18-r0061:784",
+            "matched": "SOLR-18-r0061:785",
+            "set_if_newer": "SOLR-18-r0061:788",
+            "target_check": "SOLR-18-r0061:789",
+            "update": "SOLR-18-r0061:787"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0061:787",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0061:786"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0061:788",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0061:787"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 61,
+      "trial_result_sha256": "0c8ad5d740990b177230ce96bc7fea22f55d02650ea986a3df0bd8a70f694276"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "7b7201c01ab24910db47cf43935ed5babb9d5f1a916d1c3d299b069a738e621b",
+      "events_raw_bytes": 736626,
+      "events_raw_sha256": "567b506e7341d03a0a76e4d49b0d8b8774b453fe1849a2a501bcbee47da140f9",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 62,
+      "trial_result_sha256": "520481971cb8d33aaef3b0009c2afe70efc2d1d73308b384331f244325375e4c"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "e95bc732ae8ad6655632e3b273950a6deb49fcb0dc5ec3ba67dadcdbca57b70d",
+      "events_raw_bytes": 735323,
+      "events_raw_sha256": "d1792adb5a3e256d7c1e1bb4a6c52fd64fad062c25a59f6c8294a1a5f5f3a14b",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 63,
+      "trial_result_sha256": "f0413909e3c6995b53797d33d05b2349b05bc3ffe61d7bd087cc628b792f83d5"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": true,
+      "events_gzip_sha256": "b548fa2ea90bc007e18de0f603a0c7425c20ede622ff5a4cbab1407ffedf3ee2",
+      "events_raw_bytes": 762983,
+      "events_raw_sha256": "e3c7b4b5e5b63463fd44632e97193c2c6fb19a75d19925292ca18d12d2d746d6",
+      "exact_badversion_plans": 6,
+      "junit_status": "passed",
+      "plan_size": 6,
+      "strict_recovery_chains": [
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:6219f31b-27ba-4531-90db-ff54ac0e5694:task:170:1",
+          "door_ordinal": 4,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0064:441",
+            "apply_enter": "SOLR-18-r0064:418",
+            "apply_exit": "SOLR-18-r0064:461",
+            "door": "SOLR-18-r0064:439",
+            "matched": "SOLR-18-r0064:440",
+            "set_if_newer": "SOLR-18-r0064:443",
+            "target_check": "SOLR-18-r0064:444",
+            "update": "SOLR-18-r0064:442"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0064:442",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0064:441"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0064:443",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0064:442"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 178,
+          "valid": true
+        },
+        {
+          "apply_occurrence": "node1:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:6219f31b-27ba-4531-90db-ff54ac0e5694:task:189:1",
+          "door_ordinal": 6,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0064:531",
+            "apply_enter": "SOLR-18-r0064:528",
+            "apply_exit": "SOLR-18-r0064:551",
+            "door": "SOLR-18-r0064:529",
+            "matched": "SOLR-18-r0064:530",
+            "set_if_newer": "SOLR-18-r0064:533",
+            "target_check": "SOLR-18-r0064:534",
+            "update": "SOLR-18-r0064:532"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0064:532",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0064:531"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0064:533",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0064:532"
+            }
+          ],
+          "node": "node1",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 179,
+          "valid": true
+        },
+        {
+          "reason": "missing_unique_caught_update",
+          "valid": false
+        },
+        {
+          "apply_occurrence": "client:0:org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V:root:1",
+          "door_ordinal": 2,
+          "epoch": 0,
+          "event_ids": {
+            "applied": "SOLR-18-r0064:795",
+            "apply_enter": "SOLR-18-r0064:782",
+            "apply_exit": "SOLR-18-r0064:813",
+            "door": "SOLR-18-r0064:793",
+            "matched": "SOLR-18-r0064:794",
+            "set_if_newer": "SOLR-18-r0064:797",
+            "target_check": "SOLR-18-r0064:798",
+            "update": "SOLR-18-r0064:796"
+          },
+          "graph_edges": [
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0064:796",
+              "kind": "program_order",
+              "producer_event": "SOLR-18-r0064:795"
+            },
+            {
+              "certainty": "observed",
+              "consumer_event": "SOLR-18-r0064:797",
+              "kind": "region_parent",
+              "producer_event": "SOLR-18-r0064:796"
+            }
+          ],
+          "node": "client",
+          "reason": "same_apply_badversion_recovery",
+          "thread_id": 140,
+          "valid": true
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 64,
+      "trial_result_sha256": "b5bfd275f91daaa3f4ea402f0484f6c6e798e1dca3196418013388fc6a8c0422"
+    },
+    {
+      "all_exact_faults_have_strict_recovery_chain": false,
+      "all_faults_effective": false,
+      "events_gzip_sha256": "2bb8a71465239b0dc2b5581660ba96da9640e7a3958f3062c610dea66a38257d",
+      "events_raw_bytes": 742920,
+      "events_raw_sha256": "b0b44350fa6334c2ba960cb141fb46ab070f041b4566662b849d95e5e99fdbed",
+      "exact_badversion_plans": 5,
+      "junit_status": "passed",
+      "plan_size": 5,
+      "strict_recovery_chains": [
+        {
+          "reason": "not_all_effective_passing_badversion_faults",
+          "valid": false
+        }
+      ],
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "target_threw": false,
+      "target_throw_event_ids": [],
+      "trace_truncated": false,
+      "trial_id": 65,
+      "trial_result_sha256": "6ce2ff4528815638cbe68d33e7d67562003d3d1db04e7edb9150ce4c585061db"
+    }
+  ],
+  "unmatched_or_ineffective_trials": [
+    3,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    19,
+    21,
+    25,
+    26,
+    32,
+    34,
+    37,
+    39,
+    40,
+    41,
+    44,
+    47,
+    49,
+    50,
+    51,
+    53,
+    54,
+    55,
+    62,
+    63,
+    65
+  ]
+}
