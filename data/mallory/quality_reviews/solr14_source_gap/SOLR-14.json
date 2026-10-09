@@ -1,0 +1,17 @@
+{
+  "case_id": "SOLR-14",
+  "classification": "source_proven_direct_door_aborts_before_target",
+  "fault_pilot_authorized": false,
+  "full_campaign_promoted": false,
+  "new_bug_confirmed": false,
+  "next_step": "A distinct caught or retrying upstream door would need a new healthy and postfault pilot.",
+  "prior_config_sha256": "028e10d4e1bba4c47fa3253f60ce4fa09228914d80ea1e5bae400a373f2daa3a",
+  "prior_healthy_audit_sha256": "86b7950446eec391d8315669f2fbf556b71467879ea5a2a4c4b4edfa25198b03",
+  "prior_healthy_result_sha256": "946f08c9e52241080288913d64526f3287b8ff8366e26e017c334c34eb35a03a",
+  "prior_source_review_sha256": "1b9518d1d9ae9b8608ebaec742a13c9ca85c96c1b636483b10cc55f7a93e18f2",
+  "schema_version": 1,
+  "source_finding": "SplitShardCmd.split calls SolrZkClient.exists at line 164 immediately before the exact line-165 null-stat guard. The only preceding local catch handles InterruptedException from getLeaderRetry; the broad split try/catch begins at line 193. An injected ConnectionLossException at exists therefore leaves the split invocation before this guard.",
+  "source_sha256": "995355f882947b528cedf9b7b38032f334afec74b5226d217f3f7828f2fb34f3",
+  "staged_future_healthy_config_sha256": "dea860120f71b5d7f3fd36a569edb358eeb54f1d50b316795aa1d9fd4c2fd5c0",
+  "staged_future_healthy_executed": false
+}
