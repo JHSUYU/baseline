@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "status": "no_new_target_retaining_request_path_identified",
+  "case_ids": ["ZOOKEEPER-02", "ZOOKEEPER-03"],
+  "scope": "Source review of the existing QuorumTest#testMultiToFollower and previously tested request-receive-context overlay. This is not an exhaustive exclusion of other tests or fault models.",
+  "selected_workload": "org.apache.zookeeper.test.QuorumTest#testMultiToFollower",
+  "source_version": "ZooKeeper 3.8.7 pristine inventory source",
+  "source_evidence": [
+    {
+      "path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumTest.java",
+      "sha256": "67a3f264bc95434d9fca8de86a3ac2f398f28aa2ad752b803ad1f6411b0181b6",
+      "lines": "380-410",
+      "finding": "Three-peer test connects a client to a follower, submits one multi-create request, reads three nodes, and closes. It has no explicit application request retry or peer restart."
+    },
+    {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerHandler.java",
+      "sha256": "ba5702c3fb346c3599fc38738c8a491faeda80394d47bbac51872be9e6b7a79d",
+      "lines": "697-722",
+      "finding": "The physical REQUEST read precedes Request creation and submitLearnerRequest; an IOException at the read exits through the outer handler and closes the socket, so that packet does not reach the selected target."
+    },
+    {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/PrepRequestProcessor.java",
+      "sha256": "b3ba5e779f99cc972d5fcde6090c43814d1695405a1da9f108257baae24ddd5d",
+      "lines": "134-163, 579-587, 835-867, 904-929, 1005",
+      "finding": "The processor claims then processes each Request; an exception escaping before pRequest exits its loop. For createSession, trackSession and setOwner are adjacent with no I/O between. For multi-create, checkSession is reached in pRequest2Txn; no new caught precheck I/O door was identified in this inspected path."
+    },
+    {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+      "sha256": "baffc60cd94b7b2c9edd3ea21602e02f782c26a32e82e80aac6d88cfe9fdc1bd",
+      "lines": "309-338",
+      "finding": "ZOOKEEPER-02 checkSession depends on the session's owner identity; ZOOKEEPER-03 setOwner throws only for an absent or closing session."
+    },
+    {
+      "path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+      "sha256": "3c883cc64beda7e14e446a6a9cd75791c7a2c12e0118dd41d99e9aedccad0631",
+      "lines": "1383-1465",
+      "finding": "The existing connect-read door precedes session creation/renewal, so its exception drops that connection attempt. The locally caught readBool IOException only changes old-client/read-only handling; it does not change the selected session owner or existence operands."
+    }
+  ],
+  "previous_evidence": [
+    {
+      "case_id": "ZOOKEEPER-02",
+      "healthy_receipt": "data/mallory/admissions/ZOOKEEPER-02-fa5f-requestrecv-v1-healthy.json",
+      "healthy_receipt_sha256": "a96cd2e951895828e433644d4019ab07e78ca4452fe9f5c3d5f7c406f7980ce6",
+      "pilot_result": "data/mallory/pilot_fa5f_lane2/ZOOKEEPER-02-requestrecv-v1/result.json",
+      "pilot_result_sha256": "ef8695c1972db38f4588e3165f19ce9694d374991570e15f88527242936fdef7",
+      "pilot_offline_audit": "data/mallory/pilot_fa5f_lane2/ZOOKEEPER-02-requestrecv-v1/offline-causal-audit.json",
+      "pilot_offline_audit_sha256": "7dc9d547c9962394682be1ce72a5c8b310fdd048775596e48445647858a9aea6",
+      "postfault_actor_audit": "data/mallory/pilot_fa5f_lane2/ZOOKEEPER-02-requestrecv-v1/postfault-actor-audit-v2.json",
+      "postfault_actor_audit_sha256": "05f35c47a72722ba7aa9351edbaf26f5b263cb288706329716c6c812eea45a45",
+      "applied_fault_events": 8,
+      "proven_postfault_target_paths": 0
+    },
+    {
+      "case_id": "ZOOKEEPER-03",
+      "healthy_receipt": "data/mallory/admissions/ZOOKEEPER-03-fa5f-requestrecv-v1-healthy.json",
+      "healthy_receipt_sha256": "cec87ab9e37c05ae5159703ed25ce6038e4b70d8ec53551dd55bc0114ecab00f",
+      "pilot_result": "data/mallory/pilot_fa5f_lane2/ZOOKEEPER-03-requestrecv-v1/result.json",
+      "pilot_result_sha256": "842393e0aa46cd699e0ecc26c4ea6b433ded8029376d468093d3f39ec25eac85",
+      "pilot_offline_audit": "data/mallory/pilot_fa5f_lane2/ZOOKEEPER-03-requestrecv-v1/offline-causal-audit.json",
+      "pilot_offline_audit_sha256": "d8a3342388ea56ca28b6ba7417eb8d78df11b1595d9534df738d6d492d5a834d",
+      "postfault_actor_audit": "data/mallory/pilot_fa5f_lane2/ZOOKEEPER-03-requestrecv-v1/postfault-actor-audit-v2.json",
+      "postfault_actor_audit_sha256": "b0d73b0cc3225fd9716c710d564982390c58f33464b66d13edc873b527467a1d",
+      "applied_fault_events": 6,
+      "proven_postfault_target_paths": 0
+    }
+  ],
+  "decision": {
+    "fresh_junit_runs": 0,
+    "new_fault_plan_staged": false,
+    "full_campaign_admission": false,
+    "checklist_classification": "causal_precision_unverified",
+    "reason": "The existing healthy exact packet and actor path is valid, but the previously tested faults did not preserve a time-respecting path from the affected request to the selected target. No distinct source-supported target-retaining request receive or processor-claim exception point was found in this review."
+  }
+}
