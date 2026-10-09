@@ -92,10 +92,25 @@ public final class SolrHooks {
 
   public static void endOverseerTaskProcessor() { end("overseer_task_processor"); }
 
-  /** ZooKeeper watcher callbacks can run outside the initiating request thread. */
+  /** A new reader can share a uniquely owned SolrZkClient with a registered reader. */
   public static void beginAliasesManager(Object manager) {
     Object reader = field(manager, "this$0");
-    SCOPES.get().push(new Scope("aliases", Probe.withRegisteredNode(reader), null));
+    Object client = invoke(reader, "getZkClient");
+    Probe.NodeScope node;
+    synchronized (SolrHooks.class) {
+      node = client != null && !AMBIGUOUS_ZK_CLIENTS.contains(client)
+          ? Probe.withRegisteredNode(client) : Probe.withNode("unknown", 0);
+      if (!"unknown".equals(Probe.currentNode())) {
+        try {
+          Probe.registerCurrentNode(reader);
+          Probe.registerCurrentNode(manager);
+        } catch (IllegalStateException conflictingOwner) {
+          node.close();
+          node = Probe.withNode("unknown", 0);
+        }
+      }
+    }
+    SCOPES.get().push(new Scope("aliases", node, null));
   }
 
   public static void endAliasesManager() { end("aliases"); }

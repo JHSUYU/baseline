@@ -161,6 +161,9 @@ public class SolrHooksTest {
     SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(new Object(), shared));
     assertEquals("unknown", Probe.currentNode());
     SolrHooks.endZkWatchDispatch();
+    SolrHooks.beginAliasesManager(serverReader.aliasesManager);
+    assertEquals("unknown", Probe.currentNode());
+    SolrHooks.endAliasesManager();
   }
 
   @Test public void aliasesManagerUsesItsRegisteredReaderEvenForNewInstance() {
@@ -173,6 +176,20 @@ public class SolrHooksTest {
     SolrHooks.beginAliasesManager(new Reader().new AliasesManager());
     assertEquals("unknown", Probe.currentNode());
     SolrHooks.endAliasesManager();
+  }
+
+  @Test public void aliasesManagerDerivesNewReaderOnlyFromUniqueClientOwner() {
+    Object sharedClient = new Object();
+    Reader registered = new Reader(sharedClient);
+    SolrHooks.registerClientReader(registered);
+    Reader derived = new Reader(sharedClient);
+    SolrHooks.beginAliasesManager(derived.aliasesManager);
+    assertEquals("client", Probe.currentNode());
+    SolrHooks.endAliasesManager();
+    try (Probe.NodeScope scope = Probe.withRegisteredNode(derived)) {
+      assertEquals("client", Probe.currentNode());
+    }
+    assertEquals("unknown", Probe.currentNode());
   }
 
   @Test public void clientProviderDoesNotRebindServerOwnedReader() {
@@ -352,6 +369,7 @@ public class SolrHooksTest {
     Object watcher = watcherClass.getConstructor(org.apache.solr.common.cloud.ZkStateReader.class)
         .newInstance(reader);
     Probe.registerNode(reader, "node1", 0);
+    Probe.registerNode(reader.getZkClient(), "node1", 0);
     assertEquals("node1", watcherClass.getMethod("setIfNewer", Object.class)
         .invoke(watcher, "new"));
     assertEquals("node1", watcherClass.getMethod("update").invoke(watcher));

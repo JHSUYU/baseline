@@ -5,7 +5,10 @@ import edu.uva.liftlab.mallory.instrumentation.Probe;
 /** Alias watcher shape used to verify the Solr transformer without Solr on the test classpath. */
 public final class ZkStateReader {
   public final AliasesManager aliasesManager = new AliasesManager();
+  private final Object zkClient = new Object();
   public String watcherNode;
+
+  public Object getZkClient() { return zkClient; }
 
   public void createClusterStateWatchersAndUpdate() {
     try (Probe.NodeScope scope = Probe.withRegisteredNode(aliasesManager)) {

@@ -1,0 +1,39 @@
+{
+  "artifact": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/target/mallory-solr-adapter-v38.jar",
+    "sha256": "86915aa43203d934431126f9cfbe6f534125dc8a198bf7e9a074a3695d8f5947"
+  },
+  "ownership_policy": "derive reader and manager actor only from uniquely registered enclosing SolrZkClient; conflicting/shared instances stay unknown",
+  "pristine_solr_source": {
+    "alias_manager_owner": {
+      "finding": "AliasesManager is a non-static inner class and its enclosing reader owns the manager",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java",
+      "sha256": "83e14eadfcc4896ff05f9ac77706fdb683e0c181caeee21802f8861f68ac373d"
+    },
+    "hook_method": "SolrZkClient$ProcessWatchWithExecutor#process(Lorg/apache/zookeeper/WatchedEvent;)V",
+    "path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java",
+    "sha256": "4a256a0fb563515451b5b733dbb4e320fceb9fa5dcc04912e4dd003d1a109c32"
+  },
+  "release": "v38_solr_alias_reader_derived_from_unique_zkclient",
+  "schema_version": 1,
+  "scope": "future-only; v37 and live adapters unchanged",
+  "source_snapshot": {
+    "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v38/source/SolrHooks.java": "0b898acd9a6fc32995efca5ac1b30854de723f58552dc56526800cd24306b726",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v38/source/SolrHooksTest.java": "bb20fee3392607c6fb5c255b3caf4dd30d1ecb17648c202c5562fc303dddd1d7",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v38/source/SolrTransformer.java": "3fa7e3b5efe22c0f82e353b8b75050a15b70037362e72da82c80a3d0360546df",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v38/source/ZkStateReader.java": "2494825cb33d9bf43395255fa303d4ee9f017add6c85e7edd915e43513e75b72"
+  },
+  "sources": {
+    "Mallory/adapters/solr/src/main/java/edu/uva/liftlab/mallory/solr/SolrHooks.java": "0b898acd9a6fc32995efca5ac1b30854de723f58552dc56526800cd24306b726",
+    "Mallory/adapters/solr/src/main/java/edu/uva/liftlab/mallory/solr/SolrTransformer.java": "3fa7e3b5efe22c0f82e353b8b75050a15b70037362e72da82c80a3d0360546df",
+    "Mallory/adapters/solr/src/test/java/edu/uva/liftlab/mallory/solr/SolrHooksTest.java": "bb20fee3392607c6fb5c255b3caf4dd30d1ecb17648c202c5562fc303dddd1d7",
+    "Mallory/adapters/solr/src/test/java/org/apache/solr/common/cloud/ZkStateReader.java": "2494825cb33d9bf43395255fa303d4ee9f017add6c85e7edd915e43513e75b72"
+  },
+  "test_receipt": {
+    "errors": 0,
+    "failures": 0,
+    "junit_class": "edu.uva.liftlab.mallory.solr.SolrHooksTest",
+    "skipped": 0,
+    "tests": 17
+  }
+}
