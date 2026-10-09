@@ -2780,6 +2780,32 @@ def _calibrations(results: Path, case_id: str) -> list[dict[str, Any]]:
     return rows
 
 
+def _hbase02_offhost_review(results: Path, result_path: Path,
+                           result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Validate the compact canonical result against every offhost archive member."""
+    if result.get("case_id") != "HBASE-02":
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    verifier = baseline / "Mallory/report/verify_hbase02_offhost.py"
+    index_path = results / "quality_reviews/hbase02_v4_offhost/index.json"
+    receipt_path = (results / "HBASE-02/campaigns/"
+                    "request-token-scoped-v4-full-offhost/negative-receipt.json")
+    index = _json(index_path)
+    if (not isinstance(index, dict)
+            or result_path.resolve() != (results / "cases/HBASE-02/result.json").resolve()
+            or not verifier.is_file() or not receipt_path.is_file()
+            or index.get("verifier_sha256") != hashlib.sha256(verifier.read_bytes()).hexdigest()
+            or index.get("receipt_sha256") != hashlib.sha256(receipt_path.read_bytes()).hexdigest()):
+        return "invalid", str(index_path)
+    try:
+        check = subprocess.run(
+            ["python3", str(verifier), "--data-root", str(results)],
+            cwd=baseline, capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return "invalid", str(index_path)
+    return ("faulted_path_unverified" if check.returncode == 0 else "invalid"), str(index_path)
+
+
 def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
     case_id = case["case_id"]
     target = case["target"]
@@ -3039,6 +3065,16 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["fault_model_receipt"] = bounded_receipt
         else:
             row["source_gap_error"] = "bounded fault-model receipt or raw evidence mismatch"
+    if case_id == "HBASE-02":
+        precision, receipt = _hbase02_offhost_review(results, result_path, result)
+        row["causal_precision_review"] = precision
+        row["causal_precision_receipt"] = receipt
+        if precision == "faulted_path_unverified":
+            row["quality_status"] = precision
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "HBASE-02 offhost archive or negative review mismatch"
     return row
 
 

@@ -1,8 +1,10 @@
 import json
 import gzip
 import hashlib
+import io
 import shutil
 import subprocess
+import tarfile
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -18,6 +20,59 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_hbase02_compact_archive_gate_rejects_member_tamper(self):
+        from Mallory.report.build import _hbase02_offhost_review
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        names = (
+            "cases/HBASE-02/result.json",
+            "cases/HBASE-02/config.json",
+            "cases/HBASE-02/offline-causal-audit.json",
+            "HBASE-02/campaigns/request-token-scoped-v4-full-offhost/result.json",
+            "HBASE-02/campaigns/request-token-scoped-v4-full-offhost/config.json",
+            "HBASE-02/campaigns/request-token-scoped-v4-full-offhost/offline-causal-audit.json",
+            "HBASE-02/campaigns/request-token-scoped-v4-full-offhost/negative-receipt.json",
+            "evidence_archives/campaign_request_token_scoped_v4/HBASE-02.tar.gz",
+            "quality_reviews/hbase02_v4_offhost/index.json",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary) / "data/mallory"
+            for name in names:
+                dest = root / name
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source / name, dest)
+            result_path = root / "cases/HBASE-02/result.json"
+            result = json.loads(result_path.read_text())
+            review = lambda: _hbase02_offhost_review(root, result_path, result)[0]
+            self.assertEqual(review(), "faulted_path_unverified")
+            archive = root / "evidence_archives/campaign_request_token_scoped_v4/HBASE-02.tar.gz"
+            rewritten = archive.with_suffix(".tampered.gz")
+            with tarfile.open(archive, "r:gz") as original, \
+                 tarfile.open(rewritten, "w:gz") as changed:
+                for member in original:
+                    if not member.isfile():
+                        changed.addfile(member)
+                        continue
+                    stream = original.extractfile(member)
+                    self.assertIsNotNone(stream)
+                    payload = stream.read()
+                    if member.name.endswith("trials/r0002/events.jsonl.gz"):
+                        payload += b"tampered"
+                        member.size = len(payload)
+                    changed.addfile(member, io.BytesIO(payload))
+            rewritten.replace(archive)
+            receipt_path = root / "HBASE-02/campaigns/request-token-scoped-v4-full-offhost/negative-receipt.json"
+            receipt = json.loads(receipt_path.read_text())
+            receipt["archive_sha256"] = hashlib.sha256(archive.read_bytes()).hexdigest()
+            receipt["archive_bytes"] = archive.stat().st_size
+            receipt_path.write_text(json.dumps(receipt))
+            index_path = root / "quality_reviews/hbase02_v4_offhost/index.json"
+            index = json.loads(index_path.read_text())
+            index["archive_sha256"] = receipt["archive_sha256"]
+            index["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index))
+            self.assertEqual(review(), "invalid")
+
     def test_zk12_terminal_review_rechecks_archive_and_trial_identity(self):
         from Mallory.report.build import _zk12_filenotfound_review
         baseline = Path(__file__).resolve().parents[2]
