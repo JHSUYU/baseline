@@ -1,0 +1,68 @@
+{
+  "aborted_region_servers": [
+    "ms1140.utah.cloudlab.us,43819,1791350570865"
+  ],
+  "archive_sha256": "eacd437156782ee80c6be453dfb58c44f492658b5d9ef5cd2058700ac8c67f3b",
+  "candidate_scope": "Mixed Master OPENED RPC and client flush RPC faults; same actor B7 occurred, but original JUnit timed out. A clean same-plan replay and source review are needed before bug classification.",
+  "checkpoint_sha256": "37483889f00f58c6b932676cf4fe1fd5d6a72cafaa8e10f5e85c436754573f49",
+  "classification": "pending_exact_replay",
+  "compressed_log_sha256": "3d54c56bed530f110a2eb7adac6f8463cd37c55fefabdde50556235e7be64daf",
+  "controller_script_sha256": "380fa7ae6863a46d7acb17a75fba9b5fe7ac2d54fe2969c16053c3d9dd3f9829",
+  "coverage_admitted": false,
+  "effective": false,
+  "elapsed_seconds": 402.76,
+  "faults": [
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 5955,
+      "proc_id": "649",
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1MDU4NDQzMC5iOTg3Mzk3MTFlOWI2M2U0ZDlkZTEzYmFmZTFjYzk2OC4",
+      "raw_secondary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1MDU4NDQzMF8wMDAxLjI1NGE2ODBlZTI1NjQ1M2VkNTJlYzA0Mzk5ZTUwZTc5Lg",
+      "selector": "MASTER_OPENED_RPC~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~attempt-1",
+      "seq": "105",
+      "server": "ms1140.utah.cloudlab.us,43819,1791350570865",
+      "source": "upstream",
+      "step": "1"
+    },
+    {
+      "kind": "DO_NOT_RETRY_IOEXCEPTION",
+      "line": 10673,
+      "raw_primary_region": "dGVzdExvdHNPZlJlZ2lvblJlcGxpMiwsMTc5MTM1MDU4NDQzMC5iOTg3Mzk3MTFlOWI2M2U0ZDlkZTEzYmFmZTFjYzk2OC4",
+      "selector": "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~target-1~rpc-1~FlushRegionCallable.call:81",
+      "seq": "147",
+      "source": "rpc",
+      "step": "1"
+    }
+  ],
+  "interpretation_limit": "The ServerCrashProcedure was scheduled only after timeout-driven shutdown, with 139/600 assignment children complete. This shows a stall but does not prove a closed lock cycle or causality from the Master fault; isolated replay is required.",
+  "jacoco_sha256": "1cedb4dcd02c3e3b8e5b0f33105d7f9552681b6ec3a5495d92176eb901ce2fff",
+  "junit": null,
+  "new_bug_confirmed": false,
+  "plan": [
+    "MASTER_OPENED_RPC~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~attempt-1~DO_NOT_RETRY_IOEXCEPTION",
+    "RPC_FLUSH_REGION~dGVzdExvdHNPZlJlZ2lvblJlcGxpMiw~replica-1~target-1~rpc-1~FlushRegionCallable.call:81~DO_NOT_RETRY_IOEXCEPTION"
+  ],
+  "plan_sha256": "a976a42fb097330b0dfc39b7b81de7f8401335e91ecb7dc10cd0e0550c27c420",
+  "raw_log_sha256": "f18ec37e937f785d59b1d55af8ee793f55a97cd7886ba5122e5550540df0a102",
+  "recorded_utc": "2026-10-07T05:32:48.521049+00:00",
+  "same_actor_b7": 1,
+  "same_actor_guard": 1,
+  "same_raw_primary_region": true,
+  "source_child_assignment_success_count": 139,
+  "source_exit": 124,
+  "source_first_scheduled_scp": {
+    "line": 30317,
+    "message": "2026-10-07T05:28:59,494 INFO  [RegionServerTracker-0] assignment.AssignmentManager: Scheduled ServerCrashProcedure pid=781 for ms1140.utah.cloudlab.us,43819,1791350570865 (carryingMeta=true) ms1140.utah.cloudlab.us,43819,1791350570865/CRASHED/regionCount=76/lock=java.util.concurrent.locks.ReentrantReadWriteLock@3a15c26a[Write locks = 1, Read locks = 0], oldState=ONLINE."
+  },
+  "source_first_shutdown_hook": {
+    "line": 23736,
+    "message": "2026-10-07T05:28:34,712 INFO  [shutdown-hook-0] regionserver.ShutdownHook: Shutdown hook starting; hbase.shutdown.hook=true; fsShutdownHook=org.apache.hadoop.fs.FileSystem$Cache$ClientFinalizer@39fc6b2c"
+  },
+  "source_reached_update_desc_cache": false,
+  "source_rs_expiration": {
+    "line": 12235,
+    "message": "2026-10-07T05:23:21,211 INFO  [RegionServerTracker-0] master.ServerManager: Processing expiration of ms1140.utah.cloudlab.us,43819,1791350570865 on ms1140.utah.cloudlab.us,44339,1791350565933"
+  },
+  "strict": true,
+  "trial": "s078"
+}

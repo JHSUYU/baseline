@@ -1,0 +1,9 @@
+1	774166645647156	ACTOR_REGISTERED	client_id=1349277854	manager_id=1775282465	node=127.0.0.1:12345_solr
+2	774166645817771	ACTOR_REGISTERED	client_id=1147985808	manager_id=2040495657	node=127.0.0.1:23456_solr
+3	774166645935970	JETTY_ROLE_BOUND	role=node1	node=127.0.0.1:12345_solr
+4	774166646017333	JETTY_ROLE_BOUND	role=node2	node=127.0.0.1:23456_solr
+5	774167901816141	IO_OBSERVED	SET_DATA	/aliases.json	caller=<external>	actor=alias-writer	node=127.0.0.1:12345_solr	client_id=1349277854	manager_id=1775282465	physical_actor=jetty:node1	thread=main	payload_aliases=myalias,myalias2
+6	774167901925472	IO_MATCHED	SET_DATA	/aliases.json	ordinal=1	relative_count=0	global_hit_ordinal=1	seed_global=0	previous_fault_id=<none>	fault_id=F0	plan_index=0	caller=<external>	actor=alias-writer	node=127.0.0.1:12345_solr	client_id=1349277854	manager_id=1775282465	physical_actor=jetty:node1	thread=main	payload_aliases=myalias,myalias2
+7	774167901964047	IO_APPLIED_CONNECTION_LOSS	SET_DATA	/aliases.json	ordinal=1	relative_count=0	global_hit_ordinal=1	seed_global=0	previous_fault_id=<none>	fault_id=F0	plan_index=0	caller=<external>	actor=alias-writer	node=127.0.0.1:12345_solr	client_id=1349277854	manager_id=1775282465	physical_actor=jetty:node1	thread=main	payload_aliases=myalias,myalias2
+8	774167913588093	TARGET_CHECK	present	SOLR-39	myalias	remote reader	actor=jetty:node2	node=127.0.0.1:23456_solr	client_id=1147985808	manager_id=2040495657	last_fault=F0
+9	774167913649701	TARGET_CHECK	present	SOLR-40	otherAlias	unrelated reader	actor=jetty:node2	node=127.0.0.1:23456_solr	client_id=1147985808	manager_id=2040495657	last_fault=F0
