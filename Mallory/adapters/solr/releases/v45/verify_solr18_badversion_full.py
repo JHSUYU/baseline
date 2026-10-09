@@ -10,6 +10,7 @@ import json
 from pathlib import Path
 
 import Mallory.core.graph as graph_module
+from Mallory.core.graph import OccurrenceGraph
 
 from verify_solr18_badversion_recovery import BAD_VERSION, DOOR, SET_IF_NEWER, digest, proof
 
@@ -40,6 +41,29 @@ def event_trace(trial_dir: Path, trial: dict) -> tuple[list[dict], dict]:
     return ([json.loads(line) for line in raw.splitlines() if line],
             {"events_gzip_sha256": packed_sha, "events_raw_sha256": raw_sha,
              "events_raw_bytes": len(raw)})
+
+
+def full_trace_proof(events: list[dict], plan_fault: dict) -> dict:
+    """Prove one exact fault on both its own chain and the unfiltered event graph."""
+    fault_id = plan_fault.get("fault_id")
+    if not isinstance(fault_id, str):
+        return {"valid": False, "reason": "missing_plan_fault_id"}
+    scoped = [row for row in events if row.get("type") not in
+              ("FAULT_MATCHED", "FAULT_APPLIED") or row.get("fault_id") == fault_id]
+    chain = proof(scoped, plan_fault)
+    if not chain["valid"]:
+        return chain
+    by_id = {row["id"]: row for row in events}
+    fault = by_id[chain["event_ids"]["applied"]]
+    target = by_id[chain["event_ids"]["target_check"]]
+    path = OccurrenceGraph(tuple(events), reject_coarse_roots=True).event_path(
+        fault, target, require_edge=True, include_candidates=False)
+    observed = ([{"kind": edge.kind, "producer_event": edge.producer_event,
+                  "consumer_event": edge.consumer_event, "certainty": edge.certainty}
+                 for edge in path] if path is not None else None)
+    if observed != chain["graph_edges"]:
+        return {"valid": False, "reason": "filtered_chain_not_preserved_in_full_trace"}
+    return chain
 
 
 def review(root: Path, source: Path, test_source: Path) -> dict:
@@ -103,15 +127,16 @@ def review(root: Path, source: Path, test_source: Path) -> dict:
                       fault.get("exception_class") == BAD_VERSION]
         target_throws = [event["id"] for event in events if event.get("type") == "TARGET_THROW"
                          and event.get("site", "").startswith(SET_IF_NEWER)]
-        eligible = (len(plan) == len(exact_plan) == 1 and
+        eligible = (len(plan) == len(exact_plan) and len(plan) > 0 and
                     feedback["all_faults_effective"] is True and
                     feedback["fault_identity_valid"] is True and
                     feedback["trace_truncated"] is False and
                     trial.get("trace_error") is None and trial.get("timed_out") is False and
                     junit["status"] == "passed" and junit["tests"] == 1 and
                     junit["failures"] == junit["errors"] == junit["skipped"] == 0)
-        chain = (proof(events, exact_plan[0]) if eligible else
-                 {"valid": False, "reason": "not_one_effective_passing_badversion_fault"})
+        chains = ([full_trace_proof(events, fault) for fault in exact_plan] if eligible else
+                  [{"valid": False, "reason": "not_all_effective_passing_badversion_faults"}])
+        strict = all(chain["valid"] for chain in chains)
         rows.append({"trial_id": trial_id, "trial_result_sha256": digest(result_path),
                      **hashes, "plan_size": len(plan), "exact_badversion_plans": len(exact_plan),
                      "all_faults_effective": feedback["all_faults_effective"],
@@ -120,8 +145,14 @@ def review(root: Path, source: Path, test_source: Path) -> dict:
                      "target_exception_candidate": feedback["target_exception_candidate"],
                      "target_throw_event_ids": target_throws,
                      "junit_status": junit["status"], "trace_truncated": feedback["trace_truncated"],
-                     "strict_recovery_chain": chain})
-    positives = [row["trial_id"] for row in rows if row["strict_recovery_chain"]["valid"]]
+                     "strict_recovery_chains": chains,
+                     "all_exact_faults_have_strict_recovery_chain": strict})
+    positives = [row["trial_id"] for row in rows
+                 if row["all_exact_faults_have_strict_recovery_chain"]]
+    single = [row["trial_id"] for row in rows
+              if row["all_exact_faults_have_strict_recovery_chain"] and row["plan_size"] == 1]
+    multi = [row["trial_id"] for row in rows
+             if row["all_exact_faults_have_strict_recovery_chain"] and row["plan_size"] > 1]
     effective = [row["trial_id"] for row in rows if row["all_faults_effective"]]
     effective_target = [row["trial_id"] for row in rows
                         if row["all_faults_effective"] and row["target_reached"]]
@@ -138,6 +169,8 @@ def review(root: Path, source: Path, test_source: Path) -> dict:
             "source_sha256": digest(source), "test_source_sha256": digest(test_source),
             "core_graph_sha256": digest(release_graph),
             "fault_trials_completed": len(rows), "strict_recovery_trials": positives,
+            "strict_single_fault_recovery_trials": single,
+            "strict_multi_fault_recovery_trials": multi,
             "effective_fault_trials": effective,
             "effective_target_trials": effective_target,
             "unmatched_or_ineffective_trials": unmatched,
