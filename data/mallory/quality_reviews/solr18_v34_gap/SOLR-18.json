@@ -1,0 +1,58 @@
+{
+  "case_id": "SOLR-18",
+  "classification": "instrumentation_identity_and_causal_path_gap",
+  "config_sha256": "fb8a503c3cb4f4ee2ed7b3c051c5a1b75de44f3ec9188eeea5c132393778caf4",
+  "exact_check_counts_by_actor": {
+    "client": 12,
+    "node2": 36,
+    "unknown": 3
+  },
+  "full_campaign_promoted": false,
+  "graph_gaps": {
+    "region_parent_missing_occurrence": 6,
+    "rpc_ambiguous_consumer": 4,
+    "task_missing_occurrence": 192,
+    "unmatched_parent": 22
+  },
+  "healthy_audit_sha256": "1db940e3c800496e3c52dae3645fa776e4fc5bed78694e0eee2f127512a288f7",
+  "healthy_result_sha256": "213b430a17305802b377d402f8a8b7971d5145de3b80b941821a1513dc63fb5a",
+  "identity_gap_reason": "unregistered_receiver",
+  "junit_status": "passed",
+  "named_node2_exact_check_count": 36,
+  "named_numeric_thread_door_count": 117,
+  "new_bug": null,
+  "raw_trace_bytes": 810468,
+  "raw_trace_gzip_sha256": "54ecde9206f13999f32579847ac71ccb9c7df0c3a401e245811216d7ab13d8ea",
+  "raw_trace_sha256": "592ec4164eb2b86adc86af21416e9d32875ca8f92324ab039170b1b00be617b0",
+  "root_free_time_respecting_door_to_node2_target_paths": 0,
+  "schema_version": 1,
+  "source_review": {
+    "core/src/test/org/apache/solr/cloud/AliasIntegrationTest.java": {
+      "finding": "existing test reads alias state through cluster client at line 462",
+      "sha256": "00569b061c1ff45a69c6a2ba3abbc006e00dbcfaf78bd22f2ac5353ca0752215"
+    },
+    "solrj/src/java/org/apache/solr/client/solrj/impl/BaseCloudSolrClient.java": {
+      "finding": "getZkStateReader returns provider field at line 288",
+      "sha256": "61aab0e25a8d70660cb51c284782ba3580805c71721660ffdf66e5c7d6fadbce"
+    },
+    "solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java": {
+      "finding": "ProcessWatchWithExecutor.process submits watcher callback at line 876",
+      "sha256": "4a256a0fb563515451b5b733dbb4e320fceb9fa5dcc04912e4dd003d1a109c32"
+    },
+    "solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java": {
+      "finding": "AliasesManager.process then setIfNewer at lines 2302-2347",
+      "sha256": "83e14eadfcc4896ff05f9ac77706fdb683e0c181caeee21802f8861f68ac373d"
+    }
+  },
+  "sync_receipt_sha256": "1568d5d1d094bac1cc6191139cb28ce0a1a8f2b04c91b47f0b1e632159374002",
+  "trial_result_sha256": "a9a5a8691898ce6dde4bee907f42a01691ec18e24fc386dea86176b8f1104c94",
+  "unknown_target_context": "da277c1b-f194-471f-83ab-b1f15f154daf:task:291",
+  "unknown_target_ids": [
+    "SOLR-18-r0000:925",
+    "SOLR-18-r0000:926",
+    "SOLR-18-r0000:927"
+  ],
+  "unknown_target_thread_ids": [
+    191
+  ]
+}

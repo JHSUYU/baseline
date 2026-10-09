@@ -18,6 +18,83 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_solr18_scope_gap_is_hash_bound_and_reverified(self):
+        from Mallory.report.build import _solr18_scope_gap
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results = root / "data/mallory"
+            digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            def write(relative, content):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content if isinstance(content, str) else json.dumps(content))
+                return path
+            release = "Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f"
+            manifest = write(f"{release}/manifest.json", {})
+            verifier = write("Mallory/adapters/solr/releases/v34/verify_solr18_scope_gap.py",
+                             "# pinned verifier")
+            campaign = "data/mallory/calibration_v34_lane1/SOLR-18"
+            result = write(f"{campaign}/result.json",
+                           {"case_id": "SOLR-18", "status": "calibration_complete",
+                            "healthy_junit_validation": {"status": "passed"}})
+            audit = write(f"{campaign}/offline-causal-audit.json",
+                          {"report_gate_passed": True})
+            sync = write(f"{campaign}/sync-receipt.json", {})
+            config = write(f"{campaign}/config.json", {})
+            trace = root / campaign / "trials/r0000/events.jsonl.gz"
+            trace.parent.mkdir(parents=True)
+            raw = b'{"type":"TARGET_CHECK"}\n'
+            with gzip.open(trace, "wb") as stream:
+                stream.write(raw)
+            trial = write(f"{campaign}/trials/r0000/result.json",
+                          {"events_evidence": {"gzip_sha256": digest(trace),
+                                               "raw_sha256": hashlib.sha256(raw).hexdigest(),
+                                               "raw_bytes": len(raw)}})
+            receipt = write("data/mallory/quality_reviews/solr18_v34_gap/SOLR-18.json",
+                            {"schema_version": 1, "case_id": "SOLR-18",
+                             "classification": "instrumentation_identity_and_causal_path_gap",
+                             "full_campaign_promoted": False, "new_bug": None,
+                             "root_free_time_respecting_door_to_node2_target_paths": 0,
+                             "identity_gap_reason": "unregistered_receiver",
+                             "named_node2_exact_check_count": 1,
+                             "healthy_result_sha256": digest(result),
+                             "healthy_audit_sha256": digest(audit),
+                             "sync_receipt_sha256": digest(sync),
+                             "config_sha256": digest(config),
+                             "trial_result_sha256": digest(trial),
+                             "raw_trace_gzip_sha256": digest(trace),
+                             "raw_trace_sha256": hashlib.sha256(raw).hexdigest(),
+                             "raw_trace_bytes": len(raw)})
+            index = write("data/mallory/quality_reviews/solr18_v34_gap/index.json",
+                          {"schema_version": 1, "case_id": "SOLR-18",
+                           "classification": "instrumentation_identity_and_causal_path_gap",
+                           "receipt_path": str(receipt.relative_to(root)),
+                           "receipt_sha256": digest(receipt),
+                           "verifier_path": str(verifier.relative_to(root)),
+                           "verifier_sha256": digest(verifier),
+                           "core_manifest_path": str(manifest.relative_to(root)),
+                           "core_manifest_sha256": digest(manifest)})
+            with patch("Mallory.report.build.subprocess.run",
+                       return_value=subprocess.CompletedProcess([], 0)):
+                self.assertEqual("instrumentation_identity_and_causal_path_gap",
+                                 _solr18_scope_gap(results, "SOLR-18")[0])
+            altered = json.loads(receipt.read_text())
+            altered["root_free_time_respecting_door_to_node2_target_paths"] = 1
+            receipt.write_text(json.dumps(altered))
+            updated = json.loads(index.read_text())
+            updated["receipt_sha256"] = digest(receipt)
+            index.write_text(json.dumps(updated))
+            self.assertEqual("invalid_instrumentation_gap",
+                             _solr18_scope_gap(results, "SOLR-18")[0])
+            altered["root_free_time_respecting_door_to_node2_target_paths"] = 0
+            receipt.write_text(json.dumps(altered))
+            updated["receipt_sha256"] = digest(receipt)
+            index.write_text(json.dumps(updated))
+            with patch("Mallory.report.build.subprocess.run",
+                       return_value=subprocess.CompletedProcess([], 1)):
+                self.assertEqual("invalid_instrumentation_gap",
+                                 _solr18_scope_gap(results, "SOLR-18")[0])
+
     def test_zk04_zxid_gap_is_nonterminal_and_fails_closed_on_tamper(self):
         from Mallory.report.build import _zk04_zxid_influence_gap
         baseline = Path(__file__).resolve().parents[2]

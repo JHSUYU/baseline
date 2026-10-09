@@ -1480,6 +1480,82 @@ def _fault_model_no_target_path(results: Path, case_id: str) -> tuple[str | None
     return "fault_model_no_target_path", str(path)
 
 
+def _solr18_scope_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Recheck a bounded healthy trace with incomplete actor/path instrumentation."""
+    if case_id != "SOLR-18":
+        return None, None
+    root = results / "quality_reviews" / "solr18_v34_gap"
+    receipt_path = root / "SOLR-18.json"
+    if not receipt_path.is_file():
+        return None, None
+    baseline = results.resolve().parent.parent
+    index = _json(root / "index.json")
+    receipt = _json(receipt_path)
+    campaign = results / "calibration_v34_lane1" / case_id
+    release = baseline / "Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f"
+    manifest = release / "manifest.json"
+    verifier = baseline / "Mallory/adapters/solr/releases/v34/verify_solr18_scope_gap.py"
+    result_path = campaign / "result.json"
+    audit_path = campaign / "offline-causal-audit.json"
+    sync_path = campaign / "sync-receipt.json"
+    config_path = campaign / "config.json"
+    trial_path = campaign / "trials/r0000/result.json"
+    trace_path = campaign / "trials/r0000/events.jsonl.gz"
+    needed = (manifest, verifier, result_path, audit_path, sync_path,
+              config_path, trial_path, trace_path)
+    if (not isinstance(index, dict) or not isinstance(receipt, dict)
+            or any(not path.is_file() for path in needed)):
+        return "invalid_instrumentation_gap", str(receipt_path)
+    digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+    result = _json(result_path)
+    audit = _json(audit_path)
+    trial = _json(trial_path)
+    if not all(isinstance(value, dict) for value in (result, audit, trial)):
+        return "invalid_instrumentation_gap", str(receipt_path)
+    evidence = trial.get("events_evidence")
+    if not isinstance(evidence, dict):
+        return "invalid_instrumentation_gap", str(receipt_path)
+    valid = (
+        index.get("schema_version") == 1
+        and index.get("case_id") == case_id
+        and index.get("classification") == "instrumentation_identity_and_causal_path_gap"
+        and index.get("receipt_path") == str(receipt_path.resolve().relative_to(baseline))
+        and index.get("receipt_sha256") == digest(receipt_path)
+        and index.get("verifier_path") == str(verifier.relative_to(baseline))
+        and index.get("verifier_sha256") == digest(verifier)
+        and index.get("core_manifest_path") == str(manifest.relative_to(baseline))
+        and index.get("core_manifest_sha256") == digest(manifest)
+        and receipt.get("schema_version") == 1
+        and receipt.get("case_id") == result.get("case_id") == case_id
+        and receipt.get("classification") == "instrumentation_identity_and_causal_path_gap"
+        and receipt.get("full_campaign_promoted") is False
+        and receipt.get("new_bug") is None
+        and receipt.get("root_free_time_respecting_door_to_node2_target_paths") == 0
+        and receipt.get("identity_gap_reason") == "unregistered_receiver"
+        and receipt.get("named_node2_exact_check_count", 0) > 0
+        and result.get("status") == "calibration_complete"
+        and result.get("healthy_junit_validation", {}).get("status") == "passed"
+        and audit.get("report_gate_passed") is True
+        and receipt.get("healthy_result_sha256") == digest(result_path)
+        and receipt.get("healthy_audit_sha256") == digest(audit_path)
+        and receipt.get("sync_receipt_sha256") == digest(sync_path)
+        and receipt.get("config_sha256") == digest(config_path)
+        and receipt.get("trial_result_sha256") == digest(trial_path)
+        and receipt.get("raw_trace_gzip_sha256") == digest(trace_path)
+        and evidence.get("gzip_sha256") == receipt.get("raw_trace_gzip_sha256")
+        and evidence.get("raw_sha256") == receipt.get("raw_trace_sha256")
+        and evidence.get("raw_bytes") == receipt.get("raw_trace_bytes")
+    )
+    if not valid:
+        return "invalid_instrumentation_gap", str(receipt_path)
+    environment = dict(os.environ, PYTHONPATH=f"{release}:{baseline}")
+    check = subprocess.run(
+        ["python3", str(verifier), "--verify-only"], cwd=baseline,
+        env=environment, capture_output=True, text=True, timeout=30)
+    return ("instrumentation_identity_and_causal_path_gap"
+            if check.returncode == 0 else "invalid_instrumentation_gap"), str(receipt_path)
+
+
 def _source_only_gap(results: Path, case_id: str,
                      receipt: dict[str, Any]) -> str:
     """Label a source-only workload gap without claiming a healthy-run audit."""
@@ -1826,6 +1902,11 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "new_bug": None,
     }
     if result is None:
+        scope_status, scope_receipt = _solr18_scope_gap(results, case_id)
+        if scope_status is not None:
+            row["report_status"] = scope_status
+            row["fault_model_receipt"] = scope_receipt
+            return row
         zxid_status, zxid_receipt = _zk04_zxid_influence_gap(results, case_id)
         if zxid_status is not None:
             row["report_status"] = zxid_status
