@@ -82,3 +82,11 @@ completed, passed its single JUnit, and hit the target once with no fault.
 `audit_healthy.py` recomputes the event and SHA audit from the retained raw
 files. A bounded fault pilot is proposed in the review as diagnostic work;
 it is not a promotion to full exploration.
+
+Dispatch later admitted one exact node4/epoch0/ordinal1 timeout plan. Its
+JUnit passed, but the exact typed door and target ran on node2; no fault
+matched or applied. `audit_unmatched_pilot.py` and
+`unmatched-pilot-audit-node2-lane3.json` preserve that negative result.
+The raw target remained present despite the runner's node4-bound
+`target_reached=false`. SOLR-09 remains nonterminal with a replay-binding
+precision gap; no wildcard or repeated pilot was run.

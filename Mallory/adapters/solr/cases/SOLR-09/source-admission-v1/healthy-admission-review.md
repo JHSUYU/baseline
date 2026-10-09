@@ -87,3 +87,26 @@ global counts is a negative or inconclusive result. A nonempty event-time
 door→target path remains an open graph requirement; a passing JUnit or local
 timeline alone cannot support full admission. The pilot would test recovery
 control flow and makes no failure claim by itself.
+
+## One diagnostic trial and replay-binding gap
+
+Dispatch granted exactly one JUnit trial with the staged plan. The original
+JUnit again passed 1/1. The plan requested node4, epoch 0, ordinal 1, but the
+raw trial's exact typed door was event 268 on node2, epoch 0, thread 215,
+ordinal 1. The exact line-277 check was event 290 on that same node, epoch,
+thread, and `deleteCore` occurrence; its outcome was `TAKEN`. No
+`FAULT_MATCHED`, `FAULT_APPLIED`, or target throw occurred. The campaign
+feedback says `target_reached=false` because the direct runner deliberately
+bound target analysis to planned node4. The raw check proves the target did
+not disappear. `audit_unmatched_pilot.py` recomputes this classification and
+the raw file hashes in `unmatched-pilot-audit-node2-lane3.json`.
+
+This trial is a **negative replay result**, not a fault recovery observation.
+The source and two healthy executions identify the operation locally, but
+the Java `FaultPlan` matcher accepts fixed node/epoch, occurrence, hit, or
+door ordinal; it has no `DELETE_REPLICA` operation-role predicate. The task
+correlation token changes between runs. A node wildcard would make the plan
+match an actor that had not been bound to this request beforehand. We leave
+SOLR-09 nonterminal with a replay-binding precision gap. A later role-aware
+matcher could justify a new bounded pilot after its own admission review.
+No identical replay, wildcard replay, or full campaign was run.
