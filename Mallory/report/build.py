@@ -2806,6 +2806,74 @@ def _hbase02_offhost_review(results: Path, result_path: Path,
     return ("faulted_path_unverified" if check.returncode == 0 else "invalid"), str(index_path)
 
 
+def _solr38_39_source_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Recheck the source-backed typed-I/O gap against pinned prior runs."""
+    if case_id not in {"SOLR-38", "SOLR-39"}:
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    source_root = Path("/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4")
+    verifier = baseline / "Mallory/adapters/solr/releases/v42/verify_solr38_39_source_gaps.py"
+    tag = case_id.lower().replace("-", "")
+    root = results / f"quality_reviews/{tag}_source_gap"
+    index_path, receipt_path = root / "index.json", root / f"{case_id}.json"
+    index, receipt = _json(index_path), _json(receipt_path)
+    classification = {"SOLR-38": "current_typed_io_fault_model_no_retained_target",
+                      "SOLR-39": "current_selector_and_typed_io_path_unproven"}[case_id]
+    status = {"SOLR-38": "fault_model_current_typed_io_no_retained_target",
+              "SOLR-39": "source_review_selector_and_io_path_unproven"}[case_id]
+    if (not isinstance(index, dict) or not isinstance(receipt, dict)
+            or not verifier.is_file() or not source_root.is_dir()
+            or index.get("schema_version") != 1
+            or index.get("case_id") != case_id
+            or index.get("classification") != classification
+            or index.get("verifier_sha256") != hashlib.sha256(verifier.read_bytes()).hexdigest()
+            or index.get("receipt_sha256") != hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            or receipt.get("case_id") != case_id
+            or receipt.get("classification") != classification
+            or receipt.get("full_campaign_promoted") is not False
+            or receipt.get("new_bug_confirmed") is not False):
+        return "invalid_fault_model_receipt", str(index_path)
+    with tempfile.TemporaryDirectory() as directory:
+        output = Path(directory) / "receipt.json"
+        try:
+            check = subprocess.run(
+                ["python3", str(verifier), "--base", str(baseline),
+                 "--source-root", str(source_root), "--case-id", case_id,
+                 "--out", str(output)], cwd=baseline, capture_output=True,
+                text=True, timeout=30)
+        except (OSError, subprocess.TimeoutExpired):
+            return "invalid_fault_model_receipt", str(index_path)
+        if (check.returncode != 0 or not output.is_file()
+                or output.read_bytes() != receipt_path.read_bytes()):
+            return "invalid_fault_model_receipt", str(index_path)
+    return status, str(receipt_path)
+
+
+def _zk06_retry_guard_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Require the exact retry packet trace before recording a skipped guard."""
+    if case_id != "ZOOKEEPER-06":
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    verifier = baseline / "Mallory/report/verify_zk06_retry_gap.py"
+    index_path = results / "quality_reviews/zk06_ackepoch_retry_gap/index.json"
+    receipt_path = (results / "admissions/"
+                    "ZOOKEEPER-06-ackepoch-retry-door-node1-source-gap-v1.json")
+    index = _json(index_path)
+    if (not isinstance(index, dict) or not verifier.is_file() or not receipt_path.is_file()
+            or index.get("verifier_sha256") != hashlib.sha256(verifier.read_bytes()).hexdigest()
+            or index.get("source_gap_receipt_sha256") != hashlib.sha256(receipt_path.read_bytes()).hexdigest()):
+        return "invalid_fault_model_receipt", str(index_path)
+    try:
+        check = subprocess.run(
+            ["python3", str(verifier), "--data-root", str(results),
+             "--baseline", str(baseline)], cwd=baseline,
+            capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return "invalid_fault_model_receipt", str(index_path)
+    return ("fault_model_target_guard_skipped_on_retry" if check.returncode == 0
+            else "invalid_fault_model_receipt"), str(receipt_path)
+
+
 def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
     case_id = case["case_id"]
     target = case["target"]
@@ -2882,6 +2950,16 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "new_bug": None,
     }
     if result is None:
+        zk06_status, zk06_receipt = _zk06_retry_guard_gap(results, case_id)
+        if zk06_status is not None:
+            row["report_status"] = zk06_status
+            row["fault_model_receipt"] = zk06_receipt
+            return row
+        source_status, source_receipt = _solr38_39_source_gap(results, case_id)
+        if source_status is not None:
+            row["report_status"] = source_status
+            row["fault_model_receipt"] = source_receipt
+            return row
         v40p_status, v40p_receipt = _solr18_v40p_fault_gap(results, case_id)
         if v40p_status is not None:
             row["report_status"] = v40p_status

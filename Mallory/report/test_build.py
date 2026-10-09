@@ -20,6 +20,67 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_zk06_retry_gap_requires_same_packet_raw_lineage(self):
+        from Mallory.report.build import _zk06_retry_guard_gap
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        names = (
+            "admissions/ZOOKEEPER-06-ackepoch-retry-door-node1-negative-v1.json",
+            "admissions/ZOOKEEPER-06-ackepoch-retry-door-node1-source-gap-v1.json",
+            "admissions/ZOOKEEPER-06-ackepoch-retry-door-node1-healthy-v1.json",
+            "pilots/ZOOKEEPER-06-ackepoch-retry-door-node1-v1/focused-pilot-result.json",
+            "pilots/ZOOKEEPER-06-ackepoch-retry-door-node1-v1/config.json",
+            "pilots/ZOOKEEPER-06-ackepoch-retry-door-node1-v1/pilot-plan.json",
+            "pilots/ZOOKEEPER-06-ackepoch-retry-door-node1-v1/trials/r0001/result.json",
+            "pilots/ZOOKEEPER-06-ackepoch-retry-door-node1-v1/trials/r0001/events.jsonl.gz",
+            "quality_reviews/zk06_ackepoch_retry_gap/index.json",
+        )
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            for name in names:
+                target = results / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source / name, target)
+            shutil.copytree(source / "source_snapshots/ZOOKEEPER-06-ackepoch-retry-v1",
+                            results / "source_snapshots/ZOOKEEPER-06-ackepoch-retry-v1")
+            self.assertEqual(_zk06_retry_guard_gap(results, "ZOOKEEPER-06")[0],
+                             "fault_model_target_guard_skipped_on_retry")
+            trace = results / names[7]
+            trace.write_bytes(trace.read_bytes() + b"tampered")
+            index_path = results / names[8]
+            index = json.loads(index_path.read_text())
+            index["pilot_trace_gzip_sha256"] = hashlib.sha256(trace.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index))
+            self.assertEqual(_zk06_retry_guard_gap(results, "ZOOKEEPER-06")[0],
+                             "invalid_fault_model_receipt")
+
+    def test_solr38_39_source_gaps_replay_and_reject_rehashed_claims(self):
+        from Mallory.report.build import _solr38_39_source_gap
+        baseline = Path(__file__).resolve().parents[2]
+        original = baseline / "data/mallory/quality_reviews"
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            for case_id in ("SOLR-38", "SOLR-39"):
+                tag = case_id.lower().replace("-", "")
+                folder = f"{tag}_source_gap"
+                target = results / "quality_reviews" / folder
+                target.mkdir(parents=True)
+                for name in ("index.json", f"{case_id}.json"):
+                    shutil.copy2(original / folder / name, target / name)
+                status, _ = _solr38_39_source_gap(results, case_id)
+                self.assertIn(status, {"fault_model_current_typed_io_no_retained_target",
+                                       "source_review_selector_and_io_path_unproven"})
+                receipt_path = target / f"{case_id}.json"
+                receipt = json.loads(receipt_path.read_text())
+                receipt["source_finding"] = "changed claim"
+                receipt_path.write_text(json.dumps(receipt))
+                index_path = target / "index.json"
+                index = json.loads(index_path.read_text())
+                index["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+                index_path.write_text(json.dumps(index))
+                self.assertEqual(_solr38_39_source_gap(results, case_id)[0],
+                                 "invalid_fault_model_receipt")
+
     def test_hbase02_compact_archive_gate_rejects_member_tamper(self):
         from Mallory.report.build import _hbase02_offhost_review
         baseline = Path(__file__).resolve().parents[2]
