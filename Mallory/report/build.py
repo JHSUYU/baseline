@@ -301,9 +301,11 @@ def _hdfs24_retry_review(results: Path, result_path: Path,
         index = _json(root / "index.json")
         review = _json(path)
         verifier = baseline / "Mallory/adapters/hdfs/cases/io-version-retry-v3-owner-binding/audit_hdfs24_full_retry.py"
+        helper = verifier.with_name("verify_hdfs24_retry_v3.py")
         audit_path = result_path.with_name("offline-causal-audit.json")
         if (not isinstance(index, dict) or not isinstance(review, dict)
-                or not verifier.is_file() or not audit_path.is_file()):
+                or not verifier.is_file() or not helper.is_file()
+                or not audit_path.is_file()):
             return invalid
         digest = lambda file: hashlib.sha256(file.read_bytes()).hexdigest()
         proven = review.get("strict_witness_trials")
@@ -313,6 +315,7 @@ def _hdfs24_retry_review(results: Path, result_path: Path,
             and index.get("receipt_path") == str(path.resolve().relative_to(baseline))
             and index.get("receipt_sha256") == digest(path)
             and index.get("verifier_sha256") == digest(verifier)
+            and index.get("helper_sha256") == digest(helper)
             and index.get("result_sha256") == digest(result_path)
             and index.get("audit_sha256") == digest(audit_path)
             and index.get("strict_witness_trials") == proven
