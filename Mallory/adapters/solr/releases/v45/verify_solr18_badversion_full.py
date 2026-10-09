@@ -122,6 +122,10 @@ def review(root: Path, source: Path, test_source: Path) -> dict:
                      "junit_status": junit["status"], "trace_truncated": feedback["trace_truncated"],
                      "strict_recovery_chain": chain})
     positives = [row["trial_id"] for row in rows if row["strict_recovery_chain"]["valid"]]
+    effective = [row["trial_id"] for row in rows if row["all_faults_effective"]]
+    effective_target = [row["trial_id"] for row in rows
+                        if row["all_faults_effective"] and row["target_reached"]]
+    unmatched = [row["trial_id"] for row in rows if not row["all_faults_effective"]]
     return {"schema_version": 1, "case_id": "SOLR-18",
             "classification": ("terminal_badversion_recovery_precision_proven" if positives else
                                "terminal_badversion_recovery_precision_unproven"),
@@ -134,6 +138,9 @@ def review(root: Path, source: Path, test_source: Path) -> dict:
             "source_sha256": digest(source), "test_source_sha256": digest(test_source),
             "core_graph_sha256": digest(release_graph),
             "fault_trials_completed": len(rows), "strict_recovery_trials": positives,
+            "effective_fault_trials": effective,
+            "effective_target_trials": effective_target,
+            "unmatched_or_ineffective_trials": unmatched,
             "exact_target_exception_candidate_trials": [row["trial_id"] for row in rows
                                                         if row["target_exception_candidate"]],
             "trials": rows}
