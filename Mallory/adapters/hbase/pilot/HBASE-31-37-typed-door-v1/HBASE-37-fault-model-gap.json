@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-37",
+  "classification": "source_review_fault_model_gap",
+  "terminal": false,
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "existing_test": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+  "exact_target": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I@205:branch:1",
+  "source_proof": {
+    "getMasterInfoPort": "MasterAddressTracker.java:200 calls ZKUtil.getData; lines 204-206 throw the target IOException only if the call returns null.",
+    "caller": "TestRSStatusPage.java:97 calls HMaster.getActiveMasterInfoPort; ActiveMasterManager.java:164-170 catches the target IOException and returns 0.",
+    "fault_model": "The current typed door throws KeeperException.ConnectionLossException before ZKUtil.getData returns. This exits getMasterInfoPort before the data == null branch, so applying it is not evidence that the exact target exception occurred."
+  },
+  "prior_healthy_evidence": {
+    "kind": "exact_check_reached_but_actor_unnamed",
+    "result": "data/mallory/calibration/HBASE-37/result.json",
+    "archive": "data/mallory/evidence_archives/calibration/HBASE-37.tar.gz",
+    "named_healthy_missing": true
+  },
+  "next_gate": "Run the staged owner-binding healthy-only calibration; then require a separate source-backed null-return or master-znode lifecycle fault with target retained before a fault pilot."
+}

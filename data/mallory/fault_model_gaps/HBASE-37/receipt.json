@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "kind": "source_review_fault_model_gap_v1",
+  "case_id": "HBASE-37",
+  "status": "source_review_fault_model_gap",
+  "terminal": false,
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "review_path": "Mallory/adapters/hbase/pilot/HBASE-31-37-typed-door-v1/HBASE-37-fault-model-gap.json",
+  "review_sha256": "a91476988b63fe7bf545653731e7a74a5196760620e432f4280487c4e09cfce0",
+  "source_review_path": "Mallory/adapters/hbase/pilot/HBASE-31-37-typed-door-v1/source-review.json",
+  "source_review_sha256": "d4cdd99ca9f3436b6c4a014cdf5ecbe770deb03c7397d5771298d5c3b7d95c82",
+  "typed_sites_path": "Mallory/adapters/hbase/pilot/HBASE-31-37-typed-door-v1/HBASE-37.sites.json",
+  "typed_sites_sha256": "71f08e81c2312f5c9b7f5d41f0b9bfe8135bdeb3d49c0dafe0465fd9fc5208fd",
+  "source_hashes": {
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ActiveMasterManager.java": "edcf8ec32db64ceac9147dcb00fefc36ff5b92f499e37e9256f0ec8552252fde",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java": "6d47807a0bf39b6cf48677bd8acbd7eaf0bc0a6a148a04d013573cefa4b4deb1",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b"
+  },
+  "prior_evidence": {
+    "result_path": "data/mallory/calibration/HBASE-37/result.json",
+    "result_sha256": "ad9d6192508bde706947ef33961e1442217bb8b48ea2a807e7a28772775856fd",
+    "archive_path": "data/mallory/evidence_archives/calibration/HBASE-37.tar.gz",
+    "archive_sha256": "df8217111417c6af6a1251a6f084ff8db8323b82d22e3324193fc14915f04df2",
+    "trace_member": "trials/r0000/events.jsonl.gz",
+    "trace_gzip_sha256": "ab67a1f1bbc4ec6a1c9d871f061cb965b7e19b58aa23fe67171e4916258e3c36",
+    "trace_raw_sha256": "fc2985d21cc3fbaa9d5129c833c844a6a38e8c488934c7979503b7e8c64e1512",
+    "exact_target_event_count": 1,
+    "target_nodes": [
+      "unknown"
+    ],
+    "named_healthy_valid": false
+  },
+  "admission": "No fault/full. Existing JUnit reaches target; actor-bound healthy pending. The current injected ConnectionLoss necessarily bypasses target null branch."
+}
