@@ -57,20 +57,16 @@ The archived v10 healthy run passed one JUnit and hit the exact guard once on
 parent edges. Its trace and summary hashes are in `manifest.json`. It proves
 test and target reachability only. The v19 adapter selected here binds the
 Overseer command to the owning `CoreContainer`/`ZkController`, and the sites
-add a `processMessage` parent region and the typed wait door. Their actual
-runtime events remain unverified.
+add a `processMessage` parent region and the typed wait door. The node2 v38
+variant has now supplied fresh runtime evidence; see
+`healthy-admission-review.md` and `healthy-audit-node2-lane3.json`.
 
-Dispatch may run `healthy.json` only after reserving a Solr lane. Admit the
-result for further work only if the fresh unchanged JUnit passes, the exact
-line-277 check fires on a registered server actor with a verified target class
-and loader, and the selected target occurrence has an observed named
-`processMessage` parent edge. The typed door must precede the check on that
-same actor, epoch, thread, and `deleteCore` occurrence. Require its event-time
-edge into the selected backward closure; if the graph builder cannot model
-this synchronous nested call, label a same-occurrence ordered timeline
-explicitly and leave graph admission open. An unknown actor, merely global
-door count, child task without a completion edge, or a later door is a gap.
-No fault campaign follows from a JUnit pass alone.
+The node2 healthy trial met the exact target, registered actor, class/loader,
+parent-edge, and same-occurrence typed-door requirements. It has an ordered
+local timeline from door to target but no nonempty door→target event-time
+graph edge. That graph path remains open. An unknown actor, merely global
+door count, child task without a completion edge, or a later door would also
+be a gap. No fault campaign follows from a JUnit pass alone.
 
 ## Node2 lane3 staging
 
@@ -81,6 +77,8 @@ event-time paths and rejects coarse roots. The separate
 this source checkout, checks a 7.125 GiB disk reserve and 8 GiB available RAM,
 verifies pinned inputs, and runs exactly one calibration trial at a new output
 path. `preflight.py --node2` validates the node2 variant without a JVM. The
-v19 `healthy.json` remains a source triage seed; use the node2 variant for
-fresh runtime admission. Even if a local timeline is reported, an observed
-graph edge and target closure are still required before any fault promotion.
+v19 `healthy.json` remains a source triage seed. The authorized node2 trial
+completed, passed its single JUnit, and hit the target once with no fault.
+`audit_healthy.py` recomputes the event and SHA audit from the retained raw
+files. A bounded fault pilot is proposed in the review as diagnostic work;
+it is not a promotion to full exploration.
