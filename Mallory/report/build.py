@@ -286,6 +286,144 @@ def _faulted_path_review(results: Path, result_path: Path,
     return ("observed_local_timeline" if positive else "faulted_path_unverified"), str(receipt_path)
 
 
+def _hdfs24_retry_review(results: Path, result_path: Path,
+                         result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Recompute the exact DN retry and NN RPC path for a terminal HDFS-24 run."""
+    if result.get("case_id") != "HDFS-24":
+        return None, None
+    root = results / "quality_reviews/hdfs24_v3_retry"
+    path = root / "HDFS-24.json"
+    if not path.is_file():
+        return None, None
+    invalid = ("invalid", str(path))
+    try:
+        baseline = results.resolve().parent.parent
+        index = _json(root / "index.json")
+        review = _json(path)
+        verifier = baseline / "Mallory/adapters/hdfs/cases/io-version-retry-v3-owner-binding/audit_hdfs24_full_retry.py"
+        audit_path = result_path.with_name("offline-causal-audit.json")
+        if (not isinstance(index, dict) or not isinstance(review, dict)
+                or not verifier.is_file() or not audit_path.is_file()):
+            return invalid
+        digest = lambda file: hashlib.sha256(file.read_bytes()).hexdigest()
+        proven = review.get("strict_witness_trials")
+        if not (
+            index.get("schema_version") == 1
+            and index.get("case_id") == "HDFS-24"
+            and index.get("receipt_path") == str(path.resolve().relative_to(baseline))
+            and index.get("receipt_sha256") == digest(path)
+            and index.get("verifier_sha256") == digest(verifier)
+            and index.get("result_sha256") == digest(result_path)
+            and index.get("audit_sha256") == digest(audit_path)
+            and index.get("strict_witness_trials") == proven
+            and isinstance(proven, int) and proven >= 0
+            and review.get("schema_version") == 1
+            and review.get("case_id") == "HDFS-24"
+            and review.get("status") == "terminal_event_time_rpc_retry_audit"
+            and review.get("scope") == "causal_path_only_no_bug_claim"
+            and review.get("result_sha256") == digest(result_path)
+            and review.get("offline_audit_sha256") == digest(audit_path)
+            and review.get("fault_trials_completed") == result.get("fault_trials_completed")
+            and result.get("status") in TERMINAL
+        ):
+            return invalid
+        with tempfile.TemporaryDirectory() as temporary:
+            generated = Path(temporary) / "review.json"
+            check = subprocess.run(
+                ["python3", str(verifier), str(result_path.parent),
+                 "--out", str(generated)], cwd=baseline,
+                capture_output=True, text=True, timeout=300)
+            if check.returncode != 0 or generated.read_bytes() != path.read_bytes():
+                return invalid
+        return ("observed_event_path" if proven > 0 else
+                "faulted_path_unverified"), str(path)
+    except (OSError, ValueError, TypeError, KeyError, EOFError, subprocess.TimeoutExpired):
+        return invalid
+
+
+def _solr01_recovery_review(results: Path, result_path: Path,
+                            result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Verify a faulted retry that returns to the exact guard in one invocation."""
+    if result.get("case_id") != "SOLR-01":
+        return None, None
+    root = results / "quality_reviews/solr01_v39f_recovery"
+    index_path = root / "index.json"
+    path = results / "audit_sidecars/SOLR-01-v39f-recovery-full.json"
+    if not path.is_file():
+        return None, None
+    invalid = ("invalid", str(path))
+    try:
+        baseline = results.resolve().parent.parent
+        digest = lambda file: hashlib.sha256(file.read_bytes()).hexdigest()
+        index = _json(index_path)
+        receipt = _json(path)
+        replay = results / "replays/SOLR-01-v39f-lane1"
+        verifier = baseline / "Mallory/adapters/solr/releases/v39/verify_solr01_recovery_full.py"
+        source = baseline / "Mallory/adapters/solr/releases/v39/source/BaseHttpClusterStateProvider.solr-8.11.4.java"
+        release = baseline / "Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f"
+        files = (path, verifier, source, release / "manifest.json",
+                 replay / "config.json", replay / "result.json",
+                 replay / "offline-causal-audit.json", replay / "sync-receipt.json")
+        if (not isinstance(index, dict) or not isinstance(receipt, dict)
+                or any(not file.is_file() for file in files)):
+            return invalid
+        positives = receipt.get("strict_same_invocation_retry_trials")
+        if not (
+            index.get("schema_version") == 1
+            and index.get("case_id") == "SOLR-01"
+            and index.get("receipt_path") == str(path.resolve().relative_to(baseline))
+            and index.get("receipt_sha256") == digest(path)
+            and index.get("verifier_sha256") == digest(verifier)
+            and index.get("source_snapshot_sha256") == digest(source)
+            and index.get("core_manifest_sha256") == digest(release / "manifest.json")
+            and index.get("result_sha256") == digest(result_path) == digest(replay / "result.json")
+            and index.get("audit_sha256") == digest(replay / "offline-causal-audit.json")
+            and index.get("qualifying_trial_count") == len(positives)
+            and isinstance(positives, list)
+            and all(isinstance(number, int) and number > 0 for number in positives)
+            and len(set(positives)) == len(positives)
+            and receipt.get("schema_version") == 1
+            and receipt.get("case_id") == "SOLR-01"
+            and receipt.get("classification") ==
+                ("terminal_recovery_precision_proven" if positives else
+                 "terminal_recovery_precision_unproven")
+            and receipt.get("canonical_quality_claim") is False
+            and receipt.get("new_bug_confirmed") is False
+            and receipt.get("evidence_kind") == "observed_local_timeline"
+            and receipt.get("campaign_result_sha256") == digest(result_path)
+            and receipt.get("offline_audit_sha256") == digest(replay / "offline-causal-audit.json")
+            and receipt.get("sync_receipt_sha256") == digest(replay / "sync-receipt.json")
+            and receipt.get("config_sha256") == digest(replay / "config.json")
+            and receipt.get("source_snapshot_sha256") == digest(source)
+            and receipt.get("fault_trials_completed") == result.get("fault_trials_completed")
+            and len(receipt.get("trials", [])) == result.get("fault_trials_completed")
+            and result.get("status") in TERMINAL
+        ):
+            return invalid
+        environment = dict(os.environ, PYTHONPATH=f"{release}:{baseline}")
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary = Path(temporary)
+            generated_audit = temporary / "audit.json"
+            generated_review = temporary / "review.json"
+            audit_check = subprocess.run(
+                ["python3", "-m", "Mallory.core.audit", "--campaign", str(replay),
+                 "--out", str(generated_audit)], cwd=baseline, env=environment,
+                capture_output=True, text=True, timeout=300)
+            review_check = subprocess.run(
+                ["python3", str(verifier), "--campaign", str(replay),
+                 "--source", str(source), "--out", str(generated_review)],
+                cwd=baseline, capture_output=True, text=True, timeout=180)
+            if (audit_check.returncode not in (0, 2) or review_check.returncode != 0
+                    or generated_audit.read_bytes() !=
+                        (replay / "offline-causal-audit.json").read_bytes()
+                    or generated_review.read_bytes() != path.read_bytes()):
+                return invalid
+        return ("observed_local_timeline" if positives else
+                "faulted_path_unverified"), str(path)
+    except (OSError, ValueError, TypeError, KeyError, EOFError, subprocess.TimeoutExpired):
+        return invalid
+
+
 def _event_path_review(results: Path, result_path: Path,
                        result: dict[str, Any]) -> tuple[str | None, str | None]:
     """Verify a named, ordered fault-to-target witness from a completed run."""
@@ -2817,12 +2955,28 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 row["quality_status"] = precision
             else:
                 row["quality_status"] = "causal_precision_review_invalid"
+        elif case_id == "SOLR-01":
+            row["static_causal_audit"] = row["causal_audit"]
+            precision, receipt = _solr01_recovery_review(results, result_path, result)
+            row["causal_precision_review"] = precision
+            row["causal_precision_receipt"] = receipt
+            if precision == "observed_local_timeline":
+                row["causal_audit"] = "recovery_path_verified"
+                row["quality_status"] = precision
+            elif precision == "faulted_path_unverified":
+                row["quality_status"] = precision
+            elif precision == "invalid":
+                row["quality_status"] = "causal_precision_review_invalid"
+            else:
+                row["quality_status"] = "causal_precision_pending"
         elif row["causal_audit"] is None:
             row["quality_status"] = "causal_audit_unproven"
         elif row["causal_audit"] != "verified":
             row["quality_status"] = "causal_audit_invalid"
         else:
-            precision, receipt = _hbase07_client_event_review(results, result_path, result)
+            precision, receipt = _hdfs24_retry_review(results, result_path, result)
+            if precision is None:
+                precision, receipt = _hbase07_client_event_review(results, result_path, result)
             if precision is None:
                 precision, receipt = _causal_precision_review(results, result_path, result)
             row["causal_precision_review"] = precision
