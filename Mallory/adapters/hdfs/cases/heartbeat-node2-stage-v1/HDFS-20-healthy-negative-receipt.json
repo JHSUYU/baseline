@@ -1,0 +1,50 @@
+{
+  "audit": {
+    "gap_counts": {
+      "door_unknown_actor": 66,
+      "rpc_missing_occurrence": 96,
+      "unmatched_parent": 66
+    },
+    "healthy_closure_included_named_doors": 0,
+    "healthy_closure_observed_edges": 0,
+    "healthy_observed_path_doors": 0,
+    "report_gate_passed": false
+  },
+  "case_id": "HDFS-20",
+  "cluster_test": "org.apache.hadoop.hdfs.server.namenode.ha.TestStandbyIsHot#testStandbyIsHot",
+  "config_sha256": "b262dcc4ad7afd63aa0c3c6d12a8641f4534453c2959041ecc0e04c7851f2b58",
+  "duration_seconds": 24.1,
+  "evidence_path": "/users/ZhenyuLi/baseline/data/mallory/calibration_heartbeat_v1/HDFS-20",
+  "exact_target_check_count": 60,
+  "exact_target_throw_count": 0,
+  "healthy_trace_gzip_sha256": "ed7dd76d15f071a24e48130d0610e08eecd8d8915637cb59ee48ba41769873ab",
+  "heartbeat_door_nodes": {
+    "unknown": 66
+  },
+  "heartbeat_doors": 66,
+  "junit": {
+    "errors": 0,
+    "failures": 0,
+    "status": "passed",
+    "tests": 1
+  },
+  "junit_receipt_sha256": "ee7fb3abf8c0a4f5861b82500727262c009c0093b4169ff0719e76f4009ed29b",
+  "launcher_sha256": "8554c61a9ad720dbdc0f0087cc66dce56ef367047700ac305d2104a0082cd861",
+  "offline_audit_sha256": "d1901217fd08947ab6de951ac9e838bf06800d6b056b1000ae7aa4f160468493",
+  "preflight_sha256": "5f44375dc4d35ec7ff819ef477236de4667bbd7de8fae6abb25281d226f1cd00",
+  "raw_copy_receipt_sha256": "ed860143747491a6a4dcdc9a5d301a620356440712b729ef16b9677779bd23c1",
+  "result_sha256": "defdcd8d58e36639d0ddd1833ef089d9575f95677c2898e11d57c7158488feec",
+  "schema_version": 1,
+  "scope": "healthy_only_no_fault_or_bug_claim",
+  "source_review": {
+    "BPOfferService_source_sha256": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294",
+    "BPServiceActor_source_sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833",
+    "observation": "The selected BPOfferService heartbeat state check is reached on named DataNodes, but the BPServiceActor.sendHeartBeat@563 door remains node=unknown for all 66 events. The frozen graph therefore has no pretarget named door in the exact target closure. This healthy run cannot justify fault-campaign promotion."
+  },
+  "status": "healthy_causal_path_gap",
+  "target_nodes": [
+    "hdfs-cluster-1/dn0",
+    "hdfs-cluster-1/dn1",
+    "hdfs-cluster-1/dn2"
+  ]
+}
