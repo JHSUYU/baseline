@@ -89,7 +89,8 @@ def main() -> int:
               "strict_postfault_http_paths": sum(bool(row["paths"]) for row in trials
                                                 if row["all_faults_effective"] and row["target_reached"]),
               "trials": trials}
-    destination = root / "postfault-http-path-review.json"
+    destination = Path(sys.argv[2]).resolve() if len(sys.argv) > 2 else root / "postfault-http-path-review.json"
+    destination.parent.mkdir(parents=True, exist_ok=True)
     destination.write_text(json.dumps(output, indent=2, sort_keys=True) + "\n",
                            encoding="utf-8")
     print(json.dumps({"path": str(destination),
