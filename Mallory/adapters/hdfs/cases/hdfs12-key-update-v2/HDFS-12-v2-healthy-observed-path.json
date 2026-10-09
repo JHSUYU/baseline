@@ -1,0 +1,63 @@
+{
+  "auditor_sha256": "af2cd41134b7db03d5241a18e4e74adf7bda9828bced51dca26b4014878c9312",
+  "bpid": "BP-939986664-128.110.217.204-1791588499647",
+  "case_id": "HDFS-12",
+  "config_sha256": "0741135d4d4b4d7f5141ca3dc51d8c9d74e70a5797d2b41752a70b1661616f08",
+  "door_to_target_path": [
+    {
+      "kind": "rpc",
+      "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:root:thread:299:segment:103\"]",
+      "target": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:59b2f791fe674301b8067907bde02f74:31:0:thread:264:segment:18\"]"
+    },
+    {
+      "kind": "rpc",
+      "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:59b2f791fe674301b8067907bde02f74:31:0:thread:264:segment:18\"]",
+      "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:59b2f791fe674301b8067907bde02f74:31:0:thread:299:segment:104\"]"
+    },
+    {
+      "kind": "region_parent",
+      "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:59b2f791fe674301b8067907bde02f74:31:0:thread:299:segment:104\"]",
+      "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.server.datanode.BPServiceActor.CommandProcessingThread#enqueue:59b2f791fe674301b8067907bde02f74:31:0:1\"]"
+    },
+    {
+      "kind": "task",
+      "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.server.datanode.BPServiceActor.CommandProcessingThread#enqueue:59b2f791fe674301b8067907bde02f74:31:0:1\"]",
+      "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:hdfs-datanode-command:9:thread:298:segment:32\"]"
+    },
+    {
+      "kind": "region_parent",
+      "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:hdfs-datanode-command:9:thread:298:segment:32\"]",
+      "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.server.datanode.BPServiceActor.CommandProcessingThread#runAction:hdfs-datanode-command:9:1\"]"
+    },
+    {
+      "kind": "key_read_from",
+      "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.server.datanode.BPServiceActor.CommandProcessingThread#runAction:hdfs-datanode-command:9:1\"]",
+      "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier;)[B:root:3\"]"
+    }
+  ],
+  "epoch": 0,
+  "event_ids": {
+    "add_keys": "HDFS-12-r0000:319",
+    "attempt": "HDFS-12-r0000:299",
+    "command": "HDFS-12-r0000:304",
+    "door": "HDFS-12-r0000:300",
+    "lookup": "HDFS-12-r0000:344",
+    "map_read": "HDFS-12-r0000:345",
+    "map_write": "HDFS-12-r0000:320",
+    "request_recv": "HDFS-12-r0000:302",
+    "request_send": "HDFS-12-r0000:301",
+    "response_recv": "HDFS-12-r0000:307",
+    "response_send": "HDFS-12-r0000:306",
+    "target": "HDFS-12-r0000:347",
+    "task_claim": "HDFS-12-r0000:311",
+    "task_submit": "HDFS-12-r0000:309"
+  },
+  "events_sha256": "ce1283f8eaa21cd5f097b06c1e0996cadfc9aead3dc9a2d33d6c91b5e057afe1",
+  "healthy_audit_sha256": "902cab63f0b4979f3bd99b3142514232f34250092cd036600ca0711f6c40b95b",
+  "key_id": 1160305508,
+  "node": "hdfs-cluster-2/dn0",
+  "request": "59b2f791fe674301b8067907bde02f74:31:0",
+  "schema_version": 1,
+  "state_token": "manager:1:key:1160305508:version:2",
+  "status": "healthy_observed_path_verified"
+}
