@@ -4,10 +4,12 @@ import hashlib
 import subprocess
 import tempfile
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from Mallory.report.build import (_causal_audit, _causal_precision_review,
                                   _event_path_review, _faulted_path_review,
+                                  _hdfs11_faulted_event_review,
                                   _local_timeline_review,
                                   _posthoc_attestation, _quality,
                                   _row, _source_gap, _source_review, build,
@@ -15,6 +17,66 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_hdfs11_event_path_receipt_fails_closed_on_tamper(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            baseline = Path(__file__).resolve().parents[2]
+            release = (baseline / "Mallory/dispatch/releases/"
+                       "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f")
+            results = Path(temporary) / "data/mallory"
+            case = results / "cases/HDFS-11"
+            case.mkdir(parents=True)
+            digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            result = {"case_id": "HDFS-11", "strict_injected_trials": 1,
+                      "strict_target_trials": 1}
+            result_path = case / "result.json"
+            result_path.write_text(json.dumps(result))
+            audit_path = case / "offline-causal-audit.json"
+            audit_path.write_text("{}")
+            config_path = case / "config.json"
+            config_path.write_text("{}")
+            archive_root = results / "evidence_archives/campaign"
+            archive_root.mkdir(parents=True)
+            archive = archive_root / "HDFS-11.tar.gz"
+            archive.write_bytes(b"archive")
+            manifest = archive_root / "HDFS-11.tar.manifest.json"
+            manifest.write_text("{}")
+            review_root = results / "quality_reviews/hdfs11_v27_faulted_path"
+            review_root.mkdir(parents=True)
+            receipt_path = review_root / "HDFS-11.json"
+            receipt = {"classification": "observed_event_path",
+                       "graph_source_sha256": digest(release / "Mallory/core/graph.py"),
+                       "campaign_result_sha256": digest(result_path),
+                       "offline_audit_sha256": digest(audit_path),
+                       "config_sha256": digest(config_path),
+                       "archive_sha256": digest(archive),
+                       "archive_manifest_sha256": digest(manifest),
+                       "strict_injected_trials": 1, "strict_target_trials": 1,
+                       "qualifying_trial_count": 1}
+            receipt_path.write_text(json.dumps(receipt))
+            index = {"schema_version": 1, "case_id": "HDFS-11",
+                     "classification": "observed_event_path",
+                     "receipt_sha256": digest(receipt_path),
+                     "verifier_sha256": digest(baseline / "Mallory/ops/audit_hdfs11_v27_full.py"),
+                     "core_manifest_sha256": digest(release / "manifest.json"),
+                     "qualifying_trial_count": 1}
+            (review_root / "index.json").write_text(json.dumps(index))
+            with patch("Mallory.report.build.subprocess.run",
+                       return_value=subprocess.CompletedProcess([], 0)):
+                self.assertEqual(_hdfs11_faulted_event_review(
+                    results, result_path, result)[0], "observed_event_path")
+            receipt["qualifying_trial_count"] = 0
+            receipt_path.write_text(json.dumps(receipt))
+            self.assertEqual(_hdfs11_faulted_event_review(
+                results, result_path, result)[0], "invalid")
+            receipt["qualifying_trial_count"] = 1
+            receipt_path.write_text(json.dumps(receipt))
+            index["receipt_sha256"] = digest(receipt_path)
+            (review_root / "index.json").write_text(json.dumps(index))
+            with patch("Mallory.report.build.subprocess.run",
+                       return_value=subprocess.CompletedProcess([], 1)):
+                self.assertEqual(_hdfs11_faulted_event_review(
+                    results, result_path, result)[0], "invalid")
+
     def test_local_timeline_receipt_requires_raw_named_occurrence_order(self):
         with tempfile.TemporaryDirectory() as temporary:
             results = Path(temporary) / "data" / "mallory"

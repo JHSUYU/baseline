@@ -4,8 +4,8 @@
   "original_selection_count": 102,
   "known_issue_control_count": 2,
   "counts": {
-    "completed_campaign": 47,
-    "pending_seed": 39,
+    "completed_campaign": 48,
+    "pending_seed": 38,
     "no_suitable_cluster_test": 3,
     "healthy_target_unreliable": 1,
     "source_weak_candidate": 1,
@@ -24,9 +24,9 @@
     "observed_local_timeline": 4,
     "faulted_path_unverified": 24,
     "causal_precision_unverified": 18,
-    "observed_event_path": 1
+    "observed_event_path": 2
   },
-  "high_quality_completed": 5,
+  "high_quality_completed": 6,
   "rows": [
     {
       "case_id": "HBASE-01",
@@ -237,9 +237,9 @@
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
       "result_path": "data/mallory/cases/HBASE-07/result.json",
-      "calibration_path": "data/mallory/calibration_v24/HBASE-07/result.json",
+      "calibration_path": "data/mallory/calibration_v26/HBASE-07/result.json",
       "calibration_status": "calibration_complete",
-      "calibration_duration_seconds": 39.692,
+      "calibration_duration_seconds": 39.405,
       "calibration_history": [
         {
           "version": 1,
@@ -275,6 +275,13 @@
           "status": "calibration_complete",
           "cluster_test": "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient#testRestoreSnapshot",
           "duration_seconds": 39.692
+        },
+        {
+          "version": 26,
+          "path": "data/mallory/calibration_v26/HBASE-07/result.json",
+          "status": "calibration_complete",
+          "cluster_test": "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient#testRestoreSnapshot",
+          "duration_seconds": 39.405
         }
       ],
       "report_status": "completed_campaign",
@@ -1951,9 +1958,9 @@
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
       "result_path": null,
-      "calibration_path": "data/mallory/calibration_v25/HBASE-35/result.json",
+      "calibration_path": "data/mallory/calibration_v27/HBASE-35/result.json",
       "calibration_status": "calibration_complete",
-      "calibration_duration_seconds": 35.783,
+      "calibration_duration_seconds": 37.787,
       "calibration_history": [
         {
           "version": 1,
@@ -1989,6 +1996,13 @@
           "status": "calibration_complete",
           "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
           "duration_seconds": 35.783
+        },
+        {
+          "version": 27,
+          "path": "data/mallory/calibration_v27/HBASE-35/result.json",
+          "status": "calibration_complete",
+          "cluster_test": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+          "duration_seconds": 37.787
         }
       ],
       "report_status": "pending_seed",
@@ -2382,11 +2396,11 @@
       "target_exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException",
       "cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
       "calibration_cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
-      "campaign_cluster_test": null,
+      "campaign_cluster_test": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
-      "result_path": null,
+      "result_path": "data/mallory/cases/HDFS-11/result.json",
       "calibration_path": "data/mallory/calibration_v27/HDFS-11/result.json",
       "calibration_status": "calibration_complete",
       "calibration_duration_seconds": 21.162,
@@ -2434,28 +2448,30 @@
           "duration_seconds": 21.162
         }
       ],
-      "report_status": "pending_seed",
-      "quality_status": null,
-      "causal_audit": null,
-      "causal_precision_review": null,
-      "causal_precision_receipt": null,
-      "healthy_closure_evidence_types": null,
-      "healthy_local_timeline_doors": null,
+      "report_status": "completed_campaign",
+      "quality_status": "observed_event_path",
+      "causal_audit": "verified",
+      "causal_precision_review": "observed_event_path",
+      "causal_precision_receipt": "data/mallory/quality_reviews/hdfs11_v27_faulted_path/HDFS-11.json",
+      "healthy_closure_evidence_types": [
+        "observed_graph_path"
+      ],
+      "healthy_local_timeline_doors": 0,
       "local_timeline_only": null,
       "same_actor_target_trials": null,
       "posthoc_attestation": null,
-      "campaign_status": null,
-      "duration_seconds": null,
-      "fault_trials_completed": null,
-      "strict_injected_trials": null,
-      "strict_target_trials": null,
-      "target_reached_trials": null,
-      "exact_exception_trials": null,
-      "coverage_ids_seen": null,
-      "closure_coverage_ids_seen": null,
-      "closure_edge_fingerprints_seen": null,
-      "target_node_named": null,
-      "source_review_status": null,
+      "campaign_status": "budget_exhausted",
+      "duration_seconds": 2356.689,
+      "fault_trials_completed": 80,
+      "strict_injected_trials": 67,
+      "strict_target_trials": 45,
+      "target_reached_trials": 52,
+      "exact_exception_trials": 0,
+      "coverage_ids_seen": 224,
+      "closure_coverage_ids_seen": 0,
+      "closure_edge_fingerprints_seen": 699,
+      "target_node_named": true,
+      "source_review_status": "not_reviewed",
       "source_review_receipt": null,
       "source_review_classification": null,
       "source_gap_receipt": null,

@@ -1,0 +1,1003 @@
+{
+  "archive_manifest_sha256": "f90af6079a4d52ce43b5d8f8e5d0db4108819a61bd2f3056512feace9f06fb4a",
+  "archive_sha256": "41ded73a0a112a6b9f43db8803ab58563828ecc43560b7356fec37fe699693cb",
+  "campaign_result_sha256": "db093d1c03567af844303bebd27afb3546bfe036477c7de15796bfed89b8721f",
+  "case_id": "HDFS-11",
+  "classification": "observed_event_path",
+  "config_sha256": "b71bdaa9e6b765e677f88f196ea724c728b4986a42e1169a7c40e0c2ad797118",
+  "graph_source_sha256": "d712040ee432ddca0e84b6ee7a22fe8da58e0755b8b8437e61ad28164b979f08",
+  "healthy_fault_door_point": {
+    "door_ordinal": 1,
+    "epoch": 0,
+    "node": "hdfs-cluster-2/nn0",
+    "site": "hdfs:nn-get-data-encryption-key"
+  },
+  "healthy_trial_result_sha256": "9b11f60c08e926976ef1ac946c5f08c1839296f5b1f546c01f822b5ef701ce85",
+  "offline_audit_sha256": "11420981e097b58ccb7c808e2daac4bcc445c032f1a9a836416121ed40b2a5de",
+  "provenance_limit": "Path certifies event order and propagation, not that the exception caused the later target check.",
+  "qualifying_trial_count": 7,
+  "schema_version": 1,
+  "strict_injected_trials": 67,
+  "strict_target_trials": 45,
+  "trials": [
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "5733ad504e98587a1d053c77f5af3890f78c96efca47514a7abfaf80259cd7ea",
+      "trace_raw_sha256": "eea0b10e9510d4f871221c096e398f880d54009d606bd934a256c072e50d9331",
+      "trial_id": 1,
+      "trial_result_sha256": "f08176fba78a2812ad61a4628020cbe1ad3f3164ea0d14df96c04d82ec0d4fbf",
+      "witness": {
+        "door_event": "HDFS-11-r0001:156",
+        "edges": [
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0001:160",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0001:159",
+            "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:e64975a2d31c4d50943da2ac5b1cc633:26:0:thread:267:segment:2\"]",
+            "target": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0001:174",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0001:172",
+            "source": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:39222->127.0.0.1:40689:thread:331:segment:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0001:175",
+            "evidence": "unique_parent_id_or_handoff_token",
+            "kind": "region_parent",
+            "producer_event": "HDFS-11-r0001:174",
+            "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:39222->127.0.0.1:40689:thread:331:segment:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B:127.0.0.1:39222->127.0.0.1:40689:1\"]"
+          }
+        ],
+        "evidence_type": "observed_nn_error_response_retry_sasl_target_event_path",
+        "fault_event": "HDFS-11-r0001:158",
+        "fault_thread_id": 267,
+        "target_check_event": "HDFS-11-r0001:176",
+        "target_node": "hdfs-cluster-2/dn0",
+        "target_thread_id": 331
+      }
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": false,
+      "trace_gzip_sha256": "dfb807bd9d07b89f51e14673f4201b84d8df04c7e261e726da605890ee93a435",
+      "trace_raw_sha256": "cdd00f7346a17e8fbe7cd67641b5bcdf2f26a23d9cd2f0ffea35a02b9d6f0201",
+      "trial_id": 2,
+      "trial_result_sha256": "21c040f4e0d4f02c9f0c216cfffefa6fdb4f2c8f3d1b0cad5bba25fc780c67d4",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "ca555590c427d94b571c92d15197c829f7eb238c504e8e2ab6a2556fda80b877",
+      "trace_raw_sha256": "55ea4a1c653337b4f3fd85523578bf9fb3e961cbfc09d0cfbba1bf8ab802447d",
+      "trial_id": 3,
+      "trial_result_sha256": "4469251167a5814e4b65e7900b52ed64f1ebdc3fd17b6f43c9617621fc7a62dc",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "cf341902219a9364a757fe1d06c5588b0e63617fead429ab1ce93e316b4dee92",
+      "trace_raw_sha256": "c58721821a8b7fd00c1e7327eff61d51ffa395a4cef801b35856a03d9e5875f2",
+      "trial_id": 4,
+      "trial_result_sha256": "42f178a59760e68861ecff07d0aea35c796f5271216544f850917ec4c3244d06",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "b64bfba5f91e497e7489257edf1467c9749e6fe6cfdd1ad38f937b689a215ae7",
+      "trace_raw_sha256": "e84b08bdf92ddda2b87b522912f1723d69caa1722f79c251e3e9d97f92fb7ce0",
+      "trial_id": 5,
+      "trial_result_sha256": "f46809068d505b98eda82e6026aec3eb0a46ce4088c8729efb31b2cfa8671cfa",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "1ae06cdfefca977199fd62dae0943e58af15299e8e9cb2d2ada0ca79a7b01c89",
+      "trace_raw_sha256": "a1498b423b4d56783285672bb2f15bc7fbb52f44e592365f71063a0cc8a639b8",
+      "trial_id": 6,
+      "trial_result_sha256": "e2374056c799f59c1e1f2dc7c04f751d56df54fbdf0893c2d376421f4dde25ee",
+      "witness": {
+        "door_event": "HDFS-11-r0006:163",
+        "edges": [
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0006:167",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0006:166",
+            "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:65e4748d7ee841b789022e5c3a063e9c:27:0:thread:258:segment:6\"]",
+            "target": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0006:186",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0006:184",
+            "source": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:40812->127.0.0.1:41097:thread:331:segment:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0006:187",
+            "evidence": "unique_parent_id_or_handoff_token",
+            "kind": "region_parent",
+            "producer_event": "HDFS-11-r0006:186",
+            "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:40812->127.0.0.1:41097:thread:331:segment:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B:127.0.0.1:40812->127.0.0.1:41097:1\"]"
+          }
+        ],
+        "evidence_type": "observed_nn_error_response_retry_sasl_target_event_path",
+        "fault_event": "HDFS-11-r0006:165",
+        "fault_thread_id": 258,
+        "target_check_event": "HDFS-11-r0006:188",
+        "target_node": "hdfs-cluster-2/dn0",
+        "target_thread_id": 331
+      }
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "6cffdde94641e7854817e9b5c447daa4be54882b1f997e3537fedd19c661a0f1",
+      "trace_raw_sha256": "6e2776d9dca8ae2fbed2880989038f994e2dabfad8899032b2f9b725aae5ad7f",
+      "trial_id": 7,
+      "trial_result_sha256": "a91aaeff62b5a2a97a7e393e80cf99aeaaadda5721ad81a53e0d5379f17f78dd",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "3d116744e838dbe3640edc9c11ca654108372f185789c46e851781e5cb898cfc",
+      "trace_raw_sha256": "4802d8bfa22f6c23f5c8ae33a1cc17c7309dc7a74d71d498ea1077d4356b1a7b",
+      "trial_id": 8,
+      "trial_result_sha256": "1a1507cb8efe292615c5760aef63314bede9b4b9ff19bb95cb75d02777b4863b",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "4252a867a78f23fc96aed56ae418bea51ecd7d765c38dd2096b6ca8b1ce10fed",
+      "trace_raw_sha256": "06421b6480934f8d8548a2e2aec8280cb347bb3208fedbd1bcf81ada15f22634",
+      "trial_id": 9,
+      "trial_result_sha256": "38451d4e8d717187315ad3856947029f535a57a8ebdcdfcdddd482054d776ef4",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "988fcd9a2fe5d0be2edc64efadcf2d562bcbe53e32fd6f50066f63cb4ec61d08",
+      "trace_raw_sha256": "14066068c550e04e7aab7dea2d52e792d48689c202c51fb9643e8242a606b099",
+      "trial_id": 10,
+      "trial_result_sha256": "af8cd02e2cde1ea3f4d0629bdfe4f73509446a0c50e36480ea4fc4d072438252",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "5cbedf6b313ec2f3f77d0a45f379da7070ee3297d203138c73b20428365cccc3",
+      "trace_raw_sha256": "8e42b7081e9cec33f7f36f1206ebaafda4222728fef957f3fad33b1915d81b46",
+      "trial_id": 11,
+      "trial_result_sha256": "20d6fe2f83028fcbe4eb4d24018ebf9e378e472b67c66b52da366b5f4402de05",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "c27f052fbf578f29a5003c1ce7f3a5154f9cca9cdb034080e1b22a630d0c4c3a",
+      "trace_raw_sha256": "b538cf318977e202b2ee0f8603d87d4e5a50d06dae0f89897590ef43714fd687",
+      "trial_id": 12,
+      "trial_result_sha256": "cc39872e4949986b31a77725fb86f726d5c0797cd0e8e2b752db5b28aa82f44c",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "43fec43978c55e49fc7d47df6f874c2bba08d8705056b37b70f618cc2a7ae77b",
+      "trace_raw_sha256": "080b6967d2f200cc0a5f4e7cca9f1a157d8830f5bced3629d77bf61ec922b624",
+      "trial_id": 13,
+      "trial_result_sha256": "a967ad45aabcd34b4254e9e2335ed3d935d5fe4123291698e80c7ff45236cca4",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "cd32aec26139f400fd5936937ff8104613ab9341bf97f98d28e4bb80b259aed4",
+      "trace_raw_sha256": "bc8f748fda52233e70dfb5517ccdee31ab77fa7e2972f710f0a298819b4b84ef",
+      "trial_id": 14,
+      "trial_result_sha256": "6fb6fbe416f6673c06c81ee26e8ca5df81f259fee7ef57379cd30a4a8f395333",
+      "witness": {
+        "door_event": "HDFS-11-r0014:153",
+        "edges": [
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0014:157",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0014:156",
+            "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:3623b4a9499b4f608d2bfb3a166cb8c9:25:0:thread:258:segment:6\"]",
+            "target": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0014:171",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0014:169",
+            "source": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:59138->127.0.0.1:39205:thread:331:segment:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0014:172",
+            "evidence": "unique_parent_id_or_handoff_token",
+            "kind": "region_parent",
+            "producer_event": "HDFS-11-r0014:171",
+            "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:59138->127.0.0.1:39205:thread:331:segment:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B:127.0.0.1:59138->127.0.0.1:39205:1\"]"
+          }
+        ],
+        "evidence_type": "observed_nn_error_response_retry_sasl_target_event_path",
+        "fault_event": "HDFS-11-r0014:155",
+        "fault_thread_id": 258,
+        "target_check_event": "HDFS-11-r0014:173",
+        "target_node": "hdfs-cluster-2/dn0",
+        "target_thread_id": 331
+      }
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "43b7914b8ebacb72b489ca1bd0ae662d6d0fb65814016e58f9ba50e50f11da10",
+      "trace_raw_sha256": "538c690dd3835c88e895d93145daf2dcc01509c271702fbe4a9e3303d13a93fb",
+      "trial_id": 15,
+      "trial_result_sha256": "734ab4adb29e6c990e0ac880ea3847b75dcf735b7aad7d2b6b487bae6e8773c1",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "59eb43a9d8c51a560165e7395e23ab65b7686cfe011488ec2c478f197e53e639",
+      "trace_raw_sha256": "22d88fc40b765b72b33f4415d35720f5ae962b3f11a3dcc5e78865c5b6ed3f20",
+      "trial_id": 16,
+      "trial_result_sha256": "c32833bb4da5b2a39cbd0161ef4fce88a5ad578799e9b4e0cf990a4e1a345384",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "5cdd00f77b38d67da6d5fb3139de127372ed56de21b555d62e58ec91f4eafbed",
+      "trace_raw_sha256": "cf57ed720047ad1348fcdf29b286efd4793e8ca2d100a7e01979b83829acdfb5",
+      "trial_id": 17,
+      "trial_result_sha256": "10fb28c6244b839c421e7f14916b1cf2f8696502b9716a8f2478c1e778feb0bb",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "f7a1bcb1e3a5b97339cacd389977c46a9367e83b9ff9f1f243c62fbade61c614",
+      "trace_raw_sha256": "21a47229642df7fcef659d626187c7c1418ed17d6112c94bcef4145ad1af52c2",
+      "trial_id": 18,
+      "trial_result_sha256": "91a611d64f78b6f346f2b157964d28fc578008d79afa60bc9eb7a5cc06b8e101",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "91cc1bffdf96f13c476de96db01cc1d33129b8488b0fe992c43b5d869b665cbe",
+      "trace_raw_sha256": "42dd2f5aeb62811abf9a4a160525398f69ae4ac781789ffb0b21c0b27b26b4cd",
+      "trial_id": 19,
+      "trial_result_sha256": "60bfee23f79dd86f4778148aadf0a54bb89352a52811e2ec4ad16f22145a71f1",
+      "witness": {
+        "door_event": "HDFS-11-r0019:163",
+        "edges": [
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0019:167",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0019:166",
+            "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:19e2a7e9f0aa48a78fa8987bf4237817:27:0:thread:259:segment:6\"]",
+            "target": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0019:181",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0019:179",
+            "source": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:43576->127.0.0.1:44823:thread:332:segment:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0019:182",
+            "evidence": "unique_parent_id_or_handoff_token",
+            "kind": "region_parent",
+            "producer_event": "HDFS-11-r0019:181",
+            "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:43576->127.0.0.1:44823:thread:332:segment:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B:127.0.0.1:43576->127.0.0.1:44823:1\"]"
+          }
+        ],
+        "evidence_type": "observed_nn_error_response_retry_sasl_target_event_path",
+        "fault_event": "HDFS-11-r0019:165",
+        "fault_thread_id": 259,
+        "target_check_event": "HDFS-11-r0019:183",
+        "target_node": "hdfs-cluster-2/dn0",
+        "target_thread_id": 332
+      }
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "0d73c4e517878e2617d107abc20ae009e43a24a3695dcc66a321eff2d7c175a5",
+      "trace_raw_sha256": "7307a0b5cffa95c4b8506c358def4166ffee4a6d161b6f5a6b6608e8986393fe",
+      "trial_id": 20,
+      "trial_result_sha256": "de8d83a91fefd4dab967af0a717690d6b89963297fe6453a1f7b3c73c3432b5d",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "0707b07fa0e758a3e6d9d027e71c8ceef36ab33c46ebe810f9f72e748a809923",
+      "trace_raw_sha256": "e50172df567ff971ca97f91b55da43b302bb56f8d56986514ab06f2cf4929085",
+      "trial_id": 21,
+      "trial_result_sha256": "7eaabf6d7ed5e73eebd2acf056575723c05c79fcebd5938509ee95b0f7178a31",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "ad92e65b7526bc0686534cb93f5b4ae7585d3414ab2ef0cd6152ceb821d10dd7",
+      "trace_raw_sha256": "7d3515e1bb0dda380ad2806cbd12e1bfeacb18524f9a8bf89059e1512c45ec90",
+      "trial_id": 22,
+      "trial_result_sha256": "12c75b23e47e006bfc8a1aa7706731892759ae890e7d7d5e04186691f74d99ca",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "6c79e94446f3642d5ecb94d26a3a213765353584062ef781d9d55d724a7c4098",
+      "trace_raw_sha256": "4f215c62dc33ea3d8f5b719a2cdbc66e31fd881fbd9b36a628270aab55d32410",
+      "trial_id": 23,
+      "trial_result_sha256": "35e515d9ca362eb13c6ff8b6739f8d199bfece81ff6b8d3c8398fbed04cf4341",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "cf1b93b027cf2e03316620d5170ff93241da25a2a3cf84c0aa7ccc7a80672877",
+      "trace_raw_sha256": "90bb66cca04e96af15e2d0d1b8d71725315312e10d103e9ead42fc688da00ebc",
+      "trial_id": 24,
+      "trial_result_sha256": "f69262f3fddf86928614b23d66e6edf6116246067903c7ec17a518a5fe06aaa1",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "c8ba84ce17aeaa34370e7bd4f64fc14ea50fa7bd9f5cd9a0552f6be6fa9e1f7f",
+      "trace_raw_sha256": "15ce1e4d1cf8eb545cbd37f6ecf16bb376cfdbbc0325a25ee1be1a3b25ceb12d",
+      "trial_id": 25,
+      "trial_result_sha256": "72f7e140a1d87d210387851282598fa328a31557a21d59f4d3dc1edeadd5249d",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "43349bcf8cc840cf19513304ee17f4f501e8c3e0938f381b3689602ca3c1543c",
+      "trace_raw_sha256": "c1dcfd6f3ccc812824ae97ba8cd719a042c328302e9cf8057949749e3d550871",
+      "trial_id": 26,
+      "trial_result_sha256": "9d6651eede1453cccfab402a2ef97fb256ec2e091c810792788ff18e2a1cfdc4",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "25bb477ba72addcca0c62c7f1fb5c7948b0b3c145013d8dc898771952701b9dc",
+      "trace_raw_sha256": "3a3dc9cc9f28c552047125abeb2b01c306f437d46aea859a09d58f31a889a868",
+      "trial_id": 27,
+      "trial_result_sha256": "c19a2099f50422b71616ee2aa61df1c53eff751c551d5818fa285ca1f4ef4dab",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "0dcae58eb3a854899e383d4ba28f44dfb0279ccd606c7bcc85a666ff990c6d54",
+      "trace_raw_sha256": "73fce2fa8d5599ff009b831b46739ce41e9585ebbb7394df748bafd25c89603a",
+      "trial_id": 28,
+      "trial_result_sha256": "82f875fc5cbe02cd4b407cc0d73486f1e43358649a61f32b0f08fa2706060bf6",
+      "witness": {
+        "door_event": "HDFS-11-r0028:158",
+        "edges": [
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0028:162",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0028:161",
+            "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:d07aeff9341c47838b2c68c7721f7e2e:26:0:thread:258:segment:6\"]",
+            "target": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0028:176",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0028:174",
+            "source": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:32770->127.0.0.1:38057:thread:332:segment:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0028:177",
+            "evidence": "unique_parent_id_or_handoff_token",
+            "kind": "region_parent",
+            "producer_event": "HDFS-11-r0028:176",
+            "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:32770->127.0.0.1:38057:thread:332:segment:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B:127.0.0.1:32770->127.0.0.1:38057:1\"]"
+          }
+        ],
+        "evidence_type": "observed_nn_error_response_retry_sasl_target_event_path",
+        "fault_event": "HDFS-11-r0028:160",
+        "fault_thread_id": 258,
+        "target_check_event": "HDFS-11-r0028:178",
+        "target_node": "hdfs-cluster-2/dn0",
+        "target_thread_id": 332
+      }
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": false,
+      "trace_gzip_sha256": "ec4242f6b16d944e0d65b93f7743cc7ada2089cfd51f57d4fd461dc251e714cb",
+      "trace_raw_sha256": "a3761ed729ab93416ea88dde4b14267ad9e4b2f013cadcce0a18caed795fab71",
+      "trial_id": 29,
+      "trial_result_sha256": "b6154238de7a7d85f0840bcb81aafc86488f43a665bc2f170595a52890e705d2",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "1b96dee1f857a55cb9f689347fbeb033c41ab8567c6abfb8a0a9776b89319f12",
+      "trace_raw_sha256": "8e1ef828ad31837a08277efeae70204a16e3dbcc3a2d91533f344bce5611f50c",
+      "trial_id": 30,
+      "trial_result_sha256": "58f26e27c00e5d81e0db2e73660da73b638d7ba6a36e7ffb9554f6229ebac506",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "7a2fef99f81254943cb2f25a90cfb47a3f1ce06d2204ce691c0e777a19e01790",
+      "trace_raw_sha256": "a45decb9c8cbd4b9978a3413ba0fc0e108f028361aa575516f181b6c111e9c18",
+      "trial_id": 31,
+      "trial_result_sha256": "0150961dc809fb6099a1a0a2fb18c9300482fe0a1abfe7f5e6ef95a74b32c284",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "d0e378e723815b516a8071033ca7bf5df50e531b3f716b5afe3eb2481bf34524",
+      "trace_raw_sha256": "3aa27e6df966c5f87f3f092f09de7d5b2ea9ae082e3988900d5d3bc760e8c7b7",
+      "trial_id": 32,
+      "trial_result_sha256": "b3f5ab71fb5e80419a30277632eb7ec5fc78f230344903fbeea1444a837aafb1",
+      "witness": {
+        "door_event": "HDFS-11-r0032:163",
+        "edges": [
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0032:167",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0032:166",
+            "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:47658f41d09c4034b8bd7b899e7d3964:27:0:thread:260:segment:6\"]",
+            "target": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0032:186",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0032:184",
+            "source": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:43060->127.0.0.1:43011:thread:332:segment:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0032:187",
+            "evidence": "unique_parent_id_or_handoff_token",
+            "kind": "region_parent",
+            "producer_event": "HDFS-11-r0032:186",
+            "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:43060->127.0.0.1:43011:thread:332:segment:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B:127.0.0.1:43060->127.0.0.1:43011:1\"]"
+          }
+        ],
+        "evidence_type": "observed_nn_error_response_retry_sasl_target_event_path",
+        "fault_event": "HDFS-11-r0032:165",
+        "fault_thread_id": 260,
+        "target_check_event": "HDFS-11-r0032:188",
+        "target_node": "hdfs-cluster-2/dn0",
+        "target_thread_id": 332
+      }
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "1675e2c0bf575de1f7a7642dab46c421c8d3d6fa76b2f4eeb1fd038c414e3d36",
+      "trace_raw_sha256": "e43b037f9d4340cc5b2a41eb3be248cea2b686cef436d9b431c80e0c92b6fb4b",
+      "trial_id": 33,
+      "trial_result_sha256": "cdacb26b986e284ce50bb6fa33be3380807ff5ebf914850e76bcf53265712dfa",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "2e613fbcd6fcaeabea942ccdd0ab9319b8643d868f246744821ba42282082c2f",
+      "trace_raw_sha256": "04993e7cc5c215e8494e4e5781123851306bd360f06b8a041397e1226c9dce8d",
+      "trial_id": 34,
+      "trial_result_sha256": "b0f2d4fc954e13f94473c634ddd5f86500d8f8942a24a8564d727976070f64a2",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "b16d2586e8c6cc1a57d7590ec0cd4d4d5b5110f60c341c76f722200c7c9e6c87",
+      "trace_raw_sha256": "0294db082d2b8e8727de888997f410817a3b9bb6d494d968945bea31dbf57b3f",
+      "trial_id": 35,
+      "trial_result_sha256": "94480684ad4f7952d9a0a2ab10c49beb07bf3e4fdcdbb38e1b4064c300813fc7",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "1f9ea57b21cecffee48a233c6cf3c21f0f8a3669696fef7bcc1708296fd4545e",
+      "trace_raw_sha256": "aede4c3721ace6ddd02ff2a8d2d663adcd3574ac4d6ad4dafb9e077c7b955f3f",
+      "trial_id": 36,
+      "trial_result_sha256": "9e7b3db8c0a78fbbce09966572c4ad571451c96c8d51ef0bd3f0be27df1414f5",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "a5afa1de2697da728acafbc9f2752df25a512407ebbb644c5f9cdaae7e3cbd8a",
+      "trace_raw_sha256": "99ed551725f13b9ad802bae69e933117c6ce684aaa23f4c2fb03341ce987809f",
+      "trial_id": 37,
+      "trial_result_sha256": "662faadd3449872eabea32096f41bea3e1c1e37cfe32d9476893db4468742107",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "aae54a258e6a1083f31a54b31383fd11b01a5a36b52d5746b8865e1967adc440",
+      "trace_raw_sha256": "85636bd244504b9e7bec136691d4f54d1172cbd8622d684eb47aba535ea31b8b",
+      "trial_id": 38,
+      "trial_result_sha256": "2036a7cf87363984ea23c1821dc469e8b541569915c43aea6f1f0352c93fabdb",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "c9ec2b7084333404306eacd73f0472db8787906f881a6cbfaed885780f164410",
+      "trace_raw_sha256": "28190287acf3321f30a807660b07cfd36ddd90d6090eef7ace8cfe1553ea259a",
+      "trial_id": 39,
+      "trial_result_sha256": "cdbd0fc5b78189649198b6b541d86d6c37a4c5ec088c0b09756852ded26ee39f",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "67a9cfc5c87ef63b5466e0777b4fe3adb3f84a4c716673532b68c3c98983f602",
+      "trace_raw_sha256": "e15c2dd2d53ac7d3f6c3314501b811b8d8d40e98b8f274cad987efea9b6ad615",
+      "trial_id": 40,
+      "trial_result_sha256": "64845e06c4f28f06d7df34668ea98bfc7ebf4bb66431c13b09444e473b440627",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "614f461ec074ca5838ff8a37b8adf700b989d3f3132fdc9a68b9eab41b6c8b0c",
+      "trace_raw_sha256": "1a67a9d8936b4dd14240cb9845e70919542092dee5b5fd997315da4284669c48",
+      "trial_id": 41,
+      "trial_result_sha256": "843af368fe62776495a5f0a720a0b67f9e8765f67621b11bba628c3d9e38b17e",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": false,
+      "trace_gzip_sha256": "18d63a24fbffd4733da964e61efa790fbbbf9b2a0d9b635c01942c60e86bd672",
+      "trace_raw_sha256": "16470af6a9e7a07dc3f5204af4293b7b78000502bdcf71097685e27c95688017",
+      "trial_id": 42,
+      "trial_result_sha256": "a9fa050809de32440e43f15c9632461a4e758e4352b7fab2f62d9bbf6e25e992",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": false,
+      "trace_gzip_sha256": "9783d21c070df05845bf5db2db826fad251ce7cba664a2131cab8873bffe2cf4",
+      "trace_raw_sha256": "9fb108f84d583298e2a91f8d079a1e39e3366fefcb39b78f102539733bfc48e6",
+      "trial_id": 43,
+      "trial_result_sha256": "18ad5b3c0c1aeb268fbade83489ba6d2a14bf113b96a70ba4f8403e6df247f37",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": false,
+      "trace_gzip_sha256": "4fb78e19aae21e03b3cf86ff3b47b214c930dd4630d4afe40c93785f8cbbb3ea",
+      "trace_raw_sha256": "3e0296a178dca87321def115d4a1a30b50e394067c4ecdc641292f32598f40c7",
+      "trial_id": 44,
+      "trial_result_sha256": "2a5933e6fb821c70c8612702ae308d3ca6cd1dbd212fe3787afed93563bead6b",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "a74ac9e20e0bcb3f2fcdcf51f58e23a1e9e5325684d9a4c938b82b37df93858e",
+      "trace_raw_sha256": "70fdd7a17052f6fc2494a01587b6a186991d7d1eac44da0891d75db1299d95d1",
+      "trial_id": 45,
+      "trial_result_sha256": "3ce1780cc331904bb7f453deca4ebc4d8b4c76da3268d6c9ba6bd0b26dd63e01",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": false,
+      "trace_gzip_sha256": "8882c0e23dd9b49bfa52066b7a5d69f406f8e495fa5fec198d753754ca94f8a6",
+      "trace_raw_sha256": "6153bb580d560e51c12c8d48ffe800e7ab000a1e6bfbae7b8163d727a7aaabcb",
+      "trial_id": 46,
+      "trial_result_sha256": "5e3591cecfc241febced32d9364aab9295df9bcb50d865305eddb9c4d27cb516",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "39aa524330487f5f1572bbf37f543da2c6d4f99b4c1f1f25349d26201cad3826",
+      "trace_raw_sha256": "9b766f50ab6d14530f549755c234f46080b4d92bc6a3fc2ce596663fc6d4a239",
+      "trial_id": 47,
+      "trial_result_sha256": "4c38c1a96d792a2baa8c60e5787174100c0e2f531895dadce975d1310643bb25",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "18f752da40c5083151879e1e616b64a4443f5aef7431587c84e397b0fef6edcd",
+      "trace_raw_sha256": "7d3a8846c57762210b195aa4325c8eb5a67cdf8841c202b716a2349005c0aa52",
+      "trial_id": 48,
+      "trial_result_sha256": "90c4a097d83ea6aefa8cd3b8c9b31c047401c083b4851be7e03bbc2d92a88789",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "12a55a600bdc02fb959893d7b9bd619e5a64f7d90a15e46bb4c355cbe1bdec75",
+      "trace_raw_sha256": "d1b49dd6906edc6e18ba3d2739181d207447084d4aa9f87f2032e2522d915b49",
+      "trial_id": 49,
+      "trial_result_sha256": "91ec7b68e19db486927c0e37e3fd39dc73643e7d9ba85eda6fad8d241b6028d7",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "250f594062a1309a93a9fb2ec95ff58ef79eb3cac592f2b9c2721d229e9481fe",
+      "trace_raw_sha256": "c274ccca15fd53495255ee335e57e28daf6ce96e1e4e1eba49a92b876fee7fb3",
+      "trial_id": 50,
+      "trial_result_sha256": "6db170c1802d5f95e3aaffb0c8a35d295f42aecc936318cf9bbdb0d177b94602",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": false,
+      "trace_gzip_sha256": "52522c4ee4cc2dbcc0677a46f79427450ba01a6e24dcc4f5f161dbf50f9feb6d",
+      "trace_raw_sha256": "3f9c7d1d969a8b91f9089eb077f853ef6dff44af5ff3d8a2740400b3afb0f19d",
+      "trial_id": 51,
+      "trial_result_sha256": "c643ffbc6b56d60e4ac492a92568d002a2780a22c8a155653781bcce4437e694",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": false,
+      "trace_gzip_sha256": "d7de761d9f91137fb1658b7710714bfb2418f4a8e0f6e7740030dd23ae00cdb4",
+      "trace_raw_sha256": "a783d1e7268e82d1720ec9b8b5bc88a099155cb65d197141a275be14c3c8a04e",
+      "trial_id": 52,
+      "trial_result_sha256": "62f98521a77150e518482dd2599149b82eabc73ffaba4631c674789675d4fa65",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "297362bd9ca35e7820e395ea216f8194934df5b14d3e327adfce3b59651d0737",
+      "trace_raw_sha256": "2dbd7aba95eb6593903e3fb3d79b07322d67dea6d2d70a27433a0c56056641a0",
+      "trial_id": 53,
+      "trial_result_sha256": "527b9817a46e25742d33ac4d3e1cb6a831381df90bb434db667bb0fb34d2b2a9",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "090cf0b60a6ef48b7710172b0a234d94190f5699f8b710fd5ed6c5d907c8ff70",
+      "trace_raw_sha256": "46518ff0c2766a47249993e682a07eb38202bdc0acec25a91e8f2f84666c2cbc",
+      "trial_id": 54,
+      "trial_result_sha256": "aab9f42a0a39f465b1a40b1e37815dfeddce8b514574aa15b15397426f98c5fa",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "7e45a5754a75eae116f2b52dace65b885c6333227117966f5495f77cb3c06e57",
+      "trace_raw_sha256": "8641b0488641b8c2a22845a0450da11c3111548027f0c73c845ab0a0c731693e",
+      "trial_id": 55,
+      "trial_result_sha256": "308cdf85d6ed550939f55e27a1a6a3eb6d7723e2f471ab9b90d0f3bf0b8024b3",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "af0f8a409f148af2895cf53868ff6e2f98cc46923b06948ed836e2712049c6ab",
+      "trace_raw_sha256": "51786bce31688302e27bb1ceb848fa82926156ff46c7b010c770af26d6b91277",
+      "trial_id": 56,
+      "trial_result_sha256": "c7a981767bec922eb8337123e4270f9f0460240ae0ab0d609e305a0ad1a800f5",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "9d59889d5b4873559a7e25f1caee27b7e395d93f35eea02638ef6afffb4e36be",
+      "trace_raw_sha256": "6a593d8c7603ed0c391e744e9846163f3a2f56a403ca7f26bbcece6ed7ea4d53",
+      "trial_id": 57,
+      "trial_result_sha256": "ad2290ee2be6c9eac963f9355e098efa70e3eb4b1c8fdc161e4304c1e6a2d497",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": false,
+      "trace_gzip_sha256": "783e0b4631523366b65ab780b9d3b274e16ce1054f9e3400713b3238bb2d87a4",
+      "trace_raw_sha256": "00e2433e5abed8ac1d5e0f597ddd4e4498bdd3d103edd0550d6063a4d96d0822",
+      "trial_id": 58,
+      "trial_result_sha256": "51f0e423b613b48c1638b4d66c250538f76a14044514f468cad8870e8c7e2920",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "32a7a1ea07e4165dd878068380208b361b2f76aa3f1b8ae081e934c7fe00b6db",
+      "trace_raw_sha256": "a76bff457d983bd8cf4743037b6cee691e7dbecfdf5f86181c2c93049f8eea15",
+      "trial_id": 59,
+      "trial_result_sha256": "a2a40c8548ad253b777280fcf9c6e4192b407e9259c83bdce4848faa95db2054",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "18a6ea6363506c4aeba0b8140324ced26191d015cf6aa22b97a70b7e79c20efe",
+      "trace_raw_sha256": "57374927f01b0110a52c87fd97eb64311b9b07387eaf87bf2e8576087cc6c151",
+      "trial_id": 60,
+      "trial_result_sha256": "38db00a68e5d46cdf545e58cb12a01a4dedffb0aaa9e558dca3ef6032196c094",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": false,
+      "trace_gzip_sha256": "9db9a37c011f6954b0277055ec6ce90f516984898a7dfca2a9ef34548252cb56",
+      "trace_raw_sha256": "dc376e1b83d1aa3aa7ba309a9506f40bdd42b9be008fc8962dd5522aa22a7975",
+      "trial_id": 61,
+      "trial_result_sha256": "857b2004eba4b1ebad3262747ba5ebed0c2bc1017f61e78839a53d856c306f78",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "0e904487839c51401af35ca40e3402566c765b033bfd2089751c5a66c1cb2b43",
+      "trace_raw_sha256": "46d41fd4ae49cc5746346573468f9a9c5753514445ded72af4bc5e6b666fb118",
+      "trial_id": 62,
+      "trial_result_sha256": "5071e581f2ef96ee872bd2a202f45fa7f6a5ad375042aaedf35bcc35d3969a45",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "8b5eb1e67a3c278913e907563c151ceb821a000f35ff3f7d12e122c45246603f",
+      "trace_raw_sha256": "7c5ff87bb9c54cef4c0c980d51da0c0a20d5b446a9f577b34c621f7b3c2c23e9",
+      "trial_id": 63,
+      "trial_result_sha256": "65a42a9a0e280c5e42d884673cb3f634ee747aea0593dca2eb93076d472ca028",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "198a0b62403b4ec2096d91888d550ea84424c9d191959eb15a1abd4000e6713e",
+      "trace_raw_sha256": "c726760683c065f9a3c11c1829d13856ec56d4ea4b2641d9223c58aa253e4287",
+      "trial_id": 64,
+      "trial_result_sha256": "4a47bbebc3ac33a599783ce66ec23d180e155b14f0667691f3a532330fc63c86",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": false,
+      "trace_gzip_sha256": "c5e3410359bb2293b579a2940034b670c9962c1099c539a9950d4069a37a60f2",
+      "trace_raw_sha256": "87bec97634c048c1e59aa827a1c5a85ef41a869f4951239207da27a21b4e08f2",
+      "trial_id": 65,
+      "trial_result_sha256": "3bb73744973e981ee29060bd80953ba619e01d135d2109fbf30566a8903f877b",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": false,
+      "trace_gzip_sha256": "7b5e2aa5efe6f61a67d948c4fbebac657a4b5d635c4884171c8f118680cf85a5",
+      "trace_raw_sha256": "83a1f9dc9c015cb33daf70f2c863edeeeaf6896a618168f417621cc419e4f48e",
+      "trial_id": 66,
+      "trial_result_sha256": "fb7808862c816d3fb0b69730fa7755f171f3bb43f09231ca5e554a16bf8f29bb",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "8229e72e5ba375dd2a84320b4311f235411f34b6910049719fe12db09cbef0bb",
+      "trace_raw_sha256": "4c57755c2c87f4113cfcd9f22dc76e19d580e188e323931b9e982a9489743710",
+      "trial_id": 67,
+      "trial_result_sha256": "51bbcc5c245b7566b8a5620369dc32b317b3d4d5aa8edaba29a07356e4c8d972",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "39d1a2ff22f495c451d217b351144723f38c6d3c07f270b2e977598faf705790",
+      "trace_raw_sha256": "4d923bd9404e56b7902e2b7614bbb583b78db068ca1b1df283302e4cab984710",
+      "trial_id": 68,
+      "trial_result_sha256": "d6580543a8f818aab8b11357f37f3a29239fc6edfad56f74878bdcf912c3b6a1",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "6d97cff63d6080a716919c2edd7755cdbe37011195c38ab0cdeaa7a7e5b647df",
+      "trace_raw_sha256": "1d55d6c6385800be9a3cf2e5bec0827ba41246b5a0db7956d565633c8793f9c9",
+      "trial_id": 69,
+      "trial_result_sha256": "33ffc23ebcf65d4bc6977b957a59e346c965e4b816a29afb74666fe51ab08707",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "4933d074732e97b4da2bf9595d2c5bb9c19848b059cb93eafc417bb95fc29b1c",
+      "trace_raw_sha256": "669d4d7710dcfe46e0f90ff1e1ad55d35356d6f5b379cef51e2145be7ed50bb2",
+      "trial_id": 70,
+      "trial_result_sha256": "b0a1ddeb1aff23388df66e80df1ca26369e0a5c7ba0a8d4ecff112f384fb70d2",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "89717e82ec58070426a46194b1f3ca5827fa9c5db735744bca38a3559bce5db7",
+      "trace_raw_sha256": "06de4389677579bd430bf93fcb0b278f73518b0488dde0af1ed6e0e7360c7b7d",
+      "trial_id": 71,
+      "trial_result_sha256": "ac8ff3bc32fe923472770ef1f3e433b3e85c03955e72c502781688d9d2ef5bd3",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "5d5c484089b0311abdec9b27a180efccfd84c13a5809b40f737f675e00a1c5c3",
+      "trace_raw_sha256": "22d8d917242e8b5b862b59c1ed8a3b4537ecddcc05793350565b1bdb450bfa5b",
+      "trial_id": 72,
+      "trial_result_sha256": "286c0e2e5646f4bd16fd34f31cd2cb5529665d4489acd9e11e5d85c8b86b04c6",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": false,
+      "trace_gzip_sha256": "d7f090d6d7b9a97823849e530d2db4997b7ea43b7d9197dd6a79dbd688a7f10e",
+      "trace_raw_sha256": "71ee18e511dc1c014f63142a78945ef71c3f9b70cf83cddce7bb6a2c26f0b1a6",
+      "trial_id": 73,
+      "trial_result_sha256": "5fcab2aa30cf60672a7d33fbf34633b87390a5bd76bc09388396d6b7a4bf7d9f",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "6274f02ec4c9e89767bfc8b4692160f75305ec59f3acae68f91fead7180e1ee0",
+      "trace_raw_sha256": "5a7e214f49d7653ae21c7b4f34fd15c47d047f2999430e7ff1e24be60c4f86e1",
+      "trial_id": 74,
+      "trial_result_sha256": "1c3597d67c529a99439ae64639d0f6748a41718520cca68635360be7a7f96a90",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "638533c5b74c539149deec9684c5c88459fc33d725042366a9ff577c9b099912",
+      "trace_raw_sha256": "598e21c571b106ddb213aaca69313649994ec4b2077c027a4aff4f91f6b43303",
+      "trial_id": 75,
+      "trial_result_sha256": "e2a61ebbfc595daf07b900c8e42d9034a3c0722205a5db5b988c1d929c6317ac",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "c14b36a6673a1783318da099a04e1ec96a41a436c4347d18960fd6b1cee15676",
+      "trace_raw_sha256": "64d7a4db6919ed60ecdf8f4885d740b6cecea5d6fdd62bcabbc7ff4940333c00",
+      "trial_id": 76,
+      "trial_result_sha256": "6fecff4b035c5cb4b9f4ea263e06744fae738d2cf5c68c816528e7161ea45ee9",
+      "witness": null
+    },
+    {
+      "postfault_target": false,
+      "strict_effective": true,
+      "trace_gzip_sha256": "f666b8bbb5f22784b949b4967983ac34425030fbe747edc3de5d016efd84f3fe",
+      "trace_raw_sha256": "f10f90425b1417ed119d48527fb20f90d9b4d239ecedfe8a48de5493e840ecad",
+      "trial_id": 77,
+      "trial_result_sha256": "1a8623284fec396dcc87b2a511d4f9edced27131eb2795318849e25ce665a4ae",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "9fba4198f3f502478adab722089f6f17486d4f234956b482507f59aefc11ce14",
+      "trace_raw_sha256": "fb43d59c23061c1748b150d5ffda3f406e6cee9215ec403adc9e124c1ae6f605",
+      "trial_id": 78,
+      "trial_result_sha256": "47454aa28f7beddca78fb6ca96723c244548cbda8745302f5ec14a43f29ccb9d",
+      "witness": null
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "f6be0ff5e7d38da291d5568adaa8732f4d1d2716d38f53cbe54f6082ae985d46",
+      "trace_raw_sha256": "ed0477e31415325207322dea4d0ad88ac6dd99f4634329f9c5938b400d8b5e47",
+      "trial_id": 79,
+      "trial_result_sha256": "4c81984d023cc958eaccd70dc40166f0ff65b4c936373742086175f221a299e2",
+      "witness": {
+        "door_event": "HDFS-11-r0079:180",
+        "edges": [
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0079:184",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0079:183",
+            "source": "[\"hdfs-cluster-2/nn0\",\"0\",\"unscoped:hdfs-cluster-2/nn0:0:9668220ba2c444e9938c2150c5da3bce:30:0:thread:259:segment:6\"]",
+            "target": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0079:208",
+            "evidence": "unique:transport,correlation,port",
+            "kind": "rpc",
+            "producer_event": "HDFS-11-r0079:206",
+            "source": "[\"hdfs-client\",\"0\",\"hdfs-client:0:org.apache.hadoop.hdfs.DFSInputStream#blockSeekTo:root:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:42758->127.0.0.1:32921:thread:334:segment:2\"]"
+          },
+          {
+            "certainty": "observed",
+            "consumer_event": "HDFS-11-r0079:209",
+            "evidence": "unique_parent_id_or_handoff_token",
+            "kind": "region_parent",
+            "producer_event": "HDFS-11-r0079:208",
+            "source": "[\"hdfs-cluster-2/dn0\",\"0\",\"unscoped:hdfs-cluster-2/dn0:0:127.0.0.1:42758->127.0.0.1:32921:thread:334:segment:2\"]",
+            "target": "[\"hdfs-cluster-2/dn0\",\"0\",\"hdfs-cluster-2/dn0:0:org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager#retrieveDataEncryptionKey(I[B)[B:127.0.0.1:42758->127.0.0.1:32921:1\"]"
+          }
+        ],
+        "evidence_type": "observed_nn_error_response_retry_sasl_target_event_path",
+        "fault_event": "HDFS-11-r0079:182",
+        "fault_thread_id": 259,
+        "target_check_event": "HDFS-11-r0079:210",
+        "target_node": "hdfs-cluster-2/dn0",
+        "target_thread_id": 334
+      }
+    },
+    {
+      "postfault_target": true,
+      "strict_effective": true,
+      "trace_gzip_sha256": "94a6735245099ba56d9947b17ce3397e168de22de7a3f829ab2d66eeacdf6915",
+      "trace_raw_sha256": "0e5684b0bc2d9d4fcdbe3020df19fc70d1ac2f869e7561e84d9eefdfacac581f",
+      "trial_id": 80,
+      "trial_result_sha256": "4ddea0af17382472d9e3cf3569c15578eb409a73013560822e089a18ac48dd46",
+      "witness": null
+    }
+  ]
+}

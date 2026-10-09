@@ -416,6 +416,64 @@ def _event_path_review(results: Path, result_path: Path,
     return ("observed_event_path" if valid else "invalid"), str(receipt_path)
 
 
+def _hdfs11_faulted_event_review(results: Path, result_path: Path,
+                                 result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Recompute the exact NN error-response-to-DN path from frozen raw traces."""
+    if result.get("case_id") != "HDFS-11":
+        return None, None
+    review_root = results / "quality_reviews/hdfs11_v27_faulted_path"
+    index_path = review_root / "index.json"
+    if not index_path.is_file():
+        return None, None
+    receipt_path = review_root / "HDFS-11.json"
+    index, receipt = _json(index_path), _json(receipt_path)
+    if not isinstance(index, dict) or not isinstance(receipt, dict):
+        return "invalid", str(receipt_path)
+    baseline = Path(__file__).resolve().parents[2]
+    verifier = baseline / "Mallory/ops/audit_hdfs11_v27_full.py"
+    release = (baseline / "Mallory/dispatch/releases/"
+               "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f")
+    manifest = release / "manifest.json"
+    graph = release / "Mallory/core/graph.py"
+    archive_path = results / "evidence_archives/campaign/HDFS-11.tar.gz"
+    archive_manifest = results / "evidence_archives/campaign/HDFS-11.tar.manifest.json"
+    needed = (verifier, manifest, graph, archive_path, archive_manifest,
+              result_path, result_path.with_name("config.json"),
+              result_path.with_name("offline-causal-audit.json"))
+    if any(not path.is_file() for path in needed):
+        return "invalid", str(receipt_path)
+    digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+    valid = (
+        index.get("schema_version") == 1 and
+        index.get("case_id") == "HDFS-11" and
+        index.get("classification") == "observed_event_path" and
+        index.get("receipt_sha256") == digest(receipt_path) and
+        index.get("verifier_sha256") == digest(verifier) and
+        index.get("core_manifest_sha256") == digest(manifest) and
+        receipt.get("graph_source_sha256") == digest(graph) and
+        receipt.get("classification") == "observed_event_path" and
+        receipt.get("campaign_result_sha256") == digest(result_path) and
+        receipt.get("offline_audit_sha256") ==
+            digest(result_path.with_name("offline-causal-audit.json")) and
+        receipt.get("config_sha256") == digest(result_path.with_name("config.json")) and
+        receipt.get("archive_sha256") == digest(archive_path) and
+        receipt.get("archive_manifest_sha256") == digest(archive_manifest) and
+        receipt.get("strict_injected_trials") == result.get("strict_injected_trials") and
+        receipt.get("strict_target_trials") == result.get("strict_target_trials") and
+        isinstance(receipt.get("qualifying_trial_count"), int) and
+        0 < receipt["qualifying_trial_count"] <= result.get("strict_target_trials", 0) and
+        index.get("qualifying_trial_count") == receipt["qualifying_trial_count"])
+    if not valid:
+        return "invalid", str(receipt_path)
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = f"{release}:{baseline}"
+    check = subprocess.run(
+        ["python3", str(verifier), "--campaign", str(result_path.parent.resolve()),
+         "--out", str(receipt_path.resolve()), "--verify"],
+        cwd=baseline, env=environment, capture_output=True, text=True, timeout=30)
+    return ("observed_event_path" if check.returncode == 0 else "invalid"), str(receipt_path)
+
+
 def _verify_retry_path_trace(trial_dir: Path, trial: dict[str, Any],
                              row: dict[str, Any], result: dict[str, Any]) -> bool:
     """Recheck a positive task-handoff witness against SHA-verified raw events."""
@@ -1547,6 +1605,8 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 precision, receipt = _faulted_path_review(results, result_path, result)
                 if precision is None:
                     precision, receipt = _event_path_review(results, result_path, result)
+                if precision is None:
+                    precision, receipt = _hdfs11_faulted_event_review(results, result_path, result)
                 if precision is None:
                     precision, receipt = _local_timeline_review(results, result_path, result)
                 row["causal_precision_review"] = precision
