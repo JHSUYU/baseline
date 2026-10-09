@@ -1,0 +1,40 @@
+{
+  "adapter_bytecode_audit_sha256": "0133967d42a64dc0a2ac67eab0c9ed70faac0011d244fe2a378e59c3bbb2ffa4",
+  "adapter_jar_sha256": "9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811",
+  "agent_jar_sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+  "case_id": "HDFS-26",
+  "cluster_test": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+  "config_sha256": "1268ee8a8685a6720c8a113322bffb375254c1db5c7866cc83cb01686096cd9b",
+  "fault_trial_started": false,
+  "full_campaign_admitted": false,
+  "healthy_admission_gate": [
+    "JUnit exactly 1 pass",
+    "exact target check reached without selected throw",
+    "all target checks named physical DN with epoch",
+    "at least one root-free observed I/O door reaches selected guard in frozen offline audit"
+  ],
+  "host": "node2",
+  "launcher_sha256": "743619f40c11583f31af4fbb1aeb4d2daddd71b4127fbf32ecc671e312139b4c",
+  "old_result_path": "data/mallory/calibration/HDFS-26/result.json",
+  "old_result_status": "healthy_node_identity_missing",
+  "old_selected_throw": false,
+  "old_target_actor": "unknown",
+  "old_target_reached": true,
+  "output": "/tmp/mallory-hdfs26-v2-healthy",
+  "preflight_sha256": "34b38b3e8cbe76b3012ce6db59c66ca22169014ce7d784223befd761c038da3e",
+  "remote_preflight": {
+    "free_disk_bytes": 8419770368,
+    "status": "preflight_pass"
+  },
+  "schema_version": 1,
+  "site_file_sha256": "301c79af26859b46fea779f80ee54096c6f55f2addcb182b4f47de87a4460b63",
+  "source_digest": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+  "source_lock": "/tmp/mallory-lanes/hdfs-identity-v8-node2.lock",
+  "source_review": "TestDFSRollback#testRollback creates current and previous DataNode/block-pool VERSION directories, starts MiniDFSCluster DataNodes with ROLLBACK, and reaches BlockPoolSliceStorage.doRollback after readPreviousVersionProperties. The selected guard rejects previous layout/ctime newer than namespace; prior healthy reached it 3 times without selected throw, but actor was unknown. The isolated adapter has bytecode-verified early DataNode/DataStorage/BlockPoolSliceStorage binding and scopes doTransition; fresh named actor and pretarget I/O path remain to be measured.",
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8",
+  "status": "healthy_only_staged_no_jvm",
+  "target_compiled_class_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+  "target_source_sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e",
+  "test_compiled_class_sha256": "ce2a43bf2b3274d089db0c012497b5104a1e25f251e09485b1e1f6b014208952",
+  "test_source_sha256": "c5a5ea5ba53bc50950d7af3de48a058ecac81513fba3d231879fa36fe75cd808"
+}
