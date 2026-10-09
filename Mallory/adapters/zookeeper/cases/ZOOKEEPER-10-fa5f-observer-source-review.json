@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "case_id": "ZOOKEEPER-10",
+  "status": "source_pinned_healthy_only_not_executed",
+  "selector": "org.apache.zookeeper.test.ObserverMasterTest#testObserver",
+  "selector_variants": [true, false],
+  "healthy_config_sha256": "7115a4277860e4a93d4a57d3ba99859089ab1796629b94a9d5f842dc4e7980d0",
+  "site_file_sha256": "59ef59cefd9f564428a1b33a44f496a2dcdbba425740d9db00083eab905a5abb",
+  "source_overlay_receipt_sha256": "6d4bd8d50b2ba979ea37a43107a5b5be58b55532d6a2a862aa12550543577fc8",
+  "compiled_target_class_sha256": "b8c050f05bc933ef98da3c7863acb3676c5be56d67405fc4e0a14627f4d85965",
+  "source_files": {
+    "zookeeper-server/src/test/java/org/apache/zookeeper/test/ObserverMasterTest.java": "27c4fca7814b9339fd4212fafca77c4ed2234aae8f01fd288f73a594575d985d",
+    "zookeeper-server/src/test/java/org/apache/zookeeper/test/ObserverMasterTestBase.java": "ba7a127739658c2dc48c90b5df5949c3ef9d6df32f17a5adc34e0a5f01ade062",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java": "b65e2d631026d6c9258e0392619d7387783bb0b657b72f03722248dee93a6f06",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java": "2008eb36fd2a4e69f557f616f7449b0bd04ee4dd0fdc81786e0a4d9113e648e0"
+  },
+  "source_observations": [
+    "ObserverMasterTestBase.setUp lines 48-80 creates two quorum participants and one observer. The true parameter enables observerMasterPort on the participants and observer.",
+    "ObserverMasterTest.testObserver lines 79-109 uses an existing parameterized cluster JUnit; the true variant starts the observer master and performs create, sync, and setData through the observer client. The selected command runs both unmodified true and false variants.",
+    "Follower.processPacket lines 193-208 forwards a received PROPOSAL as ObserverMaster.proposalReceived and a COMMIT as ObserverMaster.proposalCommitted when the observer master is active.",
+    "ObserverMaster.removeProposedPacket patched lines 363-377 checks the queued proposal zxid against the commit zxid and throws only on a mismatched nonempty proposal. The pinned compiled LineNumberTable contains both target lines 368 and 374.",
+    "The original ObserverMasterTest.testInOrderCommits selector sends 10001 async writes from each of two clients. This shorter existing test permits a bounded exact target and I/O-path calibration before considering that costly selector."
+  ],
+  "runtime_gate": "Require JUnit tests >0 and all pass, loaded ObserverMaster.class SHA equality, a named target occurrence in the true variant with no selected throw, and a time-respecting observed path from a physical quorum packet read door into that exact target. No fault/full admission from this source review alone."
+}
