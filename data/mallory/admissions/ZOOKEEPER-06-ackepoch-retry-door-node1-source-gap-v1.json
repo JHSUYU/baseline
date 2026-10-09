@@ -1,0 +1,38 @@
+{
+  "case_id": "ZOOKEEPER-06",
+  "followup": "Seek an existing cluster test or source-backed I/O fault that yields a follower currentEpoch/lastZxid ahead of the leader and still reaches the selected comparison; do not repeat the after-setAcceptedEpoch IOException plan.",
+  "full_campaign_admission": false,
+  "healthy_exact_packet_path_witness_count": 1,
+  "healthy_receipt_sha256": "1b4016aa141b6a93fda161d572d4199da091f644def84374ad89d1a9322071fd",
+  "new_jvm_runs_for_this_review": 0,
+  "patched_source_files": {
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java": "934035d24494e97a5c7a10dfc1ff55aa49d0d7ee30daaa2d1c7207ea0e9cd1a5",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java": "60cfa08dd34e86e88cf8d521f191d31f178c7494dd930c0289fb23889fafa021",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java": "0633876e2801101ca022dbf3c3c500ff9bc31053e7e5c1224148df9b7b2136f8",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java": "cb36ed638d883c04b2313890c9a55f779ec957d2f2388dab2caa06b95a8311ef"
+  },
+  "pilot_exact_fault_trials": 1,
+  "pilot_lineage_receipt_sha256": "966b67bb18484ac1a0e45e2207eaba7bc270427761e9f24e6fb4ff07e6c5a5d1",
+  "pilot_same_packet_postfault_target_checks": 0,
+  "pilot_selected_throws": 0,
+  "pilot_summary_sha256": "839a188c90c69d7fb54bab30f44d577da64bd3ac1087d15fcfa209ed70e3589b",
+  "pilot_target_method_entered_after_retry": true,
+  "pilot_trace_gzip_sha256": "5dfd0b1594189c5eec7156f2ffa62052061c1db935b3f8d909f06b06b0e73dfc",
+  "pilot_trial_result_sha256": "2b152818d14367607ef62f4a0a0b1e71689f383839f7bd4dce26e8f5b24786f4",
+  "pristine_source_files": {
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java": "2008eb36fd2a4e69f557f616f7449b0bd04ee4dd0fdc81786e0a4d9113e648e0",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java": "32b759257765f1bb8c656ac84abd284eadcf97c9f911b4279cdd5f87d02d655f",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java": "3827ccefc4a632b3f37ebe5258f4c97c142211675a5a22801aac1ae2122cb830",
+    "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java": "72606c8b4f2d887a94555de2d5fd6ec213b33496da8469df73064d5dfbe4d651",
+    "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc"
+  },
+  "schema_version": 1,
+  "scope": "One existing QuorumRestartTest rolling-restart JUnit and one precise after-setAcceptedEpoch IOException pilot; other workloads and fault models remain untested.",
+  "source_findings": [
+    "In Learner.registerWithLeader, newEpoch > acceptedEpoch encodes currentEpoch into ACKEPOCH, then setAcceptedEpoch writes acceptedEpoch to disk before the precise injected write door; an equal-epoch retry encodes -1 instead.",
+    "Leader.waitForEpochAck returns if electionFinished and evaluates the selected isMoreRecentThan comparison only when StateSummary.currentEpoch != -1. The pilot trace shows the retried packet entered this method and exited without the selected TARGET_CHECK; it does not record the ACK payload, so the -1 route is source-grounded rather than directly observed.",
+    "An IOException at the earlier FOLLOWERINFO write or LEADERINFO read aborts registerWithLeader before setAcceptedEpoch; retry can retain the guard, but those operations do not increase follower currentEpoch or lastLoggedZxid relative to leaderStateSummary in this existing rolling-restart test.",
+    "AcceptedEpoch persistence changes the protocol epoch handshake but is not an operand in StateSummary.isMoreRecentThan. The present exact-door model has no demonstrated path that both influences currentEpoch/zxid and retains the selected guard."
+  ],
+  "status": "fault_model_target_guard_skipped_on_retry"
+}
