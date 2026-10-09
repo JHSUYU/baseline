@@ -34,22 +34,37 @@ def checked_events(trial_dir: Path, result: dict) -> tuple[list[dict], dict]:
              "raw_bytes": len(raw)})
 
 
-def witness(events: list[dict], fault: dict, checks: set[str]) -> list[dict]:
+def witness(events: list[dict], fault: dict, plan_fault: dict,
+            checks: set[str]) -> list[dict]:
     if (fault.get("site") != SITE or fault.get("fault_type") != "EXCEPTION" or
             fault.get("exception_class") != "java.io.IOException" or
             fault.get("node") != "client" or
-            not isinstance(fault.get("thread_id"), int)):
+            not isinstance(fault.get("thread_id"), int) or
+            plan_fault.get("fault_id") != fault.get("fault_id") or
+            plan_fault.get("fault_type") != "EXCEPTION" or
+            plan_fault.get("exception_class") != "java.io.IOException"):
         return []
-    door = next((event for event in reversed(events)
-                 if event.get("type") == "DOOR_OBSERVED" and
-                 event.get("site") == SITE and
-                 event.get("door_ordinal") == fault.get("door_ordinal") and
-                 event.get("node") == fault.get("node") and
-                 event.get("epoch") == fault.get("epoch") and
-                 event.get("thread_id") == fault.get("thread_id") and
-                 event.get("occurrence") == fault.get("occurrence") and
-                 event["seq"] < fault["seq"]), None)
-    if door is None:
+    point = plan_fault.get("point", {})
+    if (point.get("site") != SITE or point.get("node") != fault.get("node") or
+            point.get("epoch") != fault.get("epoch") or
+            point.get("door_ordinal") != fault.get("door_ordinal")):
+        return []
+    identity = ("site", "node", "epoch", "thread_id", "occurrence",
+                "door_ordinal")
+    def same(event: dict) -> bool:
+        return all(event.get(key) == fault.get(key) for key in identity)
+    doors = [event for event in events if event.get("type") == "DOOR_OBSERVED"
+             and same(event)]
+    matched = [event for event in events if event.get("type") == "FAULT_MATCHED"
+               and same(event) and event.get("fault_id") == fault.get("fault_id")
+               and event.get("fault_type") == "EXCEPTION"
+               and event.get("exception_class") == "java.io.IOException"]
+    applied = [event for event in events if event.get("type") == "FAULT_APPLIED"
+               and same(event) and event.get("fault_id") == fault.get("fault_id")]
+    if len(doors) != 1 or len(matched) != 1 or len(applied) != 1:
+        return []
+    door, match = doors[0], matched[0]
+    if not (door["seq"] < match["seq"] < fault["seq"]):
         return []
     exits = [event["seq"] for event in events
              if event.get("type") == "REGION_EXIT" and
@@ -58,10 +73,14 @@ def witness(events: list[dict], fault: dict, checks: set[str]) -> list[dict]:
              event.get("thread_id") == fault.get("thread_id") and
              event.get("occurrence") == fault.get("occurrence") and
              event["seq"] > fault["seq"]]
-    limit = min(exits) if exits else float("inf")
-    return [{"door_id": door["id"], "fault_id": fault["id"],
+    if len(exits) != 1:
+        return []
+    limit = exits[0]
+    return [{"door_id": door["id"], "matched_id": match["id"],
+             "fault_id": fault["id"],
              "target_check_id": event["id"], "door_seq": door["seq"],
-             "fault_seq": fault["seq"], "target_seq": event["seq"],
+             "matched_seq": match["seq"], "fault_seq": fault["seq"],
+             "target_seq": event["seq"],
              "node": fault["node"], "epoch": fault["epoch"],
              "thread_id": fault["thread_id"], "occurrence": fault["occurrence"],
              "door_ordinal": fault["door_ordinal"]}
@@ -104,9 +123,7 @@ def inspect(root: Path, source: Path) -> dict:
             matching = [item for item in exact_plan if item["fault_id"] == fault.get("fault_id")]
             if len(matching) != 1 or matching[0].get("exception_class") != "java.io.IOException":
                 continue
-            if fault.get("door_ordinal") != matching[0]["point"].get("door_ordinal"):
-                continue
-            found.extend(witness(events, fault, checks))
+            found.extend(witness(events, fault, matching[0], checks))
         rows.append({"trial_id": trial_id, "trial_result_sha256": file_sha(result_file),
                      **event_hashes, "plan_size": len(plan),
                      "all_faults_effective": trial["feedback"]["all_faults_effective"],
@@ -123,6 +140,9 @@ def inspect(root: Path, source: Path) -> dict:
                                "terminal_recovery_precision_unproven"),
             "canonical_quality_claim": False, "new_bug_confirmed": False,
             "evidence_kind": "observed_local_timeline",
+            "causality_limit": ("The event chain and source catch/retry path establish a "
+                                "same-invocation recovery execution, but do not by themselves "
+                                "establish a counterfactual cause for the later guard."),
             "campaign_result_sha256": file_sha(result_path),
             "offline_audit_sha256": file_sha(audit_path),
             "offline_audit_gate": audit["report_gate_passed"],
