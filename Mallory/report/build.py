@@ -500,6 +500,38 @@ def _hbase07_client_event_review(results: Path, result_path: Path,
     return ("observed_event_path" if check.returncode == 0 else "invalid"), str(review_path)
 
 
+def _solr10_role_event_review(results: Path, result_path: Path,
+                              result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Admit symbolic leader points only through their separate pinned audit.
+
+    The frozen generic auditor expects a static physical point and correctly
+    rejects this campaign's role-bound plans.  Its negative is retained as a
+    diagnostic; the role-aware verifier checks all 80 trials offhost and this
+    local gate recomputes one SHA-matched fault-to-target path.
+    """
+    if result.get("case_id") != "SOLR-10":
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    index_path = results / "quality_reviews/solr10_role_v1_full/index.json"
+    index = _json(index_path)
+    verifier = (baseline / "Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/"
+                "terminal-role-audit/verify_sparse.py")
+    if (not isinstance(index, dict) or not verifier.is_file()
+            or index.get("sparse_verifier_sha256") !=
+            hashlib.sha256(verifier.read_bytes()).hexdigest()
+            or result_path.resolve() !=
+            (results / "replays/SOLR-10-role-v1-full-metadata/result.json").resolve()):
+        return "invalid", str(index_path)
+    try:
+        check = subprocess.run(
+            ["python3", str(verifier), "--base", str(baseline), "--canonical",
+             str(result_path.parent), "--index", str(index_path)],
+            cwd=baseline, capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return "invalid", str(index_path)
+    return ("observed_event_path" if check.returncode == 0 else "invalid"), str(index_path)
+
+
 def _hdfs11_faulted_event_review(results: Path, result_path: Path,
                                  result: dict[str, Any]) -> tuple[str | None, str | None]:
     """Recompute the exact NN error-response-to-DN path from frozen raw traces."""
@@ -2603,7 +2635,17 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             result["strict_target_trials"] > 0):
         row["quality_status"] = "target_exercised_posthoc"
     if row["quality_status"] in {"target_exercised", "target_exercised_posthoc"}:
-        if row["causal_audit"] is None:
+        if case_id == "SOLR-10":
+            row["static_causal_audit"] = row["causal_audit"]
+            precision, receipt = _solr10_role_event_review(results, result_path, result)
+            row["causal_precision_review"] = precision
+            row["causal_precision_receipt"] = receipt
+            if precision == "observed_event_path":
+                row["causal_audit"] = "role_aware_verified"
+                row["quality_status"] = precision
+            else:
+                row["quality_status"] = "causal_precision_review_invalid"
+        elif row["causal_audit"] is None:
             row["quality_status"] = "causal_audit_unproven"
         elif row["causal_audit"] != "verified":
             row["quality_status"] = "causal_audit_invalid"

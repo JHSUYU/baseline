@@ -18,6 +18,51 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_solr10_sparse_role_gate_recomputes_path_and_rejects_tampering(self):
+        baseline = Path(__file__).resolve().parents[2]
+        script = (baseline / "Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/"
+                  "terminal-role-audit/verify_sparse.py")
+        source = baseline / "data/mallory/replays/SOLR-10-role-v1-full-metadata"
+        index_source = baseline / "data/mallory/quality_reviews/solr10_role_v1_full/index.json"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            sparse = root / "data/mallory/replays/SOLR-10-role-v1-full-metadata"
+            shutil.copytree(source, sparse, symlinks=True)
+            canonical = root / "data/mallory/cases/SOLR-10"
+            canonical.parent.mkdir(parents=True)
+            canonical.symlink_to("../replays/SOLR-10-role-v1-full-metadata")
+            index = root / "data/mallory/quality_reviews/solr10_role_v1_full/index.json"
+            index.parent.mkdir(parents=True)
+            shutil.copy2(index_source, index)
+            case_source = baseline / "Mallory/adapters/solr/cases/SOLR-10-role-binding-v1"
+            case_copy = root / "Mallory/adapters/solr/cases/SOLR-10-role-binding-v1"
+            case_copy.parent.mkdir(parents=True)
+            case_copy.symlink_to(case_source, target_is_directory=True)
+            audit_copy = root / "Mallory/core/audit.py"
+            audit_copy.parent.mkdir(parents=True)
+            audit_copy.symlink_to(baseline / "Mallory/core/audit.py")
+
+            def check():
+                return subprocess.run(
+                    ["python3", str(script), "--base", str(root),
+                     "--canonical", str(canonical), "--index", str(index)],
+                    capture_output=True, text=True, timeout=10)
+
+            self.assertEqual(check().returncode, 0)
+            trace = sparse / "trials/r0002/events.jsonl.gz"
+            original = trace.read_bytes()
+            trace.write_bytes(original[:-1] + bytes([original[-1] ^ 1]))
+            self.assertNotEqual(check().returncode, 0)
+            trace.write_bytes(original)
+            index_json = json.loads(index.read_text())
+            index_json["offhost_postfault_path_trials"] = 78
+            index.write_text(json.dumps(index_json))
+            self.assertNotEqual(check().returncode, 0)
+            shutil.copy2(index_source, index)
+            archive_receipt = sparse / "SOLR-10-role-v1-export-receipt.json"
+            archive_receipt.write_text(archive_receipt.read_text() + " ")
+            self.assertNotEqual(check().returncode, 0)
+
     def test_hbase07_client_review_requires_pinned_archive_and_verifier(self):
         from Mallory.report.build import _hbase07_client_event_review
         with tempfile.TemporaryDirectory() as temporary:
