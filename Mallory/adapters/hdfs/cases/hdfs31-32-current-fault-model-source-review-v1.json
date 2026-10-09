@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "kind": "narrow_source_and_prior_trace_review",
+  "case_ids": ["HDFS-31", "HDFS-32"],
+  "classification": "current_fault_model_selected_predicate_unproven",
+  "fault_trial_admission": false,
+  "fresh_healthy_priority": false,
+  "scope": "The two named existing JUnit selectors and the currently staged I/O exception model; this does not rule out a different workload or state-changing fault site.",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+  "source_sha256": {
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4",
+    "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolManager.java": "1d3bae5753526ca1bfc9dec3a5e63820564db49c9dedd32b4b7fd5f1f8ad423a",
+    "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java": "122183dc0da270317d8bbf2744b6dbdbfe578e720566eee37d23fbe6fd79f3ed",
+    "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java": "31467bca1249b93cae7ed984bac01d405cde8ec1409a9ef78fa0a0c469a3bb3a"
+  },
+  "prior_evidence_sha256": {
+    "Mallory/cases/revisions/HDFS-31-32-datanode-linkage-preflight-v1.json": "c028c1d02fef625af0118ee5dc7cf46c6597424929a33ae0e86621b79764f7ac",
+    "Mallory/adapters/hdfs/cases/datanode-linkage-v1/HDFS-31-original-junit-healthy-v1.json": "8620561db7de818e26c9ca7e12e9553e13e850e68c23bda57c30ecad9933063a",
+    "Mallory/adapters/hdfs/cases/next-v23/HDFS-32-dfsadmin-healthy-v23.json": "895421f5d845efcdedf4fece66ff823fd88ff41ae57bb69381e24001e18c2877",
+    "data/mallory/calibration/HDFS-31/trials/r0000/result.json": "2e9185fee57d75b15e76f9b9d61e8c6e3a9ce8b3ec56ee5385d664776fa1065e",
+    "data/mallory/calibration/HDFS-32/trials/r0000/result.json": "124f0800f0eb1918cb8269cdd705c94814224ddfa9bd4388484e0939bfe39a13"
+  },
+  "cases": {
+    "HDFS-31": {
+      "selected_junit": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+      "selected_guard": "DataNode.getBPOSForBlock @1833 tests whether blockPoolManager.get(block.getBlockPoolId()) is null before the @1835 IOException.",
+      "necessary_state_change": "Remove the requested block-pool ID from the sending DataNode's local BlockPoolManager.bpByBlockPoolId, or make the ExtendedBlock carry an ID absent from that map.",
+      "source_observation": "TestDiskError lines 241-283 writes a file, corrupts its metadata, starts a second DataNode, then calls dn0.transferBlock with the existing ExtendedBlock. It does not refresh or shut down dn0's block-pool service. BlockPoolManager.remove at lines 89-95 is the map-removal operation; a transfer or replica I/O exception alone does not call it.",
+      "prior_trace_limit": "The archived calibration failed during DataNode startup with a duplicate-definition LinkageError from the obsolete SafeWriter agent, before the transferBlock step; target_missing is not evidence that this JUnit cannot reach the guard.",
+      "current_decision": "No fault pilot or new healthy run is prioritized without a source-backed local map-removal or wrong-block-pool-ID mechanism that can retain the same transfer target."
+    },
+    "HDFS-32": {
+      "selected_junit": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
+      "selected_guard": "DataNode.deleteBlockPool @3819 tests whether blockPoolManager.get(blockPoolId) is non-null before the @3822 still-running IOException.",
+      "necessary_state_change": "Keep the removed nameservice's BPOfferService in bpByBlockPoolId until the later DFSAdmin deleteBlockPool call.",
+      "source_observation": "TestDeleteBlockPool lines 142-187 calls dn1.refreshNamenodes with only namesServerId1, asserts exactly one offer service, then issues DFSAdmin deleteBlockPool for bpid2. BlockPoolManager.doRefreshNamenodes lines 194-251 stops and joins removed services before refreshNamenodes returns; the stopped service calls remove, which deletes its block-pool map entry. An uncaught refresh exception prevents the test from reaching DFSAdmin, and a later client RPC exception does not reinsert the removed service.",
+      "oracle_limit": "The test explicitly expects the unforced delete command to fail because the block pool still has files, then expects the forced command to succeed. That expected failure is distinct from the selected still-running guard exception and cannot be counted by exception class alone.",
+      "prior_trace_limit": "The archived original calibration failed during MiniDFSCluster startup with the same obsolete-agent duplicate-definition LinkageError; the alternate DFSAdmin JUnit has no fresh SHA-attested healthy result.",
+      "current_decision": "No fault pilot or new healthy run is prioritized until an exact target-retaining fault is shown to prevent the old BPOfferService's removal without aborting this JUnit."
+    }
+  }
+}
