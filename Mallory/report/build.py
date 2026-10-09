@@ -2909,6 +2909,80 @@ def _zk06_retry_guard_gap(results: Path, case_id: str) -> tuple[str | None, str 
             else "invalid_fault_model_receipt"), str(receipt_path)
 
 
+def _zk_independent_source_review(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Attach later source review while preserving each case's primary outcome."""
+    groups = {
+        "ZOOKEEPER-02": "ZOOKEEPER-02-03", "ZOOKEEPER-03": "ZOOKEEPER-02-03",
+        "ZOOKEEPER-04": "ZOOKEEPER-04-05", "ZOOKEEPER-05": "ZOOKEEPER-04-05",
+        "ZOOKEEPER-10": "ZOOKEEPER-10-11", "ZOOKEEPER-11": "ZOOKEEPER-10-11",
+    }
+    group = groups.get(case_id)
+    if group is None:
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    source_root = Path("/users/ZhenyuLi/.graphchecker-sources/zookeeper-3.8.7")
+    index = _json(results / "quality_reviews/zk_independent_source_v1/index.json")
+    entry = (index.get("receipts", {}).get(group) if isinstance(index, dict) else None)
+    if not isinstance(entry, dict) or index.get("schema_version") != 1:
+        return "invalid_supplementary_source_review", None
+    receipt_name = entry.get("path")
+    if (not isinstance(receipt_name, str)
+            or not receipt_name.startswith("data/mallory/admissions/")):
+        return "invalid_supplementary_source_review", None
+    receipt_path = (results / receipt_name.removeprefix("data/mallory/")).resolve()
+    if (not receipt_path.is_relative_to(results.resolve()) or not receipt_path.is_file()
+            or hashlib.sha256(receipt_path.read_bytes()).hexdigest() != entry.get("sha256")):
+        return "invalid_supplementary_source_review", str(receipt_path)
+    receipt = _json(receipt_path)
+    if not isinstance(receipt, dict) or receipt.get("schema_version") != 1:
+        return "invalid_supplementary_source_review", str(receipt_path)
+    expected_status = ("no_new_target_retaining_request_path_identified"
+                       if group == "ZOOKEEPER-02-03" else "no_new_full_campaign_admission")
+    cases = receipt.get("cases", receipt.get("case_ids"))
+    identifiers = [item.get("case_id") if isinstance(item, dict) else item
+                   for item in cases] if isinstance(cases, list) else []
+    if receipt.get("status") != expected_status:
+        return "invalid_supplementary_source_review", str(receipt_path)
+    suffixes = group.removeprefix("ZOOKEEPER-").split("-")
+    if identifiers != [f"ZOOKEEPER-{suffix}" for suffix in suffixes]:
+        return "invalid_supplementary_source_review", str(receipt_path)
+    evidence = receipt.get("source_evidence")
+    sources = ([{"path": path, "sha256": value} for path, value in evidence.items()]
+               if isinstance(evidence, dict) else evidence)
+    if not isinstance(sources, list) or not sources:
+        return "invalid_supplementary_source_review", str(receipt_path)
+    for item in sources:
+        if not isinstance(item, dict) or not isinstance(item.get("path"), str):
+            return "invalid_supplementary_source_review", str(receipt_path)
+        path = (source_root / item["path"]).resolve()
+        if (not path.is_relative_to(source_root) or not path.is_file()
+                or hashlib.sha256(path.read_bytes()).hexdigest() != item.get("sha256")):
+            return "invalid_supplementary_source_review", str(receipt_path)
+    records = receipt.get("previous_evidence", receipt.get("cases"))
+    if not isinstance(records, list) or len(records) != 2:
+        return "invalid_supplementary_source_review", str(receipt_path)
+    for record in records:
+        if not isinstance(record, dict):
+            return "invalid_supplementary_source_review", str(receipt_path)
+        if record.get("full_campaign_admission") is True:
+            return "invalid_supplementary_source_review", str(receipt_path)
+        for key, value in record.items():
+            if not key.endswith("_sha256") or not isinstance(value, str):
+                continue
+            ref = record.get(key.removesuffix("_sha256"))
+            if not isinstance(ref, str):
+                continue
+            path = (baseline / ref).resolve()
+            if (not path.is_relative_to(baseline) or not path.is_file()
+                    or hashlib.sha256(path.read_bytes()).hexdigest() != value):
+                return "invalid_supplementary_source_review", str(receipt_path)
+        if record.get("proven_postfault_target_paths", 0) != 0:
+            return "invalid_supplementary_source_review", str(receipt_path)
+    if group == "ZOOKEEPER-02-03" and receipt.get("decision", {}).get("full_campaign_admission") is not False:
+        return "invalid_supplementary_source_review", str(receipt_path)
+    return "supplementary_source_review_verified", str(receipt_path)
+
+
 def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
     case_id = case["case_id"]
     target = case["target"]
@@ -2984,6 +3058,12 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "supplementary_fault_model_status": None,
         "new_bug": None,
     }
+    supplementary, supplementary_receipt = _zk_independent_source_review(results, case_id)
+    if supplementary == "supplementary_source_review_verified":
+        row["supplementary_fault_model_status"] = supplementary
+        row["source_review_receipt"] = supplementary_receipt
+    elif supplementary is not None:
+        row["source_gap_error"] = "independent source review or referenced evidence mismatch"
     if result is None:
         zk06_status, zk06_receipt = _zk06_retry_guard_gap(results, case_id)
         if zk06_status is not None:

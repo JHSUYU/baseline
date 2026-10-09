@@ -20,6 +20,36 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_zookeeper_independent_reviews_bind_sources_and_prior_receipts(self):
+        from Mallory.report.build import _zk_independent_source_review
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            index_path = results / "quality_reviews/zk_independent_source_v1/index.json"
+            index_path.parent.mkdir(parents=True)
+            shutil.copy2(source / "quality_reviews/zk_independent_source_v1/index.json",
+                         index_path)
+            index = json.loads(index_path.read_text())
+            for record in index["receipts"].values():
+                relative = record["path"].removeprefix("data/mallory/")
+                dest = results / relative
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source / relative, dest)
+            for case_id in ("ZOOKEEPER-02", "ZOOKEEPER-03", "ZOOKEEPER-04",
+                            "ZOOKEEPER-05", "ZOOKEEPER-10", "ZOOKEEPER-11"):
+                self.assertEqual(_zk_independent_source_review(results, case_id)[0],
+                                 "supplementary_source_review_verified")
+            receipt_path = results / index["receipts"]["ZOOKEEPER-10-11"]["path"].removeprefix("data/mallory/")
+            receipt = json.loads(receipt_path.read_text())
+            source_name = next(iter(receipt["source_evidence"]))
+            receipt["source_evidence"][source_name] = "0" * 64
+            receipt_path.write_text(json.dumps(receipt))
+            index["receipts"]["ZOOKEEPER-10-11"]["sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index))
+            self.assertEqual(_zk_independent_source_review(results, "ZOOKEEPER-10")[0],
+                             "invalid_supplementary_source_review")
+
     def test_solr37_retry_source_finding_replays_and_rejects_rehashed_claim(self):
         from Mallory.report.build import _solr37_retry_source_review
         baseline = Path(__file__).resolve().parents[2]
