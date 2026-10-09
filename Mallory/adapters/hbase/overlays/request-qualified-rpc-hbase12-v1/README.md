@@ -1,0 +1,7 @@
+# HBASE-12 scoped UnassignRegion healthy candidate
+
+The normal `TestAdmin2#testShouldUnassignTheRegion` healthy run passed one JUnit and reached the exact `AssignmentManager.preTransitCheck` line 762 check without the line 763 throw. Its master0 `UnassignRegion` receive, typed `java.io.IOException` door, and check were ordered at sequences 920, 921, and 923 on the same transported task and thread. The door was unscoped, so the pinned fa5f audit found no strict door-to-target graph path. The full terminal evidence and negative audit are pinned in `HBASE-12-normal-unassign-healthy-v1/lane9-healthy-terminal-receipt.json`.
+
+This isolated overlay wraps the selected `RpcServer.call` handler in a Probe region from the real service dispatch through the existing base adapter response close. It accepts only a transported task token, exact `MasterService.UnassignRegion` method, and named `master0`. Unselected calls maintain balanced frames. Offline ASM verification found one dispatch, one entry, and both normal and exceptional closes; offline Probe checks passed for normal, exceptional, and nested calls. The source and immutable JAR are separate from HBASE-10 v5.
+
+`cases/HBASE-12.scoped-healthy.json` is a single healthy-only JUnit on fixed core439 with strict event-time paths required. The runner requires a dispatch healthy-only grant and a free node1 lane9-next lock. No fault or full run is admitted until a fresh trace shows the named typed door nested above the exact nonthrowing target check with a strict graph path and a passing JUnit.
