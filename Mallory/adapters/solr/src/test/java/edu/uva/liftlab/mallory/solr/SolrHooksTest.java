@@ -32,7 +32,9 @@ public class SolrHooksTest {
   }
 
   public static final class Controller {
-    private final Reader reader = new Reader();
+    private final Reader reader;
+    Controller() { this(new Reader()); }
+    Controller(Reader reader) { this.reader = reader; }
     public String getNodeName() { return "solr-node"; }
     public CoreContainer getCoreContainer() { return new CoreContainer(this); }
     public Reader getZkStateReader() { return reader; }
@@ -55,6 +57,10 @@ public class SolrHooksTest {
 
   public static final class Reader {
     public final Object aliasesManager = new Object();
+    private final Object zkClient;
+    Reader() { this(new Object()); }
+    Reader(Object zkClient) { this.zkClient = zkClient; }
+    public Object getZkClient() { return zkClient; }
   }
 
   public static final class Filter {
@@ -64,7 +70,11 @@ public class SolrHooksTest {
 
   public static final class WatchDispatchWrapper {
     private final Object watcher;
-    WatchDispatchWrapper(Object watcher) { this.watcher = watcher; }
+    private final Object this$0;
+    WatchDispatchWrapper(Object watcher, Object client) {
+      this.watcher = watcher;
+      this.this$0 = client;
+    }
   }
 
   @Test public void requestHeaderAndLogicalNodeArePaired() {
@@ -120,22 +130,34 @@ public class SolrHooksTest {
     }
   }
 
-  @Test public void zkCallbackSubmitCarriesOnlyTheRegisteredWatcherActor() {
-    Object knownWatcher = new Object();
-    Probe.registerNode(knownWatcher, "node2", 4);
-    SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(knownWatcher));
-    assertEquals("node2", Probe.currentNode());
+  @Test public void zkCallbackSubmitCarriesOnlyTheRegisteredClientOwner() {
+    Reader reader = new Reader();
+    SolrHooks.registerClientReader(reader);
+    SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(new Object(), reader.getZkClient()));
+    assertEquals("client", Probe.currentNode());
     Runnable callback = SolrHooks.wrapTask(new Runnable() {
       @Override public void run() {
-        assertEquals("node2", Probe.currentNode());
-        assertEquals(4, Probe.currentEpoch());
+        assertEquals("client", Probe.currentNode());
+        assertEquals(0, Probe.currentEpoch());
       }
     });
     SolrHooks.endZkWatchDispatch();
     assertEquals("unknown", Probe.currentNode());
     callback.run();
     assertEquals("unknown", Probe.currentNode());
-    SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(new Object()));
+    SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(new Object(), new Object()));
+    assertEquals("unknown", Probe.currentNode());
+    SolrHooks.endZkWatchDispatch();
+  }
+
+  @Test public void sharedZkClientConflictingOwnersStayUnknown() {
+    Object shared = new Object();
+    Reader clientReader = new Reader(shared);
+    SolrHooks.registerClientReader(clientReader);
+    Reader serverReader = new Reader(shared);
+    Controller server = new Controller(serverReader);
+    SolrHooks.registerController(server);
+    SolrHooks.beginZkWatchDispatch(new WatchDispatchWrapper(new Object(), shared));
     assertEquals("unknown", Probe.currentNode());
     SolrHooks.endZkWatchDispatch();
   }

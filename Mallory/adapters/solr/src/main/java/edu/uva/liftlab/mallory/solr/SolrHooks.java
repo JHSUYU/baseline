@@ -6,10 +6,12 @@ import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -22,6 +24,8 @@ public final class SolrHooks {
   private static final AtomicLong SERIAL = new AtomicLong();
   private static final Map<Object, NodeRef> CONTROLLERS = new IdentityHashMap<Object, NodeRef>();
   private static final Map<Object, NodeRef> HTTP_CLIENTS = new IdentityHashMap<Object, NodeRef>();
+  private static final Set<Object> AMBIGUOUS_ZK_CLIENTS =
+      Collections.newSetFromMap(new IdentityHashMap<Object, Boolean>());
   private static final Map<String, Integer> EPOCHS = new HashMap<String, Integer>();
   private static final ThreadLocal<Deque<Scope>> SCOPES = new ThreadLocal<Deque<Scope>>() {
     @Override protected Deque<Scope> initialValue() { return new ArrayDeque<Scope>(); }
@@ -47,6 +51,7 @@ public final class SolrHooks {
       Probe.registerNode(reader, logicalName, epoch);
       Object aliasesManager = field(reader, "aliasesManager");
       if (aliasesManager != null) Probe.registerNode(aliasesManager, logicalName, epoch);
+      registerZkClient(reader, logicalName, epoch);
     }
     System.err.println("MALLORY_SOLR_NODE logical=" + logicalName + " physical=" + name
         + " epoch=" + epoch);
@@ -94,11 +99,16 @@ public final class SolrHooks {
 
   public static void endAliasesManager() { end("aliases"); }
 
-  /** Scope the real ZooKeeper watcher before its callback is submitted to ExecutorUtil. */
+  /** Scope the reader-owned ZooKeeper client before its callback is submitted. */
   public static void beginZkWatchDispatch(Object wrapper) {
-    Object watcher = field(wrapper, "watcher");
+    Object client = field(wrapper, "this$0");
+    Probe.NodeScope node;
+    synchronized (SolrHooks.class) {
+      node = client != null && AMBIGUOUS_ZK_CLIENTS.contains(client)
+          ? Probe.withNode("unknown", 0) : Probe.withRegisteredNode(client);
+    }
     SCOPES.get().push(new Scope("zk_watch_dispatch",
-        Probe.withRegisteredNode(watcher), null));
+        node, null));
   }
 
   public static void endZkWatchDispatch() { end("zk_watch_dispatch"); }
@@ -120,6 +130,18 @@ public final class SolrHooks {
       } catch (IllegalStateException alreadyServerOwned) {
         // The existing server binding is authoritative.
       }
+    }
+    registerZkClient(reader, "client", 0);
+  }
+
+  /** A SolrZkClient can be shared; conflicting owners make its callbacks unattributable. */
+  private static synchronized void registerZkClient(Object reader, String node, int epoch) {
+    Object client = invoke(reader, "getZkClient");
+    if (client == null || AMBIGUOUS_ZK_CLIENTS.contains(client)) return;
+    try {
+      Probe.registerNode(client, node, epoch);
+    } catch (IllegalStateException conflictingOwner) {
+      AMBIGUOUS_ZK_CLIENTS.add(client);
     }
   }
 
