@@ -1,0 +1,163 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.master.assignment.AssignmentManager"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/159c74ec50d0703e85cfdfd1b06451e961fc180db04d568926b990aa5458db7a/mallory-agent.jar",
+  "agent_properties": {
+    "adapter.jars": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar,/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/d02c2cb7ebace550/adapter.jar",
+    "adapter.transformers": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer,edu.uva.liftlab.mallory.hbase.requestqualified.hbase12.RequestQualifiedRpcTransformer",
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "allow_local_timeline_doors": false,
+  "auto_promote_if_healthy": false,
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 720,
+    "trial_timeout_seconds": 600,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "HBASE-12",
+  "cluster_test": "org.apache.hadoop.hbase.client.TestAdmin2#testShouldUnassignTheRegion",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-Dmallory.hbase.rpc.door.case=HBASE-12",
+    "-cp",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/51c53d7d45cd25ea/runner.jar:/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar:/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/d02c2cb7ebace550/adapter.jar:/users/ZhenyuLi/baseline/crashfuzz/vendor/0b0beaeb6880a311-junit-platform-launcher-1.13.4.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.client.TestAdmin2",
+    "testShouldUnassignTheRegion"
+  ],
+  "core_release": {
+    "manifest_sha256": "a679d1d67144e41234b0af1e2cfd399d014dc13d99ba0acfe9ed8116258a6d15",
+    "release_id": "4390310699b695ba002ed541508b359204a2d95529df09bb9f702db5dac3cde4"
+  },
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/source",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "expected_target_class_sha256": "f6fd0445b9180846112fee6f36341c1c6d59b562974858f81d955bd4a0562545",
+  "explore_outside_closure": false,
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "mapping": {
+    "alternate_selector_nonthrowing_source_basis": "TestAdmin2#testShouldUnassignTheRegion creates table at 263; invokes ADMIN.unassign at 271; no table disable or expected exception in method.",
+    "client_bound_runner_jar": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/51c53d7d45cd25ea/runner.jar",
+    "client_bound_runner_jar_sha256": "51c53d7d45cd25ea6071126f58e9dab2112a1138aecfb0ae2395a36bccac990f",
+    "client_bound_runner_manifest": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/51c53d7d45cd25ea/manifest.json",
+    "client_bound_runner_manifest_sha256": "83d103c30b16a68fa08e80a58d5b08da0e749eaf86a8d6329b332f4f04334945",
+    "client_bound_runner_source_sha256": "ace21a27288d14152704250826406fcf54ab27d30b830f1a09f8545fc965394b",
+    "compiled_class_sha256": "f6fd0445b9180846112fee6f36341c1c6d59b562974858f81d955bd4a0562545",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "compiled_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "door_exception_class": "java.io.IOException",
+    "fault_admission_blocked": true,
+    "fault_path_gate": "Only after this fresh client-bound healthy passes, a separate max1 diagnostic may inject the named master0 UnassignRegion IOException. Require applied fault, observed response and client retry SEND/RECV on one logical Admin call, then exact @762 check and @763 throw on the same affected region with strict event-time path and source/JUnit oracle review before full.",
+    "healthy_gate": "Fresh passing TestAdmin2 JUnit; client node has named UnassignRegion SEND and response RECV; master0 has typed door inside balanced RpcServer.call region with exact nonthrowing @762 check and strict core439 event-time path. No fault/full.",
+    "healthy_seed_verified_for_this_stage": false,
+    "isolation_lane": "lane9-next",
+    "original_selector_oracle_confounded": "TestRegionMove#testDisableAndMove disables table at 115-116 and catches expected DoNotRetryIOException at 118-123.",
+    "overlay_manifest": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/d02c2cb7ebace550/manifest.json",
+    "overlay_manifest_sha256": "7ee7a210e4bdc9e5918678be3a2863dab8beade8691e68e40fc2dfd29d059244",
+    "prior_healthy_audit": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HBASE-12/offline-causal-audit.json",
+    "prior_healthy_audit_sha256": "dab35f7b13d5efab8180691d6356e0a955443e30d559eba6f87b977aef3c71ef",
+    "prior_scoped_healthy_audit_sha256": "7736ee2ccb224e2ef575f432cbbb14db2281a3d0045aeb3980d662e0bc60f331",
+    "prior_scoped_healthy_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/cases/scoped-healthy-positive-receipt.json",
+    "prior_scoped_healthy_receipt_sha256": "2268b0261c4dd6c9238263b81cc4b03d6d086c38e2d4e4f830f1c5f9929f2fb2",
+    "prior_unscoped_healthy_audit": "/users/ZhenyuLi/baseline/data/mallory/calibration_v33/HBASE-12/offline-causal-audit.json",
+    "prior_unscoped_healthy_audit_sha256": "ef53a5f68578f879763f17bb4ebad8d6042fca11636669dd9df6e03d87ff1f1e",
+    "prior_unscoped_healthy_gap": "Same-request/thread timeline 920->921->923, strict door-to-target path absent because qualified door unscoped.",
+    "prior_unscoped_healthy_result": "/users/ZhenyuLi/baseline/data/mallory/calibration_v33/HBASE-12/result.json",
+    "prior_unscoped_healthy_result_sha256": "48d4849895ab2c412529642da724df575ea289fb6a0fb50b023b11c2cce4feb4",
+    "request_qualified_door_site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1:rpc:hbase.pb.MasterService.UnassignRegion",
+    "request_qualified_node": "master0",
+    "request_qualified_rpc_port": "hbase.pb.MasterService.UnassignRegion",
+    "required_rpc_ports": [
+      "hbase.pb.MasterService.UnassignRegion",
+      "hbase.pb.MasterService.AssignRegion"
+    ],
+    "rpc_server_compiled_class_sha256": "2ddfc45d9955537897684a392a07e45b277675ca6f75f96bad6354a02f8d81c5",
+    "runtime_method_identity_verified": false,
+    "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+    "source_equivalence_digest": "211136146806c868a7056e071018423cfa464aa69f446efc350a2253415fbafb",
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "source_supported_retry": "HBaseAdmin.unassign lines 1610-1619 invokes MasterCallable via executeCallable; executeCallable lines 3169-3181 calls RpcRetryingCaller.callWithRetries; RpcRetryingCallerImpl lines 93-161 retries translated ordinary IOException unless DoNotRetryIOException.",
+    "status": "HBASE12_client_bound_scoped_UnassignRegion_core439_healthy_only_unrun",
+    "target_source_sha256": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03",
+    "test_base_compiled_class_sha256": "6439c536001c1c40ea0354099621e9bf3d9034b0028ea2cd46843f8fdff1c8dc",
+    "test_base_source_sha256": "92fc03892782026178ecea9dc68f2e94342714416e0ed1b4d3c59a16a092afea",
+    "test_compiled_class_sha256": "8c8e81d2a0751068f7953ac57b6c0a5e205a1efbd29fa000b14f934fa34ca6fd",
+    "test_compiled_jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+    "test_source_sha256": "20339e54967dc782afa0bc9c8796c186e35546cb67aef6e862ff5e31d4e56fe9"
+  },
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/159c74ec50d0703e85cfdfd1b06451e961fc180db04d568926b990aa5458db7a/mallory-agent.jar",
+      "sha256": "7415d7bf1ee4f64e423f2377be86a3af006e20b82dde7ab4e09c097011a9e816"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar",
+      "sha256": "ab943e3fda02126261f99703cafeb4b6b0f71b6b5d645a29abb3498d43851cd1"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/d02c2cb7ebace550/adapter.jar",
+      "sha256": "d02c2cb7ebace550532216ba9243fc1ab7e4cc4272b3c5192bb3b16ec057d247"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/51c53d7d45cd25ea/runner.jar",
+      "sha256": "51c53d7d45cd25ea6071126f58e9dab2112a1138aecfb0ae2395a36bccac990f"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/crashfuzz/vendor/0b0beaeb6880a311-junit-platform-launcher-1.13.4.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/cases/HBASE-12.sites.json",
+      "sha256": "73c179cad2950ab41aaa442c48b241279136e545bb2def7cfc4fb65c8da6c0bf"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/4390310699b695ba002ed541508b359204a2d95529df09bb9f702db5dac3cde4/manifest.json",
+      "sha256": "a679d1d67144e41234b0af1e2cfd399d014dc13d99ba0acfe9ed8116258a6d15"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/d02c2cb7ebace550/manifest.json",
+      "sha256": "7ee7a210e4bdc9e5918678be3a2863dab8beade8691e68e40fc2dfd29d059244"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/releases/51c53d7d45cd25ea/manifest.json",
+      "sha256": "83d103c30b16a68fa08e80a58d5b08da0e749eaf86a8d6329b332f4f04334945"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/request-qualified-rpc-hbase12-v1/cases/HBASE-12.sites.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/source",
+  "system": "hbase",
+  "target": {
+    "check_code": "if (isTableDisabled(regionNode.getTable())) {\nthrow new DoNotRetryIOException(regionNode.getTable() + \" is disabled for \" + regionNode);",
+    "check_sites": [
+      "org.apache.hadoop.hbase.master.assignment.AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V@762:branch:3"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.DoNotRetryIOException",
+    "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+    "original_source_line": 763,
+    "site_id": "<org.apache.hadoop.hbase.master.assignment.AssignmentManager: void preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])>#u38",
+    "source_line": 763,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+    "throw_site": "org.apache.hadoop.hbase.master.assignment.AssignmentManager#preTransitCheck(Lorg/apache/hadoop/hbase/master/assignment/RegionStateNode;[Lorg/apache/hadoop/hbase/master/RegionState$State;)V@763:throw:1"
+  }
+}
