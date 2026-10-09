@@ -498,6 +498,193 @@ def _verify_retry_path_trace(trial_dir: Path, trial: dict[str, Any],
     return True
 
 
+def _local_timeline_review(results: Path, result_path: Path,
+                           result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Recheck a named-thread continuation within one unique region occurrence."""
+    root = results / "quality_reviews" / "local_timeline_v1"
+    case_id = result.get("case_id")
+    receipt_path = root / f"{case_id}.json"
+    index = _json(root / "index.json")
+    if index is None:
+        return ("invalid", str(receipt_path)) if receipt_path.is_file() else (None, None)
+    entries = index.get("cases")
+    if not isinstance(entries, list):
+        return "invalid", str(root / "index.json")
+    matches = [row for row in entries if isinstance(row, dict)
+               and row.get("case_id") == case_id]
+    if not matches:
+        return ("invalid", str(receipt_path)) if receipt_path.is_file() else (None, None)
+    if len(matches) != 1:
+        return "invalid", str(root / "index.json")
+    try:
+        entry = matches[0]
+        receipt = _json(receipt_path)
+        if receipt is None:
+            return "invalid", str(receipt_path)
+        sha = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+        audit_path = result_path.with_name("offline-causal-audit.json")
+        config_path = result_path.with_name("config.json")
+        archive_path = results / "evidence_archives/campaign" / f"{case_id}.tar.gz"
+        manifest_path = archive_path.with_suffix(".manifest.json")
+        sync_path = result_path.with_name("sync-receipt.json")
+        result_hash, audit_hash = sha(result_path), sha(audit_path)
+        config_hash, archive_hash = sha(config_path), sha(archive_path)
+        manifest_hash, sync_hash = sha(manifest_path), sha(sync_path)
+        receipt_hash = sha(receipt_path)
+        audit = _json(audit_path)
+        manifest = _json(manifest_path)
+        sync = _json(sync_path)
+
+        def sidecar(name: str) -> tuple[dict[str, Any], str]:
+            if (not isinstance(name, str) or Path(name).is_absolute() or
+                    Path(name).parent != Path("data/mallory/audit_sidecars")):
+                raise ValueError("sidecar path escapes audit_sidecars")
+            path = (results.resolve().parent.parent / name).resolve()
+            if not path.is_relative_to((results / "audit_sidecars").resolve()):
+                raise ValueError("sidecar path escapes results")
+            value = _json(path)
+            if value is None:
+                raise ValueError("sidecar missing")
+            return value, sha(path)
+
+        prior, prior_hash = sidecar(receipt["prior_precision_receipt"])
+        witness, witness_hash = sidecar(receipt["trial_witnesses_receipt"])
+        rows = witness.get("trials")
+        if (index.get("schema_version") != 1 or
+                index.get("review_status") != "verified_faulted_local_timeline" or
+                entry.get("classification") != "observed_local_timeline" or
+                entry.get("receipt_sha256") != receipt_hash or
+                entry.get("result_sha256") != result_hash or
+                entry.get("audit_sha256") != audit_hash or
+                entry.get("archive_sha256") != archive_hash or
+                receipt.get("schema_version") != 1 or
+                receipt.get("kind") != "verified_faulted_local_timeline_v1" or
+                receipt.get("case_id") != case_id or
+                receipt.get("campaign_result_sha256") != result_hash or
+                receipt.get("offline_audit_sha256") != audit_hash or
+                receipt.get("config_sha256") != config_hash or
+                receipt.get("archive_sha256") != archive_hash or
+                receipt.get("archive_manifest_sha256") != manifest_hash or
+                receipt.get("sync_receipt_sha256") != sync_hash or
+                receipt.get("prior_precision_receipt_sha256") != prior_hash or
+                receipt.get("trial_witnesses_receipt_sha256") != witness_hash or
+                receipt.get("thread_identity") !=
+                "thread_name_plus_unique_reload_occurrence" or
+                receipt.get("numeric_thread_id_proven") is not False or
+                receipt.get("one_region_enter_per_witness_actor") is not True or
+                audit is None or audit.get("report_gate_passed") is not True or
+                audit.get("local_timeline_only") is not True or
+                audit.get("same_actor_target_gate_passed") is not True or
+                audit.get("campaign_result_sha256") != result_hash or
+                manifest is None or manifest.get("case_id") != case_id or
+                manifest.get("source_result_sha256") != result_hash or
+                manifest.get("config_sha256") != config_hash or
+                manifest.get("archive_sha256") != archive_hash or
+                sync is None or sync.get("result_sha256") != result_hash or
+                manifest.get("members") != {
+                    **sync["retained_files"], **sync["remote_only_scratch_files"]} or
+                witness.get("case_id") != case_id or
+                witness.get("campaign_result_sha256") != result_hash or
+                witness.get("offline_causal_audit_sha256") != audit_hash or
+                witness.get("prior_precision_receipt_sha256") != prior_hash or
+                prior.get("campaign_result_sha256") != result_hash or
+                prior.get("offline_causal_audit_sha256") != audit_hash or
+                not isinstance(rows, list) or not rows or
+                len(rows) != witness.get("qualifying_trials") or
+                len(rows) != receipt.get("qualifying_trial_count") or
+                len(rows) != entry.get("qualifying_trial_count") or
+                len(rows) != audit.get("same_actor_target_trials") or
+                len(rows) > result.get("strict_target_trials", 0) or
+                len({row.get("trial_id") for row in rows}) != len(rows)):
+            return "invalid", str(receipt_path)
+
+        check_sites = set(result["target"]["check_sites"])
+        proven = 0
+        for row in rows:
+            trial_id = row["trial_id"]
+            if not isinstance(trial_id, int) or not 1 <= trial_id <= result["fault_trials_completed"]:
+                return "invalid", str(receipt_path)
+            trial_dir = result_path.parent / "trials" / f"r{trial_id:04d}"
+            trial_path = trial_dir / "result.json"
+            trace_path = trial_dir / "events.jsonl.gz"
+            trial = _json(trial_path)
+            if (trial is None or sha(trial_path) != row.get("trial_result_sha256") or
+                    sha(trace_path) != row.get("trace_gzip_sha256") or
+                    trace_path.stat().st_size != row.get("trace_gzip_bytes") or
+                    trial.get("events_evidence", {}).get("gzip_sha256") !=
+                    row.get("trace_gzip_sha256") or
+                    trial["events_evidence"].get("raw_sha256") !=
+                    row.get("trace_raw_sha256")):
+                return "invalid", str(receipt_path)
+            feedback = trial.get("feedback", {})
+            if (feedback.get("target_reached") is not True or
+                    feedback.get("all_faults_effective") is not True or
+                    feedback.get("all_faults_applied") is not True or
+                    feedback.get("target_identity_complete") is not True):
+                return "invalid", str(receipt_path)
+            witnesses = row.get("witnesses")
+            if not isinstance(witnesses, list) or not witnesses:
+                return "invalid", str(receipt_path)
+            ids = {part["id"] for item in witnesses for part in
+                   (item["door"], item["fault"], item["target_check"])}
+            actors = {(item["node"], item["epoch"], item["occurrence"], item["thread"])
+                      for item in witnesses}
+            found = {}
+            enter_counts = Counter()
+            thread_ids: set[Any] = set()
+            raw = hashlib.sha256()
+            raw_bytes = 0
+            with gzip.open(trace_path, "rb") as stream:
+                for line in stream:
+                    raw.update(line)
+                    raw_bytes += len(line)
+                    event = json.loads(line)
+                    event_actor = (event.get("node"), event.get("epoch"),
+                                   event.get("occurrence"), event.get("thread"))
+                    if event_actor in actors:
+                        thread_ids.add(event.get("thread_id"))
+                        if event.get("type") == "REGION_ENTER":
+                            enter_counts[event_actor] += 1
+                    if event.get("id") in ids:
+                        if event["id"] in found:
+                            return "invalid", str(receipt_path)
+                        found[event["id"]] = event
+            if (raw.hexdigest() != row.get("trace_raw_sha256") or
+                    raw_bytes != row.get("trace_raw_bytes") or
+                    found.keys() != ids or thread_ids != {None} or
+                    any(enter_counts[actor] != 1 for actor in actors)):
+                return "invalid", str(receipt_path)
+            for item in witnesses:
+                door = found[item["door"]["id"]]
+                fault = found[item["fault"]["id"]]
+                check = found[item["target_check"]["id"]]
+                actor = (item["node"], item["epoch"], item["occurrence"], item["thread"])
+                if (not isinstance(item["node"], str) or item["node"] in ("", "unknown") or
+                        not isinstance(item["thread"], str) or not item["thread"] or
+                        not item["occurrence"] or
+                        item["occurrence"].startswith("unscoped:") or
+                        item["occurrence"].endswith(":root") or
+                        tuple(event.get("type") for event in (door, fault, check)) !=
+                        ("DOOR_OBSERVED", "FAULT_APPLIED", "TARGET_CHECK") or
+                        not door["seq"] < fault["seq"] < check["seq"] or
+                        check["seq"] <= feedback.get("last_fault_seq", -1) or
+                        door.get("site") != item["door"]["site"] or
+                        fault.get("site") != item["fault"]["site"] or
+                        door.get("site") != fault.get("site") or
+                        check.get("site") != item["target_check"]["site"] or
+                        check.get("site") not in check_sites or
+                        fault.get("fault_id") != item["fault"]["fault_id"] or
+                        fault.get("fault_id") not in feedback.get("applied_fault_ids", []) or
+                        any((event.get("node"), event.get("epoch"),
+                             event.get("occurrence"), event.get("thread")) != actor
+                            for event in (door, fault, check))):
+                    return "invalid", str(receipt_path)
+            proven += 1
+        return ("observed_local_timeline" if proven > 0 else "invalid"), str(receipt_path)
+    except (OSError, KeyError, TypeError, ValueError, AttributeError, EOFError):
+        return "invalid", str(receipt_path)
+
+
 def _posthoc_attestation(result_path: Path, case: dict[str, Any],
                          result: dict[str, Any]) -> str | None:
     """Recognize a separate audit without changing the campaign's raw result."""
@@ -834,6 +1021,111 @@ def _source_gap(results: Path, case_id: str,
     return "no_suitable_cluster_test" if valid else "invalid_source_gap"
 
 
+def _fault_model_target_lost(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Recognize a bounded effective fault that bypasses its exact target."""
+    candidates = sorted((results / "admissions").glob(
+        f"{case_id}-*-fault-model-target-lost.json"))
+    if not candidates:
+        return None, None
+    if len(candidates) != 1:
+        return "invalid_fault_model_receipt", str(results / "admissions")
+    path = candidates[0]
+    receipt = _json(path)
+    if receipt is None:
+        return "invalid_fault_model_receipt", str(path)
+    digest = lambda file: hashlib.sha256(file.read_bytes()).hexdigest()
+    project_root = results.resolve().parent.parent
+
+    def bound(relative: Any, expected: Any) -> Path | None:
+        if (not isinstance(relative, str) or not relative.startswith("data/mallory/")
+                or not isinstance(expected, str) or len(expected) != 64):
+            return None
+        candidate = (project_root / relative).resolve()
+        if (not candidate.is_relative_to(results.resolve()) or not candidate.is_file()
+                or digest(candidate) != expected):
+            return None
+        return candidate
+
+    healthy, pilot = receipt.get("healthy"), receipt.get("pilot")
+    if not isinstance(healthy, dict) or not isinstance(pilot, dict):
+        return "invalid_fault_model_receipt", str(path)
+    healthy_root = results / "calibration_fa5f_lane2" / case_id
+    pilot_root = results / "pilot_fa5f_lane2" / case_id
+    healthy_config = bound(healthy.get("config"), healthy.get("config_sha256"))
+    pilot_config = bound(pilot.get("config"), pilot.get("config_sha256"))
+    healthy_result_path = healthy_root / "result.json"
+    healthy_audit_path = healthy_root / "offline-causal-audit.json"
+    pilot_result_path = pilot_root / "result.json"
+    pilot_audit_path = pilot_root / "offline-causal-audit.json"
+    fault_result_path = pilot_root / "trials/r0001/result.json"
+    files = ((healthy_result_path, healthy.get("result_sha256")),
+             (healthy_audit_path, healthy.get("audit_sha256")),
+             (pilot_result_path, pilot.get("result_sha256")),
+             (pilot_audit_path, pilot.get("audit_sha256")),
+             (fault_result_path, pilot.get("fault_trial_result_sha256")))
+    if (healthy_config is None or pilot_config is None or
+            any(not file.is_file() or digest(file) != expected for file, expected in files)):
+        return "invalid_fault_model_receipt", str(path)
+    healthy_result = _json(healthy_result_path)
+    healthy_audit = _json(healthy_audit_path)
+    pilot_result = _json(pilot_result_path)
+    pilot_audit = _json(pilot_audit_path)
+    trial = _json(fault_result_path)
+    if any(item is None for item in (
+            healthy_result, healthy_audit, pilot_result, pilot_audit, trial)):
+        return "invalid_fault_model_receipt", str(path)
+    evidence = trial.get("events_evidence", {})
+    gzip_name = evidence.get("gzip_path")
+    if not isinstance(gzip_name, str) or Path(gzip_name).name != gzip_name:
+        return "invalid_fault_model_receipt", str(path)
+    trace = fault_result_path.parent / gzip_name
+    if (not trace.is_file() or digest(trace) != evidence.get("gzip_sha256") or
+            trace.stat().st_size != evidence.get("gzip_bytes") or
+            evidence.get("raw_sha256") != pilot.get("fault_trace_sha256")):
+        return "invalid_fault_model_receipt", str(path)
+    fault = pilot.get("fault_event", {})
+    raw = hashlib.sha256()
+    applied = None
+    later_target = False
+    try:
+        with gzip.open(trace, "rb") as stream:
+            for line in stream:
+                raw.update(line)
+                event = json.loads(line)
+                if event.get("id") == fault.get("id"):
+                    applied = event
+                if (event.get("type") == "TARGET_CHECK" and
+                        event.get("site") == receipt.get("target", {}).get("check_site") and
+                        isinstance(event.get("seq"), int) and
+                        event["seq"] > fault.get("seq", -1)):
+                    later_target = True
+    except (OSError, EOFError, ValueError, TypeError):
+        return "invalid_fault_model_receipt", str(path)
+    valid = (
+        receipt.get("schema_version") == 1
+        and receipt.get("case_id") == case_id
+        and receipt.get("status") == "fault_model_target_lost"
+        and healthy_result.get("case_id") == case_id
+        and healthy_result.get("status") == "calibration_complete"
+        and healthy_result.get("healthy_seed_valid") is True
+        and healthy_audit.get("report_gate_passed") is True
+        and healthy_audit.get("healthy_local_timeline_doors", 0) > 0
+        and pilot_result.get("case_id") == case_id
+        and pilot_result.get("fault_trials_completed") == 1
+        and pilot_result.get("strict_injected_trials") == 1
+        and pilot_result.get("strict_target_trials") == 0
+        and pilot_audit.get("report_gate_passed") is False
+        and trial.get("trial_id") == 1
+        and raw.hexdigest() == pilot.get("fault_trace_sha256")
+        and isinstance(applied, dict)
+        and applied.get("type") == "FAULT_APPLIED"
+        and all(applied.get(key) == fault.get(key) for key in (
+            "id", "seq", "site", "node", "epoch", "occurrence"))
+        and not later_target
+    )
+    return ("fault_model_target_lost" if valid else "invalid_fault_model_receipt"), str(path)
+
+
 def _source_only_gap(results: Path, case_id: str,
                      receipt: dict[str, Any]) -> str:
     """Label a source-only workload gap without claiming a healthy-run audit."""
@@ -923,6 +1215,144 @@ def _source_only_gap(results: Path, case_id: str,
         return "source_review_no_suitable_test"
     except (OSError, KeyError, TypeError, ValueError, subprocess.CalledProcessError):
         return "invalid_source_gap"
+
+
+def _source_weak_candidate(results: Path, case_id: str) -> str | None:
+    """Recognize a hash-bound source finding without claiming no suitable test."""
+    try:
+        project_root = results.resolve().parent.parent
+        receipt_path = results / "source_weak" / case_id / "receipt-v1.json"
+        receipt = _json(receipt_path)
+        if receipt is None:
+            return None
+        if (receipt.get("schema_version") != 1 or
+                receipt.get("kind") != "source_weak_candidate_v1" or
+                receipt.get("case_id") != case_id or
+                receipt.get("status") != "source_weak_candidate"):
+            return "invalid_source_weak"
+        review_name = receipt.get("review_path")
+        if not isinstance(review_name, str) or Path(review_name).is_absolute():
+            return "invalid_source_weak"
+        review_path = (project_root / review_name).resolve()
+        if (not review_path.is_relative_to((project_root / "Mallory").resolve()) or
+                hashlib.sha256(review_path.read_bytes()).hexdigest() !=
+                receipt.get("review_sha256")):
+            return "invalid_source_weak"
+        review = _json(review_path)
+        if (review is None or review.get("case_id") != case_id or
+                review.get("classification") !=
+                "configuration_local_weak_static_candidate"):
+            return "invalid_source_weak"
+        source_root = Path(review["source_root"]).resolve()
+        if (not source_root.is_dir() or
+                subprocess.run(["git", "-C", str(source_root), "rev-parse", "HEAD"],
+                               capture_output=True, text=True, check=True).stdout.strip() !=
+                review.get("source_commit")):
+            return "invalid_source_weak"
+        for reference in review["source_refs"]:
+            name = reference["path"]
+            if not isinstance(name, str) or Path(name).is_absolute():
+                return "invalid_source_weak"
+            path = (source_root / name).resolve()
+            if (not path.is_relative_to(source_root) or
+                    hashlib.sha256(path.read_bytes()).hexdigest() !=
+                    reference.get("sha256")):
+                return "invalid_source_weak"
+        for evidence in (review["prior_calibration"], review["prior_triage"]):
+            name = evidence.get("result_path", evidence.get("path"))
+            expected = evidence.get("result_sha256", evidence.get("sha256"))
+            if (not isinstance(name, str) or Path(name).is_absolute() or
+                    not isinstance(expected, str)):
+                return "invalid_source_weak"
+            path = (project_root / name).resolve()
+            if (not path.is_relative_to(project_root) or
+                    hashlib.sha256(path.read_bytes()).hexdigest() != expected):
+                return "invalid_source_weak"
+        prior = _json(project_root / review["prior_calibration"]["result_path"])
+        if (prior is None or prior.get("case_id") != case_id or
+                prior.get("status") != review["prior_calibration"]["status"] or
+                prior.get("fault_trials_completed") != 0):
+            return "invalid_source_weak"
+        return "source_weak_candidate"
+    except (OSError, KeyError, TypeError, ValueError, subprocess.CalledProcessError):
+        return "invalid_source_weak"
+
+
+def _healthy_target_unreliable(results: Path, case_id: str) -> str | None:
+    """Record repeated healthy target misses while preserving a prior target hit."""
+    try:
+        project_root = results.resolve().parent.parent
+        receipt = _json(results / "target_unreliable" / case_id / "receipt.json")
+        if receipt is None:
+            return None
+        if (receipt.get("schema_version") != 1 or
+                receipt.get("kind") != "healthy_target_unreliable_v1" or
+                receipt.get("case_id") != case_id or
+                receipt.get("status") != "healthy_target_unreliable" or
+                receipt.get("terminal_classification") is not False or
+                receipt.get("fault_trials_completed") != 0):
+            return "invalid_target_unreliable"
+
+        def evidence(name: str, expected: str) -> Path:
+            if not isinstance(name, str) or Path(name).is_absolute():
+                raise ValueError("invalid evidence path")
+            path = (project_root / name).resolve()
+            if (not path.is_relative_to(results.resolve()) or
+                    hashlib.sha256(path.read_bytes()).hexdigest() != expected):
+                raise ValueError("evidence hash mismatch")
+            return path
+
+        positive = receipt["prior_positive_target_evidence"]
+        old_result = _json(evidence(positive["result_path"],
+                                    positive["result_sha256"]))
+        old_trial = _json(evidence(positive["trial_result_path"],
+                                   positive["trial_result_sha256"]))
+        if (old_result is None or old_trial is None or
+                old_result.get("case_id") != case_id or
+                old_result.get("status") != "calibration_complete" or
+                old_result.get("healthy_seed_valid") is not True or
+                old_result.get("fault_trials_completed") != 0 or
+                old_result.get("runtime_attestation", {}).get("valid") is not True or
+                old_result["runtime_attestation"].get("exact_site_catalog_valid") is not True or
+                not old_result["runtime_attestation"].get("bound_nodes") or
+                old_trial.get("feedback", {}).get("target_reached") is not True or
+                old_trial["feedback"].get("target_identity_complete") is not True or
+                old_trial["feedback"].get("target_threw") is not False or
+                positive.get("target_reached") is not True):
+            return "invalid_target_unreliable"
+        attempts = receipt.get("new_hook_attempts")
+        if not isinstance(attempts, list) or len(attempts) != 3 or len({
+                item.get("cohort") for item in attempts}) != 3:
+            return "invalid_target_unreliable"
+        for attempt in attempts:
+            result = _json(evidence(attempt["result_path"],
+                                    attempt["result_sha256"]))
+            audit = _json(evidence(attempt["audit_path"],
+                                   attempt["audit_sha256"]))
+            junit = _json(evidence(attempt["junit_receipt_path"],
+                                   attempt["junit_receipt_sha256"]))
+            evidence(attempt["trace_path"], attempt["trace_sha256"])
+            if (result is None or audit is None or junit is None or
+                    result.get("case_id") != case_id or
+                    result.get("status") != "healthy_seed_invalid" or
+                    result.get("fault_trials_completed") != 0 or
+                    result.get("healthy_seed_valid") is not False or
+                    len(result.get("trials", [])) != 1 or
+                    result["trials"][0].get("status") != "healthy_target_missing" or
+                    result["trials"][0].get("target_reached") is not False or
+                    audit.get("campaign_result_sha256") != attempt["result_sha256"] or
+                    audit.get("archive_integrity_valid") is not True or
+                    audit.get("report_gate_passed") is not False or
+                    audit.get("healthy_observed_path_doors") != 0 or
+                    junit.get("status") != "passed" or junit.get("tests") != 1 or
+                    junit.get("failures") != 0 or junit.get("errors") != 0 or
+                    attempt.get("exact_target_reached") is not False or
+                    attempt.get("junit_passed") is not True or
+                    attempt.get("target_site_catalog_valid") is not True):
+                return "invalid_target_unreliable"
+        return "healthy_target_unreliable"
+    except (OSError, KeyError, TypeError, ValueError, AttributeError):
+        return "invalid_target_unreliable"
 
 
 def _json(path: Path) -> dict[str, Any] | None:
@@ -1038,9 +1468,24 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "source_review_receipt": None,
         "source_review_classification": None,
         "source_gap_receipt": None,
+        "fault_model_receipt": None,
         "new_bug": None,
     }
     if result is None:
+        model_status, model_receipt = _fault_model_target_lost(results, case_id)
+        if model_status is not None:
+            row["report_status"] = model_status
+            row["fault_model_receipt"] = model_receipt
+            return row
+        target_status = _healthy_target_unreliable(results, case_id)
+        if target_status == "healthy_target_unreliable":
+            row["report_status"] = target_status
+            row["source_gap_receipt"] = str(
+                results / "target_unreliable" / case_id / "receipt.json")
+            return row
+        if target_status == "invalid_target_unreliable":
+            row["source_gap_error"] = "target-unreliable receipt or evidence mismatch"
+            return row
         source_gap = _source_gap(results, case_id, calibration)
         if source_gap in {"no_suitable_cluster_test",
                           "source_review_no_suitable_test"}:
@@ -1048,6 +1493,14 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["source_gap_receipt"] = str(results / "source_gaps" / case_id / "receipt.json")
         elif source_gap == "invalid_source_gap":
             row["source_gap_error"] = "source-gap receipt or healthy evidence mismatch"
+        if source_gap is None:
+            source_weak = _source_weak_candidate(results, case_id)
+            if source_weak == "source_weak_candidate":
+                row["report_status"] = source_weak
+                row["source_gap_receipt"] = str(
+                    results / "source_weak" / case_id / "receipt-v1.json")
+            elif source_weak == "invalid_source_weak":
+                row["source_gap_error"] = "source-weak receipt or evidence mismatch"
         return row
     if result.get("case_id") != case_id:
         row["report_status"] = "invalid_result"
@@ -1094,6 +1547,8 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 precision, receipt = _faulted_path_review(results, result_path, result)
                 if precision is None:
                     precision, receipt = _event_path_review(results, result_path, result)
+                if precision is None:
+                    precision, receipt = _local_timeline_review(results, result_path, result)
                 row["causal_precision_review"] = precision
                 row["causal_precision_receipt"] = receipt
                 if precision in {"observed_local_timeline", "observed_event_path",
@@ -1174,15 +1629,23 @@ def markdown(report: dict[str, Any]) -> str:
              "Rows are generated from `Mallory/cases/inventory.json` and "
              "`data/mallory/cases/<ID>/result.json`. Pending rows are not run results. "
              "`source_review_no_suitable_test` records a hash-checked source review, "
-             "not a healthy-run causal audit. `Target after fault (generic)` can count "
-             "another actor; local-timeline-only quality also requires a same-actor, "
+             "not a healthy-run causal audit. "
+             "`source_weak_candidate` records a hash-checked source finding "
+             "with an undemonstrated fault relation, and "
+             "`healthy_target_unreliable` records repeated healthy target misses "
+             "despite an earlier hit. "
+             "`Target after fault (generic)` can count "
+             "another actor. `fault_model_target_lost` records a SHA-checked "
+             "healthy seed and effective bounded fault whose affected target disappeared; "
+             "it is not a completed campaign. "
+             "Local-timeline-only quality also requires a same-actor, "
              "same-epoch, same-occurrence target check after an admitted fault door. "
              "A SHA-bound faulted-path review is required for high-quality status. "
              "`observed_local_timeline` means an ordered same-region continuation "
              "in a legacy trace, not an inter-region path. Terminal runs without a "
              "positive review remain pending; unsupported paths retain their raw "
              "results under an unverified label.", "",
-             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Quality | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source gap receipt | New bug |",
+             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Quality | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source disposition receipt | New bug |",
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |"]
     for row in report["rows"]:
         location = f'{row["source_path"]}:{row["source_line"]}'

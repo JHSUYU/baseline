@@ -1,0 +1,645 @@
+{
+  "case_id": "HBASE-23",
+  "dispatch_attempt_id": null,
+  "elapsed_seconds": 30.97,
+  "events_evidence": {
+    "gzip_bytes": 12530,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "aecd8b7a93a5231d48c80e644b9b7ab290e27c8e3ec780567361e5be18605912",
+    "raw_bytes": 165881,
+    "raw_path": null,
+    "raw_sha256": "44e69bcfbb6e13dbe9b501bcfca7edc809ee5f5f6e1bc9923331e38066e53d68"
+  },
+  "events_sha256": "44e69bcfbb6e13dbe9b501bcfca7edc809ee5f5f6e1bc9923331e38066e53d68",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": false,
+    "all_faults_matched": true,
+    "applied_fault_ids": [],
+    "closure_coverage_ids": [],
+    "closure_edges": [],
+    "closure_occurrences": [],
+    "coverage_ids": [
+      "org.apache.hadoop.hbase.ipc.RpcServer#<init>(Lorg/apache/hadoop/hbase/Server;Ljava/lang/String;Ljava/util/List;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hbase/ipc/RpcScheduler;Z)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#<init>(Lorg/apache/hadoop/hbase/Server;Ljava/lang/String;Ljava/util/List;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hbase/ipc/RpcScheduler;Z)V@305:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#addCallSize(J)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@455:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@466:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@480:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@480:branch:4:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@500:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@501:branch:9:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@511:branch:10:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@512:branch:11:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#createSecretManager()Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#createSecretManager()Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager;@411:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getByteBuffAllocator()Lorg/apache/hadoop/hbase/io/ByteBuffAllocator;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getCurrentCall()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getIsOnlineLogProviderEnabled(Lorg/apache/hadoop/conf/Configuration;)Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRemoteAddress()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRemoteIp()Ljava/net/InetAddress;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRemoteIp()Ljava/net/InetAddress;@856:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUser()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUser()Ljava/util/Optional;@777:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUser()Ljava/util/Optional;@777:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUserName()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getScheduler()Lorg/apache/hadoop/hbase/ipc/RpcScheduler;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getService(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hbase/thirdparty/com/google/protobuf/BlockingService;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getService(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hbase/thirdparty/com/google/protobuf/BlockingService;@836:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;@809:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;@810:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;@810:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getStatus()Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getStatus()Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;@842:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getStatus()Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;@842:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnResponseSize(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnResponseTime(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnScanResponseSize(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnScanResponseTime(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#initReconfigurable(Lorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#initReconfigurable(Lorg/apache/hadoop/conf/Configuration;)V@378:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isStarted()Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@605:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@605:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@608:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@608:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@608:branch:4:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z@598:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z@598:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z@601:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#needAuthorization()Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setCurrentCall(Lorg/apache/hadoop/hbase/ipc/RpcCall;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setErrorHandler(Lorg/apache/hadoop/hbase/ipc/HBaseRPCErrorHandler;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setNamedQueueRecorder(Lorg/apache/hadoop/hbase/namequeues/NamedQueueRecorder;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setRsRpcServices(Lorg/apache/hadoop/hbase/regionserver/RSRpcServices;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#unsetCurrentCall()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#<init>(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;Ljava/lang/String;Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#abort(Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#abort(Ljava/lang/String;)V@284:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#abort(Ljava/lang/String;)V@284:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#access$000()Lorg/slf4j/Logger;",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#close()V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#resetMembers(Lorg/apache/hadoop/hbase/procedure/Procedure;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#resetMembers(Lorg/apache/hadoop/hbase/procedure/Procedure;)V@174:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierAcquire(Lorg/apache/hadoop/hbase/procedure/Procedure;[BLjava/util/List;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierAcquire(Lorg/apache/hadoop/hbase/procedure/Procedure;[BLjava/util/List;)V@101:branch:3:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierAcquire(Lorg/apache/hadoop/hbase/procedure/Procedure;[BLjava/util/List;)V@79:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierAcquire(Lorg/apache/hadoop/hbase/procedure/Procedure;[BLjava/util/List;)V@98:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierAcquire(Lorg/apache/hadoop/hbase/procedure/Procedure;[BLjava/util/List;)V@98:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@121:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@121:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@123:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#start(Lorg/apache/hadoop/hbase/procedure/ProcedureCoordinator;)Z",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#start(Lorg/apache/hadoop/hbase/procedure/ProcedureCoordinator;)Z@183:branch:1:TAKEN"
+    ],
+    "coverage_ref_errors": [],
+    "doors": [
+      {
+        "event_id": "HBASE-23-r0000:7",
+        "event_seq": 7,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:8",
+        "event_seq": 8,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:23",
+        "event_seq": 23,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:24",
+        "event_seq": 24,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:37",
+        "event_seq": 37,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:38",
+        "event_seq": 38,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:53",
+        "event_seq": 53,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:61",
+        "event_seq": 61,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:76",
+        "event_seq": 76,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:85",
+        "event_seq": 85,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:94",
+        "event_seq": 94,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:104",
+        "event_seq": 104,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:111",
+        "event_seq": 111,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:122",
+        "event_seq": 122,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:131",
+        "event_seq": 131,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:139",
+        "event_seq": 139,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:149",
+        "event_seq": 149,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:160",
+        "event_seq": 160,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:168",
+        "event_seq": 168,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:176",
+        "event_seq": 176,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:186",
+        "event_seq": 186,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:193",
+        "event_seq": 193,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:200",
+        "event_seq": 200,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:210",
+        "event_seq": 210,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 16,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:217",
+        "event_seq": 217,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 17,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:225",
+        "event_seq": 225,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 18,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:234",
+        "event_seq": 234,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 19,
+          "epoch": 0,
+          "node": "rs0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:242",
+        "event_seq": 242,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      },
+      {
+        "event_id": "HBASE-23-r0000:250",
+        "event_seq": 250,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "master0",
+          "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1"
+      }
+    ],
+    "eligible_doors_before_target": 29,
+    "event_count": 452,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 0,
+      "candidate_edges_by_kind": {},
+      "edges": 62,
+      "edges_by_kind": {
+        "rpc": 30,
+        "task": 32
+      },
+      "gaps": {
+        "rpc_missing_occurrence": 28,
+        "task_missing_occurrence": 14,
+        "unmatched_parent": 1
+      },
+      "occurrences": 72
+    },
+    "last_fault_seq": -1,
+    "matched_fault_ids": [],
+    "observed_door_events": 29,
+    "pairing_order_valid": true,
+    "qualified_target_throw_evidence": [],
+    "reject_coarse_roots": true,
+    "require_event_time_paths": true,
+    "status": "healthy_target_missing",
+    "target_anchor": null,
+    "target_closures": [],
+    "target_exception_candidate": false,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [],
+    "target_reached": false,
+    "target_region_present": true,
+    "target_threw": false,
+    "target_throw_evidence": [],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "c3e2fcc7cc97c9732d13f4eece2016fed06016eb1441aa37c55c1caf3889d81d",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "13248ca52ba7747f3c524f17c5e0cb0aefa8310ea65abe23ee5d9b2d9ef56892",
+    "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "novelty": {
+    "closure_coverage": 0,
+    "closure_edges": 0,
+    "coverage": 76
+  },
+  "plan": [],
+  "return_code": 0,
+  "schema_version": 1,
+  "selection_reason": "healthy_seed",
+  "site_catalog_sha256": "7df5dd2a8d954148fec82e96aa187e8b7af011d74f07ad0a8c5e0a1aec60b7d8",
+  "site_catalog_validation": {
+    "catalog_rows": 7,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "8d43fa6f2820e626e9174810628b8ee1ecb841daf4e6736cf537c124ca75be41",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "8d43fa6f2820e626e9174810628b8ee1ecb841daf4e6736cf537c124ca75be41"
+    ],
+    "observed_target_class_sha256": "8d43fa6f2820e626e9174810628b8ee1ecb841daf4e6736cf537c124ca75be41",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791579327.4162765,
+  "stderr_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 387283,
+    "raw_path": "stderr.log",
+    "raw_sha256": "13248ca52ba7747f3c524f17c5e0cb0aefa8310ea65abe23ee5d9b2d9ef56892"
+  },
+  "stderr_sha256": "13248ca52ba7747f3c524f17c5e0cb0aefa8310ea65abe23ee5d9b2d9ef56892",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 42,
+    "raw_path": "stdout.log",
+    "raw_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3"
+  },
+  "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 0
+}

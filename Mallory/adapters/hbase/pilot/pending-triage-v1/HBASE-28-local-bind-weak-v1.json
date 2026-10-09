@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-28",
+  "classification": "configuration_local_weak_static_candidate",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "target": {
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+    "function": "HRegionServer.putUpWebUI()",
+    "branch_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2482:branch:3",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2487:throw:1"
+  },
+  "source_finding": "The guard compares a configured bind address with local interface addresses. The address is read from hbase.regionserver.info.bindAddress or hbase.master.info.bindAddress, default 0.0.0.0. The InfoServer bind and HTTP requests in TestInfoServers#testInfoServersRedirect happen after this guard. Injecting IOException at or before InetAddress.getByName exits before the selected predicate, while later server/network exceptions cannot change the prior configuration value.",
+  "prior_calibration": {
+    "result_path": "data/mallory/calibration/HBASE-28/result.json",
+    "result_sha256": "182c0e1871b8a426982e64c19e078c828581631bb735a6f8f45fe4be67074451",
+    "status": "healthy_node_identity_missing",
+    "exact_branch_reached": true,
+    "target_actor_named": false,
+    "fault_trials_completed": 0
+  },
+  "source_refs": [
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+      "sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java",
+      "sha256": "7b0d83c60833a5427396477fed836873b6d58b297cb656867008a221d0e2067e"
+    }
+  ],
+  "prior_triage": {
+    "path": "Mallory/adapters/hbase/pilot/pending-triage-v1/source-review.json",
+    "sha256": "61d67c63e6ffa03c86610c113e8858e4bf68bded78af27831b96efa0230cdd08"
+  },
+  "decision": "Do not schedule exception fuzz from the current selector. This is a weak static coordination candidate, not a no-test classification: the MiniCluster test reaches startup, but it offers no demonstrated relevant pretarget exception door. Revisit only if an existing passing cluster test supplies a dynamic I/O-influenced bind address and named target-retained fault evidence.",
+  "scope": "Source-only weak-candidate record; no JVM/fault/full and no canonical-table classification."
+}

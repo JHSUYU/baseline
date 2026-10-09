@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-33",
+  "classification": "no_suitable_existing_cluster_test_found",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "target": {
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+    "function": "AuthenticationTokenSecretManager.retrievePassword(AuthenticationTokenIdentifier)",
+    "branch_site": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@139:branch:3",
+    "throw_site": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@141:throw:1",
+    "required_healthy_condition": "The initial allKeys.get(identifier.keyId) must miss, then zkWatcher.getWatcher().isAborted() must return false so the selected branch executes without throwing."
+  },
+  "reviewed_tests": [
+    {
+      "selector": "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation",
+      "finding": "The only direct retrievePassword call in Java tests; it generates a token from currentKey and immediately retrieves it, so the initial allKeys lookup normally hits. The original executed calibration reached no exact @139 check."
+    },
+    {
+      "selector": "org.apache.hadoop.hbase.security.token.TestZKSecretWatcher#testKeyUpdate",
+      "finding": "Exercises key roll, expiry, watcher propagation, and slave join but never calls retrievePassword on an identifier whose key misses."
+    },
+    {
+      "selector": "org.apache.hadoop.hbase.security.token.TestZKSecretWatcherRefreshKeys#testRefreshKeys",
+      "finding": "Creates keys in MiniZK and invokes refreshKeys directly, but has no retrievePassword call."
+    },
+    {
+      "selector": "org.apache.hadoop.hbase.security.token.TestGenerateDelegationToken#testOnlyToken",
+      "finding": "Uses a real secure MiniCluster and a freshly generated token; source contains no explicit missing-key retrieval. A generated current key is expected to be present when authentication uses it."
+    },
+    {
+      "selector": "org.apache.hadoop.hbase.security.token.TestDelegationTokenWithEncryption#testPutGetWithDelegationToken",
+      "finding": "Exercises token-authenticated Put/Get against a live MiniCluster but does not establish an allKeys miss before authentication."
+    }
+  ],
+  "search_scope": [
+    "Repository-wide rg retrievePassword( in *Test*.java: only TestTokenAuthentication.java:424 is a direct Java test call.",
+    "Read all HBase token test classes above and AuthenticationTokenSecretManager.java:132-163, including the commented-out token-authentication RPC test body."
+  ],
+  "source_refs": [
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+      "sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java",
+      "sha256": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestZKSecretWatcher.java",
+      "sha256": "0d167ad407429d103f249fac97f6e61420b354c662bd3b6bbdc98ef74495123d"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestZKSecretWatcherRefreshKeys.java",
+      "sha256": "c558e063ec785b13b37e1cfaaaf2a178da8053ae6d45c259b386e8367bfcbc0d"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestGenerateDelegationToken.java",
+      "sha256": "0e3d43a6abde10e82b85aca87b1183b91138e36c3d1d3ea19421df01b80ea8bd"
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestDelegationTokenWithEncryption.java",
+      "sha256": "1c721e046ff303c536bfa41273a3b97a75eef737f0727f0db2afe125e8d018c8"
+    }
+  ],
+  "old_calibration": {
+    "result_path": "data/mallory/calibration/HBASE-33/result.json",
+    "result_sha256": "8c06b8a835e92a8c18b75f2887b03078c8171533cfefef487cec3b90f4befb40",
+    "status": "healthy_seed_invalid",
+    "trial_status": "healthy_target_missing",
+    "fault_trials_completed": 0
+  },
+  "prior_triage": {
+    "path": "Mallory/adapters/hbase/pilot/pending-triage-v1/source-review.json",
+    "sha256": "61d67c63e6ffa03c86610c113e8858e4bf68bded78af27831b96efa0230cdd08"
+  },
+  "conclusion": "Under the existing-cluster-test-only workload rule, no checked-in HBase 2.6.6 test was found that reaches the exact inner abort guard in a passing healthy run. Do not synthesize an unknown key and report its expected InvalidToken as a new bug.",
+  "scope": "Source-only review, no new JVM trial and no claim of an observed healthy target or fault."
+}
