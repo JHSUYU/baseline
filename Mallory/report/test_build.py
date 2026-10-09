@@ -18,6 +18,88 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_hbase07_client_review_requires_pinned_archive_and_verifier(self):
+        from Mallory.report.build import _hbase07_client_event_review
+        with tempfile.TemporaryDirectory() as temporary:
+            baseline = Path(temporary)
+            results = baseline / "data/mallory"
+
+            def write(relative, content):
+                path = baseline / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content if isinstance(content, str) else json.dumps(content))
+                return path
+
+            digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            campaign_rel = "data/mallory/HBASE-07/campaigns/client-only-v1"
+            legacy_rel = "data/mallory/HBASE-07/campaigns/legacy-pre-client-only"
+            review_rel = "data/mallory/quality_reviews/hbase07_client_only_v1/HBASE-07.json"
+            release_rel = ("Mallory/dispatch/releases/"
+                           "96dd5cda2fe8e3f67130c8232fb98fa316a1eeac9a2ff3237075d7d8fe95538d")
+            result = {"case_id": "HBASE-07", "status": "queue_exhausted",
+                      "fault_trials_completed": 27, "strict_injected_trials": 27,
+                      "strict_target_trials": 27, "exact_exception_trials": 0,
+                      "duration_seconds": 100.0}
+            result_path = write(f"{campaign_rel}/result.json", result)
+            audit = write(f"{campaign_rel}/offline-causal-audit.json", {})
+            config = write(f"{campaign_rel}/config.json", {})
+            healthy = write(f"{campaign_rel}/trials/r0000/result.json", {})
+            archive = write("data/mallory/evidence_archives/campaign_client_only_v1/HBASE-07.tar.gz",
+                            "archive")
+            collector = write("data/mallory/HBASE-07/campaigns/client-only-v1-receipt.json", {})
+            legacy_result = write(f"{legacy_rel}/result.json", {"status": "budget_exhausted"})
+            legacy_audit = write(f"{legacy_rel}/offline-causal-audit.json", {})
+            legacy_review = write("data/mallory/HBASE-07/campaigns/legacy-pre-client-only-causal-precision-v2.json", {})
+            verifier = write("Mallory/adapters/hbase/pilot/verify-HBASE-07-client-only-v1-review.py",
+                             "# pinned verifier")
+            manifest = write(f"{release_rel}/manifest.json", {})
+            canonical = results / "cases/HBASE-07"
+            canonical.parent.mkdir(parents=True)
+            canonical.symlink_to(result_path.parent, target_is_directory=True)
+            review = {"schema_version": 1, "case_id": "HBASE-07",
+                      "classification": "observed_event_path", "status": "positive_frozen_96dd_review",
+                      "campaign_result_sha256": digest(result_path),
+                      "campaign_audit_sha256": digest(audit),
+                      "campaign_config_sha256": digest(config),
+                      "archive_sha256": digest(archive),
+                      "collector_receipt_sha256": digest(collector),
+                      "core_manifest_sha256": digest(manifest),
+                      "core_release_id": Path(release_rel).name,
+                      "versioned_campaign_path": campaign_rel,
+                      "healthy_trial_result_sha256": digest(healthy),
+                      "legacy_negative_review_sha256": digest(legacy_review),
+                      "legacy_result_sha256": digest(legacy_result),
+                      "legacy_audit_sha256": digest(legacy_audit),
+                      "canonical_result_path": "data/mallory/cases/HBASE-07/result.json",
+                      "canonical_audit_path": "data/mallory/cases/HBASE-07/offline-causal-audit.json",
+                      "campaign_status": "queue_exhausted", "duration_seconds": 100.0,
+                      "fault_trials_completed": 27,
+                      "strict_injected_trials": 27, "strict_postfault_event_path_trials": 27,
+                      "selected_exception_trials": 0, "qualifying_trial_ids": list(range(1, 28))}
+            review_path = write(review_rel, review)
+            index = {"schema_version": 1, "case_id": "HBASE-07",
+                     "classification": "observed_event_path", "receipt": review_rel,
+                     "receipt_sha256": digest(review_path), "verifier_sha256": digest(verifier),
+                     "result_sha256": digest(result_path), "audit_sha256": digest(audit),
+                     "config_sha256": digest(config), "archive_sha256": digest(archive),
+                     "collector_receipt_sha256": digest(collector),
+                     "core_manifest_sha256": digest(manifest),
+                     "legacy_v2_review_sha256": digest(legacy_review),
+                     "legacy_v2_result_sha256": digest(legacy_result),
+                     "legacy_v2_audit_sha256": digest(legacy_audit),
+                     "strict_postfault_event_path_trials": 27}
+            write("data/mallory/quality_reviews/hbase07_client_only_v1/index.json", index)
+            passed = type("Completed", (), {"returncode": 0})()
+            with patch("Mallory.report.build.__file__", str(baseline / "Mallory/report/build.py")), \
+                 patch("Mallory.report.build.subprocess.run", return_value=passed) as runner:
+                self.assertEqual("observed_event_path", _hbase07_client_event_review(
+                    results, canonical / "result.json", result)[0])
+                runner.assert_called_once()
+                archive.write_text("tampered")
+                self.assertEqual("invalid", _hbase07_client_event_review(
+                    results, canonical / "result.json", result)[0])
+                runner.assert_called_once()
+
     def test_solr18_scope_gap_is_hash_bound_and_reverified(self):
         from Mallory.report.build import _solr18_scope_gap
         with tempfile.TemporaryDirectory() as temporary:

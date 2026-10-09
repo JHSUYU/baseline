@@ -1,0 +1,876 @@
+{
+  "case_id": "HBASE-07",
+  "dispatch_attempt_id": null,
+  "elapsed_seconds": 47.468,
+  "events_evidence": {
+    "gzip_bytes": 217812,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "c866cccc04b131bbf74b4326f169eaa272dca8eac94ae784a50019a62304c9a9",
+    "raw_bytes": 3587289,
+    "raw_path": null,
+    "raw_sha256": "18417843928da075747f378eee609e4aaccd6c71653f844c7d4a154a20e9f4e2"
+  },
+  "events_sha256": "18417843928da075747f378eee609e4aaccd6c71653f844c7d4a154a20e9f4e2",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": true,
+    "all_faults_matched": true,
+    "applied_fault_ids": [
+      "f936ed2c67824d82e6f23",
+      "fef3ffe6078b4f2a1f76d",
+      "f0c21e12ebdd0cc363cff",
+      "fee6defeeedb871983b23",
+      "ff695d4ef6c502b9e249e",
+      "f0b834d05a1bfb4fea082"
+    ],
+    "closure_coverage_ids": [],
+    "closure_edges": [
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4914",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:4913",
+        "source": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]",
+        "target": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1601:thread:545:segment:6\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6182",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:6181",
+        "source": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]",
+        "target": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2023:thread:551:segment:14\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3177",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:3176",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1025:thread:832:segment:90\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3318",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:3317",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1071:thread:832:segment:94\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3543",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:3542",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1145:thread:832:segment:98\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3984",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:3983",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1291:thread:832:segment:102\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4875",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:4874",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1587:thread:832:segment:106\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4900",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:4899",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1589:thread:832:segment:110\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4906",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:4905",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1597:thread:831:segment:70\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4912",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:4911",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1599:thread:831:segment:74\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4918",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:4917",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1601:thread:831:segment:78\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6161",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:6160",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2015:thread:832:segment:198\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6168",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:6167",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2017:thread:832:segment:202\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6174",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:6173",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2019:thread:831:segment:104\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6180",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:6179",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2021:thread:831:segment:108\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6186",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:6185",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2023:thread:831:segment:112\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3033",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:3032",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:979:thread:832:segment:82\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3084",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HBASE-07-r0027:3083",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:995:thread:832:segment:86\"]",
+        "target": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3175",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:3174",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1025:thread:313:segment:170\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1025:thread:832:segment:90\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3316",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:3315",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1071:thread:313:segment:174\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1071:thread:832:segment:94\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3541",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:3540",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1145:thread:313:segment:178\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1145:thread:832:segment:98\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3982",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:3981",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1291:thread:313:segment:182\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1291:thread:832:segment:102\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4873",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:4872",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1587:thread:313:segment:186\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1587:thread:832:segment:106\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4898",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:4897",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1589:thread:313:segment:190\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1589:thread:832:segment:110\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6159",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:6158",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:2015:thread:313:segment:306\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2015:thread:832:segment:198\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6166",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:6165",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:2017:thread:313:segment:310\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2017:thread:832:segment:202\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3031",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:3030",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:979:thread:313:segment:162\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:979:thread:832:segment:82\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:3082",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:3081",
+        "source": "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:995:thread:313:segment:166\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:995:thread:832:segment:86\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4904",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:4903",
+        "source": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1597:thread:546:segment:6\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1597:thread:831:segment:70\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4910",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:4909",
+        "source": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1599:thread:549:segment:18\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1599:thread:831:segment:74\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:4916",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:4915",
+        "source": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1601:thread:545:segment:6\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1601:thread:831:segment:78\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6172",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:6171",
+        "source": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2019:thread:544:segment:14\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2019:thread:831:segment:104\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6178",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:6177",
+        "source": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2021:thread:554:segment:6\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2021:thread:831:segment:108\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HBASE-07-r0027:6184",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HBASE-07-r0027:6183",
+        "source": "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2023:thread:551:segment:14\"]",
+        "target": "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2023:thread:831:segment:112\"]"
+      }
+    ],
+    "closure_occurrences": [
+      "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]",
+      "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1025:thread:832:segment:90\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1071:thread:832:segment:94\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1145:thread:832:segment:98\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1291:thread:832:segment:102\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1587:thread:832:segment:106\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1589:thread:832:segment:110\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1597:thread:831:segment:70\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1599:thread:831:segment:74\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1601:thread:831:segment:78\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2015:thread:832:segment:198\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2017:thread:832:segment:202\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2019:thread:831:segment:104\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2021:thread:831:segment:108\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2023:thread:831:segment:112\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:979:thread:832:segment:82\"]",
+      "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:995:thread:832:segment:86\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1025:thread:313:segment:170\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1071:thread:313:segment:174\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1145:thread:313:segment:178\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1291:thread:313:segment:182\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1587:thread:313:segment:186\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1589:thread:313:segment:190\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:2015:thread:313:segment:306\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:2017:thread:313:segment:310\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:979:thread:313:segment:162\"]",
+      "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:995:thread:313:segment:166\"]",
+      "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1597:thread:546:segment:6\"]",
+      "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1599:thread:549:segment:18\"]",
+      "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1601:thread:545:segment:6\"]",
+      "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2019:thread:544:segment:14\"]",
+      "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2021:thread:554:segment:6\"]",
+      "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2023:thread:551:segment:14\"]"
+    ],
+    "coverage_ids": [
+      "org.apache.hadoop.hbase.client.HBaseAdmin#<init>(Lorg/apache/hadoop/hbase/client/ClusterConnection;)V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#access$000(Lorg/apache/hadoop/hbase/client/HBaseAdmin;)Lorg/apache/hadoop/hbase/client/NonceGenerator;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#access$100()Lorg/slf4j/Logger;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#access$1100(Lorg/apache/hadoop/hbase/client/HBaseAdmin;I)J",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#access$800(Lorg/apache/hadoop/hbase/client/HBaseAdmin;)Lorg/apache/hadoop/hbase/ipc/RpcControllerFactory;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#access$900(Lorg/apache/hadoop/hbase/client/HBaseAdmin;Lorg/apache/hadoop/hbase/client/RetryingCallable;)Ljava/lang/Object;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#asyncSnapshot(Lorg/apache/hadoop/hbase/shaded/protobuf/generated/SnapshotProtos$SnapshotDescription;)Lorg/apache/hadoop/hbase/shaded/protobuf/generated/MasterProtos$SnapshotResponse;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#checkTableExists(Lorg/apache/hadoop/hbase/TableName;)Lorg/apache/hadoop/hbase/TableName;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#close()V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@698:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@701:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@701:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@705:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@705:branch:4:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@706:branch:5:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@710:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@710:branch:6:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#createTableAsync(Lorg/apache/hadoop/hbase/client/TableDescriptor;[[B)Ljava/util/concurrent/Future;@710:branch:7:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#deleteSnapshot(Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#disableTableAsync(Lorg/apache/hadoop/hbase/TableName;)Ljava/util/concurrent/Future;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#enableTableAsync(Lorg/apache/hadoop/hbase/TableName;)Ljava/util/concurrent/Future;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#executeCallable(Lorg/apache/hadoop/hbase/client/RetryingCallable;)Ljava/lang/Object;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#executeCallable(Lorg/apache/hadoop/hbase/client/RetryingCallable;Lorg/apache/hadoop/hbase/client/RpcRetryingCallerFactory;II)Ljava/lang/Object;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#get(Ljava/util/concurrent/Future;JLjava/util/concurrent/TimeUnit;)Ljava/lang/Object;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getConnection()Lorg/apache/hadoop/hbase/client/Connection;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getPauseTime(I)J",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getPauseTime(I)J@670:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getRegions(Lorg/apache/hadoop/hbase/TableName;)Ljava/util/List;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getRegions(Lorg/apache/hadoop/hbase/TableName;)Ljava/util/List;@485:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getRpcControllerFactory()Lorg/apache/hadoop/hbase/ipc/RpcControllerFactory;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getSyncWaitTimeout()I",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableDescriptor(Lorg/apache/hadoop/hbase/TableName;Lorg/apache/hadoop/hbase/client/Connection;Lorg/apache/hadoop/hbase/client/RpcRetryingCallerFactory;Lorg/apache/hadoop/hbase/ipc/RpcControllerFactory;II)Lorg/apache/hadoop/hbase/client/TableDescriptor;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableDescriptor(Lorg/apache/hadoop/hbase/TableName;Lorg/apache/hadoop/hbase/client/Connection;Lorg/apache/hadoop/hbase/client/RpcRetryingCallerFactory;Lorg/apache/hadoop/hbase/ipc/RpcControllerFactory;II)Lorg/apache/hadoop/hbase/client/TableDescriptor;@617:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableDescriptor(Lorg/apache/hadoop/hbase/TableName;Lorg/apache/hadoop/hbase/client/Connection;Lorg/apache/hadoop/hbase/client/RpcRetryingCallerFactory;Lorg/apache/hadoop/hbase/ipc/RpcControllerFactory;II)Lorg/apache/hadoop/hbase/client/TableDescriptor;@631:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableNameBeforeRestoreSnapshot(Ljava/lang/String;)Lorg/apache/hadoop/hbase/TableName;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableNameBeforeRestoreSnapshot(Ljava/lang/String;)Lorg/apache/hadoop/hbase/TableName;@2755:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableNameBeforeRestoreSnapshot(Ljava/lang/String;)Lorg/apache/hadoop/hbase/TableName;@2756:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableNameBeforeRestoreSnapshot(Ljava/lang/String;)Lorg/apache/hadoop/hbase/TableName;@2756:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableNameBeforeRestoreSnapshot(Ljava/lang/String;)Lorg/apache/hadoop/hbase/TableName;@2762:branch:3:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#getTableRegions(Lorg/apache/hadoop/hbase/TableName;)Ljava/util/List;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#internalRestoreSnapshotAsync(Ljava/lang/String;Lorg/apache/hadoop/hbase/TableName;ZLjava/lang/String;)Ljava/util/concurrent/Future;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#isTableAvailable(Lorg/apache/hadoop/hbase/TableName;)Z",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#isTableDisabled(Lorg/apache/hadoop/hbase/TableName;)Z",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#listSnapshots()Ljava/util/List;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;Z)V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2781:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2787:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2793:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V@2838:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot([B)V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#snapshotAsync(Lorg/apache/hadoop/hbase/client/SnapshotDescription;)Ljava/util/concurrent/Future;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#snapshotAsync(Lorg/apache/hadoop/hbase/client/SnapshotDescription;)Ljava/util/concurrent/Future;@2663:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin#tableExists(Lorg/apache/hadoop/hbase/TableName;)Z",
+      "org.apache.hadoop.hbase.client.HBaseAdmin$74#<init>(Lorg/apache/hadoop/hbase/client/HBaseAdmin;Lorg/apache/hadoop/hbase/client/Connection;Lorg/apache/hadoop/hbase/ipc/RpcControllerFactory;)V",
+      "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/lang/Object;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;",
+      "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3022:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3022:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#<init>(Lorg/apache/hadoop/hbase/Server;Ljava/lang/String;Ljava/util/List;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hbase/ipc/RpcScheduler;Z)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#<init>(Lorg/apache/hadoop/hbase/Server;Ljava/lang/String;Ljava/util/List;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hbase/ipc/RpcScheduler;Z)V@305:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#addCallSize(J)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@455:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@466:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@480:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@480:branch:4:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@500:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@501:branch:9:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@511:branch:10:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@512:branch:11:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#createSecretManager()Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#createSecretManager()Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager;@411:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getByteBuffAllocator()Lorg/apache/hadoop/hbase/io/ByteBuffAllocator;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getCurrentCall()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getIsOnlineLogProviderEnabled(Lorg/apache/hadoop/conf/Configuration;)Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRemoteAddress()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRemoteIp()Ljava/net/InetAddress;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRemoteIp()Ljava/net/InetAddress;@856:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUser()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUser()Ljava/util/Optional;@777:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUser()Ljava/util/Optional;@777:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getRequestUserName()Ljava/util/Optional;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getScheduler()Lorg/apache/hadoop/hbase/ipc/RpcScheduler;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getService(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hbase/thirdparty/com/google/protobuf/BlockingService;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getService(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hbase/thirdparty/com/google/protobuf/BlockingService;@836:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;@809:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;@810:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getServiceAndInterface(Ljava/util/List;Ljava/lang/String;)Lorg/apache/hadoop/hbase/ipc/RpcServer$BlockingServiceAndInterface;@810:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getStatus()Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getStatus()Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;@842:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getStatus()Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;@842:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnResponseSize(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnResponseTime(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnScanResponseSize(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#getWarnScanResponseTime(Lorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hbase.ipc.RpcServer#initReconfigurable(Lorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#initReconfigurable(Lorg/apache/hadoop/conf/Configuration;)V@378:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isStarted()Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@605:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@605:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@608:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@608:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooLarge(Lorg/apache/hadoop/hbase/ipc/RpcCall;JJ)Z@608:branch:4:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z@598:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z@598:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#isTooSlow(Lorg/apache/hadoop/hbase/ipc/RpcCall;I)Z@601:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.ipc.RpcServer#needAuthorization()Z",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setCurrentCall(Lorg/apache/hadoop/hbase/ipc/RpcCall;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setErrorHandler(Lorg/apache/hadoop/hbase/ipc/HBaseRPCErrorHandler;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setNamedQueueRecorder(Lorg/apache/hadoop/hbase/namequeues/NamedQueueRecorder;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#setRsRpcServices(Lorg/apache/hadoop/hbase/regionserver/RSRpcServices;)V",
+      "org.apache.hadoop.hbase.ipc.RpcServer#unsetCurrentCall()Ljava/util/Optional;"
+    ],
+    "coverage_ref_errors": [],
+    "doors": [
+      {
+        "event_id": "HBASE-07-r0027:3034",
+        "event_seq": 3034,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 1,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      },
+      {
+        "event_id": "HBASE-07-r0027:3085",
+        "event_seq": 3085,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 2,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      },
+      {
+        "event_id": "HBASE-07-r0027:3178",
+        "event_seq": 3178,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 3,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      },
+      {
+        "event_id": "HBASE-07-r0027:3319",
+        "event_seq": 3319,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 4,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      },
+      {
+        "event_id": "HBASE-07-r0027:3544",
+        "event_seq": 3544,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 5,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      },
+      {
+        "event_id": "HBASE-07-r0027:3985",
+        "event_seq": 3985,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 6,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      },
+      {
+        "event_id": "HBASE-07-r0027:4876",
+        "event_seq": 4876,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 7,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      },
+      {
+        "event_id": "HBASE-07-r0027:6162",
+        "event_seq": 6162,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "epoch": 0,
+          "hit": 1,
+          "node": "client",
+          "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+          "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      }
+    ],
+    "eligible_doors_before_target": 8,
+    "event_count": 9473,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 0,
+      "candidate_edges_by_kind": {},
+      "edges": 2615,
+      "edges_by_kind": {
+        "rpc": 1610,
+        "task": 1005
+      },
+      "gaps": {
+        "door_unknown_actor": 2,
+        "rpc_missing_occurrence": 460,
+        "task_missing_occurrence": 230,
+        "unmatched_parent": 2
+      },
+      "occurrences": 2070
+    },
+    "last_fault_seq": 3987,
+    "matched_fault_ids": [
+      "f936ed2c67824d82e6f23",
+      "fef3ffe6078b4f2a1f76d",
+      "f0c21e12ebdd0cc363cff",
+      "fee6defeeedb871983b23",
+      "ff695d4ef6c502b9e249e",
+      "f0b834d05a1bfb4fea082"
+    ],
+    "observed_door_events": 10,
+    "pairing_order_valid": true,
+    "qualified_target_throw_evidence": [],
+    "reject_coarse_roots": true,
+    "require_event_time_paths": true,
+    "status": "observed",
+    "target_anchor": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]",
+    "target_closures": [
+      {
+        "anchor": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]",
+        "anchor_event_id": "HBASE-07-r0027:4919",
+        "anchor_seq": 4919,
+        "closure_occurrences": [
+          "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1025:thread:832:segment:90\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1071:thread:832:segment:94\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1145:thread:832:segment:98\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1291:thread:832:segment:102\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1587:thread:832:segment:106\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1589:thread:832:segment:110\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1597:thread:831:segment:70\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1599:thread:831:segment:74\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:1601:thread:831:segment:78\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:979:thread:832:segment:82\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:995:thread:832:segment:86\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1025:thread:313:segment:170\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1071:thread:313:segment:174\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1145:thread:313:segment:178\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1291:thread:313:segment:182\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1587:thread:313:segment:186\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:1589:thread:313:segment:190\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:979:thread:313:segment:162\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:995:thread:313:segment:166\"]",
+          "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1597:thread:546:segment:6\"]",
+          "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1599:thread:549:segment:18\"]",
+          "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:1601:thread:545:segment:6\"]"
+        ],
+        "epoch": 0,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1"
+      },
+      {
+        "anchor": "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]",
+        "anchor_event_id": "HBASE-07-r0027:6187",
+        "anchor_seq": 6187,
+        "closure_occurrences": [
+          "[\"client\",\"0\",\"client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2015:thread:832:segment:198\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2017:thread:832:segment:202\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2019:thread:831:segment:104\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2021:thread:831:segment:108\"]",
+          "[\"client\",\"0\",\"unscoped:client:0:HBASE-07-r0027:task:2023:thread:831:segment:112\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:2015:thread:313:segment:306\"]",
+          "[\"master0\",\"0\",\"unscoped:master0:0:HBASE-07-r0027:task:2017:thread:313:segment:310\"]",
+          "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2019:thread:544:segment:14\"]",
+          "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2021:thread:554:segment:6\"]",
+          "[\"rs2\",\"0\",\"unscoped:rs2:0:HBASE-07-r0027:task:2023:thread:551:segment:14\"]"
+        ],
+        "epoch": 0,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2"
+      }
+    ],
+    "target_exception_candidate": false,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [
+      {
+        "epoch": 0,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1"
+      },
+      {
+        "epoch": 0,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2"
+      }
+    ],
+    "target_reached": true,
+    "target_region_present": true,
+    "target_threw": false,
+    "target_throw_evidence": [],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "908a7edcbdd680bed2040511649343d664199bab99c0e9a2e90885e103a1898e",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "cf8d64455961deea02f1f3e58bc4524934f5934adafc671c47fff97c710543d6",
+    "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "novelty": {
+    "closure_coverage": 0,
+    "closure_edges": 34,
+    "coverage": 0
+  },
+  "plan": [
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "f936ed2c67824d82e6f23",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "epoch": 0,
+        "hit": 1,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      }
+    },
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "fef3ffe6078b4f2a1f76d",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "epoch": 0,
+        "hit": 2,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      }
+    },
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "f0c21e12ebdd0cc363cff",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "epoch": 0,
+        "hit": 3,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      }
+    },
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "fee6defeeedb871983b23",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "epoch": 0,
+        "hit": 4,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      }
+    },
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "ff695d4ef6c502b9e249e",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "epoch": 0,
+        "hit": 5,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      }
+    },
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "f0b834d05a1bfb4fea082",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "epoch": 0,
+        "hit": 6,
+        "node": "client",
+        "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+        "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+      }
+    }
+  ],
+  "return_code": 0,
+  "schema_version": 1,
+  "selection_reason": "dynamic_closure",
+  "site_catalog_sha256": "b3ccbaae2bc271ace2a177041c47ff1d3a755f7f963cd853ec65d1cf1b171f02",
+  "site_catalog_validation": {
+    "catalog_rows": 4,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6"
+    ],
+    "observed_target_class_sha256": "b1ac0bf42ea1a31156a9b9c5add7f1ae24594f1bccccc479058f2090deacffc6",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.hadoop.hbase.client.HBaseAdmin",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791583022.3234844,
+  "stderr_evidence": {
+    "gzip_bytes": 108330,
+    "gzip_path": "stderr.log.gz",
+    "gzip_sha256": "896c1e37ee011a79fe7e7890c7e413152c62167fdb0d81c5ab920552c8e1cd6c",
+    "raw_bytes": 1577008,
+    "raw_path": null,
+    "raw_sha256": "cf8d64455961deea02f1f3e58bc4524934f5934adafc671c47fff97c710543d6"
+  },
+  "stderr_sha256": "cf8d64455961deea02f1f3e58bc4524934f5934adafc671c47fff97c710543d6",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 42,
+    "raw_path": "stdout.log",
+    "raw_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3"
+  },
+  "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 27
+}

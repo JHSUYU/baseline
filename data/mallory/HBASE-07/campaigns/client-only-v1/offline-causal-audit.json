@@ -1,0 +1,5368 @@
+{
+  "allow_local_timeline_doors": false,
+  "applied_fault_identity_valid": true,
+  "archive_integrity_valid": true,
+  "audit_kind": "offline_causal_quality",
+  "campaign_dir": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1",
+  "campaign_result_sha256": "e73471082a3863e8e3d3a8882c277e0a23bc32e690e2855172f81e5636f9015b",
+  "candidate_edges_total": 0,
+  "case_id": "HBASE-07",
+  "core_source_sha256": {
+    "audit.py": "a72df9d7805f2577bcaefc8b12d47905063b937206b237376ae63ded730727d7",
+    "campaign.py": "a1dce95dfe8bbc2fcef01aae16240fbd4f72804d770c341f54e66ec648d529c1",
+    "events.py": "db6b5ca756fe13d804e4356fdf01ef1924913b9977b5444797544f85cc98bd34",
+    "feedback.py": "cfc335c6cb929e18a19664aff6a49955efe15453537156f24f761d68e83de964",
+    "graph.py": "d712040ee432ddca0e84b6ee7a22fe8da58e0755b8b8437e61ad28164b979f08"
+  },
+  "gap_counts": {
+    "door_unknown_actor": 56,
+    "rpc_missing_occurrence": 14038,
+    "task_missing_occurrence": 7019,
+    "unmatched_parent": 56
+  },
+  "graph_guidance_changed_trials": [],
+  "guidance_consistent": true,
+  "healthy_closure_evidence_types": [
+    "observed_graph_path"
+  ],
+  "healthy_closure_included_named_doors": 2,
+  "healthy_closure_observed_edges": 22,
+  "healthy_closure_proven": true,
+  "healthy_event_time_path_sample": [
+    {
+      "door_event_id": "HBASE-07-r0000:3136",
+      "door_seq": 3136,
+      "edges": [
+        {
+          "consumer_event": "HBASE-07-r0000:3163",
+          "kind": "rpc",
+          "producer_event": "HBASE-07-r0000:3160"
+        },
+        {
+          "consumer_event": "HBASE-07-r0000:3170",
+          "kind": "rpc",
+          "producer_event": "HBASE-07-r0000:3166"
+        },
+        {
+          "consumer_event": "HBASE-07-r0000:3172",
+          "kind": "task",
+          "producer_event": "HBASE-07-r0000:3171"
+        }
+      ],
+      "target_check_event_id": "HBASE-07-r0000:3173",
+      "target_check_seq": 3173
+    },
+    {
+      "door_event_id": "HBASE-07-r0000:4559",
+      "door_seq": 4559,
+      "edges": [
+        {
+          "consumer_event": "HBASE-07-r0000:4579",
+          "kind": "rpc",
+          "producer_event": "HBASE-07-r0000:4578"
+        },
+        {
+          "consumer_event": "HBASE-07-r0000:4581",
+          "kind": "rpc",
+          "producer_event": "HBASE-07-r0000:4580"
+        },
+        {
+          "consumer_event": "HBASE-07-r0000:4583",
+          "kind": "task",
+          "producer_event": "HBASE-07-r0000:4582"
+        }
+      ],
+      "target_check_event_id": "HBASE-07-r0000:4584",
+      "target_check_seq": 4584
+    }
+  ],
+  "healthy_local_timeline_doors": 0,
+  "healthy_local_timeline_evidence_sample": [],
+  "healthy_local_timeline_sites": [],
+  "healthy_observed_path_doors": 2,
+  "healthy_target_nonthrowing": true,
+  "local_timeline_only": false,
+  "named_applied_faults": 112,
+  "observed_edges_total": 59810,
+  "reject_coarse_roots": true,
+  "replay_identity_mode": "occurrence_hit",
+  "replay_identity_sites": [
+    "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+  ],
+  "report_gate_passed": true,
+  "require_event_time_paths": true,
+  "same_actor_target_gate_passed": true,
+  "same_actor_target_required": false,
+  "same_actor_target_trials": 0,
+  "schema_version": 1,
+  "target_claims_reverified": true,
+  "target_retained_fault_trials": 27,
+  "terminal_status": "queue_exhausted",
+  "trial_count": 28,
+  "trials": [
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7339,
+      "faults": [],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 2,
+        "in_closure_count": 2,
+        "sha256": "47d73b0745d563a37559d42581de4f3e10cf2e1946ab14c2f7c1d3426c0a8b0f"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1793,
+        "edges_by_kind": {
+          "rpc": 1062,
+          "task": 731
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 478,
+          "task_missing_occurrence": 239,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1531
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 22,
+        "coverage": 118
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 2,
+        "in_closure_count": 2,
+        "sha256": "47d73b0745d563a37559d42581de4f3e10cf2e1946ab14c2f7c1d3426c0a8b0f"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1793,
+        "edges_by_kind": {
+          "rpc": 1062,
+          "task": 731
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 478,
+          "task_missing_occurrence": 239,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1531
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 22,
+        "coverage": 118
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0000/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "healthy_seed",
+      "target_claim_reverified": true,
+      "target_retained": false,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0000/events.jsonl.gz",
+        "raw_sha256": "48028eb3de77902fca7a1c86ff22dd4da7b0c475c1a0953c4f9b9f92d0973d53",
+        "verified": true
+      },
+      "trial_id": 0
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7822,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0001:4449"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f29ef6fe3bdc7be355028",
+          "matched_event_ids": [
+            "HBASE-07-r0001:4448"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0001:4447"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 3,
+        "in_closure_count": 2,
+        "sha256": "56a9bd10069edf7d41d721939c43dcb3a0f39ab8458de8ac8329528d032dbf26"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1892,
+        "edges_by_kind": {
+          "rpc": 1128,
+          "task": 764
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 526,
+          "task_missing_occurrence": 263,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1621
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 3,
+        "in_closure_count": 2,
+        "sha256": "56a9bd10069edf7d41d721939c43dcb3a0f39ab8458de8ac8329528d032dbf26"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1892,
+        "edges_by_kind": {
+          "rpc": 1128,
+          "task": 764
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 526,
+          "task_missing_occurrence": 263,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1621
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0001/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0001/events.jsonl.gz",
+        "raw_sha256": "eae2bbee203824fd9a50cfa5c9b40ce79d784261fc6a256061cf5ee4934554cb",
+        "verified": true
+      },
+      "trial_id": 1
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7145,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0002:2950"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0002:2949"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0002:2948"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 3,
+        "in_closure_count": 3,
+        "sha256": "e7cf89187c5d140ae26ebce9adac1b6d78fbaa6cc9d72089561f7e870620f423"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1727,
+        "edges_by_kind": {
+          "rpc": 1018,
+          "task": 709
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 474,
+          "task_missing_occurrence": 237,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1485
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 24,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 3,
+        "in_closure_count": 3,
+        "sha256": "e7cf89187c5d140ae26ebce9adac1b6d78fbaa6cc9d72089561f7e870620f423"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1727,
+        "edges_by_kind": {
+          "rpc": 1018,
+          "task": 709
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 474,
+          "task_missing_occurrence": 237,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1485
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 24,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0002/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0002/events.jsonl.gz",
+        "raw_sha256": "f298b20b930291a0d42c251306f763fd733d5d84363ff375efaf6f1c7e159b31",
+        "verified": true
+      },
+      "trial_id": 2
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7455,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0003:3066"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0003:3065"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0003:3064"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0003:4573"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f7ea20b2ad2b5659195b9",
+          "matched_event_ids": [
+            "HBASE-07-r0003:4572"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0003:4571"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 4,
+        "in_closure_count": 2,
+        "sha256": "e2be33d21d8a63f9f8de8f42a13bdc0ccad33c07fe03938be5703a53e934b4ef"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1835,
+        "edges_by_kind": {
+          "rpc": 1090,
+          "task": 745
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 478,
+          "task_missing_occurrence": 239,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1559
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 4,
+        "in_closure_count": 2,
+        "sha256": "e2be33d21d8a63f9f8de8f42a13bdc0ccad33c07fe03938be5703a53e934b4ef"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1835,
+        "edges_by_kind": {
+          "rpc": 1090,
+          "task": 745
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 478,
+          "task_missing_occurrence": 239,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1559
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0003/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0003/events.jsonl.gz",
+        "raw_sha256": "5896389c399eadde1326c62e0ae81d5865425728d645b918d3f12dad70470457",
+        "verified": true
+      },
+      "trial_id": 3
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7480,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0004:3126"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0004:3125"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0004:3124"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0004:4529"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f7ea20b2ad2b5659195b9",
+          "matched_event_ids": [
+            "HBASE-07-r0004:4528"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0004:4527"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0004:4574"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "feb415f0218af0c0aa7d6",
+          "matched_event_ids": [
+            "HBASE-07-r0004:4573"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0004:4572"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 3,
+        "sha256": "95fe2aec5331e3b4f863f1bcd25e34a00e6e8f314af2a3becb0d41df077bbcdf"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1859,
+        "edges_by_kind": {
+          "rpc": 1106,
+          "task": 753
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 470,
+          "task_missing_occurrence": 235,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1571
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 3,
+        "sha256": "95fe2aec5331e3b4f863f1bcd25e34a00e6e8f314af2a3becb0d41df077bbcdf"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1859,
+        "edges_by_kind": {
+          "rpc": 1106,
+          "task": 753
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 470,
+          "task_missing_occurrence": 235,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1571
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0004/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0004/events.jsonl.gz",
+        "raw_sha256": "c96dd1ce28135c6423c33ff8497f3524afd316d8f2880591d2d6e7f76e6eb4da",
+        "verified": true
+      },
+      "trial_id": 4
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8318,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0005:2981"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0005:2980"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0005:2979"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0005:4564"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f7ea20b2ad2b5659195b9",
+          "matched_event_ids": [
+            "HBASE-07-r0005:4563"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0005:4562"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0005:4609"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "feb415f0218af0c0aa7d6",
+          "matched_event_ids": [
+            "HBASE-07-r0005:4608"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0005:4607"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0005:4708"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0dd77aa4cd64fc14d147",
+          "matched_event_ids": [
+            "HBASE-07-r0005:4707"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0005:4706"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 4,
+        "sha256": "717069837224f63a493f71fb63d7ee5ba9fbd194c294bdab21f258f9e78f3d97"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2072,
+        "edges_by_kind": {
+          "rpc": 1248,
+          "task": 824
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 524,
+          "task_missing_occurrence": 262,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1740
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 4,
+        "sha256": "717069837224f63a493f71fb63d7ee5ba9fbd194c294bdab21f258f9e78f3d97"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2072,
+        "edges_by_kind": {
+          "rpc": 1248,
+          "task": 824
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 524,
+          "task_missing_occurrence": 262,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1740
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0005/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0005/events.jsonl.gz",
+        "raw_sha256": "5166fec287d88c794b222f828242cce438dee813a83af0a3a681657f969abf6a",
+        "verified": true
+      },
+      "trial_id": 5
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8713,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0006:3137"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0006:3136"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0006:3135"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0006:4637"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f7ea20b2ad2b5659195b9",
+          "matched_event_ids": [
+            "HBASE-07-r0006:4636"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0006:4635"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0006:4682"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "feb415f0218af0c0aa7d6",
+          "matched_event_ids": [
+            "HBASE-07-r0006:4681"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0006:4680"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0006:4781"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0dd77aa4cd64fc14d147",
+          "matched_event_ids": [
+            "HBASE-07-r0006:4780"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0006:4779"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0006:4916"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fc34267bf98466acdc361",
+          "matched_event_ids": [
+            "HBASE-07-r0006:4915"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0006:4914"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 5,
+        "sha256": "8918f6a3beaba48878a459d418af90e0e04a9c021f9d95225deabda0d919e566"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2234,
+        "edges_by_kind": {
+          "rpc": 1356,
+          "task": 878
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 516,
+          "task_missing_occurrence": 258,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1844
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 19,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 5,
+        "sha256": "8918f6a3beaba48878a459d418af90e0e04a9c021f9d95225deabda0d919e566"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2234,
+        "edges_by_kind": {
+          "rpc": 1356,
+          "task": 878
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 516,
+          "task_missing_occurrence": 258,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1844
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 19,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0006/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0006/events.jsonl.gz",
+        "raw_sha256": "b50212c41bc2e7cd40b1de67c44a23b9cee249d3f49d7fb8051ebe7d8529de15",
+        "verified": true
+      },
+      "trial_id": 6
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 9094,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0007:3119"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0007:3118"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0007:3117"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0007:4472"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f7ea20b2ad2b5659195b9",
+          "matched_event_ids": [
+            "HBASE-07-r0007:4471"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0007:4470"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0007:4529"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "feb415f0218af0c0aa7d6",
+          "matched_event_ids": [
+            "HBASE-07-r0007:4528"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0007:4527"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0007:4628"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0dd77aa4cd64fc14d147",
+          "matched_event_ids": [
+            "HBASE-07-r0007:4627"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0007:4626"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0007:4763"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fc34267bf98466acdc361",
+          "matched_event_ids": [
+            "HBASE-07-r0007:4762"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0007:4761"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0007:4988"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f18222d14a341a17eb4a1",
+          "matched_event_ids": [
+            "HBASE-07-r0007:4987"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0007:4986"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 5,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 6,
+        "sha256": "82d4b93182e2a7986b33fb0d8c29c8397707fff65a0eddc2da65e0037a0fd648"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2402,
+        "edges_by_kind": {
+          "rpc": 1468,
+          "task": 934
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 502,
+          "task_missing_occurrence": 251,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1949
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 21,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 6,
+        "sha256": "82d4b93182e2a7986b33fb0d8c29c8397707fff65a0eddc2da65e0037a0fd648"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2402,
+        "edges_by_kind": {
+          "rpc": 1468,
+          "task": 934
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 502,
+          "task_missing_occurrence": 251,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1949
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 21,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0007/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0007/events.jsonl.gz",
+        "raw_sha256": "0d9c99c952a7cec0d0e8aa45d832363504dd4565fa70d34e73191512feb5d71c",
+        "verified": true
+      },
+      "trial_id": 7
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7091,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0008:4239"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f29ef6fe3bdc7be355028",
+          "matched_event_ids": [
+            "HBASE-07-r0008:4238"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0008:4237"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0008:4284"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "faf44ef4fd4e97bf0e164",
+          "matched_event_ids": [
+            "HBASE-07-r0008:4283"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0008:4282"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 4,
+        "in_closure_count": 3,
+        "sha256": "6ce15af17794fd2c4beba9ebd177f1378b29220ee1d3083b333fa4dbee99ec7c"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1745,
+        "edges_by_kind": {
+          "rpc": 1030,
+          "task": 715
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 452,
+          "task_missing_occurrence": 226,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1486
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 4,
+        "in_closure_count": 3,
+        "sha256": "6ce15af17794fd2c4beba9ebd177f1378b29220ee1d3083b333fa4dbee99ec7c"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1745,
+        "edges_by_kind": {
+          "rpc": 1030,
+          "task": 715
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 452,
+          "task_missing_occurrence": 226,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1486
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0008/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0008/events.jsonl.gz",
+        "raw_sha256": "3ea9907f0b29956e1d7213f419bc4cee6211967722ce2c3a2f3026c4017077f4",
+        "verified": true
+      },
+      "trial_id": 8
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7980,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0009:2997"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0009:2996"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0009:2995"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0009:3048"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0009:3047"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0009:3046"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 4,
+        "in_closure_count": 4,
+        "sha256": "2fbe2fdf207d24babc387c3c07d12b5921d6f752f4d8e92886c66356d45bb794"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1967,
+        "edges_by_kind": {
+          "rpc": 1178,
+          "task": 789
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 512,
+          "task_missing_occurrence": 256,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1664
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 26,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 4,
+        "in_closure_count": 4,
+        "sha256": "2fbe2fdf207d24babc387c3c07d12b5921d6f752f4d8e92886c66356d45bb794"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1967,
+        "edges_by_kind": {
+          "rpc": 1178,
+          "task": 789
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 512,
+          "task_missing_occurrence": 256,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1664
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 26,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0009/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0009/events.jsonl.gz",
+        "raw_sha256": "97b5a8b3abc21fa677c337639a003b52f65d895e032c7414ac06e9b964034de7",
+        "verified": true
+      },
+      "trial_id": 9
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8192,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0010:2863"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0010:2862"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0010:2861"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0010:2908"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0010:2907"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0010:2906"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0010:4610"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fb0cde4bb4a8182727dca",
+          "matched_event_ids": [
+            "HBASE-07-r0010:4609"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0010:4608"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 2,
+        "sha256": "749c310d7a8628dd4c3a75eebb5602301019e8980ede73d72fe7bf6da8ee32f6"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2024,
+        "edges_by_kind": {
+          "rpc": 1216,
+          "task": 808
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 524,
+          "task_missing_occurrence": 262,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1708
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 2,
+        "sha256": "749c310d7a8628dd4c3a75eebb5602301019e8980ede73d72fe7bf6da8ee32f6"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2024,
+        "edges_by_kind": {
+          "rpc": 1216,
+          "task": 808
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 524,
+          "task_missing_occurrence": 262,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1708
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0010/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0010/events.jsonl.gz",
+        "raw_sha256": "6df789a74ff28a77e2ae4952fa31ea228a5f500c8403714a0311fa9b4341e4af",
+        "verified": true
+      },
+      "trial_id": 10
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7746,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0011:3127"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0011:3126"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0011:3125"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0011:3189"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0011:3188"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0011:3187"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0011:4725"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fb0cde4bb4a8182727dca",
+          "matched_event_ids": [
+            "HBASE-07-r0011:4724"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0011:4723"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0011:4770"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f2ef8c5b62d2a79e253bd",
+          "matched_event_ids": [
+            "HBASE-07-r0011:4769"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0011:4768"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 3,
+        "sha256": "6f760612a96c249942689082469edb44fbf8933ac1b5a4b51d1d4ca069da5dff"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1952,
+        "edges_by_kind": {
+          "rpc": 1168,
+          "task": 784
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 472,
+          "task_missing_occurrence": 236,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1634
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 3,
+        "sha256": "6f760612a96c249942689082469edb44fbf8933ac1b5a4b51d1d4ca069da5dff"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1952,
+        "edges_by_kind": {
+          "rpc": 1168,
+          "task": 784
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 472,
+          "task_missing_occurrence": 236,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1634
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0011/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0011/events.jsonl.gz",
+        "raw_sha256": "27824714efa56f81f5854d44806ef98aefab47404e105b6ab8b11e9caf21b292",
+        "verified": true
+      },
+      "trial_id": 11
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8589,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0012:3124"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0012:3123"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0012:3122"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0012:3169"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0012:3168"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0012:3167"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0012:4776"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fb0cde4bb4a8182727dca",
+          "matched_event_ids": [
+            "HBASE-07-r0012:4775"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0012:4774"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0012:4839"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f2ef8c5b62d2a79e253bd",
+          "matched_event_ids": [
+            "HBASE-07-r0012:4838"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0012:4837"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0012:4932"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f38b9ac04b2ae891da3d0",
+          "matched_event_ids": [
+            "HBASE-07-r0012:4931"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0012:4930"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 4,
+        "sha256": "2a3043cf141752221c9d123faefcf7c89c76f706f5ac8190a442e08fe488e0b0"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2186,
+        "edges_by_kind": {
+          "rpc": 1324,
+          "task": 862
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 522,
+          "task_missing_occurrence": 261,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1815
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 4,
+        "sha256": "2a3043cf141752221c9d123faefcf7c89c76f706f5ac8190a442e08fe488e0b0"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2186,
+        "edges_by_kind": {
+          "rpc": 1324,
+          "task": 862
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 522,
+          "task_missing_occurrence": 261,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1815
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0012/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0012/events.jsonl.gz",
+        "raw_sha256": "c31e6e8991f8bea52471e185152eb65c067787e72b431cbd1b1471be27de5a61",
+        "verified": true
+      },
+      "trial_id": 12
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8748,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0013:3174"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0013:3173"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0013:3172"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0013:3219"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0013:3218"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0013:3217"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0013:4676"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fb0cde4bb4a8182727dca",
+          "matched_event_ids": [
+            "HBASE-07-r0013:4675"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0013:4674"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0013:4721"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f2ef8c5b62d2a79e253bd",
+          "matched_event_ids": [
+            "HBASE-07-r0013:4720"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0013:4719"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0013:4820"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f38b9ac04b2ae891da3d0",
+          "matched_event_ids": [
+            "HBASE-07-r0013:4819"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0013:4818"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0013:4961"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fc423fa79ad1b6d20f4a1",
+          "matched_event_ids": [
+            "HBASE-07-r0013:4960"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0013:4959"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 5,
+        "sha256": "1f2e685feeffcb1f4cd93df91c64799c2391b2a58733dd533c4beca763c43de7"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2246,
+        "edges_by_kind": {
+          "rpc": 1364,
+          "task": 882
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 516,
+          "task_missing_occurrence": 258,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1852
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 19,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 5,
+        "sha256": "1f2e685feeffcb1f4cd93df91c64799c2391b2a58733dd533c4beca763c43de7"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2246,
+        "edges_by_kind": {
+          "rpc": 1364,
+          "task": 882
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 516,
+          "task_missing_occurrence": 258,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1852
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 19,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0013/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0013/events.jsonl.gz",
+        "raw_sha256": "c4610dca9249a5b0f367e00e316dfc73ed05e4fefb8f6cc556b0001dfc4ce4c0",
+        "verified": true
+      },
+      "trial_id": 13
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8696,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0014:4742"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f29ef6fe3bdc7be355028",
+          "matched_event_ids": [
+            "HBASE-07-r0014:4741"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0014:4740"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0014:4793"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "faf44ef4fd4e97bf0e164",
+          "matched_event_ids": [
+            "HBASE-07-r0014:4792"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0014:4791"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0014:4892"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f1e200786fc99754a1fc5",
+          "matched_event_ids": [
+            "HBASE-07-r0014:4891"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0014:4890"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 4,
+        "sha256": "8266a098c4b288cc37cfe9d54095d4e5da9c2c0fd0bdba265f4194674af28959"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2210,
+        "edges_by_kind": {
+          "rpc": 1340,
+          "task": 870
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 526,
+          "task_missing_occurrence": 263,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1833
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 4,
+        "sha256": "8266a098c4b288cc37cfe9d54095d4e5da9c2c0fd0bdba265f4194674af28959"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2210,
+        "edges_by_kind": {
+          "rpc": 1340,
+          "task": 870
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 526,
+          "task_missing_occurrence": 263,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1833
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0014/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0014/events.jsonl.gz",
+        "raw_sha256": "f2a85331d0a5da633b967da0625f608734896ad290cecd1f9173aba359bc5e83",
+        "verified": true
+      },
+      "trial_id": 14
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8199,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0015:4239"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f29ef6fe3bdc7be355028",
+          "matched_event_ids": [
+            "HBASE-07-r0015:4238"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0015:4237"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0015:4284"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "faf44ef4fd4e97bf0e164",
+          "matched_event_ids": [
+            "HBASE-07-r0015:4283"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0015:4282"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0015:4383"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f1e200786fc99754a1fc5",
+          "matched_event_ids": [
+            "HBASE-07-r0015:4382"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0015:4381"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0015:4525"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fe4ae1e3bcd29a0f22825",
+          "matched_event_ids": [
+            "HBASE-07-r0015:4524"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0015:4522"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 5,
+        "sha256": "62686f8128151731237c297735981f9410bddc63587e4ecd735196716795f19e"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2087,
+        "edges_by_kind": {
+          "rpc": 1258,
+          "task": 829
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 490,
+          "task_missing_occurrence": 245,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1733
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 19,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 5,
+        "sha256": "62686f8128151731237c297735981f9410bddc63587e4ecd735196716795f19e"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2087,
+        "edges_by_kind": {
+          "rpc": 1258,
+          "task": 829
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 490,
+          "task_missing_occurrence": 245,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1733
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 19,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0015/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0015/events.jsonl.gz",
+        "raw_sha256": "07102c8a22950848283d00321f202d13b73ea156dd0eb1ab7dec689b30d5d8df",
+        "verified": true
+      },
+      "trial_id": 15
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 9233,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0016:4461"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f29ef6fe3bdc7be355028",
+          "matched_event_ids": [
+            "HBASE-07-r0016:4460"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0016:4459"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0016:4506"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "faf44ef4fd4e97bf0e164",
+          "matched_event_ids": [
+            "HBASE-07-r0016:4505"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0016:4504"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0016:4605"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f1e200786fc99754a1fc5",
+          "matched_event_ids": [
+            "HBASE-07-r0016:4604"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0016:4603"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0016:4740"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fe4ae1e3bcd29a0f22825",
+          "matched_event_ids": [
+            "HBASE-07-r0016:4739"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0016:4738"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0016:4977"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f3a9aa49649d4e1933bc5",
+          "matched_event_ids": [
+            "HBASE-07-r0016:4976"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0016:4975"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 5,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 6,
+        "sha256": "8341af1c704b766f65104580dc738880c119b916a33ddbb1ff4bce472a104885"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2423,
+        "edges_by_kind": {
+          "rpc": 1482,
+          "task": 941
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 518,
+          "task_missing_occurrence": 259,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1971
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 21,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 6,
+        "sha256": "8341af1c704b766f65104580dc738880c119b916a33ddbb1ff4bce472a104885"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2423,
+        "edges_by_kind": {
+          "rpc": 1482,
+          "task": 941
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 518,
+          "task_missing_occurrence": 259,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1971
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 21,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0016/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0016/events.jsonl.gz",
+        "raw_sha256": "e7520a3008dd9a004797ef8bdda8c4d15f25f3cf11d358cd8282019800a6832f",
+        "verified": true
+      },
+      "trial_id": 16
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 10209,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0017:4423"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f29ef6fe3bdc7be355028",
+          "matched_event_ids": [
+            "HBASE-07-r0017:4422"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0017:4421"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0017:4473"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "faf44ef4fd4e97bf0e164",
+          "matched_event_ids": [
+            "HBASE-07-r0017:4472"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0017:4469"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0017:4567"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f1e200786fc99754a1fc5",
+          "matched_event_ids": [
+            "HBASE-07-r0017:4566"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0017:4565"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0017:4708"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fe4ae1e3bcd29a0f22825",
+          "matched_event_ids": [
+            "HBASE-07-r0017:4707"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0017:4706"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0017:4934"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f3a9aa49649d4e1933bc5",
+          "matched_event_ids": [
+            "HBASE-07-r0017:4933"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0017:4932"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 5,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0017:5374"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f319906937f61224fdad7",
+          "matched_event_ids": [
+            "HBASE-07-r0017:5373"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0017:5372"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 6,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 7,
+        "sha256": "93467b75d0216f55edc91fa48c8549b3f909479e2747cb5cf2d1ed1d18feda4e"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2798,
+        "edges_by_kind": {
+          "rpc": 1732,
+          "task": 1066
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 514,
+          "task_missing_occurrence": 257,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2219
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 23,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 7,
+        "sha256": "93467b75d0216f55edc91fa48c8549b3f909479e2747cb5cf2d1ed1d18feda4e"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2798,
+        "edges_by_kind": {
+          "rpc": 1732,
+          "task": 1066
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 514,
+          "task_missing_occurrence": 257,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2219
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 23,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0017/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0017/events.jsonl.gz",
+        "raw_sha256": "f286e0da03f6af73b0ad341c60bdcc0f03558ca398902c1ced5fdb9299ec87e4",
+        "verified": true
+      },
+      "trial_id": 17
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8001,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0018:2871"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0018:2870"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0018:2869"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0018:2922"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0018:2921"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0018:2920"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0018:3021"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0018:3020"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0018:3019"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 5,
+        "sha256": "afb19ec8f594c6a1573f2fbbf90062360fccf3edd0c23631e374532581a686ec"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1994,
+        "edges_by_kind": {
+          "rpc": 1196,
+          "task": 798
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 504,
+          "task_missing_occurrence": 252,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1678
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 28,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 5,
+        "in_closure_count": 5,
+        "sha256": "afb19ec8f594c6a1573f2fbbf90062360fccf3edd0c23631e374532581a686ec"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 1994,
+        "edges_by_kind": {
+          "rpc": 1196,
+          "task": 798
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 504,
+          "task_missing_occurrence": 252,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1678
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 28,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0018/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0018/events.jsonl.gz",
+        "raw_sha256": "035e39dd55106d581426ef52cc506ebbfc79c4daa02497231ffa541aa8621efd",
+        "verified": true
+      },
+      "trial_id": 18
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8162,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0019:3109"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0019:3108"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0019:3107"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0019:3154"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0019:3153"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0019:3152"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0019:3253"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0019:3252"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0019:3251"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0019:4696"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f852acdfa0bfacfbafd6f",
+          "matched_event_ids": [
+            "HBASE-07-r0019:4695"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0019:4694"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 2,
+        "sha256": "8ad1bd800d861278668e80a404876e3b239a68c7c7553ede489e5f7d179d2b85"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2054,
+        "edges_by_kind": {
+          "rpc": 1236,
+          "task": 818
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 506,
+          "task_missing_occurrence": 253,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1719
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 2,
+        "sha256": "8ad1bd800d861278668e80a404876e3b239a68c7c7553ede489e5f7d179d2b85"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2054,
+        "edges_by_kind": {
+          "rpc": 1236,
+          "task": 818
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 506,
+          "task_missing_occurrence": 253,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1719
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0019/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0019/events.jsonl.gz",
+        "raw_sha256": "7d5f0317867fa1ef71c1cff1c58c8a06fa7581bea0496b5863e172b79c18ee18",
+        "verified": true
+      },
+      "trial_id": 19
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8607,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0020:3004"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0020:3003"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0020:3002"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0020:3067"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0020:3066"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0020:3065"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0020:3166"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0020:3165"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0020:3164"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0020:4923"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f852acdfa0bfacfbafd6f",
+          "matched_event_ids": [
+            "HBASE-07-r0020:4922"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0020:4921"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0020:4968"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fa18bfc0182fae5349d28",
+          "matched_event_ids": [
+            "HBASE-07-r0020:4967"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0020:4966"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 3,
+        "sha256": "8be06158ea7765a4d341d58e400d7e35d062f77b25f3e8007c18ccf7a2c036d6"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2180,
+        "edges_by_kind": {
+          "rpc": 1320,
+          "task": 860
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 522,
+          "task_missing_occurrence": 261,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1811
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 3,
+        "sha256": "8be06158ea7765a4d341d58e400d7e35d062f77b25f3e8007c18ccf7a2c036d6"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2180,
+        "edges_by_kind": {
+          "rpc": 1320,
+          "task": 860
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 522,
+          "task_missing_occurrence": 261,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1811
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0020/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0020/events.jsonl.gz",
+        "raw_sha256": "e9739e5fe5ad22ae3f0c19da5d5e85d886fec79f01b626026bd75ae59bb18224",
+        "verified": true
+      },
+      "trial_id": 20
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 7892,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0021:2981"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0021:2980"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0021:2979"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0021:3038"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0021:3037"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0021:3036"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0021:3137"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0021:3136"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0021:3135"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0021:4697"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f852acdfa0bfacfbafd6f",
+          "matched_event_ids": [
+            "HBASE-07-r0021:4696"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0021:4695"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0021:4752"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fa18bfc0182fae5349d28",
+          "matched_event_ids": [
+            "HBASE-07-r0021:4751"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0021:4750"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0021:4851"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fd4c93aa8a430bfdf4d50",
+          "matched_event_ids": [
+            "HBASE-07-r0021:4850"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0021:4849"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 4,
+        "sha256": "abda9fb137bedb14fe59e5d217b506180c25209a83dee3eb48225cb362e065d0"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2015,
+        "edges_by_kind": {
+          "rpc": 1210,
+          "task": 805
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 466,
+          "task_missing_occurrence": 233,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1673
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 4,
+        "sha256": "abda9fb137bedb14fe59e5d217b506180c25209a83dee3eb48225cb362e065d0"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2015,
+        "edges_by_kind": {
+          "rpc": 1210,
+          "task": 805
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 466,
+          "task_missing_occurrence": 233,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1673
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 17,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0021/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0021/events.jsonl.gz",
+        "raw_sha256": "f2401f9e037e3f67ed3010875bf4f186f43a7c34ab35f772b23b9e3d14fa4cec",
+        "verified": true
+      },
+      "trial_id": 21
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8270,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0022:2979"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0022:2978"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0022:2977"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0022:3024"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0022:3023"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0022:3022"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0022:3123"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0022:3122"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0022:3121"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0022:3258"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fee6defeeedb871983b23",
+          "matched_event_ids": [
+            "HBASE-07-r0022:3257"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0022:3256"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 6,
+        "sha256": "307f8bfb2b014e125b5eae01f545655e3e83e41b6f31abb90a0bddf6f27d4454"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2084,
+        "edges_by_kind": {
+          "rpc": 1256,
+          "task": 828
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 508,
+          "task_missing_occurrence": 254,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1740
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 30,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 6,
+        "in_closure_count": 6,
+        "sha256": "307f8bfb2b014e125b5eae01f545655e3e83e41b6f31abb90a0bddf6f27d4454"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2084,
+        "edges_by_kind": {
+          "rpc": 1256,
+          "task": 828
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 508,
+          "task_missing_occurrence": 254,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1740
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 30,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0022/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0022/events.jsonl.gz",
+        "raw_sha256": "855e0479a19ef50f04c93143eb1de642f31a0f481437315b2b066efbb592a9f7",
+        "verified": true
+      },
+      "trial_id": 22
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8428,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0023:3176"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0023:3175"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0023:3174"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0023:3233"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0023:3232"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0023:3231"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0023:3332"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0023:3331"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0023:3330"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0023:3467"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fee6defeeedb871983b23",
+          "matched_event_ids": [
+            "HBASE-07-r0023:3466"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0023:3465"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0023:4890"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f99b9f0023124ee5ae965",
+          "matched_event_ids": [
+            "HBASE-07-r0023:4889"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0023:4888"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 2,
+        "sha256": "a876731e05565f87debca82b5645dc6af2de56a13a1204ae2bdd14d8386abe85"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2153,
+        "edges_by_kind": {
+          "rpc": 1302,
+          "task": 851
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 504,
+          "task_missing_occurrence": 252,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1784
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 2,
+        "sha256": "a876731e05565f87debca82b5645dc6af2de56a13a1204ae2bdd14d8386abe85"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2153,
+        "edges_by_kind": {
+          "rpc": 1302,
+          "task": 851
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 504,
+          "task_missing_occurrence": 252,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1784
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0023/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0023/events.jsonl.gz",
+        "raw_sha256": "b79aa2bd873b8e6f12eef0cc84e861a8e39c3a4007cdc03be41bc75db14f58f0",
+        "verified": true
+      },
+      "trial_id": 23
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 8697,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0024:3101"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0024:3100"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0024:3099"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0024:3164"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0024:3163"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0024:3162"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0024:3263"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0024:3262"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0024:3261"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0024:3398"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fee6defeeedb871983b23",
+          "matched_event_ids": [
+            "HBASE-07-r0024:3397"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0024:3396"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0024:4993"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f99b9f0023124ee5ae965",
+          "matched_event_ids": [
+            "HBASE-07-r0024:4992"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0024:4991"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0024:5055"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fadb260546604cae22acf",
+          "matched_event_ids": [
+            "HBASE-07-r0024:5051"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0024:5044"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 3,
+        "sha256": "47312598c5ad9ac8c646f13b27343709b4f2e049a2d20cedcadda1ce0367dfbb"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2252,
+        "edges_by_kind": {
+          "rpc": 1368,
+          "task": 884
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 504,
+          "task_missing_occurrence": 252,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1850
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 3,
+        "sha256": "47312598c5ad9ac8c646f13b27343709b4f2e049a2d20cedcadda1ce0367dfbb"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2252,
+        "edges_by_kind": {
+          "rpc": 1368,
+          "task": 884
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 504,
+          "task_missing_occurrence": 252,
+          "unmatched_parent": 2
+        },
+        "occurrences": 1850
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 15,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0024/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0024/events.jsonl.gz",
+        "raw_sha256": "ccb2f740902a01adb7d255d534090bd9ec2ae9bc4808e79a78121894aa914cac",
+        "verified": true
+      },
+      "trial_id": 24
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 9343,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0025:3126"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0025:3125"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0025:3124"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0025:3177"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0025:3176"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0025:3175"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0025:3271"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0025:3270"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0025:3268"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0025:3411"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fee6defeeedb871983b23",
+          "matched_event_ids": [
+            "HBASE-07-r0025:3410"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0025:3409"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0025:3648"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "ff695d4ef6c502b9e249e",
+          "matched_event_ids": [
+            "HBASE-07-r0025:3647"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0025:3646"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 5,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 7,
+        "sha256": "20cfb6a612e010ecbbc31e831d5c567f18e578450723c8078728fa308843ef28"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2471,
+        "edges_by_kind": {
+          "rpc": 1514,
+          "task": 957
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 518,
+          "task_missing_occurrence": 259,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2003
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 32,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 7,
+        "in_closure_count": 7,
+        "sha256": "20cfb6a612e010ecbbc31e831d5c567f18e578450723c8078728fa308843ef28"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2471,
+        "edges_by_kind": {
+          "rpc": 1514,
+          "task": 957
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 518,
+          "task_missing_occurrence": 259,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2003
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 32,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0025/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0025/events.jsonl.gz",
+        "raw_sha256": "26c554d5f8650c90d87a4940c4ee6ddc390d70614800204ec439c4f6095cb614",
+        "verified": true
+      },
+      "trial_id": 25
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 9594,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0026:3149"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0026:3148"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0026:3147"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0026:3194"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0026:3193"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0026:3192"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0026:3293"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0026:3292"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0026:3291"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0026:3428"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fee6defeeedb871983b23",
+          "matched_event_ids": [
+            "HBASE-07-r0026:3427"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0026:3426"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0026:3653"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "ff695d4ef6c502b9e249e",
+          "matched_event_ids": [
+            "HBASE-07-r0026:3652"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0026:3651"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 5,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0026:5769"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f35e35c2d6df9de0f6b35",
+          "matched_event_ids": [
+            "HBASE-07-r0026:5768"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0026:5767"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:2",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 2,
+        "sha256": "de5169a9c9f95d056757faa622bcd18662eb800a681fecd39faf334b176d09ba"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2540,
+        "edges_by_kind": {
+          "rpc": 1560,
+          "task": 980
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 532,
+          "task_missing_occurrence": 266,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2056
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 2,
+        "sha256": "de5169a9c9f95d056757faa622bcd18662eb800a681fecd39faf334b176d09ba"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2540,
+        "edges_by_kind": {
+          "rpc": 1560,
+          "task": 980
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 532,
+          "task_missing_occurrence": 266,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2056
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 13,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0026/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0026/events.jsonl.gz",
+        "raw_sha256": "fe05ed50bf6bb43b60e06ae5cfc0c6c4cef7a46ca349071cb508d953dc4e5a83",
+        "verified": true
+      },
+      "trial_id": 26
+    },
+    {
+      "applied_identity_valid": true,
+      "archive_integrity_valid": true,
+      "closure_edges_consistent": true,
+      "closure_novelty_consistent": true,
+      "closure_occurrences_consistent": true,
+      "eligible_door_membership_consistent": true,
+      "eligible_door_membership_diff_count": 0,
+      "eligible_door_membership_diff_sample": [],
+      "event_count": 9473,
+      "faults": [
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0027:3036"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f936ed2c67824d82e6f23",
+          "matched_event_ids": [
+            "HBASE-07-r0027:3035"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0027:3034"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 1,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0027:3087"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fef3ffe6078b4f2a1f76d",
+          "matched_event_ids": [
+            "HBASE-07-r0027:3086"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0027:3085"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 2,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0027:3180"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0c21e12ebdd0cc363cff",
+          "matched_event_ids": [
+            "HBASE-07-r0027:3179"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0027:3178"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 3,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0027:3321"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "fee6defeeedb871983b23",
+          "matched_event_ids": [
+            "HBASE-07-r0027:3320"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0027:3319"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 4,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0027:3546"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "ff695d4ef6c502b9e249e",
+          "matched_event_ids": [
+            "HBASE-07-r0027:3545"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0027:3544"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 5,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        },
+        {
+          "applied_event_ids": [
+            "HBASE-07-r0027:3987"
+          ],
+          "applied_identity_valid": true,
+          "applied_receipts": 1,
+          "exact_point": true,
+          "fault_id": "f0b834d05a1bfb4fea082",
+          "matched_event_ids": [
+            "HBASE-07-r0027:3986"
+          ],
+          "matched_receipts": 1,
+          "named_actor": true,
+          "observed_door_event_ids": [
+            "HBASE-07-r0027:3985"
+          ],
+          "observed_door_matches": 1,
+          "point": {
+            "epoch": 0,
+            "hit": 6,
+            "node": "client",
+            "occurrence": "client:0:org.apache.hadoop.hbase.client.HBaseAdmin#restoreSnapshot(Ljava/lang/String;ZZ)V:root:1",
+            "site": "org.apache.hadoop.hbase.client.HBaseAdmin$74#rpcCall()Ljava/util/List;@3019:door:1"
+          },
+          "receipts_exact": true
+        }
+      ],
+      "graph_changed": false,
+      "guidance_consistent": true,
+      "old_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 8,
+        "sha256": "8d09f9c07cec13677c688e55c915d266e468f51a31cdf6ff648759f7f366e6df"
+      },
+      "old_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2615,
+        "edges_by_kind": {
+          "rpc": 1610,
+          "task": 1005
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 460,
+          "task_missing_occurrence": 230,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2070
+      },
+      "old_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 34,
+        "coverage": 0
+      },
+      "old_status": "observed",
+      "old_target_exception_candidate": false,
+      "recomputed_eligible_door_membership": {
+        "count": 8,
+        "in_closure_count": 8,
+        "sha256": "8d09f9c07cec13677c688e55c915d266e468f51a31cdf6ff648759f7f366e6df"
+      },
+      "recomputed_graph": {
+        "candidate_edges": 0,
+        "candidate_edges_by_kind": {},
+        "edges": 2615,
+        "edges_by_kind": {
+          "rpc": 1610,
+          "task": 1005
+        },
+        "gaps": {
+          "door_unknown_actor": 2,
+          "rpc_missing_occurrence": 460,
+          "task_missing_occurrence": 230,
+          "unmatched_parent": 2
+        },
+        "occurrences": 2070
+      },
+      "recomputed_novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 34,
+        "coverage": 0
+      },
+      "recomputed_status": "observed",
+      "recomputed_target_exception_candidate": false,
+      "result_path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0027/result.json",
+      "same_actor_target_after_fault": false,
+      "same_actor_target_followups": [],
+      "selection_reason": "dynamic_closure",
+      "target_claim_reverified": true,
+      "target_retained": true,
+      "trace_evidence": {
+        "compressed": true,
+        "path": "/users/ZhenyuLi/baseline/data/mallory/HBASE-07/campaigns/client-only-v1/trials/r0027/events.jsonl.gz",
+        "raw_sha256": "18417843928da075747f378eee609e4aaccd6c71653f844c7d4a154a20e9f4e2",
+        "verified": true
+      },
+      "trial_id": 27
+    }
+  ],
+  "unknown_applied_faults": 0
+}

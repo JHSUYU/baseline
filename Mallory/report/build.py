@@ -416,6 +416,90 @@ def _event_path_review(results: Path, result_path: Path,
     return ("observed_event_path" if valid else "invalid"), str(receipt_path)
 
 
+def _hbase07_client_event_review(results: Path, result_path: Path,
+                                result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Recompute the client-only faulted paths before accepting its new canonical run."""
+    if result.get("case_id") != "HBASE-07":
+        return None, None
+    baseline = Path(__file__).resolve().parents[2]
+    root = results / "quality_reviews/hbase07_client_only_v1"
+    index_path, review_path = root / "index.json", root / "HBASE-07.json"
+    index, review = _json(index_path), _json(review_path)
+    if not isinstance(index, dict) or not isinstance(review, dict):
+        return "invalid", str(review_path)
+    release = (baseline / "Mallory/dispatch/releases/"
+               "96dd5cda2fe8e3f67130c8232fb98fa316a1eeac9a2ff3237075d7d8fe95538d")
+    verifier = baseline / "Mallory/adapters/hbase/pilot/verify-HBASE-07-client-only-v1-review.py"
+    campaign = results / "HBASE-07/campaigns/client-only-v1"
+    legacy = results / "HBASE-07/campaigns/legacy-pre-client-only"
+    legacy_review = results / "HBASE-07/campaigns/legacy-pre-client-only-causal-precision-v2.json"
+    archive = results / "evidence_archives/campaign_client_only_v1/HBASE-07.tar.gz"
+    collector = results / "HBASE-07/campaigns/client-only-v1-receipt.json"
+    audit_path, config_path = campaign / "offline-causal-audit.json", campaign / "config.json"
+    healthy_trial = campaign / "trials/r0000/result.json"
+    needed = (verifier, release / "manifest.json", review_path, result_path,
+              audit_path, config_path, archive, collector, legacy_review,
+              legacy / "result.json", legacy / "offline-causal-audit.json",
+              healthy_trial)
+    if any(not path.is_file() for path in needed):
+        return "invalid", str(review_path)
+    digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+    valid = (
+        index.get("schema_version") == 1
+        and index.get("case_id") == "HBASE-07"
+        and index.get("classification") == "observed_event_path"
+        and index.get("receipt") == "data/mallory/quality_reviews/hbase07_client_only_v1/HBASE-07.json"
+        and index.get("receipt_sha256") == digest(review_path)
+        and index.get("verifier_sha256") == digest(verifier)
+        and index.get("result_sha256") == digest(result_path) == digest(campaign / "result.json")
+        and index.get("audit_sha256") == digest(audit_path)
+        and index.get("config_sha256") == digest(config_path)
+        and index.get("archive_sha256") == digest(archive)
+        and index.get("collector_receipt_sha256") == digest(collector)
+        and index.get("core_manifest_sha256") == digest(release / "manifest.json")
+        and index.get("legacy_v2_review_sha256") == digest(legacy_review)
+        and index.get("legacy_v2_result_sha256") == digest(legacy / "result.json")
+        and index.get("legacy_v2_audit_sha256") == digest(legacy / "offline-causal-audit.json")
+        and index.get("strict_postfault_event_path_trials") == 27
+        and review.get("schema_version") == 1
+        and review.get("case_id") == "HBASE-07"
+        and review.get("classification") == "observed_event_path"
+        and review.get("status") == "positive_frozen_96dd_review"
+        and review.get("campaign_result_sha256") == digest(result_path)
+        and review.get("campaign_audit_sha256") == digest(audit_path)
+        and review.get("campaign_config_sha256") == digest(config_path)
+        and review.get("archive_sha256") == digest(archive)
+        and review.get("collector_receipt_sha256") == digest(collector)
+        and review.get("core_manifest_sha256") == digest(release / "manifest.json")
+        and review.get("core_release_id") == release.name
+        and review.get("versioned_campaign_path") == "data/mallory/HBASE-07/campaigns/client-only-v1"
+        and review.get("healthy_trial_result_sha256") == digest(healthy_trial)
+        and review.get("legacy_negative_review_sha256") == digest(legacy_review)
+        and review.get("legacy_result_sha256") == digest(legacy / "result.json")
+        and review.get("legacy_audit_sha256") == digest(legacy / "offline-causal-audit.json")
+        and review.get("canonical_result_path") == "data/mallory/cases/HBASE-07/result.json"
+        and review.get("canonical_audit_path") == "data/mallory/cases/HBASE-07/offline-causal-audit.json"
+        and result_path.resolve() == (campaign / "result.json").resolve()
+        and result.get("status") == review.get("campaign_status") == "queue_exhausted"
+        and result.get("duration_seconds") == review.get("duration_seconds")
+        and result.get("fault_trials_completed") == review.get("fault_trials_completed") == 27
+        and result.get("strict_injected_trials") == review.get("strict_injected_trials") == 27
+        and result.get("strict_target_trials") == review.get("strict_postfault_event_path_trials") == 27
+        and result.get("exact_exception_trials") == review.get("selected_exception_trials") == 0
+        and review.get("qualifying_trial_ids") == list(range(1, 28)))
+    if not valid:
+        return "invalid", str(review_path)
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = f"{release}:{baseline}"
+    try:
+        check = subprocess.run(
+            ["python3", str(verifier), "--repo", str(baseline), "--review", str(review_path)],
+            cwd=baseline, env=environment, capture_output=True, text=True, timeout=120)
+    except (OSError, subprocess.TimeoutExpired):
+        return "invalid", str(review_path)
+    return ("observed_event_path" if check.returncode == 0 else "invalid"), str(review_path)
+
+
 def _hdfs11_faulted_event_review(results: Path, result_path: Path,
                                  result: dict[str, Any]) -> tuple[str | None, str | None]:
     """Recompute the exact NN error-response-to-DN path from frozen raw traces."""
@@ -2524,10 +2608,12 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         elif row["causal_audit"] != "verified":
             row["quality_status"] = "causal_audit_invalid"
         else:
-            precision, receipt = _causal_precision_review(results, result_path, result)
+            precision, receipt = _hbase07_client_event_review(results, result_path, result)
+            if precision is None:
+                precision, receipt = _causal_precision_review(results, result_path, result)
             row["causal_precision_review"] = precision
             row["causal_precision_receipt"] = receipt
-            if precision == "causal_precision_unverified":
+            if precision in {"causal_precision_unverified", "observed_event_path"}:
                 row["quality_status"] = precision
             elif precision == "invalid":
                 row["quality_status"] = "causal_precision_review_invalid"
