@@ -2192,6 +2192,106 @@ def _zk05_epoch_influence_gap(results: Path, case_id: str) -> tuple[str | None, 
         return invalid
 
 
+def _solr18_v40p_fault_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Recompute the bounded v40p verdict from its frozen graph-order release."""
+    if case_id != "SOLR-18":
+        return None, None
+    root = results / "quality_reviews/solr18_v40p_gap"
+    path = root / "SOLR-18.json"
+    if not path.is_file():
+        return None, None
+    invalid = ("invalid_bounded_fault_model_gap", str(path))
+    try:
+        baseline = results.resolve().parent.parent
+        digest = lambda file: hashlib.sha256(file.read_bytes()).hexdigest()
+        index = _json(root / "index.json")
+        receipt = _json(path)
+        healthy = results / "replays/SOLR-18-v40-lane4"
+        pilot = results / "replays/SOLR-18-v40p-lane4"
+        release = baseline / "Mallory/dispatch/releases/4390310699b695ba002ed541508b359204a2d95529df09bb9f702db5dac3cde4"
+        manifest = release / "manifest.json"
+        verifier = baseline / "Mallory/adapters/solr/releases/v40/verify_solr18_pilot_gap.py"
+        source = Path("/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java")
+        files = (path, verifier, manifest, source,
+                 healthy / "result.json", healthy / "offline-causal-audit.json",
+                 healthy / "sync-receipt.json", pilot / "result.json",
+                 pilot / "offline-causal-audit.json", pilot / "sync-receipt.json",
+                 pilot / "config.json")
+        if (not isinstance(index, dict) or not isinstance(receipt, dict)
+                or any(not file.is_file() for file in files)):
+            return invalid
+        healthy_result = _json(healthy / "result.json")
+        pilot_result = _json(pilot / "result.json")
+        audit = _json(pilot / "offline-causal-audit.json")
+        if not all(isinstance(item, dict) for item in (healthy_result, pilot_result, audit)):
+            return invalid
+        valid = (
+            index.get("schema_version") == 1
+            and index.get("case_id") == receipt.get("case_id") == "SOLR-18"
+            and index.get("classification") == receipt.get("classification") ==
+                "fault_model_no_same_actor_postfault_target"
+            and index.get("receipt_path") == str(path.resolve().relative_to(baseline))
+            and index.get("receipt_sha256") == digest(path)
+            and index.get("verifier_sha256") == digest(verifier)
+            and index.get("core_manifest_sha256") == digest(manifest)
+            and receipt.get("full_campaign_promoted") is False
+            and receipt.get("new_bug_confirmed") is False
+            and receipt.get("healthy_result_sha256") == digest(healthy / "result.json")
+            and receipt.get("healthy_audit_sha256") == digest(healthy / "offline-causal-audit.json")
+            and receipt.get("healthy_sync_receipt_sha256") == digest(healthy / "sync-receipt.json")
+            and receipt.get("pilot_result_sha256") == digest(pilot / "result.json")
+            and receipt.get("pilot_audit_sha256") == digest(pilot / "offline-causal-audit.json")
+            and receipt.get("pilot_sync_receipt_sha256") == digest(pilot / "sync-receipt.json")
+            and receipt.get("pilot_config_sha256") == digest(pilot / "config.json")
+            and receipt.get("source_sha256") == digest(source)
+            and healthy_result.get("status") == "calibration_complete"
+            and pilot_result.get("status") == "budget_exhausted"
+            and pilot_result.get("fault_trials_completed") == 8
+            and pilot_result.get("strict_injected_trials") == 5
+            and audit.get("report_gate_passed") is True
+            and audit.get("target_retained_fault_trials") == 4
+            and audit.get("same_actor_target_trials") == 0
+            and len(receipt.get("trials", [])) == 8
+        )
+        if not valid:
+            return invalid
+        for number, trial in enumerate(receipt["trials"], 1):
+            result_file = pilot / f"trials/r{number:04d}/result.json"
+            trace_file = pilot / f"trials/r{number:04d}/events.jsonl.gz"
+            if (trial.get("trial_id") != number or not result_file.is_file()
+                    or not trace_file.is_file()
+                    or trial.get("trial_result_sha256") != digest(result_file)):
+                return invalid
+            trial_result = _json(result_file)
+            evidence = trial_result.get("events_evidence", {}) if isinstance(trial_result, dict) else {}
+            if (evidence.get("gzip_sha256") != digest(trace_file)
+                    or evidence.get("raw_sha256") !=
+                        hashlib.sha256(gzip.decompress(trace_file.read_bytes())).hexdigest()):
+                return invalid
+        environment = dict(os.environ, PYTHONPATH=f"{release}:{baseline}")
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary = Path(temporary)
+            generated_audit = temporary / "audit.json"
+            generated_review = temporary / "review.json"
+            audit_check = subprocess.run(
+                ["python3", "-m", "Mallory.core.audit", "--campaign", str(pilot),
+                 "--out", str(generated_audit)], cwd=baseline, env=environment,
+                capture_output=True, text=True, timeout=120)
+            review_check = subprocess.run(
+                ["python3", str(verifier), "--healthy", str(healthy),
+                 "--pilot", str(pilot), "--source", str(source),
+                 "--out", str(generated_review)], cwd=baseline,
+                capture_output=True, text=True, timeout=60)
+            if (audit_check.returncode != 0 or review_check.returncode != 0
+                    or generated_audit.read_bytes() !=
+                        (pilot / "offline-causal-audit.json").read_bytes()
+                    or generated_review.read_bytes() != path.read_bytes()):
+                return invalid
+        return "fault_model_no_same_actor_postfault_target", str(path)
+    except (OSError, ValueError, TypeError, KeyError, EOFError, subprocess.TimeoutExpired):
+        return invalid
+
+
 def _solr18_scope_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Recheck a bounded healthy trace with incomplete actor/path instrumentation."""
     if case_id != "SOLR-18":
@@ -2615,6 +2715,11 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "new_bug": None,
     }
     if result is None:
+        v40p_status, v40p_receipt = _solr18_v40p_fault_gap(results, case_id)
+        if v40p_status is not None:
+            row["report_status"] = v40p_status
+            row["fault_model_receipt"] = v40p_receipt
+            return row
         for review in (_hbase37_source_fault_gap,
                        _hdfs48_target_retention_gap,
                        _zk10_packet_fault_gap):
