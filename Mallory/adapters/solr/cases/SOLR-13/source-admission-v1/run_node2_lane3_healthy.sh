@@ -10,7 +10,7 @@ lane_lock=/tmp/mallory-lanes/solr-lane3.lock
 source_lock=/tmp/mallory-lanes/solr-source-graphchecker-8.11.4.lock
 
 test "$(hostname -s)" = node2
-test "$(sha256sum "$config" | cut -d ' ' -f1)" = f9316df2c50108e5375eda7d4ba59688b6a564958f9f4ce96412b21eb7f668ec
+test "$(sha256sum "$config" | cut -d ' ' -f1)" = b239636a890b152b6495e6448c10b6a46e41fa687e576d20e3c8a161f9c2e78e
 test ! -e "$out"
 mkdir -p "$(dirname "$out")" "$(dirname "$lane_lock")"
 exec 9>"$lane_lock"
