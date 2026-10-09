@@ -19,8 +19,8 @@ ROOT = HERE.parents[1]
 sys.path.insert(0, str(HERE.parent))
 import checklist  # noqa: E402
 
-TABLE_JSON = "data/checklist102.json"
-TABLE_MD = "data/checklist102.md"
+TABLE_JSON = "data/crashfuzz/checklist102.json"
+TABLE_MD = "data/crashfuzz/checklist102.md"
 TERMINAL = {"quality_complete", "confirmed_bug", "no_cluster_test",
             "no_usable_cluster_test", "source_excluded"}
 

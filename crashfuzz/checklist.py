@@ -12,7 +12,7 @@ import tempfile
 
 
 HERE = Path(__file__).resolve().parent
-DATA = HERE.parent / "data"
+DATA = HERE.parent / "data" / "crashfuzz"
 SELECTION = DATA / "selection102.json"
 CHECK_LOCATIONS = DATA / "check_locations.json"
 RESULTS = HERE / "cases"

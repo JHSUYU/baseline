@@ -12,7 +12,7 @@ import sys
 
 
 HERE = Path(__file__).resolve().parent
-DATA = HERE.parent / "data"
+DATA = HERE.parent / "data" / "crashfuzz"
 ENTRYPOINTS = HERE / "entrypoints.json"
 TERMINAL_WITHOUT_REPRO = {"no_cluster_test", "no_usable_cluster_test", "source_excluded"}
 
