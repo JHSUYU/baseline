@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "scope": "HDFS-26-31-32-source-only-admission-v1",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "status": "HDFS-26-offline-source-admission-pending-isolated-healthy",
+  "selected_case": "HDFS-26",
+  "selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+  "selected_checks": [
+    "BlockPoolSliceStorage.doRollback@619:branch:3",
+    "BlockPoolSliceStorage.doRollback@620:branch:4"
+  ],
+  "selected_throw": "BlockPoolSliceStorage.doRollback@626:throw:1",
+  "typed_retry_door": "BPServiceActor.retrieveNamespaceInfo@260 DatanodeProtocolClientSideTranslatorPB.versionRequest IOException caught and retried",
+  "diagnostic_file_door": "StorageInfo.readPropertiesFile@272 Properties.load previous/VERSION IOException may abort startup",
+  "source_only": true,
+  "live_jvm_or_fault_trials_started": false,
+  "explicit_gaps": [
+    "HDFS-26 identity overlay has no live named-actor verification",
+    "No HDFS-26 explicit typed door catalog, matched response, or event-time path observed",
+    "No postfault target retention established",
+    "HDFS-31 previous JUnit failed before transferBlock; exact named target unobserved",
+    "HDFS-32 original JUnit intentionally throws selected IOException; DFSAdmin alternate has no passing healthy evidence and no source-proven retained RPC fault"
+  ],
+  "inputs": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs26-retry-io-admission-v1/HDFS-26-healthy-only.json",
+      "sha256": "219f8a7452196723478ddb979af79c440613e0bf04ca0cae70f0692530f03dda"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs26-retry-io-admission-v1/HDFS-26.sites.json",
+      "sha256": "301c79af26859b46fea779f80ee54096c6f55f2addcb182b4f47de87a4460b63"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs26-retry-io-admission-v1/check_offline.py",
+      "sha256": "0a523a212a6724e917bdc97022312528ea75662faf583c31e8a804537a208b1d"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs26-retry-io-admission-v1/README.md",
+      "sha256": "41e1c2523459d8dce85b95184384bb1ad6feef0e49b539031b60ad6b915c28a6"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-26-33-v1/HDFS-26-healthy-only.json",
+      "sha256": "939721cdb2dc5f0db8e1c0766e619d0640b8ffc64275932d527e8767b72d2768"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-26-33-v1/audit-receipt.json",
+      "sha256": "0133967d42a64dc0a2ac67eab0c9ed70faac0011d244fe2a378e59c3bbb2ffa4"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-26-33-v1/README.md",
+      "sha256": "41c1688c8575e237107c0012c4b4fc0cf4a23ce9285989ff08805b993b9981f3"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-26/result.json",
+      "sha256": "cc013f906c76d58e189e44d8f87edae572eefe4cbfe70b13d23b9e7e4d2a436f"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/datanode-linkage-v1/HDFS-31-original-junit-healthy-v1.json",
+      "sha256": "8620561db7de818e26c9ca7e12e9553e13e850e68c23bda57c30ecad9933063a"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/next-v23/HDFS-32-dfsadmin-healthy-v23.json",
+      "sha256": "895421f5d845efcdedf4fece66ff823fd88ff41ae57bb69381e24001e18c2877"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/cases/revisions/HDFS-31-32-datanode-linkage-preflight-v1.json",
+      "sha256": "c028c1d02fef625af0118ee5dc7cf46c6597424929a33ae0e86621b79764f7ac"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-31/trials/r0000/result.json",
+      "sha256": "2e9185fee57d75b15e76f9b9d61e8c6e3a9ce8b3ec56ee5385d664776fa1065e"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-32/trials/r0000/result.json",
+      "sha256": "124f0800f0eb1918cb8269cdd705c94814224ddfa9bd4388484e0939bfe39a13"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f/manifest.json",
+      "sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/manifest.json",
+      "sha256": "093e23873f42b67ceb7f80c553f78fdc9b54820c5a2e43a2092f8d8dc65bc67a"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/adapter-builds/identity-26-33-v1/Mallory/adapters/hdfs/target/mallory-hdfs-adapter.jar",
+      "sha256": "9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/StorageInfo.java",
+      "sha256": "c07faaffe2a7184d8806d7f53900f62d812e7902edda543c76eae4135571b2de"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSAdmin.java",
+      "sha256": "ec3b8dfa9768db3ee3188ae926dd9c8242074aff4353e0c3281d2d8336102313"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+      "sha256": "c5a5ea5ba53bc50950d7af3de48a058ecac81513fba3d231879fa36fe75cd808"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java",
+      "sha256": "122183dc0da270317d8bbf2744b6dbdbfe578e720566eee37d23fbe6fd79f3ed"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
+      "sha256": "31467bca1249b93cae7ed984bac01d405cde8ec1409a9ef78fa0a0c469a3bb3a"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.class",
+      "sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class",
+      "sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/common/StorageInfo.class",
+      "sha256": "cf1de14e6b8dc4a662feeba877db93cd419ef499507cd758c347bb3ebf585f0d"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestDFSRollback.class",
+      "sha256": "ce2a43bf2b3274d089db0c012497b5104a1e25f251e09485b1e1f6b014208952"
+    }
+  ]
+}
