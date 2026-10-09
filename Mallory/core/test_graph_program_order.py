@@ -59,6 +59,29 @@ class NestedProgramOrderTest(unittest.TestCase):
         self.assertEqual("extra", path[0].producer_event)
         self.assertEqual(1, graph.summary()["edges_by_kind"]["program_order"])
 
+    def test_later_malformed_exit_discards_earlier_pending_edge(self):
+        rows = nested_trace()
+        rows.append(event("REGION_EXIT", 7, "orphan", region="O"))
+        graph, path = self.path(rows)
+        self.assertIsNone(path)
+        self.assertEqual(0, graph.summary()["edges_by_kind"].get("program_order", 0))
+
+    def test_whole_thread_identity_and_balance_are_required(self):
+        changes = {
+            "duplicate_later_id": lambda rows: rows[5].update(id="e5"),
+            "duplicate_later_sequence": lambda rows: rows[5].update(seq=5),
+            "missing_later_id": lambda rows: rows[5].pop("id"),
+            "missing_later_sequence": lambda rows: rows[5].pop("seq"),
+            "unclosed_parent": lambda rows: rows.pop(),
+        }
+        for name, change in changes.items():
+            with self.subTest(name=name):
+                rows = nested_trace()
+                change(rows)
+                graph, path = self.path(rows)
+                self.assertIsNone(path)
+                self.assertEqual(0, graph.summary()["edges_by_kind"].get("program_order", 0))
+
     def test_rejects_ambiguous_or_non_nested_order(self):
         changes = {
             "other_thread": lambda rows: rows[2].update(thread_id=8),

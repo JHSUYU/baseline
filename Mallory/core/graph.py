@@ -148,8 +148,9 @@ class OccurrenceGraph:
 
         The parent-entry edge alone cannot carry an event that happens later
         in the parent. Use the last event on that exact occurrence and JVM
-        thread before the child enters. The explicit parent occurrence and a
-        well-formed enter/exit stack prove that the parent is still active.
+        thread before the child enters. Validate the entire thread's region
+        stack before publishing any edge, so a later malformed exit cannot
+        leave an earlier, apparently valid, bridge in the graph.
         """
         groups: dict[tuple[str, str, int], list[dict[str, Any]]] = defaultdict(list)
         invalid_groups: set[tuple[str, str, int]] = set()
@@ -174,8 +175,11 @@ class OccurrenceGraph:
                 continue
             seq = event.get("seq")
             if not isinstance(seq, int) or isinstance(seq, bool) or seq < 0:
-                if event.get("type") in {"REGION_ENTER", "REGION_EXIT"}:
-                    invalid_groups.add(group)
+                invalid_groups.add(group)
+                continue
+            event_id = event.get("id")
+            if not isinstance(event_id, str) or ids.get(event_id) is not event:
+                invalid_groups.add(group)
                 continue
             groups[group].append(event)
 
@@ -189,6 +193,8 @@ class OccurrenceGraph:
                 continue
             # Each frame holds the enter and the latest event in that region.
             stack: list[list[dict[str, Any]]] = []
+            pending_edges: list[tuple[dict[str, Any], dict[str, Any]]] = []
+            balanced = True
             for event in rows:
                 kind = event.get("type")
                 address = event_address(event)
@@ -196,11 +202,13 @@ class OccurrenceGraph:
                     if (not stack or event_address(stack[-1][0]) != address or
                             event.get("region") != stack[-1][0].get("region")):
                         self.gaps["program_order_unbalanced_region"] += 1
+                        balanced = False
                         break
                     stack.pop()
                 elif kind == "REGION_ENTER":
                     if stack and event.get("parent_id") != stack[-1][0].get("occurrence"):
                         self.gaps["program_order_unbalanced_region"] += 1
+                        balanced = False
                         break
                     if stack and enter_counts[address] == 1:
                         parent_enter, producer = stack[-1]
@@ -218,13 +226,19 @@ class OccurrenceGraph:
                                 producer.get("region") == parent_enter["region"] and
                                 isinstance(producer_id, str) and ids.get(producer_id) is producer and
                                 isinstance(consumer_id, str) and ids.get(consumer_id) is event):
-                            self._add(producer, event, "program_order",
-                                      "same_thread_direct_nested_region")
+                            pending_edges.append((producer, event))
                     stack.append([event, event])
                 elif stack and address == event_address(stack[-1][0]):
                     parent_enter = stack[-1][0]
                     if event.get("region") == parent_enter.get("region"):
                         stack[-1][1] = event
+            if balanced and stack:
+                self.gaps["program_order_unbalanced_region"] += 1
+                balanced = False
+            if balanced:
+                for producer, consumer in pending_edges:
+                    self._add(producer, consumer, "program_order",
+                              "same_thread_direct_nested_region")
 
     def _add(self, producer: dict[str, Any], consumer: dict[str, Any], kind: str,
              evidence: str, *, certainty: str = "observed") -> None:
