@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-27",
+  "review_type": "existing_cluster_test_and_fault_mechanism",
+  "status": "source_only_expected_abort_path_no_new_healthy",
+  "selected_target": {
+    "function": "HRegionServer.blockAndCheckIfStopped(ZKNodeTracker)",
+    "check": "HRegionServer.java:1052",
+    "throw": "HRegionServer.java:1053",
+    "predicate": "this.stopped after a tracker wait returned null",
+    "exception": "IOException: Received the shutdown message while waiting."
+  },
+  "workload": {
+    "selector": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+    "file": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestClusterBootOrder.java:91-96",
+    "sequence": "The test starts one RegionServer, waits four seconds, then starts a master and waits for cluster initialization. The RegionServer is expected to wait for master-address and cluster-up znodes."
+  },
+  "source_findings": [
+    {
+      "location": "HRegionServer.java:1005-1009,1049-1055; ZKNodeTracker.java:126-165",
+      "finding": "The target invokes blockUntilAvailable(msgInterval,false). With refresh=false, nodeExistsChecked is true, so its conditional checkExists/getDataAndWatch calls are skipped. The waiting thread does no ZK I/O in this loop."
+    },
+    {
+      "location": "ZKNodeTracker.java:193-208; HRegionServer.java:2828-2872,2587-2603",
+      "finding": "After the master creates a znode, nodeCreated reads it via getDataAndWatch. A caught KeeperException invokes the tracker abortable, which is the actual HRegionServer. HRegionServer.abort calls stop and sets this.stopped. The waiter may then return null and throw the selected IOException. This is the source's explicit shutdown response, not by itself a bug."
+    },
+    {
+      "location": "ZKNodeTracker.java:71-89; HRegionServer.java:724-728,967-983",
+      "finding": "An exception during tracker.start also aborts the RegionServer, but can do so before the target method runs. It is not an admitted target-retaining door without runtime evidence. preRegistrationInitialization catches the selected IOException and aborts the RegionServer."
+    },
+    {
+      "location": "TestClusterBootOrder.java:75-96; HRegionServer.java:2609-2620",
+      "finding": "The test's waitForServerOnline returns when the RegionServer is stopped; it does not assert isOnline afterward. A JUnit pass under injected abort would not prove that the service recovered."
+    }
+  ],
+  "existing_healthy_evidence": {
+    "path": "data/mallory/calibration_v2/HBASE-27",
+    "result_sha256": "88bcf6110bec9d5443ee3227c93b73cef671800ef081c024423e10a329b73852",
+    "audit_sha256": "a9201c0827b24217a92f6ab3524e399993732fcc9ff03ed1fc81b19b992e44b3",
+    "observation": "JUnit passed and the exact check was reached on a named rs actor, but the frozen audit found zero observed-path fault doors."
+  },
+  "instrumentation_status": "A separate same-tracker monitor overlay is staged but has no real healthy calibration. It must bind the watcher callback to the actual RegionServer and carry the exact tracker monitor handoff to the waiter; an actor-wide or time-only edge is insufficient. The current staged healthy config is preliminary and uses an older core. No new JVM ran for this review.",
+  "decision": "Do not promote a fault trial or full campaign from the current evidence. A future isolated healthy trace must prove the watcher read and exact same-tracker handoff to the named check. If a watcher fault then reaches the selected IOException through RegionServer.abort, classify it as expected shutdown unless an independent recovery or service invariant is violated; the current test does not assert such an invariant.",
+  "source_sha256": {
+    "HRegionServer.java": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+    "ZKNodeTracker.java": "c30ebadfb0e12252ff9c0d6fcf056dd53dea7253744e230eddfefaad9a1dc1c3",
+    "TestClusterBootOrder.java": "7ac0843f5cc522b4494fa2570f91ba334b70492da8bf73c58ea4d3baf9f0c630"
+  }
+}
