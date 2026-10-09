@@ -1,0 +1,307 @@
+{
+  "admission": "Isolated test/adapter build only. Verify patches against pinned source, run one patched healthy JUnit, then at most six targeted single-fault pilot trials. Do not promote to full fuzz until event-time causal audit passes.",
+  "case_id": "HDFS-48",
+  "healthy_gate": {
+    "exact_named_nn_target": true,
+    "junit_errors": 0,
+    "junit_failures": 0,
+    "junit_tests": 1,
+    "named_client_actor": "hdfs-client",
+    "root_free_event_time_path_from_retry_send": true,
+    "selected_throw_absent": true
+  },
+  "no_jvm_or_fault_trial_launched": true,
+  "original_junit": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestRenameWithSnapshots#testRenameUndo_1",
+  "patches": {
+    "hadoop_test": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/HDFS-48-target-retention-v1/hadoop-test-retry.patch",
+      "sha256": "de0ea10188f6c4745ae3f167b8f87b945c28442f043d3e3ab063eedbbaf523e8"
+    },
+    "hdfs_adapter": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/HDFS-48-target-retention-v1/hdfs-adapter-client-door.patch",
+      "sha256": "8cff0b9a3ff8bca4303a975ba246401970a764058860ee00c5d6596f09033ac1"
+    },
+    "hdfs_hooks": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/HDFS-48-target-retention-v1/hdfs-hooks-client-door.patch",
+      "sha256": "1f6417149fe6ea5595bd5e2702a40319d31db3ddb30586e1d29a7c8f2a9a7d89"
+    }
+  },
+  "pilot_bounds": {
+    "fault_exception": "java.io.IOException",
+    "inject_site": "hdfs:client-send-rpc-request:rename",
+    "max_elapsed_seconds": 480,
+    "max_fault_trials": 6,
+    "max_faults_per_sequence": 1,
+    "only_client_rename_request": true,
+    "required_evidence": [
+      "effective_fault_before_send",
+      "fault_site_is_ClientProtocol_rename",
+      "client_retry_send_and_nn_receive_same_logical_rpc",
+      "postfault_exact_named_nn_target",
+      "passing_junit_or_source_reviewed_failure"
+    ]
+  },
+  "prior_decision": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/cases/revisions/HDFS-48-nn-v14.pilot-decision-v2.json",
+    "sha256": "85fe5a679bddada84ca0d59aa228eb6de1da97bbfde11fe2abafb18dc8f34c7a"
+  },
+  "prior_healthy_result": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v14_node0/HDFS-48/trials/r0000/result.json",
+    "sha256": "fa888832d9e8ff62bf173399aa58366f819972163d8e8c92db562dac398a4dde"
+  },
+  "prior_nn_pilot_effective_trials": [
+    {
+      "fault_effective": true,
+      "fault_ordinal": 24,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1360,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0001/result.json",
+        "sha256": "05d8c778758c3c04bff67db5e3b3405051ca7b83bc338844fb15e11df07adcc4"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0001/stdout.log",
+        "sha256": "b364fe0939493e4393cb7616877c28fc0d268c88dcfddbb0f12cb5be4ce762f3"
+      },
+      "trial": "r0001"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 23,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1350,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0002/result.json",
+        "sha256": "289bcf939c01e30018e0a2eb7454448d1d70e660c6f6f49fd8f01654449333f7"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0002/stdout.log",
+        "sha256": "a6780c51e231c55fa1e92696002ea4edc662813ecdf7274b07e5bf0878b44085"
+      },
+      "trial": "r0002"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 22,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1350,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0003/result.json",
+        "sha256": "92dd67e8888d2a1fb4043375f34909535e3c11ff38739ebd273c940dbdcbb7da"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0003/stdout.log",
+        "sha256": "da83a62fc64b5e6c120b06320a1d57ed8002d922375a905a485c0fbe3bb4dbf6"
+      },
+      "trial": "r0003"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 21,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1350,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0004/result.json",
+        "sha256": "8cd07f054f3fd8f14d590e38cd74201a1f202f28e79bb52208471c5ee19629ad"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0004/stdout.log",
+        "sha256": "1edc67ec848356cfda1233a5d73f33056c7d0b62afa8835121f269ce533a6179"
+      },
+      "trial": "r0004"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 20,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1350,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0005/result.json",
+        "sha256": "f841e4638c129c4f3e4145188ce282f691ceb1594bfa30b0016a31d4e4e07e2d"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0005/stdout.log",
+        "sha256": "3c9684071cf54331c2680f00b733f4ac3d8c483d10f9fce1fe154870b07d9558"
+      },
+      "trial": "r0005"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 14,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1348,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0006/result.json",
+        "sha256": "b50297f7be416c936b3cab8e6ce71417798002accc707f82eac3a82e43495da5"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0006/stdout.log",
+        "sha256": "9a5cc7a6d2381115d021468b0179fddea9141691bc992d7ab3ba43a7a6593552"
+      },
+      "trial": "r0006"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 13,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1348,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0007/result.json",
+        "sha256": "31c062351b420b31af68d1decf0be130ac21d40faa8cdee6f086235ae4e902a4"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0007/stdout.log",
+        "sha256": "6ceaabd296d6735dbb291d3850d3f6469fceb040919b639b7e618ae095c00249"
+      },
+      "trial": "r0007"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 8,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1346,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0008/result.json",
+        "sha256": "2dbe11be464d8fcf4fe0c54a23d9f98e591da53b33801be35f1d149e686cd468"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0008/stdout.log",
+        "sha256": "1a8567cf69fb8bb0fcc5d215f266b5623f8e89889b02a64e61480be0bf623c8c"
+      },
+      "trial": "r0008"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 5,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1346,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0009/result.json",
+        "sha256": "68e943abb4d62617054feeb7967d2d267ab0fc8da4f0746dd407223ae3ee3ecb"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0009/stdout.log",
+        "sha256": "6613adb5850a5321ce78b5453cec8cfdf7fe710c81e407a40748411133b4cf83"
+      },
+      "trial": "r0009"
+    },
+    {
+      "fault_effective": true,
+      "fault_ordinal": 4,
+      "fault_site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+      "junit_failure_line": 1346,
+      "postfault_target_reached": false,
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0010/result.json",
+        "sha256": "e06d35865960e4f74d6a9f3f227305f38d0ed7308ea7d062549f541ce0d9f3ad"
+      },
+      "stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/pilots_v14/HDFS-48-nn-only/trials/r0010/stdout.log",
+        "sha256": "ac1aa32af3a35b7059ffc9c8de8382087588c6e5fc0611bf21fb46b5d224e2ec"
+      },
+      "trial": "r0010"
+    }
+  ],
+  "pristine_adapter": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java",
+    "sha256": "98886c4ff83d3a9dd766f43752f3e2bc2c0ecfbd69c8e0668342abe57bd41441"
+  },
+  "pristine_hooks": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java",
+    "sha256": "7a8d2b1171b7e48701e9493fbb3a238ae60902e3eddf62e16e2880fdc9f31458"
+  },
+  "pristine_test": {
+    "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java",
+    "sha256": "58c382b17db4855ebc3e105feb72232c086126e3ecb8a71dc8919d5967c8af00"
+  },
+  "required_agent_include_additions": [
+    "org.apache.hadoop.ipc.Client$Connection",
+    "org.apache.hadoop.ipc.Client",
+    "org.apache.hadoop.hdfs.server.namenode.snapshot.TestRenameWithSnapshots"
+  ],
+  "schema_version": 1,
+  "source_reasoning": [
+    "NN RpcCall entry IOException becomes RemoteException(IOException). The existing JUnit aborts at setup/rename and no postfault NN target appears.",
+    "The target is reached inside FSDirRenameOp.RenameOperation after RPC ingress. Edit-log rename/sync is after the in-memory target.",
+    "The non-HA ClientProtocol proxy has a retry wrapper, but its default retry policy is disabled. RetryUtils retries a local IOException when explicitly enabled, while RemoteException apart from SafeModeException is not retried.",
+    "ClientNamenodeProtocolTranslatorPB.rename converts the local ServiceException cause back to IOException via ShadedProtobufHelper.ipc. The 20,1 retry spec permits one retry.",
+    "A method-aware beforeDoor at Client.Connection.sendRpcRequest before rpcSend selects ClientProtocol.rename and throws before queueing. A single retry could then send the rename and reach NN replaceChild after the fault. This remains unverified."
+  ],
+  "source_refs": [
+    {
+      "lines": "351-359,381-399",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+      "sha256": "39636bc2cd045b41aadc631ad0ed8edc7935235422d0cc6decde876392208f50"
+    },
+    {
+      "lines": "47-65,489-523,629-686",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirRenameOp.java",
+      "sha256": "aeb3505380b89896c921642c25e71050717ed185004ec3b1cb220b10b7a41277"
+    },
+    {
+      "lines": "1047-1073",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+      "sha256": "5259c4a030d6905feb9245596719d6ba5fd2cc8f26c1aff457c8f5b8566ff377"
+    },
+    {
+      "lines": "3301-3330",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+      "sha256": "4443993aa68c4505be454532d390600dab19777b88dca5863eb548121102069d"
+    },
+    {
+      "lines": "122-140,339-388",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/NameNodeProxiesClient.java",
+      "sha256": "7ec84c60223b27bb32af7c6a4960371cf0646e2d3547b7dcc9f512e560ba9e0e"
+    },
+    {
+      "lines": "355-362",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/client/HdfsClientConfigKeys.java",
+      "sha256": "3b89af8fc4b13a6fd00c9746cb4307de658babd29e42cc6d431d7206795c45a5"
+    },
+    {
+      "lines": "59-122",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/RetryUtils.java",
+      "sha256": "18fe683b8819f6c501ca5e8e823d05a4e61384395384a88aea4db69b60739834"
+    },
+    {
+      "lines": "1159-1190,1452-1495",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+      "sha256": "65427c4d91e7bef56bad8be379f1c583dd90e72083538b2b578b95eb5a0d237c"
+    },
+    {
+      "lines": "180-201,649-681",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/ProtobufRpcEngine2.java",
+      "sha256": "2b504ed1208a6a1b9f6330b80fb9398803b4a4b0f5b12b488f9eca8bd81313fb"
+    },
+    {
+      "lines": "48-65,152-166",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/internal/ShadedProtobufHelper.java",
+      "sha256": "ff89d000a937a720ca84de354d7ae9fc408078ea4517abfc1b9f3fea0bb8f8e0"
+    },
+    {
+      "lines": "387-429,483-518",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/RetryPolicies.java",
+      "sha256": "5ac61d334a9cbe2510f47dc0e11b0f7efcb0066292864952cf48b45bf9bea3c2"
+    },
+    {
+      "lines": "145-149",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/protocol/HdfsConstants.java",
+      "sha256": "af7159c6d3f7aa6d741217f089d24625bacef01c0a692436864289537fef8a0d"
+    },
+    {
+      "lines": "543-551",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/protocolPB/ClientNamenodeProtocolTranslatorPB.java",
+      "sha256": "7dafc7640cf14d4f9083bfff301df0db36a2c0db594b8a1413f336f60a7efbff"
+    }
+  ],
+  "status": "source_backed_hypothesis_unverified_no_jvm"
+}

@@ -1,0 +1,30 @@
+diff --git a/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java b/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
+--- a/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
++++ b/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
+@@ -381,6 +381,26 @@
+     return new RpcScope(nodeScope, request);
+   }
+ 
++  /** Method-aware client RPC door, before serialization and queueing. */
++  public static void rpcBeforeSend(Object call) {
++    final Object request;
++    try {
++      request = field(call, "rpcRequest");
++    } catch (ReflectiveOperationException failure) {
++      throw new IllegalStateException("HDFS client RPC request unavailable", failure);
++    }
++    if (request == null || !request.getClass().getName().equals(
++        "org.apache.hadoop.ipc.ProtobufRpcEngine2$RpcProtobufRequest")) return;
++    String rpcName = request.toString();
++    String protocol = "org.apache.hadoop.hdfs.protocol.ClientProtocol.";
++    if (!rpcName.startsWith(protocol)) return;
++    String method = rpcName.substring(protocol.length());
++    if (method.isEmpty())
++      throw new IllegalStateException("HDFS client RPC method unavailable");
++    Probe.beforeDoor("hdfs:client-send-rpc-request:" + method,
++        "java.io.IOException");
++  }
++
+   public static void rpcSend(Object connection, Object call) {
+     String token = correlationFromConnection(connection, call);
+     if ("unknown".equals(Probe.currentNode())) {
