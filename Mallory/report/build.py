@@ -1480,6 +1480,143 @@ def _fault_model_no_target_path(results: Path, case_id: str) -> tuple[str | None
     return "fault_model_no_target_path", str(path)
 
 
+def _zk05_epoch_influence_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Verify the archived six-trial ZK05 fault-model gap from raw events."""
+    if case_id != "ZOOKEEPER-05":
+        return None, None
+    path = results / "admissions/ZOOKEEPER-05-5820-fault-model-gap-v2.json"
+    if not path.is_file():
+        return None, None
+    invalid = ("invalid_fault_model_receipt", str(path))
+    try:
+        from Mallory.core.graph import OccurrenceGraph
+
+        digest = lambda file: hashlib.sha256(file.read_bytes()).hexdigest()
+        receipt = _json(path)
+        v1 = results / "admissions/ZOOKEEPER-05-5820-fault-model-gap-v1.json"
+        actor_path = results / "admissions/ZOOKEEPER-05-5820-actor-retention-v2.json"
+        healthy_dir = results / "calibration_core5820/ZOOKEEPER-05"
+        pilot_dir = results / "pilot_core5820/ZOOKEEPER-05"
+        bindings = {
+            "source_gap_v1_sha256": v1,
+            "strict_actor_receipt_sha256": actor_path,
+            "healthy_result_sha256": healthy_dir / "result.json",
+            "healthy_offline_audit_sha256": healthy_dir / "offline-causal-audit.json",
+            "pilot_result_sha256": pilot_dir / "result.json",
+            "pilot_offline_audit_sha256": pilot_dir / "offline-causal-audit.json",
+        }
+        if not isinstance(receipt, dict) or any(
+                not file.is_file() or digest(file) != receipt.get(field)
+                for field, file in bindings.items()):
+            return invalid
+        v1_data = _json(v1)
+        actor = _json(actor_path)
+        healthy = _json(bindings["healthy_result_sha256"])
+        pilot = _json(bindings["pilot_result_sha256"])
+        healthy_audit = _json(bindings["healthy_offline_audit_sha256"])
+        pilot_audit = _json(bindings["pilot_offline_audit_sha256"])
+        config = _json(pilot_dir / "config.json")
+        if not all(isinstance(item, dict) for item in
+                   (v1_data, actor, healthy, pilot, healthy_audit, pilot_audit, config)):
+            return invalid
+        selector = "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart"
+        source_root = Path("/users/ZhenyuLi/.graphchecker-sources/zookeeper-3.8.7")
+        patched_root = Path("/users/ZhenyuLi/.mallory-worktrees/zookeeper")
+        sources = receipt.get("source_files")
+        if not isinstance(sources, dict) or len(sources) != 4:
+            return invalid
+        for relative, expected in sources.items():
+            file = (source_root / relative).resolve()
+            if (not file.is_relative_to(source_root.resolve()) or
+                    not file.is_file() or digest(file) != expected):
+                return invalid
+        patched = patched_root / "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java"
+        compiled = patched_root / "zookeeper-server/target/classes/org/apache/zookeeper/server/quorum/Follower.class"
+        if (not patched.is_file() or not compiled.is_file() or
+                digest(patched) != receipt.get("patched_follower_source_sha256") or
+                digest(compiled) != receipt.get("compiled_follower_class_sha256")):
+            return invalid
+        valid = (
+            receipt.get("schema_version") == 1
+            and receipt.get("case_id") == "ZOOKEEPER-05"
+            and receipt.get("status") ==
+                "no_target_retaining_epoch_increase_fault_demonstrated"
+            and receipt.get("full_campaign_admission") is False
+            and receipt.get("new_jvm_runs_for_this_review") == 0
+            and receipt.get("pilot_exact_injections") == 6
+            and receipt.get("pilot_same_occurrence_postfault_checks") == 0
+            and receipt.get("pilot_time_respecting_fault_to_target_paths") == 0
+            and {key: receipt.get(key) for key in v1_data} == v1_data
+            and healthy.get("case_id") == pilot.get("case_id") == "ZOOKEEPER-05"
+            and healthy.get("cluster_test") == pilot.get("cluster_test") == selector
+            and healthy.get("status") == "calibration_complete"
+            and healthy.get("healthy_seed_valid") is True
+            and healthy.get("fault_trials_completed") == 0
+            and pilot.get("status") in TERMINAL
+            and pilot.get("healthy_seed_valid") is True
+            and pilot.get("fault_trials_completed") == 6
+            and pilot.get("strict_injected_trials") == 6
+            and pilot.get("exact_exception_trials") == 0
+            and healthy_audit.get("report_gate_passed") is True
+            and pilot_audit.get("report_gate_passed") is True
+            and healthy_audit.get("campaign_result_sha256") ==
+                receipt["healthy_result_sha256"]
+            and pilot_audit.get("campaign_result_sha256") ==
+                receipt["pilot_result_sha256"]
+            and actor.get("status") == "no_proven_postfault_target_causality"
+            and actor.get("applied_fault_count") == 6
+            and actor.get("exact_same_occurrence_count") == 0
+            and actor.get("time_respecting_observed_path_count") == 0
+            and config.get("case_id") == "ZOOKEEPER-05"
+        )
+        evidence = receipt.get("trial_evidence")
+        if not valid or not isinstance(evidence, list) or len(evidence) != 6:
+            return invalid
+        sites = set(config.get("target", {}).get("check_sites", []))
+        if not sites:
+            return invalid
+        for expected_id, entry in enumerate(evidence, 1):
+            if not isinstance(entry, dict) or entry.get("trial_id") != expected_id:
+                return invalid
+            trial_dir = pilot_dir / f"trials/r{expected_id:04d}"
+            trial_path = trial_dir / "result.json"
+            trace_path = trial_dir / "events.jsonl.gz"
+            if (not trial_path.is_file() or not trace_path.is_file() or
+                    digest(trial_path) != entry.get("trial_result_sha256") or
+                    digest(trace_path) != entry.get("trace_gzip_sha256")):
+                return invalid
+            trial = _json(trial_path)
+            packed = trace_path.read_bytes()
+            raw = gzip.decompress(packed)
+            if (not isinstance(trial, dict) or trial.get("trial_id") != expected_id or
+                    hashlib.sha256(raw).hexdigest() != entry.get("trace_raw_sha256") or
+                    trial.get("events_evidence", {}).get("raw_sha256") !=
+                        entry.get("trace_raw_sha256") or
+                    trial.get("events_evidence", {}).get("gzip_sha256") !=
+                        entry.get("trace_gzip_sha256")):
+                return invalid
+            events = tuple(json.loads(line) for line in raw.splitlines() if line.strip())
+            faults = [event for event in events if event.get("type") == "FAULT_APPLIED"]
+            checks = [event for event in events if event.get("type") == "TARGET_CHECK"
+                      and event.get("site") in sites]
+            if (len(faults) != 1 or faults[0].get("id") !=
+                    entry.get("applied_fault_event_id") or not checks):
+                return invalid
+            fault = faults[0]
+            if any(check.get("seq", -1) > fault.get("seq", 10**12) and
+                   all(check.get(key) == fault.get(key)
+                       for key in ("node", "epoch", "occurrence"))
+                   for check in checks):
+                return invalid
+            graph = OccurrenceGraph(events, reject_coarse_roots=True)
+            if any(graph.event_path(fault, check, require_edge=True)
+                   for check in checks):
+                return invalid
+        return "fault_model_epoch_influence_unproven", str(path)
+    except (OSError, ValueError, TypeError, KeyError, EOFError):
+        return invalid
+
+
 def _solr18_scope_gap(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Recheck a bounded healthy trace with incomplete actor/path instrumentation."""
     if case_id != "SOLR-18":
@@ -1902,6 +2039,11 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "new_bug": None,
     }
     if result is None:
+        epoch_status, epoch_receipt = _zk05_epoch_influence_gap(results, case_id)
+        if epoch_status is not None:
+            row["report_status"] = epoch_status
+            row["fault_model_receipt"] = epoch_receipt
+            return row
         scope_status, scope_receipt = _solr18_scope_gap(results, case_id)
         if scope_status is not None:
             row["report_status"] = scope_status
@@ -2091,6 +2233,11 @@ def markdown(report: dict[str, Any]) -> str:
              "cluster JUnit reaches the guard, but current I/O exception evidence "
              "does not show a target-preserving change to either zxid operand; "
              "it is neither an impossibility claim nor a completed campaign. "
+             "`fault_model_epoch_influence_unproven` means the existing ZK05 "
+             "six-fault pilot has no same-occurrence or observed fault-to-target "
+             "continuation and source review identifies no current "
+             "target-retaining acceptedEpoch-changing fault; it is not a "
+             "completed campaign. "
              "Local-timeline-only quality also requires a same-actor, "
              "same-epoch, same-occurrence target check after an admitted fault door. "
              "A SHA-bound faulted-path review is required for high-quality status. "

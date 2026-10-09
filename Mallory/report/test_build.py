@@ -95,6 +95,38 @@ class ReportEvidenceTest(unittest.TestCase):
                 self.assertEqual("invalid_instrumentation_gap",
                                  _solr18_scope_gap(results, "SOLR-18")[0])
 
+    def test_zk05_epoch_gap_rechecks_each_fault_trace_and_fails_closed(self):
+        from Mallory.report.build import _zk05_epoch_influence_gap
+        original = Path(__file__).resolve().parents[2] / "data/mallory"
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            for relative in (
+                "admissions/ZOOKEEPER-05-5820-fault-model-gap-v1.json",
+                "admissions/ZOOKEEPER-05-5820-fault-model-gap-v2.json",
+                "admissions/ZOOKEEPER-05-5820-actor-retention-v2.json",
+                "calibration_core5820/ZOOKEEPER-05/result.json",
+                "calibration_core5820/ZOOKEEPER-05/offline-causal-audit.json",
+                "pilot_core5820/ZOOKEEPER-05/result.json",
+                "pilot_core5820/ZOOKEEPER-05/offline-causal-audit.json",
+                "pilot_core5820/ZOOKEEPER-05/config.json",
+            ):
+                dest = results / relative
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(original / relative, dest)
+            for trial_id in range(1, 7):
+                relative = f"pilot_core5820/ZOOKEEPER-05/trials/r{trial_id:04d}"
+                dest = results / relative
+                dest.mkdir(parents=True)
+                for name in ("result.json", "events.jsonl.gz"):
+                    shutil.copy2(original / relative / name, dest / name)
+            self.assertEqual("fault_model_epoch_influence_unproven",
+                             _zk05_epoch_influence_gap(results, "ZOOKEEPER-05")[0])
+            trace = (results / "pilot_core5820/ZOOKEEPER-05" /
+                     "trials/r0003/events.jsonl.gz")
+            trace.write_bytes(trace.read_bytes() + b"tampered")
+            self.assertEqual("invalid_fault_model_receipt",
+                             _zk05_epoch_influence_gap(results, "ZOOKEEPER-05")[0])
+
     def test_zk04_zxid_gap_is_nonterminal_and_fails_closed_on_tamper(self):
         from Mallory.report.build import _zk04_zxid_influence_gap
         baseline = Path(__file__).resolve().parents[2]
