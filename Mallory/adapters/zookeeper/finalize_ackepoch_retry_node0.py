@@ -61,7 +61,7 @@ def finalize(source_receipt: Path, patch_file: Path, compiled_receipt: Path,
     write_new(patch_file, "".join(lines))
     receipt = {
         "schema_version": 1,
-        "version": "ackepoch-following-retry-node0-compiled-v1",
+        "version": f"ackepoch-following-retry-{source.get('host', 'node0')}-compiled-v2",
         "base_root": str(pristine),
         "patched_root": str(root),
         "patch_file": str(patch_file),
@@ -73,6 +73,26 @@ def finalize(source_receipt: Path, patch_file: Path, compiled_receipt: Path,
         "source_rule": source["source_rule"],
         "evidence_limit": "Compiled hooks require a fresh exact-packet healthy trace and a bounded fault retry trace before full admission.",
     }
+    if source.get("host") == "node1":
+        repair_path = source_receipt.with_name(
+            "ZOOKEEPER-06-ackepoch-retry-door-node1-build-repair-v3.json")
+        repair = json.loads(repair_path.read_text(encoding="utf-8"))
+        if (repair["source_receipt_sha256"] != sha(source_receipt)
+                or repair["java_source_hashes"] != modified
+                or (root / ".git").exists()):
+            raise ValueError("node1 isolated Git-pointer repair is unverified")
+        receipt["build_repair_receipt"] = str(repair_path)
+        receipt["build_repair_receipt_sha256"] = sha(repair_path)
+        compile_root = source_receipt.parent.parent / "calibration/ZOOKEEPER-06/ackepoch-retry-door-node1-compile-v3"
+        compile_exit = compile_root / "compile-exit.json"
+        compile_log = compile_root / "compile.log"
+        compile_status = json.loads(compile_exit.read_text(encoding="utf-8"))
+        if compile_status.get("exit_code") != 0 or compile_status.get("test_execution") is not False:
+            raise ValueError("node1 no-JUnit compilation did not succeed")
+        receipt["compile_exit"] = str(compile_exit)
+        receipt["compile_exit_sha256"] = sha(compile_exit)
+        receipt["compile_log"] = str(compile_log)
+        receipt["compile_log_sha256"] = sha(compile_log)
     write_new(compiled_receipt, json.dumps(receipt, indent=2, sort_keys=True) + "\n")
 
     config = json.loads(base_config.read_text(encoding="utf-8"))

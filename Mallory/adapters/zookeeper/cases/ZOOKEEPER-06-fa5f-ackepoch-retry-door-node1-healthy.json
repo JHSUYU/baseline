@@ -1,0 +1,95 @@
+{
+  "agent_arg_property": "mallory.agent.arg",
+  "agent_include": [
+    "org.apache.zookeeper.server.quorum.Leader"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+  "agent_properties": {
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": true
+  },
+  "agent_transport": "surefire_argline",
+  "auto_promote_if_healthy": false,
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 300,
+    "trial_timeout_basis": "existing_quorum_restart_healthy_ceiling",
+    "trial_timeout_seconds": 180,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "ZOOKEEPER-06",
+  "cluster_test": "QuorumRestartTest#testRollingRestart",
+  "command": [
+    "mvn",
+    "-pl",
+    "zookeeper-server",
+    "-am",
+    "-Dtest=QuorumRestartTest#testRollingRestart",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dmallory.test.dir={trial_dir}/test-data",
+    "test"
+  ],
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-ackepoch-retry-door-node1",
+  "expected_target_class_sha256": "2997636daa456c16bbe1168a22da699bef636e27ab6bbd0a224ea0c6718f2256",
+  "mapping": {
+    "agent_sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-ackepoch-retry-door-node1/zookeeper-server/target/classes",
+    "compiled_class_sha256": "2997636daa456c16bbe1168a22da699bef636e27ab6bbd0a224ea0c6718f2256",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",
+    "compiled_jar_sha256": "fd12731eecb5d3ace48fa25f0141f011bcb13273b5dca301ff15d5409bd52a91",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin",
+    "distribution_root_env": "MALLORY_ZOOKEEPER_DIST_ROOT",
+    "healthy_seed_verified": false,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/zookeeper-3.8.7",
+    "node_identity_binding_configured": true,
+    "node_identity_binding_verified": false,
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-ackepoch-retry-door-node1",
+    "source_root_env": "MALLORY_ZOOKEEPER_SOURCE_ROOT",
+    "status": "compiled_retry_overlay_pending_fresh_healthy_seed",
+    "target_class_relative": "zookeeper-server/target/classes/org/apache/zookeeper/server/quorum/Leader.class",
+    "target_source_sha256": "60cfa08dd34e86e88cf8d521f191d31f178c7494dd930c0289fb23889fafa021",
+    "target_throw_kind": "athrow",
+    "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java",
+    "test_source_sha256": "d6f089ecb24e083db17d94540ceea72e4afca08a63b8d5fc7155aef3cbcb30fc"
+  },
+  "reject_coarse_roots": true,
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/cases/ZOOKEEPER-06-fa5f-ackepoch-healthy.sites.json",
+      "sha256": "bf63bd060da195f8a3217f007f33d9d25284b90af981cdd029935f440eadd54d"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/cases/ZOOKEEPER-06-fa5f-ackepoch-healthy.sites.json",
+  "source_overlay_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/zookeeper-3.8.7-ackepoch-retry-door-node1-overlay.json",
+  "source_overlay_receipt_sha256": "a34e86625873d356aa751a257476e318637e6af9d2f4842dda94ac3cda5af3fc",
+  "system": "zookeeper",
+  "target": {
+    "check_code": "if (ss.isMoreRecentThan(leaderStateSummary)) {\nthrow new IOException(\"Follower is ahead of the leader, leader summary: \"\n+ leaderStateSummary.getCurrentEpoch()\n+ \" (current epoch), \"\n+ leaderStateSummary.getLastZxid()\n+ \" (last zxid)\");",
+    "check_sites": [
+      "org.apache.zookeeper.server.quorum.Leader#waitForEpochAck(JLorg/apache/zookeeper/server/quorum/StateSummary;)V@1475:branch:3"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.zookeeper.server.quorum.Leader.waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)",
+    "nodes": [
+      "zk1",
+      "zk2",
+      "zk3"
+    ],
+    "original_source_line": 1475,
+    "site_id": "<org.apache.zookeeper.server.quorum.Leader: void waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)>#u29",
+    "source_line": 1479,
+    "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java",
+    "throw_site": "org.apache.zookeeper.server.quorum.Leader#waitForEpochAck(JLorg/apache/zookeeper/server/quorum/StateSummary;)V@1479:throw:1"
+  }
+}
