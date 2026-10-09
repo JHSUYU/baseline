@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-24",
+  "kind": "offline_strict_graph_feasibility",
+  "status": "numeric_agent_alone_insufficient_no_second_healthy",
+  "source_healthy_trace_gzip_sha256": "6b5e9928f9c56be7ff8aa2857f95e632e3a615ad33fbe55df5ee36aac679c39c",
+  "evaluated_core_release_id": "4390310699b695ba002ed541508b359204a2d95529df09bb9f702db5dac3cde4",
+  "evaluated_core_manifest_sha256": "a679d1d67144e41234b0af1e2cfd399d014dc13d99ba0acfe9ed8116258a6d15",
+  "offline_model": {
+    "method": "Assign a distinct hypothetical numeric thread_id to every (node, thread name) pair in the frozen healthy trace, then evaluate the pinned OccurrenceGraph with reject_coarse_roots=true. These IDs are a feasibility model, not runtime evidence.",
+    "named_member_door_check_pairs": 4,
+    "direct_same_occurrence_empty_edge_witnesses": 4,
+    "event_path_require_edge_true_witnesses": 0,
+    "graph_observed_edges": 0,
+    "graph_candidate_edges": 0
+  },
+  "structural_reason": "The line-405 door and line-205 check are events in one startNewSubprocedure region occurrence. Core 439 accepts their ordered, same-thread direct path with an empty edge tuple, but event_path(require_edge=true) requires at least one observed edge. Its nested program-order rule only adds an edge into a direct child region, not between two events in this same region.",
+  "agent_status": "The staged 5a agent omits numeric thread_id. Available immutable agent JARs inspected locally also omit it. The current Probe.java source contains numeric thread_id emission, but staging an agent from that source alone cannot make this same-region path a nonempty observed graph path.",
+  "admission": {
+    "strict_graph_path_proven": false,
+    "second_healthy_staged": false,
+    "fault_or_full_admitted": false,
+    "required_change": "A separately reviewed sound graph rule for a same-region dataflow/program-order path, or a documented strict criterion for a direct same-region event-time witness, before another healthy run can test strict admission."
+  }
+}

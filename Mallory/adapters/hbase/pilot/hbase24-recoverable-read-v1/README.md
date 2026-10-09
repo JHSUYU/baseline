@@ -53,3 +53,21 @@ success, and an unmodified returned-byte path. A fault pilot needs a fresh
 same member after fault check and a strict causal argument; the healthy run
 does not authorize a fault or full campaign. An idempotent read retry alone
 does not imply malformed PB data or a coordination bug.
+
+## Healthy result and strict-path gate
+
+The granted one-JUnit node1 run passed 1/0/0 and matched the compiled class
+hashes. Each of the four named members had a line-405 door before a
+nonthrowing line-205 check in its own `startNewSubprocedure` occurrence. The
+[healthy receipt](healthy-v1-receipt.json) pins the four event pairs, result,
+audit, raw trace, and local evidence archive. Its audit counted four local
+timeline doors and **zero observed graph path doors or edges**. The audit's
+`report_gate_passed: true` comes from the explicit local timeline allowance;
+it is not a strict graph-path verdict. No fault was injected.
+
+The [strict feasibility review](strict-v2-feasibility.json) evaluates current
+core 439 on the frozen trace with hypothetical numeric thread IDs. All four
+same-region paths remain empty-edge event-time witnesses, and
+`event_path(require_edge=true)` finds none. A numeric-thread-ID agent alone
+cannot turn these paths into observed graph edges. No second healthy, fault,
+or full run is staged under the current strict criterion.
