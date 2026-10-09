@@ -1,0 +1,114 @@
+{
+  "calibration_only": true,
+  "case_id": "HBASE-31",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 16,
+  "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+  "coverage_ids_seen": 354,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 34.576,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 0,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "89747a174d58b803af73e19b93472084147d17ef9ec581bb533edf7d7580e620",
+    "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "healthy_local_timeline_doors": null,
+  "healthy_observed_door_events": 8,
+  "healthy_seed_valid": false,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "rs0",
+      "rs1"
+    ],
+    "eligible_doors_before_target": 0,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "52905795b7b29a665da3ef94b73c43e7233fb0d96748a1054d0a57b53fe1224f",
+    "observed_target_class_sha256": "52905795b7b29a665da3ef94b73c43e7233fb0d96748a1054d0a57b53fe1224f",
+    "reasons": [
+      "no_injectable_door"
+    ],
+    "site_catalog_sha256": "f11620e0f848b7282bfd16f5a7d1abf79d46ae87ea54ef50e0193ce5987d0e87",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": false
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "healthy_no_injectable_door",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (regionServer.serverName.getStartcode() != serverStartCode) {\nthrow new ServiceException(new DoNotRetryIOException(\n\"This RPC was intended for a \" + \"different server with startCode: \" + serverStartCode\n+ \", this server is: \" + regionServer.serverName));",
+    "check_sites": [
+      "org.apache.hadoop.hbase.regionserver.RSRpcServices#throwOnWrongStartCode(J)V@2010:branch:1"
+    ],
+    "exception_class": "java.lang.Throwable",
+    "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(long)",
+    "original_source_line": 2011,
+    "site_id": "<org.apache.hadoop.hbase.regionserver.RSRpcServices: void throwOnWrongStartCode(long)>#u21",
+    "source_line": 2011,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.RSRpcServices#throwOnWrongStartCode(J)V@2011:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "rs0",
+      "rs1"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 34.576,
+      "eligible_doors_before_target": 0,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 16,
+        "coverage": 354
+      },
+      "observed_door_events": 8,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}
