@@ -1,0 +1,2065 @@
+{
+  "case_id": "HDFS-29",
+  "dispatch_attempt_id": null,
+  "elapsed_seconds": 21.893,
+  "events_evidence": {
+    "gzip_bytes": 99619,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "dab69ac708f5b028d329e076a5879d77871c5669c9cafe55d9eece3b607a5000",
+    "raw_bytes": 2349777,
+    "raw_path": null,
+    "raw_sha256": "68b4e2e2cd760d198f2b8a07ed8c45cef141ee042144c15697b980e142f66ff4"
+  },
+  "events_sha256": "68b4e2e2cd760d198f2b8a07ed8c45cef141ee042144c15697b980e142f66ff4",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": false,
+    "all_faults_matched": true,
+    "applied_fault_ids": [],
+    "closure_coverage_ids": [
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$000(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$100(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;)Lorg/apache/hadoop/hdfs/server/datanode/DataNode;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$200(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;)Lorg/apache/hadoop/conf/Configuration;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$300(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;)Lorg/apache/hadoop/hdfs/server/datanode/DNConf;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$400(Lorg/apache/hadoop/hdfs/server/protocol/InterDatanodeProtocol;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)Lorg/apache/hadoop/hdfs/server/protocol/ReplicaRecoveryInfo;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$900(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#callInitReplicaRecovery(Lorg/apache/hadoop/hdfs/server/protocol/InterDatanodeProtocol;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)Lorg/apache/hadoop/hdfs/server/protocol/ReplicaRecoveryInfo;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@577:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@582:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#logRecoverBlock(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#recoverBlocks(Ljava/lang/String;Ljava/util/Collection;)Lorg/apache/hadoop/util/Daemon;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V@1448:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAndWaitForBP(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#elapsed()J",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#getBufferedOutputStream()Ljava/io/DataOutputStream;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#getOutputStream()Ljava/io/OutputStream;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@599:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@599:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@623:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@629:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@167:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@171:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeSuccessWithChecksumInfo(Lorg/apache/hadoop/hdfs/server/datanode/BlockSender;Ljava/io/DataOutputStream;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkNNStartup()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkNNStartup()V@2358:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#commitBlockSynchronization(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJZZ[Lorg/apache/hadoop/hdfs/protocol/DatanodeID;[Ljava/lang/String;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V@1311:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1236:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1251:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponse(Ljava/nio/ByteBuffer;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponseFields(Lorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V"
+    ],
+    "closure_edges": [
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:2938",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-29-r0000:2718",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;:hdfs-block-recovery:1:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:3122",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:3107",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+        "target": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:100:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:2926",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:2921",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+        "target": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:92:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:2863",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:2843",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+        "target": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:90:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:3010",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:2991",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+        "target": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:96:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:3217",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:3212",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+        "target": "[\"hdfs-cluster-1/nn1\",\"0\",\"unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:104:0\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:2718",
+        "evidence": "unique:correlation",
+        "kind": "task",
+        "producer_event": "HDFS-29-r0000:2712",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:root\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:3136",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:3131",
+        "source": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:100:0\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:2937",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:2935",
+        "source": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:92:0\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:2907",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:2905",
+        "source": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:90:0\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:3096",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:3087",
+        "source": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:96:0\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-29-r0000:3231",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-29-r0000:3229",
+        "source": "[\"hdfs-cluster-1/nn1\",\"0\",\"unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:104:0\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]"
+      }
+    ],
+    "closure_occurrences": [
+      "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;:hdfs-block-recovery:1:1\"]",
+      "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+      "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:root\"]",
+      "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:100:0\"]",
+      "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:92:0\"]",
+      "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:90:0\"]",
+      "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:96:0\"]",
+      "[\"hdfs-cluster-1/nn1\",\"0\",\"unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:104:0\"]"
+    ],
+    "coverage_ids": [
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#<init>(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$000(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$100(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;)Lorg/apache/hadoop/hdfs/server/datanode/DataNode;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$200(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;)Lorg/apache/hadoop/conf/Configuration;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$300(Lorg/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker;)Lorg/apache/hadoop/hdfs/server/datanode/DNConf;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$400(Lorg/apache/hadoop/hdfs/server/protocol/InterDatanodeProtocol;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)Lorg/apache/hadoop/hdfs/server/protocol/ReplicaRecoveryInfo;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#access$900(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#callInitReplicaRecovery(Lorg/apache/hadoop/hdfs/server/protocol/InterDatanodeProtocol;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)Lorg/apache/hadoop/hdfs/server/protocol/ReplicaRecoveryInfo;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@577:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@582:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getDatanodeID(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/DatanodeID;@538:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#logRecoverBlock(Ljava/lang/String;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#recoverBlocks(Ljava/lang/String;Ljava/util/Collection;)Lorg/apache/hadoop/util/Daemon;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#<init>(Lorg/apache/hadoop/hdfs/net/Peer;Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/datanode/DataXceiverServer;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#<init>(Lorg/apache/hadoop/hdfs/net/Peer;Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/datanode/DataXceiverServer;)V@151:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V@1448:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAndWaitForBP(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#collectThreadLocalStates()V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#collectThreadLocalStates()V@353:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#create(Lorg/apache/hadoop/hdfs/net/Peer;Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/datanode/DataXceiverServer;)Lorg/apache/hadoop/hdfs/server/datanode/DataXceiver;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#decrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#decrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1488:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#decrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1488:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#decrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1490:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#elapsed()J",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#getBlockReceiver(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Ljava/io/DataInputStream;Ljava/lang/String;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;JJJLjava/lang/String;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZLjava/lang/String;)Lorg/apache/hadoop/hdfs/server/datanode/BlockReceiver;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#getBufferedOutputStream()Ljava/io/DataOutputStream;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#getOutputStream()Ljava/io/OutputStream;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#incrDatanodeNetworkErrors()V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#incrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#incrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1480:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#incrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1480:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#incrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1482:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@599:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@599:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@623:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@629:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@267:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@267:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@268:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@268:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@289:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@289:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@295:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@295:branch:8:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@301:branch:9:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@302:branch:10:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@302:branch:10:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@302:branch:11:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@304:branch:14:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@307:branch:15:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@307:branch:16:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@316:branch:18:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@325:branch:21:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@326:branch:22:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@338:branch:12:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@338:branch:23:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@339:branch:13:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@339:branch:24:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#setCurrentBlockReceiver(Lorg/apache/hadoop/hdfs/server/datanode/BlockReceiver;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@167:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@167:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@171:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@700:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@701:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@702:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@702:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@704:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@713:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@713:branch:8:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@720:branch:9:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@720:branch:9:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@723:branch:10:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@734:branch:11:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@739:branch:13:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@756:branch:14:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@772:branch:15:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@772:branch:16:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@792:branch:17:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@792:branch:17:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@811:branch:18:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@822:branch:19:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@838:branch:20:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@842:branch:21:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@842:branch:22:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@842:branch:22:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@863:branch:23:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@868:branch:24:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@904:branch:27:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@904:branch:28:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@905:branch:29:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@918:branch:30:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@919:branch:31:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@919:branch:31:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@924:branch:32:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@931:branch:33:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@931:branch:34:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@940:branch:35:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@940:branch:36:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@948:branch:37:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@962:branch:38:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Lorg/apache/hadoop/fs/StorageType;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;Lorg/apache/hadoop/hdfs/protocol/datatransfer/BlockConstructionStage;IJJJLorg/apache/hadoop/util/DataChecksum;Lorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;ZZ[ZLjava/lang/String;[Ljava/lang/String;)V@962:branch:39:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeSuccessWithChecksumInfo(Lorg/apache/hadoop/hdfs/server/datanode/BlockSender;Ljava/io/DataOutputStream;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@351:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@405:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@449:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@460:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@498:branch:8:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@550:branch:11:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@553:branch:12:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@558:branch:13:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@558:branch:14:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#addBlock(Ljava/lang/String;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;J[Ljava/lang/String;Ljava/util/EnumSet;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#addBlock(Ljava/lang/String;Ljava/lang/String;Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;J[Ljava/lang/String;Ljava/util/EnumSet;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@934:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReceivedAndDeleted(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReceivedAndDeleted(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks;)V@1699:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReceivedAndDeleted(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageReceivedDeletedBlocks;)V@1699:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1642:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1643:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1643:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1668:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1669:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1670:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkNNStartup()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkNNStartup()V@2358:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkPathLength(Ljava/lang/String;)Z",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkPathLength(Ljava/lang/String;)Z@1160:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkPathLength(Ljava/lang/String;)Z@1161:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#commitBlockSynchronization(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;JJZZ[Lorg/apache/hadoop/hdfs/protocol/DatanodeID;[Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#create(Ljava/lang/String;Lorg/apache/hadoop/fs/permission/FsPermission;Ljava/lang/String;Lorg/apache/hadoop/io/EnumSetWritable;ZSJ[Lorg/apache/hadoop/crypto/CryptoProtocolVersion;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#create(Ljava/lang/String;Lorg/apache/hadoop/fs/permission/FsPermission;Ljava/lang/String;Lorg/apache/hadoop/io/EnumSetWritable;ZSJ[Lorg/apache/hadoop/crypto/CryptoProtocolVersion;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;@816:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#create(Ljava/lang/String;Lorg/apache/hadoop/fs/permission/FsPermission;Ljava/lang/String;Lorg/apache/hadoop/io/EnumSetWritable;ZSJ[Lorg/apache/hadoop/crypto/CryptoProtocolVersion;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;@822:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#create(Ljava/lang/String;Lorg/apache/hadoop/fs/permission/FsPermission;Ljava/lang/String;Lorg/apache/hadoop/io/EnumSetWritable;ZSJ[Lorg/apache/hadoop/crypto/CryptoProtocolVersion;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;@822:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#create(Ljava/lang/String;Lorg/apache/hadoop/fs/permission/FsPermission;Ljava/lang/String;Lorg/apache/hadoop/io/EnumSetWritable;ZSJ[Lorg/apache/hadoop/crypto/CryptoProtocolVersion;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;@831:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#create(Ljava/lang/String;Lorg/apache/hadoop/fs/permission/FsPermission;Ljava/lang/String;Lorg/apache/hadoop/io/EnumSetWritable;ZSJ[Lorg/apache/hadoop/crypto/CryptoProtocolVersion;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;@834:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#fsync(Ljava/lang/String;JLjava/lang/String;J)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getAdditionalDatanode(Ljava/lang/String;JLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;ILjava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getAdditionalDatanode(Ljava/lang/String;JLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;ILjava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@948:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getAdditionalDatanode(Ljava/lang/String;JLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;ILjava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@957:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getAdditionalDatanode(Ljava/lang/String;JLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;ILjava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@959:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getAdditionalDatanode(Ljava/lang/String;JLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;[Ljava/lang/String;[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;ILjava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/LocatedBlock;@959:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getBlockLocations(Ljava/lang/String;JJ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlocks;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getCacheEntryWithPayload(Ljava/lang/Object;)Lorg/apache/hadoop/ipc/RetryCache$CacheEntryWithPayload;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getClientMachine()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getClientRpcServer()Lorg/apache/hadoop/ipc/RPC$Server;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getDatanodeReport(Lorg/apache/hadoop/hdfs/protocol/HdfsConstants$DatanodeReportType;)[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getFileInfo(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getLifelineRpcAddress()Ljava/net/InetSocketAddress;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getRemoteUser()Lorg/apache/hadoop/security/UserGroupInformation;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getRpcAddress()Ljava/net/InetSocketAddress;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getServerDefaults()Lorg/apache/hadoop/fs/FsServerDefaults;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getServiceRpcAddress()Ljava/net/InetSocketAddress;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#join()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#join()V@601:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#join()V@604:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#lambda$blockReport$0(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockManager;Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;ILorg/apache/hadoop/hdfs/protocol/BlockListAsLongs;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Ljava/lang/Boolean;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#recoverLease(Ljava/lang/String;Ljava/lang/String;)Z",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#registerDatanode(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#sendHeartbeat(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;[Lorg/apache/hadoop/hdfs/server/protocol/StorageReport;JJIIILorg/apache/hadoop/hdfs/server/protocol/VolumeFailureSummary;ZLorg/apache/hadoop/hdfs/server/protocol/SlowPeerReports;Lorg/apache/hadoop/hdfs/server/protocol/SlowDiskReports;)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#start()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#start()V@588:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#start()V@591:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V@613:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V@616:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V@619:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#transitionToActive(Lorg/apache/hadoop/ha/HAServiceProtocol$StateChangeRequestInfo;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#transitionToStandby(Lorg/apache/hadoop/ha/HAServiceProtocol$StateChangeRequestInfo;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#transitionToStandby(Lorg/apache/hadoop/ha/HAServiceProtocol$StateChangeRequestInfo;)V@1853:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifyRequest(Lorg/apache/hadoop/hdfs/server/protocol/NodeRegistration;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifyRequest(Lorg/apache/hadoop/hdfs/server/protocol/NodeRegistration;)V@1767:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V@1892:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V@1899:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#versionRequest()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;I)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;II)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;IILorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/RPC$RpcKind;[BLorg/apache/hadoop/tracing/Span;Lorg/apache/hadoop/ipc/CallerContext;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V@1311:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#getHostInetAddress()Ljava/net/InetAddress;",
+      "org.apache.hadoop.ipc.Server$RpcCall#getProtocol()Ljava/lang/String;",
+      "org.apache.hadoop.ipc.Server$RpcCall#getRemoteUser()Lorg/apache/hadoop/security/UserGroupInformation;",
+      "org.apache.hadoop.ipc.Server$RpcCall#isOpen()Z",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1281:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1285:branch:2:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1298:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Object;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1236:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1251:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponse(Ljava/nio/ByteBuffer;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponseFields(Lorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#toString()Ljava/lang/String;"
+    ],
+    "doors": [
+      {
+        "event_id": "HDFS-29-r0000:129",
+        "event_seq": 129,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:5:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:130",
+        "event_seq": 130,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:3:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:131",
+        "event_seq": 131,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:2:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:132",
+        "event_seq": 132,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:0:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:134",
+        "event_seq": 134,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:4:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:135",
+        "event_seq": 135,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:1:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:163",
+        "event_seq": 163,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:6:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:164",
+        "event_seq": 164,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:7:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:168",
+        "event_seq": 168,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:8:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:297",
+        "event_seq": 297,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:10:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:320",
+        "event_seq": 320,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:14:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:328",
+        "event_seq": 328,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:11:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:329",
+        "event_seq": 329,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:17:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:335",
+        "event_seq": 335,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:13:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:351",
+        "event_seq": 351,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:16:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:360",
+        "event_seq": 360,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:12:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:380",
+        "event_seq": 380,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:18:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:387",
+        "event_seq": 387,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:15:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:417",
+        "event_seq": 417,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:9:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:558",
+        "event_seq": 558,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:26:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:559",
+        "event_seq": 559,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:23:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:563",
+        "event_seq": 563,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:21:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:564",
+        "event_seq": 564,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:20:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:565",
+        "event_seq": 565,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:22:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:567",
+        "event_seq": 567,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:25:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:572",
+        "event_seq": 572,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:24:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:573",
+        "event_seq": 573,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:27:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:611",
+        "event_seq": 611,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:19:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:741",
+        "event_seq": 741,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:31:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:754",
+        "event_seq": 754,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:35:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:762",
+        "event_seq": 762,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:34:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:769",
+        "event_seq": 769,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:30:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:776",
+        "event_seq": 776,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:36:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:779",
+        "event_seq": 779,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:33:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:782",
+        "event_seq": 782,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:29:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:797",
+        "event_seq": 797,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:32:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:820",
+        "event_seq": 820,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:28:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:932",
+        "event_seq": 932,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:37:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1064",
+        "event_seq": 1064,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:38:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1089",
+        "event_seq": 1089,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:39:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1114",
+        "event_seq": 1114,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:40:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1139",
+        "event_seq": 1139,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:41:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1168",
+        "event_seq": 1168,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:42:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1197",
+        "event_seq": 1197,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:42:1"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1235",
+        "event_seq": 1235,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 16,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:43:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1257",
+        "event_seq": 1257,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 17,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:44:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1487",
+        "event_seq": 1487,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 18,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:45:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1527",
+        "event_seq": 1527,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:47:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1566",
+        "event_seq": 1566,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 16,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:50:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1575",
+        "event_seq": 1575,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 20,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:51:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1576",
+        "event_seq": 1576,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 19,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:48:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1577",
+        "event_seq": 1577,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 16,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:46:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1581",
+        "event_seq": 1581,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 17,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:49:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1623",
+        "event_seq": 1623,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 21,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:52:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1624",
+        "event_seq": 1624,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 18,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:54:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1656",
+        "event_seq": 1656,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 17,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:53:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1890",
+        "event_seq": 1890,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 22,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:55:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1918",
+        "event_seq": 1918,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 23,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:56:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1941",
+        "event_seq": 1941,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 18,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:56:1"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1964",
+        "event_seq": 1964,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 19,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:56:2"
+      },
+      {
+        "event_id": "HDFS-29-r0000:1995",
+        "event_seq": 1995,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 20,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:57:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2032",
+        "event_seq": 2032,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 21,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:58:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2067",
+        "event_seq": 2067,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 19,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:61:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2069",
+        "event_seq": 2069,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 24,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:59:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2081",
+        "event_seq": 2081,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 25,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:63:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2096",
+        "event_seq": 2096,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 22,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:66:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2098",
+        "event_seq": 2098,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 20,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:62:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2107",
+        "event_seq": 2107,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 26,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:60:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2133",
+        "event_seq": 2133,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 23,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:64:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2140",
+        "event_seq": 2140,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 21,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:65:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2162",
+        "event_seq": 2162,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 24,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:67:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2239",
+        "event_seq": 2239,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 27,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:68:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2240",
+        "event_seq": 2240,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 22,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:69:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2299",
+        "event_seq": 2299,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 23,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:70:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2310",
+        "event_seq": 2310,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 28,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:71:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2320",
+        "event_seq": 2320,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 25,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:73:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2325",
+        "event_seq": 2325,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 29,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:72:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2337",
+        "event_seq": 2337,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 26,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:75:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2366",
+        "event_seq": 2366,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 24,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:74:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2450",
+        "event_seq": 2450,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 27,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:76:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2473",
+        "event_seq": 2473,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 28,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:77:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2496",
+        "event_seq": 2496,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 29,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:78:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2553",
+        "event_seq": 2553,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 30,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:80:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2558",
+        "event_seq": 2558,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 30,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:79:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2573",
+        "event_seq": 2573,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 31,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:83:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2582",
+        "event_seq": 2582,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 31,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:85:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2590",
+        "event_seq": 2590,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 32,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:87:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2597",
+        "event_seq": 2597,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 25,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:86:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2604",
+        "event_seq": 2604,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 26,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:84:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2610",
+        "event_seq": 2610,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 32,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn0:0:60ca972b438e4b68a2645de317c68b16:81:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2647",
+        "event_seq": 2647,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 27,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn2:0:60ca972b438e4b68a2645de317c68b16:82:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2822",
+        "event_seq": 2822,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 33,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:88:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2868",
+        "event_seq": 2868,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/dn0:0:60ca972b438e4b68a2645de317c68b16:89:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2872",
+        "event_seq": 2872,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:90:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2875",
+        "event_seq": 2875,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/dn0:0:60ca972b438e4b68a2645de317c68b16:91:0"
+      },
+      {
+        "event_id": "HDFS-29-r0000:2929",
+        "event_seq": 2929,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn1",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1",
+        "trace_occurrence": "unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:92:0"
+      }
+    ],
+    "eligible_doors_before_target": 96,
+    "event_count": 3566,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 0,
+      "candidate_edges_by_kind": {},
+      "edges": 202,
+      "edges_by_kind": {
+        "region_parent": 1,
+        "rpc": 151,
+        "task": 50
+      },
+      "gaps": {
+        "door_unknown_actor": 10,
+        "rpc_missing_occurrence": 70
+      },
+      "occurrences": 190
+    },
+    "last_fault_seq": -1,
+    "matched_fault_ids": [],
+    "observed_door_events": 128,
+    "pairing_order_valid": true,
+    "qualified_target_throw_evidence": [],
+    "status": "observed",
+    "target_anchor": "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;:hdfs-block-recovery:1:1\"]",
+    "target_closures": [
+      {
+        "anchor": "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;:hdfs-block-recovery:1:1\"]",
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;:hdfs-block-recovery:1:1\"]",
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:hdfs-block-recovery:1\"]",
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:root\"]",
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:100:0\"]",
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:60ca972b438e4b68a2645de317c68b16:92:0\"]",
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:90:0\"]",
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:60ca972b438e4b68a2645de317c68b16:96:0\"]",
+          "[\"hdfs-cluster-1/nn1\",\"0\",\"unscoped:hdfs-cluster-1/nn1:0:60ca972b438e4b68a2645de317c68b16:104:0\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn0",
+        "occurrence": "hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;:hdfs-block-recovery:1:1"
+      }
+    ],
+    "target_exception_candidate": false,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn0",
+        "occurrence": "hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;:hdfs-block-recovery:1:1"
+      }
+    ],
+    "target_reached": true,
+    "target_region_present": true,
+    "target_threw": false,
+    "target_throw_evidence": [],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "97b04e4ba0fbc639ba99cf759b1f7a17190a8dd0cbe181091e38f911851e3a35",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_69ace0546b4e45a79b584ec6dc235913",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover-mallory_0000_69ace0546b4e45a79b584ec6dc235913.xml",
+        "sha256": "83bba1f63d091fe0d30fed15f6826adcb18ebd1063d47f074298b065bf32e7fa"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "05e90670a6ccb0a7c451ef3cf868e35c30bdfec8cee97f8b337c85224ea02103",
+    "tests": 1
+  },
+  "novelty": {
+    "closure_coverage": 40,
+    "closure_edges": 12,
+    "coverage": 205
+  },
+  "plan": [],
+  "return_code": 0,
+  "schema_version": 1,
+  "selection_reason": "healthy_seed",
+  "site_catalog_sha256": "5907df44f77538bed8b953746247a10a253cce4635731bf37fbbaac1418db627",
+  "site_catalog_validation": {
+    "catalog_rows": 16,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88"
+    ],
+    "observed_target_class_sha256": "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791589648.0788512,
+  "stderr_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 0,
+    "raw_path": "stderr.log",
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 1765,
+    "raw_path": "stdout.log",
+    "raw_sha256": "05e90670a6ccb0a7c451ef3cf868e35c30bdfec8cee97f8b337c85224ea02103"
+  },
+  "stdout_sha256": "05e90670a6ccb0a7c451ef3cf868e35c30bdfec8cee97f8b337c85224ea02103",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 0
+}
