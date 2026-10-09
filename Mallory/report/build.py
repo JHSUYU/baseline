@@ -3337,6 +3337,8 @@ def build(inventory_path: Path, results: Path) -> dict[str, Any]:
         "calibration_counts": dict(Counter(row["calibration_status"] for row in rows
                                            if row["calibration_status"] is not None)),
         "quality_counts": dict(quality_counts),
+        "strict_graph_path_completed": quality_counts["observed_event_path"],
+        "local_timeline_completed": quality_counts["observed_local_timeline"],
         "high_quality_completed": (quality_counts["observed_local_timeline"] +
                                    quality_counts["observed_event_path"]),
         "rows": rows,
@@ -3353,7 +3355,9 @@ def _cell(value: Any) -> str:
 def markdown(report: dict[str, Any]) -> str:
     lines = ["# Mallory check results", "",
              f'{report["high_quality_completed"]} of 102 original checks have verified '
-             'fault-to-target continuation. '
+             'fault-to-target continuation: '
+             f'{report["strict_graph_path_completed"]} observed graph paths and '
+             f'{report["local_timeline_completed"]} named same-occurrence local timelines. '
              f'{report["counts"].get("completed_campaign", 0)} campaigns are terminal; '
              'a terminal campaign may still fail a quality gate.', "",
              "Rows are generated from `Mallory/cases/inventory.json` and "

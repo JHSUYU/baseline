@@ -38,6 +38,8 @@
     "causal_precision_unverified": 17,
     "causal_precision_pending": 1
   },
+  "strict_graph_path_completed": 5,
+  "local_timeline_completed": 6,
   "high_quality_completed": 11,
   "rows": [
     {
@@ -588,15 +590,15 @@
       "check_code": "if (isTableDisabled(regionNode.getTable())) {\nthrow new DoNotRetryIOException(regionNode.getTable() + \" is disabled for \" + regionNode);",
       "target_exception": "org.apache.hadoop.hbase.DoNotRetryIOException",
       "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
-      "calibration_cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+      "calibration_cluster_test": "org.apache.hadoop.hbase.client.TestAdmin2#testShouldUnassignTheRegion",
       "campaign_cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
       "inventory_state": "ready_for_healthy_seed",
       "bytecode_mapping_status": "unique_compiled_site",
       "mapping_gaps": [],
       "result_path": "data/mallory/cases/HBASE-12/result.json",
-      "calibration_path": "data/mallory/calibration_v2/HBASE-12/result.json",
+      "calibration_path": "data/mallory/calibration_v33/HBASE-12/result.json",
       "calibration_status": "calibration_complete",
-      "calibration_duration_seconds": 36.481,
+      "calibration_duration_seconds": 27.714,
       "calibration_history": [
         {
           "version": 1,
@@ -611,6 +613,13 @@
           "status": "calibration_complete",
           "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
           "duration_seconds": 36.481
+        },
+        {
+          "version": 33,
+          "path": "data/mallory/calibration_v33/HBASE-12/result.json",
+          "status": "calibration_complete",
+          "cluster_test": "org.apache.hadoop.hbase.client.TestAdmin2#testShouldUnassignTheRegion",
+          "duration_seconds": 27.714
         }
       ],
       "report_status": "completed_campaign",
