@@ -1,7 +1,7 @@
 # SOLR-13 source and JUnit admission
 
-This directory stages **one healthy-only** run of an unchanged Solr 8.11.4
-JUnit. It has not run and makes no exception or bug claim. The source checkout
+This directory records **one healthy-only** run of an unchanged Solr 8.11.4
+JUnit. It makes no injected exception or bug claim. The source checkout
 is pinned to `e27f44e3d78dfcec230c97e0a1240e3751daeff9`; `manifest.json`
 binds source, bytecode, test, config, sites, and runner inputs by SHA-256.
 `python3 preflight.py` checks them without starting a JVM.
@@ -47,25 +47,29 @@ The older v10 healthy JUnit failed while creating a ConfigSet, before the
 target: its log reports Solr's unauthenticated trusted-base ConfigSet guard.
 The staged config sets the source-defined
 `-Dsolr.disableConfigSetsCreateAuthChecks=true` test setup flag and uses the
-pinned v38 Solr JUnit runner, adapter, and thread-ID-capable agent. A passing
-JUnit and target hit remain unverified. This flag addresses test setup only;
-it does not establish target reachability or a fault effect.
+pinned v38 Solr JUnit runner, adapter, and thread-ID-capable agent. The fresh
+healthy trial passed and hit the exact target; this flag addresses test setup
+only and does not establish a fault effect.
 
 ## Fresh admission gate
 
 `healthy-node2-lane3.json` enables strict event-time paths, rejects coarse
-roots, and disables automatic promotion. `run_node2_lane3_healthy.sh` checks
+roots, and disables automatic promotion. `run_node2_lane3_healthy.sh` checked
 the node2 host, config SHA, fresh output, both lane and source locks, a
-7.125 GiB disk reserve, 8 GiB available RAM, and runtime hashes before one
-calibration trial. Dispatch must grant a fresh Solr lane/resource gate before
-that shell is run.
+7.125 GiB disk reserve, 8 GiB available RAM, and runtime hashes before the
+single calibration trial. Dispatch granted its fresh Solr lane/resource gate.
 
-The fresh trial must pass the unchanged JUnit, hit the exact line-348 check
-on a registered actor with the pinned class and loader, and observe the exact
-line-2259 typed door on a named Overseer actor. An observed request/reply or
-task-token chain and a unique event-time graph path must connect that door
-to the selected target occurrence. Equality of alias names, a global door
-count, a later door, or a merely plausible source path does not establish
-that cross-actor link. If the JUnit still stops in setup or the graph path is
-absent, record the corresponding gap. No fault or full campaign is admitted
-by this healthy selector alone.
+The fresh JUnit passed 1/1 and hit the exact line-348 check five times on
+registered node1/node4 actors with the pinned class and loader. Twenty exact
+line-2259 typed doors occurred on named node1. Each target region had one
+earlier typed door in its local time interval, but the door ran in a separate
+Overseer task context. `audit_healthy.py` recomputes these facts from the
+SHA-pinned raw evidence and writes `healthy-audit-node2-lane3.json`.
+
+No selected typed door had a nonempty event-time graph path into any exact
+target check. The target-side request and Overseer-side task tokens were
+distinct, and the trace did not establish a unique request/reply link between
+them. Equality of alias names, a global door count, or temporal adjacency
+does not establish that cross-actor link. This is an explicit graph admission
+gap: the source candidate and passing JUnit support further instrumentation
+work, while no fault or full campaign is admitted from this healthy run.

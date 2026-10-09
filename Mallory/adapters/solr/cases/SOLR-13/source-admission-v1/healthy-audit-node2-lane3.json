@@ -1,0 +1,119 @@
+{
+  "case_id": "SOLR-13",
+  "class_loader": "sun.misc.Launcher$AppClassLoader@18b4aac2",
+  "door_class_sha256": "11316fa5cf00d33d779e5ae96fbb04048e9a61070fb827641395589b84e2e8ad",
+  "evidence_sha256": {
+    "campaign-result.json": "733e37b68f41db242c1c789cfd85d944ca3f94e069dbbbd3a23ec858faa0e05d",
+    "events.jsonl.gz": "c48498d3d826faf445d3a5fa10b64b47e695678e26fb5f8062d6a0c8bade0f0e",
+    "junit-receipt.json": "d96555fed73346fb4344e1f528678aad8bbb9bf0af804054f2cb376544d7355c",
+    "junit.log": "0344b41475ed0b15e56c12ee1daf5dc1b34dd3e3e69f7d964b132f44dac22ddf",
+    "pilot-result.json": "18463e2fd73f7c5cdf30c9ff50776db9bfdf61326e5ec341936803a82af11d46",
+    "plan.json": "befe80c16068de989642fa02430d10590dff17d611607841432aa31763aa3b22",
+    "result.json": "32e73359aa23526d0d3fe4a4b02dbd46afc637f70256b225445c71f5dbe48798",
+    "sites.jsonl": "70f5a35f54b5233296ce0aaf48fcc9bec70531a2f9ef3a23f9e2bb253b562374"
+  },
+  "faults_applied": 0,
+  "junit": "passed_1_of_1",
+  "limit": "Each exact target region contains one earlier typed alias-write door, but its Overseer task context is distinct from the target request context. No typed door has a nonempty event-time graph path to any selected target. Temporal pairing and alias-name similarity do not establish a unique request/reply or task-token link. No fault/full admission follows.",
+  "observed_graph": {
+    "candidate_edges": 0,
+    "candidate_edges_by_kind": {},
+    "edges": 2165,
+    "edges_by_kind": {
+      "program_order": 14,
+      "region_parent": 41,
+      "rpc": 884,
+      "task": 1226
+    },
+    "gaps": {
+      "rpc_ambiguous_consumer": 10,
+      "rpc_consumer_missing_identity": 15,
+      "task_missing_occurrence": 459
+    },
+    "occurrences": 3984
+  },
+  "schema_version": 1,
+  "source_commit": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "status": "healthy_junit_and_exact_target_with_cross_actor_graph_gap",
+  "target_check_count": 5,
+  "target_class_sha256": "d24b8af0ab3596fcdf5cec0af47b963b9c35cafe0c12a3b19e04caa1a9751332",
+  "target_throw_count": 0,
+  "temporal_candidates": [
+    {
+      "door_context": "094e21a1-b950-4a18-9c10-09845b69bc59:task:255",
+      "door_event": "SOLR-13-r0000:647",
+      "door_node": "node1",
+      "door_ordinal": 3,
+      "door_seq": 647,
+      "door_thread": 250,
+      "nonempty_event_time_graph_path": false,
+      "region_enter_event": "SOLR-13-r0000:567",
+      "target_event": "SOLR-13-r0000:664",
+      "target_node": "node1",
+      "target_occurrence": "node1:0:org.apache.solr.cloud.api.collections.RoutedAlias#doSynchronous(Lorg/apache/solr/update/AddUpdateCommand;Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;Lorg/apache/solr/core/CoreContainer;)Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;:094e21a1-b950-4a18-9c10-09845b69bc59:252:1",
+      "target_seq": 664,
+      "target_thread": 222
+    },
+    {
+      "door_context": "094e21a1-b950-4a18-9c10-09845b69bc59:task:300",
+      "door_event": "SOLR-13-r0000:738",
+      "door_node": "node1",
+      "door_ordinal": 4,
+      "door_seq": 738,
+      "door_thread": 250,
+      "nonempty_event_time_graph_path": false,
+      "region_enter_event": "SOLR-13-r0000:666",
+      "target_event": "SOLR-13-r0000:755",
+      "target_node": "node1",
+      "target_occurrence": "node1:0:org.apache.solr.cloud.api.collections.RoutedAlias#doSynchronous(Lorg/apache/solr/update/AddUpdateCommand;Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;Lorg/apache/solr/core/CoreContainer;)Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;:094e21a1-b950-4a18-9c10-09845b69bc59:252:2",
+      "target_seq": 755,
+      "target_thread": 222
+    },
+    {
+      "door_context": "094e21a1-b950-4a18-9c10-09845b69bc59:task:435",
+      "door_event": "SOLR-13-r0000:1124",
+      "door_node": "node1",
+      "door_ordinal": 5,
+      "door_seq": 1124,
+      "door_thread": 250,
+      "nonempty_event_time_graph_path": false,
+      "region_enter_event": "SOLR-13-r0000:1052",
+      "target_event": "SOLR-13-r0000:1141",
+      "target_node": "node1",
+      "target_occurrence": "node1:0:org.apache.solr.cloud.api.collections.RoutedAlias#doSynchronous(Lorg/apache/solr/update/AddUpdateCommand;Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;Lorg/apache/solr/core/CoreContainer;)Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;:094e21a1-b950-4a18-9c10-09845b69bc59:432:1",
+      "target_seq": 1141,
+      "target_thread": 222
+    },
+    {
+      "door_context": "094e21a1-b950-4a18-9c10-09845b69bc59:task:476",
+      "door_event": "SOLR-13-r0000:1215",
+      "door_node": "node1",
+      "door_ordinal": 6,
+      "door_seq": 1215,
+      "door_thread": 250,
+      "nonempty_event_time_graph_path": false,
+      "region_enter_event": "SOLR-13-r0000:1143",
+      "target_event": "SOLR-13-r0000:1232",
+      "target_node": "node1",
+      "target_occurrence": "node1:0:org.apache.solr.cloud.api.collections.RoutedAlias#doSynchronous(Lorg/apache/solr/update/AddUpdateCommand;Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;Lorg/apache/solr/core/CoreContainer;)Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;:094e21a1-b950-4a18-9c10-09845b69bc59:432:2",
+      "target_seq": 1232,
+      "target_thread": 222
+    },
+    {
+      "door_context": "094e21a1-b950-4a18-9c10-09845b69bc59:task:1885",
+      "door_event": "SOLR-13-r0000:5136",
+      "door_node": "node1",
+      "door_ordinal": 16,
+      "door_seq": 5136,
+      "door_thread": 250,
+      "nonempty_event_time_graph_path": false,
+      "region_enter_event": "SOLR-13-r0000:5056",
+      "target_event": "SOLR-13-r0000:5153",
+      "target_node": "node4",
+      "target_occurrence": "node4:0:org.apache.solr.cloud.api.collections.RoutedAlias#doSynchronous(Lorg/apache/solr/update/AddUpdateCommand;Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;Lorg/apache/solr/core/CoreContainer;)Lorg/apache/solr/cloud/api/collections/RoutedAlias$CandidateCollection;:094e21a1-b950-4a18-9c10-09845b69bc59:1882:1",
+      "target_seq": 5153,
+      "target_thread": 211
+    }
+  ],
+  "typed_door_count": 20
+}
