@@ -71,3 +71,16 @@ this synchronous nested call, label a same-occurrence ordered timeline
 explicitly and leave graph admission open. An unknown actor, merely global
 door count, child task without a completion edge, or a later door is a gap.
 No fault campaign follows from a JUnit pass alone.
+
+## Node2 lane3 staging
+
+`healthy-node2-lane3.json` uses the same source and selected sites with the
+v38 adapter and the pinned thread-ID-capable agent. It enables strict
+event-time paths and rejects coarse roots. The separate
+`run_node2_lane3_healthy.sh` acquires both the node2 lane3 lock and a lock for
+this source checkout, checks a 7.125 GiB disk reserve and 8 GiB available RAM,
+verifies pinned inputs, and runs exactly one calibration trial at a new output
+path. `preflight.py --node2` validates the node2 variant without a JVM. The
+v19 `healthy.json` remains a source triage seed; use the node2 variant for
+fresh runtime admission. Even if a local timeline is reported, an observed
+graph edge and target closure are still required before any fault promotion.
