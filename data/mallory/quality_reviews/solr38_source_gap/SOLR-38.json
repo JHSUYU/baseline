@@ -1,0 +1,20 @@
+{
+  "case_id": "SOLR-38",
+  "classification": "current_typed_io_fault_model_no_retained_target",
+  "exact_check_line": 1021,
+  "exact_throw_line": 1023,
+  "full_campaign_promoted": false,
+  "healthy_audit_sha256": "d210cebabc4cb911117e0db48a46bf99b94c0a7cfc5ba86ce775c7c3de95372b",
+  "healthy_result_sha256": "9ed7d2abeee9f41ad31b54008e70e988144996e470da0631ab5069deb60dcf1a",
+  "new_bug_confirmed": false,
+  "next_step": "Require a source-backed I/O-to-leader-state path and bounded retained-target pilot before full promotion.",
+  "pilot_audit_sha256": "f2ce9e2623901d4bec0a222a4c39775f49b8f781a3d863dd978d24ec86e54868",
+  "pilot_effective_fault_trials": 4,
+  "pilot_postfault_target_trials": 0,
+  "pilot_result_sha256": "d21eb65f73b92e1fd6638c6b3f0e46e5105efdf50ef53deea22d43a5c96adf0a",
+  "schema_version": 1,
+  "source_finding": "doDefensiveChecks reads the cached clusterState and cloudDesc before line 1021. Its only caught pretarget exception in the method is InterruptedException at Thread.sleep (lines 1015-1017), which is not an I/O point. The already tested client HTTP/2 IOException door had four effective injections and zero postfault target reaches. This does not exclude a distinct background state-changing I/O fault model.",
+  "source_path": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java",
+  "source_sha256": "f443baaebc22f93c5bf138cd48e4021bf1b88580881b6c36e2e50d5b7d898674",
+  "typed_io_site_file_sha256": "cd8bcea4ace6a67474d11f58eed51e099f47845a89abc1954fb5940a29c0eda1"
+}
