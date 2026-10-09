@@ -1,0 +1,209 @@
+{
+  "cases": [
+    {
+      "additional_source": [
+        {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java",
+          "sha256": "f13d33c1e945090aacb82747fae692aa510eb355a46c862a2088f1b7c88a26a6"
+        },
+        {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+          "sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809"
+        }
+      ],
+      "alternate_junit_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.class",
+        "sha256": "f7148c7f1c77b002753655c1f3257b73e8721f5b484c4e37cfb91c8ddf24309f"
+      },
+      "alternate_junit_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java",
+        "sha256": "f60f8552ac841ec6d4f0572f9fc390c887a45a832422e8a56d0ddd4e49cd916b"
+      },
+      "alternate_selector": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart",
+      "assessment": {
+        "accept": "named DN @414, zero @424 throw, JUnit 1/0/0, observed causal path from a pretarget retry door",
+        "rejected_alternate": "TestDFSUpgradeFromImage#testUpgradeFromRel22Image formats block-pool storage with current layoutVersion and namespace cTime during DataStorage.doUpgradePreFederation; BlockPoolSliceStorage.doTransition returns at regular-startup check @400-402 before @414. Do not dispatch old-image HDFS-24 candidate.",
+        "static_reach": "testUpgradeAndRestart first formats three DNs with existing block-pool storage, then restarts with NN UPGRADE. FSImage.doUpgrade assigns a fresh namespace cTime; the DN restart uses REGULAR but the persisted block-pool cTime is older, so BlockPoolSliceStorage.doTransition should reach @414/@415 and take doUpgrade rather than @424 throw. Exact runtime reach remains unverified.",
+        "target_lines": "BlockPoolSliceStorage.java:385-425",
+        "test_lines": "TestFileTruncate.java:987-1066,1344-1355"
+      },
+      "case_id": "HDFS-24",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/io-version-retry-v1/HDFS-24-healthy-only.json",
+        "sha256": "abb777fda8bfa7d5061c8f5545586f824320ac803b582652ede9f5764048cabb"
+      },
+      "original_selector": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+      "prior_original_healthy": {
+        "junit_process_return_code": 0,
+        "result": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-24/trials/r0000/result.json",
+          "sha256": "143fe5927bef3aef0387bf712c6236b334bbbbb4d67534db42d5f4eefe186bf5"
+        },
+        "target_node": "unknown",
+        "target_reached": true,
+        "target_threw": true
+      },
+      "retry_door": {
+        "callee": "org.apache.hadoop.hdfs.protocolPB.DatanodeProtocolClientSideTranslatorPB#versionRequest()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;",
+        "callee_source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.java",
+          "sha256": "07f1cc59498881a424ec2e6c5837a6299d73dc93417cd1e4da327d172d2f0f98"
+        },
+        "compiled_class": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class",
+          "sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0"
+        },
+        "fault": "one java.io.IOException before invocation",
+        "line": 260,
+        "method": "retrieveNamespaceInfo",
+        "owner": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor",
+        "recovery": "IOException caught at BPServiceActor.java:265 and request retried after 5 seconds while shouldRun(); a successful retry continues through connectToNNAndHandshake to storage transition",
+        "source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+          "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+        },
+        "status": "unobserved_source_candidate; require site-catalog and healthy event-path proof"
+      },
+      "site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/io-version-retry-v1/HDFS-24.sites.json",
+        "sha256": "7a4265553752aa4e93c3296fbe46ae191f87973507260bcf3fc3293d49e14a2e"
+      },
+      "target_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.class",
+        "sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9"
+      },
+      "target_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e"
+      }
+    },
+    {
+      "alternate_junit_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.class",
+        "sha256": "a84ac55ffb306f4e0778bf641c9979a0876e14fafd590dd9f2b98bf31cb4f5a5"
+      },
+      "alternate_junit_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.java",
+        "sha256": "5b98a6ee667a9d2422b16bc53ab8bdfc36ba2acfae97fdeaea6aca101a98f951"
+      },
+      "alternate_selector": "org.apache.hadoop.hdfs.TestDFSUpgradeFromImage#testUpgradeFromRel22Image",
+      "assessment": {
+        "accept": "named DN @739, zero @744 throw, JUnit 1/0/0, observed causal path from a pretarget retry door",
+        "fixture_lines": "dfs/name-0-1/current/VERSION; dfs/data/data1/current/VERSION",
+        "static_reach": "The same 0.22 DN VERSION lacks federation and matches the NN namespaceID. The four-DN UPGRADE starts DataStorage.doTransition, where @739 should evaluate the pre-federation namespace check and fall through rather than throw @744. Exact runtime reach remains unverified.",
+        "target_lines": "DataStorage.java:719-745",
+        "test_lines": "TestDFSUpgradeFromImage.java:296-300,598-625"
+      },
+      "case_id": "HDFS-34",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/io-version-retry-v1/HDFS-34-healthy-only.json",
+        "sha256": "4094b945e9da23612096d407681ab39e316a01e6de89c3aed1ec61b144739e32"
+      },
+      "fixture": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/hadoop-22-dfs-dir.tgz",
+        "sha256": "eaddf228d286f54fb431a12342550a9b473b189dc3a36cbf3eec668ce9000380"
+      },
+      "original_selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+      "prior_original_healthy": {
+        "junit_process_return_code": 0,
+        "result": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-34/trials/r0000/result.json",
+          "sha256": "29977f30f7e62b1dca27c31f43d6fa86b59fdf4ff985d52a826fd6a056b24418"
+        },
+        "target_node": "unknown",
+        "target_reached": true,
+        "target_threw": true
+      },
+      "retry_door": {
+        "callee": "org.apache.hadoop.hdfs.protocolPB.DatanodeProtocolClientSideTranslatorPB#versionRequest()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;",
+        "callee_source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB.java",
+          "sha256": "07f1cc59498881a424ec2e6c5837a6299d73dc93417cd1e4da327d172d2f0f98"
+        },
+        "compiled_class": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class",
+          "sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0"
+        },
+        "fault": "one java.io.IOException before invocation",
+        "line": 260,
+        "method": "retrieveNamespaceInfo",
+        "owner": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor",
+        "recovery": "IOException caught at BPServiceActor.java:265 and request retried after 5 seconds while shouldRun(); a successful retry continues through connectToNNAndHandshake to storage transition",
+        "source": {
+          "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+          "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+        },
+        "status": "unobserved_source_candidate; require site-catalog and healthy event-path proof"
+      },
+      "site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/io-version-retry-v1/HDFS-34.sites.json",
+        "sha256": "34ae42d7325c85a542d7e260c92a2a3620748ff946ab6c3d284ebbbf1da7e2be"
+      },
+      "target_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/DataStorage.class",
+        "sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f"
+      },
+      "target_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809"
+      }
+    },
+    {
+      "alternate_examined": [
+        {
+          "reason": "ROLLBACK enters doRollback, but DN-root previous does not exist so guard is skipped.",
+          "selector": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testUpgradeAndRestart",
+          "source": {
+            "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java",
+            "sha256": "f60f8552ac841ec6d4f0572f9fc390c887a45a832422e8a56d0ddd4e49cd916b"
+          }
+        },
+        {
+          "reason": "Positive rollback cases reach guard; same selected JUnit includes negative cases that throw the selected exception.",
+          "selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+          "source": {
+            "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+            "sha256": "c5a5ea5ba53bc50950d7af3de48a058ecac81513fba3d231879fa36fe75cd808"
+          }
+        }
+      ],
+      "alternate_selector": null,
+      "assessment": {
+        "accept": "Do not dispatch a healthy probe until an existing selector with a valid DN-root previous directory and zero selected @947 throw is identified.",
+        "static_reach": "Only TestDFSRollback#testRollback demonstrably enters the selected DataStorage.doRollback comparison, but its version matrix deliberately exercises invalid previous states and the prior healthy trial observed @947 throw. TestFileTruncate#testUpgradeAndRestart does send DN ROLLBACK but its preceding UPGRADE sends DN REGULAR; DataStorage.doTransition returns when its layoutVersion is current, leaving no DN-root previous directory. DataStorage.doRollback returns at !prevDir.exists() before @940/@941. Other located rollback selectors do not create DN-root previous storage.",
+        "target_lines": "DataStorage.java:719-766,919-948",
+        "test_lines": "TestDFSRollback.java:140-299; TestFileTruncate.java:1012-1048,1344-1355"
+      },
+      "case_id": "HDFS-37",
+      "original_selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+      "prior_original_healthy": {
+        "junit_process_return_code": 0,
+        "result": {
+          "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-37/trials/r0000/result.json",
+          "sha256": "bba63fb8ff839245c7f4f349297ceeceec5fffda5c3f54886afe7bcd64116aea"
+        },
+        "target_node": "unknown",
+        "target_reached": true,
+        "target_threw": true
+      },
+      "status": "hold_no_suitable_existing_healthy_junit",
+      "target_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/DataStorage.class",
+        "sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f"
+      },
+      "target_source": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809"
+      }
+    }
+  ],
+  "checklist": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/checklist102.json",
+    "sha256": "9ac4d0c82b01e8ceefbdc805680e2ac6b5e7569c4af46bb3280edd0d452133b2"
+  },
+  "no_jvm_or_fault_trial_launched": true,
+  "schema_version": 1,
+  "scope": "source_only_healthy_seed_handoff",
+  "shared_checklist_or_release_modified": false,
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b"
+}
