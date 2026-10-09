@@ -95,6 +95,120 @@ class ReportEvidenceTest(unittest.TestCase):
                 self.assertEqual("invalid_instrumentation_gap",
                                  _solr18_scope_gap(results, "SOLR-18")[0])
 
+    def test_solr22_bounded_gap_keeps_terminal_row_and_rejects_tamper(self):
+        from Mallory.report.build import _solr22_dynamic_bounded_gap
+        baseline = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            replay = "data/mallory/replays/SOLR-22-v33g2p-lane4"
+            names = [
+                "data/mallory/quality_reviews/solr22_v33g2p_gap/index.json",
+                "data/mallory/quality_reviews/solr22_v33g2p_gap/SOLR-22.json",
+                "data/mallory/audit_sidecars/SOLR-22-v33g2p-dynamic-pilot.json",
+                "Mallory/adapters/solr/releases/v33/verify_solr22_dynamic_gap.py",
+                "Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f/manifest.json",
+                *(f"{replay}/{name}" for name in
+                  ("result.json", "offline-causal-audit.json", "sync-receipt.json",
+                   "config.json")),
+            ]
+            for number in range(9):
+                names.extend((f"{replay}/trials/r{number:04d}/result.json",
+                              f"{replay}/trials/r{number:04d}/events.jsonl.gz"))
+            for relative in names:
+                dest = root / relative
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(baseline / relative, dest)
+            results = root / "data/mallory"
+            receipt = json.loads((root / names[1]).read_text())
+            def replay_verifier(args, **_kwargs):
+                Path(args[args.index("--out") + 1]).write_text(json.dumps(receipt))
+                return subprocess.CompletedProcess(args, 0)
+            with patch("Mallory.report.build.subprocess.run", side_effect=replay_verifier):
+                self.assertEqual("bounded_fault_model_gap_verified",
+                                 _solr22_dynamic_bounded_gap(results, "SOLR-22")[0])
+                trace = root / f"{replay}/trials/r0006/events.jsonl.gz"
+                trace.write_bytes(trace.read_bytes() + b"tampered")
+                self.assertEqual("invalid_bounded_fault_model_gap",
+                                 _solr22_dynamic_bounded_gap(results, "SOLR-22")[0])
+
+    def test_hbase37_source_fault_gap_rejects_changed_archived_trace(self):
+        from Mallory.report.build import _hbase37_source_fault_gap
+        baseline = Path(__file__).resolve().parents[2]
+        receipt = json.loads((baseline / "data/mallory/fault_model_gaps/HBASE-37/receipt.json").read_text())
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for relative in (
+                "data/mallory/fault_model_gaps/HBASE-37/receipt.json",
+                receipt["review_path"], receipt["source_review_path"],
+                receipt["typed_sites_path"], receipt["prior_evidence"]["result_path"],
+                receipt["prior_evidence"]["archive_path"],
+            ):
+                dest = root / relative
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(baseline / relative, dest)
+            results = root / "data/mallory"
+            self.assertEqual("source_review_fault_model_gap",
+                             _hbase37_source_fault_gap(results, "HBASE-37")[0])
+            archive = root / receipt["prior_evidence"]["archive_path"]
+            archive.write_bytes(archive.read_bytes() + b"tampered")
+            self.assertEqual("invalid_fault_model_receipt",
+                             _hbase37_source_fault_gap(results, "HBASE-37")[0])
+
+    def test_hdfs48_fault_gap_rechecks_ten_raw_trials(self):
+        from Mallory.report.build import _hdfs48_target_retention_gap
+        baseline = Path(__file__).resolve().parents[2]
+        receipt_name = "data/mallory/admissions/HDFS-48-v14-fault-model-no-target-retaining-pretarget-door.json"
+        receipt = json.loads((baseline / receipt_name).read_text())
+        review = json.loads((baseline / receipt["review_path"]).read_text())
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            names = [receipt_name, receipt["review_path"]]
+            for section in (review["healthy_evidence"]["files"],
+                            review["pilot_evidence"]["files"]):
+                names.extend(record["path"] for record in section.values())
+            names.append(review["pilot_evidence"]["decision"]["path"])
+            for item in review["pilot_evidence"]["trial_evidence"]:
+                names.extend((item["result"]["path"], item["trace_gzip"]["path"]))
+            for relative in names:
+                dest = root / relative
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(baseline / relative, dest)
+            results = root / "data/mallory"
+            self.assertEqual("fault_model_no_target_retaining_pretarget_door",
+                             _hdfs48_target_retention_gap(results, "HDFS-48")[0])
+            trace = root / review["pilot_evidence"]["trial_evidence"][4]["trace_gzip"]["path"]
+            trace.write_bytes(trace.read_bytes() + b"tampered")
+            self.assertEqual("invalid_fault_model_receipt",
+                             _hdfs48_target_retention_gap(results, "HDFS-48")[0])
+
+    def test_zk10_packet_gap_rejects_changed_healthy_trace(self):
+        from Mallory.report.build import _zk10_packet_fault_gap
+        baseline = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            names = (
+                "data/mallory/admissions/ZOOKEEPER-10-fa5f-observer-v1-fault-model-gap.json",
+                "data/mallory/admissions/ZOOKEEPER-10-fa5f-observer-v1-healthy.json",
+                "data/mallory/calibration_fa5f_node0/ZOOKEEPER-10-observer-v1/result.json",
+                "data/mallory/calibration_fa5f_node0/ZOOKEEPER-10-observer-v1/offline-causal-audit.json",
+                "data/mallory/calibration_fa5f_node0/ZOOKEEPER-10-observer-v1/trials/r0000/result.json",
+                "data/mallory/calibration_fa5f_node0/ZOOKEEPER-10-observer-v1/trials/r0000/events.jsonl.gz",
+                "Mallory/adapters/zookeeper/cases/ZOOKEEPER-10-fa5f-observer-healthy.json",
+                "Mallory/adapters/zookeeper/cases/ZOOKEEPER-10-fa5f-observer-healthy.sites.json",
+                "Mallory/adapters/zookeeper/cases/ZOOKEEPER-10-fa5f-observer-source-review.json",
+            )
+            for relative in names:
+                dest = root / relative
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(baseline / relative, dest)
+            results = root / "data/mallory"
+            self.assertEqual("fault_model_packet_io_no_target_retention",
+                             _zk10_packet_fault_gap(results, "ZOOKEEPER-10")[0])
+            trace = root / names[5]
+            trace.write_bytes(trace.read_bytes() + b"tampered")
+            self.assertEqual("invalid_fault_model_receipt",
+                             _zk10_packet_fault_gap(results, "ZOOKEEPER-10")[0])
+
     def test_zk05_epoch_gap_rechecks_each_fault_trace_and_fails_closed(self):
         from Mallory.report.build import _zk05_epoch_influence_gap
         original = Path(__file__).resolve().parents[2] / "data/mallory"

@@ -1,0 +1,66 @@
+{
+  "case_id": "SOLR-22",
+  "classification": "bounded_no_current_same_request_injectable_door",
+  "full_campaign_promoted": false,
+  "healthy_bound_actor": "node2",
+  "healthy_bound_actor_door_count": 44,
+  "healthy_bound_actor_door_to_target_path_count": 0,
+  "healthy_client_request_path_witness_ids": [
+    "SOLR-22-r0000:363",
+    "SOLR-22-r0000:364",
+    "SOLR-22-r0000:365",
+    "SOLR-22-r0000:367"
+  ],
+  "healthy_trace_gzip_sha256": "02b83b367d55b85796ba6bf06ba8635a46e5c6158defb9abebca2a81c7e0d5aa",
+  "offline_audit_sha256": "961c92b6674c025b9c5e0e488fcfe147968386898520ea9eaafbe6c11ecc49d7",
+  "result_sha256": "98009f1fe711907759e426bde1518169ff0f5dc1da850c097cf007b80527786f",
+  "retained_but_unlinked_trials": [
+    {
+      "fault_id": "SOLR-22-r0001:759",
+      "fault_node": "client",
+      "fault_seq": 759,
+      "fault_site": "org.apache.solr.client.solrj.impl.HttpSolrClient#request(Lorg/apache/solr/client/solrj/SolrRequest;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;@248:door:1",
+      "later_bound_actor_target_check_count": 450,
+      "later_same_thread_occurrence_send_count": 0,
+      "trace_gzip_sha256": "93dc9d210f6a63d55a876d7028fbe4336dacc1c729956ee8c223d64d95702f4f",
+      "trial_id": 1,
+      "trial_result_sha256": "4c2839379cdcd3ed7f38ca5e773792650937ff0ff2d3175967c1cbc134e25191"
+    },
+    {
+      "fault_id": "SOLR-22-r0003:1722",
+      "fault_node": "client",
+      "fault_seq": 1722,
+      "fault_site": "org.apache.solr.client.solrj.impl.HttpSolrClient#request(Lorg/apache/solr/client/solrj/SolrRequest;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;@248:door:1",
+      "later_bound_actor_target_check_count": 300,
+      "later_same_thread_occurrence_send_count": 0,
+      "trace_gzip_sha256": "f8e4a5cbe85a16128fef0ffafa6512a304c19fdbea29c321e5756b150fc9b279",
+      "trial_id": 3,
+      "trial_result_sha256": "6eff0424851756da5d1d130764844cb0477d7f0363a5c83f4488598f2b668e8c"
+    },
+    {
+      "fault_id": "SOLR-22-r0006:2063",
+      "fault_node": "client",
+      "fault_seq": 2063,
+      "fault_site": "org.apache.solr.client.solrj.impl.HttpSolrClient#request(Lorg/apache/solr/client/solrj/SolrRequest;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;@248:door:1",
+      "later_bound_actor_target_check_count": 156,
+      "later_same_thread_occurrence_send_count": 0,
+      "trace_gzip_sha256": "f707487c2265365c3ca9310c9b527a0606fd1bcf2d8474e44f10b73e23d324a4",
+      "trial_id": 6,
+      "trial_result_sha256": "926ff32c761099da40bf5ed4c7432fefda52511d99a5066b97888aa93b2c1841"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "existing TestPullReplica#testAddDocs, v33g2p client request door; no claim about untested server/background fault models",
+  "source_review": {
+    "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/core/IndexDeletionPolicyWrapper.java": {
+      "finding": "the selected knownCommits/deleted/latestCommit guard runs at method entry before reference-count update",
+      "sha256": "97c24e5e13806630017e755f135a98c3e94f8d5581c3c11e1778e49ef1f29b8c"
+    },
+    "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/handler/ReplicationHandler.java": {
+      "finding": "getFileList parses generation and directly calls getAndSaveCommitPoint; no caught I/O operation precedes the selected guard inside this handler",
+      "sha256": "7e49c1913939f2f52e722df7897723a3b97061b3d08a0cdffc54e2504fa52244"
+    }
+  },
+  "strict_sidecar_sha256": "febf810b4fa1282df1507bd192281f09a04e384393cd18ade57656a9d13e932e",
+  "sync_receipt_sha256": "a001070ddbd354e8c9a6a09e0d7f56f36da80e2e069a21b372790b8086a36fef"
+}
