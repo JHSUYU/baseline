@@ -1,0 +1,100 @@
+{
+  "case_id": "ZOOKEEPER-12",
+  "exact_faults_applied": 5,
+  "fault_trials": 5,
+  "full_campaign_admission": false,
+  "healthy_receipt_sha256": "194fcbf44f4bdc91dd35130570269999dad04654c73741e7ed2d4a5c6d7e4f5b",
+  "pilot_config_sha256": "a44439a28f99d5af7c7b4606c05c29dd06d1e17aa27ed54346c74c7254277162",
+  "pilot_offline_audit_sha256": "a3b0bd036331c74669db03d360d02c6cc0c23937e995077f132076a7020475b2",
+  "pilot_result_sha256": "40cc484a1b6c11736ba064184d3b335bac6e4a8fc9f4a43182c136979456f06e",
+  "prepared_config_sha256": "a44439a28f99d5af7c7b4606c05c29dd06d1e17aa27ed54346c74c7254277162",
+  "same_actor_same_occurrence_postfault_checks": 4,
+  "schema_version": 1,
+  "source_interpretation": [
+    "Epoch2 door ordinal3 is the acceptedEpoch read: FileNotFoundException uses the locally caught fallback acceptedEpoch=epochOfZxid and reaches the same target check. The trace identifies the ordinal; the filename follows the deterministic source call order, not a recorded argument.",
+    "Epoch2 ordinal2 is the currentEpoch.tmp read. Its FileNotFoundException is not locally caught and the selected target is lost, so it is not a valid retained fault path.",
+    "The four retained trials preserve the selected guard but do not trigger its IOException; additional multi-fault exploration is a separate campaign with no present bug claim."
+  ],
+  "status": "bounded_filenotfound_pilot_four_target_retained_zero_throw",
+  "target_exception_candidates": 0,
+  "trial_evidence": [
+    {
+      "door_ordinal": 3,
+      "epoch": 2,
+      "fault_event_id": "ZOOKEEPER-12-r0001:672",
+      "fault_occurrence": "zk0:2:org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V:root:1",
+      "fault_seq": 672,
+      "junit_status": "passed",
+      "same_occurrence_target_event_ids": [
+        "ZOOKEEPER-12-r0001:673"
+      ],
+      "target_retained": true,
+      "trace_gzip_sha256": "9613d1dbf6d51e7277b64bb559117d94abd409f184991df7c0b2fe2bd957d864",
+      "trace_raw_sha256": "dd29d3a8cf776385946b90a20f5fcd8d88d5a129fb94497c4a1b8e29b923884c",
+      "trial_id": 1,
+      "trial_result_sha256": "bd18a7e0529c10e3ddc15b8e9153c3528f20d55b22ff90524220d64d2ed2e130"
+    },
+    {
+      "door_ordinal": 2,
+      "epoch": 2,
+      "fault_event_id": "ZOOKEEPER-12-r0002:655",
+      "fault_occurrence": "zk0:2:org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V:root:1",
+      "fault_seq": 655,
+      "junit_status": "failed",
+      "same_occurrence_target_event_ids": [],
+      "target_retained": false,
+      "trace_gzip_sha256": "0164785542b3d1ce2f968f9df050753a2c5320dcf5493fcc5d4700fc99f1f98f",
+      "trace_raw_sha256": "d8b93bc2a7ed49588466d0dc8c63b7aa23539389fbbe41c5fa559a67931a21ac",
+      "trial_id": 2,
+      "trial_result_sha256": "b301b1720af1e041a9d39479702c07fdac2b2ce633bc7f41825408a6dd4fffa3"
+    },
+    {
+      "door_ordinal": 1,
+      "epoch": 2,
+      "fault_event_id": "ZOOKEEPER-12-r0003:654",
+      "fault_occurrence": "zk0:2:org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V:root:1",
+      "fault_seq": 654,
+      "junit_status": "passed",
+      "same_occurrence_target_event_ids": [
+        "ZOOKEEPER-12-r0003:656"
+      ],
+      "target_retained": true,
+      "trace_gzip_sha256": "543a85ef4cca401ecff618d4a1f77af79b3130c9a53b7da7eb8c99dbe81a94c0",
+      "trace_raw_sha256": "2bf4690a46ae08a69d2770d1ddd52b852f2e037d0f3b75b506187c6318db42dc",
+      "trial_id": 3,
+      "trial_result_sha256": "9c350624a451f77176f921aa12eceb1c5121f3235fef84f637918dd38f7c8225"
+    },
+    {
+      "door_ordinal": 2,
+      "epoch": 1,
+      "fault_event_id": "ZOOKEEPER-12-r0004:294",
+      "fault_occurrence": "zk0:1:org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V:root:1",
+      "fault_seq": 294,
+      "junit_status": "passed",
+      "same_occurrence_target_event_ids": [
+        "ZOOKEEPER-12-r0004:299"
+      ],
+      "target_retained": true,
+      "trace_gzip_sha256": "e71f9acf907d2f1c7419e8ebbcefb7af50afaabf77f20ce35d56cbba81cc7049",
+      "trace_raw_sha256": "b3c852782b9ddd94da38074ea7212295c38d14c61fa4a789116aa0a83abc6657",
+      "trial_id": 4,
+      "trial_result_sha256": "d189318e29a91fb2658b462835e1725b475155c077b372f1552a2daf278975a5"
+    },
+    {
+      "door_ordinal": 1,
+      "epoch": 1,
+      "fault_event_id": "ZOOKEEPER-12-r0005:291",
+      "fault_occurrence": "zk0:1:org.apache.zookeeper.server.quorum.QuorumPeer#loadDataBase()V:root:1",
+      "fault_seq": 291,
+      "junit_status": "passed",
+      "same_occurrence_target_event_ids": [
+        "ZOOKEEPER-12-r0005:299"
+      ],
+      "target_retained": true,
+      "trace_gzip_sha256": "c24fe81130b9a42c9b54b73a041cae61034476c3f77a02f6df8bc01cc6a6b916",
+      "trace_raw_sha256": "292599616b538a2465d4b394dd8bcc235be9de366411f8da33be1deb0c06cad0",
+      "trial_id": 5,
+      "trial_result_sha256": "c9c879a5095c4edb32fc452a3b19a82caa8f1bfc9f6025538c88b15668bee35a"
+    }
+  ]
+}
