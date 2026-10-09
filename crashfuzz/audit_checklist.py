@@ -17,7 +17,7 @@ import checklist
 
 
 HERE = Path(__file__).resolve().parent
-DATA = HERE.parent / "data"
+DATA = HERE.parent / "data" / "crashfuzz"
 TERMINAL = checklist.TERMINAL
 KNOWN_ISSUES = {
     "HDFS-54": "known_HDFS-17897_reproduced",

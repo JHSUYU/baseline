@@ -6,7 +6,7 @@ The campaign contains 102 selected checks: 38 HDFS 3.4.3, 30 HBase 2.6.6,
 21 Solr 8.11.4, and 13 ZooKeeper 3.8.7. It also includes two separate HDFS
 known-issue controls, for 104 checklist entries in total. The selected source
 locations and candidate tests are in
-[selection102.json](.study-repairs/unit-test-pivot/selection102.json). A
+[selection102.json](data/crashfuzz/selection102.json). A
 selected check is a hypothesis; a failed test alone does not establish a new
 coordination bug.
 

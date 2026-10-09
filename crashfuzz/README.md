@@ -1,6 +1,6 @@
 # Graph-free coverage-guided fault injection
 
-This is the current baseline for the ad hoc coordination study. It runs each selected original cluster JUnit workload, observes runtime I/O points and the selected target check, injects ordered I/O exceptions using exact runtime identities, and uses production code coverage and new I/O families to prioritize later fault sequences. An exact target exception after an applied fault is a review candidate; its meaning is decided from replay and source code. No causal graph, backward closure, region skeleton, or GraphChecker runtime is used by the campaign.
+This directory contains the completed CrashFuzz-style baseline for the ad hoc coordination study. It runs each selected original cluster JUnit workload, observes runtime I/O points and the selected target check, injects ordered I/O exceptions using exact runtime identities, and uses production code coverage and new I/O families to prioritize later fault sequences. An exact target exception after an applied fault is a review candidate; its meaning is decided from replay and source code. No causal graph, backward closure, region skeleton, or GraphChecker runtime is used by this campaign.
 
 ## Layout
 
@@ -9,9 +9,9 @@ This is the current baseline for the ad hoc coordination study. It runs each sel
 - `entrypoints.json`: one explicit original JUnit test, target source location, current campaign runner, and instrumentation source index per check. Shared runners are identified by `shared_campaign_checks`.
 - `hdfs-*`, `qjm-rpc-actor-v2/`, `hbase-namespace-actor-v2/`, `zk-actor-v2/`: shared system adapters used by the selected cases.
 - `vendor/`: one copy of each case-local JAR dependency; case paths are relative symlinks to these files.
-- `checklist.py` and `audit_checklist.py`: render and audit the final table in `../data/`.
+- `checklist.py` and `audit_checklist.py`: render and audit the final table in `../data/crashfuzz/`.
 
-Final results, measured time, selection metadata, and recorded run artifacts live in [`../data/`](../data/README.md). Symlinks in case directories preserve paths expected by the original campaign code. The source for each current case instrumentation agent is indexed in `entrypoints.json`.
+Final results, measured time, selection metadata, and recorded run artifacts live in [`../data/crashfuzz/`](../data/crashfuzz/README.md). Symlinks in case directories preserve paths expected by the original campaign code. The source for each current case instrumentation agent is indexed in `entrypoints.json`.
 
 ## One check
 
