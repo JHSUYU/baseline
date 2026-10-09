@@ -17,6 +17,78 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_solr37_no_target_path_receipt_fails_closed(self):
+        from Mallory.report.build import _fault_model_no_target_path
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results = root / "data/mallory"
+            digest = lambda path: hashlib.sha256(path.read_bytes()).hexdigest()
+            def write(relative, content):
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content if isinstance(content, str) else json.dumps(content))
+                return path
+            healthy = write("data/mallory/calibration/SOLR-37/result.json",
+                            {"case_id": "SOLR-37", "status": "calibration_complete"})
+            healthy_audit = write("data/mallory/calibration/SOLR-37/offline-causal-audit.json",
+                                  {"report_gate_passed": True})
+            pilot = write("data/mallory/pilot/SOLR-37/result.json",
+                          {"case_id": "SOLR-37", "status": "budget_exhausted",
+                           "fault_trials_completed": 1, "strict_injected_trials": 1,
+                           "strict_target_trials": 1, "exact_exception_trials": 0})
+            pilot_audit = write("data/mallory/pilot/SOLR-37/offline-causal-audit.json",
+                                {"report_gate_passed": True})
+            sync = write("data/mallory/pilot/SOLR-37/sync-receipt.json", {})
+            raw = b'{"type":"FAULT_APPLIED"}\n'
+            trace = pilot.parent / "trials/r0001/events.jsonl.gz"
+            trace.parent.mkdir(parents=True)
+            with gzip.open(trace, "wb") as stream:
+                stream.write(raw)
+            trial = write("data/mallory/pilot/SOLR-37/trials/r0001/result.json",
+                          {"events_evidence": {"raw_sha256": hashlib.sha256(raw).hexdigest(),
+                                               "raw_bytes": len(raw),
+                                               "gzip_sha256": digest(trace)}})
+            sidecar = write("data/mallory/audit_sidecars/SOLR-37.json",
+                            {"case_id": "SOLR-37", "campaign_result_sha256": digest(pilot),
+                             "offline_causal_audit_sha256": digest(pilot_audit),
+                             "fault_trials_completed": 1,
+                             "trials_with_time_respecting_observed_path": 0,
+                             "trials": [{"trial_id": 1, "trial_result_sha256": digest(trial),
+                                         "trace_gzip_sha256": digest(trace),
+                                         "trace_raw_sha256": hashlib.sha256(raw).hexdigest(),
+                                         "trace_raw_bytes": len(raw),
+                                         "applied_faults": [{"time_respecting_observed_path": None}]}]})
+            source = write("Mallory/adapters/solr/source-review.md", "source SHA abc123")
+            files = {"healthy_result": healthy, "healthy_audit": healthy_audit,
+                     "pilot_result": pilot, "pilot_audit": pilot_audit,
+                     "pilot_sync_receipt": sync, "postfault_path_sidecar": sidecar,
+                     "source_request_order_review": source}
+            artifacts = {key: {"path": str(path.relative_to(root)),
+                               "bytes": path.stat().st_size, "sha256": digest(path)}
+                         for key, path in files.items()}
+            receipt = write("data/mallory/quality_reviews/solr37_v29p_gap/SOLR-37.json",
+                            {"schema_version": 1, "case_id": "SOLR-37",
+                             "classification": "fault_model_no_target_path",
+                             "full_campaign_promoted": False, "healthy_junit_pass": True,
+                             "healthy_named_exact_target": True,
+                             "time_respecting_observed_postfault_paths": 0,
+                             "pilot_fault_trials": 1, "pilot_strict_applied": 1,
+                             "pilot_target_retained": 1, "exact_target_exception_trials": 0,
+                             "source_file_sha256_as_attested_in_review": "abc123",
+                             "artifacts": artifacts})
+            self.assertEqual("fault_model_no_target_path",
+                             _fault_model_no_target_path(results, "SOLR-37")[0])
+            altered = json.loads(sidecar.read_text())
+            altered["trials_with_time_respecting_observed_path"] = 1
+            sidecar.write_text(json.dumps(altered))
+            update = json.loads(receipt.read_text())
+            update["artifacts"]["postfault_path_sidecar"] = {
+                "path": str(sidecar.relative_to(root)), "bytes": sidecar.stat().st_size,
+                "sha256": digest(sidecar)}
+            receipt.write_text(json.dumps(update))
+            self.assertEqual("invalid_fault_model_receipt",
+                             _fault_model_no_target_path(results, "SOLR-37")[0])
+
     def test_hdfs11_event_path_receipt_fails_closed_on_tamper(self):
         with tempfile.TemporaryDirectory() as temporary:
             baseline = Path(__file__).resolve().parents[2]

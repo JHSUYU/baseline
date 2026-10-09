@@ -1184,6 +1184,114 @@ def _fault_model_target_lost(results: Path, case_id: str) -> tuple[str | None, s
     return ("fault_model_target_lost" if valid else "invalid_fault_model_receipt"), str(path)
 
 
+def _fault_model_no_target_path(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Record a bounded pilot whose retained checks have no observed fault path."""
+    path = results / "quality_reviews" / "solr37_v29p_gap" / f"{case_id}.json"
+    if not path.is_file():
+        return None, None
+    receipt = _json(path)
+    if not isinstance(receipt, dict):
+        return "invalid_fault_model_receipt", str(path)
+    project_root = results.resolve().parent.parent
+    artifacts = receipt.get("artifacts")
+    if not isinstance(artifacts, dict):
+        return "invalid_fault_model_receipt", str(path)
+    files: dict[str, Path] = {}
+    for name in ("healthy_result", "healthy_audit", "pilot_result", "pilot_audit",
+                 "pilot_sync_receipt", "postfault_path_sidecar",
+                 "source_request_order_review"):
+        entry = artifacts.get(name)
+        if not isinstance(entry, dict) or not isinstance(entry.get("path"), str):
+            return "invalid_fault_model_receipt", str(path)
+        candidate = (project_root / entry["path"]).resolve()
+        if (not candidate.is_relative_to(project_root) or not candidate.is_file()
+                or candidate.stat().st_size != entry.get("bytes")
+                or hashlib.sha256(candidate.read_bytes()).hexdigest() != entry.get("sha256")):
+            return "invalid_fault_model_receipt", str(path)
+        files[name] = candidate
+    healthy = _json(files["healthy_result"])
+    healthy_audit = _json(files["healthy_audit"])
+    pilot = _json(files["pilot_result"])
+    pilot_audit = _json(files["pilot_audit"])
+    sidecar = _json(files["postfault_path_sidecar"])
+    if not all(isinstance(item, dict) for item in (
+            healthy, healthy_audit, pilot, pilot_audit, sidecar)):
+        return "invalid_fault_model_receipt", str(path)
+    trial_rows = sidecar.get("trials")
+    valid = (
+        receipt.get("schema_version") == 1
+        and receipt.get("case_id") == case_id == "SOLR-37"
+        and receipt.get("classification") == "fault_model_no_target_path"
+        and receipt.get("full_campaign_promoted") is False
+        and receipt.get("healthy_junit_pass") is True
+        and receipt.get("healthy_named_exact_target") is True
+        and receipt.get("time_respecting_observed_postfault_paths") == 0
+        and healthy.get("case_id") == case_id
+        and healthy.get("status") == "calibration_complete"
+        and healthy_audit.get("report_gate_passed") is True
+        and pilot.get("case_id") == case_id
+        and pilot.get("status") in TERMINAL
+        and pilot_audit.get("report_gate_passed") is True
+        and pilot.get("fault_trials_completed") == receipt.get("pilot_fault_trials")
+        and pilot.get("strict_injected_trials") == receipt.get("pilot_strict_applied")
+        and pilot.get("strict_target_trials") == receipt.get("pilot_target_retained")
+        and pilot.get("exact_exception_trials") == receipt.get("exact_target_exception_trials")
+        and sidecar.get("case_id") == case_id
+        and sidecar.get("campaign_result_sha256") == artifacts["pilot_result"]["sha256"]
+        and sidecar.get("offline_causal_audit_sha256") == artifacts["pilot_audit"]["sha256"]
+        and sidecar.get("fault_trials_completed") == pilot.get("fault_trials_completed")
+        and sidecar.get("trials_with_time_respecting_observed_path") == 0
+        and isinstance(trial_rows, list)
+        and len(trial_rows) == pilot.get("fault_trials_completed")
+        and receipt.get("source_file_sha256_as_attested_in_review") in
+            files["source_request_order_review"].read_text()
+    )
+    if not valid:
+        return "invalid_fault_model_receipt", str(path)
+    trial_root = files["pilot_result"].parent / "trials"
+    seen_ids: set[int] = set()
+    for row in trial_rows:
+        trial_id = row.get("trial_id") if isinstance(row, dict) else None
+        if (not isinstance(trial_id, int) or isinstance(trial_id, bool)
+                or trial_id in seen_ids):
+            return "invalid_fault_model_receipt", str(path)
+        seen_ids.add(trial_id)
+        trial_dir = trial_root / f"r{trial_id:04d}"
+        trial_result = trial_dir / "result.json"
+        trace = trial_dir / "events.jsonl.gz"
+        if (not trial_result.is_file() or not trace.is_file()
+                or hashlib.sha256(trial_result.read_bytes()).hexdigest() !=
+                row.get("trial_result_sha256")
+                or hashlib.sha256(trace.read_bytes()).hexdigest() !=
+                row.get("trace_gzip_sha256")):
+            return "invalid_fault_model_receipt", str(path)
+        evidence = (_json(trial_result) or {}).get("events_evidence", {})
+        faults = row.get("applied_faults")
+        if (not isinstance(evidence, dict) or not isinstance(faults, list)
+                or not all(isinstance(fault, dict) for fault in faults)):
+            return "invalid_fault_model_receipt", str(path)
+        raw = hashlib.sha256()
+        raw_bytes = 0
+        try:
+            with gzip.open(trace, "rb") as stream:
+                for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                    raw.update(chunk)
+                    raw_bytes += len(chunk)
+        except (OSError, EOFError):
+            return "invalid_fault_model_receipt", str(path)
+        if (raw.hexdigest() != row.get("trace_raw_sha256")
+                or raw_bytes != row.get("trace_raw_bytes")
+                or evidence.get("raw_sha256") != row.get("trace_raw_sha256")
+                or evidence.get("raw_bytes") != row.get("trace_raw_bytes")
+                or evidence.get("gzip_sha256") != row.get("trace_gzip_sha256")
+                or any(fault.get("time_respecting_observed_path") is not None
+                       for fault in faults)):
+            return "invalid_fault_model_receipt", str(path)
+    if seen_ids != set(range(1, pilot["fault_trials_completed"] + 1)):
+        return "invalid_fault_model_receipt", str(path)
+    return "fault_model_no_target_path", str(path)
+
+
 def _source_only_gap(results: Path, case_id: str,
                      receipt: dict[str, Any]) -> str:
     """Label a source-only workload gap without claiming a healthy-run audit."""
@@ -1530,6 +1638,11 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "new_bug": None,
     }
     if result is None:
+        no_path_status, no_path_receipt = _fault_model_no_target_path(results, case_id)
+        if no_path_status is not None:
+            row["report_status"] = no_path_status
+            row["fault_model_receipt"] = no_path_receipt
+            return row
         model_status, model_receipt = _fault_model_target_lost(results, case_id)
         if model_status is not None:
             row["report_status"] = model_status
@@ -1697,7 +1810,9 @@ def markdown(report: dict[str, Any]) -> str:
              "`Target after fault (generic)` can count "
              "another actor. `fault_model_target_lost` records a SHA-checked "
              "healthy seed and effective bounded fault whose affected target disappeared; "
-             "it is not a completed campaign. "
+             "it is not a completed campaign. `fault_model_no_target_path` records "
+             "a SHA-checked bounded pilot with retained checks but no observed "
+             "fault-to-target path; it is also not a completed campaign. "
              "Local-timeline-only quality also requires a same-actor, "
              "same-epoch, same-occurrence target check after an admitted fault door. "
              "A SHA-bound faulted-path review is required for high-quality status. "
