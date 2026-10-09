@@ -1,0 +1,18 @@
+{
+  "case_id": "HDFS-30",
+  "hadoop_version": "3.4.3",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "selected_check": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@582:branch:2",
+  "selected_throw": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker#getActiveNamenodeForBP(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB;@583:throw:1",
+  "observed_existing_test": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+  "observed_existing_test_status": "archived healthy JUnit 1/0/0 and two exact nonthrowing checks, both node unknown",
+  "alternate_existing_test": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testLeaseRecoveryAfterFailover",
+  "alternate_existing_test_status": "three-DataNode HA lease-recovery path by source; exact target reach under this selector unverified",
+  "candidate_typed_door": "BPServiceActor.sendHeartBeat@563 DatanodeProtocolClientSideTranslatorPB.sendHeartbeat IOException",
+  "door_catch": "BPServiceActor.offerService@786 IOException catch, sleep, retry",
+  "control_plane_effect": "failed heartbeat skips updateActorStatesFromHeartbeat and response command enqueue; bpServiceToActive is unchanged by the failure itself",
+  "causal_gap": "a new recovery command from a later successful heartbeat follows that heartbeat's active-state update; only an already queued or concurrently spawned task can race with another actor clearing or delaying bpServiceToActive, and the pinned v11 adapter has no typed heartbeat-response-to-recovery-task correlation",
+  "status": "offline_source_review_nonterminal_identity_and_fault_model_gap",
+  "live_jvm_started": false,
+  "fault_or_full_admitted": false
+}
