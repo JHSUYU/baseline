@@ -1,0 +1,69 @@
+{
+  "bounded_pilot": {
+    "conclusion_limit": "A matched fault and target throw would be a bounded causal pilot observation; it is not a new-bug claim or full-campaign result.",
+    "fault_scope": "Only the explicit @563 sendHeartbeat call before invocation, on the same BPServiceActor, DataNode, and epoch; no other doors.",
+    "max_faults_per_trial": 2,
+    "one_fault_condition": "One scheduled heartbeat after NN rotation R1 is skipped; no successful key-update heartbeat reaches this DN before NN rotation R2 promotes the new key, token mint, and selected DN lookup.",
+    "one_fault_max_trials": 2,
+    "required_observation": "For one token identifier digest, bpid and keyId k: R1 NN next-key insertion, pending true with DN UUID, H1 selected fault, R2 promotion, H2 next attempt on same actor/epoch, NN mint after R2, valid selected DN lookup before any DN addKeys(k), exact branch/throw, and strict root-free graph path. Two-fault mode faults H1 and H2 only.",
+    "stop_conditions": [
+      "JUnit zero tests, failure, error, or timeout unrelated to the selected check",
+      "unknown or conflicting actor/epoch, keyId, block-pool ID, or test-method identity",
+      "successful addKeys(k) before the selected lookup or no R1-to-R2 promotion window",
+      "target not reached, only an expired-token rejection, or root/coarse/timeline-only path",
+      "any unselected fault or more than the bounded trial count"
+    ],
+    "two_fault_condition": "Only after the one-fault observations show a successful intervening update; skip the first two scheduled heartbeats after R1 on that same actor and epoch, then require R2/token/target ordering before the next successful update.",
+    "two_fault_max_trials": 2
+  },
+  "case_id": "HDFS-12",
+  "current_instrumentation_limits": [
+    "Pinned heartbeat-v1 runtime JARs do not contain the new HDFS12_KEY metadata hooks; current healthy config remains source-only diagnostic until a scoped release replaces them.",
+    "state.maps captures map key/object and sampled version but not Map.get return or Iterator.remove; selected branch supplies null/non-null result.",
+    "A before-call heartbeat fault delays delivery; no response token exists for an RPC that never reached the NN.",
+    "The source overlay selectors passed offline pinned-class checks, but no live transformer/JUnit/graph identity has been tested."
+  ],
+  "healthy_required": [
+    "Exactly one executed and passing JUnit method TestEncryptedTransfer.testLongLivedClient[0]; zero or different tests reject.",
+    "New HDFS-12 agent and adapter overlay compiled, tested, immutable and SHA-pinned; pinned Hadoop class images and exact selected door catalogued.",
+    "Named DataNode/epoch selected nonthrowing @511 branch, no selected @514 throw, same-thread/context selected HDFS12_KEY dn_lookup and STATE_READ.",
+    "NN nn_token_mint and DN dn_lookup have identical nonempty SHA-256 token identifier digest, bpid, keyId, and expiry; expiry exceeds lookup wall time.",
+    "NN descriptor UUID joins a unique DN dn_bind named actor/epoch; nn_command_key matches that bpid/keyId/peer, and dn_add_keys matches that named DN/epoch.",
+    "Strict root-free event-time graph paths nn_command_key\u2192dn_add_keys\u2192selected target, including the state handoff; timeline proximity alone is insufficient.",
+    "No unknown actor, epoch, token digest, keyId, block-pool ID, ambiguous test method, trace truncation, or local timeline doors."
+  ],
+  "pilot_admission": "prohibited until every healthy_required item is attested on one pinned run and dispatch grants an idle HDFS lane",
+  "schema_version": 1,
+  "source_model": {
+    "command": "A successful NN heartbeat with needKeyUpdate true adds KeyUpdateCommand and clears the flag; the DN command processor subsequently calls addKeys. The pre-call fault does not clear needKeyUpdate.",
+    "heartbeat": "The DN default heartbeat interval is 3000 ms. sendHeartBeat schedules the next heartbeat before the selected RPC call. An injected pre-call IOException skips this scheduled attempt, offerService catches it, sleeps at most 1000 ms, and retries when the next heartbeat is due.",
+    "registration_keys": "DN registration imports NN current and next block keys; the next key can validate the first promotion without a new command.",
+    "rotation": "The NN HeartbeatManager checks every 5000 ms; with the test's 2000 ms key-update interval, successive monitor passes can promote a previously exported next key and create a new next key.",
+    "target": "retrievePassword first rejects expired tokens, then looks up identifier.keyId in the DN allKeys map. Missing-key evidence requires a still-valid token at this exact lookup."
+  },
+  "source_only_overlay": {
+    "adapter_dependency": "scoped HdfsMiniClusterTransformer/HdfsHooks/Hdfs12KeyHooks; requires new isolated adapter release",
+    "agent_dependency": "scoped Probe.blockKeyObservation API; requires new isolated agent release",
+    "event_type": "HDFS12_KEY",
+    "fields": [
+      "phase",
+      "bpid",
+      "owner_bpid",
+      "key_id",
+      "peer",
+      "actor_ref",
+      "request",
+      "token_id",
+      "expiry_ms",
+      "wall_time_ms",
+      "node",
+      "epoch",
+      "thread_id",
+      "ts"
+    ],
+    "path": "overlay/",
+    "status": "unbuilt_unrun",
+    "token_id": "SHA-256 of BlockTokenIdentifier.getBytes, no identifier or key bytes emitted"
+  },
+  "status": "offline_proof_contract_no_healthy_or_pilot_evidence"
+}
