@@ -427,6 +427,110 @@ def _solr01_recovery_review(results: Path, result_path: Path,
         return invalid
 
 
+def _solr18_badversion_recovery_review(results: Path, result_path: Path,
+                                       result: dict[str, Any]) -> tuple[str | None, str | None]:
+    """Replay exact fault-created BadVersion recovery paths on the frozen graph."""
+    if result.get("case_id") != "SOLR-18":
+        return None, None
+    path = results / "audit_sidecars/SOLR-18-v45-badversion-full.json"
+    if not path.is_file():
+        return None, None
+    invalid = ("invalid", str(path))
+    try:
+        baseline = results.resolve().parent.parent
+        replay = results / "replays/SOLR-18-v45-lane4"
+        index = _json(results / "quality_reviews/solr18_v45_badversion_recovery/index.json")
+        receipt = _json(path)
+        verifier = baseline / "Mallory/adapters/solr/releases/v45/verify_solr18_badversion_full.py"
+        helper = verifier.with_name("verify_solr18_badversion_recovery.py")
+        source = verifier.parent / "source/ZkStateReader.solr-8.11.4.java"
+        test_source = verifier.parent / "source/AliasIntegrationTest.solr-8.11.4.java"
+        release = baseline / "Mallory/dispatch/releases/4390310699b695ba002ed541508b359204a2d95529df09bb9f702db5dac3cde4"
+        names = ("config.json", "result.json", "offline-causal-audit.json",
+                 "sync-receipt.json")
+        files = (path, verifier, helper, source, test_source,
+                 release / "manifest.json", release / "Mallory/core/graph.py")
+        if (not isinstance(index, dict) or not isinstance(receipt, dict)
+                or any(not file.is_file() for file in files)
+                or any(not (replay / name).is_file() or
+                       not (result_path.parent / name).is_file() for name in names)):
+            return invalid
+        digest = lambda file: hashlib.sha256(file.read_bytes()).hexdigest()
+        if any((replay / name).read_bytes() !=
+               (result_path.parent / name).read_bytes() for name in names):
+            return invalid
+        config = _json(replay / "config.json")
+        positives = receipt.get("strict_recovery_trials")
+        trials = result.get("fault_trials_completed")
+        if not (
+            index.get("schema_version") == receipt.get("schema_version") == 1
+            and index.get("case_id") == receipt.get("case_id") == "SOLR-18"
+            and index.get("receipt_path") == str(path.resolve().relative_to(baseline))
+            and index.get("receipt_sha256") == digest(path)
+            and index.get("verifier_sha256") == digest(verifier)
+            and index.get("helper_sha256") == digest(helper)
+            and index.get("source_snapshot_sha256") == digest(source)
+            and index.get("test_source_snapshot_sha256") == digest(test_source)
+            and index.get("core_manifest_sha256") == digest(release / "manifest.json")
+            and index.get("result_sha256") == digest(result_path)
+            and index.get("audit_sha256") == digest(replay / "offline-causal-audit.json")
+            and index.get("sync_sha256") == digest(replay / "sync-receipt.json")
+            and isinstance(config, dict)
+            and Path(config.get("core_release", "")).resolve() == release.resolve()
+            and receipt.get("classification") ==
+                ("terminal_badversion_recovery_precision_proven" if positives else
+                 "terminal_badversion_recovery_precision_unproven")
+            and receipt.get("canonical_quality_claim") is False
+            and receipt.get("new_bug_confirmed") is False
+            and receipt.get("offline_audit_gate") is False
+            and receipt.get("campaign_result_sha256") == digest(result_path)
+            and receipt.get("config_sha256") == digest(replay / "config.json")
+            and receipt.get("offline_audit_sha256") == digest(replay / "offline-causal-audit.json")
+            and receipt.get("sync_receipt_sha256") == digest(replay / "sync-receipt.json")
+            and receipt.get("source_sha256") == digest(source)
+            and receipt.get("test_source_sha256") == digest(test_source)
+            and receipt.get("core_graph_sha256") == digest(release / "Mallory/core/graph.py")
+            and isinstance(trials, int) and not isinstance(trials, bool) and trials > 0
+            and receipt.get("fault_trials_completed") == trials
+            and isinstance(receipt.get("trials"), list)
+            and len(receipt["trials"]) == trials
+            and isinstance(positives, list) and positives
+            and all(isinstance(number, int) and not isinstance(number, bool)
+                    and 1 <= number <= trials for number in positives)
+            and len(set(positives)) == len(positives)
+            and index.get("qualifying_trial_count") == len(positives)
+            and len(receipt.get("effective_target_trials", [])) ==
+                result.get("strict_target_trials")
+            and receipt.get("exact_target_exception_candidate_trials") == []
+            and result.get("exact_exception_trials") == 0
+            and result.get("status") in TERMINAL
+        ):
+            return invalid
+        environment = dict(os.environ, PYTHONPATH=f"{release}:{baseline}")
+        with tempfile.TemporaryDirectory() as temporary:
+            temporary = Path(temporary)
+            generated_audit = temporary / "audit.json"
+            generated_review = temporary / "review.json"
+            audit_check = subprocess.run(
+                ["python3", "-m", "Mallory.core.audit", "--campaign", str(replay),
+                 "--out", str(generated_audit)], cwd=baseline, env=environment,
+                capture_output=True, text=True, timeout=300)
+            review_check = subprocess.run(
+                ["python3", str(verifier), "--campaign", str(replay),
+                 "--source", str(source), "--test-source", str(test_source),
+                 "--out", str(generated_review), "--require-witness"],
+                cwd=baseline, env=environment,
+                capture_output=True, text=True, timeout=300)
+            if (audit_check.returncode not in (0, 2) or review_check.returncode != 0
+                    or generated_audit.read_bytes() !=
+                        (replay / "offline-causal-audit.json").read_bytes()
+                    or generated_review.read_bytes() != path.read_bytes()):
+                return invalid
+        return "observed_event_path", str(path)
+    except (OSError, ValueError, TypeError, KeyError, EOFError, subprocess.TimeoutExpired):
+        return invalid
+
+
 def _event_path_review(results: Path, result_path: Path,
                        result: dict[str, Any]) -> tuple[str | None, str | None]:
     """Verify a named, ordered fault-to-target witness from a completed run."""
@@ -3218,6 +3322,19 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 row["causal_audit"] = "recovery_path_verified"
                 row["quality_status"] = precision
             elif precision == "faulted_path_unverified":
+                row["quality_status"] = precision
+            elif precision == "invalid":
+                row["quality_status"] = "causal_precision_review_invalid"
+            else:
+                row["quality_status"] = "causal_precision_pending"
+        elif case_id == "SOLR-18":
+            row["static_causal_audit"] = row["causal_audit"]
+            precision, receipt = _solr18_badversion_recovery_review(
+                results, result_path, result)
+            row["causal_precision_review"] = precision
+            row["causal_precision_receipt"] = receipt
+            if precision == "observed_event_path":
+                row["causal_audit"] = "recovery_graph_path_verified"
                 row["quality_status"] = precision
             elif precision == "invalid":
                 row["quality_status"] = "causal_precision_review_invalid"

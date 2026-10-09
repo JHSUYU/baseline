@@ -20,6 +20,42 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_solr18_recovery_gate_replays_raw_and_rejects_rehashed_witness(self):
+        from Mallory.report.build import _solr18_badversion_recovery_review
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        with tempfile.TemporaryDirectory() as temporary:
+            fake_baseline = Path(temporary)
+            (fake_baseline / "Mallory").symlink_to(baseline / "Mallory")
+            results = fake_baseline / "data/mallory"
+            replay = results / "replays/SOLR-18-v45-lane4"
+            replay.parent.mkdir(parents=True)
+            replay.symlink_to(source / "replays/SOLR-18-v45-lane4")
+            canonical = results / "cases/SOLR-18"
+            canonical.mkdir(parents=True)
+            for name in ("config.json", "result.json", "offline-causal-audit.json",
+                         "sync-receipt.json"):
+                shutil.copy2(source / "cases/SOLR-18" / name, canonical / name)
+            index_path = results / "quality_reviews/solr18_v45_badversion_recovery/index.json"
+            index_path.parent.mkdir(parents=True)
+            shutil.copy2(source / "quality_reviews/solr18_v45_badversion_recovery/index.json",
+                         index_path)
+            receipt_path = results / "audit_sidecars/SOLR-18-v45-badversion-full.json"
+            receipt_path.parent.mkdir(parents=True)
+            shutil.copy2(source / "audit_sidecars/SOLR-18-v45-badversion-full.json",
+                         receipt_path)
+            result_path = canonical / "result.json"
+            result = json.loads(result_path.read_text())
+            review = lambda: _solr18_badversion_recovery_review(results, result_path, result)[0]
+            self.assertEqual(review(), "observed_event_path")
+            receipt = json.loads(receipt_path.read_text())
+            receipt["strict_recovery_trials"][-1] = 31
+            receipt_path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n")
+            index = json.loads(index_path.read_text())
+            index["receipt_sha256"] = hashlib.sha256(receipt_path.read_bytes()).hexdigest()
+            index_path.write_text(json.dumps(index, indent=2, sort_keys=True) + "\n")
+            self.assertEqual(review(), "invalid")
+
     def test_hbase12_legacy_archive_preserves_expected_exception_caveat(self):
         from Mallory.report.build import _hbase12_legacy_review
         baseline = Path(__file__).resolve().parents[2]
