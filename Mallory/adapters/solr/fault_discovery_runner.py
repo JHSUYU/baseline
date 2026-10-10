@@ -92,6 +92,8 @@ def preflight(here: Path, mode: str) -> dict:
             raise ValueError("selected split leader-znode I/O door is not configured")
     if case == "SOLR-34":
         reader = "org.apache.solr.common.cloud.ZkStateReader"
+        native = package["retry_internal_getdata"]
+        client = "org.apache.solr.common.cloud.SolrZkClient"
         if (reader not in config["agent_include"] or
                 not any(row.get("class") == reader and
                         row.get("callee", "").startswith(
@@ -101,6 +103,16 @@ def preflight(here: Path, mode: str) -> dict:
                         and site.endswith("@1641:door:1")
                         for site in policy["door_sites"])):
             raise ValueError("coordinator collection-state getData I/O is not configured")
+        if (client not in config["agent_include"] or
+                native["site"] not in policy["door_sites"] or
+                not any(row.get("class") == client and
+                        row.get("method") == "lambda$getData$6" and
+                        row.get("line") == 349 and
+                        row.get("callee") == native["callee"] and
+                        row.get("exception_class") ==
+                        "org.apache.zookeeper.KeeperException$ConnectionLossException"
+                        for row in sites["doors"])):
+            raise ValueError("retry-internal SolrZooKeeper.getData door is not configured")
     for row in config["runtime_artifacts"]:
         path = Path(row["path"])
         if not path.is_file() or sha(path) != row["sha256"]:
@@ -123,6 +135,20 @@ def preflight(here: Path, mode: str) -> dict:
         if ("zkClient.getData(" not in reader_source[310] or
                 "zkClient.getData(" not in reader_source[1640]):
             raise ValueError("collection-state getData locations changed")
+        native = package["retry_internal_getdata"]
+        client_source = source / native["source_path"]
+        if (sha(client_source) != native["source_sha256"] or
+                "keeper.getData(" not in client_source.read_text().splitlines()[348]):
+            raise ValueError("retry-internal SolrZooKeeper.getData source changed")
+        solrj = Path(config["mapping"]["solrj_compiled_jar"])
+        if sha(solrj) != config["mapping"]["solrj_compiled_jar_sha256"]:
+            raise ValueError("compiled SolrJ JAR changed")
+        with zipfile.ZipFile(solrj) as archive:
+            client_hash = hashlib.sha256(archive.read(
+                "org/apache/solr/common/cloud/SolrZkClient.class")).hexdigest()
+        if (client_hash != native["class_sha256"] or
+                client_hash != config["mapping"]["solr_zk_client_class_sha256"]):
+            raise ValueError("retry-internal SolrZkClient class changed")
     compiled = Path(config["mapping"]["compiled_jar"])
     if sha(compiled) != config["mapping"]["compiled_jar_sha256"]:
         raise ValueError("compiled Solr JAR changed")
