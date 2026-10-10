@@ -3513,6 +3513,7 @@ def _fault_depth_review(results: Path, result_path: Path, result: dict[str, Any]
         assert review["scheduler_policy_commit"] == config.get("mapping", {}).get("scheduler_policy_commit")
 
         raw_copy = _json(canonical / "raw-copy-receipt.json")
+        trial_prefix = "trials/"
         if raw_copy is not None:
             raw_files = raw_copy["files"]
             sync = _json(canonical / "sync-receipt.json")
@@ -3520,7 +3521,7 @@ def _fault_depth_review(results: Path, result_path: Path, result: dict[str, Any]
             assert raw_files["checkpoint.json"] == review["campaign_checkpoint_sha256"]
             assert raw_files["config.json"] == review["campaign_config_sha256"]
             trial_hashes = raw_files
-        else:
+        elif (canonical / "canonical-import-receipt.json").is_file():
             receipt = _json(canonical / "canonical-import-receipt.json")
             archive_path = path.with_name(f"{case_id}.archive-manifest.json")
             archive = _json(archive_path)
@@ -3529,14 +3530,27 @@ def _fault_depth_review(results: Path, result_path: Path, result: dict[str, Any]
             assert receipt["manifest_sha256"] == hashlib.sha256(archive_path.read_bytes()).hexdigest()
             trial_hashes = {item["path"].split("/trials/", 1)[-1]: item["sha256"]
                             for item in archive["members"] if "/trials/" in item["path"]}
+            trial_prefix = ""
+        else:
+            seal = _json(canonical / "terminal-seal.json")
+            assert seal["case_id"] == case_id and seal["status"] == result["status"]
+            source = results.parent.parent / seal["source_campaign"]
+            assert source.resolve().is_relative_to(results.resolve())
+            assert hashlib.sha256((source / "result.json").read_bytes()).hexdigest() == review["campaign_result_sha256"]
+            assert hashlib.sha256((source / "config.json").read_bytes()).hexdigest() == review["campaign_config_sha256"]
+            assert hashlib.sha256((source / "checkpoint.json").read_bytes()).hexdigest() == review["campaign_checkpoint_sha256"]
+            assert seal["compact_files_sha256"]["result.json"] == review["campaign_result_sha256"]
+            trial_hashes = {
+                f"trials/r{number:04d}/result.json": hashlib.sha256(
+                    (source / "trials" / f"r{number:04d}" / "result.json").read_bytes()).hexdigest()
+                for number in range(1, review["fault_trials_completed"] + 1)
+            }
         distribution: dict[str, int] = {}
         trials = review["trials"]
         assert len(trials) == review["fault_trials_completed"]
         for expected_id, trial in enumerate(trials, start=1):
             assert trial["trial_id"] == expected_id
-            key = f"trials/r{expected_id:04d}/result.json"
-            if raw_copy is None:
-                key = f"r{expected_id:04d}/result.json"
+            key = f"{trial_prefix}r{expected_id:04d}/result.json"
             assert trial_hashes[key] == trial["result_sha256"]
             depth = trial["depth"]
             assert isinstance(depth, int) and 1 <= depth <= config["budget"]["max_faults_per_trial"]
