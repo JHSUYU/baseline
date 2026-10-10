@@ -1,0 +1,54 @@
+{
+  "bootstrap_door_sites": [
+    "org.apache.solr.common.cloud.SolrZkClient#lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@349:door:1",
+    "org.apache.solr.client.solrj.impl.Http2SolrClient#request(Lorg/apache/solr/client/solrj/SolrRequest;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;@776:door:1",
+    "org.apache.solr.client.solrj.impl.HttpSolrClient#request(Lorg/apache/solr/client/solrj/SolrRequest;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;@248:door:1",
+    "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1267:door:1",
+    "org.apache.solr.cloud.ZkController#linkConfSet(Lorg/apache/solr/common/cloud/SolrZkClient;Ljava/lang/String;Ljava/lang/String;)V@2129:door:1",
+    "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;)Lorg/apache/solr/common/cloud/DocCollection;@1641:door:1",
+    "org.apache.solr.common.cloud.ZkStateReader#readConfigName(Ljava/lang/String;)Ljava/lang/String;@311:door:1"
+  ],
+  "case_id": "SOLR-34",
+  "cluster_test": "org.apache.solr.search.TestCoordinatorRole#testSimple",
+  "core_manifest_sha256": "addd46568f8d29029e6b4f68df491c098fa37feb153c1f406f278b7cb35fda8c",
+  "core_source_commit": "815cba9b",
+  "exact_check_site": "org.apache.solr.servlet.CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;@139:branch:6",
+  "exact_throw_site": "org.apache.solr.servlet.CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;@143:throw:1",
+  "files": {
+    "README.md": {
+      "bytes": 3230,
+      "sha256": "93660113979de2486e36ee6ea445d27de76b0c3c6025d29dd35971cbd671ab4d"
+    },
+    "config-full-node2.json": {
+      "bytes": 10754,
+      "sha256": "7ea7720725f26c417b7564e9fb510accf7dff85e47241a9ceecf11437fb535c4"
+    },
+    "config-healthy-node2.json": {
+      "bytes": 10757,
+      "sha256": "b1b7850d35fbafa4f0877e7a7bd9bb075439dbbf0be28f9298f2d217a28b8e1f"
+    },
+    "run_campaign.py": {
+      "bytes": 337,
+      "sha256": "537f13ac02f9050f6e532c856ca452e58dd2f9da41c0bb1f6873282848dd6a1b"
+    },
+    "run_node2.sh": {
+      "bytes": 398,
+      "sha256": "93cba4588b796b7e9dcf5817112a83a67a3085ef1b223ad84cb652840e49907b"
+    },
+    "sites.json": {
+      "bytes": 6683,
+      "sha256": "7b83d5fb25af09538896ae82df3805a634b02f7b76d6663b095f5abcc60bbb8b"
+    }
+  },
+  "retry_internal_getdata": {
+    "callee": "org.apache.solr.common.cloud.SolrZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+    "class_sha256": "51b3131fed142509b80da408d0d3f8d036045237b51a48c2a4dd9cf574a72dc0",
+    "site": "org.apache.solr.common.cloud.SolrZkClient#lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@349:door:1",
+    "source_path": "solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java",
+    "source_sha256": "4a256a0fb563515451b5b733dbb4e320fceb9fa5dcc04912e4dd003d1a109c32"
+  },
+  "schema_version": 1,
+  "target_class_sha256": "e1fbaaed7d0348b722277cefd66e4aec61f2463e968a9a336d794dc3bf4dd087",
+  "test_source_path": "solr/core/src/test/org/apache/solr/search/TestCoordinatorRole.java",
+  "test_source_sha256": "2e2c6a24b8f2ea37bb1dc4b95842e7974b166e000acf8393ba7d1342bddb59b3"
+}
