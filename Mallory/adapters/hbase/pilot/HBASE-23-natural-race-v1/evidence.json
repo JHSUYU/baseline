@@ -1,0 +1,67 @@
+{
+  "case_id": "HBASE-23",
+  "healthy_evidence": [
+    {
+      "cohort": "v13",
+      "exact_127_checks": 1,
+      "exact_check_node": "zk-coordinator:ms1105.utah.cloudlab.us,34741,1791576298006",
+      "junit": "passed",
+      "named_region_entries": 1,
+      "observed_doors": 29,
+      "region_node": "zk-coordinator:ms1105.utah.cloudlab.us,34741,1791576298006",
+      "result_path": "data/mallory/calibration_v13/HBASE-23/result.json",
+      "result_sha256": "dd7a4aa9c4d97bc475746b1065e8de841bccccadbdd969ed34eb1e06a705b1bd",
+      "target_catalog_valid": true
+    },
+    {
+      "cohort": "v21",
+      "exact_127_checks": 0,
+      "exact_check_node": null,
+      "junit": "passed",
+      "named_region_entries": 1,
+      "observed_doors": 27,
+      "region_node": "zk-coordinator:ms1105.utah.cloudlab.us,33375,1791579213906",
+      "result_path": "data/mallory/calibration_v21/HBASE-23/result.json",
+      "result_sha256": "9ee657d8561e7c469de30a9ed2ac6250a1ae2613e765511e72f9ef7be7ff8834",
+      "target_catalog_valid": true
+    },
+    {
+      "cohort": "v22",
+      "exact_127_checks": 0,
+      "exact_check_node": null,
+      "junit": "passed",
+      "named_region_entries": 1,
+      "observed_doors": 29,
+      "region_node": "zk-coordinator:ms1105.utah.cloudlab.us,33827,1791579338421",
+      "result_path": "data/mallory/calibration_v22/HBASE-23/result.json",
+      "result_sha256": "257ee6c6c97d70f1d042dbea5ccf43a5eeca0015b3753d86de4f32502d3e8978",
+      "target_catalog_valid": true
+    },
+    {
+      "cohort": "v23",
+      "exact_127_checks": 0,
+      "exact_check_node": null,
+      "junit": "passed",
+      "named_region_entries": 1,
+      "observed_doors": 29,
+      "region_node": "zk-coordinator:ms1105.utah.cloudlab.us,35257,1791579369916",
+      "result_path": "data/mallory/calibration_v23/HBASE-23/result.json",
+      "result_sha256": "1eaf84a5845957a40971e2795861003c5050e5e1fe375471b36bc6e8ff933413",
+      "target_catalog_valid": true
+    }
+  ],
+  "interpretation": "The exact synchronous guard requires a reached/member child before watchAndCheckExists; later completion is handled by the distinct nodeCreated callback. Region identity is named in all listed fa5f seeds, so missing exact checks reflect timing rather than actor identity or site catalog failure.",
+  "schema_version": 1,
+  "source_guard": {
+    "callback_guard_line": 211,
+    "exact_pb_check_line": 127,
+    "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator.java",
+    "sha256": "7f1ebc383086f82c98d0460d7c0504d5fd59e590176b65931c3061bcdac947b7",
+    "synchronous_child_check_line": 121
+  },
+  "test_source": {
+    "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestProcedureManager.java",
+    "selector": "org.apache.hadoop.hbase.procedure.TestProcedureManager#testSimpleProcedureManager",
+    "sha256": "35dee7363efa0ade2a906fb1b75bc1ab1396ae48c02ff75db0b18f676d6cd135"
+  }
+}
