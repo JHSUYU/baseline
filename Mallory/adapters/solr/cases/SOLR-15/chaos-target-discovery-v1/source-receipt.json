@@ -1,0 +1,75 @@
+{
+  "case_id": "SOLR-15",
+  "claim": "Prior original chaos JUnit two-fault native ZooKeeper run and replay reached exact SOLR-15 guard/throw with a passing JUnit; current Mallory variant is statically staged and unexecuted.",
+  "compiled_classes": [
+    {
+      "class": "org.apache.solr.cloud.api.collections.SplitShardCmd",
+      "sha256": "590ff068f83f4c7644891c19db9900911bf93a1a306de2f30c176568850ea93a"
+    },
+    {
+      "class": "org.apache.solr.common.cloud.SolrZkClient",
+      "sha256": "51b3131fed142509b80da408d0d3f8d036045237b51a48c2a4dd9cf574a72dc0"
+    }
+  ],
+  "current_package": {
+    "config_sha256": "d6c57d8c06762bc31387258369dff8d587a7d88a6c08486583084980feaf8bd0",
+    "inventory_sha256": "2fc7f907c6f00a5f22697f574cfec6d079446ac6695fcf9f033ef5ad49519074",
+    "run_campaign_sha256": "71d6363a489cba2439802189772806161f9f48b055bfb20cca51874051ba909c",
+    "run_pilot_sha256": "36fe8f078561267e32c6d7b158f1b31661bf20bf210e4e90bcbeaf6541eed6e5",
+    "sites_sha256": "fcd1ffb1d69c3f3905462ac2bfb4828693620a5ccc8a8ae3b9b673cd8b6483d4"
+  },
+  "historical_evidence": [
+    {
+      "path": "crashfuzz/cases/SOLR-14/independent/supplemental/shardsplit/native-chaos-plan-01-selection.json",
+      "sha256": "2bf249b491d4974d2e60a85bb773a802ba4e01f42aaff39f7e7c6d2387fd24ab"
+    },
+    {
+      "path": "crashfuzz/cases/SOLR-14/independent/supplemental/shardsplit/native-chaos-fault-02/audit.json",
+      "sha256": "ba1daeec028625c25174d586ec20777203338713effc90437acd439423681074"
+    },
+    {
+      "path": "crashfuzz/cases/SOLR-14/independent/supplemental/shardsplit/native-chaos-replay-01/audit.json",
+      "sha256": "2cb4e87852055e02037de565bbcfd2300ea01db034fcaaf20495b8035f26b432"
+    },
+    {
+      "path": "crashfuzz/cases/SOLR-14/independent/supplemental/shardsplit/solr15-native-candidate-source-review.json",
+      "sha256": "26268fb063b31603a4bdff3c8d4e24415883a279da4e06f8ede26b8f1e864059"
+    }
+  ],
+  "runtime_limit": "Mallory DOOR_OBSERVED records site and physical node but no ZooKeeper path. The healthy gate cannot attest the parent /live_nodes resource; no full campaign can be admitted from this receipt alone.",
+  "schema_version": 1,
+  "source_files": [
+    {
+      "evidence_lines": [
+        408,
+        459,
+        475,
+        485,
+        506
+      ],
+      "path": "solr/core/src/test/org/apache/solr/cloud/api/collections/ShardSplitTest.java",
+      "sha256": "877be1fdba4d626214d647a8ca6b25957b0a87cc381821a125fff71dfe0dc352"
+    },
+    {
+      "evidence_lines": [
+        164,
+        523,
+        524,
+        536,
+        538
+      ],
+      "path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+      "sha256": "995355f882947b528cedf9b7b38032f334afec74b5226d217f3f7828f2fb34f3"
+    },
+    {
+      "evidence_lines": [
+        298,
+        301
+      ],
+      "path": "solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java",
+      "sha256": "4a256a0fb563515451b5b733dbb4e320fceb9fa5dcc04912e4dd003d1a109c32"
+    }
+  ],
+  "source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "variant": "chaos-target-discovery-v1"
+}
