@@ -1,0 +1,91 @@
+{
+  "case_id": "SOLR-31",
+  "config_sha256": "18a56a64ebd7d07b3b88d5aea1d746af7908ab4ea0260b3e4a441bce257f2bea",
+  "evidence_kind": "postfault_state_timeline_not_graph_edge",
+  "healthy_receipt_sha256": "9c6372741daad90ca97e93f0ea5485ddc8fd47062bd942deca7f4419992c30b0",
+  "result_sha256": "35333243e45dd7cee0d2d021b70b8014de41c206e6e5a1f5cb1f1fb98276ab60",
+  "schema_version": 1,
+  "selected_throw_witness_count": 1,
+  "strict_same_reader_witness_count": 1,
+  "trials": [
+    {
+      "all_faults_effective": true,
+      "events_gzip_sha256": "5776454b3bdeedcef5d11bec0dacb13b9c2d2fc026fd830a91b117027dda731c",
+      "events_raw_sha256": "d78647a45e996951471fce8d9b98613d75af121a898c799185aa7101e6f69d8c",
+      "exact_applied_count": 1,
+      "exact_target_count": 0,
+      "feedback_status": "target_lost",
+      "junit_log_sha256": "14a76f82c67a321f070bf5d8c5df5831efa7beb8b8d16e849813033111e972b7",
+      "junit_receipt_sha256": "d8d3242dd0872dffdb3364890567b379a23e2e590c45cd3e7d93a613306ac561",
+      "junit_status": "failed",
+      "same_reader_state_witness": null,
+      "trial": "r0001",
+      "trial_result_sha256": "9c0c66cf4c4b3dac5c5f32bb499f5a573064f0430db31c2578d44ca96062cede"
+    },
+    {
+      "all_faults_effective": true,
+      "events_gzip_sha256": "501b15c2df735937b8eedf4c4b2c5cf36f1fa3bad45cff0802ef6829f93cd68a",
+      "events_raw_sha256": "1dd57247cfcddc9265008ddaa6f6aa7ce1d1ac62edcf8bcb39dcd9d4aa03a1df",
+      "exact_applied_count": 1,
+      "exact_target_count": 2,
+      "feedback_status": "target_exception_candidate",
+      "junit_log_sha256": "e098cf8f10cc51e8fe6620237761c8d1bdf8a95aa4ac43dde6d4880368ce234a",
+      "junit_receipt_sha256": "43a0e2825846bbe34db047d0c53f59f10bc1b0cb93d5439cd26512ee803ad8c0",
+      "junit_status": "failed",
+      "same_reader_state_witness": {
+        "after_leader_state": "active",
+        "after_version": "5",
+        "before_leader_state": "active",
+        "before_version": "5",
+        "door_ordinal": 4,
+        "door_seq": 835,
+        "epoch": 0,
+        "fault_applied_seq": 840,
+        "fault_id": "solr31-v46p-r0002",
+        "fault_matched_seq": 839,
+        "node": "shard-2",
+        "reader_id": "15166816",
+        "selected_throw_seqs": [
+          998
+        ],
+        "target_leader": "core_node6",
+        "target_leader_state": "active",
+        "target_occurrence": "shard-2:0:org.apache.solr.handler.admin.CollectionsHandler#forceLeaderElection(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/handler/admin/CollectionsHandler;)V:3c75eb7b-46c3-4ed3-8b8a-b7ed4eed4608:425:1",
+        "target_seq": 996,
+        "target_version": "5",
+        "thread_id": 227,
+        "watch_occurrence": "shard-2:0:solr31:ZkStateReader.StateWatcher.refreshAndWatch:3c75eb7b-46c3-4ed3-8b8a-b7ed4eed4608:task:349:1"
+      },
+      "trial": "r0002",
+      "trial_result_sha256": "218ec233d96ad06b007e3c04d6aa6fbdd1536cc97270549c12da198448cacd46"
+    },
+    {
+      "all_faults_effective": true,
+      "events_gzip_sha256": "aebe07d66222d70ce40e41fa5569c79ddcfee569c9ca3c7cb3ebf6d98919d34c",
+      "events_raw_sha256": "bc76bed2164db0a91aef56b26a1550aa85609c853b9ae87dfedc47ba7b4a2ff4",
+      "exact_applied_count": 1,
+      "exact_target_count": 0,
+      "feedback_status": "target_lost",
+      "junit_log_sha256": "718bb3cf5e1afbe6683ea3cd246ce4bf09df83509ee92446a47a4c36a052c2a1",
+      "junit_receipt_sha256": "0033e24052c31010d343bb125a0ce51f78d081b525599787fe673c734eaf685b",
+      "junit_status": "failed",
+      "same_reader_state_witness": null,
+      "trial": "r0003",
+      "trial_result_sha256": "a40067783d31ef39220ce2b6415ea78d3cdf085d8e0df0ce47e2140b4b2bda37"
+    },
+    {
+      "all_faults_effective": true,
+      "events_gzip_sha256": "a9f9b2d1cfe71882d25c26535bef05b227dd5fd691ba7a935dbb7c4e0baf200a",
+      "events_raw_sha256": "9103f4b8a747a0353b568d4665d7c1491cbfe2358fc86c76614868e629b47911",
+      "exact_applied_count": 1,
+      "exact_target_count": 1,
+      "feedback_status": "workload_failed_other",
+      "junit_log_sha256": "aa684d8be9d4e42f7233e0b14f01871dc612ad0550c1a55e2dff201643f0aec9",
+      "junit_receipt_sha256": "160e3967a544e2f9b2332faecae5380e6f94cdbed321cffe977ba45df5bebcb4",
+      "junit_status": "failed",
+      "same_reader_state_witness": null,
+      "trial": "r0004",
+      "trial_result_sha256": "cabc1c7a3bf2b18785e6d09b4006ba92bede553bb1dba2b9508eebdb38419938"
+    }
+  ]
+}

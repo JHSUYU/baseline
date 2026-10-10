@@ -20,6 +20,11 @@ public final class SolrHooks {
   public static final String HEADER = "X-Mallory-Causal";
   private static final String TRANSPORT = "solr-http";
   private static final String PORT = "request";
+  private static final String FORCE_LEADER_COLLECTION = "forceleader_lower_terms_collection";
+  public static final String FORCE_LEADER_STATE_DOOR =
+      "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState"
+      + "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;)"
+      + "Lorg/apache/solr/common/cloud/DocCollection;@1641:door:watcher";
   private static final String PREFIX = UUID.randomUUID().toString();
   private static final AtomicLong SERIAL = new AtomicLong();
   private static final Map<Object, NodeRef> CONTROLLERS = new IdentityHashMap<Object, NodeRef>();
@@ -30,6 +35,10 @@ public final class SolrHooks {
   private static final ThreadLocal<Deque<Scope>> SCOPES = new ThreadLocal<Deque<Scope>>() {
     @Override protected Deque<Scope> initialValue() { return new ArrayDeque<Scope>(); }
   };
+  private static final ThreadLocal<Deque<StateWatch>> STATE_WATCHES =
+      new ThreadLocal<Deque<StateWatch>>() {
+        @Override protected Deque<StateWatch> initialValue() { return new ArrayDeque<StateWatch>(); }
+      };
 
   private SolrHooks() { }
 
@@ -128,6 +137,85 @@ public final class SolrHooks {
   }
 
   public static void endZkWatchDispatch() { end("zk_watch_dispatch"); }
+
+  /** Diagnostic scope for a real collection-state watch callback. */
+  public static void beginStateWatcher(Object watcher) {
+    Object reader = field(watcher, "this$0");
+    Object collField = field(watcher, "coll");
+    String collection = collField instanceof String ? (String) collField : null;
+    Probe.NodeScope node = Probe.withRegisteredNode(reader);
+    SCOPES.get().push(new Scope("state_watcher", node, null));
+    Probe.regionEnter("solr31:ZkStateReader.StateWatcher.refreshAndWatch");
+    StateWatch watch = new StateWatch(watcher, reader, collection, Probe.captureContext());
+    STATE_WATCHES.get().push(watch);
+    stateDiagnostic("before", watch.reader, watch.collection, watch.occurrence);
+  }
+
+  public static void endStateWatcher() {
+    Deque<StateWatch> watches = STATE_WATCHES.get();
+    if (!watches.isEmpty()) {
+      StateWatch watch = watches.pop();
+      stateDiagnostic("after", watch.reader, watch.collection, watch.occurrence);
+    }
+    Probe.regionExit("solr31:ZkStateReader.StateWatcher.refreshAndWatch");
+    end("state_watcher");
+    if (watches.isEmpty()) STATE_WATCHES.remove();
+  }
+
+  /** Only the selected real watcher read can receive this diagnostic fault. */
+  public static void beforeQualifiedStateRead(String collection, String path, Object watcher) {
+    Deque<StateWatch> watches = STATE_WATCHES.get();
+    if (watches.isEmpty()) return;
+    StateWatch active = watches.peek();
+    if (active.watcher != watcher || !FORCE_LEADER_COLLECTION.equals(collection)
+        || !collection.equals(active.collection)
+        || !("/collections/" + collection + "/state.json").equals(path)
+        || "unknown".equals(Probe.currentNode())) return;
+    Probe.beforeDoor(FORCE_LEADER_STATE_DOOR,
+        "org.apache.zookeeper.KeeperException$ConnectionLossException");
+  }
+
+  /** Exposes the exact cached leader operand immediately before the selected guard. */
+  public static void forceLeaderOperand(Object leader, Object slice,
+      Object docCollection, String collection, Object controller) {
+    Object state = invoke(leader, "getState");
+    Object name = invoke(leader, "getName");
+    Object sliceName = invoke(slice, "getName");
+    System.err.println("MALLORY_SOLR31_STATE phase=target ts=" + System.nanoTime()
+        + " node=" + Probe.currentNode()
+        + " epoch=" + Probe.currentEpoch() + " thread_id=" + Thread.currentThread().getId()
+        + " occurrence=" + Probe.captureContext() + " collection=" + collection
+        + " reader_id=" + identity(invoke(controller, "getZkStateReader"))
+        + " shard=" + sliceName + " version=" + invoke(docCollection, "getZNodeVersion")
+        + " leader=" + name + " leader_state=" + state);
+  }
+
+  private static void stateDiagnostic(String phase, Object reader, String collection,
+      String occurrence) {
+    Object state = invoke(reader, "getClusterState");
+    Object doc = invokeStringArg(state, "getCollectionOrNull", collection);
+    Object slice = invokeStringArg(doc, "getSlice", "shard1");
+    Object leader = invoke(slice, "getLeader");
+    Object version = invoke(doc, "getZNodeVersion");
+    System.err.println("MALLORY_SOLR31_STATE phase=" + phase + " ts=" + System.nanoTime()
+        + " node=" + Probe.currentNode()
+        + " epoch=" + Probe.currentEpoch() + " thread_id=" + Thread.currentThread().getId()
+        + " occurrence=" + occurrence + " collection=" + collection
+        + " reader_id=" + identity(reader)
+        + " path=/collections/" + collection + "/state.json"
+        + " shard=shard1 version=" + version + " leader=" + invoke(leader, "getName")
+        + " leader_state=" + invoke(leader, "getState"));
+  }
+
+  private static String identity(Object value) {
+    return value == null ? "null" : Integer.toHexString(System.identityHashCode(value));
+  }
+
+  private static Object invokeStringArg(Object receiver, String method, String argument) {
+    if (receiver == null || argument == null) return null;
+    try { return receiver.getClass().getMethod(method, String.class).invoke(receiver, argument); }
+    catch (ReflectiveOperationException | SecurityException failure) { return null; }
+  }
 
   /** A standalone SolrJ ZooKeeper reader belongs to the test client actor. */
   public static void registerClientReader(Object reader) {
@@ -322,6 +410,19 @@ public final class SolrHooks {
     final String name;
     final int epoch;
     NodeRef(String name, int epoch) { this.name = name; this.epoch = epoch; }
+  }
+
+  private static final class StateWatch {
+    final Object watcher;
+    final Object reader;
+    final String collection;
+    final String occurrence;
+    StateWatch(Object watcher, Object reader, String collection, String occurrence) {
+      this.watcher = watcher;
+      this.reader = reader;
+      this.collection = collection;
+      this.occurrence = occurrence;
+    }
   }
 
   private static final class Scope {

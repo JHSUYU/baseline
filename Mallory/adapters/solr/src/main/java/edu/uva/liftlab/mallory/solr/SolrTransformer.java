@@ -22,6 +22,9 @@ public final class SolrTransformer implements ClassFileTransformer {
   private static final String CLIENT_STATE = "org/apache/solr/client/solrj/impl/BaseHttpClusterStateProvider";
   private static final String CLIENT_ZK = "org/apache/solr/client/solrj/impl/ZkClientClusterStateProvider";
   private static final String STATE_READER = "org/apache/solr/common/cloud/ZkStateReader";
+  private static final String STATE_WATCHER = "org/apache/solr/common/cloud/ZkStateReader$StateWatcher";
+  private static final String COLLECTIONS_HANDLER = "org/apache/solr/handler/admin/CollectionsHandler";
+  private static final String SLICE = "org/apache/solr/common/cloud/Slice";
   private static final String OVERSEER = "org/apache/solr/cloud/api/collections/OverseerCollectionMessageHandler";
   private static final String OVERSEER_TASK_PROCESSOR = "org/apache/solr/cloud/OverseerTaskProcessor";
   private static final String ALIASES = "org/apache/solr/common/cloud/ZkStateReader$AliasesManager";
@@ -35,6 +38,8 @@ public final class SolrTransformer implements ClassFileTransformer {
         && !CLIENT_ZK.equals(className)
         && !OVERSEER.equals(className) && !OVERSEER_TASK_PROCESSOR.equals(className)
         && !ALIASES.equals(className) && !ZK_WATCH_DISPATCH.equals(className)
+        && !STATE_WATCHER.equals(className) && !STATE_READER.equals(className)
+        && !COLLECTIONS_HANDLER.equals(className)
         && !HTTP1.equals(className) && !HTTP2.equals(className) && !POOL.equals(className)) return null;
     try {
       ClassReader reader = new ClassReader(classfileBuffer);
@@ -62,6 +67,9 @@ public final class SolrTransformer implements ClassFileTransformer {
             if ("<init>".equals(name)) return constructor(method, "registerClientProvider");
             if ("getZkStateReader".equals(name)) return clientReader(method);
           }
+          if (STATE_READER.equals(className) && "fetchCollectionState".equals(name)
+              && "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;)Lorg/apache/solr/common/cloud/DocCollection;".equals(descriptor))
+            return qualifiedStateRead(method);
           if (OVERSEER.equals(className) && "processMessage".equals(name))
             return scoped(method, "beginOverseer", "endOverseer", false,
                 className, access, descriptor);
@@ -78,6 +86,13 @@ public final class SolrTransformer implements ClassFileTransformer {
               && "(Lorg/apache/zookeeper/WatchedEvent;)V".equals(descriptor))
             return scoped(method, "beginZkWatchDispatch", "endZkWatchDispatch", false,
                 className, access, descriptor);
+          if (STATE_WATCHER.equals(className) && "refreshAndWatch".equals(name)
+              && "(Lorg/apache/zookeeper/Watcher$Event$EventType;)V".equals(descriptor))
+            return scoped(method, "beginStateWatcher", "endStateWatcher", false,
+                className, access, descriptor);
+          if (COLLECTIONS_HANDLER.equals(className) && "forceLeaderElection".equals(name)
+              && "(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/handler/admin/CollectionsHandler;)V".equals(descriptor))
+            return forceLeaderOperand(method);
           if ((HTTP2.equals(className) || HTTP1.equals(className)) && "<init>".equals(name))
             return constructor(method, "registerHttpClient");
           if ((HTTP2.equals(className) || HTTP1.equals(className)) && "request".equals(name)
@@ -224,6 +239,46 @@ public final class SolrTransformer implements ClassFileTransformer {
         super.visitMethodInsn(Opcodes.INVOKESTATIC, HOOKS, "wrapTask",
             "(Ljava/lang/Runnable;)Ljava/lang/Runnable;", false);
         super.visitVarInsn(Opcodes.ASTORE, 1);
+      }
+    };
+  }
+
+  private static MethodVisitor forceLeaderOperand(MethodVisitor method) {
+    return new MethodVisitor(Opcodes.ASM9, method) {
+      private boolean observed;
+      @Override public void visitMethodInsn(int opcode, String owner, String name,
+          String descriptor, boolean isInterface) {
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+        if (!observed && SLICE.equals(owner) && "getLeader".equals(name)
+            && "()Lorg/apache/solr/common/cloud/Replica;".equals(descriptor)) {
+          observed = true;
+          super.visitInsn(Opcodes.DUP);
+          super.visitVarInsn(Opcodes.ALOAD, 8); // selected Slice
+          super.visitVarInsn(Opcodes.ALOAD, 7); // selected DocCollection
+          super.visitVarInsn(Opcodes.ALOAD, 5); // resolved collection name
+          super.visitVarInsn(Opcodes.ALOAD, 2); // serving ZkController
+          super.visitMethodInsn(Opcodes.INVOKESTATIC, HOOKS, "forceLeaderOperand",
+              "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;)V", false);
+        }
+      }
+    };
+  }
+
+  private static MethodVisitor qualifiedStateRead(MethodVisitor method) {
+    return new MethodVisitor(Opcodes.ASM9, method) {
+      @Override public void visitMethodInsn(int opcode, String owner, String name,
+          String descriptor, boolean isInterface) {
+        if ("org/apache/solr/common/cloud/SolrZkClient".equals(owner)
+            && "getData".equals(name)
+            && "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;Z)[B".equals(descriptor)) {
+          // The existing call arguments remain on the operand stack.
+          super.visitVarInsn(Opcodes.ALOAD, 1); // collection
+          super.visitVarInsn(Opcodes.ALOAD, 4); // resolved collection path
+          super.visitVarInsn(Opcodes.ALOAD, 2); // registered watcher
+          super.visitMethodInsn(Opcodes.INVOKESTATIC, HOOKS, "beforeQualifiedStateRead",
+              "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
+        }
+        super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
       }
     };
   }

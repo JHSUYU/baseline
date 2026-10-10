@@ -58,6 +58,10 @@ public class SolrHooksTest {
   public static final class Reader {
     public final AliasesManager aliasesManager = new AliasesManager();
     public final class AliasesManager { }
+    public final class StateWatcher {
+      private final String coll;
+      StateWatcher(String coll) { this.coll = coll; }
+    }
     private final Object zkClient;
     Reader() { this(new Object()); }
     Reader(Object zkClient) { this.zkClient = zkClient; }
@@ -129,6 +133,18 @@ public class SolrHooksTest {
       SolrHooks.endAliasesManager();
       assertEquals("client", Probe.currentNode());
     }
+  }
+
+  @Test public void collectionStateWatcherCarriesRegisteredReaderAndRestoresScope() {
+    Controller controller = new Controller();
+    SolrHooks.registerController(controller);
+    Reader.StateWatcher watcher = controller.getZkStateReader().new StateWatcher("collection1");
+    assertEquals("unknown", Probe.currentNode());
+    SolrHooks.beginStateWatcher(watcher);
+    assertEquals("node1", Probe.currentNode());
+    assertTrue(Probe.captureContext().contains("StateWatcher.refreshAndWatch"));
+    SolrHooks.endStateWatcher();
+    assertEquals("unknown", Probe.currentNode());
   }
 
   @Test public void zkCallbackSubmitCarriesOnlyTheRegisteredClientOwner() {
