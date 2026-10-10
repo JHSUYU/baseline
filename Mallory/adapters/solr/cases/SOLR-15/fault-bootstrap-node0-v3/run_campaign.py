@@ -189,6 +189,9 @@ def _applied(state: dict, config: dict, result: dict, item: dict | None) -> None
             raise ValueError("target check did not follow all three applied faults")
         if bool(feedback.get("target_check_reached")) != attestation["target_after_all_faults"]:
             raise ValueError("target observation differs from after-all-faults gate")
+        if (feedback.get("target_exception_candidate") and
+                not attestation["target_throw_after_all_faults"]):
+            raise ValueError("target throw did not follow all three applied faults")
     except (ValueError, OSError, KeyError) as error:
         reason = str(error)
         _drop_feedback(feedback)
@@ -197,6 +200,9 @@ def _applied(state: dict, config: dict, result: dict, item: dict | None) -> None
                                        "raw_result_sha256": sha(raw_path),
                                        "scope_tier": item.get("scope_tier", "outside_closure")}
     else:
+        if not attestation["target_throw_after_all_faults"]:
+            feedback["target_threw"] = False
+            feedback["qualified_target_throw_evidence"] = []
         result["resource_attestation"] = attestation
     result["scope_tier"] = item.get("scope_tier", "outside_closure")
     ORIGINAL_APPLY(state, config, result, item)

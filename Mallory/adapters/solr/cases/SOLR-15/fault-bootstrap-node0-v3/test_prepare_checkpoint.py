@@ -168,6 +168,33 @@ class ContinuationTest(unittest.TestCase):
             self.assertIn("target check did not follow",
                           state["dropped_trials"][-1]["reason"])
 
+    def test_prethird_throw_cannot_credit_exception_candidate(self):
+        state, _ = seed.reconstruct(self.config)
+        item = copy.deepcopy(state["queue"][0])
+        result = {"trial_id": 5, "plan": item["faults"],
+                  "feedback": {"coverage_ids": ["new"],
+                               "target_check_reached": True,
+                               "target_exception_candidate": True,
+                               "all_faults_effective": True}}
+        with tempfile.TemporaryDirectory(prefix="solr15-v3-throw-test-") as temp:
+            output = Path(temp)
+            trial = output / "trials/r0005"
+            trial.mkdir(parents=True)
+            (trial / "result.json").write_text(json.dumps(result))
+            captured = []
+            attestation = {"target_after_all_faults": True,
+                           "target_throw_after_all_faults": False}
+            with patch.object(runner, "OUT", output), \
+                    patch.object(runner.audit_trial, "attest",
+                                 return_value=attestation), \
+                    patch.object(runner, "ORIGINAL_APPLY",
+                                 side_effect=lambda *_args: captured.append(_args[2])):
+                runner._applied(state, self.config, result, item)
+            self.assertFalse(captured[0]["feedback"]["target_exception_candidate"])
+            self.assertEqual([], captured[0]["feedback"]["coverage_ids"])
+            self.assertIn("target throw did not follow",
+                          state["dropped_trials"][-1]["reason"])
+
     def test_seed_copy_is_idempotent_and_rejects_tampered_prior_trial(self):
         with tempfile.TemporaryDirectory(prefix="solr15-v3-seed-test-") as temp:
             output = Path(temp) / "continuation"

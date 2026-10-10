@@ -39,10 +39,12 @@ limited to this explicit exploration tier and exact runtime resource.
 For each new trial, the controller independently verifies the first two
 same-parent receipts, the third fault's resource or occurrence identity, and
 an exact target check after all three applied faults on the selected
-execution. An unmatched or invalid depth-three plan consumes one trial slot,
-keeps `raw-result.json`, contributes no coverage or edge novelty, and cannot
-spawn child plans. The full search remains incomplete until the v3 run reaches
-its bounded terminal status and its receipts are audited.
+execution. A target exception candidate additionally requires the exact
+line-538 throw after that check. An unmatched or invalid depth-three plan
+consumes one trial slot, keeps `raw-result.json`, contributes no coverage or
+edge novelty, and cannot spawn child plans. The full search remains incomplete
+until the v3 run reaches its bounded terminal status and its receipts are
+audited.
 
 Offline checks:
 

@@ -74,7 +74,17 @@ def attest(trial: Path, plan: list[dict]) -> dict:
                 applied.get("door_ordinal") == point.get("door_ordinal"),
                 "nonnative third occurrence or ordinal changed")
     target_after = seed.attest_target_after_fault(trial, plan)
+    checks_after = [row for row in rows if row.get("type") == "TARGET_CHECK" and
+                    row.get("site") == seed.SPLIT + "@536:branch:40" and
+                    row.get("seq", -1) > applied["seq"] and
+                    seed.same_execution(row, applied)]
+    throw_after = any(row.get("type") == "TARGET_THROW" and
+                      row.get("site") == seed.SPLIT + "@538:throw:1" and
+                      seed.same_execution(row, applied) and
+                      any(check["seq"] < row.get("seq", -1)
+                          for check in checks_after) for row in rows)
     return {"valid": True, "third_applied_event_id": applied["id"],
             "third_resource": applied.get("resource"),
             "third_scope": phase or "exact_occurrence_ordinal",
-            "target_after_all_faults": target_after}
+            "target_after_all_faults": target_after,
+            "target_throw_after_all_faults": throw_after}
