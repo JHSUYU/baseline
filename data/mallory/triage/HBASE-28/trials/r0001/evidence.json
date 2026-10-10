@@ -1,0 +1,119 @@
+{
+  "case_id": "HBASE-28",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=0 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 1,
+    "status": "no_tests",
+    "stderr_sha256": "4064c372601224173034c14ea9fc283e5c2f3bd0e8a78ed576543f489a1ac23f",
+    "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+    "succeeded": 0,
+    "tests": 1
+  },
+  "plan": [
+    {
+      "exception_class": "java.net.SocketException",
+      "fault_id": "f9ca23726c17e24c885d3",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "door_ordinal": 1,
+        "epoch": 0,
+        "node": "master0",
+        "site": "org.apache.hadoop.hbase.util.Addressing#isLocalAddress(Ljava/net/InetAddress;)Z@148:door:1"
+      }
+    }
+  ],
+  "raw_paths": {
+    "events.jsonl.gz": "data/mallory/campaigns/HBASE-28-nonloopback-master-full-v2/trials/r0001/events.jsonl.gz",
+    "result.json": "data/mallory/campaigns/HBASE-28-nonloopback-master-full-v2/trials/r0001/result.json",
+    "stderr.log": "data/mallory/campaigns/HBASE-28-nonloopback-master-full-v2/trials/r0001/stderr.log"
+  },
+  "raw_sha256": {
+    "events.jsonl.gz": "cf8872929ad38429c6d0788a31515246e19d5cc0fa5c1dfb0649cf3dd99ea986",
+    "result.json": "93e702d7721d690dd885244c854037c138ad791e24f61b1c40362f24adb5030c",
+    "stderr.log": "4064c372601224173034c14ea9fc283e5c2f3bd0e8a78ed576543f489a1ac23f"
+  },
+  "schema_version": 1,
+  "selected_events": [
+    {
+      "context": "root",
+      "door_ordinal": 1,
+      "epoch": 0,
+      "exception_class": "java.net.SocketException",
+      "fault_id": "f9ca23726c17e24c885d3",
+      "fault_type": "EXCEPTION",
+      "hit": 1,
+      "id": "HBASE-28-r0001:4",
+      "node": "master0",
+      "occurrence": "master0:0:org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V:root:1",
+      "region": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V",
+      "seq": 4,
+      "site": "org.apache.hadoop.hbase.util.Addressing#isLocalAddress(Ljava/net/InetAddress;)Z@148:door:1",
+      "thread": "Listener at localhost/38557",
+      "thread_id": 1,
+      "ts": 831365351968963,
+      "type": "FAULT_APPLIED"
+    },
+    {
+      "branch": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2482:branch:3",
+      "context": "root",
+      "epoch": 0,
+      "id": "HBASE-28-r0001:5",
+      "node": "master0",
+      "occurrence": "master0:0:org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V:root:1",
+      "outcome": "FALLTHROUGH",
+      "region": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V",
+      "seq": 5,
+      "site": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2482:branch:3",
+      "thread": "Listener at localhost/38557",
+      "thread_id": 1,
+      "ts": 831365352237655,
+      "type": "TARGET_CHECK"
+    },
+    {
+      "context": "root",
+      "epoch": 0,
+      "exception_class": "java.io.IOException",
+      "id": "HBASE-28-r0001:6",
+      "node": "master0",
+      "occurrence": "master0:0:org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V:root:1",
+      "region": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V",
+      "seq": 6,
+      "site": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2487:throw:1",
+      "thread": "Listener at localhost/38557",
+      "thread_id": 1,
+      "ts": 831365352590520,
+      "type": "TARGET_THROW"
+    }
+  ],
+  "stderr_excerpts": [
+    {
+      "line": 428,
+      "text": "2026-10-10T05:05:52,815 ERROR [Listener at localhost/38557] regionserver.HRegionServer: Failed to start http info server. Address 10.10.1.2 does not belong to this host. Correct configuration parameter: hbase.master.info.bindAddress"
+    },
+    {
+      "line": 430,
+      "text": "java.io.IOException: Failed to start http info server. Address 10.10.1.2 does not belong to this host. Correct configuration parameter: hbase.master.info.bindAddress"
+    },
+    {
+      "line": 442,
+      "text": "\tat org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage.beforeClass(TestRSStatusPage.java:76)"
+    },
+    {
+      "line": 565,
+      "text": "MALLORY_JUNIT found=1 succeeded=0 failed=0"
+    },
+    {
+      "line": 571,
+      "text": "\tat org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage.beforeClass(TestRSStatusPage.java:76)"
+    },
+    {
+      "line": 574,
+      "text": "Caused by: java.io.IOException: Failed to start http info server. Address 10.10.1.2 does not belong to this host. Correct configuration parameter: hbase.master.info.bindAddress"
+    }
+  ],
+  "trial_id": 1
+}
