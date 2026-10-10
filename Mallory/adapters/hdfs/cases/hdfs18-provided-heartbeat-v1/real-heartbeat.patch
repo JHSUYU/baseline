@@ -1,17 +1,8 @@
 --- a/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java
 +++ b/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java
-@@ -27,6 +27,7 @@
- import org.apache.hadoop.hdfs.MiniDFSCluster;
- import org.apache.hadoop.hdfs.qjournal.TestSecureNNWithQJM;
- import org.apache.hadoop.hdfs.server.blockmanagement.BlockManager;
+@@ -29,0 +30 @@
 +import org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor;
- import org.apache.hadoop.hdfs.server.common.blockaliasmap.BlockAliasMap;
- import org.apache.hadoop.hdfs.server.datanode.DataNode;
- import org.apache.hadoop.hdfs.server.datanode.fsdataset.FsDatasetSpi;
-@@ -135,6 +136,22 @@
-     BlockManager blockManager = namesystem.getBlockManager();
-     DataNode dn = cluster.getDataNodes().get(0);
- 
+@@ -137,0 +139,16 @@
 +    if (Boolean.getBoolean("mallory.hdfs18.secondProvidedHeartbeat")) {
 +      DatanodeDescriptor descriptor = blockManager.getDatanodeManager()
 +          .getDatanode(dn.getDatanodeId());
@@ -28,6 +19,3 @@
 +          + dn.getDatanodeUuid());
 +    }
 +
-     FsDatasetSpi.FsVolumeReferences volumes =
-         dn.getFSDataset().getFsVolumeReferences();
-     FsVolumeSpi providedVolume = null;
