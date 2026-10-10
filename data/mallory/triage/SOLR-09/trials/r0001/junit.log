@@ -1,0 +1,434 @@
+Picked up JAVA_TOOL_OPTIONS: -javaagent:/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/releases/v1/mallory-agent.jar=config=/users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/agent.properties
+2073 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCase Setting 'solr.default.confdir' system property to test-framework derived value of '/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/server/solr/configsets/_default/conf'
+2081 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCaseJ4 SecureRandom sanity checks: test.solr.allowed.securerandom=null & java.security.egd=file:/dev/./urandom
+2086 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.u.ErrorLogMuter Creating ErrorLogMuter-regex-1 for ERROR logs matching regex: ignore_exception
+2094 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCaseJ4 Created dataDir: /users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/data-dir-1-001
+2262 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCaseJ4 Using TrieFields (NUMERIC_POINTS_SYSPROP=false) w/NUMERIC_DOCVALUES_SYSPROP=false
+2301 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.e.j.u.log Logging initialized @2330ms to org.eclipse.jetty.util.log.Slf4jLog
+2307 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCaseJ4 Randomized ssl (false) and clientAuth (true) via: @org.apache.solr.util.RandomizeSSL(reason=, ssl=NaN, value=NaN, clientAuth=NaN)
+2369 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.SolrCloudTestCase Using per-replica state
+MALLORY_TEST_STARTED deleteReplicaAndVerifyDirectoryCleanup(org.apache.solr.cloud.DeleteReplicaTest)
+2381 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCaseJ4 ###Starting deleteReplicaAndVerifyDirectoryCleanup
+2385 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.MiniSolrCloudCluster Starting cluster of 4 servers in /users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001
+2395 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer STARTING ZK TEST SERVER
+2400 INFO  (ZkTestServer Run Thread) [     ] o.a.s.c.ZkTestServer client port: 0.0.0.0/0.0.0.0:0
+2400 INFO  (ZkTestServer Run Thread) [     ] o.a.s.c.ZkTestServer Starting server
+2463 WARN  (ZkTestServer Run Thread) [     ] o.a.z.s.ServerCnxnFactory maxCnxns is not configured, using default value 0.
+2496 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer start zk server on port: 34267
+2497 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer waitForServerUp: 127.0.0.1:34267
+2499 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer parse host and port list: 127.0.0.1:34267
+2499 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer connecting to 127.0.0.1 34267
+2571 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+2628 INFO  (zkConnectionManagerCallback-3-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+2628 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+2664 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+2670 INFO  (zkConnectionManagerCallback-5-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+2670 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+2671 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+2676 INFO  (zkConnectionManagerCallback-7-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+2676 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+2997 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.s.e.JettySolrRunner Start Jetty (configured port=0, binding port=0)
+2997 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.s.e.JettySolrRunner Start Jetty (configured port=0, binding port=0)
+2997 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.s.e.JettySolrRunner Start Jetty (configured port=0, binding port=0)
+2997 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.s.e.JettySolrRunner Trying to start Jetty on port 0 try number 2 ...
+2997 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.s.e.JettySolrRunner Trying to start Jetty on port 0 try number 2 ...
+2997 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.s.e.JettySolrRunner Start Jetty (configured port=0, binding port=0)
+2997 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.s.e.JettySolrRunner Trying to start Jetty on port 0 try number 2 ...
+2997 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.s.e.JettySolrRunner Trying to start Jetty on port 0 try number 2 ...
+3006 INFO  (jetty-launcher-8-thread-1) [     ] o.e.j.s.Server jetty-9.4.53.v20231009; built: 2023-10-09T12:29:09.265Z; git: 27bde00a0b95a1d5bbee0eae7984f891d2d0f8c9; jvm 1.8.0_492-8u492-ga~us2-0ubuntu1~22.04.1-b09
+3006 INFO  (jetty-launcher-8-thread-2) [     ] o.e.j.s.Server jetty-9.4.53.v20231009; built: 2023-10-09T12:29:09.265Z; git: 27bde00a0b95a1d5bbee0eae7984f891d2d0f8c9; jvm 1.8.0_492-8u492-ga~us2-0ubuntu1~22.04.1-b09
+3006 INFO  (jetty-launcher-8-thread-3) [     ] o.e.j.s.Server jetty-9.4.53.v20231009; built: 2023-10-09T12:29:09.265Z; git: 27bde00a0b95a1d5bbee0eae7984f891d2d0f8c9; jvm 1.8.0_492-8u492-ga~us2-0ubuntu1~22.04.1-b09
+3006 INFO  (jetty-launcher-8-thread-4) [     ] o.e.j.s.Server jetty-9.4.53.v20231009; built: 2023-10-09T12:29:09.265Z; git: 27bde00a0b95a1d5bbee0eae7984f891d2d0f8c9; jvm 1.8.0_492-8u492-ga~us2-0ubuntu1~22.04.1-b09
+3020 INFO  (jetty-launcher-8-thread-2) [     ] o.e.j.s.session DefaultSessionIdManager workerName=node0
+3020 INFO  (jetty-launcher-8-thread-2) [     ] o.e.j.s.session No SessionScavenger set, using defaults
+3020 INFO  (jetty-launcher-8-thread-1) [     ] o.e.j.s.session DefaultSessionIdManager workerName=node0
+3020 INFO  (jetty-launcher-8-thread-1) [     ] o.e.j.s.session No SessionScavenger set, using defaults
+3020 INFO  (jetty-launcher-8-thread-4) [     ] o.e.j.s.session DefaultSessionIdManager workerName=node0
+3020 INFO  (jetty-launcher-8-thread-3) [     ] o.e.j.s.session DefaultSessionIdManager workerName=node0
+3020 INFO  (jetty-launcher-8-thread-4) [     ] o.e.j.s.session No SessionScavenger set, using defaults
+3020 INFO  (jetty-launcher-8-thread-3) [     ] o.e.j.s.session No SessionScavenger set, using defaults
+3022 INFO  (jetty-launcher-8-thread-3) [     ] o.e.j.s.session node0 Scavenging every 600000ms
+3022 INFO  (jetty-launcher-8-thread-1) [     ] o.e.j.s.session node0 Scavenging every 600000ms
+3022 INFO  (jetty-launcher-8-thread-2) [     ] o.e.j.s.session node0 Scavenging every 600000ms
+3022 INFO  (jetty-launcher-8-thread-4) [     ] o.e.j.s.session node0 Scavenging every 600000ms
+3037 INFO  (jetty-launcher-8-thread-2) [     ] o.e.j.s.h.ContextHandler Started o.e.j.s.ServletContextHandler@2c3b272c{/solr,null,AVAILABLE}
+3037 INFO  (jetty-launcher-8-thread-4) [     ] o.e.j.s.h.ContextHandler Started o.e.j.s.ServletContextHandler@e9451ff{/solr,null,AVAILABLE}
+3037 INFO  (jetty-launcher-8-thread-1) [     ] o.e.j.s.h.ContextHandler Started o.e.j.s.ServletContextHandler@1675a472{/solr,null,AVAILABLE}
+3037 INFO  (jetty-launcher-8-thread-3) [     ] o.e.j.s.h.ContextHandler Started o.e.j.s.ServletContextHandler@1bc42530{/solr,null,AVAILABLE}
+3065 INFO  (jetty-launcher-8-thread-3) [     ] o.e.j.s.AbstractConnector Started ServerConnector@5e0842cd{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:35289}
+3065 INFO  (jetty-launcher-8-thread-2) [     ] o.e.j.s.AbstractConnector Started ServerConnector@42d1b949{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:42591}
+3065 INFO  (jetty-launcher-8-thread-1) [     ] o.e.j.s.AbstractConnector Started ServerConnector@5e34b371{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:38693}
+3066 INFO  (jetty-launcher-8-thread-4) [     ] o.e.j.s.AbstractConnector Started ServerConnector@adebfc5{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:41607}
+3066 INFO  (jetty-launcher-8-thread-1) [     ] o.e.j.s.Server Started @3100ms
+3066 INFO  (jetty-launcher-8-thread-3) [     ] o.e.j.s.Server Started @3100ms
+3066 INFO  (jetty-launcher-8-thread-2) [     ] o.e.j.s.Server Started @3100ms
+3066 INFO  (jetty-launcher-8-thread-4) [     ] o.e.j.s.Server Started @3100ms
+3066 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.s.e.JettySolrRunner Jetty properties: {hostContext=/solr, zkHost=127.0.0.1:34267/solr, hostPort=38693}
+3066 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.s.e.JettySolrRunner Jetty properties: {hostContext=/solr, zkHost=127.0.0.1:34267/solr, hostPort=35289}
+3066 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.s.e.JettySolrRunner Jetty properties: {hostContext=/solr, zkHost=127.0.0.1:34267/solr, hostPort=42591}
+3066 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.s.e.JettySolrRunner Jetty properties: {hostContext=/solr, zkHost=127.0.0.1:34267/solr, hostPort=41607}
+3137 ERROR (jetty-launcher-8-thread-1) [     ] o.a.s.u.StartupLoggingUtils Missing Java Option solr.log.dir. Logging may be missing or incomplete.
+3137 ERROR (jetty-launcher-8-thread-4) [     ] o.a.s.u.StartupLoggingUtils Missing Java Option solr.log.dir. Logging may be missing or incomplete.
+3137 ERROR (jetty-launcher-8-thread-3) [     ] o.a.s.u.StartupLoggingUtils Missing Java Option solr.log.dir. Logging may be missing or incomplete.
+3137 ERROR (jetty-launcher-8-thread-2) [     ] o.a.s.u.StartupLoggingUtils Missing Java Option solr.log.dir. Logging may be missing or incomplete.
+3138 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.s.SolrDispatchFilter Using logger factory org.apache.logging.slf4j.Log4jLoggerFactory
+3138 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.s.SolrDispatchFilter Using logger factory org.apache.logging.slf4j.Log4jLoggerFactory
+3138 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.s.SolrDispatchFilter Using logger factory org.apache.logging.slf4j.Log4jLoggerFactory
+3138 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.s.SolrDispatchFilter Using logger factory org.apache.logging.slf4j.Log4jLoggerFactory
+3138 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.s.SolrDispatchFilter  ___      _       Welcome to Apache Solr™ version 8.11.4
+3138 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.s.SolrDispatchFilter  ___      _       Welcome to Apache Solr™ version 8.11.4
+3138 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.s.SolrDispatchFilter  ___      _       Welcome to Apache Solr™ version 8.11.4
+3138 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.s.SolrDispatchFilter  ___      _       Welcome to Apache Solr™ version 8.11.4
+3139 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.s.SolrDispatchFilter / __| ___| |_ _   Starting in cloud mode on port null
+3139 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.s.SolrDispatchFilter / __| ___| |_ _   Starting in cloud mode on port null
+3139 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.s.SolrDispatchFilter / __| ___| |_ _   Starting in cloud mode on port null
+3139 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.s.SolrDispatchFilter / __| ___| |_ _   Starting in cloud mode on port null
+3139 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.s.SolrDispatchFilter \__ \/ _ \ | '_|  Install dir: /users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr
+3139 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.s.SolrDispatchFilter \__ \/ _ \ | '_|  Install dir: /users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr
+3139 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.s.SolrDispatchFilter \__ \/ _ \ | '_|  Install dir: /users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr
+3139 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.s.SolrDispatchFilter \__ \/ _ \ | '_|  Install dir: /users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr
+3140 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.s.SolrDispatchFilter |___/\___/_|_|    Start time: 2026-10-10T04:20:52.480Z
+3140 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.s.SolrDispatchFilter |___/\___/_|_|    Start time: 2026-10-10T04:20:52.480Z
+3140 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.s.SolrDispatchFilter |___/\___/_|_|    Start time: 2026-10-10T04:20:52.480Z
+3140 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.s.SolrDispatchFilter |___/\___/_|_|    Start time: 2026-10-10T04:20:52.480Z
+3142 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+3143 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+3143 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+3144 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+3148 INFO  (zkConnectionManagerCallback-13-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+3148 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+3148 INFO  (zkConnectionManagerCallback-15-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+3148 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+3148 INFO  (zkConnectionManagerCallback-14-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+3149 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+3149 INFO  (zkConnectionManagerCallback-16-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+3149 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+3151 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.s.SolrDispatchFilter solr.xml found in ZooKeeper. Loading...
+3151 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.s.SolrDispatchFilter solr.xml found in ZooKeeper. Loading...
+3151 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.s.SolrDispatchFilter solr.xml found in ZooKeeper. Loading...
+3151 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.s.SolrDispatchFilter solr.xml found in ZooKeeper. Loading...
+3261 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.SolrXmlConfig Metrics collection is disabled.
+3262 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.SolrXmlConfig Metrics collection is disabled.
+3263 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.SolrXmlConfig Metrics collection is disabled.
+3263 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.SolrXmlConfig Metrics collection is disabled.
+3270 WARN  (jetty-launcher-8-thread-4-SendThread(127.0.0.1:34267)) [     ] o.a.z.ClientCnxn An exception was thrown while closing send thread for session 0x10031646a420006.
+          => EndOfStreamException: Unable to read additional data from server sessionid 0x10031646a420006, likely server has closed socket
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doIO(ClientCnxnSocketNIO.java:77)
+org.apache.zookeeper.ClientCnxn$EndOfStreamException: Unable to read additional data from server sessionid 0x10031646a420006, likely server has closed socket
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doIO(ClientCnxnSocketNIO.java:77) ~[zookeeper-3.6.2.jar:3.6.2]
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doTransport(ClientCnxnSocketNIO.java:350) ~[zookeeper-3.6.2.jar:3.6.2]
+	at org.apache.zookeeper.ClientCnxn$SendThread.run(ClientCnxn.java:1275) ~[zookeeper-3.6.2.jar:3.6.2]
+4033 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.h.c.HttpShardHandlerFactory Host whitelist initialized: WhitelistHostChecker [whitelistHosts=null, whitelistHostCheckingEnabled=true]
+4033 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.h.c.HttpShardHandlerFactory Host whitelist initialized: WhitelistHostChecker [whitelistHosts=null, whitelistHostCheckingEnabled=true]
+4064 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.h.c.HttpShardHandlerFactory Host whitelist initialized: WhitelistHostChecker [whitelistHosts=null, whitelistHostCheckingEnabled=true]
+4190 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.h.c.HttpShardHandlerFactory Host whitelist initialized: WhitelistHostChecker [whitelistHosts=null, whitelistHostCheckingEnabled=true]
+4220 WARN  (jetty-launcher-8-thread-4) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@5d1cf58c[provider=null,keyStore=null,trustStore=null]
+4220 WARN  (jetty-launcher-8-thread-3) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@1c6e78ff[provider=null,keyStore=null,trustStore=null]
+4220 WARN  (jetty-launcher-8-thread-1) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@3b892cda[provider=null,keyStore=null,trustStore=null]
+4220 WARN  (jetty-launcher-8-thread-2) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@2d86a6c[provider=null,keyStore=null,trustStore=null]
+4221 WARN  (jetty-launcher-8-thread-4) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@5d1cf58c[provider=null,keyStore=null,trustStore=null]
+4221 WARN  (jetty-launcher-8-thread-3) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@1c6e78ff[provider=null,keyStore=null,trustStore=null]
+4221 WARN  (jetty-launcher-8-thread-1) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@3b892cda[provider=null,keyStore=null,trustStore=null]
+4221 WARN  (jetty-launcher-8-thread-2) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@2d86a6c[provider=null,keyStore=null,trustStore=null]
+4345 WARN  (jetty-launcher-8-thread-4) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@7fe0fc97[provider=null,keyStore=null,trustStore=null]
+4345 WARN  (jetty-launcher-8-thread-4) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@7fe0fc97[provider=null,keyStore=null,trustStore=null]
+4345 WARN  (jetty-launcher-8-thread-1) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@3384a172[provider=null,keyStore=null,trustStore=null]
+4345 WARN  (jetty-launcher-8-thread-3) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@238d0f29[provider=null,keyStore=null,trustStore=null]
+4345 WARN  (jetty-launcher-8-thread-1) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@3384a172[provider=null,keyStore=null,trustStore=null]
+4346 WARN  (jetty-launcher-8-thread-3) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@238d0f29[provider=null,keyStore=null,trustStore=null]
+4346 WARN  (jetty-launcher-8-thread-2) [     ] o.e.j.u.s.S.config Trusting all certificates configured for Client@349589ab[provider=null,keyStore=null,trustStore=null]
+4346 WARN  (jetty-launcher-8-thread-2) [     ] o.e.j.u.s.S.config No Client EndPointIdentificationAlgorithm configured for Client@349589ab[provider=null,keyStore=null,trustStore=null]
+4390 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.ZkContainer Zookeeper client=127.0.0.1:34267/solr
+4390 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.ZkContainer Zookeeper client=127.0.0.1:34267/solr
+4390 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.ZkContainer Zookeeper client=127.0.0.1:34267/solr
+4390 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.ZkContainer Zookeeper client=127.0.0.1:34267/solr
+4467 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4467 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4468 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4468 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4473 INFO  (zkConnectionManagerCallback-57-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4473 INFO  (zkConnectionManagerCallback-56-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4473 INFO  (zkConnectionManagerCallback-58-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4473 INFO  (jetty-launcher-8-thread-1) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+4473 INFO  (jetty-launcher-8-thread-4) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+4473 INFO  (zkConnectionManagerCallback-60-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4473 INFO  (jetty-launcher-8-thread-2) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+4473 INFO  (jetty-launcher-8-thread-3) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+4479 WARN  (jetty-launcher-8-thread-3-SendThread(127.0.0.1:34267)) [     ] o.a.z.ClientCnxn An exception was thrown while closing send thread for session 0x10031646a420009.
+          => EndOfStreamException: Unable to read additional data from server sessionid 0x10031646a420009, likely server has closed socket
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doIO(ClientCnxnSocketNIO.java:77)
+org.apache.zookeeper.ClientCnxn$EndOfStreamException: Unable to read additional data from server sessionid 0x10031646a420009, likely server has closed socket
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doIO(ClientCnxnSocketNIO.java:77) ~[zookeeper-3.6.2.jar:3.6.2]
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doTransport(ClientCnxnSocketNIO.java:350) ~[zookeeper-3.6.2.jar:3.6.2]
+	at org.apache.zookeeper.ClientCnxn$SendThread.run(ClientCnxn.java:1275) ~[zookeeper-3.6.2.jar:3.6.2]
+4585 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4589 INFO  (zkConnectionManagerCallback-62-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4589 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+MALLORY_SOLR_NODE logical=node4 physical=127.0.0.1:41607_solr epoch=0
+4680 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4684 INFO  (zkConnectionManagerCallback-66-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4684 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+MALLORY_SOLR_NODE logical=node3 physical=127.0.0.1:35289_solr epoch=0
+4781 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4785 INFO  (zkConnectionManagerCallback-70-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4785 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+MALLORY_SOLR_NODE logical=node2 physical=127.0.0.1:42591_solr epoch=0
+4822 WARN  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.ZkController Contents of zookeeper /security.json are world-readable; consider setting up ACLs as described in https://solr.apache.org/guide/zookeeper-access-control.html
+4882 INFO  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+4887 INFO  (zkConnectionManagerCallback-74-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+4888 INFO  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+MALLORY_SOLR_NODE logical=node1 physical=127.0.0.1:38693_solr epoch=0
+4904 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.OverseerElectionContext I am going to be the leader 127.0.0.1:42591_solr
+4909 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.Overseer Overseer (id=72111901387128845-127.0.0.1:42591_solr-n_0000000000) starting
+4911 WARN  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.c.ZkController Contents of zookeeper /security.json are world-readable; consider setting up ACLs as described in https://solr.apache.org/guide/zookeeper-access-control.html
+4930 INFO  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.c.ZkController Register node as live in ZooKeeper:/live_nodes/127.0.0.1:38693_solr
+4950 INFO  (zkCallback-69-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (0) -> (1)
+4951 INFO  (zkCallback-73-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (0) -> (1)
+4955 INFO  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.c.ZkController non-data nodes now []
+5003 WARN  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.ZkController Contents of zookeeper /security.json are world-readable; consider setting up ACLs as described in https://solr.apache.org/guide/zookeeper-access-control.html
+5010 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (0) -> (1)
+5020 INFO  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.p.PackageLoader /packages.json updated to version -1
+5025 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.ZkController Publish node=127.0.0.1:35289_solr as DOWN
+5025 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.TransientSolrCoreCacheDefault Allocating transient core cache for max 2147483647 cores with initial capacity of 1024
+5039 WARN  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.c.CoreContainer Not all security plugins configured!  authentication=disabled authorization=disabled.  Solr is only as secure as you make it. Consider configuring authentication/authorization before exposing Solr to users internal or external.  See https://s.apache.org/solrsecurity for more info
+5041 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.ZkController Register node as live in ZooKeeper:/live_nodes/127.0.0.1:35289_solr
+5044 INFO  (zkCallback-73-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (1) -> (2)
+5044 INFO  (zkCallback-69-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (1) -> (2)
+5045 INFO  (zkCallback-65-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (1) -> (2)
+5049 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.ZkController non-data nodes now []
+5053 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.p.PackageLoader /packages.json updated to version -1
+5055 WARN  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.CoreContainer Not all security plugins configured!  authentication=disabled authorization=disabled.  Solr is only as secure as you make it. Consider configuring authentication/authorization before exposing Solr to users internal or external.  See https://s.apache.org/solrsecurity for more info
+5068 WARN  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.ZkController Contents of zookeeper /security.json are world-readable; consider setting up ACLs as described in https://solr.apache.org/guide/zookeeper-access-control.html
+5070 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (0) -> (2)
+5080 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.ZkController Publish node=127.0.0.1:42591_solr as DOWN
+5080 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.TransientSolrCoreCacheDefault Allocating transient core cache for max 2147483647 cores with initial capacity of 1024
+5080 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.ZkController Register node as live in ZooKeeper:/live_nodes/127.0.0.1:42591_solr
+5081 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.ZkController Publish node=127.0.0.1:41607_solr as DOWN
+5081 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.TransientSolrCoreCacheDefault Allocating transient core cache for max 2147483647 cores with initial capacity of 1024
+5084 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.ZkController Register node as live in ZooKeeper:/live_nodes/127.0.0.1:41607_solr
+5087 INFO  (OverseerStateUpdate-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [n:127.0.0.1:42591_solr     ] o.a.s.c.Overseer Starting to work on the main queue : 127.0.0.1:42591_solr
+5090 INFO  (zkCallback-65-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (2) -> (4)
+5091 INFO  (zkCallback-73-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (2) -> (4)
+5093 INFO  (zkCallback-61-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (2) -> (4)
+5094 INFO  (OverseerStateUpdate-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [n:127.0.0.1:42591_solr     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (2) -> (4)
+5096 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.ZkController non-data nodes now []
+5097 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.ZkController non-data nodes now []
+5101 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.p.PackageLoader /packages.json updated to version -1
+5102 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.p.PackageLoader /packages.json updated to version -1
+5103 WARN  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.CoreContainer Not all security plugins configured!  authentication=disabled authorization=disabled.  Solr is only as secure as you make it. Consider configuring authentication/authorization before exposing Solr to users internal or external.  See https://s.apache.org/solrsecurity for more info
+5103 WARN  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.CoreContainer Not all security plugins configured!  authentication=disabled authorization=disabled.  Solr is only as secure as you make it. Consider configuring authentication/authorization before exposing Solr to users internal or external.  See https://s.apache.org/solrsecurity for more info
+5459 INFO  (jetty-launcher-8-thread-3) [n:127.0.0.1:35289_solr     ] o.a.s.c.CorePropertiesLocator Found 0 core definitions underneath /users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node3
+5459 INFO  (jetty-launcher-8-thread-2) [n:127.0.0.1:42591_solr     ] o.a.s.c.CorePropertiesLocator Found 0 core definitions underneath /users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node2
+5459 INFO  (jetty-launcher-8-thread-1) [n:127.0.0.1:38693_solr     ] o.a.s.c.CorePropertiesLocator Found 0 core definitions underneath /users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node1
+5459 INFO  (jetty-launcher-8-thread-4) [n:127.0.0.1:41607_solr     ] o.a.s.c.CorePropertiesLocator Found 0 core definitions underneath /users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node4
+5527 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.MiniSolrCloudCluster waitForAllNodes: numServers=4
+5529 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Waiting for client to connect to ZooKeeper
+5533 INFO  (zkConnectionManagerCallback-101-thread-1) [     ] o.a.s.c.c.ConnectionManager zkClient has connected
+5533 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ConnectionManager Client is connected to ZooKeeper
+5538 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (0) -> (4)
+5542 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.s.i.ZkClientClusterStateProvider Cluster at 127.0.0.1:34267/solr ready
+5789 INFO  (qtp330897169-197) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall HttpSolrCall.init(http://127.0.0.1:38693/solr/admin/collections?action=CREATE&name=deletereplica_test&collection.configName=conf&numShards=1&nrtReplicas=2&wt=javabin&version=2)
+5844 INFO  (OverseerThreadFactory-83-thread-1-processing-n:127.0.0.1:42591_solr) [n:127.0.0.1:42591_solr     ] o.a.s.c.a.c.CreateCollectionCmd Create collection deletereplica_test
+5995 INFO  (OverseerStateUpdate-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [n:127.0.0.1:42591_solr     ] o.a.s.c.o.SliceMutator createReplica() {
+  "operation":"ADDREPLICA",
+  "collection":"deletereplica_test",
+  "shard":"shard1",
+  "core":"deletereplica_test_shard1_replica_n1",
+  "state":"down",
+  "node_name":"127.0.0.1:38693_solr",
+  "base_url":"http://127.0.0.1:38693/solr",
+  "type":"NRT",
+  "waitForFinalState":"false"} 
+6006 INFO  (OverseerStateUpdate-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [n:127.0.0.1:42591_solr     ] o.a.s.c.o.SliceMutator createReplica() {
+  "operation":"ADDREPLICA",
+  "collection":"deletereplica_test",
+  "shard":"shard1",
+  "core":"deletereplica_test_shard1_replica_n2",
+  "state":"down",
+  "node_name":"127.0.0.1:42591_solr",
+  "base_url":"http://127.0.0.1:42591/solr",
+  "type":"NRT",
+  "waitForFinalState":"false"} 
+6224 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall HttpSolrCall.init(http://127.0.0.1:38693/solr/admin/cores?null)
+6224 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr     ] o.a.s.s.HttpSolrCall HttpSolrCall.init(http://127.0.0.1:42591/solr/admin/cores?null)
+6227 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr    x:deletereplica_test_shard1_replica_n2 ] o.a.s.h.a.CoreAdminOperation core create command qt=/admin/cores&coreNodeName=core_node4&collection.configName=conf&newCollection=true&name=deletereplica_test_shard1_replica_n2&action=CREATE&numShards=1&collection=deletereplica_test&shard=shard1&wt=javabin&version=2&replicaType=NRT
+6227 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr    x:deletereplica_test_shard1_replica_n1 ] o.a.s.h.a.CoreAdminOperation core create command qt=/admin/cores&coreNodeName=core_node3&collection.configName=conf&newCollection=true&name=deletereplica_test_shard1_replica_n1&action=CREATE&numShards=1&collection=deletereplica_test&shard=shard1&wt=javabin&version=2&replicaType=NRT
+6230 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr    x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.TransientSolrCoreCacheDefault Allocating transient core cache for max 2147483647 cores with initial capacity of 1024
+6276 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.SolrConfig Using Lucene MatchVersion: 8.11.4
+6276 WARN  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.SolrConfig You should not use LATEST as luceneMatchVersion property: if you use this setting, and then Solr upgrades to a newer release of Lucene, sizable changes may happen. If precise back compatibility is important then you should instead explicitly specify an actual Lucene version.
+6276 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.SolrConfig Using Lucene MatchVersion: 8.11.4
+6310 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.s.IndexSchema Schema name=minimal
+6310 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.s.IndexSchema Schema name=minimal
+6326 WARN  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.D.s.TrieIntField Solr loaded a deprecated plugin/analysis class [solr.TrieIntField]. Please consult documentation how to replace it accordingly.
+6328 WARN  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.D.s.TrieLongField Solr loaded a deprecated plugin/analysis class [solr.TrieLongField]. Please consult documentation how to replace it accordingly.
+6335 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.s.IndexSchema Loaded schema minimal/1.1 with uniqueid field id
+6335 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.s.IndexSchema Loaded schema minimal/1.1 with uniqueid field id
+6336 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.CoreContainer Creating SolrCore 'deletereplica_test_shard1_replica_n1' using configuration from configset conf, trusted=true
+6336 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.CoreContainer Creating SolrCore 'deletereplica_test_shard1_replica_n2' using configuration from configset conf, trusted=true
+6373 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.SolrCore [[deletereplica_test_shard1_replica_n2] ] Opening new SolrCore at [/users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node2/deletereplica_test_shard1_replica_n2], dataDir=[/users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node2/deletereplica_test_shard1_replica_n2/data/]
+6373 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.SolrCore [[deletereplica_test_shard1_replica_n1] ] Opening new SolrCore at [/users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node1/deletereplica_test_shard1_replica_n1], dataDir=[/users/ZhenyuLi/baseline/data/mallory/full_solr09_runtime_role_v1_node1/SOLR-09/trials/r0001/scratch/solr.cloud.DeleteReplicaTest_F0993D5343E20BA4-001/tempDir-001/node1/deletereplica_test_shard1_replica_n1/data/]
+6986 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.u.UpdateHandler Using UpdateLog implementation: org.apache.solr.update.UpdateLog
+6986 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.u.UpdateHandler Using UpdateLog implementation: org.apache.solr.update.UpdateLog
+6986 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.u.UpdateLog Initializing UpdateLog: dataDir=null defaultSyncLevel=FLUSH numRecordsToKeep=100 maxNumLogsToKeep=10 numVersionBuckets=65536
+6987 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.u.UpdateLog Initializing UpdateLog: dataDir=null defaultSyncLevel=FLUSH numRecordsToKeep=100 maxNumLogsToKeep=10 numVersionBuckets=65536
+7014 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.u.CommitTracker Hard AutoCommit: disabled
+7014 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.u.CommitTracker Hard AutoCommit: disabled
+7014 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.u.CommitTracker Soft AutoCommit: disabled
+7014 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.u.CommitTracker Soft AutoCommit: disabled
+7046 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.r.ManagedResourceStorage Configured ZooKeeperStorageIO with znodeBase: /configs/conf
+7046 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.r.ManagedResourceStorage Configured ZooKeeperStorageIO with znodeBase: /configs/conf
+7050 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.r.ManagedResourceStorage Loaded null at path _rest_managed.json using ZooKeeperStorageIO:path=/configs/conf
+7050 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.r.ManagedResourceStorage Loaded null at path _rest_managed.json using ZooKeeperStorageIO:path=/configs/conf
+7062 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.h.ReplicationHandler Commits will be reserved for 10000 ms
+7062 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.h.ReplicationHandler Commits will be reserved for 10000 ms
+7068 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.u.UpdateLog Could not find max version in index or recent updates, using new clock 1878635112204075008
+7068 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.u.UpdateLog Could not find max version in index or recent updates, using new clock 1878635112204075008
+7090 INFO  (searcherExecutor-104-thread-1-processing-n:127.0.0.1:42591_solr x:deletereplica_test_shard1_replica_n2 c:deletereplica_test s:shard1 r:core_node4) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.SolrCore [deletereplica_test_shard1_replica_n2]  Registered new searcher autowarm time: 0 ms
+7090 INFO  (searcherExecutor-105-thread-1-processing-n:127.0.0.1:38693_solr x:deletereplica_test_shard1_replica_n1 c:deletereplica_test s:shard1 r:core_node3) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.SolrCore [deletereplica_test_shard1_replica_n1]  Registered new searcher autowarm time: 0 ms
+7097 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.ZkShardTerms Successful update of terms at /collections/deletereplica_test/terms/shard1 to Terms{values={core_node4=0}, version=0}
+7097 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ZkShardTerms Failed to save terms, version is not a match, retrying
+7100 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ZkShardTerms Successful update of terms at /collections/deletereplica_test/terms/shard1 to Terms{values={core_node3=0, core_node4=0}, version=1}
+7101 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.ShardLeaderElectionContextBase make sure parent is created /collections/deletereplica_test/leaders/shard1
+7101 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ShardLeaderElectionContextBase make sure parent is created /collections/deletereplica_test/leaders/shard1
+7117 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ShardLeaderElectionContext Enough replicas found to continue.
+7118 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ShardLeaderElectionContext I may be the new leader - try and sync
+7118 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.SyncStrategy Sync replicas to http://127.0.0.1:38693/solr/deletereplica_test_shard1_replica_n1/
+7125 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.u.PeerSync PeerSync: core=deletereplica_test_shard1_replica_n1 url=http://127.0.0.1:38693/solr  START replicas=[http://127.0.0.1:42591/solr/deletereplica_test_shard1_replica_n2/] nUpdates=100
+7126 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.u.PeerSync PeerSync: core=deletereplica_test_shard1_replica_n1 url=http://127.0.0.1:38693/solr  DONE. We have no versions. sync failed.
+7131 INFO  (qtp1829027821-211) [n:127.0.0.1:42591_solr     ] o.a.s.s.HttpSolrCall HttpSolrCall.init(http://127.0.0.1:42591/solr/deletereplica_test_shard1_replica_n2/get?null)
+7140 INFO  (qtp1829027821-211) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.S.Request [deletereplica_test_shard1_replica_n2]  webapp=/solr path=/get params={distrib=false&qt=/get&fingerprint=false&getVersions=100&wt=javabin&version=2} status=0 QTime=8
+7166 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.SyncStrategy Leader's attempt to sync with shard failed, moving to the next candidate
+7167 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ShardLeaderElectionContext We failed sync, but we have no versions - we can't sync in that case - we were active before, so become leader anyway
+7169 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ShardLeaderElectionContextBase Creating leader registration node /collections/deletereplica_test/leaders/shard1/leader after winning as /collections/deletereplica_test/leader_elect/shard1/election/72111901387128846-core_node3-n_0000000000
+7181 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ShardLeaderElectionContext I am the new leader: http://127.0.0.1:38693/solr/deletereplica_test_shard1_replica_n1/ shard1
+7289 INFO  (zkCallback-73-thread-1) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+7295 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr c:deletereplica_test s:shard1 r:core_node3 x:deletereplica_test_shard1_replica_n1 ] o.a.s.c.ZkController I am the leader, no recovery necessary
+7312 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/cores params={qt=/admin/cores&coreNodeName=core_node3&collection.configName=conf&newCollection=true&name=deletereplica_test_shard1_replica_n1&action=CREATE&numShards=1&collection=deletereplica_test&shard=shard1&wt=javabin&version=2&replicaType=NRT} status=0 QTime=1087
+7408 INFO  (zkCallback-73-thread-1) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+7409 INFO  (zkCallback-73-thread-2) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+8129 INFO  (qtp1829027821-204) [n:127.0.0.1:42591_solr     ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/cores params={qt=/admin/cores&coreNodeName=core_node4&collection.configName=conf&newCollection=true&name=deletereplica_test_shard1_replica_n2&action=CREATE&numShards=1&collection=deletereplica_test&shard=shard1&wt=javabin&version=2&replicaType=NRT} status=0 QTime=1905
+8140 INFO  (qtp330897169-197) [n:127.0.0.1:38693_solr     ] o.a.s.h.a.CollectionsHandler Wait for new collection to be active for at most 45 seconds. Check all shard replicas
+8229 INFO  (zkCallback-73-thread-2) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+8229 INFO  (zkCallback-69-thread-1) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+8230 INFO  (zkCallback-73-thread-1) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+8233 INFO  (qtp330897169-197) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/collections params={collection.configName=conf&name=deletereplica_test&nrtReplicas=2&action=CREATE&numShards=1&wt=javabin&version=2} status=0 QTime=2451
+8243 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall HttpSolrCall.init(http://127.0.0.1:38693/solr/admin/cores?action=STATUS&indexInfo=true&wt=javabin&version=2)
+8247 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/cores params={action=STATUS&indexInfo=true&wt=javabin&version=2} status=0 QTime=4
+8256 INFO  (qtp330897169-197) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall HttpSolrCall.init(http://127.0.0.1:38693/solr/admin/collections?action=DELETEREPLICA&collection=deletereplica_test&replica=core_node3&shard=shard1&wt=javabin&version=2)
+8265 INFO  (OverseerCollectionConfigSetProcessor-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [n:127.0.0.1:42591_solr     ] o.a.s.c.OverseerTaskQueue Response ZK path: /overseer/collection-queue-work/qnr-0000000000 doesn't exist. Requestor may have disconnected from ZooKeeper
+8270 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall HttpSolrCall.init(http://127.0.0.1:38693/solr/admin/cores?null)
+8272 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr    x:deletereplica_test_shard1_replica_n1 ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.core.deletereplica_test.shard1.replica_n1 tag=null
+8272 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.c.SolrCore [deletereplica_test_shard1_replica_n1]  CLOSING SolrCore org.apache.solr.core.SolrCore@11f0d02c
+8273 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.core.deletereplica_test.shard1.replica_n1 tag=SolrCore@11f0d02c
+8273 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.collection.deletereplica_test.shard1.leader tag=SolrCore@11f0d02c
+8275 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.u.DirectUpdateHandler2 Committing on IndexWriter.close()  ... SKIPPED (unnecessary).
+8299 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.c.ZkShardTerms Successful update of terms at /collections/deletereplica_test/terms/shard1 to Terms{values={core_node4=0}, version=2}
+8303 INFO  (qtp330897169-203) [n:127.0.0.1:38693_solr     ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/cores params={deleteInstanceDir=true&core=deletereplica_test_shard1_replica_n1&deleteMetricsHistory=true&qt=/admin/cores&deleteDataDir=true&action=UNLOAD&wt=javabin&version=2&deleteIndex=true} status=0 QTime=33
+8307 INFO  (zkCallback-69-thread-1) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.ShardLeaderElectionContext I may be the new leader - try and sync
+8416 INFO  (zkCallback-73-thread-1) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+8416 INFO  (zkCallback-69-thread-2) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+8417 INFO  (zkCallback-73-thread-2) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+8424 INFO  (qtp330897169-197) [n:127.0.0.1:38693_solr c:deletereplica_test    ] o.a.s.s.HttpSolrCall [admin] webapp=null path=/admin/collections params={replica=core_node3&action=DELETEREPLICA&collection=deletereplica_test&shard=shard1&wt=javabin&version=2} status=0 QTime=168
+10271 INFO  (OverseerCollectionConfigSetProcessor-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [n:127.0.0.1:42591_solr     ] o.a.s.c.OverseerTaskQueue Response ZK path: /overseer/collection-queue-work/qnr-0000000002 doesn't exist. Requestor may have disconnected from ZooKeeper
+10808 INFO  (zkCallback-69-thread-1) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.SyncStrategy Sync replicas to http://127.0.0.1:42591/solr/deletereplica_test_shard1_replica_n2/
+10808 INFO  (zkCallback-69-thread-1) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.SyncStrategy Sync Success - now sync replicas to me
+10809 INFO  (zkCallback-69-thread-1) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.SyncStrategy http://127.0.0.1:42591/solr/deletereplica_test_shard1_replica_n2/ has no replicas
+10809 INFO  (zkCallback-69-thread-1) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.ShardLeaderElectionContextBase Creating leader registration node /collections/deletereplica_test/leaders/shard1/leader after winning as /collections/deletereplica_test/leader_elect/shard1/election/72111901387128845-core_node4-n_0000000001
+10818 INFO  (zkCallback-69-thread-1) [n:127.0.0.1:42591_solr c:deletereplica_test s:shard1 r:core_node4 x:deletereplica_test_shard1_replica_n2 ] o.a.s.c.ShardLeaderElectionContext I am the new leader: http://127.0.0.1:42591/solr/deletereplica_test_shard1_replica_n2/ shard1
+10823 INFO  (zkCallback-100-thread-1) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+10823 INFO  (zkCallback-69-thread-1) [     ] o.a.s.c.c.ZkStateReader A cluster state change: [WatchedEvent state:SyncConnected type:NodeDataChanged path:/collections/deletereplica_test/state.json] for collection [deletereplica_test] has occurred - updating... (live nodes size: [4])
+10938 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.c.CoreContainer Shutting down CoreContainer instance=1487165089
+10939 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.c.CoreContainer Shutting down CoreContainer instance=886242976
+10939 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.c.ZkController Remove node as live in ZooKeeper:/live_nodes/127.0.0.1:35289_solr
+10939 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.c.ZkController Remove node as live in ZooKeeper:/live_nodes/127.0.0.1:42591_solr
+10939 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.c.CoreContainer Shutting down CoreContainer instance=2119426188
+10939 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.c.CoreContainer Shutting down CoreContainer instance=999796072
+10939 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.c.ZkController Remove node as live in ZooKeeper:/live_nodes/127.0.0.1:41607_solr
+10940 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.c.ZkController Remove node as live in ZooKeeper:/live_nodes/127.0.0.1:38693_solr
+10942 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.c.ZkController Publish this node as DOWN...
+10942 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.c.ZkController Publish this node as DOWN...
+10942 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.c.ZkController Publish node=127.0.0.1:35289_solr as DOWN
+10942 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.c.ZkController Publish node=127.0.0.1:42591_solr as DOWN
+10942 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.c.ZkController Publish this node as DOWN...
+10942 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.c.ZkController Publish this node as DOWN...
+10942 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.c.ZkController Publish node=127.0.0.1:41607_solr as DOWN
+10942 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.c.ZkController Publish node=127.0.0.1:38693_solr as DOWN
+10960 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.node tag=null
+10960 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.node tag=null
+10960 INFO  (coreCloseExecutor-128-thread-1) [n:127.0.0.1:42591_solr     ] o.a.s.c.SolrCore [deletereplica_test_shard1_replica_n2]  CLOSING SolrCore org.apache.solr.core.SolrCore@cedcce
+10960 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jvm tag=null
+10960 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jvm tag=null
+10960 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.node tag=null
+10960 INFO  (coreCloseExecutor-128-thread-1) [n:127.0.0.1:42591_solr     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.core.deletereplica_test.shard1.replica_n2 tag=SolrCore@cedcce
+10960 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jetty tag=null
+10960 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jetty tag=null
+10960 INFO  (coreCloseExecutor-128-thread-1) [n:127.0.0.1:42591_solr     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.collection.deletereplica_test.shard1.leader tag=SolrCore@cedcce
+10960 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jvm tag=null
+10961 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jetty tag=null
+10961 INFO  (jetty-closer-114-thread-3) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.cluster tag=null
+10961 INFO  (jetty-closer-114-thread-4) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.cluster tag=null
+10961 INFO  (jetty-closer-114-thread-1) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.cluster tag=null
+10966 INFO  (coreCloseExecutor-128-thread-1) [n:127.0.0.1:42591_solr     ] o.a.s.u.DirectUpdateHandler2 Committing on IndexWriter.close()  ... SKIPPED (unnecessary).
+10976 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.node tag=null
+10976 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jvm tag=null
+10976 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.jetty tag=null
+10976 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.m.SolrMetricManager Closing metric reporters for registry=solr.cluster tag=null
+10983 INFO  (closeThreadPool-135-thread-1) [     ] o.a.s.c.Overseer Overseer (id=72111901387128845-127.0.0.1:42591_solr-n_0000000000) closing
+10984 INFO  (OverseerStateUpdate-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [n:127.0.0.1:42591_solr     ] o.a.s.c.Overseer Overseer Loop exiting : 127.0.0.1:42591_solr
+10984 INFO  (zkCallback-69-thread-1) [     ] o.a.s.c.c.ZkStateReader Updated live nodes from ZooKeeper... (4) -> (1)
+10984 WARN  (jetty-launcher-8-thread-1-SendThread(127.0.0.1:34267)) [     ] o.a.z.ClientCnxn An exception was thrown while closing send thread for session 0x10031646a42000e.
+          => EndOfStreamException: Unable to read additional data from server sessionid 0x10031646a42000e, likely server has closed socket
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doIO(ClientCnxnSocketNIO.java:77)
+org.apache.zookeeper.ClientCnxn$EndOfStreamException: Unable to read additional data from server sessionid 0x10031646a42000e, likely server has closed socket
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doIO(ClientCnxnSocketNIO.java:77) ~[zookeeper-3.6.2.jar:3.6.2]
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doTransport(ClientCnxnSocketNIO.java:350) ~[zookeeper-3.6.2.jar:3.6.2]
+	at org.apache.zookeeper.ClientCnxn$SendThread.run(ClientCnxn.java:1275) ~[zookeeper-3.6.2.jar:3.6.2]
+10987 INFO  (OverseerAutoScalingTriggerThread-72111901387128845-127.0.0.1:42591_solr-n_0000000000) [     ] o.a.s.c.a.OverseerTriggerThread OverseerTriggerThread woken up but we are closed, exiting.
+10989 INFO  (closeThreadPool-135-thread-2) [     ] o.a.s.c.Overseer Overseer (id=72111901387128845-127.0.0.1:42591_solr-n_0000000000) closing
+11088 INFO  (jetty-closer-114-thread-1) [     ] o.e.j.s.AbstractConnector Stopped ServerConnector@5e0842cd{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:0}
+11091 INFO  (jetty-closer-114-thread-1) [     ] o.e.j.s.h.ContextHandler Stopped o.e.j.s.ServletContextHandler@1bc42530{/solr,null,STOPPED}
+11091 INFO  (jetty-closer-114-thread-1) [     ] o.e.j.s.session node0 Stopped scavenging
+11181 INFO  (jetty-closer-114-thread-2) [     ] o.a.s.c.Overseer Overseer (id=72111901387128845-127.0.0.1:42591_solr-n_0000000000) closing
+11186 INFO  (jetty-closer-114-thread-2) [     ] o.e.j.s.AbstractConnector Stopped ServerConnector@42d1b949{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:0}
+11186 INFO  (jetty-closer-114-thread-2) [     ] o.e.j.s.h.ContextHandler Stopped o.e.j.s.ServletContextHandler@2c3b272c{/solr,null,STOPPED}
+11187 INFO  (jetty-closer-114-thread-2) [     ] o.e.j.s.session node0 Stopped scavenging
+11286 INFO  (jetty-closer-114-thread-4) [     ] o.e.j.s.AbstractConnector Stopped ServerConnector@5e34b371{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:0}
+11287 INFO  (jetty-closer-114-thread-4) [     ] o.e.j.s.h.ContextHandler Stopped o.e.j.s.ServletContextHandler@1675a472{/solr,null,STOPPED}
+11287 INFO  (jetty-closer-114-thread-4) [     ] o.e.j.s.session node0 Stopped scavenging
+11385 INFO  (jetty-closer-114-thread-3) [     ] o.e.j.s.AbstractConnector Stopped ServerConnector@adebfc5{HTTP/1.1, (http/1.1, h2c)}{127.0.0.1:0}
+11386 INFO  (jetty-closer-114-thread-3) [     ] o.e.j.s.h.ContextHandler Stopped o.e.j.s.ServletContextHandler@e9451ff{/solr,null,STOPPED}
+11386 INFO  (jetty-closer-114-thread-3) [     ] o.e.j.s.session node0 Stopped scavenging
+11387 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer Shutting down ZkTestServer.
+11596 WARN  (ZkTestServer Run Thread) [     ] o.a.s.c.ZkTestServer Watch limit violations: 
+Maximum concurrent create/delete watches above limit:
+
+	7	/solr/collections/deletereplica_test/terms/shard1
+	5	/solr/aliases.json
+	5	/solr/clusterprops.json
+	4	/solr/packages.json
+	4	/solr/security.json
+	2	/solr/configs/conf
+
+Maximum concurrent data watches above limit:
+
+	15	/solr/collections/deletereplica_test/state.json
+	5	/solr/clusterstate.json
+
+Maximum concurrent children watches above limit:
+
+	22	/solr/overseer/queue
+	15	/solr/live_nodes
+	10	/solr/collections
+	8	/solr/overseer/collection-queue-work
+	4	/solr/collections/deletereplica_test/state.json
+
+11606 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer waitForServerDown: 127.0.0.1:34267
+11607 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer parse host and port list: 127.0.0.1:34267
+11607 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.c.ZkTestServer connecting to 127.0.0.1 34267
+11607 INFO  (TEST-DeleteReplicaTest.deleteReplicaAndVerifyDirectoryCleanup-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCaseJ4 ###Ending deleteReplicaAndVerifyDirectoryCleanup
+11612 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.u.ErrorLogMuter Closing ErrorLogMuter-regex-1 after mutting 0 log messages
+11612 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.u.ErrorLogMuter Creating ErrorLogMuter-regex-2 for ERROR logs matching regex: ignore_exception
+11613 INFO  (SUITE-DeleteReplicaTest-seed#[F0993D5343E20BA4]-worker) [     ] o.a.s.SolrTestCaseJ4 ------------------------------------------------------- Done waiting for tracked resources to be released
+Oct 10, 2026 4:21:00 AM com.carrotsearch.randomizedtesting.ThreadLeakControl checkThreadLeaks
+WARNING: Will linger awaiting termination of 1 leaked thread(s).
+MALLORY_TEST_RESULT run=1 failures=0 ignored=0
