@@ -95,9 +95,23 @@ def preflight(node1: bool) -> dict:
     require(b"NoSuchFieldError: ERR_00003_INVALID_OID" in stderr and
             b"Oid.processStateStart" in stderr and
             b"MiniKdc.start" in stderr, "the recorded failure changed")
-    source_commit = subprocess.check_output(
-        ["git", "-C", str(SOURCE), "rev-parse", "HEAD"], text=True).strip()
-    require(source_commit == pins["source_commit"], "source commit changed")
+    source_revision = subprocess.run(
+        ["git", "-C", str(SOURCE), "rev-parse", "HEAD"],
+        text=True, capture_output=True, check=False)
+    if source_revision.returncode == 0:
+        require(source_revision.stdout.strip() == pins["source_commit"],
+                "source commit changed")
+        source_commit_mode = "git_checkout"
+    else:
+        # node1 holds the pinned source snapshot, but its .git file points to
+        # the absent origin host's worktree metadata. Do not synthesize a Git
+        # repository or claim independent commit verification on node1.
+        require(node1 and (SOURCE / ".git").is_file() and
+                (SOURCE / ".git").read_text().strip() ==
+                "gitdir: /users/ZhenyuLi/hbase/.git/worktrees/hbase-2.6.6" and
+                "not a git repository" in source_revision.stderr,
+                "source Git metadata unavailable for an unexpected reason")
+        source_commit_mode = "sha_pinned_snapshot_no_git_metadata"
     for relative, digest in pins["source_files"].items():
         require(sha(SOURCE / relative) == digest, f"source changed: {relative}")
 
@@ -168,6 +182,7 @@ def preflight(node1: bool) -> dict:
         require(socket.gethostname().split(".")[0] == "node1", "wrong host")
     return {"case_id": "HBASE-34", "kind": "KDC_classpath_repair_static_preflight",
             "status": "passed", "jvm_started": False,
+            "source_commit_mode": source_commit_mode,
             "explicit_first_directory_api": str(all_m20),
             "healthy_runtime_attested": False}
 
