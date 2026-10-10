@@ -1,0 +1,114 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-39",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 12,
+  "cluster_test": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+  "coverage_ids_seen": 403,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 29.016,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 13,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 0,
+    "junit_log_sha256": "b719d1a6ba483d486b650a91aba6e32990127a892bfdbb06d606d489350e54a0",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=0 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "da3d3c023e2dc8f26d48959c1ab675cabf48c9eb0aa002f2df62e602e09d90d1",
+    "tests": 1,
+    "wrapper_sha256": "7558894f1e87b4255239764512934fb135467e3e12cfc05bf9e76c3a4d85a415"
+  },
+  "healthy_local_timeline_doors": null,
+  "healthy_observed_door_events": 58,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1",
+      "node2"
+    ],
+    "eligible_doors_before_target": 13,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "a146513b1cf3bdd7a724fd83ba203021b02348f92adc0d6784c3fa86b286baf0",
+    "observed_target_class_sha256": "a146513b1cf3bdd7a724fd83ba203021b02348f92adc0d6784c3fa86b286baf0",
+    "reasons": [],
+    "site_catalog_sha256": "60616d97d5318d1c816393b93ee3a048cc45aaba73f3d9a437063175f4578884",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (collections == null) {\nthrow RoutedAlias.newAliasMustExistException(getAliasName());",
+    "check_sites": [
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;@246:branch:1"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections()",
+    "original_source_line": 247,
+    "site_id": "<org.apache.solr.update.processor.RoutedAliasUpdateProcessor: java.util.List lookupShardLeadersOfCollections()>#u11",
+    "source_line": 247,
+    "source_path": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+    "throw_site": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;@247:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1",
+      "node2"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 29.016,
+      "eligible_doors_before_target": 13,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 12,
+        "coverage": 403
+      },
+      "observed_door_events": 58,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}
