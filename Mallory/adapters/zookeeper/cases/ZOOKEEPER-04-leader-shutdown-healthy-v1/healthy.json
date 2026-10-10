@@ -1,0 +1,96 @@
+{
+  "agent_arg_property": "mallory.agent.arg",
+  "agent_include": [
+    "org.apache.zookeeper.server.ZooKeeperServer"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+  "agent_properties": {
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "surefire_argline",
+  "allow_local_timeline_doors": true,
+  "auto_promote_if_healthy": false,
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 900,
+    "trial_timeout_basis": "source_only_preflight_ceiling",
+    "trial_timeout_seconds": 900,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "ZOOKEEPER-04",
+  "cluster_test": "org.apache.zookeeper.test.QuorumTest#testLeaderShutdown",
+  "command": [
+    "mvn",
+    "-pl",
+    "zookeeper-server",
+    "-am",
+    "-Dtest=QuorumTest#testLeaderShutdown",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dmallory.test.dir={trial_dir}/test-data",
+    "test"
+  ],
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-connectpath-lane2",
+  "expected_target_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+  "mapping": {
+    "agent_sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-connectpath-lane2/zookeeper-server/target/classes",
+    "compiled_class_sha256": "76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin/lib/zookeeper-3.8.7.jar",
+    "compiled_jar_sha256": "fd12731eecb5d3ace48fa25f0141f011bcb13273b5dca301ff15d5409bd52a91",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/apache-zookeeper-3.8.7-bin",
+    "distribution_root_env": "MALLORY_ZOOKEEPER_DIST_ROOT",
+    "healthy_seed_verified": false,
+    "node_identity_binding_verified": false,
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/zookeeper-connectpath-lane2",
+    "source_root_env": "MALLORY_ZOOKEEPER_SOURCE_ROOT",
+    "status": "source_pinned_alternate_five_peer_healthy_only_not_executed",
+    "target_class_relative": "zookeeper-server/target/classes/org/apache/zookeeper/server/ZooKeeperServer.class",
+    "target_source_sha256": "6011ece2590691c458bfd4cc95758c732a31717586ad7d0952c6cab056efeb9e",
+    "test_class_relative": "zookeeper-server/target/test-classes/org/apache/zookeeper/test/QuorumTest.class",
+    "test_class_sha256": "b29ee15a70c943fd74e51f98b14f543d59383d3e5e37c956415e0c6b9ac84932",
+    "test_source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumTest.java",
+    "test_source_sha256": "67a3f264bc95434d9fca8de86a3ac2f398f28aa2ad752b803ad1f6411b0181b6"
+  },
+  "reject_coarse_roots": true,
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/cases/ZOOKEEPER-04-fa5f-readbool-pilot.sites.json",
+      "sha256": "759895ffdff2f44c349e940eee905a68719c59501fd281b2611b27b3905b0acd"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/cases/ZOOKEEPER-04-fa5f-readbool-pilot.sites.json",
+  "source_overlay_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/zookeeper/zookeeper-3.8.7-connectpath-lane2-overlay.json",
+  "source_overlay_receipt_sha256": "90f907e3542464e71521371d2ec42ccf60fa7dae41ae53ebfbb14c2c8a67170c",
+  "system": "zookeeper",
+  "target": {
+    "check_code": "throw new CloseRequestException(msg, ServerCnxn.DisconnectReason.CLIENT_ZXID_AHEAD);",
+    "check_sites": [
+      "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1434:branch:7"
+    ],
+    "exception_class": "org.apache.zookeeper.server.ServerCnxn$CloseRequestException",
+    "function": "org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)",
+    "nodes": [
+      "zk1",
+      "zk2",
+      "zk3",
+      "zk4",
+      "zk5"
+    ],
+    "site_id": "<org.apache.zookeeper.server.ZooKeeperServer: void processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)>#u97",
+    "source_line": 1444,
+    "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+    "throw_site": "org.apache.zookeeper.server.ZooKeeperServer#processConnectRequest(Lorg/apache/zookeeper/server/ServerCnxn;Ljava/nio/ByteBuffer;)V@1444:throw:1"
+  }
+}
