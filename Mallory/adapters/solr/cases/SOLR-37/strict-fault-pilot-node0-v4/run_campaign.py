@@ -157,12 +157,16 @@ def install_strict_runtime() -> None:
         trial_id = result["trial_id"]
         trial = Path(state["out"]) / "trials" / f"r{trial_id:04d}"
         path = trial / "events.jsonl.gz"
-        if path.is_file():
-            with gzip.open(path, "rt", encoding="utf-8") as source:
-                events = tuple(json.loads(line) for line in source if line.strip())
-            audit = audit_trial(events, result["plan"])
-        else:
-            audit = {"valid": False, "reason": "missing_compressed_trace"}
+        try:
+            if path.is_file():
+                with gzip.open(path, "rt", encoding="utf-8") as source:
+                    events = tuple(json.loads(line) for line in source if line.strip())
+                audit = audit_trial(events, result["plan"])
+            else:
+                audit = {"valid": False, "reason": "missing_compressed_trace"}
+        except Exception as failure:
+            audit = {"valid": False, "reason": "audit_error",
+                     "error_type": type(failure).__name__, "error": str(failure)[:512]}
         campaign.atomic_json(trial / "strict-audit.json", audit)
         result["strict_audit"] = audit
         if not audit["valid"]:

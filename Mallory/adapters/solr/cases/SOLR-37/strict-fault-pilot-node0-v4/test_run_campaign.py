@@ -1,4 +1,6 @@
 import unittest
+import tempfile
+from pathlib import Path
 
 import run_campaign
 
@@ -21,6 +23,33 @@ class StrictRuntimeTest(unittest.TestCase):
                 {"point": {**base, "node": "shard-2"}}))
             self.assertIsNone(run_campaign.scheduler._replay_point(
                 {"point": {**base, "site": "unqualified"}}))
+        finally:
+            run_campaign.scheduler._replay_point = original_replay
+            run_campaign.campaign.mutate = original_mutate
+            run_campaign.campaign._apply_result = original_apply
+
+    def test_missing_trace_fails_closed_without_losing_trial_result(self):
+        original_replay = run_campaign.scheduler._replay_point
+        original_mutate = run_campaign.campaign.mutate
+        original_apply = run_campaign.campaign._apply_result
+        captured = []
+        try:
+            run_campaign.campaign._apply_result = lambda state, config, result, item: captured.append(result)
+            run_campaign.install_strict_runtime()
+            with tempfile.TemporaryDirectory() as directory:
+                result = {"trial_id": 1, "plan": [{"fault_id": "f1"}],
+                          "feedback": {"status": "observed", "target_reached": True,
+                                       "all_faults_effective": True,
+                                       "target_exception_candidate": True}}
+                run_campaign.campaign._apply_result(
+                    {"out": directory}, {}, result, None)
+                audit = Path(directory) / "trials/r0001/strict-audit.json"
+                self.assertTrue(audit.is_file())
+                self.assertEqual("missing_compressed_trace", result["strict_audit"]["reason"])
+                self.assertFalse(result["feedback"]["target_reached"])
+                self.assertFalse(result["feedback"]["all_faults_effective"])
+                self.assertFalse(result["feedback"]["target_exception_candidate"])
+                self.assertEqual(1, len(captured))
         finally:
             run_campaign.scheduler._replay_point = original_replay
             run_campaign.campaign.mutate = original_mutate
