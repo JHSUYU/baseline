@@ -1,0 +1,35 @@
+{
+  "case_id": "HBASE-23",
+  "core_release": "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+  "evidence_kind": "observed_local_timeline_pending_runtime",
+  "exact_check": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@127:branch:5",
+  "fault_trials_run": 0,
+  "files_sha256": {
+    "README.md": "dfe5868f6753b8521274a7da02462f7d51de2ebcce41d0d38d6b4a2981cbb8ea",
+    "healthy.json": "338023d43b2ed6b51770b18762e35635e1f73469ca798cc680e154164fab6965",
+    "preflight.py": "98243918c1683db433b98e3abec27747798f30ae0aece795b973c2189c4c3abd",
+    "run_healthy.py": "8386ee58a077203b5e3c97013c408473b13ae49dc5658fb223d5c008d1b407d4",
+    "sites.json": "f406aa03e1681177fad5049f3747098e548ed109cf2a68ad38ce5e5af061284a",
+    "stage-preflight.json": "f68b617d6385aa6caa5a2b4bc9057cf705091beab77db2eba7f705717622cdae",
+    "test_verify_healthy.py": "c7071451ae4c44b12b01947ad245439042f7da6e7652913d16a704101e8bf526",
+    "verify_healthy.py": "e80cd8f8993acdad57b590f1518469f7703a2af68d613eaba5de6cab557ffb97"
+  },
+  "jvm_workloads_run": 0,
+  "next_gate": "Dispatch syncs package to node1, runs strict no-JVM preflight, then a bounded healthy-only MiniCluster calibration and an explicitly labeled same-thread local-timeline audit.",
+  "node1_runtime_deferred": [
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/agent-handoff-v1.jar",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/adapter-handoff-v1.jar",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/classes/edu/uva/liftlab/mallory/hbase/pilot/SelectedJUnit.class",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/runtime/junit-platform-launcher.jar",
+    "/users/ZhenyuLi/.mallory-worktrees/hbase/lane9-next/source-equivalence.json"
+  ],
+  "offline_tests": {
+    "admission_gate_synthetic": "3 passed",
+    "archived_v13_negative_control": "healthy_not_admitted",
+    "source_bytecode_preflight": "passed"
+  },
+  "schema_version": 1,
+  "selector": "org.apache.hadoop.hbase.procedure.TestProcedureManager#testSimpleProcedureManager",
+  "status": "staged_healthy_only_node1_runtime_deferred",
+  "typed_door": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+}
