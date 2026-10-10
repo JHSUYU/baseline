@@ -4116,6 +4116,24 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["quality_status"] = "causal_path_unverified"
             row["causal_precision_review"] = "faulted_path_unverified"
             row["causal_precision_receipt"] = str(result_path.with_name("terminal-quality.json"))
+        elif (case_id == "SOLR-14" and row["causal_audit"] == "invalid"
+              and audit.get("archive_integrity_valid") is True
+              and audit.get("applied_fault_identity_valid") is True
+              and audit.get("target_claims_reverified") is True
+              and audit.get("guidance_consistent") is True
+              and audit.get("healthy_closure_proven") is True
+              and audit.get("same_actor_target_required") is True
+              and audit.get("same_actor_target_gate_passed") is False
+              and (_json(result_path.with_name("terminal-quality.json")) or {}).get(
+                  "classification") == "postfault_same_actor_unverified"
+              and (_json(result_path.with_name("terminal-quality.json")) or {}).get(
+                  "campaign_result_sha256") == hashlib.sha256(result_path.read_bytes()).hexdigest()
+              and (_json(result_path.with_name("terminal-quality.json")) or {}).get(
+                  "offline_audit_sha256") == hashlib.sha256(
+                      result_path.with_name("offline-causal-audit.json").read_bytes()).hexdigest()):
+            row["quality_status"] = "postfault_same_actor_unverified"
+            row["causal_precision_review"] = "postfault_same_actor_unverified"
+            row["causal_precision_receipt"] = str(result_path.with_name("terminal-quality.json"))
         elif row["causal_audit"] != "verified":
             row["quality_status"] = "causal_audit_invalid"
         else:
