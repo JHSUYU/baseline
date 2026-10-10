@@ -16,6 +16,12 @@ in `calibration_history`. Earlier receipts and evidence remain untouched.
 
 The generated checklist schema is version 2. `completed_checks` counts only
 terminal campaigns; `not_completed_checks` is the rest of the fixed 102.
+`skipped_no_suitable_cluster_test` counts rows with a verified source review
+showing no suitable existing cluster JUnit. Each row has the same Boolean
+classification. `handled_checks` is completed campaigns plus these source
+proven skips; `remaining_unhandled_checks` excludes both. A staged but unrun
+fault-discovery bootstrap stays pending, and source reviews never increase
+`completed_checks`.
 Fault-to-target evidence and source reviews are outcome fields, never a
 second completion count.
 
@@ -45,6 +51,10 @@ recorded in `data/mallory/source_gaps/<ID>/receipt.json`. The report displays
 the newest healthy calibration result, and its offline audit, and that audit
 shows zero observed I/O paths to the target. A newer calibration or completed
 campaign supersedes the gap; a stale receipt never counts as a tested check.
+HBASE-32 has a pinned target-absent bootstrap under an unchanged cluster JUnit,
+so its older no-suitable-healthy-test review is superseded by a pending
+bootstrap. HBASE-34 has a source-pinned LocalHBaseCluster JUnit whose previous
+calibration stopped in MiniKdc setup; it remains pending environment repair.
 
 Campaign completion has one definition: a terminal result. The report keeps
 `quality_status` as a fault-to-target evidence annotation; it does not affect

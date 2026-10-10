@@ -2538,6 +2538,89 @@ def _zk08_09_cluster_junit_review(results: Path, case_id: str) -> tuple[str | No
     return "source_review_no_mapped_cluster_test", str(path)
 
 
+def _hbase32_target_discovery_stage(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Recognize the pinned unrun bootstrap, which supersedes the old skip."""
+    if case_id != "HBASE-32":
+        return None, None
+    baseline = results.resolve().parent.parent
+    package = baseline / "Mallory/adapters/hbase/cases/HBASE-32/target-discovery-v1"
+    manifest_path = package / "sha-manifest.json"
+    if not manifest_path.is_file():
+        return None, None
+    invalid = ("invalid_target_discovery_stage", str(manifest_path))
+    try:
+        expected = "bf21b73c5ac9eea9dfea46c32570d6492691dfa6bd4df1686adfa8e8144e7151"
+        if hashlib.sha256(manifest_path.read_bytes()).hexdigest() != expected:
+            return invalid
+        manifest = _json(manifest_path)
+        if not isinstance(manifest, dict) or manifest.get("case_id") != case_id:
+            return invalid
+        for name, digest in manifest["case_files"].items():
+            file = (package / name).resolve()
+            if (not file.is_relative_to(package.resolve()) or not file.is_file() or
+                    hashlib.sha256(file.read_bytes()).hexdigest() != digest):
+                return invalid
+        for name, digest in {
+            "preflight.py": "ed64d3d87822f0558ea5487c9af8a7cc12c601551a888339791a63f5379faa57",
+            "run_campaign.py": "9a5ce7cfe14d44e8dbd18425a3c5452b569cf65a209e9599cc6dd8096844cfd3",
+        }.items():
+            if hashlib.sha256((package / name).read_bytes()).hexdigest() != digest:
+                return invalid
+        prior = results / "calibration_v19/HBASE-32/result.json"
+        if hashlib.sha256(prior.read_bytes()).hexdigest() != manifest["prior_negative_sha256"]:
+            return invalid
+        healthy = _json(package / "config-healthy.json")
+        full = _json(package / "config-full.json")
+        if (healthy.get("case_id") != case_id or full.get("case_id") != case_id or
+                healthy.get("calibration_only") is not True or
+                full.get("calibration_only") is not False or
+                full.get("budget", {}).get("trials") != 80):
+            return invalid
+        return "pending_fault_discovery_bootstrap", str(manifest_path)
+    except (OSError, KeyError, TypeError, ValueError, AttributeError):
+        return invalid
+
+
+def _hbase34_environment_repair(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Keep a real cluster JUnit pending while its MiniKdc setup is repaired."""
+    if case_id != "HBASE-34":
+        return None, None
+    baseline = results.resolve().parent.parent
+    path = (baseline / "Mallory/adapters/hbase/pilot"
+            / "hbase34-37-independent-admission-v1/receipt.json")
+    if not path.is_file():
+        return None, None
+    invalid = ("invalid_environment_repair_review", str(path))
+    try:
+        if hashlib.sha256(path.read_bytes()).hexdigest() != (
+                "4cfd06853d4b7bbee4ff9faedbdee1fca14f1200649064db13ed6de9c49deda2"):
+            return invalid
+        review = _json(path)
+        item = review[case_id]
+        if (review.get("kind") != "independent_hbase34_37_source_and_static_admission" or
+                item.get("classification") !=
+                "true_LocalHBaseCluster_JUnit_exists_but_original_calibration_blocked_before_test" or
+                item.get("selected_original_test") !=
+                "org.apache.hadoop.hbase.security.token.TestGenerateDelegationToken#testOnlyToken"):
+            return invalid
+        source = Path(review["source_root"])
+        for entry in review["source_files"].values():
+            file = (source / entry["path"]).resolve()
+            if (not file.is_relative_to(source.resolve()) or not file.is_file() or
+                    hashlib.sha256(file.read_bytes()).hexdigest() != entry["sha256"]):
+                return invalid
+        prior = item["original_calibration"]
+        for name, expected in ((prior["archive"], prior["archive_sha256"]),
+                               (prior["result"], prior["result_sha256"])):
+            file = (baseline / name).resolve()
+            if (not file.is_relative_to(baseline) or not file.is_file() or
+                    hashlib.sha256(file.read_bytes()).hexdigest() != expected):
+                return invalid
+        return "pending_environment_repair", str(path)
+    except (OSError, KeyError, TypeError, ValueError, AttributeError):
+        return invalid
+
+
 def _hbase23_28_source_audit(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Attach the immutable source finding without changing pending status."""
     expected = {
@@ -3608,6 +3691,7 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                                          if calibration is not None else None),
         "calibration_history": calibrations,
         "report_status": initial_status,
+        "skipped_no_suitable_cluster_test": False,
         "quality_status": None,
         "causal_audit": None,
         "causal_precision_review": None,
@@ -3671,6 +3755,15 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["source_review_classification"] = "adapted_cluster_junit_unexecuted"
             row["source_gap_receipt"] = hdfs_audit_path
             return row
+        hbase32_status, hbase32_receipt = _hbase32_target_discovery_stage(results, case_id)
+        if hbase32_status == "pending_fault_discovery_bootstrap":
+            row["report_status"] = hbase32_status
+            row["source_review_status"] = "prior_healthy_guard_absent_bootstrap_staged"
+            row["source_review_receipt"] = hbase32_receipt
+            row["source_gap_receipt"] = hbase32_receipt
+            return row
+        if hbase32_status is not None:
+            row["source_gap_error"] = "HBASE-32 discovery package or prior evidence mismatch"
         bootstrap_status, bootstrap_receipt = _solr_fault_discovery_bootstrap(results, case_id)
         if bootstrap_status is not None:
             row["report_status"] = bootstrap_status
@@ -3686,6 +3779,17 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["source_review_receipt"] = no_door_receipt
             if no_door_status.startswith("invalid_"):
                 row["source_gap_error"] = "healthy no-door receipt or pinned evidence mismatch"
+            return row
+        environment_status, environment_receipt = _hbase34_environment_repair(
+            results, case_id)
+        if environment_status is not None:
+            row["report_status"] = environment_status
+            row["source_review_status"] = "true_cluster_junit_setup_blocked"
+            row["source_review_receipt"] = environment_receipt
+            row["source_gap_receipt"] = environment_receipt
+            row["source_review_classification"] = "MiniKdc_dependency_failure_before_junit"
+            if environment_status.startswith("invalid_"):
+                row["source_gap_error"] = "HBASE-34 source or calibration evidence mismatch"
             return row
         hbase34_status, hbase34_receipt, hbase34_selector = _hbase34_cluster_stage(results, case_id)
         if hbase34_status is not None:
@@ -3776,6 +3880,7 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                           "source_review_no_suitable_test"}:
             row["report_status"] = source_gap
             row["source_gap_receipt"] = str(results / "source_gaps" / case_id / "receipt.json")
+            row["skipped_no_suitable_cluster_test"] = True
         elif source_gap == "invalid_source_gap":
             row["source_gap_error"] = "source-gap receipt or healthy evidence mismatch"
         if source_gap is None:
@@ -3793,6 +3898,7 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["source_review_classification"] = "remote_modify_rpc_selector_unproven"
             row["source_review_receipt"] = review_receipt
             row["source_gap_receipt"] = review_receipt
+            row["skipped_no_suitable_cluster_test"] = False
         elif existing_junit == "invalid_existing_junit_review":
             row["report_status"] = existing_junit
             row["source_gap_error"] = "superseding exact-JUnit review or pinned evidence mismatch"
@@ -3983,17 +4089,32 @@ def build(inventory_path: Path, results: Path) -> dict[str, Any]:
         raise ValueError("inventory must contain 102 unique original checks")
     rows = [_row(case, results) for case in cases]
     control_rows = [_row(case, results) for case in controls]
+    for row in rows:
+        source_gap_skip = (row["report_status"] in {
+            "source_review_no_suitable_test", "no_suitable_cluster_test"}
+            and bool(row["source_gap_receipt"]) and not row.get("source_gap_error"))
+        mapped_test_skip = (row["report_status"] == "no_mapped_cluster_test"
+            and row["source_review_status"] == "source_review_no_mapped_cluster_test"
+            and bool(row["source_review_receipt"]) and not row.get("source_gap_error"))
+        row["skipped_no_suitable_cluster_test"] = bool(source_gap_skip or mapped_test_skip)
     status_counts = Counter(row["report_status"] for row in rows)
     evidence_counts = Counter(row["quality_status"] for row in rows
                               if row["quality_status"] is not None)
+    skipped_checks = sum(row["skipped_no_suitable_cluster_test"] for row in rows)
+    completed_checks = status_counts["completed_campaign"]
+    if completed_checks + skipped_checks > len(rows):
+        raise ValueError("completed campaigns and source-proven skips overlap")
     return {
         "schema_version": 2,
         "method": "Mallory",
         "original_selection_count": 102,
         "known_issue_control_count": len(control_rows),
         "counts": dict(status_counts),
-        "completed_checks": status_counts["completed_campaign"],
-        "not_completed_checks": len(rows) - status_counts["completed_campaign"],
+        "completed_checks": completed_checks,
+        "skipped_no_suitable_cluster_test": skipped_checks,
+        "handled_checks": completed_checks + skipped_checks,
+        "not_completed_checks": len(rows) - completed_checks,
+        "remaining_unhandled_checks": len(rows) - completed_checks - skipped_checks,
         "calibration_counts": dict(Counter(row["calibration_status"] for row in rows
                                            if row["calibration_status"] is not None)),
         "evidence_counts": dict(evidence_counts),
@@ -4014,16 +4135,23 @@ def markdown(report: dict[str, Any]) -> str:
              f'a fault-injection campaign; {report["not_completed_checks"]} have not. '
              'Completion means the campaign ended at its configured budget or '
              'exhausted its fault queue. Fault-to-target evidence and selected '
-             'exceptions are recorded as outcomes, not extra completion gates.', "",
+             'exceptions are recorded as outcomes, not extra completion gates. '
+             f'{report["skipped_no_suitable_cluster_test"]} checks have a '
+             'source-proven no-suitable-cluster-test skip; '
+             f'{report["handled_checks"]} are handled in total and '
+             f'{report["remaining_unhandled_checks"]} remain unhandled.', "",
              "Rows are generated from `Mallory/cases/inventory.json` and "
              "`data/mallory/cases/<ID>/result.json`. Pending rows are not run results. "
              "`source_review_no_suitable_test` records a hash-checked source review, "
              "not a healthy-run causal audit. "
              "`source_weak_candidate` records a hash-checked source finding "
              "with an undemonstrated fault relation, and "
-             "`pending_fault_discovery_bootstrap` records three passing Solr "
-             "cluster JUnits whose exact selected guard is absent in healthy traces; "
+             "`pending_fault_discovery_bootstrap` records passing cluster "
+             "JUnits whose exact selected guard is absent in healthy traces; "
              "fault-discovery admission and a full campaign remain pending. "
+             "`skipped_no_suitable_cluster_test` is true only for a verified "
+             "source review with no suitable existing cluster JUnit; a staged "
+             "but unrun bootstrap is pending, not skipped. "
              "`healthy_exact_guard_observed` records a passing existing JUnit "
              "that reached the exact nonthrowing HBASE-19/20 guard, with no "
              "observed pretarget graph-path door or completed fault campaign. "
@@ -4047,9 +4175,10 @@ def markdown(report: dict[str, Any]) -> str:
              "HBASE37 `pending_seed` records a newer staged LocalHBaseCluster "
              "workload; its prior exact target had unknown actor identity and "
              "the new typed door still needs a fresh healthy run. "
-             "HBASE34 `pending_seed` records a staged alternate existing token "
-             "JUnit whose archived healthy trace reaches the selected guard; "
-             "its new typed I/O door still needs a fresh healthy run. "
+             "HBASE34 `pending_environment_repair` records a real "
+             "LocalHBaseCluster JUnit blocked during MiniKdc setup before any "
+             "test or target event; a pinned classpath repair awaits a fresh "
+             "healthy run. "
              "ZOOKEEPER13 `legacy_integrity_verified_path_unclassified` means "
              "its older audit verifies archive and fault identities but does not "
              "contain the later graph-path fields. "
@@ -4065,7 +4194,7 @@ def markdown(report: dict[str, Any]) -> str:
              "in a legacy trace, not an inter-region path. Terminal runs without "
              "a positive path review remain completed; their path evidence stays "
              "unverified.", "",
-             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Fault-to-target evidence | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source disposition receipt | New bug |",
+             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Source-proven skip | Fault-to-target evidence | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source disposition receipt | New bug |",
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |"]
     for row in report["rows"]:
         location = f'{row["source_path"]}:{row["source_line"]}'
@@ -4080,6 +4209,7 @@ def markdown(report: dict[str, Any]) -> str:
                   row["cluster_test"], row["calibration_cluster_test"],
                   row["campaign_cluster_test"], row["calibration_status"],
                   row["calibration_duration_seconds"], row["report_status"],
+                  row["skipped_no_suitable_cluster_test"],
                   row["quality_status"], row["causal_audit"],
                   row["causal_precision_review"],
                   ", ".join(row["healthy_closure_evidence_types"] or []),

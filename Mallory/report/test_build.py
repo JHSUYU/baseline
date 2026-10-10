@@ -21,6 +21,27 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_source_proven_skip_accounting_excludes_staged_bootstrap(self):
+        from Mallory.report.build import (_hbase32_target_discovery_stage,
+                                          _hbase34_environment_repair)
+        baseline = Path(__file__).resolve().parents[2]
+        results = baseline / "data/mallory"
+        self.assertEqual("pending_fault_discovery_bootstrap",
+                         _hbase32_target_discovery_stage(results, "HBASE-32")[0])
+        self.assertEqual("pending_environment_repair",
+                         _hbase34_environment_repair(results, "HBASE-34")[0])
+        report = build(baseline / "Mallory/cases/inventory.json", results)
+        skipped = {row["case_id"] for row in report["rows"]
+                   if row["skipped_no_suitable_cluster_test"]}
+        self.assertEqual({"HBASE-33", "HDFS-13", "ZOOKEEPER-08", "ZOOKEEPER-09"},
+                         skipped)
+        self.assertEqual(report["completed_checks"] + len(skipped),
+                         report["handled_checks"])
+        self.assertEqual(102 - report["handled_checks"],
+                         report["remaining_unhandled_checks"])
+        self.assertEqual(102 - report["completed_checks"],
+                         report["not_completed_checks"])
+
     def test_fault_depth_review_is_bound_to_each_offhost_trial(self):
         baseline = Path(__file__).resolve().parents[2]
         source = baseline / "data/mallory"
