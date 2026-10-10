@@ -158,7 +158,7 @@ def score(candidate: dict[str, Any], parent_feedback: dict[str, Any],
 
 def pick_next(queue: list[dict[str, Any]], next_trial: int,
               fault_trials_completed: int, config: dict[str, Any]) -> dict[str, Any]:
-    """Prioritize validated doors and optional single-fault breadth."""
+    """Prioritize validated doors and reserve periodic deeper exploration."""
     queue.sort(key=lambda item: (-(item["priority"] +
                                   0.05 * (next_trial - item["queued_at"])),
                                  item["queued_at"], item["signature"]))
@@ -171,6 +171,16 @@ def pick_next(queue: list[dict[str, Any]], next_trial: int,
             if item.get("selection_reason") != "validated_recovery":
                 return queue.pop(index)
     breadth_interval = config.get("single_fault_breadth_interval")
+    # Healthy-run coverage can give every initial single-fault candidate a
+    # higher inherited score than any later mutation. Without a depth slot,
+    # a bounded campaign may never exercise the multi-fault plans it generated.
+    depth_interval = config.get("multi_fault_exploration_interval",
+                                4 if breadth_interval is None else None)
+    if (depth_interval and fault_trials_completed > 0 and
+            (fault_trials_completed + 1) % depth_interval == 0):
+        for index, item in enumerate(queue):
+            if len(item["faults"]) > 1:
+                return queue.pop(index)
     if (breadth_interval and
             (fault_trials_completed + 1) % breadth_interval != 0):
         for index, item in enumerate(queue):

@@ -19,6 +19,24 @@ def _candidate(name: str, *, depth: int, priority: float,
 
 
 class SchedulerBreadthTest(unittest.TestCase):
+    def test_default_reserves_periodic_multi_fault_pick_despite_seed_coverage(self):
+        queue = [_candidate(f"single-{index}", depth=1, priority=38.3)
+                 for index in range(5)]
+        queue.append(_candidate("deep", depth=2, priority=8.1))
+        for trial in (1, 2, 3):
+            self.assertEqual(1, len(pick_next(queue, trial, trial - 1, {})["faults"]))
+        self.assertEqual("deep", pick_next(queue, 4, 3, {})["signature"])
+
+    def test_explicit_depth_interval_and_replay_priority(self):
+        queue = [_candidate("single", depth=1, priority=38.3),
+                 _candidate("deep", depth=2, priority=8.1)]
+        config = {"multi_fault_exploration_interval": 2}
+        self.assertEqual("deep", pick_next(queue, 2, 1, config)["signature"])
+        replay = _candidate("replay", depth=1, priority=1000,
+                            reason="candidate_replay")
+        self.assertEqual("replay", pick_next([replay, _candidate("other-deep", depth=2,
+                                   priority=8.1)], 2, 1, config)["signature"])
+
     def test_two_single_fault_picks_then_one_unrestricted_pick(self):
         queue = [_candidate("deep", depth=2, priority=100),
                  _candidate("single-a", depth=1, priority=20),
@@ -56,6 +74,11 @@ class SchedulerBreadthTest(unittest.TestCase):
                         ValueError, "single_fault_breadth_interval"):
                     validate_config({**config, "single_fault_breadth_interval": invalid})
             validate_config({**config, "single_fault_breadth_interval": 3})
+            for invalid in (True, 0, 1, -2, 2.5, "3"):
+                with self.subTest(value=invalid), self.assertRaisesRegex(
+                        ValueError, "multi_fault_exploration_interval"):
+                    validate_config({**config, "multi_fault_exploration_interval": invalid})
+            validate_config({**config, "multi_fault_exploration_interval": 4})
 
 
 if __name__ == "__main__":

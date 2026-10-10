@@ -122,6 +122,11 @@ def validate_config(config: dict[str, Any]) -> None:
             not isinstance(breadth_interval, int) or
             isinstance(breadth_interval, bool) or breadth_interval < 2):
         raise ValueError("single_fault_breadth_interval must be at least 2")
+    depth_interval = config.get("multi_fault_exploration_interval")
+    if depth_interval is not None and (
+            not isinstance(depth_interval, int) or
+            isinstance(depth_interval, bool) or depth_interval < 2):
+        raise ValueError("multi_fault_exploration_interval must be at least 2")
     bootstrap = config.get("target_absent_bootstrap")
     if bootstrap is not None:
         if not isinstance(bootstrap, dict):
