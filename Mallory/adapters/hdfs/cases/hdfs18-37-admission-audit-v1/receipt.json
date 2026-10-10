@@ -1,0 +1,127 @@
+{
+  "artifact_pins": {
+    "hdfs18_baseline_events": {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-18/trials/r0000/events.jsonl.gz",
+      "sha256": "ec5fdc60b3fe800167f9394424d36c9da37f31132243389f2f291d0344cdb58d"
+    },
+    "hdfs18_baseline_result": {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-18/trials/r0000/result.json",
+      "sha256": "2455bebd6c24c4fa2e42bd46027617e29be41784c6b3a7f381e14a8710d35663"
+    },
+    "hdfs18_baseline_stdout": {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-18/trials/r0000/stdout.log",
+      "sha256": "a598623827d857b810df005e25650c408ae87e3f4ef4fc42df63d4a536877ae4"
+    },
+    "hdfs18_patch": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs18-provided-heartbeat-v1/real-heartbeat.patch",
+      "sha256": "1844ef454bc30a60db0c87c0265ca0c0af122853b23be79d60acb6d7df6c2f82"
+    },
+    "hdfs18_site_file": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs18-provided-heartbeat-v1/HDFS-18.sites.json",
+      "sha256": "e3718c34741f99e1c1557fb4d2029983a38106b950b5e30d223d7c1f4e381823"
+    },
+    "hdfs37_baseline_events": {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-37/trials/r0000/events.jsonl.gz",
+      "sha256": "4a8603053fd63d818aafecf3afffd41ebb681cbcfc7a61abb955c340b447ec1a"
+    },
+    "hdfs37_baseline_result": {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-37/trials/r0000/result.json",
+      "sha256": "bba63fb8ff839245c7f4f349297ceeceec5fffda5c3f54886afe7bcd64116aea"
+    },
+    "hdfs37_baseline_stdout": {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-37/trials/r0000/stdout.log",
+      "sha256": "bdc832b4740b0b0fd3c5c114fdf14a29edb5523e9e245845ec506fb53970e067"
+    },
+    "hdfs37_patch": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs37-normal-phase-v1/normal-phase.patch",
+      "sha256": "da8a126faa3729a82c0a9b61e8e6391fd7100f051609b0188842a118c2909826"
+    },
+    "hdfs37_site_file": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs37-normal-phase-v1/HDFS-37.sites.json",
+      "sha256": "6d62574fa18a92f660aee53e5e2947d783f4cd1b701e058d1046dd9ae39c15d2"
+    }
+  },
+  "campaign_or_checklist_changed": false,
+  "findings": {
+    "HDFS-18": {
+      "adapted_path": "Test-only patch requests another ordinary heartbeat after first PROVIDED storage insertion. FsDatasetImpl.getStorageReports -> BPServiceActor.sendHeartBeat -> DatanodeManager.handleHeartbeat -> BlockManager.updateHeartbeat -> ProvidedStorageMap.updateStorage passes shared providedStorageInfo to injectStorage. This is a source-backed duplicate-identity branch candidate, not observed coverage.",
+      "baseline": "Original TestSecureAliasMap#testSecureConnectionToAliasMap passed 1/0/0 but trace has only injectStorage@522:branch:1 at seq 373; no @537 target.",
+      "door": "Current HDFS-18.sites.json has doors=[] and nodeBindings=[]. A typed IOException candidate is BPServiceActor.sendHeartBeat -> bpNamenode.sendHeartbeat at line 563; offerService catches IOException at line 786 and retries. A fault at that call can precede a later target visit, but whether the same DN/PROVIDED report and target are retained must be measured. Archived generic RpcCall doors have unknown node and do not attest this path.",
+      "gate": "Healthy-only diagnostic GO after isolated source build and HDFS-20 lane release; full injection pending exact @537 nonthrowing trace, assertion enablement, named NN and same DN/storage identity, and observed typed physical door with event-time causal path.",
+      "selected_sites": [
+        "DatanodeDescriptor.injectStorage@537:branch:5",
+        "DatanodeDescriptor.injectStorage@537:branch:6",
+        "DatanodeDescriptor.injectStorage@537:throw:1"
+      ]
+    },
+    "HDFS-37": {
+      "adapted_path": "Test-only patch returns after normal DN rollback checkResult(DATA_NODE), shutdown and cleanup in first numDirs iteration. It retains the original positive MiniDFSCluster ROLLBACK path and excludes subsequent expected-error phases. Overlay remains unapplied/unbuilt.",
+      "baseline": "Original TestDFSRollback#testRollback passed 1/0/0. Exact nonthrowing guard pair first occurs at seq 2566/2568; later expected selected throws occur at seq 3829, 5637, 5668. All archived actor labels are unknown.",
+      "door": "BPServiceActor.retrieveNamespaceInfo -> bpNamenode.versionRequest at line 260 is a typed IOException RPC door. The method catches IOException and retries before DataNode.initStorage -> DataStorage.recoverTransitionRead -> doTransition -> doRollback, so a one-shot failure can precede and retain the target. StorageInfo.readPropertiesFile -> Properties.load at line 272 is physically before guard but a thrown IOException skips that DN storage root in DataStorage.loadDataStorage; another root reaching target would not establish same-root retention.",
+      "gate": "Healthy-only diagnostic GO after isolated source build and HDFS-20 lane release; full injection pending passing phase-scoped 1/0/0 JUnit, marker, exact nonthrowing guard, named DN/epoch/root, observed versionRequest door and event-time causal path, compiled test/class hash attestation.",
+      "selected_sites": [
+        "DataStorage.doRollback@940:branch:3",
+        "DataStorage.doRollback@941:branch:4",
+        "DataStorage.doRollback@947:throw:1"
+      ]
+    }
+  },
+  "jvm_started": false,
+  "kind": "offline_source_pinned_hdfs18_hdfs37_admission_audit",
+  "limitations": [
+    "Source order establishes possible retry paths, not a fault result or causal closure.",
+    "No adapted JUnit, fault run, or JVM was started in this audit."
+  ],
+  "offline_preflight": {
+    "HDFS-18": "patch_preflight_pass; offline_preflight_pass; dedicated root absent; no healthy seed",
+    "HDFS-37": "patch_preflight_pass; offline_preflight_pass; overlay unapplied; no healthy seed"
+  },
+  "schema_version": 1,
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_pins": {
+    "BPServiceActor": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+    },
+    "BlockManager": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+      "sha256": "fa565bc350a839178ecd7be5a7d106f8e0a1d93c34052b54db38cf59ed4b698e"
+    },
+    "DataNode": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4"
+    },
+    "DataStorage": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809"
+    },
+    "DatanodeDescriptor": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java",
+      "sha256": "df2b7b8d5eb514cbb39638304865888ae701dba67788e89afb63ff4e7f862588"
+    },
+    "DatanodeManager": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java",
+      "sha256": "c686cb437a8c2b3c7ea710f6e17c2ad2006bad257f9888a7c5142fa860b88df6"
+    },
+    "FsDatasetImpl": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+      "sha256": "247c12da1eb9a6933d4bf594f18342fc1d46c6a94ffa67d2b2deb3b43bc4d344"
+    },
+    "ProvidedStorageMap": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java",
+      "sha256": "77ce4735b27502d117f3ceb83d3e7fbb30c0abb58bad9c6825e3ed18e231fb9a"
+    },
+    "StorageInfo": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/StorageInfo.java",
+      "sha256": "c07faaffe2a7184d8806d7f53900f62d812e7902edda543c76eae4135571b2de"
+    },
+    "TestDFSRollback": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+      "sha256": "c5a5ea5ba53bc50950d7af3de48a058ecac81513fba3d231879fa36fe75cd808"
+    },
+    "TestSecureAliasMap": {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java",
+      "sha256": "67919a1131d485c990397e1fe0c6768d8482f2435d7510f2bbf49dc1eb51d5dc"
+    }
+  }
+}
