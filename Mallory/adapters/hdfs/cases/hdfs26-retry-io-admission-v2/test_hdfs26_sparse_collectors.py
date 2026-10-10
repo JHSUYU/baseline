@@ -134,6 +134,32 @@ class SparsePublicationTest(unittest.TestCase):
                 "case_id": "HDFS-26", "status": "budget_exhausted", "running": None})
             self.assertTrue(COLLECT.ready())
 
+    def test_node2_recovers_after_canonical_move_before_receipt(self):
+        raw = self.base / "raw"
+        raw.mkdir(exist_ok=True)
+        shutil.copy2(self.case / "config.json", raw / "config.json")
+        write(raw / "result.json", {"case_id": "HDFS-26", "status": "budget_exhausted"})
+        write(raw / "trials/r0000/result.json", {"case_id": "HDFS-26", "trial_id": 0})
+        (self.case / "trials/r0000").mkdir(parents=True)
+        shutil.copy2(raw / "trials/r0000/result.json",
+                     self.case / "trials/r0000/result.json")
+        source_hashes = COLLECT.tree(raw)
+        value = json.loads(self.manifest.read_text())
+        value["source_result_sha256"] = source_hashes["result.json"]
+        value["members"] = sorted(source_hashes)
+        write(self.manifest, value)
+        with (patch.object(COLLECT, "DESTINATION", self.case),
+              patch.object(COLLECT, "STAGING_ROOT", self.state / "publication"),
+              patch.object(COLLECT, "STATE", self.state),
+              patch.object(COLLECT, "CONFIG_SHA", source_hashes["config.json"])):
+            COLLECT.seal_existing(source_hashes)
+            self.assertEqual(json.loads(self.publication.read_text())[
+                "raw_result_sha256"], source_hashes["result.json"])
+            COLLECT.seal_existing(source_hashes)
+            (self.case / "trials/r0000/result.json").write_text("tampered\n")
+            with self.assertRaisesRegex(RuntimeError, "differs from locked raw"):
+                COLLECT.seal_existing(source_hashes)
+
 
 if __name__ == "__main__":
     unittest.main()

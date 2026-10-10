@@ -64,14 +64,49 @@ def ready() -> bool:
     return True
 
 
+def seal_existing(source_hashes: dict[str, str]) -> None:
+    """Recover a case moved to canonical just before receipt creation."""
+    result_path = DESTINATION / "result.json"
+    audit_path = DESTINATION / "offline-causal-audit.json"
+    archive = STAGING_ROOT / "evidence_archives/campaign/HDFS-26.tar.gz"
+    manifest = STAGING_ROOT / "evidence_archives/campaign/HDFS-26.tar.manifest.json"
+    if not all(path.is_file() for path in (result_path, audit_path, archive, manifest)):
+        raise RuntimeError("terminal canonical missing result, audit, or archive")
+    result = json.loads(result_path.read_text())
+    audit = json.loads(audit_path.read_text())
+    packed = json.loads(manifest.read_text())
+    if (result.get("case_id") != CASE or result.get("status") not in TERMINAL or
+            sha(DESTINATION / "config.json") != CONFIG_SHA or
+            audit.get("campaign_result_sha256") != sha(result_path) or
+            packed.get("source_result_sha256") != source_hashes.get("result.json") or
+            packed.get("archive_sha256") != sha(archive) or
+            result.get("evidence_archive", {}).get("sha256") != sha(archive) or
+            sorted(packed.get("members", [])) != sorted(source_hashes) or
+            any(sha(DESTINATION / name) != digest for name, digest in source_hashes.items()
+                if name != "result.json")):
+        raise RuntimeError("terminal canonical differs from locked raw evidence")
+    atomic_json(STATE / "terminal-publication.json", {
+        "schema_version": 1, "case_id": CASE, "status": result["status"],
+        "raw_result_sha256": source_hashes["result.json"],
+        "canonical_result_sha256": sha(result_path),
+        "config_sha256": CONFIG_SHA, "audit_sha256": sha(audit_path),
+        "report_gate_passed": audit.get("report_gate_passed"),
+        "archive_path": str(archive), "archive_sha256": sha(archive),
+        "archive_bytes": archive.stat().st_size,
+        "archive_manifest_path": str(manifest),
+        "archive_manifest_sha256": sha(manifest),
+        "files": tree(DESTINATION), "case_bytes": bytes_in(DESTINATION)})
+
+
 def collect() -> None:
     with (SOURCE / ".campaign.lock").open("a+b") as lock:
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         if not ready() or sha(SOURCE / "config.json") != CONFIG_SHA:
             raise RuntimeError("terminal source or pinned config changed")
-        if DESTINATION.exists():
-            raise FileExistsError(f"canonical case already exists: {DESTINATION}")
         source_hashes = tree(SOURCE)
+        if DESTINATION.exists():
+            seal_existing(source_hashes)
+            return
         source_bytes = bytes_in(SOURCE)
         # Copy + compressed archive may each approach the original raw size.
         if shutil.disk_usage(BASE).free < FLOOR + 2 * source_bytes + HEADROOM:
@@ -126,20 +161,7 @@ def collect() -> None:
             raise RuntimeError("audit/result hash mismatch")
         DESTINATION.parent.mkdir(parents=True, exist_ok=True)
         os.replace(staged, DESTINATION)
-        archive = STAGING_ROOT / "evidence_archives/campaign/HDFS-26.tar.gz"
-        manifest = STAGING_ROOT / "evidence_archives/campaign/HDFS-26.tar.manifest.json"
-        atomic_json(STATE / "terminal-publication.json", {
-            "schema_version": 1, "case_id": CASE, "status": result["status"],
-            "raw_result_sha256": source_hashes["result.json"],
-            "canonical_result_sha256": sha(DESTINATION / "result.json"),
-            "config_sha256": CONFIG_SHA,
-            "audit_sha256": sha(DESTINATION / "offline-causal-audit.json"),
-            "report_gate_passed": audit_result.get("report_gate_passed"),
-            "archive_path": str(archive), "archive_sha256": sha(archive),
-            "archive_bytes": archive.stat().st_size,
-            "archive_manifest_path": str(manifest),
-            "archive_manifest_sha256": sha(manifest),
-            "files": tree(DESTINATION), "case_bytes": bytes_in(DESTINATION)})
+        seal_existing(source_hashes)
 
 
 def main() -> None:
