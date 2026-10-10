@@ -1,0 +1,60 @@
+{
+  "adapter_sha256": "9b3f8d93be1d7297c6d092ddf8406409b95af906ef192c809e0b0b3edc3179bf",
+  "adapter_sources_sha256": [
+    "763a88c0dbcd05d9bcf5728b069008c5932c89aba603414d2c5a06c3baeb9414",
+    "f65a9f7b792fc55b8c542db1aafa82b03aa80fce8228c7393eb136f7d2dc5eb7"
+  ],
+  "case_id": "HDFS-34",
+  "config_sha256": "e9cecd6c2c47bc99202a4dd5451b8641e1e38a208abbf0a4b48975a1c3b0d2d3",
+  "full_campaign_admitted": false,
+  "hadoop_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "new_bug": null,
+  "offline_bytecode_proof": {
+    "original_datanode_class_sha256": "9adbbabe330f09303c5fab84997b68879055cb4f97a9377b4da03a87bc1250cf",
+    "original_minicluster_class_sha256": "c984b9db4e1e76e1ebafe69917e66a32d7f41df754ae0be67a0dba3e729882f6",
+    "transformed_datanode_class_sha256": "b332d98d5e5a05e691dc077e5bb1fe640152e1461f621b36dffd6a7c17f020d2",
+    "transformed_minicluster_class_sha256": "ca46154e7f8737e7cae5e57de29d652bd5ae72c8b80302655377bfcbfef2b633",
+    "verified_hooks": [
+      "MiniDFSCluster.startDataNodes entry: HdfsHooks.dataNodesStartEnter",
+      "MiniDFSCluster.startDataNodes normal and exceptional exits: DataNodesStartScope.close",
+      "DataNode.startDataNode before refreshNamenodes: HdfsHooks.dataNodePreRefresh"
+    ]
+  },
+  "runtime_status": "not_run",
+  "schema_version": 1,
+  "site_sha256": "a43cf63598a9e36f41bb4c8a79fb8b8d4d2272c92135869719d39bf9387d4112",
+  "source_digest": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+  "source_order_proof": {
+    "BPServiceActor.retrieveNamespaceInfo": "v2 bytecode call at @260 is woven and naturally observed; IOException caught by retry loop.",
+    "DataNode.startDataNode": "v3 adapter registers the concrete DataNode and its storage immediately before BlockPoolManager.refreshNamenodes starts BPServiceActor.",
+    "DataStorage.doTransition": "exact @739 branch naturally reached eight times on four named DataNodes and @744 selected throw absent.",
+    "MiniDFSCluster.startDataNodes": "DataNode.instantiateDataNode returns only after DataNode.startDataNode has invoked BlockPoolManager.refreshNamenodes; old adapter registered at later runDatanodeDaemon call."
+  },
+  "stage": "healthy_only_early_datanode_registration_v3",
+  "v2_healthy_archive_sha256": "ab7b86d03d41db7915fb152988de599f990be30dba1cc8f5464e23fd740375ab",
+  "v2_healthy_evidence": {
+    "junit": "1/0/0",
+    "reason_no_fault_go": "All selected versionRequest doors were unknown actor at startup; no same-node strict path was observed.",
+    "rpc_request_send_named_sequences": [
+      22,
+      25,
+      32,
+      37
+    ],
+    "selected_check_count": 8,
+    "selected_check_named_nodes": [
+      "hdfs-cluster-1/dn0",
+      "hdfs-cluster-1/dn1",
+      "hdfs-cluster-1/dn2",
+      "hdfs-cluster-1/dn3"
+    ],
+    "typed_door_actor": "unknown",
+    "typed_door_event_sequences": [
+      21,
+      24,
+      31,
+      36
+    ],
+    "typed_version_request_door_count": 4
+  }
+}
