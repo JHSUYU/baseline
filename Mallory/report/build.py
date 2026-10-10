@@ -4060,11 +4060,16 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = source_gap
             row["source_gap_receipt"] = str(results / "source_gaps" / case_id / "receipt.json")
             row["skipped_no_suitable_cluster_test"] = True
-            if case_id == "HDFS-33":
+            if case_id in {"HDFS-32", "HDFS-33"}:
                 row["source_review_status"] = "existing_junit_reaches_target"
-                row["source_review_classification"] = (
-                    "no_existing_junit_and_pinned_typed_io_fault_model_combines_"
-                    "retained_builder_with_same_bpid_map_removal")
+                row["source_review_classification"] = {
+                    "HDFS-32": (
+                        "no_existing_junit_and_pinned_typed_io_fault_model_"
+                        "changes_bpid2_mapping_while_retaining_target"),
+                    "HDFS-33": (
+                        "no_existing_junit_and_pinned_typed_io_fault_model_"
+                        "combines_retained_builder_with_same_bpid_map_removal"),
+                }[case_id]
         elif source_gap == "invalid_source_gap":
             row["source_gap_error"] = "source-gap receipt or healthy evidence mismatch"
         if source_gap is None:
