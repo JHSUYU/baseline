@@ -1,0 +1,1794 @@
+{
+  "case_id": "SOLR-39",
+  "case_local_novelty": {
+    "closure_coverage": 0,
+    "coverage": 0,
+    "observed_reference_edges": 0
+  },
+  "case_local_valid": false,
+  "dispatch_attempt_id": "solr39-v5-8b913e273f6f4067bcf4aa3da46a1558",
+  "elapsed_seconds": 49.236,
+  "events_evidence": {
+    "gzip_bytes": 1099146,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "c781dbabf03c230a547db024d43258a833fad16a8a2b721287da1b05ae2d76c1",
+    "raw_bytes": 24781177,
+    "raw_path": null,
+    "raw_sha256": "26c06c4770f7b825e1166a62c70c6843ec16c19b464f4d5725024714a2aca4c4"
+  },
+  "events_sha256": "26c06c4770f7b825e1166a62c70c6843ec16c19b464f4d5725024714a2aca4c4",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": true,
+    "all_faults_matched": true,
+    "applied_fault_ids": [
+      "solr39_v5_node3_0_13"
+    ],
+    "closure_coverage_ids": [],
+    "closure_edges": [
+      {
+        "certainty": "observed",
+        "consumer_event": "SOLR-39-r0002:32889",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "SOLR-39-r0002:32888",
+        "source": "[\"client\",\"0\",\"unscoped:client:0:root:thread:22:segment:1179\"]",
+        "target": "[\"node4\",\"0\",\"unscoped:node4:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:thread:215:segment:53\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "SOLR-39-r0002:28499",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "SOLR-39-r0002:28446",
+        "source": "[\"node1\",\"0\",\"unscoped:node1:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:thread:324:segment:63\"]",
+        "target": "[\"node1\",\"0\",\"node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1\"]"
+      },
+      {
+        "certainty": "candidate",
+        "consumer_event": "SOLR-39-r0002:28500",
+        "evidence": "sampled_version:object,key,version",
+        "kind": "state",
+        "producer_event": "SOLR-39-r0002:28491",
+        "source": "[\"node1\",\"0\",\"unscoped:node1:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:thread:324:segment:65\"]",
+        "target": "[\"node1\",\"0\",\"node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "SOLR-39-r0002:32942",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "SOLR-39-r0002:32889",
+        "source": "[\"node4\",\"0\",\"unscoped:node4:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:thread:215:segment:53\"]",
+        "target": "[\"node4\",\"0\",\"node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:1\"]"
+      },
+      {
+        "certainty": "candidate",
+        "consumer_event": "SOLR-39-r0002:32943",
+        "evidence": "sampled_version:object,key,version",
+        "kind": "state",
+        "producer_event": "SOLR-39-r0002:32935",
+        "source": "[\"node4\",\"0\",\"unscoped:node4:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:thread:215:segment:55\"]",
+        "target": "[\"node4\",\"0\",\"node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:1\"]"
+      }
+    ],
+    "closure_occurrences": [
+      "[\"client\",\"0\",\"unscoped:client:0:root:thread:22:segment:1179\"]",
+      "[\"node1\",\"0\",\"node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1\"]",
+      "[\"node1\",\"0\",\"unscoped:node1:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:thread:324:segment:63\"]",
+      "[\"node1\",\"0\",\"unscoped:node1:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:thread:324:segment:65\"]",
+      "[\"node4\",\"0\",\"node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:1\"]",
+      "[\"node4\",\"0\",\"unscoped:node4:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:thread:215:segment:53\"]",
+      "[\"node4\",\"0\",\"unscoped:node4:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:thread:215:segment:55\"]"
+    ],
+    "coverage_ids": [
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V",
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@307:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@332:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@332:branch:3:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@339:branch:4:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@339:branch:5:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@494:branch:6:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#<init>(Lorg/apache/solr/core/CoreContainer;Ljava/lang/String;ILorg/apache/solr/core/CloudConfig;Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@494:branch:7:TAKEN",
+      "org.apache.solr.cloud.ZkController#access$1100(Lorg/apache/solr/cloud/ZkController;Ljava/lang/String;)Z",
+      "org.apache.solr.cloud.ZkController#access$1200(Lorg/apache/solr/cloud/ZkController;Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)V",
+      "org.apache.solr.cloud.ZkController#access$1300(Lorg/apache/solr/cloud/ZkController;Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/solr/common/cloud/Replica;",
+      "org.apache.solr.cloud.ZkController#access$200(Lorg/apache/solr/cloud/ZkController;)Lorg/apache/solr/common/cloud/SolrZkClient;",
+      "org.apache.solr.cloud.ZkController#access$900(Lorg/apache/solr/cloud/ZkController;Ljava/lang/String;Ljava/lang/Runnable;)V",
+      "org.apache.solr.cloud.ZkController#addOnReconnectListener(Lorg/apache/solr/common/cloud/OnReconnect;)V",
+      "org.apache.solr.cloud.ZkController#addOnReconnectListener(Lorg/apache/solr/common/cloud/OnReconnect;)V@2432:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#bootstrapDefaultConfigSet(Lorg/apache/solr/common/cloud/SolrZkClient;)V",
+      "org.apache.solr.cloud.ZkController#bootstrapDefaultConfigSet(Lorg/apache/solr/common/cloud/SolrZkClient;)V@885:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#bootstrapDefaultConfigSet(Lorg/apache/solr/common/cloud/SolrZkClient;)V@885:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#bootstrapDefaultConfigSet(Lorg/apache/solr/common/cloud/SolrZkClient;)V@887:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkChrootPath(Ljava/lang/String;Z)Z",
+      "org.apache.solr.cloud.ZkController#checkChrootPath(Ljava/lang/String;Z)Z@1140:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkChrootPath(Ljava/lang/String;Z)Z@1149:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkForExistingEphemeralNode()V",
+      "org.apache.solr.cloud.ZkController#checkForExistingEphemeralNode()V@1006:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkForExistingEphemeralNode()V@1012:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#checkIfCoreNodeNameAlreadyExists(Lorg/apache/solr/core/CoreDescriptor;)Z",
+      "org.apache.solr.cloud.ZkController#checkIfCoreNodeNameAlreadyExists(Lorg/apache/solr/core/CoreDescriptor;)Z@2776:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#checkIfCoreNodeNameAlreadyExists(Lorg/apache/solr/core/CoreDescriptor;)Z@2779:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#checkIfCoreNodeNameAlreadyExists(Lorg/apache/solr/core/CoreDescriptor;)Z@2782:branch:3:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#checkIfCoreNodeNameAlreadyExists(Lorg/apache/solr/core/CoreDescriptor;)Z@2782:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkOverseerDesignate()V",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z@1562:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z@1567:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z@1567:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z@1569:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z@1573:branch:7:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z@1582:branch:10:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkRecovery(ZZZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Lorg/apache/solr/core/CoreContainer;Z)Z@1582:branch:9:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#checkStateInZk(Lorg/apache/solr/core/CoreDescriptor;)V",
+      "org.apache.solr.cloud.ZkController#checkStateInZk(Lorg/apache/solr/core/CoreDescriptor;)V@1940:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#checkStateInZk(Lorg/apache/solr/core/CoreDescriptor;)V@1943:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#checkStateInZk(Lorg/apache/solr/core/CoreDescriptor;)V@1955:branch:5:TAKEN",
+      "org.apache.solr.cloud.ZkController#close()V",
+      "org.apache.solr.cloud.ZkController#close()V@638:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#close()V@683:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#close()V@683:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#createClusterZkNodes(Lorg/apache/solr/common/cloud/SolrZkClient;)V",
+      "org.apache.solr.cloud.ZkController#createClusterZkNodes(Lorg/apache/solr/common/cloud/SolrZkClient;)V@863:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#createClusterZkNodes(Lorg/apache/solr/common/cloud/SolrZkClient;)V@863:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#createClusterZkNodes(Lorg/apache/solr/common/cloud/SolrZkClient;)V@865:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#createClusterZkNodes(Lorg/apache/solr/common/cloud/SolrZkClient;)V@865:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#createEphemeralLiveNode()V",
+      "org.apache.solr.cloud.ZkController#createEphemeralLiveNode()V@1164:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#createEphemeralLiveNode()V@1176:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#createEphemeralLiveNode()V@1191:branch:4:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#createEphemeralLiveNode()V@1191:branch:4:TAKEN",
+      "org.apache.solr.cloud.ZkController#doGetShardIdAndNodeNameProcess(Lorg/apache/solr/core/CoreDescriptor;)V",
+      "org.apache.solr.cloud.ZkController#doGetShardIdAndNodeNameProcess(Lorg/apache/solr/core/CoreDescriptor;)V@1797:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#ensureRegisteredSearcher(Lorg/apache/solr/core/SolrCore;)V",
+      "org.apache.solr.cloud.ZkController#ensureRegisteredSearcher(Lorg/apache/solr/core/SolrCore;)V@2851:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#ensureRegisteredSearcher(Lorg/apache/solr/core/SolrCore;)V@2853:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#ensureRegisteredSearcher(Lorg/apache/solr/core/SolrCore;)V@2854:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#ensureRegisteredSearcher(Lorg/apache/solr/core/SolrCore;)V@2899:branch:13:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#ensureRegisteredSearcher(Lorg/apache/solr/core/SolrCore;)V@2900:branch:14:TAKEN",
+      "org.apache.solr.cloud.ZkController#fireEventListeners(Ljava/lang/String;)Z",
+      "org.apache.solr.cloud.ZkController#fireEventListeners(Ljava/lang/String;)Z@2658:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#fireEventListeners(Ljava/lang/String;)Z@2658:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#fireEventListeners(Ljava/lang/String;)Z@2663:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#fireEventListeners(Ljava/lang/String;)Z@2668:branch:4:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#fireEventListeners(Ljava/lang/String;)Z@2668:branch:5:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#generateNodeName(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#getBaseUrl()Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#getClusterState()Lorg/apache/solr/common/cloud/ClusterState;",
+      "org.apache.solr.cloud.ZkController#getCollectionTerms(Ljava/lang/String;)Lorg/apache/solr/cloud/ZkCollectionTerms;",
+      "org.apache.solr.cloud.ZkController#getCollectionTerms(Ljava/lang/String;)Lorg/apache/solr/cloud/ZkCollectionTerms;@1729:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#getCollectionTerms(Ljava/lang/String;)Lorg/apache/solr/cloud/ZkCollectionTerms;@1729:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#getConfDirListeners(Ljava/lang/String;)Ljava/util/Set;",
+      "org.apache.solr.cloud.ZkController#getConfDirListeners(Ljava/lang/String;)Ljava/util/Set;@2607:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#getConfDirListeners(Ljava/lang/String;)Ljava/util/Set;@2607:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#getConfDirListeners(Ljava/lang/String;)Ljava/util/Set;@2609:branch:3:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#getConfDirListeners(Ljava/lang/String;)Ljava/util/Set;@2609:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#getConfigDirListener()Lorg/apache/solr/common/cloud/OnReconnect;",
+      "org.apache.solr.cloud.ZkController#getCoreContainer()Lorg/apache/solr/core/CoreContainer;",
+      "org.apache.solr.cloud.ZkController#getCoreNodeName(Lorg/apache/solr/core/CoreDescriptor;)Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#getCoreNodeName(Lorg/apache/solr/core/CoreDescriptor;)Ljava/lang/String;@1866:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#getDefaultConfigDirPath()Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#getDefaultConfigDirPath()Ljava/lang/String;@912:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#getDefaultConfigDirPath()Ljava/lang/String;@912:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#getLeader(Lorg/apache/solr/cloud/CloudDescriptor;I)Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#getLeader(Lorg/apache/solr/cloud/CloudDescriptor;I)Ljava/lang/String;@1442:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#getLeaderProps(Ljava/lang/String;Ljava/lang/String;I)Lorg/apache/solr/common/cloud/ZkCoreNodeProps;",
+      "org.apache.solr.cloud.ZkController#getLeaderProps(Ljava/lang/String;Ljava/lang/String;IZ)Lorg/apache/solr/common/cloud/ZkCoreNodeProps;",
+      "org.apache.solr.cloud.ZkController#getLeaderProps(Ljava/lang/String;Ljava/lang/String;IZ)Lorg/apache/solr/common/cloud/ZkCoreNodeProps;@1493:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#getLeaderProps(Ljava/lang/String;Ljava/lang/String;IZ)Lorg/apache/solr/common/cloud/ZkCoreNodeProps;@1512:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#getLeaderVoteWait()I",
+      "org.apache.solr.cloud.ZkController#getNodeName()Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#getOverseer()Lorg/apache/solr/cloud/Overseer;",
+      "org.apache.solr.cloud.ZkController#getOverseerCollectionQueue()Lorg/apache/solr/cloud/OverseerTaskQueue;",
+      "org.apache.solr.cloud.ZkController#getOverseerConfigSetQueue()Lorg/apache/solr/cloud/OverseerTaskQueue;",
+      "org.apache.solr.cloud.ZkController#getReplicaOrNull(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/solr/common/cloud/Replica;",
+      "org.apache.solr.cloud.ZkController#getReplicaOrNull(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/solr/common/cloud/Replica;@1387:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#getReplicaOrNull(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/solr/common/cloud/Replica;@1390:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#getReplicaOrNull(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/solr/common/cloud/Replica;@1393:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#getReplicaOrNull(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;Ljava/lang/String;)Lorg/apache/solr/common/cloud/Replica;@1394:branch:4:TAKEN",
+      "org.apache.solr.cloud.ZkController#getShardTerms(Ljava/lang/String;Ljava/lang/String;)Lorg/apache/solr/cloud/ZkShardTerms;",
+      "org.apache.solr.cloud.ZkController#getSolrCloudManager()Lorg/apache/solr/client/solrj/cloud/SolrCloudManager;",
+      "org.apache.solr.cloud.ZkController#getSolrCloudManager()Lorg/apache/solr/client/solrj/cloud/SolrCloudManager;@751:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#getSolrCloudManager()Lorg/apache/solr/client/solrj/cloud/SolrCloudManager;@751:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#getSolrCloudManager()Lorg/apache/solr/client/solrj/cloud/SolrCloudManager;@755:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#getSysPropsCacher()Lorg/apache/solr/common/cloud/NodesSysPropsCacher;",
+      "org.apache.solr.cloud.ZkController#getZkClient()Lorg/apache/solr/common/cloud/SolrZkClient;",
+      "org.apache.solr.cloud.ZkController#getZkServerAddress()Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#getZkStateReader()Lorg/apache/solr/common/cloud/ZkStateReader;",
+      "org.apache.solr.cloud.ZkController#init(Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V",
+      "org.apache.solr.cloud.ZkController#init(Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@970:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#init(Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@981:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#init(Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@981:branch:3:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#init(Lorg/apache/solr/cloud/CurrentCoreDescriptorProvider;)V@981:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#joinElection(Lorg/apache/solr/core/CoreDescriptor;ZZ)V",
+      "org.apache.solr.cloud.ZkController#joinElection(Lorg/apache/solr/core/CoreDescriptor;ZZ)V@1530:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#lambda$checkStateInZk$13(Ljava/util/concurrent/atomic/AtomicReference;Lorg/apache/solr/cloud/CloudDescriptor;Ljava/util/concurrent/atomic/AtomicReference;Ljava/lang/String;Lorg/apache/solr/common/cloud/DocCollection;)Z",
+      "org.apache.solr.cloud.ZkController#lambda$checkStateInZk$13(Ljava/util/concurrent/atomic/AtomicReference;Lorg/apache/solr/cloud/CloudDescriptor;Ljava/util/concurrent/atomic/AtomicReference;Ljava/lang/String;Lorg/apache/solr/common/cloud/DocCollection;)Z@1964:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#lambda$checkStateInZk$13(Ljava/util/concurrent/atomic/AtomicReference;Lorg/apache/solr/cloud/CloudDescriptor;Ljava/util/concurrent/atomic/AtomicReference;Ljava/lang/String;Lorg/apache/solr/common/cloud/DocCollection;)Z@1967:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#lambda$checkStateInZk$13(Ljava/util/concurrent/atomic/AtomicReference;Lorg/apache/solr/cloud/CloudDescriptor;Ljava/util/concurrent/atomic/AtomicReference;Ljava/lang/String;Lorg/apache/solr/common/cloud/DocCollection;)Z@1972:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#lambda$close$3()V",
+      "org.apache.solr.cloud.ZkController#lambda$close$4()V",
+      "org.apache.solr.cloud.ZkController#lambda$close$5()V",
+      "org.apache.solr.cloud.ZkController#lambda$close$6()V",
+      "org.apache.solr.cloud.ZkController#lambda$close$7()V",
+      "org.apache.solr.cloud.ZkController#lambda$fireEventListeners$16(Ljava/lang/String;Ljava/util/Set;)V",
+      "org.apache.solr.cloud.ZkController#lambda$fireEventListeners$16(Ljava/lang/String;Ljava/util/Set;)V@2673:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#lambda$fireEventListeners$16(Ljava/lang/String;Ljava/util/Set;)V@2673:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#lambda$preClose$1()V",
+      "org.apache.solr.cloud.ZkController#lambda$preClose$2()V",
+      "org.apache.solr.cloud.ZkController#lambda$register$12(Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/DocCollection;)Z",
+      "org.apache.solr.cloud.ZkController#lambda$register$12(Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/DocCollection;)Z@1268:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#lambda$registerLiveNodesListener$10(Ljava/util/SortedSet;Ljava/util/SortedSet;)Z",
+      "org.apache.solr.cloud.ZkController#lambda$registerLiveNodesListener$10(Ljava/util/SortedSet;Ljava/util/SortedSet;)Z@1043:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#lambda$registerLiveNodesListener$10(Ljava/util/SortedSet;Ljava/util/SortedSet;)Z@1043:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#lambda$registerLiveNodesListener$10(Ljava/util/SortedSet;Ljava/util/SortedSet;)Z@1046:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#lambda$touchConfDir$15([B)[B",
+      "org.apache.solr.cloud.ZkController#lambda$touchConfDir$15([B)[B@2543:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#lambda$touchConfDir$15([B)[B@2543:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#normalizeHostName(Ljava/lang/String;)Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#normalizeHostName(Ljava/lang/String;)Ljava/lang/String;@790:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#normalizeHostName(Ljava/lang/String;)Ljava/lang/String;@790:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#normalizeHostName(Ljava/lang/String;)Ljava/lang/String;@820:branch:7:TAKEN",
+      "org.apache.solr.cloud.ZkController#pathExists(Ljava/lang/String;)Z",
+      "org.apache.solr.cloud.ZkController#persistConfigResourceToZooKeeper(Lorg/apache/solr/cloud/ZkSolrResourceLoader;ILjava/lang/String;[BZ)I",
+      "org.apache.solr.cloud.ZkController#persistConfigResourceToZooKeeper(Lorg/apache/solr/cloud/ZkSolrResourceLoader;ILjava/lang/String;[BZ)I@2488:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#preClose()V",
+      "org.apache.solr.cloud.ZkController#preClose()V@613:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#preRegister(Lorg/apache/solr/core/CoreDescriptor;Z)V",
+      "org.apache.solr.cloud.ZkController#preRegister(Lorg/apache/solr/core/CoreDescriptor;Z)V@1886:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#preRegister(Lorg/apache/solr/core/CoreDescriptor;Z)V@1891:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#preRegister(Lorg/apache/solr/core/CoreDescriptor;Z)V@1896:branch:4:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;)V",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1609:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1609:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1611:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1611:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1614:branch:6:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1614:branch:7:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1623:branch:10:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1628:branch:11:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1628:branch:12:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1628:branch:13:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1644:branch:14:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1647:branch:15:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1650:branch:16:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1654:branch:17:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1654:branch:17:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1654:branch:18:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1657:branch:19:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1657:branch:19:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1657:branch:20:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1667:branch:23:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1667:branch:23:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1667:branch:24:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1675:branch:28:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1680:branch:30:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1680:branch:30:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1680:branch:31:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1686:branch:32:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1686:branch:32:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1690:branch:33:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1690:branch:33:TAKEN",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1690:branch:34:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1695:branch:35:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publish(Lorg/apache/solr/core/CoreDescriptor;Lorg/apache/solr/common/cloud/Replica$State;ZZ)V@1695:branch:36:TAKEN",
+      "org.apache.solr.cloud.ZkController#publishAndWaitForDownStates()V",
+      "org.apache.solr.cloud.ZkController#publishAndWaitForDownStates(I)V",
+      "org.apache.solr.cloud.ZkController#publishAndWaitForDownStates(I)V@1099:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#publishAndWaitForDownStates(I)V@1104:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#publishAndWaitForDownStates(I)V@1125:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2802:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2802:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2805:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2806:branch:3:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2807:branch:4:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2808:branch:5:TAKEN",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2822:branch:6:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2822:branch:7:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2832:branch:8:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#publishNodeAsDown(Ljava/lang/String;)V@2832:branch:8:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1263:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1263:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1267:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1273:branch:4:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1278:branch:5:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1290:branch:6:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:branch:10:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:branch:10:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:branch:11:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1315:branch:9:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1325:branch:12:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1330:branch:13:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1331:branch:15:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1338:branch:17:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1338:branch:18:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1338:branch:19:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1338:branch:20:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1341:branch:21:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1343:branch:23:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1350:branch:24:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1358:branch:25:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1359:branch:26:TAKEN",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1365:branch:27:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1370:branch:28:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1370:branch:29:TAKEN",
+      "org.apache.solr.cloud.ZkController#registerConfListenerForCore(Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Ljava/lang/Runnable;)V",
+      "org.apache.solr.cloud.ZkController#registerConfListenerForCore(Ljava/lang/String;Lorg/apache/solr/core/SolrCore;Ljava/lang/Runnable;)V@2586:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#registerLiveNodesListener()V",
+      "org.apache.solr.cloud.ZkController#removeEphemeralLiveNode()V",
+      "org.apache.solr.cloud.ZkController#removeEphemeralLiveNode()V@1207:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#removeOnReconnectListener(Lorg/apache/solr/common/cloud/OnReconnect;)V",
+      "org.apache.solr.cloud.ZkController#removeOnReconnectListener(Lorg/apache/solr/common/cloud/OnReconnect;)V@2444:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#removeOnReconnectListener(Lorg/apache/solr/common/cloud/OnReconnect;)V@2449:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#repairSecurityJson(Lorg/apache/solr/common/cloud/SolrZkClient;)V",
+      "org.apache.solr.cloud.ZkController#repairSecurityJson(Lorg/apache/solr/common/cloud/SolrZkClient;)V@927:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#repairSecurityJson(Lorg/apache/solr/common/cloud/SolrZkClient;)V@929:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#repairSecurityJson(Lorg/apache/solr/common/cloud/SolrZkClient;)V@944:branch:5:TAKEN",
+      "org.apache.solr.cloud.ZkController#setConfWatcher(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)V",
+      "org.apache.solr.cloud.ZkController#setConfWatcher(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)V@2690:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#setConfWatcher(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)V@2690:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#setConfWatcher(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)V@2690:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#touchConfDir(Lorg/apache/solr/cloud/ZkSolrResourceLoader;)V",
+      "org.apache.solr.cloud.ZkController#trimLeadingAndTrailingSlashes(Ljava/lang/String;)Ljava/lang/String;",
+      "org.apache.solr.cloud.ZkController#trimLeadingAndTrailingSlashes(Ljava/lang/String;)Ljava/lang/String;@2291:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#trimLeadingAndTrailingSlashes(Ljava/lang/String;)Ljava/lang/String;@2294:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#trimLeadingAndTrailingSlashes(Ljava/lang/String;)Ljava/lang/String;@2294:branch:2:TAKEN",
+      "org.apache.solr.cloud.ZkController#trimLeadingAndTrailingSlashes(Ljava/lang/String;)Ljava/lang/String;@2297:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#tryCancelAllElections()V",
+      "org.apache.solr.cloud.ZkController#tryCancelAllElections()V@1993:branch:1:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;)V",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)V",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)V@1751:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)V@1757:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)V@1759:branch:4:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)V@1759:branch:5:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)V@1762:branch:6:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#unregister(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;Z)V@1767:branch:7:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#unregisterConfListener(Ljava/lang/String;Ljava/lang/Runnable;)V",
+      "org.apache.solr.cloud.ZkController#unregisterConfListener(Ljava/lang/String;Ljava/lang/Runnable;)V@2564:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#unregisterConfListener(Ljava/lang/String;Ljava/lang/Runnable;)V@2568:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#unregisterConfListener(Ljava/lang/String;Ljava/lang/Runnable;)V@2571:branch:3:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#unregisterConfListener(Ljava/lang/String;Ljava/lang/Runnable;)V@2571:branch:3:TAKEN",
+      "org.apache.solr.cloud.ZkController#updateStateDotJson(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;)Z",
+      "org.apache.solr.cloud.ZkController#updateStateDotJson(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;)Z@1710:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#updateStateDotJson(Lorg/apache/solr/common/cloud/DocCollection;Ljava/lang/String;)Z@1711:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#waitForShardId(Lorg/apache/solr/core/CoreDescriptor;)V",
+      "org.apache.solr.cloud.ZkController#waitForShardId(Lorg/apache/solr/core/CoreDescriptor;)V@1842:branch:1:TAKEN",
+      "org.apache.solr.cloud.ZkController#waitForShardId(Lorg/apache/solr/core/CoreDescriptor;)V@1846:branch:2:FALLTHROUGH",
+      "org.apache.solr.cloud.ZkController#waitForShardId(Lorg/apache/solr/core/CoreDescriptor;)V@1848:branch:3:FALLTHROUGH",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#<init>(Lorg/apache/solr/common/cloud/ZkStateReader;)V",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V@2233:branch:1:TAKEN",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V@2247:branch:4:FALLTHROUGH",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V@2252:branch:5:TAKEN",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#applyModificationAndExportToZk(Ljava/util/function/UnaryOperator;)V@2271:branch:6:TAKEN",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#getAliases()Lorg/apache/solr/common/cloud/Aliases;",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2304:branch:1:TAKEN",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2337:branch:1:FALLTHROUGH",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2337:branch:2:TAKEN",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2340:branch:3:FALLTHROUGH",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2340:branch:3:TAKEN",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:4:FALLTHROUGH",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:5:FALLTHROUGH",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#setIfNewer(Lorg/apache/solr/common/cloud/Aliases;)Z@2347:branch:6:TAKEN",
+      "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#update()Z",
+      "org.apache.solr.servlet.SolrDispatchFilter#<init>()V",
+      "org.apache.solr.servlet.SolrDispatchFilter#<init>()V@113:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#access$000()Ljava/lang/String;",
+      "org.apache.solr.servlet.SolrDispatchFilter#access$100(Lorg/apache/solr/servlet/SolrDispatchFilter;)Z",
+      "org.apache.solr.servlet.SolrDispatchFilter#authenticateRequest(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/util/concurrent/atomic/AtomicReference;)Z",
+      "org.apache.solr.servlet.SolrDispatchFilter#authenticateRequest(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/util/concurrent/atomic/AtomicReference;)Z@505:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#authenticateRequest(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Ljava/util/concurrent/atomic/AtomicReference;)Z@506:branch:2:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#close()V",
+      "org.apache.solr.servlet.SolrDispatchFilter#close()V@345:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#close()V@357:branch:2:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#closeOnDestroy(Z)V",
+      "org.apache.solr.servlet.SolrDispatchFilter#closeShield(Ljavax/servlet/http/HttpServletRequest;Z)Ljavax/servlet/http/HttpServletRequest;",
+      "org.apache.solr.servlet.SolrDispatchFilter#closeShield(Ljavax/servlet/http/HttpServletRequest;Z)Ljavax/servlet/http/HttpServletRequest;@633:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#closeShield(Ljavax/servlet/http/HttpServletResponse;Z)Ljavax/servlet/http/HttpServletResponse;",
+      "org.apache.solr.servlet.SolrDispatchFilter#closeShield(Ljavax/servlet/http/HttpServletResponse;Z)Ljavax/servlet/http/HttpServletResponse;@668:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#computeSolrHome(Ljavax/servlet/FilterConfig;)Ljava/nio/file/Path;",
+      "org.apache.solr.servlet.SolrDispatchFilter#computeSolrHome(Ljavax/servlet/FilterConfig;)Ljava/nio/file/Path;@287:branch:1:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#consumeInputFully(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V",
+      "org.apache.solr.servlet.SolrDispatchFilter#consumeInputFully(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V@475:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#consumeInputFully(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V@475:branch:1:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#consumeInputFully(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;)V@475:branch:2:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#createCoreContainer(Ljava/nio/file/Path;Ljava/util/Properties;)Lorg/apache/solr/core/CoreContainer;",
+      "org.apache.solr.servlet.SolrDispatchFilter#destroy()V",
+      "org.apache.solr.servlet.SolrDispatchFilter#destroy()V@336:branch:1:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;)V",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@371:branch:1:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@378:branch:2:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@378:branch:3:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@392:branch:6:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@393:branch:7:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@393:branch:7:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@395:branch:8:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@407:branch:11:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@421:branch:12:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@424:branch:15:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@428:branch:16:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@438:branch:18:CASE:7",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@459:branch:19:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#doFilter(Ljavax/servlet/ServletRequest;Ljavax/servlet/ServletResponse;Ljavax/servlet/FilterChain;Z)V@460:branch:20:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#getCores()Lorg/apache/solr/core/CoreContainer;",
+      "org.apache.solr.servlet.SolrDispatchFilter#getHttpSolrCall(Ljavax/servlet/http/HttpServletRequest;Ljavax/servlet/http/HttpServletResponse;Z)Lorg/apache/solr/servlet/HttpSolrCall;",
+      "org.apache.solr.servlet.SolrDispatchFilter#getSolrPort()Ljava/lang/String;",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@151:branch:1:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@162:branch:2:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@169:branch:3:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@173:branch:5:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@179:branch:6:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@182:branch:7:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@182:branch:7:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@193:branch:8:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#init(Ljavax/servlet/FilterConfig;)V@198:branch:9:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#isCloudMode()Z",
+      "org.apache.solr.servlet.SolrDispatchFilter#isCloudMode()Z@278:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#isCloudMode()Z@278:branch:2:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#isCloudMode()Z@279:branch:3:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#loadNodeConfig(Ljava/nio/file/Path;Ljava/util/Properties;)Lorg/apache/solr/core/NodeConfig;",
+      "org.apache.solr.servlet.SolrDispatchFilter#loadNodeConfig(Ljava/nio/file/Path;Ljava/util/Properties;)Lorg/apache/solr/core/NodeConfig;@307:branch:1:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#loadNodeConfig(Ljava/nio/file/Path;Ljava/util/Properties;)Lorg/apache/solr/core/NodeConfig;@312:branch:2:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#loadNodeConfig(Ljava/nio/file/Path;Ljava/util/Properties;)Lorg/apache/solr/core/NodeConfig;@316:branch:3:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#loadNodeConfig(Ljava/nio/file/Path;Ljava/util/Properties;)Lorg/apache/solr/core/NodeConfig;@321:branch:4:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#loadNodeConfig(Ljava/nio/file/Path;Ljava/util/Properties;)Lorg/apache/solr/core/NodeConfig;@321:branch:5:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#logWelcomeBanner()V",
+      "org.apache.solr.servlet.SolrDispatchFilter#logWelcomeBanner()V@243:branch:1:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#logWelcomeBanner()V@246:branch:2:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#logWelcomeBanner()V@247:branch:3:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#logWelcomeBanner()V@249:branch:4:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#logWelcomeBanner()V@252:branch:5:FALLTHROUGH",
+      "org.apache.solr.servlet.SolrDispatchFilter#setupJvmMetrics(Lorg/apache/solr/core/CoreContainer;)V",
+      "org.apache.solr.servlet.SolrDispatchFilter#shouldAudit(Lorg/apache/solr/security/AuditEvent$EventType;)Z",
+      "org.apache.solr.servlet.SolrDispatchFilter#shouldAudit(Lorg/apache/solr/security/AuditEvent$EventType;)Z@619:branch:1:TAKEN",
+      "org.apache.solr.servlet.SolrDispatchFilter#solrVersion()Ljava/lang/String;",
+      "org.apache.solr.servlet.SolrDispatchFilter#solrVersion()Ljava/lang/String;@261:branch:1:FALLTHROUGH",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#<init>(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;Lorg/apache/solr/cloud/api/collections/RoutedAlias;)V",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#<init>(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;Lorg/apache/solr/cloud/api/collections/RoutedAlias;)V@142:branch:1:FALLTHROUGH",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#<init>(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;Lorg/apache/solr/cloud/api/collections/RoutedAlias;)V@142:branch:2:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#doClose()V",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#finish()V",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#finish()V@216:branch:1:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#getAliasName()Ljava/lang/String;",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#getAliasProps(Lorg/apache/solr/request/SolrQueryRequest;Ljava/lang/String;)Ljava/util/Map;",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#getAliasProps(Lorg/apache/solr/request/SolrQueryRequest;Ljava/lang/String;)Ljava/util/Map;@132:branch:1:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#getLeaderNode(Ljava/lang/String;Lorg/apache/solr/common/cloud/Slice;)Lorg/apache/solr/update/SolrCmdDistributor$Node;",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#getLeaderNode(Ljava/lang/String;Lorg/apache/solr/common/cloud/Slice;)Lorg/apache/solr/update/SolrCmdDistributor$Node;@264:branch:1:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeaderOfCollection(Ljava/lang/String;)Lorg/apache/solr/update/SolrCmdDistributor$Node;",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeaderOfCollection(Ljava/lang/String;)Lorg/apache/solr/update/SolrCmdDistributor$Node;@254:branch:1:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;@246:branch:1:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#processAdd(Lorg/apache/solr/update/AddUpdateCommand;)V",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#processAdd(Lorg/apache/solr/update/AddUpdateCommand;)V@183:branch:1:FALLTHROUGH",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#processAdd(Lorg/apache/solr/update/AddUpdateCommand;)V@183:branch:1:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#processCommit(Lorg/apache/solr/update/CommitUpdateCommand;)V",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#routeDocToSlice(Ljava/lang/String;Lorg/apache/solr/common/SolrInputDocument;)Lorg/apache/solr/update/SolrCmdDistributor$Node;",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#routeDocToSlice(Ljava/lang/String;Lorg/apache/solr/common/SolrInputDocument;)Lorg/apache/solr/update/SolrCmdDistributor$Node;@236:branch:1:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#routeDocToSlice(Ljava/lang/String;Lorg/apache/solr/common/SolrInputDocument;)Lorg/apache/solr/update/SolrCmdDistributor$Node;@237:branch:2:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;@106:branch:2:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;@113:branch:3:FALLTHROUGH",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;@113:branch:4:FALLTHROUGH",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;@113:branch:4:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;@113:branch:5:FALLTHROUGH",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;@113:branch:5:TAKEN",
+      "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#wrap(Lorg/apache/solr/request/SolrQueryRequest;Lorg/apache/solr/update/processor/UpdateRequestProcessor;)Lorg/apache/solr/update/processor/UpdateRequestProcessor;@97:branch:1:FALLTHROUGH"
+    ],
+    "coverage_ref_errors": [],
+    "doors": [
+      {
+        "event_id": "SOLR-39-r0002:3192",
+        "event_seq": 3192,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3195",
+        "event_seq": 3195,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3196",
+        "event_seq": 3196,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3197",
+        "event_seq": 3197,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3198",
+        "event_seq": 3198,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3874",
+        "event_seq": 3874,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3879",
+        "event_seq": 3879,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3882",
+        "event_seq": 3882,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3886",
+        "event_seq": 3886,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:3887",
+        "event_seq": 3887,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:4660",
+        "event_seq": 4660,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:4663",
+        "event_seq": 4663,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:4670",
+        "event_seq": 4670,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:4671",
+        "event_seq": 4671,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:4672",
+        "event_seq": 4672,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:5325",
+        "event_seq": 5325,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:5327",
+        "event_seq": 5327,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:5329",
+        "event_seq": 5329,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:5331",
+        "event_seq": 5331,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:5333",
+        "event_seq": 5333,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:7706",
+        "event_seq": 7706,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:7712",
+        "event_seq": 7712,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:7716",
+        "event_seq": 7716,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:7720",
+        "event_seq": 7720,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:7723",
+        "event_seq": 7723,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:8360",
+        "event_seq": 8360,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:8362",
+        "event_seq": 8362,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:8371",
+        "event_seq": 8371,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:8376",
+        "event_seq": 8376,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:8380",
+        "event_seq": 8380,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15337",
+        "event_seq": 15337,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15347",
+        "event_seq": 15347,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15352",
+        "event_seq": 15352,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15359",
+        "event_seq": 15359,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15362",
+        "event_seq": 15362,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15448",
+        "event_seq": 15448,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15460",
+        "event_seq": 15460,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15483",
+        "event_seq": 15483,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15485",
+        "event_seq": 15485,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:15488",
+        "event_seq": 15488,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:20232",
+        "event_seq": 20232,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:20234",
+        "event_seq": 20234,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:20236",
+        "event_seq": 20236,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:20238",
+        "event_seq": 20238,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:20241",
+        "event_seq": 20241,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21071",
+        "event_seq": 21071,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21078",
+        "event_seq": 21078,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21086",
+        "event_seq": 21086,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21092",
+        "event_seq": 21092,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21094",
+        "event_seq": 21094,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21606",
+        "event_seq": 21606,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21608",
+        "event_seq": 21608,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21611",
+        "event_seq": 21611,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21615",
+        "event_seq": 21615,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:21616",
+        "event_seq": 21616,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:23196",
+        "event_seq": 23196,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:23208",
+        "event_seq": 23208,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:23210",
+        "event_seq": 23210,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:23218",
+        "event_seq": 23218,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:23224",
+        "event_seq": 23224,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:25695",
+        "event_seq": 25695,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:25702",
+        "event_seq": 25702,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "node3",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:25707",
+        "event_seq": 25707,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:25712",
+        "event_seq": 25712,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:25715",
+        "event_seq": 25715,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:29362",
+        "event_seq": 29362,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:29365",
+        "event_seq": 29365,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:29366",
+        "event_seq": 29366,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:29367",
+        "event_seq": 29367,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:32170",
+        "event_seq": 32170,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "client",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:32174",
+        "event_seq": 32174,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "node4",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:32184",
+        "event_seq": 32184,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "node2",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      },
+      {
+        "event_id": "SOLR-39-r0002:32192",
+        "event_seq": 32192,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "node1",
+          "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+        },
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      }
+    ],
+    "eligible_doors_before_target": 73,
+    "event_count": 46088,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 1858,
+      "candidate_edges_by_kind": {
+        "state": 1858
+      },
+      "edges": 3656,
+      "edges_by_kind": {
+        "program_order": 99,
+        "region_parent": 1427,
+        "rpc": 886,
+        "task": 1244
+      },
+      "gaps": {
+        "region_parent_missing_occurrence": 3,
+        "rpc_ambiguous_consumer": 12,
+        "rpc_consumer_missing_identity": 16,
+        "state_missing_occurrence": 23562,
+        "state_unmatched": 6713,
+        "task_missing_occurrence": 462,
+        "unmatched_parent": 31
+      },
+      "occurrences": 6356
+    },
+    "last_fault_seq": 25705,
+    "matched_fault_ids": [
+      "solr39_v5_node3_0_13"
+    ],
+    "observed_door_events": 89,
+    "pairing_order_valid": true,
+    "qualified_target_throw_evidence": [],
+    "reject_coarse_roots": true,
+    "require_event_time_paths": true,
+    "status": "observed",
+    "target_anchor": "[\"node1\",\"0\",\"node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1\"]",
+    "target_closures": [
+      {
+        "anchor": "[\"node1\",\"0\",\"node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1\"]",
+        "anchor_event_id": "SOLR-39-r0002:28506",
+        "anchor_seq": 28506,
+        "closure_occurrences": [
+          "[\"node1\",\"0\",\"node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1\"]",
+          "[\"node1\",\"0\",\"unscoped:node1:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:thread:324:segment:63\"]",
+          "[\"node1\",\"0\",\"unscoped:node1:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:thread:324:segment:65\"]"
+        ],
+        "epoch": 0,
+        "node": "node1",
+        "occurrence": "node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1"
+      },
+      {
+        "anchor": "[\"node4\",\"0\",\"node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:1\"]",
+        "anchor_event_id": "SOLR-39-r0002:32949",
+        "anchor_seq": 32949,
+        "closure_occurrences": [
+          "[\"client\",\"0\",\"unscoped:client:0:root:thread:22:segment:1179\"]",
+          "[\"node4\",\"0\",\"node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:1\"]",
+          "[\"node4\",\"0\",\"unscoped:node4:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:thread:215:segment:53\"]",
+          "[\"node4\",\"0\",\"unscoped:node4:0:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:thread:215:segment:55\"]"
+        ],
+        "epoch": 0,
+        "node": "node4",
+        "occurrence": "node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:1"
+      }
+    ],
+    "target_exception_candidate": false,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [
+      {
+        "epoch": 0,
+        "node": "node1",
+        "occurrence": "node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1318:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node1",
+        "occurrence": "node1:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1716:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node2",
+        "occurrence": "node2:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1166:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node3",
+        "occurrence": "node3:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:378:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node3",
+        "occurrence": "node3:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:555:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node3",
+        "occurrence": "node3:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:684:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node3",
+        "occurrence": "node3:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:697:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node3",
+        "occurrence": "node3:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:827:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node3",
+        "occurrence": "node3:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:843:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node4",
+        "occurrence": "node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1466:1"
+      },
+      {
+        "epoch": 0,
+        "node": "node4",
+        "occurrence": "node4:0:org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;:544d48f4-3b94-40f8-b8c2-4b5ada68e418:1999:1"
+      }
+    ],
+    "target_reached": true,
+    "target_region_present": true,
+    "target_threw": false,
+    "target_throw_evidence": [],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "9ee39b9e4f79014ac8b845c2926f1f1b213e5b8f93d71cfa12606080d8e6f8a7",
+  "junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 0,
+    "junit_log_sha256": "8e531e308f828b6b65a4654417e32c5f6985eb938d9a5c19534202d691497367",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=0 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "96676b7a9eb8a14d1e755781a0ee06f26b0455d38f890debbde7c1cc26ae5f42",
+    "tests": 1,
+    "wrapper_sha256": "507b1a828de2d437aa31eca0bc7b205be9edebf4d8636a4ca73999944480ed3f"
+  },
+  "plan": [
+    {
+      "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+      "fault_id": "solr39_v5_node3_0_13",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "door_ordinal": 13,
+        "epoch": 0,
+        "node": "node3",
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1"
+      }
+    }
+  ],
+  "return_code": 0,
+  "schema_version": 1,
+  "site_catalog_sha256": "60616d97d5318d1c816393b93ee3a048cc45aaba73f3d9a437063175f4578884",
+  "site_catalog_validation": {
+    "catalog_rows": 8,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "a146513b1cf3bdd7a724fd83ba203021b02348f92adc0d6784c3fa86b286baf0",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "a146513b1cf3bdd7a724fd83ba203021b02348f92adc0d6784c3fa86b286baf0"
+    ],
+    "observed_target_class_sha256": "a146513b1cf3bdd7a724fd83ba203021b02348f92adc0d6784c3fa86b286baf0",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791620862.1355975,
+  "stderr_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 307,
+    "raw_path": "stderr.log",
+    "raw_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14"
+  },
+  "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 7771,
+    "raw_path": "stdout.log",
+    "raw_sha256": "96676b7a9eb8a14d1e755781a0ee06f26b0455d38f890debbde7c1cc26ae5f42"
+  },
+  "stdout_sha256": "96676b7a9eb8a14d1e755781a0ee06f26b0455d38f890debbde7c1cc26ae5f42",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 2
+}

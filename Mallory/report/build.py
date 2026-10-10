@@ -158,6 +158,76 @@ def _solr38_corrected_audit(results: Path, result_path: Path,
         return "invalid", str(receipt_path)
 
 
+def _solr39_offline_completion(results: Path, result_path: Path,
+                               result: dict[str, Any]) -> tuple[str, str | None]:
+    """Bind the finite fault queue to sealed raw bytes and the corrected path audit."""
+    if result.get("case_id") != "SOLR-39":
+        return "not_applicable", None
+    base = Path(__file__).resolve().parents[2]
+    canonical = result_path.parent
+    package = base / "Mallory/adapters/solr/cases/SOLR-39/preemptive-fault-v6"
+    receipt_path = canonical / "canonical-import-receipt.json"
+    audit_path = canonical / "case-local-causal-audit.json"
+    archive = results / "evidence_archives/SOLR-39-preemptive-fault-node1-v5.tar.gz"
+    manifest = results / "evidence_archives/SOLR-39-preemptive-fault-node1-v5.members.json"
+    seal = results / "evidence_archives/SOLR-39-preemptive-fault-node1-v5.receipt.json"
+    try:
+        receipt = _json(receipt_path)
+        audit = _json(audit_path)
+        checkpoint = _json(canonical / "checkpoint.json")
+        depth = _json(canonical / "fault-depth-review.json")
+        if not all(isinstance(item, dict) for item in (receipt, audit, checkpoint, depth)):
+            return "invalid", str(receipt_path)
+        hashes = ((result_path, "result_sha256"),
+                  (canonical / "config.json", "config_sha256"),
+                  (canonical / "checkpoint.json", "checkpoint_sha256"),
+                  (audit_path, "causal_audit_sha256"),
+                  (canonical / "fault-depth-review.json", "depth_review_sha256"),
+                  (canonical / "import-proposal.json", "proposal_sha256"),
+                  (archive, "v5_archive_sha256"),
+                  (manifest, "v5_manifest_sha256"),
+                  (seal, "v5_seal_sha256"),
+                  (package / "reconcile.py", "v6_reconciler_sha256"),
+                  (package / "audit_trial.py", "v6_auditor_sha256"),
+                  (package / "stage-request.json", "v6_stage_sha256"))
+        if any(not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() !=
+               receipt.get(key) for path, key in hashes):
+            return "invalid", str(receipt_path)
+        stages = [item.get("qualification") for item in checkpoint.get("trials", [])]
+        if (receipt.get("completion_criterion") !=
+                "finite_strict_queue_exhausted_after_sealed_reclassification"
+                or not (receipt.get("valid_trials") == checkpoint.get("valid_trials") == [3])
+                or not (receipt.get("invalid_trials") == checkpoint.get("invalid_trials") == [1, 2])
+                or stages != ["postfault_bound_actor_prior_reference_target_missing",
+                              "postfault_bound_actor_prior_reference_target_missing",
+                              "strict_prior_reference_target_retained"]
+                or checkpoint.get("queue") != []
+                or checkpoint.get("completed_fault_trials") != [1, 2, 3]
+                or checkpoint.get("status") != audit.get("status") !=
+                "queue_exhausted_after_strict_reclassification"
+                or audit.get("r0003_exact_prior_reference_witness") != {
+                    "aliases_ref": 81, "cache_write_seq": 32094, "epoch": 0,
+                    "fault_applied_seq": 32106, "manager_object": "o10", "node": "node2",
+                    "observed_edge_kinds": ["program_return", "state_exact_ref"],
+                    "owner_ref": 1, "target_check_seq": 32895,
+                    "target_read_seq": 32892, "zk_version": 15}
+                or audit.get("exact_target_exception_candidates") != []
+                or audit.get("new_bug_confirmed") is not False
+                or audit.get("elapsed_seconds") != 142.739
+                or depth.get("depth_distribution") != {"1": 3}
+                or depth.get("campaign_result_sha256") != receipt["result_sha256"]
+                or result.get("status") != receipt.get("status") != "queue_exhausted"
+                or result.get("fault_trials_completed") != 3
+                or result.get("strict_injected_trials") != 3
+                or result.get("strict_target_trials") != 1
+                or result.get("exact_exception_trials") != 0
+                or result.get("new_bug") is not False):
+            return "invalid", str(receipt_path)
+        return "verified_sealed_queue_exhaustion", str(audit_path)
+    except (OSError, KeyError, TypeError, ValueError):
+        return "invalid", str(receipt_path)
+
+
 def _hdfs48_case_audit(results: Path, result_path: Path,
                        result: dict[str, Any]) -> tuple[str, str | None]:
     """Bind the finite v6 continuation to its case-local postfault path audit."""
@@ -4549,6 +4619,27 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = "invalid_result"
             row["quality_status"] = None
             row["result_error"] = "SOLR-38 sealed offline correction or import receipt mismatch"
+    if case_id == "SOLR-39":
+        completed, completed_receipt = _solr39_offline_completion(results, result_path, result)
+        if completed == "verified_sealed_queue_exhaustion":
+            row["inventory_cluster_test"] = row["cluster_test"]
+            row["cluster_test"] = result["cluster_test"]
+            row["causal_audit"] = completed
+            row["causal_precision_review"] = "observed_prior_reference_path"
+            row["causal_precision_receipt"] = completed_receipt
+            row["quality_status"] = "one_bound_actor_retained_two_bound_actor_lost"
+            row["same_actor_target_trials"] = 1
+            row["fault_depth_distribution"] = {"1": 3}
+            row["fault_depth_review_receipt"] = str(result_path.with_name(
+                "fault-depth-review.json"))
+            row.pop("fault_depth_review_error", None)
+            row["source_review_status"] = "no_exact_target_throw_observed"
+            row["source_review_classification"] = "no_exact_throw_one_prior_reference_path"
+            row["new_bug"] = False
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "SOLR-39 sealed queue, prior-reference audit, or import receipt mismatch"
     if case_id == "HDFS-48":
         checked, checked_receipt = _hdfs48_case_audit(results, result_path, result)
         if checked == "verified_case_local":
