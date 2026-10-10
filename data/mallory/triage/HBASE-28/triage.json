@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "kind": "independent_source_disposition",
+  "case_id": "HBASE-28",
+  "system": "hbase",
+  "source_version": "2.6.6",
+  "source_revision": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_review_status": "expected_guard",
+  "classification": "expected_local_address_guard_after_injected_socket_exception",
+  "new_bug": false,
+  "campaign": {
+    "canonical_result_path": "data/mallory/cases/HBASE-28/result.json",
+    "canonical_result_sha256": "53c21aaa51b1a17e92d1523ea9ca2495bd74ac671d1abcfacd3ef04c86802292",
+    "canonical_audit_path": "data/mallory/cases/HBASE-28/offline-causal-audit.json",
+    "canonical_audit_sha256": "e8ce1785fa1c89b6bfe122ae68400ad34c082a77f38fabdc64135097ec9f5cad",
+    "canonical_import_receipt_path": "data/mallory/cases/HBASE-28/canonical-import-receipt.json",
+    "canonical_import_receipt_sha256": "bdcb9a59716f4af8ee6ef8a979ba2917e967becd39f6e79e4db9b4dda8e2ae70",
+    "raw_root": "data/mallory/campaigns/HBASE-28-nonloopback-master-full-v2",
+    "archive_receipt_path": "data/mallory/evidence_archives/HBASE-28-nonloopback-master-full-v2.receipt.json",
+    "archive_receipt_sha256": "62906f05a733b9bac0b84305aede23a80583b3aac0ec19ac38f78048fcb5e5ac",
+    "terminal_status": "queue_exhausted",
+    "duration_seconds": 71.599,
+    "fault_trials_completed": 3,
+    "strict_injected_trials": 3,
+    "strict_target_trials": 3,
+    "exact_exception_trials": 3,
+    "reproduced_candidate_pairs": [[1, 2], [1, 3]],
+    "audit_report_gate_passed": true,
+    "audit_applied_fault_identity_valid": true,
+    "audit_same_actor_target_trials": 3
+  },
+  "source": {
+    "typed_io": {
+      "path": "hbase-common/src/main/java/org/apache/hadoop/hbase/util/Addressing.java",
+      "sha256": "fc05e62bb8fbb9bd4ecfc24f0cc003f1191d8aa9cb4fe3f500899a3ec61d5b17",
+      "function": "Addressing.isLocalAddress(InetAddress)",
+      "line": 148,
+      "behavior": "For a nonloopback address, NetworkInterface.getByInetAddress is consulted. Addressing catches SocketException and sets local=false."
+    },
+    "target": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+      "sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+      "function": "HRegionServer.putUpWebUI()",
+      "check_line": 2482,
+      "throw_line": 2487,
+      "behavior": "The master reads hbase.master.info.bindAddress. If Addressing.isLocalAddress returns false, this guard deliberately throws an IOException naming that configuration key."
+    },
+    "cluster_test": {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java",
+      "sha256": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b",
+      "selector": "TestRSStatusPage#testStatusPage",
+      "startup_line": 76,
+      "behavior": "@BeforeAll beforeClass starts a LocalHBaseCluster before the test method. Faulted master startup aborts this setup, so each selected test is skipped."
+    }
+  },
+  "healthy_trial": {
+    "trial_id": 0,
+    "junit": "1 passed, 0 failed, 0 errors, 0 skipped",
+    "target_nonthrowing": true,
+    "named_target_actor": "master0",
+    "typed_door_before_target": true,
+    "raw_result_sha256": "613d3032fc0e09d482663496aa3745f7bce0dcb4fabbb7e8cf018b67662d83b7",
+    "raw_trace_sha256": "5b2fe40f2cb4efd237d2bcdf994357b20b651fe36d84698f137ea83dc33006c6"
+  },
+  "candidate_trials": [
+    {
+      "trial_id": 1,
+      "selection_reason": "dynamic_closure",
+      "fault_id": "f9ca23726c17e24c885d3",
+      "fault_applied": "HBASE-28-r0001:4",
+      "target_check": "HBASE-28-r0001:5",
+      "target_throw": "HBASE-28-r0001:6",
+      "actor": "master0",
+      "epoch": 0,
+      "occurrence": "master0:0:org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V:root:1",
+      "thread_id": 1,
+      "target_branch_outcome": "FALLTHROUGH",
+      "target_exception": "java.io.IOException",
+      "junit_status": "no_tests",
+      "junit_skipped": 1,
+      "startup_error": "Failed to start http info server. Address 10.10.1.2 does not belong to this host. Correct configuration parameter: hbase.master.info.bindAddress",
+      "raw_result_sha256": "93e702d7721d690dd885244c854037c138ad791e24f61b1c40362f24adb5030c",
+      "raw_trace_sha256": "cf8872929ad38429c6d0788a31515246e19d5cc0fa5c1dfb0649cf3dd99ea986",
+      "raw_stderr_sha256": "4064c372601224173034c14ea9fc283e5c2f3bd0e8a78ed576543f489a1ac23f"
+    },
+    {
+      "trial_id": 2,
+      "selection_reason": "candidate_replay",
+      "fault_id": "f9ca23726c17e24c885d3",
+      "fault_applied": "HBASE-28-r0002:4",
+      "target_check": "HBASE-28-r0002:5",
+      "target_throw": "HBASE-28-r0002:6",
+      "actor": "master0",
+      "epoch": 0,
+      "occurrence": "master0:0:org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V:root:1",
+      "thread_id": 1,
+      "target_branch_outcome": "FALLTHROUGH",
+      "target_exception": "java.io.IOException",
+      "junit_status": "no_tests",
+      "junit_skipped": 1,
+      "startup_error": "Failed to start http info server. Address 10.10.1.2 does not belong to this host. Correct configuration parameter: hbase.master.info.bindAddress",
+      "raw_result_sha256": "1b51e72364a18775ee6842c2108b6c6125744706c5a1d3ac26aecba8e72ff253",
+      "raw_trace_sha256": "020fd5c47ee150e5601b99e131bd2c10e89764ec99c6efdb1d0284de11e81ee9",
+      "raw_stderr_sha256": "cd5ada30c42cb8cb4301e8c1cebbf77f22b7eadfb8ab773a1141b051555b1eb2"
+    },
+    {
+      "trial_id": 3,
+      "selection_reason": "candidate_replay",
+      "fault_id": "f9ca23726c17e24c885d3",
+      "fault_applied": "HBASE-28-r0003:4",
+      "target_check": "HBASE-28-r0003:5",
+      "target_throw": "HBASE-28-r0003:6",
+      "actor": "master0",
+      "epoch": 0,
+      "occurrence": "master0:0:org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V:root:1",
+      "thread_id": 1,
+      "target_branch_outcome": "FALLTHROUGH",
+      "target_exception": "java.io.IOException",
+      "junit_status": "no_tests",
+      "junit_skipped": 1,
+      "startup_error": "Failed to start http info server. Address 10.10.1.2 does not belong to this host. Correct configuration parameter: hbase.master.info.bindAddress",
+      "raw_result_sha256": "fbad544e84c884fd4396330c46fe2639ac85d5475ee3d6581c5be3c3afec1250",
+      "raw_trace_sha256": "0e1f2cbd0049f08230d19c0616cee01150eb6c72bfe5e6cbcd38ad90c9925cb4",
+      "raw_stderr_sha256": "1178f67a7f49f122cc50a092ecd9d1ba2689e6e095414b41f98bc78e3f9625b9"
+    }
+  ],
+  "source_analysis": [
+    "The case-local classpath config binds the master UI to node1's 10.10.1.2, which passed the fault-free cluster JUnit and reached a nonthrowing named master0 check.",
+    "Each fault trial applies a SocketException at the same Addressing callsite and immediately reaches the same master0 guard and exact IOException throw in one occurrence and thread.",
+    "The injected exception is handled by Addressing's explicit fallback to local=false. The selected guard's IOException and the consequent @BeforeAll startup failure are the behavior this source code specifies.",
+    "The two replays reproduce this expected guard outcome. The archived evidence contains no distinct coordination invariant violation or independent new bug."
+  ]
+}
