@@ -559,6 +559,20 @@ class ReportEvidenceTest(unittest.TestCase):
             self.assertEqual("invalid_fault_model_receipt",
                              _hbase37_source_fault_gap(results, "HBASE-37")[0])
 
+    def test_hbase37_new_cluster_stage_supersedes_old_pending_label(self):
+        from Mallory.report.build import _hbase37_cluster_stage
+        baseline = Path(__file__).resolve().parents[2]
+        relative = Path("Mallory/adapters/hbase/pilot/HBASE-37-cluster-status-v1/full-v1")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shutil.copytree(baseline / relative, root / relative)
+            results = root / "data/mallory"
+            self.assertEqual("pending_seed", _hbase37_cluster_stage(results, "HBASE-37")[0])
+            config = root / relative / "config.json"
+            config.write_bytes(config.read_bytes() + b" ")
+            self.assertEqual("invalid_cluster_stage_receipt",
+                             _hbase37_cluster_stage(results, "HBASE-37")[0])
+
     def test_hdfs48_fault_gap_rechecks_ten_raw_trials(self):
         from Mallory.report.build import _hdfs48_target_retention_gap
         baseline = Path(__file__).resolve().parents[2]

@@ -2218,6 +2218,10 @@ def _hdfs48_target_retention_gap(results: Path, case_id: str) -> tuple[str | Non
                    (healthy, pilot, config, healthy_audit)):
             return invalid
         source_root = Path(review["source_root"]).resolve()
+        if not source_root.is_dir():
+            # The clean smoke worktree was reclaimed for disk space. The
+            # immutable upstream snapshot has the same pinned file bytes.
+            source_root = Path("/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3").resolve()
         for record in review["source_files"]:
             file = (source_root / record["path"]).resolve()
             if (not file.is_relative_to(source_root) or not file.is_file() or
@@ -2363,6 +2367,51 @@ def _hbase37_source_fault_gap(results: Path, case_id: str) -> tuple[str | None, 
         return ("source_review_fault_model_gap" if valid else
                 "invalid_fault_model_receipt"), str(path)
     except (OSError, ValueError, TypeError, KeyError, AttributeError, tarfile.TarError):
+        return invalid
+
+
+def _hbase37_cluster_stage(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Recognize the newer cluster workload without rewriting the older gap."""
+    if case_id != "HBASE-37":
+        return None, None
+    baseline = results.resolve().parent.parent
+    package = baseline / "Mallory/adapters/hbase/pilot/HBASE-37-cluster-status-v1/full-v1"
+    receipt_path = package / "stage-receipt.json"
+    if not receipt_path.is_file():
+        return None, None
+    invalid = ("invalid_cluster_stage_receipt", str(receipt_path))
+    try:
+        receipt = _json(receipt_path)
+        if not isinstance(receipt, dict):
+            return invalid
+        files = {
+            "config.json": "config_sha256",
+            "run_full_node1.sh": "runner_sha256",
+            "preflight.py": "preflight_sha256",
+            "sites.json": "site_sha256",
+            "prior-healthy-result.json": "prior_healthy_result_sha256",
+            "verify_terminal.py": "verifier_sha256",
+        }
+        if any(not (package / name).is_file() or
+               hashlib.sha256((package / name).read_bytes()).hexdigest() != receipt.get(key)
+               for name, key in files.items()):
+            return invalid
+        config = _json(package / "config.json")
+        prior = _json(package / "prior-healthy-result.json")
+        if (receipt.get("schema_version") != 1 or
+                receipt.get("kind") != "immutable_cluster_full_v1_stage" or
+                receipt.get("case_id") != "HBASE-37" or
+                receipt.get("status") != "staged_no_jvm" or
+                receipt.get("jvm_started_from_this_stage") is not False or
+                receipt.get("prior_healthy_evidence", {}).get("exact_target_reached") is not True or
+                config.get("case_id") != "HBASE-37" or
+                config.get("cluster_test") !=
+                "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage" or
+                config.get("budget") != receipt.get("budget") or
+                prior.get("case_id") != "HBASE-37"):
+            return invalid
+        return "pending_seed", str(receipt_path)
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
         return invalid
 
 
@@ -3260,6 +3309,13 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
     elif supplementary is not None:
         row["source_gap_error"] = "independent source review or referenced evidence mismatch"
     if result is None:
+        staged_status, staged_receipt = _hbase37_cluster_stage(results, case_id)
+        if staged_status is not None:
+            row["report_status"] = staged_status
+            row["source_review_status"] = "prior_healthy_exact_target_actor_unknown"
+            row["source_review_receipt"] = staged_receipt
+            row["source_gap_receipt"] = staged_receipt
+            return row
         zk06_status, zk06_receipt = _zk06_retry_guard_gap(results, case_id)
         if zk06_status is not None:
             row["report_status"] = zk06_status
@@ -3577,9 +3633,9 @@ def markdown(report: dict[str, Any]) -> str:
              "continuation and source review identifies no current "
              "target-retaining acceptedEpoch-changing fault; it is not a "
              "completed campaign. "
-             "`source_review_fault_model_gap` records that HBASE37 still lacks "
-             "a named healthy actor and that the current exception skips its "
-             "selected guard. "
+             "HBASE37 `pending_seed` records a newer staged LocalHBaseCluster "
+             "workload; its prior exact target had unknown actor identity and "
+             "the new typed door still needs a fresh healthy run. "
              "`fault_model_no_target_retaining_pretarget_door` records ten "
              "effective HDFS48 faults that all lose the named target. "
              "`fault_model_packet_io_no_target_retention` records that ZK10 "
