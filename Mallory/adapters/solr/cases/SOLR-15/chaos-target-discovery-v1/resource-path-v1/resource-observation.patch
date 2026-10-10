@@ -1,0 +1,80 @@
+--- a/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/Probe.java
++++ b/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/Probe.java
+@@ -463,6 +463,11 @@
+   }
+
+   public static void beforeDoor(String site, String defaultExceptionClass) {
++    beforeDoor(site, defaultExceptionClass, null);
++  }
++
++  /** Observe the exact ZooKeeper path while preserving the original door selector. */
++  public static void beforeDoor(String site, String defaultExceptionClass, String resource) {
+     if (defaultExceptionClass == null || defaultExceptionClass.isEmpty())
+       defaultExceptionClass = "java.io.IOException";
+     Context context = CONTEXT.get();
+@@ -471,7 +476,7 @@
+     long doorOrdinal = increment(DOOR_ORDINALS,
+         context.node + "|" + context.epoch + "|" + site);
+     event("DOOR_OBSERVED", site, fields("hit", hit, "door_ordinal", doorOrdinal,
+-        "fault_type", "EXCEPTION",
++        "fault_type", "EXCEPTION", "resource", resource,
+         "exception_class", defaultExceptionClass));
+     synchronized (plan) {
+       for (FaultPlan.Fault fault : plan.faults) {
+@@ -484,7 +489,7 @@
+         fault.markApplied();
+         Map<String, Object> details = fields("fault_id", fault.fault_id,
+             "fault_type", faultType, "exception_class", exception.getClass().getName(),
+-            "hit", hit, "door_ordinal", doorOrdinal);
++            "hit", hit, "door_ordinal", doorOrdinal, "resource", resource);
+         event("FAULT_MATCHED", site, details);
+         event("FAULT_APPLIED", site, details);
+         Probe.<RuntimeException>throwUnchecked(exception);
+--- a/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/MalloryTransformer.java
++++ b/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/MalloryTransformer.java
+@@ -159,11 +159,21 @@
+           InsnList probe = new InsnList();
+           probe.add(new LdcInsnNode(site));
+           probe.add(new LdcInsnNode(exceptionClass));
+-          probe.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "beforeDoor",
+-              "(Ljava/lang/String;Ljava/lang/String;)V", false));
++          if (isSolrZkResourceDoor(owner, method, call)) {
++            // The pinned retry lambdas capture path as their first String argument.
++            probe.add(new VarInsnNode(Opcodes.ALOAD,
++                (method.access & Opcodes.ACC_STATIC) == 0 ? 1 : 0));
++            probe.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "beforeDoor",
++                "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V", false));
++          } else {
++            probe.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "beforeDoor",
++                "(Ljava/lang/String;Ljava/lang/String;)V", false));
++          }
+           method.instructions.insertBefore(call, probe);
+           Map<String, Object> doorSite = catalogRow("DOOR_OBSERVED", site, line, callee);
+           doorSite.put("exception_class", exceptionClass);
++          if (isSolrZkResourceDoor(owner, method, call))
++            doorSite.put("resource_argument", "first_string_parameter");
+           sites.add(doorSite);
+           changed = true;
+         }
+@@ -253,6 +263,21 @@
+     method.instructions.insert(call, after);
+     method.tryCatchBlocks.add(0,
+         new TryCatchBlockNode(start, end, handler, "java/lang/Throwable"));
++  }
++
++  private static boolean isSolrZkResourceDoor(String owner, MethodNode method,
++                                                MethodInsnNode call) {
++    if (!"org/apache/solr/common/cloud/SolrZkClient".equals(owner)
++        || !"org/apache/solr/common/cloud/SolrZooKeeper".equals(call.owner)) return false;
++    if ("lambda$exists$2".equals(method.name)
++        && "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;".equals(method.desc))
++      return "exists".equals(call.name)
++          && "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;".equals(call.desc);
++    if ("lambda$getData$6".equals(method.name)
++        && "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B".equals(method.desc))
++      return "getData".equals(call.name)
++          && "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B".equals(call.desc);
++    return false;
+   }
+
+   private static Map<String, Object> catalogRow(String type, String site, int line, String callee) {
