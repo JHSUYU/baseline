@@ -81,6 +81,7 @@ def main() -> dict:
     require(config["agent_jar"] == manifest["files"]["role_agent"]["path"] and
             config["agent_properties"]["adapter.jar"] ==
             manifest["files"]["adapter"]["path"] and
+            config["agent_transport"] == "java_tool_options" and
             config["command"] == ["python3", manifest["files"]["v38_junit_runner"]["path"],
                                   "SOLR-09", "--source", str(source), "--output",
                                   "{trial_dir}", "--campaign", "--timeout", "420"] and
@@ -102,7 +103,8 @@ def main() -> dict:
                 f"runtime artifact changed: {path}")
     required_runtime = {manifest["files"][name]["path"] for name in (
         "role_agent", "adapter", "v38_junit_runner", "v38_pilot_runner",
-        "v38_junit_implementation", "v20_inventory", "pilot_junit_source")}
+        "v38_junit_implementation", "v20_inventory", "pilot_junit_source",
+        "v38_wrapper_agent")}
     require({row["path"] for row in config["runtime_artifacts"]} == required_runtime,
             "transitive v38 runner/inventory artifact closure changed")
     inventory = json.loads(Path(manifest["files"]["v20_inventory"]["path"]).read_text())
