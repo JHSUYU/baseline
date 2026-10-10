@@ -96,16 +96,6 @@ def main() -> int:
                                              metadata["config_sha256"])
     if socket.gethostname().split(".", 1)[0] != "node0" or OUT.exists():
         raise ValueError("node0 and a fresh healthy output are required")
-    if shutil.disk_usage(ROOT).free < 6_442_450_944:
-        raise ValueError("insufficient free disk for isolated Solr JUnit")
-    available_kib = next(int(row.split()[1]) for row in
-                         Path("/proc/meminfo").read_text().splitlines()
-                         if row.startswith("MemAvailable:"))
-    if available_kib < 8_388_608:
-        raise ValueError("insufficient available RAM")
-    processes = subprocess.check_output(["ps", "-eo", "user=,comm="], text=True)
-    if any(row.split() == [getpass.getuser(), "java"] for row in processes.splitlines()):
-        raise ValueError("another user JVM is running on node0")
     lock_root = Path("/tmp/mallory-lanes")
     lock_root.mkdir(parents=True, exist_ok=True)
     locks = []
@@ -117,6 +107,16 @@ def main() -> int:
             locks.append(handle)
         if OUT.exists():
             raise ValueError("healthy output appeared while acquiring locks")
+        if shutil.disk_usage(ROOT).free < 7_650_410_496:
+            raise ValueError("insufficient free disk for isolated Solr JUnit")
+        available_kib = next(int(row.split()[1]) for row in
+                             Path("/proc/meminfo").read_text().splitlines()
+                             if row.startswith("MemAvailable:"))
+        if available_kib < 8_388_608:
+            raise ValueError("insufficient available RAM")
+        processes = subprocess.check_output(["ps", "-eo", "user=,comm="], text=True)
+        if any(row.split() == [getpass.getuser(), "java"] for row in processes.splitlines()):
+            raise ValueError("another user JVM is running on node0")
         print(json.dumps({"preflight": "passed", "case_id": "SOLR-15",
                           "mode": "healthy", **metadata}, sort_keys=True), flush=True)
         state = campaign.run(HERE / "config-healthy-node0.json", OUT)
