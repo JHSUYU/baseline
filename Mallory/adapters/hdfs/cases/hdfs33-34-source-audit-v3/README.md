@@ -63,8 +63,9 @@ transition and can abort startup, so it is diagnostic only.
 
 ## Next GO
 
-After HDFS-20 releases the node2 HDFS source/build lane, **admit one
-HDFS-34 healthy-only run** from the staged v2 package, subject to dispatch's
+After HDFS-20 seals and the already queued HDFS-29 v4 and HDFS-30 v4 runs
+release the node2 HDFS source/build lane, **admit one HDFS-34 healthy-only
+run** from the staged v2 package, subject to dispatch's
 normal fresh-output and capacity checks. Require Surefire 1/0/0, the exact
 nonthrowing `@739` guard on a named DataNode and epoch, zero selected `@744`
 throws, loaded class/catalog SHA attestation, and an observed typed
