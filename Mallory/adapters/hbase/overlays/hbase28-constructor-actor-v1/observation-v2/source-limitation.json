@@ -1,0 +1,55 @@
+{
+  "admission": "Healthy JUnit pass and named exact target check validate reachability. Report zero observed predicate-relevant doors or zero strict paths as a source/runtime limitation; do not promote a fault campaign from RPC/HTTP timing or actor-only proximity.",
+  "case_id": "HBASE-28",
+  "cluster_test_facts": [
+    "TestInfoServers.beforeClass sets master/RegionServer info ports to 0, enables the read-only master UI and starts a MiniCluster; it does not set either info.bindAddress key.",
+    "testInfoServersRedirect later fetches the master and RegionServer pages through http://localhost after both putUpWebUI checks have completed."
+  ],
+  "kind": "selected_predicate_physical_door_limitation",
+  "other_door_limitations": [
+    "An exception from InetAddress.getByName(addr) exits before the selected branch and cannot demonstrate the selected IOException.",
+    "InfoServer bind and test HTTP calls occur after the guard; RpcServer.call cannot change the configured addr already read in the constructor."
+  ],
+  "overlay": "The existing hbase28-constructor-actor-v1 factory hook names the exact constructor from JVMClusterUtil index; this observation package reuses its pinned JAR and leaves shared adapter unchanged.",
+  "physical_door": {
+    "call": "NetworkInterface.getByInetAddress(InetAddress)",
+    "compiled_effect": "HBase 2.6.6 Addressing bytecode places the line-148 call in a SocketException handler that assigns false.",
+    "exception": "java.net.SocketException",
+    "line": 148,
+    "method": "Addressing.isLocalAddress(InetAddress)",
+    "source_effect": "The catch at line 149 sets local=false, which would make the selected HRegionServer guard true if execution reached this call under a nonloopback, non-any-local configured address."
+  },
+  "prior_evidence": {
+    "exact_check_events": 2,
+    "fault_trials": 0,
+    "named_actor": false,
+    "path": "data/mallory/calibration/HBASE-28/result.json",
+    "status": "healthy_node_identity_missing"
+  },
+  "schema_version": 1,
+  "selected_configuration_limitation": "With 0.0.0.0, InetAddress.isAnyLocalAddress is true and Addressing returns before NetworkInterface.getByInetAddress. The alternate typed door is unreachable in the pinned default JUnit. A nonloopback local bind address would reach that call, but the existing test requests both HTTP pages via localhost; a passing test with such an override has not been established.",
+  "selected_guard": {
+    "address_source": "hbase.master.info.bindAddress or hbase.regionserver.info.bindAddress; both default to 0.0.0.0",
+    "exception": "java.io.IOException",
+    "predicate": "!Addressing.isLocalAddress(InetAddress.getByName(addr))",
+    "site": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2482:branch:3",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2487:throw:1"
+  },
+  "selected_junit": "org.apache.hadoop.hbase.TestInfoServers#testInfoServersRedirect",
+  "source_paths": {
+    "addressing": "hbase-common/src/main/java/org/apache/hadoop/hbase/util/Addressing.java",
+    "defaults": "hbase-common/src/main/resources/hbase-default.xml",
+    "factory": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/JVMClusterUtil.java",
+    "target": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+    "test": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java"
+  },
+  "source_sha256": {
+    "hbase-common/src/main/java/org/apache/hadoop/hbase/util/Addressing.java": "fc05e62bb8fbb9bd4ecfc24f0cc003f1191d8aa9cb4fe3f500899a3ec61d5b17",
+    "hbase-common/src/main/resources/hbase-default.xml": "6cae740b56d8ca60c095f83092362d68460f99b9b3f16303edfda8ced8eabd02",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/util/JVMClusterUtil.java": "62ac5f8b5b42b57630c9421e16bd5371856064b312f3db06aefd03e35391e4b3",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java": "7b0d83c60833a5427396477fed836873b6d58b297cb656867008a221d0e2067e"
+  },
+  "source_version": "hbase-2.6.6",
+  "status": "healthy_observation_pending_no_causal_admission"
+}
