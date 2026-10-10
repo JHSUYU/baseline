@@ -18,6 +18,13 @@ with no intervening instrumented setter. These events still have
 establish an atomic read-from relation. This package cannot authorize a full
 campaign or a bug claim.
 
+The offline audit accepts only the exact typed ZooKeeper exception door,
+checks the trace digests recorded by the trial, and verifies that the run
+loaded this diagnostic adapter. It rejects missing thread identities and
+retains the field edge as a candidate even if the written and read booleans
+match. A positive value witness motivates a separately gated fault pilot;
+it is not an observed causal path.
+
 `python3 -B -m unittest -v test_offline.py` and
 `python3 -B run_healthy.py --preflight-only` are JVM-free. The node1 steward
 may create `admission-healthy-node1.json` matching the preflight fields, with

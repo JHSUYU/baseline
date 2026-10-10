@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import gzip
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -21,12 +22,23 @@ TARGET = ("org.apache.solr.update.processor.DistributedZkUpdateProcessor"
           "DistributedUpdateProcessor$DistribPhase;)V@1021:branch:")
 WRITE = "solr38:leader-value:write"
 READ = "solr38:leader-value:read"
+EXCEPTION = "org.apache.zookeeper.KeeperException$ConnectionLossException"
 
 
 def load_events(trial: Path) -> list[dict]:
     path = trial / "events.jsonl.gz"
+    expected = json.loads((trial / "result.json").read_text(encoding="utf-8"))[
+        "events_evidence"]
+    if hashlib.sha256(path.read_bytes()).hexdigest() != expected["gzip_sha256"]:
+        raise ValueError("healthy trace gzip digest differs from result")
     with gzip.open(path, "rt", encoding="utf-8") as stream:
-        rows = [json.loads(line) for line in stream if line.strip()]
+        lines = stream.readlines()
+    if any(not line.endswith("\n") for line in lines):
+        raise ValueError("incomplete healthy trace line")
+    raw = "".join(lines).encode("utf-8")
+    if hashlib.sha256(raw).hexdigest() != expected["raw_sha256"]:
+        raise ValueError("healthy trace raw digest differs from result")
+    rows = [json.loads(line) for line in lines if line.strip()]
     if any(row.get("type") == "TRACE_TRUNCATED" for row in rows):
         raise ValueError("trace truncated")
     return rows
@@ -35,10 +47,13 @@ def load_events(trial: Path) -> list[dict]:
 def same_actor(a: dict, b: dict) -> bool:
     return (a.get("node") == b.get("node")
             and a.get("node") not in (None, "", "unknown")
+            and isinstance(a.get("epoch"), int)
             and a.get("epoch") == b.get("epoch"))
 
 
 def inside_region(events: list[dict], start: dict, end: dict, prefix: str) -> bool:
+    if not isinstance(start.get("thread_id"), int):
+        return False
     entries = {(row.get("node"), row.get("epoch"), row.get("thread_id"),
                 row.get("occurrence")): row for row in events
                if row.get("type") == "REGION_ENTER" and row.get("occurrence")}
@@ -59,7 +74,9 @@ def inside_region(events: list[dict], start: dict, end: dict, prefix: str) -> bo
 def value_witnesses(events: list[dict]) -> list[dict]:
     doors = [row for row in events if row.get("type") == "DOOR_OBSERVED"
              and str(row.get("site", "")).startswith(DOOR)
-             and ("@396:door:" in row["site"] or "@450:door:" in row["site"])]
+             and ("@396:door:" in row["site"] or "@450:door:" in row["site"])
+             and row.get("fault_type") == "EXCEPTION"
+             and row.get("exception_class") == EXCEPTION]
     writes = [row for row in events if row.get("type") == "STATE_WRITE"
               and row.get("site") == WRITE
               and row.get("key") == "solr38:isLeader=true"]
@@ -116,6 +133,17 @@ def audit(out: Path) -> dict:
     if (result.get("case_id") != "SOLR-38" or result.get("plan") != []
             or junit.get("status") != "passed" or junit.get("tests") != 1):
         raise ValueError("unchanged cluster JUnit did not pass")
+    config = json.loads((out / "config.json").read_text(encoding="utf-8"))
+    adapter = str(HERE / "adapter/target/mallory-solr-adapter.jar")
+    adapter_sha = config.get("mapping", {}).get("value_diagnostic_adapter_sha256")
+    if (config.get("revision") != "SOLR-38-election-value-healthy-node1-v1"
+            or config.get("agent_properties", {}).get("adapter.jar") != adapter
+            or not isinstance(adapter_sha, str)
+            or not any(artifact.get("path") == adapter and
+                       artifact.get("sha256") == adapter_sha
+                       for artifact in config.get("runtime_artifacts", []))
+            or not result.get("runtime_attestation", {}).get("valid")):
+        raise ValueError("value diagnostic adapter or runtime identity not attested")
     events = load_events(trial)
     witnesses = value_witnesses(events)
     return {"case_id": "SOLR-38", "schema_version": 1,

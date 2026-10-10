@@ -18,7 +18,9 @@ class ValueDiagnosticTest(unittest.TestCase):
         common = {"node": "node1", "epoch": 1, "thread_id": 7}
         rows = [
             {**common, "id": "d", "seq": 1, "type": "DOOR_OBSERVED",
-             "site": "org.apache.solr.cloud.ShardLeaderElectionContext#waitForReplicasToComeUp(I)Z@396:door:1"},
+             "site": "org.apache.solr.cloud.ShardLeaderElectionContext#waitForReplicasToComeUp(I)Z@396:door:1",
+             "fault_type": "EXCEPTION",
+             "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException"},
             {**common, "id": "w", "seq": 2, "type": "STATE_WRITE",
              "site": "solr38:leader-value:write", "key": "solr38:isLeader=true",
              "object": "o1"},
@@ -41,7 +43,9 @@ class ValueDiagnosticTest(unittest.TestCase):
              "org.apache.solr.cloud.ShardLeaderElectionContext#runLeaderProcess(ZI)V"},
             {**common, "id": "d", "seq": 2, "type": "DOOR_OBSERVED",
              "occurrence": "election", "site":
-             "org.apache.solr.cloud.ShardLeaderElectionContext#waitForReplicasToComeUp(I)Z@396:door:1"},
+             "org.apache.solr.cloud.ShardLeaderElectionContext#waitForReplicasToComeUp(I)Z@396:door:1",
+             "fault_type": "EXCEPTION",
+             "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException"},
             {**common, "id": "w", "seq": 3, "type": "STATE_WRITE",
              "occurrence": "election", "site": "solr38:leader-value:write",
              "key": "solr38:isLeader=true", "object": "o1",
@@ -64,6 +68,15 @@ class ValueDiagnosticTest(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["field_edge_certainty"], "candidate")
         self.assertFalse(result[0]["strict_graph_path"])
+
+        wrong_fault = [dict(row) for row in rows]
+        wrong_fault[1]["exception_class"] = "java.io.IOException"
+        self.assertEqual(value_witnesses(wrong_fault), [])
+
+        unknown_thread = [dict(row) for row in rows]
+        for row in unknown_thread:
+            row.pop("thread_id", None)
+        self.assertEqual(value_witnesses(unknown_thread), [])
 
 
 if __name__ == "__main__":
