@@ -52,11 +52,12 @@ task edges require an explicit, unique correlation. Optional sampled state
 events are an extension, disabled by default; if enabled, they produce only
 candidate edges rather than a proven shared-field read-from relation.
 Unknown node identity, unpaired messages, and missing target reach are recorded
-as gaps. A campaign cannot claim a high-quality completed check solely from a
-zero process exit or a generic JUnit failure. Its healthy trace must include
-a named I/O fault point with an observed causal path to the target, or a
-separately labeled local temporal relation when the optional rule is enabled;
-candidate state edges cannot prove either relation.
+as gaps. A campaign is completed when it reaches its configured terminal
+budget or exhausts its fault queue; these gaps describe its result, not a
+second completion threshold. A positive causal-path annotation requires a
+named I/O fault point with an observed path to the target, or a separately
+labeled local temporal relation when the optional rule is enabled. Candidate
+state edges cannot prove either relation.
 
 When a fault-free trace has no event at the exact configured target site, the
 core records its oracle result, global coverage and observed doors without
@@ -65,16 +66,18 @@ marked `analysis_skipped: healthy_target_absent`; zero edge counters in that
 record are not a claim that the trace contains no communication. The raw trace
 is retained, and offline audit applies the same rule to this invalid seed.
 
-The first 23 completed checks passed an earlier gate requiring a root-free
-healthy path and a target check after an effective fault. Their archived agent
+The earliest 23 campaigns received a path annotation under an earlier rule
+requiring a root-free healthy path and a target check after an effective fault.
+Their archived agent
 traces lack numeric JVM `thread_id`, so the later `fa5f3bde` event-time gate
 cannot retroactively prove a same-thread path. SHA-bound reviews in
 `data/mallory/quality_reviews/event_time_v1/` and
 `data/mallory/quality_reviews/faulted_path_v1/` separate a healthy path from
 an observed fault-to-target continuation. The checklist labels cases without
 the latter `faulted_path_unverified`; this is an evidence gap, not proof that
-the fault had no effect or that no bug exists. New terminal cases require a
-SHA-bound positive precision review before they count as high quality.
+the fault had no effect or that no bug exists. New terminal cases are counted
+as completed immediately; SHA-bound reviews can later refine their evidence
+annotations.
 
 For checks whose I/O door and target lie in one region occurrence, an optional
 local-timeline rule accepts a named door observed before the exact check in

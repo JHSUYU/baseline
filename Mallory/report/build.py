@@ -115,9 +115,9 @@ def _causal_precision_review(results: Path, result_path: Path,
                              result: dict[str, Any]) -> tuple[str | None, str | None]:
     """Bind a superseding causal precision review to unchanged campaign evidence.
 
-    The review can lower a quality claim; it cannot promote a campaign.  A
+    The review can narrow a path-evidence claim; it cannot change completion. A
     listed but damaged review fails closed so a stale or truncated sidecar
-    cannot silently restore the old high-quality classification.
+    cannot silently restore an unsupported path classification.
     """
     review_root = results / "quality_reviews" / "causal_precision_v2"
     case_id = result.get("case_id")
@@ -184,7 +184,8 @@ def _faulted_path_review(results: Path, result_path: Path,
 
     Older traces can establish a named, ordered same-region continuation,
     which is labeled as local timeline evidence. Thread-name equality alone
-    is never a positive proof. Unreviewed terminal runs remain pending.
+    is never a positive proof. Unreviewed terminal runs remain completed with
+    a pending path-evidence annotation.
     """
     case_id = result.get("case_id")
     root = results / "quality_reviews" / "faulted_path_v1"
