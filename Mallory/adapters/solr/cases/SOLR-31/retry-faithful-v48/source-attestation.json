@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "case_id": "SOLR-31",
+  "status": "source_only_unbuilt_unrun",
+  "workload": "org.apache.solr.cloud.ForceLeaderTest#testReplicasInLowerTerms",
+  "workload_source_sha256": "c9e660ce598703f618b00ff93dbb6e305e166686e8752d031caf7d75f580105f",
+  "solr_version": "8.11.4",
+  "distribution_jar": "dist/solr-solrj-8.11.4.jar",
+  "distribution_jar_sha256": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517",
+  "original_solr_zk_client_class_sha256": "51b3131fed142509b80da408d0d3f8d036045237b51a48c2a4dd9cf574a72dc0",
+  "original_source_sha256": {
+    "solr/solrj/src/java/org/apache/solr/common/cloud/SolrZkClient.java": "4a256a0fb563515451b5b733dbb4e320fceb9fa5dcc04912e4dd003d1a109c32",
+    "solr/solrj/src/java/org/apache/solr/common/cloud/ZkCmdExecutor.java": "4b50e7d0cb1872829c3d29e3d51ac9a9f3d6571b31ce2861e59f007cc1c8c415"
+  },
+  "bytecode": {
+    "method": "org.apache.solr.common.cloud.SolrZkClient#lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+    "invoke_owner": "org/apache/solr/common/cloud/SolrZooKeeper",
+    "invoke_name": "getData",
+    "invoke_descriptor": "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+    "invoke_count": 1,
+    "source_line": 349,
+    "inspection": "javap -classpath <pinned solr-solrj jar> -p -c org.apache.solr.common.cloud.SolrZkClient"
+  },
+  "existing_runtime": {
+    "adapter_v46_jar_sha256": "24f2907cdea04347fb829220c67ed27934466902f198240177007c24818bf798",
+    "agent_jar_sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+  },
+  "staged_files_sha256": {
+    ".gitignore": "16dc2ecd1d62e57662b982e8741c8a5c81fed2660ab82660ff1d04d6ae845814",
+    "README.md": "aa26522f443ffc1f171e91a17523b2e6054aebfa98df3334910f5a3aa6a661f9",
+    "pom.xml": "177e10a200c34f515cc36df0864a142274700b8030d6cf20334f8930795be554",
+    "build_plan.py": "c6823504e58a1a9c4f0d2b4ef96c31bc93904087846da550b92190e4eb16cbcc",
+    "test_build_plan.py": "ff3cce14da727bd7f1bbdc686418d737388704dece0e50b32ab7eb192f335902",
+    "src/main/java/edu/uva/liftlab/mallory/solr31/RetryAttemptHook.java": "6dc3cfec5839c811477c777219772194e21e3837a6cd0106902c81707f096f52",
+    "src/main/java/edu/uva/liftlab/mallory/solr31/RetryAttemptTransformer.java": "c66e63af580467c1fb02a1b49966e89aa5cc376f0cf84c225436da373653a03c"
+  },
+  "offline_tests": "python3 -m unittest test_build_plan.py (4/4 pass)",
+  "runtime_admission": "blocked_until_addon_jar_weave_test_fresh_healthy_receipt_and_dispatch_node2_go"
+}
