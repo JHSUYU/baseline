@@ -97,7 +97,7 @@ def preflight(runtime: bool) -> dict:
             config["cluster_test"] != "org.apache.hadoop.hdfs.TestDFSRollback#testRollback" or
             config["cwd"] != str(SOURCE) or
             config["source_equivalent_root"] != str(SOURCE) or
-            config["target"]["nodes"] != ["hdfs-cluster-1/dn0"] or
+            config["target"]["nodes"] != ["hdfs-cluster-2/dn0"] or
             config["target"]["source_line"] != 947 or
             config["target"]["exception_class"] != "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException" or
             config["target"]["check_sites"] != [

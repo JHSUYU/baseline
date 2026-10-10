@@ -10,6 +10,9 @@ The SHA-pinned v2 test-local patch returns just after the valid DataNode
 rollback assertion, shutdown, and storage cleanup. It preserves the complete
 valid rollback prefix. The target is the `DataStorage.doRollback` condition at
 lines 940–941 and its `InconsistentFSStateException` throw at line 947. The
+`UpgradeUtilities.initialize()` fixture creates the first MiniDFSCluster;
+the selected valid rollback is on the second cluster's `dn0`, so this package
+pins `hdfs-cluster-2/dn0` pending runtime identity verification. The
 candidate pretarget doors are `BPServiceActor.retrieveNamespaceInfo`
 `versionRequest` and `StorageInfo.readPropertiesFile` `Properties.load`; their
 actual event-time path and fault-retaining behavior must be established by
