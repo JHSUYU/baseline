@@ -77,10 +77,14 @@ def preflight(runtime: bool) -> dict:
     if (ref["commit"] != pins["source_commit"] or
             ref["digest"] != pins["original_full_source_digest"]):
         raise RuntimeError("frozen Hadoop source reference differs from package")
-    commit = subprocess.check_output(
-        ["git", "-C", str(ORIGINAL), "rev-parse", "HEAD"], text=True).strip()
-    if commit != pins["source_commit"]:
+    git_probe = subprocess.run(
+        ["git", "-C", str(ORIGINAL), "rev-parse", "HEAD"],
+        text=True, capture_output=True, check=False)
+    if git_probe.returncode == 0 and git_probe.stdout.strip() != pins["source_commit"]:
         raise RuntimeError("pristine Hadoop checkout commit changed")
+    # Node2's copied GraphChecker source can have stale worktree metadata.
+    # A missing Git handle is not proof of source equivalence; the complete
+    # 15,586-file snapshot digest below is the admission evidence.
     if source_digest(ORIGINAL, ref["paths"]) != pins["original_full_source_digest"]:
         raise RuntimeError("original Hadoop source snapshot changed")
     sys.path.insert(0, str(V2))
