@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-23",
+  "host": "node1",
+  "selector": "org.apache.hadoop.hbase.procedure.TestZKProcedure#testMultipleMembers",
+  "evidence_root": "/users/ZhenyuLi/baseline/data/mallory/HBASE-23/healthy/existing-minizk-four-member-v1/attempt-01",
+  "files_sha256": {
+    "admission-receipt.json": "574adb7ae1f8f0c817e072be332c4af4563cf4d34a4df102c0eb34bc638168c8",
+    "result.json": "4737b6703bb71382a846c319a3b7067f1825208669112d669bd0d654ca835823",
+    "trials/r0000/result.json": "d63db870326bc284d60fb6af19419517701897892ee98bfd268aaddb3a883f7d",
+    "trials/r0000/events.jsonl.gz": "e2d8c5f4b4dfc698fe51010357d9f2d5c063e800137bbdbde1951726a7a6d9a7",
+    "offline-causal-audit.json": "312628aa66f03946ec32e400dfbdb0d57d3d52804d038bc366e9d67b59de91de",
+    "config.json": "48b2a44badcfdec9c7144f01c582e30a3ef1e09f7d2fa603cfc99d4ac2ed9805"
+  },
+  "observed": {
+    "healthy_status": "calibration_complete",
+    "healthy_seed_valid": true,
+    "duration_seconds": 5.593,
+    "junit": "passed 1/0/0",
+    "named_actor": "zk-coordinator:coordinator",
+    "exact_check": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@127:branch:5",
+    "typed_door": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1",
+    "eligible_local_timeline_doors": 2,
+    "matched_worker_token": "HBASE-23-r0000:task:1",
+    "offline_audit_exit_code": 0,
+    "offline_audit_report_gate_passed": true,
+    "admission_status": "healthy_admitted"
+  },
+  "interpretation": "Prior seed supports full staging only. The full campaign must independently pass its own fresh r0000 gate before any fault trial."
+}

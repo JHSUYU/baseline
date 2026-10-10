@@ -19,8 +19,12 @@ separate ZooKeeper `nodeCreated` callback. The original full MiniCluster test
 `TestProcedureManager#testSimpleProcedureManager` reached the exact check once
 in archived v13 but missed it in subsequent passing attempts, including a
 16-procedure repetition. Four active members in this existing MiniZK test
-provide another source-backed timing opportunity. This is a healthy-only
-admission attempt, not a claim that the target will be reached.
+provide another source-backed timing opportunity. The existing four-member
+test subsequently passed once on node1: JUnit 1/0/0, exact named target,
+two typed doors, and two same-occurrence local-timeline witnesses in 5.593 s.
+`prior-admitted-healthy.json` SHA-pins that raw result, compressed event trace,
+admission receipt, and offline audit. This result establishes a usable seed;
+it does not claim a fault-induced bug.
 
 The selected physical fault door is
 `RecoverableZooKeeper.getData@405 → ZooKeeper.getData` with a typed
@@ -40,13 +44,47 @@ python3 Mallory/adapters/hbase/pilot/hbase23-existing-minizk-v1/preflight.py --s
 MALLORY_NODE1_CAPACITY_GRANTED=1 python3 Mallory/adapters/hbase/pilot/hbase23-existing-minizk-v1/run_healthy.py --attempt 1
 ```
 
-The runner refuses concurrent Java processes, holds the node1 lane lock, and
+The healthy runner refuses concurrent Java processes, holds the node1 lane lock, and
 writes an immutable directory under
 `data/mallory/HBASE-23/healthy/existing-minizk-four-member-v1/`.
 It permits at most three healthy attempts, with one existing JUnit and zero
-fault trials per attempt. Do not promote to full fuzzing until a fresh attempt
-passes the named target, typed door, actor identity, and event-time checks.
+fault trials per attempt. The admitted attempt-01 passed the named target,
+typed door, actor identity, and event-time checks.
 `source-inventory.json` records the tested alternatives and the outstanding
 decision if this selector also misses. The node0 `stage-preflight.json` checks
 source, compiled test class, target bytecode, site, and config without starting
 a JVM.
+
+## Full campaign staged for dispatch
+
+The full campaign uses the same existing JUnit, exact target, typed door,
+agent, adapter, core release, and source-equivalent runtime. `full.json`
+changes only the run mode and budget: at most 80 fault trials, 3600 seconds,
+600 seconds per trial, and 3 faults per sequence. The earlier admitted healthy
+run is prerequisite evidence, never reused as the full campaign's seed.
+
+After HBASE-34 is terminal and dispatch grants the free node1 HBase lane,
+sync this package to node1 and run:
+
+```sh
+python3 Mallory/adapters/hbase/pilot/hbase23-existing-minizk-v1/preflight_full.py --strict-runtime
+MALLORY_NODE1_CAPACITY_GRANTED=1 python3 Mallory/adapters/hbase/pilot/hbase23-existing-minizk-v1/run_full.py --attempt 1
+```
+
+`run_full.py` makes a new fault-free r0000 in its own immutable attempt
+directory. It synchronously verifies the selected JUnit, exact compiled check,
+named actor, accepted Procedure worker token, typed `getData` read, and ordered
+same-thread, same-occurrence door-to-check witness before scheduling any fault.
+It writes `fresh-r0000-admission.json`; a rejection terminates the attempt with
+zero fault trials. This gate wraps the frozen core's result application so the
+event trace can be checked before the core selects the next fault sequence.
+The node1 lane lock and Java process check prevent concurrent campaigns. An
+interrupted attempt resumes from its checkpoint only if the full config and
+fresh r0000 receipt still match. Dispatch may use attempts 2 or 3 in fresh
+directories if needed.
+
+The full output belongs under
+`data/mallory/HBASE-23/full/existing-minizk-four-member-v1/`. Dispatch audits
+the terminal output and classifies any target exception using its trace and
+source. A target exception alone remains a candidate until reproduced and
+explained.
