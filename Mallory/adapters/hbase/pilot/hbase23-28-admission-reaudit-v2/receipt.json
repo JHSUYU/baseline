@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "scope": "Original-102 HBASE-23 and HBASE-28, pinned HBase 2.6.6 source and unmodified cluster JUnits; offline source, package, and archived-healthy review only; no new JVM, fault trial, or checklist edit",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "cases": {
+    "HBASE-23": {
+      "decision": "GO_fresh_healthy_only_after_node1_runtime_preflight; HOLD_faults_until_exact_target_and_typed_door_admission",
+      "selected_check": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@127:branch:5",
+      "selected_throw": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator#sendGlobalBarrierReached(Lorg/apache/hadoop/hbase/procedure/Procedure;Ljava/util/List;)V@131:throw:1",
+      "selector": "org.apache.hadoop.hbase.procedure.TestProcedureManager#testSimpleProcedureManager",
+      "source_pins": {
+        "ZKProcedureCoordinator.java": "7f1ebc383086f82c98d0460d7c0504d5fd59e590176b65931c3061bcdac947b7",
+        "TestProcedureManager.java": "35dee7363efa0ade2a906fb1b75bc1ab1396ae48c02ff75db0b18f676d6cd135",
+        "RecoverableZooKeeper.java": "f946cd3195c5969b55ce5d079c272a7b12d673c5406a98ef026dc8fcea18fa88",
+        "ZKUtil.java": "413a0487863e7b7c8c5299f939eaec45ac33321fec8af2c5d160b64c7cf04b40"
+      },
+      "test_and_guard_path": "TestProcedureManager.java:41-51 starts a two-RegionServer MiniCluster; :60-66 executes a procedure. ZKProcedureCoordinator.java:119-127 checks the PB prefix only when the member completion child already exists during the synchronous watchAndCheckExists scan and getData returns nonempty bytes. TestZKProcedureControllers.java:213-218 and :294-298 call sendGlobalBarrierReached before posting completion; those direct-controller tests do not supply a deterministic selected @127 path. Later child callbacks check a distinct guard at ZKProcedureCoordinator.java:208-211.",
+      "typed_pretarget_door": {
+        "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1",
+        "callee": "org.apache.zookeeper.ZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+        "exception": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "source_chain": "ZKProcedureCoordinator.java:123-127 -> ZKUtil.java:340-345 -> RecoverableZooKeeper.java:397-423. A transient ConnectionLossException is retried at :408-422, so a later successful physical ZooKeeper read can still supply bytes to exact @127. Exhausted retries exit before @127; a connection fault does not itself imply malformed PB data or the selected @131 IOException."
+      },
+      "archived_healthy": {
+        "positive_result_sha256": "dd7a4aa9c4d97bc475746b1065e8de841bccccadbdd969ed34eb1e06a705b1bd",
+        "positive_trace_sha256": "3bfe302bdfbd42b56214b531ecdf99581f05730d1335e84510cbaeecd406fdfc",
+        "positive_observation": "calibration_v13/HBASE-23: JUnit 1/1 passed; one named nonthrowing exact @127 event at seq 1684 on zk-coordinator worker; no typed getData door was instrumented and strict cross-region observed-path doors were zero.",
+        "repeat_result_sha256": {
+          "v21": "9ee657d8561e7c469de30a9ed2ac6250a1ae2613e765511e72f9ef7be7ff8834",
+          "v22": "257ee6c6c97d70f1d042dbea5ccf43a5eeca0015b3753d86de4f32502d3e8978",
+          "v23": "1eaf84a5845957a40971e2795861003c5050e5e1fe375471b36bc6e8ff933413"
+        },
+        "repeat_observation": "v21-v23 each passed JUnit and entered the target method but emitted zero exact @127 events. The exact hit is naturally timing dependent, not source-infeasible."
+      },
+      "staged_package": {
+        "path": "Mallory/adapters/hbase/pilot/hbase23-zk-read-admission-v1",
+        "manifest_sha256": "09762630aa39aab824a08125130df06b5a1a9b073ab7b98c6029d42969a97f36",
+        "healthy_config_sha256": "338023d43b2ed6b51770b18762e35635e1f73469ca798cc680e154164fab6965",
+        "sites_sha256": "f406aa03e1681177fad5049f3747098e548ed109cf2a68ad38ce5e5af061284a",
+        "offline_preflight": "Passed again with no JVM; HBase source/compiled offsets and typed retry path pinned. Five node1 runtime artifacts remain deferred on node0.",
+        "runtime_gate": "Dispatch must run preflight.py --strict-runtime on node1, then bounded fresh healthy-only attempts. Admit a seed only with passing JUnit, exact named @127, exact typed @405 door before that check on the same thread and occurrence, accepted Procedure submit/claim token, and offline event-time local-timeline audit. Record strict graph-path count separately; do not invent a cross-thread edge."
+      }
+    },
+    "HBASE-28": {
+      "decision": "HOLD_default_TestInfoServers_faults; GO_conditional_fresh_healthy_only_for_nonloopback_LocalHBaseCluster_candidate_after_node1_IP_preflight",
+      "selected_check": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2482:branch:3",
+      "selected_throw": "org.apache.hadoop.hbase.regionserver.HRegionServer#putUpWebUI()V@2487:throw:1",
+      "source_pins": {
+        "HRegionServer.java": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+        "Addressing.java": "fc05e62bb8fbb9bd4ecfc24f0cc003f1191d8aa9cb4fe3f500899a3ec61d5b17",
+        "TestInfoServers.java": "7b0d83c60833a5427396477fed836873b6d58b297cb656867008a221d0e2067e",
+        "TestRSStatusPage.java": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b"
+      },
+      "default_selector": {
+        "junit": "org.apache.hadoop.hbase.TestInfoServers#testInfoServersRedirect",
+        "healthy_result_sha256": "182c0e1871b8a426982e64c19e078c828581631bb735a6f8f45fe4be67074451",
+        "observation": "Prior JUnit passed and exact @2482 emitted twice at seq 56 and 128, both node=unknown; zero fault trials. TestInfoServers.java:51-60 starts MiniCluster with ephemeral UI ports but never changes the bind-address keys. Defaults are 0.0.0.0, which Addressing.java:141-153 accepts via isAnyLocalAddress before NetworkInterface.getByInetAddress. RpcServer.call, InfoServer bind, and HTTP fetches cannot supply a predicate-relevant pretarget fault for this default path."
+      },
+      "alternate_selector": {
+        "junit": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+        "source_lines": "TestRSStatusPage.java:61-79,93-133",
+        "workload": "Unmodified LocalHBaseCluster JUnit starts MiniZK, MiniDFS, HMaster and one RegionServer. It only fetches the RegionServer page; the master URL is asserted as link text, so a case-local nonloopback master UI bind can be tested without changing JUnit source.",
+        "configuration": "Case-local hbase-site.xml sets only hbase.master.info.bindAddress=10.10.1.2 relative to the pinned distribution resource. Node1 must confirm that this IPv4 address is assigned to a local interface before JVM admission.",
+        "typed_door": "Addressing.isLocalAddress(InetAddress) @148 -> java.net.NetworkInterface.getByInetAddress(InetAddress), java.net.SocketException",
+        "causal_effect": "With a local nonloopback, non-any-local configured master bind, Addressing.java:143-153 executes the OS network-interface lookup before selected @2482. A SocketException is caught and sets local=false, so the selected guard still evaluates and throws its expected IOException at @2487. Healthy test pass, named actor, and actual door occurrence are not yet observed.",
+        "package": "Mallory/adapters/hbase/overlays/hbase28-constructor-actor-v1/nonloopback-master-healthy-v1",
+        "config_sha256": "2b99bfa3c35c8c9d1e3e48322a8e8466ff55b16699fe09388ca8bb43660dc84f",
+        "hbase_site_sha256": "969a541fd3700aea7bedb27a3fd22b65122d951cdbfea32f44be6209de233a16",
+        "sites_sha256": "bbc883539f51732a7fa686fcc58606e6350d9c473e51d4be20aad8cff3fc861d",
+        "offline_preflight": "nonloopback-master-healthy-v1/preflight.py passed on node0 without starting JVM; observation-v2/preflight.py also passed and reaffirmed the default-bind door bypass. Node1-specific IP assignment and fresh healthy result remain pending."
+      },
+      "next_gate": "Dispatch may run only the alternate candidate's node1 --node1 preflight and one healthy-only LocalHBaseCluster calibration after capacity is granted. Require passing JUnit, named master0 @2482, and same-master0 typed Addressing@148 before any fault trial. An injected SocketException followed by selected @2487 is expected behavior, not automatically a new bug."
+    }
+  }
+}
