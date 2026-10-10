@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-35",
+  "status": "staged_not_launched",
+  "host": "node1",
+  "queue_after": ["HBASE-31", "ZOOKEEPER-04"],
+  "worker_lock": "/tmp/mallory-lanes/hbase-lane9-next.lock",
+  "output": "/users/ZhenyuLi/baseline/data/mallory/HBASE-35/campaigns/client-scan-v1-full",
+  "output_absent_at_stage": true,
+  "config": {
+    "path": "Mallory/adapters/hbase/pilot/HBASE-35-client-scan-door-v1/HBASE-35-client-scan-door-v1-full.json",
+    "sha256": "8ef1fa816b6854205d1a61a012a9ec13c30aa202aea51cad5ca6095006572563"
+  },
+  "runner": {
+    "path": "Mallory/adapters/hbase/pilot/HBASE-35-client-scan-door-v1/run-full.sh",
+    "sha256": "6b557a08dcddebc2333f2c1fb45aea4ee4ea54aaa9ae6ada55710904f3b658fe"
+  },
+  "budget": {
+    "trials": 80,
+    "seconds": 3600,
+    "max_faults_per_trial": 3,
+    "trial_timeout_seconds": 780
+  },
+  "selector": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+  "target_check": "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2715:branch:10",
+  "target_throw": "org.apache.hadoop.hbase.util.HBaseFsck$3#visit(Lorg/apache/hadoop/hbase/client/Result;)Z@2720:throw:1",
+  "healthy_evidence": {
+    "receipt_path": "data/mallory/calibration_v29/HBASE-35/calibration-receipt.json",
+    "receipt_sha256": "74e96a7483f1de64013c834da99c6309be37f3def21b846b4688168cb7dda74f",
+    "junit_tests": 1,
+    "named_nonthrowing_target": true,
+    "event_time_observed_path_doors": 1
+  },
+  "pilot_evidence": {
+    "receipt_path": "data/mallory/pilots/HBASE-35-client-scan-v1-receipt.json",
+    "receipt_sha256": "c224c7dd0dedf4b81adc3584b59c74c6287c7e8633834116295cd8e11e960787",
+    "fault_trials": 3,
+    "fault_applied_and_target_retained": 3,
+    "strict_same_result_postfault_paths": 1,
+    "selected_exception_trials": 0,
+    "outcome_limitation": "The selected Scan door ordinal drifted across pilot runs; strict same-Result evidence held for only one of three injected trials. The source review also found no supported route from this pre-scan IOException to duplicate meta rows. Record these as full-campaign outcomes, not a bug claim."
+  },
+  "core_release": {
+    "release_id": "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+    "manifest_sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8",
+    "remote_verify": "pass"
+  },
+  "preflight": {
+    "remote_config_sha256": "8ef1fa816b6854205d1a61a012a9ec13c30aa202aea51cad5ca6095006572563",
+    "remote_runner_sha256": "6b557a08dcddebc2333f2c1fb45aea4ee4ea54aaa9ae6ada55710904f3b658fe",
+    "remote_pilot_receipt_sha256": "c224c7dd0dedf4b81adc3584b59c74c6287c7e8633834116295cd8e11e960787",
+    "remote_validate_config": "pass",
+    "remote_runtime_artifacts_verified": 9,
+    "remote_healthy_pins_verified": 2,
+    "remote_runner_bash_n": "pass",
+    "jvm_launched": false
+  },
+  "admission": "dispatch must independently recheck live source/runtime hashes, node1 resources, lane lock and fresh output before tmux launch"
+}
