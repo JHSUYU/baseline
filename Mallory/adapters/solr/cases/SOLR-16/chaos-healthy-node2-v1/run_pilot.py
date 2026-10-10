@@ -12,7 +12,7 @@ SOLR = HERE.parents[2]
 sys.path.insert(0, str(SOLR))
 import solr_junit_runner_v14 as runner  # noqa: E402
 
-AGENT = (SOLR.parents[1] / "instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar")
+AGENT = (SOLR.parents[1] / "instrumentation/releases/b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4/mallory-agent.jar")
 ADAPTER = SOLR / "target/mallory-solr-adapter-v38.jar"
 SELECTOR = "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitWithChaosMonkey"
 

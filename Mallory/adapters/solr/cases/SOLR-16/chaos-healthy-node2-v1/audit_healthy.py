@@ -31,9 +31,9 @@ def identity(event: dict) -> tuple:
 
 def lookup_witness(events: list[dict]) -> tuple[dict | None, str]:
     """Bind both stat reads to one split and the same parent live-node path."""
-    doors = [event for event in events if event.get("type") == "DOOR_OBSERVED"
-             and event.get("site") in {FIRST, SECOND, NATIVE}
-             and isinstance(event.get("seq"), int)]
+    sequenced = [event for event in events if isinstance(event.get("seq"), int)]
+    doors = [event for event in sequenced if event.get("type") == "DOOR_OBSERVED"
+             and event.get("site") in {FIRST, SECOND, NATIVE}]
     pathless = False
     for second in doors:
         if second["site"] != SECOND or not PHYSICAL.fullmatch(str(second.get("node", ""))):
@@ -41,27 +41,34 @@ def lookup_witness(events: list[dict]) -> tuple[dict | None, str]:
         key = identity(second)
         if key[-1] != REGION or not isinstance(key[2], str) or not key[2]:
             continue
-        same = sorted((event for event in doors if identity(event) == key),
+        same = sorted((event for event in sequenced if identity(event) == key),
                       key=lambda event: event["seq"])
-        firsts = [event for event in same if event["site"] == FIRST
+        firsts = [event for event in same if event.get("site") == FIRST
+                  and event.get("type") == "DOOR_OBSERVED"
                   and event["seq"] < second["seq"]]
         if len(firsts) != 1:
             continue
         first = firsts[0]
-        before = [event for event in same if event["site"] == NATIVE
-                  and first["seq"] < event["seq"] < second["seq"]]
-        after = [event for event in same if event["site"] == NATIVE
-                 and event["seq"] > second["seq"]]
-        if not before or not after:
+        first_index = same.index(first)
+        second_index = same.index(second)
+        if first_index + 1 >= len(same) or second_index + 1 >= len(same):
             continue
-        resources = {event.get("resource") for event in before + after}
+        first_native = same[first_index + 1]
+        second_native = same[second_index + 1]
+        if (first_native.get("type") != "DOOR_OBSERVED"
+                or first_native.get("site") != NATIVE
+                or first_native["seq"] >= second["seq"]
+                or second_native.get("type") != "DOOR_OBSERVED"
+                or second_native.get("site") != NATIVE):
+            continue
+        resources = {first_native.get("resource"), second_native.get("resource")}
         witness = {"actor": second["node"], "epoch": second["epoch"],
                    "split_occurrence": second["occurrence"],
                    "thread_id": second["thread_id"], "context": second["context"],
                    "first_caller_event_id": first.get("id"),
                    "second_caller_event_id": second.get("id"),
-                   "first_native_event_ids": [event.get("id") for event in before],
-                   "second_native_event_ids": [event.get("id") for event in after]}
+                   "first_native_event_id": first_native.get("id"),
+                   "second_native_event_id": second_native.get("id")}
         if len(resources) == 1:
             resource = next(iter(resources))
             if isinstance(resource, str) and LIVE_NODE.fullmatch(resource):

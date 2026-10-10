@@ -36,6 +36,13 @@ class SameSplitEvidenceTest(unittest.TestCase):
         events = [door(1, FIRST), door(2, NATIVE), door(3, SECOND), door(4, NATIVE)]
         self.assertEqual(lookup_witness(events), (None, "resource_missing"))
 
+    def test_intervening_same_thread_event_is_rejected(self):
+        events = [door(1, FIRST), door(2, NATIVE, resource="/live_nodes/leader-1"),
+                  door(3, SECOND),
+                  {**door(4, NATIVE, resource="/live_nodes/leader-1"), "type": "TASK_SUBMIT"},
+                  door(5, NATIVE, resource="/live_nodes/leader-1")]
+        self.assertEqual(lookup_witness(events)[0], None)
+
 
 if __name__ == "__main__":
     unittest.main()

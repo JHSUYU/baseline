@@ -20,18 +20,25 @@ typed `KeeperException.ConnectionLossException` point as well as the exact
 target. `audit_healthy.py` requires one passing original JUnit, loaded target
 class and catalog, a complete fault-free trace, and both line-164 and line-523
 caller doors on the same actor, epoch, split occurrence, thread and context.
-Native `exists` attempts must read the same exact `/live_nodes/<node>` resource
-on both sides of the handoff. A different split or znode cannot satisfy this
+The next same-thread event after each caller door must be its native `exists`
+attempt, and those two attempts must read the same exact
+`/live_nodes/<node>` resource. A different split or znode cannot satisfy this
 gate. A passing healthy receipt is observation evidence only; this package has
 no full or fault mode.
 
-The currently pinned agent does not record the ZooKeeper resource path on
-`DOOR_OBSERVED`, so the path gate will fail closed until a separately built and
-verified resource-aware agent is available. SOLR-15's prior chaos healthy trace
-showed line-164 and line-523 caller doors in the same split occurrence, but its
-native doors lacked the resource path. That trace cannot be reused as SOLR-16
-evidence. The `chaos-target-discovery-v1/resource-path-v1` proposal under
-SOLR-15 describes the required instrumentation; it is not an active release.
+This package now pins the isolated resource-aware agent release
+`b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4`.
+For the exact Solr 8.11.4 `SolrZkClient.lambda$exists$2` and
+`lambda$getData$6` calls, it reads the first String argument and attaches that
+path to the existing I/O event. The bytecode matcher requires the exact method
+and callee descriptors. An isolated transformed-class test verifies both
+methods still return their original values. SOLR-15's earlier chaos healthy
+trace used the old agent and showed same-split caller doors but no resource
+path. It cannot be reused as SOLR-16 evidence.
+
+The new agent adds path observation; it does not add a path-aware fault-plan
+selector. A future fault campaign must bind the second lookup's path to the
+same parent leader in each new split execution before injecting a fault.
 
 `python3 run_campaign.py --mode healthy --preflight-only` checks the staged
 package, source, bytecode, and release without starting a JVM. A case-local

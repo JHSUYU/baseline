@@ -17,6 +17,8 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[5]
 SOLR = HERE.parents[2]
 RELEASE = ROOT / "Mallory/dispatch/releases/815cba9b-target-absent-v1"
+RESOURCE_AGENT = ROOT / ("Mallory/instrumentation/releases/"
+                         "b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4")
 OUT = ROOT / "data/mallory/solr16_chaos_healthy_node2_v1/healthy"
 sys.path.insert(0, str(RELEASE))
 from Mallory.core import campaign  # noqa: E402
@@ -75,6 +77,15 @@ def preflight() -> dict:
     inventory = read(HERE / "inventory.json")["cases"][0]
     workload = inventory["workload"]
     sites = read(HERE / "sites.json")
+    resource_agent = read(RESOURCE_AGENT / "manifest.json")
+    if (resource_agent.get("release_id") != RESOURCE_AGENT.name
+            or resource_agent.get("agent_sha256") != sha(RESOURCE_AGENT / "mallory-agent.jar")
+            or resource_agent.get("test_results", {}).get("tests", 0) < 26
+            or resource_agent.get("test_results", {}).get("failures") != 0
+            or resource_agent.get("test_results", {}).get("errors") != 0
+            or not any("lambda$exists$2 first String path" in feature
+                       for feature in resource_agent.get("features", []))):
+        raise ValueError("resource-aware agent release is unverified")
     if (config.get("case_id") != "SOLR-16"
             or config.get("cluster_test") != SELECTOR
             or config.get("command", [None, None, None])[1:3] !=
@@ -91,6 +102,9 @@ def preflight() -> dict:
             or config.get("auto_promote_if_healthy") is not False
             or config.get("fault_types") != ["EXCEPTION"]
             or config.get("env", {}).get("MALLORY_SOLR_NIGHTLY") != "1"
+            or config.get("agent_jar") != str(RESOURCE_AGENT / "mallory-agent.jar")
+            or config.get("env", {}).get("MALLORY_SOLR_AGENT_JAR") !=
+            str(RESOURCE_AGENT / "mallory-agent.jar")
             or config.get("core_release") != str(RELEASE)
             or config.get("target_absent_bootstrap", {}).get("door_sites") !=
             [FIRST, SECOND, NATIVE]
