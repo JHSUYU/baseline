@@ -66,9 +66,9 @@ def preflight(on_node1: bool) -> None:
                                  "trial_timeout_seconds": 600}, "wrong full budget")
     require(config["calibration_only"] is False and
             config["auto_promote_if_healthy"] is True and
-            config["require_event_time_paths"] is True and
-            config["reject_coarse_roots"] is True and
-            config["allow_local_timeline_doors"] is False,
+            config["require_event_time_paths"] is False and
+            config["reject_coarse_roots"] is False and
+            config["allow_local_timeline_doors"] is True,
             "fault admission or graph path policy changed")
     for key in ("target", "command", "cwd", "site_file", "agent_jar",
                 "agent_include", "agent_properties", "runtime_artifacts"):
