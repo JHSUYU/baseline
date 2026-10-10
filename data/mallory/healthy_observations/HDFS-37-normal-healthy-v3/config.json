@@ -1,0 +1,148 @@
+{
+  "agent_arg_property": "maven-surefire-plugin.argLine",
+  "agent_include": [
+    "org.apache.hadoop.hdfs.server.datanode.DataStorage",
+    "org.apache.hadoop.hdfs.server.datanode.BPServiceActor",
+    "org.apache.hadoop.hdfs.server.common.StorageInfo",
+    "org.apache.hadoop.ipc.Server$RpcCall",
+    "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer",
+    "org.apache.hadoop.hdfs.server.datanode.DataXceiver",
+    "org.apache.hadoop.hdfs.MiniDFSCluster",
+    "org.apache.hadoop.hdfs.MiniDFSCluster$Builder",
+    "org.apache.hadoop.hdfs.server.datanode.DataNode"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs26-retry-io-admission-v2/releases/9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811/adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.adapters.hdfs.HdfsMiniClusterTransformer",
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "surefire_argline",
+  "auto_promote_if_healthy": false,
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 900,
+    "trial_timeout_basis": "test_local_normal_dn_phase_only",
+    "trial_timeout_seconds": 720,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "HDFS-37",
+  "cluster_test": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+  "command": [
+    "mvn",
+    "-B",
+    "-ntp",
+    "-pl",
+    "hadoop-hdfs-project/hadoop-hdfs",
+    "-Dtest=TestDFSRollback#testRollback",
+    "-Dmallory.hdfs37.normalDataNodeRollbackOnly=true",
+    "-Dsurefire.failIfNoSpecifiedTests=false",
+    "-Dtest.build.data={trial_dir}/hdfs-data",
+    "surefire:test"
+  ],
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f",
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/hdfs37-normal-node2-v3",
+  "expected_target_class_sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f",
+  "healthy_gate": {
+    "allow_local_timeline_doors": false,
+    "minimum_healthy_observed_path_doors": 1,
+    "require_exact_target_reached": true,
+    "require_named_target_node": true,
+    "require_nonempty_observed_graph_path": true,
+    "require_offline_audit_report_gate": true,
+    "require_target_exception_absent": true,
+    "required_junit_errors": 0,
+    "required_junit_failures": 0,
+    "required_junit_tests": 1
+  },
+  "mapping": {
+    "adapter_sha256": "9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811",
+    "agent_build": {
+      "artifact": "/users/ZhenyuLi/baseline/Mallory/instrumentation/target/mallory-agent.jar",
+      "command": [
+        "mvn",
+        "test",
+        "package"
+      ],
+      "cwd": "/users/ZhenyuLi/baseline/Mallory/instrumentation"
+    },
+    "agent_sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9",
+    "calibration_revision": "hdfs37_normal_dn_phase_node2_v3",
+    "compiled_artifact": "/users/ZhenyuLi/.mallory-worktrees/hdfs37-normal-node2-v3/hadoop-hdfs-project/hadoop-hdfs/target/classes",
+    "compiled_class_sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3/share/hadoop/hdfs/hadoop-hdfs-3.4.3.jar",
+    "compiled_jar_sha256": "23181c3b05e94bc9759087505cca5c9704a00bf1bbd98d9d722e7151ea95b162",
+    "compiled_test_class_sha256": "01c70adad4253c8aa6e677d52e8d222b7973d787eea332e4fc37288e61b94ef0",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3",
+    "distribution_root_env": "MALLORY_HDFS_DIST_ROOT",
+    "full_admission": false,
+    "healthy_seed_verified": false,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3",
+    "node_identity_binding_configured": true,
+    "node_identity_binding_verified": false,
+    "original_full_source_digest": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+    "patched_full_source_digest": "cb2487c401826dae1e2129de14fb888db0a9b7a7e232fd967e67860a9035ea28",
+    "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+    "source_overlay_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs37-normal-phase-v2/source-overlay-receipt.json",
+    "source_overlay_receipt_sha256": "e52a484c129951fb0a2150cc1cbffef34cd4245ead6837c2818346e72a1939b4",
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs37-normal-node2-v3",
+    "source_root_env": "MALLORY_HDFS_SOURCE_ROOT",
+    "status": "node2_compiled_healthy_pending",
+    "system_receipt": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/overlay-receipt.json",
+    "system_receipt_sha256": "03650a28cfde7175ad65dd139ef2e203fb6fae95d95eb2db42abd601a3157ab4",
+    "target_source_sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809",
+    "target_throw_kind": "athrow",
+    "test_local_phase_marker": "MALLORY_HDFS37_NORMAL_DATANODE_ROLLBACK_COMPLETE",
+    "test_source_sha256": "229beaa491c980fa44ca149d8f830c450fc923fb0b847694e795fa8fc5bc27c9"
+  },
+  "reject_coarse_roots": true,
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs26-retry-io-admission-v2/releases/9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811/adapter.jar",
+      "sha256": "9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs37-normal-phase-v2/HDFS-37.sites.json",
+      "sha256": "6d62574fa18a92f660aee53e5e2947d783f4cd1b701e058d1046dd9ae39c15d2"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs37-normal-node2-v3/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/DataStorage.class",
+      "sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs37-normal-node2-v3/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestDFSRollback.class",
+      "sha256": "01c70adad4253c8aa6e677d52e8d222b7973d787eea332e4fc37288e61b94ef0"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs37-normal-phase-v2/HDFS-37.sites.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs37-normal-node2-v3",
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (!(prevInfo.getLayoutVersion() >=\nDataNodeLayoutVersion.getCurrentLayoutVersion()\n&& prevInfo.getCTime() <= nsInfo.getCTime())) {  // cannot rollback\nthrow new InconsistentFSStateException(sd.getRoot(),\n\"Cannot rollback to a newer state.\\nDatanode previous state: LV = \"\n+ prevInfo.getLayoutVersion() + \" CTime = \" + prevInfo.getCTime()\n+ \" is newer than the namespace state: LV = \"\n+ DataNodeLayoutVersion.getCurrentLayoutVersion() + \" CTime = \"\n+ nsInfo.getCTime());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@940:branch:3",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@941:branch:4"
+    ],
+    "exception_class": "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException",
+    "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+    "nodes": [
+      "hdfs-cluster-2/dn0"
+    ],
+    "original_source_line": 947,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataStorage: void doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)>#u48",
+    "source_line": 947,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@947:throw:1"
+  }
+}
