@@ -1,0 +1,329 @@
+{
+  "case_id": "SOLR-09",
+  "classes": {
+    "door_owner": "a13bdec21685f267f30ca01db19338b0cb84e94813ba3471847687189c6e779f",
+    "target": "a76f7f732bd13437f37a44e4e0eaee13e053b0a6ae72b571bea1b3ec6b623c3b"
+  },
+  "classpath_jars": {
+    "contrib/analysis-extras/lib/icu4j-62.1.jar": "e5b0962e566003d68bf3ec7d87b60e279f5cc7aa93cbc4056432803046512478",
+    "contrib/analysis-extras/lib/morfologik-fsa-2.1.5.jar": "71e25acf42c1cada71042f3a87ea5df5f6f1512da600e1e180f3e3d388396d31",
+    "contrib/analysis-extras/lib/morfologik-polish-2.1.5.jar": "88e7f148053540c3c1a9d725e637f87376a10502a4b55f75698773ae07f6066e",
+    "contrib/analysis-extras/lib/morfologik-stemming-2.1.5.jar": "e1116fabc9025ea536cb9776e4f91ddc8aaccf9e8c8ecc380a29b5f4df4bc17e",
+    "contrib/analysis-extras/lib/morfologik-ukrainian-search-4.9.1.jar": "463d9054b8d4cfacb9cd69566395826a6fe32fb6e7da91dbf79d37ddf7d56ba0",
+    "contrib/analysis-extras/lib/opennlp-tools-1.9.2.jar": "6ecbbb0db47b2892360d5b77f76c48842de97f447ba21bcf6dce3f912773245c",
+    "contrib/analysis-extras/lucene-libs/lucene-analyzers-icu-8.11.4.jar": "58c77ae7f37abcecf06c5aca175074ee79814bc0dac6b87ff5020508a484d3b0",
+    "contrib/analysis-extras/lucene-libs/lucene-analyzers-morfologik-8.11.4.jar": "6918244bfcc39c5418ebb5b0a0b63ac931e29133ba68b493a3222ac0b89ae19e",
+    "contrib/analysis-extras/lucene-libs/lucene-analyzers-opennlp-8.11.4.jar": "0fec08b461c81fcff40214b2daacd145eaf4cb5d798944d18c6408d7e3452e13",
+    "contrib/analysis-extras/lucene-libs/lucene-analyzers-smartcn-8.11.4.jar": "bdadb4a422298b58f1f23c1e11b4a3d4e6a95db516cf096671b0484726b9fbc4",
+    "contrib/analysis-extras/lucene-libs/lucene-analyzers-stempel-8.11.4.jar": "4184046b5b2ed68f9c4b186ec1cf775af88a4eb1cba9e4b3c5bf7b6e5d71b9ac",
+    "dist/solr-analysis-extras-8.11.4.jar": "c31678e86cd383b41f791620fd1aa788a0fb53f72992e3f409074941ec4f3738",
+    "dist/solr-core-8.11.4.jar": "e83db498c6af8f3eca14483ab42fd9fe30bbf795ceacab3b4d5eaa66f2461536",
+    "dist/solr-solrj-8.11.4.jar": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517",
+    "dist/solr-test-framework-8.11.4.jar": "eaba1c8e8f322f3fb60156e54e628169c970328ab8a5815f79de198551fc2e96",
+    "dist/test-framework/lib/ant-1.10.14.jar": "4cbbd9243de4c1042d61d9a15db4c43c90ff93b16d78b39481da1c956c8e9671",
+    "dist/test-framework/lib/hamcrest-core-1.3.jar": "66fdef91e9739348df7a096aa384a5685f4e875584cce89386a7a47251c4d8e9",
+    "dist/test-framework/lib/junit-4.13.1.jar": "c30719db974d6452793fe191b3638a5777005485bae145924044530ffa5f6122",
+    "dist/test-framework/lib/junit4-ant-2.8.1.jar": "5839583e53d42b8282507be1d4e907a8af80a348bde0c3a3f36b5565c37f0664",
+    "dist/test-framework/lib/opentracing-mock-0.33.0.jar": "295f55eb6d29cd99b8b45a46eab47fb3098f65fc302668d9ea0294377d467c9a",
+    "dist/test-framework/lib/randomizedtesting-runner-2.8.1.jar": "38302cf4c5a8ba4bf0ff2f707340dcd230657b3a766d9df6e3783cce19c5acb5",
+    "dist/test-framework/lucene-libs/lucene-test-framework-8.11.4.jar": "9b55007c495669ec683eaf54b7559a5a74080c5380d582a82c286773b093348c",
+    "server/lib/ext/disruptor-3.4.2.jar": "f412ecbb235c2460b45e63584109723dea8d94b819c78c9bfc38f50cba8546c0",
+    "server/lib/ext/jcl-over-slf4j-1.7.36.jar": "ab57ca8fd223772c17365d121f59e94ecbf0ae59d08c03a3cb5b81071c019195",
+    "server/lib/ext/jul-to-slf4j-1.7.36.jar": "9e641fb142c5f0b0623d6222c09ea87523a41bf6bed48ac79940724010b989de",
+    "server/lib/ext/log4j-1.2-api-2.17.2.jar": "dd8c649a46c5d80ad11394d68c133ba8e9a91acf99b7b9920dd5b6ad3f5adfa8",
+    "server/lib/ext/log4j-api-2.17.2.jar": "09351b5a03828f369cdcff76f4ed39e6a6fc20f24f046935d0b28ef5152f8ce4",
+    "server/lib/ext/log4j-core-2.17.2.jar": "5adb34ff4197cd16a8d24f63035856a933cb59562a6888dde86e9450fcfef646",
+    "server/lib/ext/log4j-layout-template-json-2.17.2.jar": "32c22efd1c3f468d5b0e2867e9f562d3db64386916d8bb0a57779a33e58d51e7",
+    "server/lib/ext/log4j-slf4j-impl-2.17.2.jar": "77912d47190a5d25d583728e048496a92a2cb32308b71d3439931d7719996637",
+    "server/lib/ext/log4j-web-2.17.2.jar": "1111bc12718a8ba40d6a7f40afb131188bbb998bb1f16ae827142509fa2f8598",
+    "server/lib/ext/slf4j-api-1.7.36.jar": "d3ef575e3e4979678dc01bf1dcce51021493b4d11fb7f1be8ad982877c16a1c0",
+    "server/lib/http2-common-9.4.53.v20231009.jar": "7ac9ae234cbeb06a32fc4b4e9ff1a57a9c7e30803a3618461f93e507862fe6e4",
+    "server/lib/http2-hpack-9.4.53.v20231009.jar": "d4573925bc87f86d31df08af661bf75b0adb367699e58b04fc84e182e754e068",
+    "server/lib/http2-server-9.4.53.v20231009.jar": "a09c26d615c5f7d2b9b8dd0adc919cc89cc5a9bedee49699386a4da71175ccbd",
+    "server/lib/javax.servlet-api-3.1.0.jar": "af456b2dd41c4e82cf54f3e743bc678973d9fe35bd4d3071fa05c7e5333b8482",
+    "server/lib/jetty-alpn-java-server-9.4.53.v20231009.jar": "fd1c8ab838897e8b2e704f3245a6807e8e3915deee624a37f8c0ebd90feb31a9",
+    "server/lib/jetty-alpn-server-9.4.53.v20231009.jar": "22970591a6b7446f23f8384cac63229f29faefcc1f0e632b60df9fd6d64fbf43",
+    "server/lib/jetty-continuation-9.4.53.v20231009.jar": "f00b5ec1cd2c0c29b7f1bde11f519f0e1cc854b40f292c2a73f20f4617ea6adf",
+    "server/lib/jetty-deploy-9.4.53.v20231009.jar": "a5d19d3ffb57011eb83db81193a13ff42facee76b1f17f8e2686a4a4e7a375fb",
+    "server/lib/jetty-http-9.4.53.v20231009.jar": "c0a0cbd25998a13ce68481d6002757e6489ea0253463db761fec0cb30d15d612",
+    "server/lib/jetty-io-9.4.53.v20231009.jar": "779a91750a60957c613ce5013404269717c504c2b21f3a73145e81c3dc41c67f",
+    "server/lib/jetty-jmx-9.4.53.v20231009.jar": "bdfe14e159a40934c13e53fe9f3412a5be83e5eea70433dcae72b5c89311d6af",
+    "server/lib/jetty-rewrite-9.4.53.v20231009.jar": "508131b99f2c8457e90f692780ed505ab1c94cc8f2fdb92f988e4de4cfe4ba22",
+    "server/lib/jetty-security-9.4.53.v20231009.jar": "6d958d0065013e0a8d64b3e683d2301cf83de4a25d34552ad60714b6cbe2a7be",
+    "server/lib/jetty-server-9.4.53.v20231009.jar": "9c4e9c6cb0a7a541031500af0823b678f65d809f481efa9cadd1ff81bda19f78",
+    "server/lib/jetty-servlet-9.4.53.v20231009.jar": "b0d372f7033b42ff72c3639d0da9c9fc0d84a89f548f0b8888716863424ed4b7",
+    "server/lib/jetty-servlets-9.4.53.v20231009.jar": "246020daf724a9679b4743f679f8e8acc3be3c662b8b49757a75e1bb32e80ebb",
+    "server/lib/jetty-util-9.4.53.v20231009.jar": "7e5370022ecd1f682653641169a33e62e26730dd1e786433bed506cb0dcb1abc",
+    "server/lib/jetty-webapp-9.4.53.v20231009.jar": "eb9ccd5f9cbf47bbeafb153fbfb53ff3cf34c07778df68247649ca00a9f599de",
+    "server/lib/jetty-xml-9.4.53.v20231009.jar": "c9205d81626888be957a27fd1f0507e31bd01d839f1cefea715079648b4f7e0b",
+    "server/lib/metrics-core-4.1.5.jar": "8ccf2d95d7f31cf09a222e02c74446560d273fdd7f7935631f1f21e6eb1455b0",
+    "server/lib/metrics-graphite-4.1.5.jar": "f6251b007b988e780ac0df696d9ddfe0f3bb0bbcd6913f38b2b4322130dda6cd",
+    "server/lib/metrics-jetty9-4.1.5.jar": "4818bcabf7a8fb491df5d9c23777f2cb1c210d71d9510b829dc71fb0e4b9bfad",
+    "server/lib/metrics-jmx-4.1.5.jar": "f8109f45bab2c1cb8e71df4f2515500583d854edb30bf33c604bf1ff04204fe8",
+    "server/lib/metrics-jvm-4.1.5.jar": "fbb52778e1c421ba419740dddf925f770f24048208fefed97540b20b3229c32a",
+    "server/solr-webapp/webapp/WEB-INF/lib/antlr4-runtime-4.5.1-1.jar": "ffca72bc2a25bb2b0c80a58cee60530a78be17da739bb6c91a8c2e3584ca099e",
+    "server/solr-webapp/webapp/WEB-INF/lib/apiguardian-api-1.1.2.jar": "b509448ac506d607319f182537f0b35d71007582ec741832a1f111e5b5b70b38",
+    "server/solr-webapp/webapp/WEB-INF/lib/asm-9.3.jar": "1263369b59e29c943918de11d6d6152e2ec6085ce63e5710516f8c67d368e4bc",
+    "server/solr-webapp/webapp/WEB-INF/lib/asm-commons-9.3.jar": "a347c24732db2aead106b6e5996a015b06a3ef86e790a4f75b61761f0d2f7f39",
+    "server/solr-webapp/webapp/WEB-INF/lib/avatica-core-1.23.0.jar": "9e138b51f28da396fec4e29574f05d60c8ea56551c2a6213fdb90f269e63ed7f",
+    "server/solr-webapp/webapp/WEB-INF/lib/avatica-metrics-1.23.0.jar": "96a3ff3def22702c9c231256c55d1f57219ba356c02656191f04036d33932318",
+    "server/solr-webapp/webapp/WEB-INF/lib/caffeine-2.9.3.jar": "1e0a7bbef1dd791653143f3f05d0e489934bf5481e58a87c9e619cd46b68729b",
+    "server/solr-webapp/webapp/WEB-INF/lib/calcite-core-1.35.0.jar": "0013447d7e864c4ffbe825b1ccee55083fc13b8506621871567cf1e6a6bfbef0",
+    "server/solr-webapp/webapp/WEB-INF/lib/calcite-linq4j-1.35.0.jar": "5cf883fc78fe25a22461470d61d79589e0230ba45a1e72826aae2f8771135a89",
+    "server/solr-webapp/webapp/WEB-INF/lib/checker-qual-3.23.0.jar": "aa09918afa2fb0695c3294a4ff80a3bab1820cc6121cf2ecd34d5b16cba66d7b",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-cli-1.4.jar": "fd3c7c9545a9cdb2051d1f9155c4f76b1e4ac5a57304404a6eedb578ffba7328",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-codec-1.15.jar": "b3e9f6d63a790109bf0d056611fbed1cf69055826defeb9894a71369d246ed63",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-collections-3.2.2.jar": "eeeae917917144a68a741d4c0dff66aa5c5c5fd85593ff217bced3fc8ca783b8",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-collections4-4.4.jar": "1df8b9430b5c8ed143d7815e403e33ef5371b2400aadbe9bda0883762e0846d1",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-compiler-3.1.8.jar": "e7b252bb85a6f619e97702aebdc709aaaa6d04a7279eec08829f4d21a24e2eef",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-configuration2-2.8.0.jar": "e5c46e4b0b1acddbc96651838c19d3df70da92dfb5107a6e4c42cb92d3a300bd",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-exec-1.3.jar": "cb49812dc1bfb0ea4f20f398bcae1a88c6406e213e67f7524fb10d4f8ad9347b",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-io-2.11.0.jar": "961b2f6d87dbacc5d54abf45ab7a6e2495f89b75598962d8c723cea9bc210908",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-lang-2.6.jar": "50f11b09f877c294d56f24463f47d28f929cf5044f648661c0f0cfbae9a2f49c",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-lang3-3.10.jar": "28968ae55fff465494083aeba856f8824c34902329882bf61e77246a91e25aa9",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-math3-3.6.1.jar": "1e56d7b058d28b65abd256b8458e3885b674c1d588fa43cd7d1cbb9c7ef2b308",
+    "server/solr-webapp/webapp/WEB-INF/lib/commons-text-1.10.0.jar": "770cd903fa7b604d1f7ef7ba17f84108667294b2b478be8ed1af3bffb4ae0018",
+    "server/solr-webapp/webapp/WEB-INF/lib/curator-client-2.13.0.jar": "62ab2201b5b9af63b215a4e6829dbe7d553a0805cfb0b1a665f9b49da8270c51",
+    "server/solr-webapp/webapp/WEB-INF/lib/curator-framework-2.13.0.jar": "db084e5e0fed0548a8128f12a3e7a15c875c9595e75316c9578d64e77375c4a9",
+    "server/solr-webapp/webapp/WEB-INF/lib/curator-recipes-2.13.0.jar": "22be05c1a3e6c5ede22e77372b08dc631a3b93b64acb7f682537ea65a6ddba06",
+    "server/solr-webapp/webapp/WEB-INF/lib/disruptor-3.4.2.jar": "f412ecbb235c2460b45e63584109723dea8d94b819c78c9bfc38f50cba8546c0",
+    "server/solr-webapp/webapp/WEB-INF/lib/eigenbase-properties-1.1.5.jar": "9394a752411d9729a083cf578ed9666ec9a7f59c18c9ca889127480a44c7285c",
+    "server/solr-webapp/webapp/WEB-INF/lib/failureaccess-1.0.1.jar": "a171ee4c734dd2da837e4b16be9df4661afab72a41adaf31eb84dfdaf936ca26",
+    "server/solr-webapp/webapp/WEB-INF/lib/guava-32.1.3-jre.jar": "6d4e2b5a118aab62e6e5e29d185a0224eed82c85c40ac3d33cf04a270c3b3744",
+    "server/solr-webapp/webapp/WEB-INF/lib/hadoop-annotations-3.2.4.jar": "9fb048b10ae77f46d1979de54ad27c5902265c613fe47315fce3ddffb5195ea4",
+    "server/solr-webapp/webapp/WEB-INF/lib/hadoop-auth-3.2.4.jar": "c99e6de50a7ce2150a2ed7d68eb3c26cc0bb416e0a900a19f2492bb37d03463c",
+    "server/solr-webapp/webapp/WEB-INF/lib/hadoop-common-3.2.4.jar": "657c67a251e8b5efd42deb14fdf84e3ccf4f6ae174d39c1fe9c2fac1b397d971",
+    "server/solr-webapp/webapp/WEB-INF/lib/hadoop-hdfs-client-3.2.4.jar": "7f98c873956ff2ab87dbb8b4a9e6da2b8fb0eb7740846205f0dcf1f1a27f0fab",
+    "server/solr-webapp/webapp/WEB-INF/lib/hppc-0.8.1.jar": "f540703478636d88f699f4666242e6fc9175a996c08ddceaf02106517b970406",
+    "server/solr-webapp/webapp/WEB-INF/lib/htrace-core4-4.1.0-incubating.jar": "5d45b7904857c3e4ad36b3bcc57be2d2c5f308c69b5f6a58bd86aa7d48a25ef6",
+    "server/solr-webapp/webapp/WEB-INF/lib/http2-client-9.4.53.v20231009.jar": "31a086495b0aec03dcbe478df3a9785bde181b4f4ec423e085137247c9bc4410",
+    "server/solr-webapp/webapp/WEB-INF/lib/http2-common-9.4.53.v20231009.jar": "7ac9ae234cbeb06a32fc4b4e9ff1a57a9c7e30803a3618461f93e507862fe6e4",
+    "server/solr-webapp/webapp/WEB-INF/lib/http2-hpack-9.4.53.v20231009.jar": "d4573925bc87f86d31df08af661bf75b0adb367699e58b04fc84e182e754e068",
+    "server/solr-webapp/webapp/WEB-INF/lib/http2-http-client-transport-9.4.53.v20231009.jar": "6ed66b29fcff6bc5707c3164604d19316ec74f31a97f3699b20caa4299510618",
+    "server/solr-webapp/webapp/WEB-INF/lib/httpclient-4.5.13.jar": "6fe9026a566c6a5001608cf3fc32196641f6c1e5e1986d1037ccdbd5f31ef743",
+    "server/solr-webapp/webapp/WEB-INF/lib/httpclient5-5.1.3.jar": "28c759254f4e35319e078bb6ffea75676608dc12cb243b24fb3c8732522977fe",
+    "server/solr-webapp/webapp/WEB-INF/lib/httpcore-4.4.14.jar": "f956209e450cb1d0c51776dfbd23e53e9dd8db9a1298ed62b70bf0944ba63b28",
+    "server/solr-webapp/webapp/WEB-INF/lib/httpcore5-5.1.3.jar": "f2bf2f2c7772169c9e30699719667ad30f9b46c4e9d7841907deb2d12d9923fe",
+    "server/solr-webapp/webapp/WEB-INF/lib/httpcore5-h2-5.1.3.jar": "d0e78ba15aa8ebe77982b660ac4b09a95d6e035dbdbea762577dc1c8e2935807",
+    "server/solr-webapp/webapp/WEB-INF/lib/httpmime-4.5.13.jar": "06e754d99245b98dcc2860dcb43d20e737d650da2bf2077a105f68accbd5c5cc",
+    "server/solr-webapp/webapp/WEB-INF/lib/j2objc-annotations-1.3.jar": "21af30c92267bd6122c0e0b4d20cccb6641a37eaf956c6540ec471d584e64a7b",
+    "server/solr-webapp/webapp/WEB-INF/lib/jackson-annotations-2.15.2.jar": "04e21f94dcfee4b078fa5a5f53047b785aaba69d19de392f616e7a7fe5d3882f",
+    "server/solr-webapp/webapp/WEB-INF/lib/jackson-core-2.15.2.jar": "303c99e82b1faa91a0bae5d8fbeb56f7e2adf9b526a900dd723bf140d62bd4b4",
+    "server/solr-webapp/webapp/WEB-INF/lib/jackson-databind-2.15.2.jar": "0eb2fdad6e40ab8832a78c9b22f58196dd970594e8d3d5a26ead87847c4f3a96",
+    "server/solr-webapp/webapp/WEB-INF/lib/jackson-dataformat-smile-2.15.2.jar": "bea13dae0b0ead8d1b108d4c621a918bdbbe39b42a8366d82b39b169bb03d408",
+    "server/solr-webapp/webapp/WEB-INF/lib/janino-3.1.8.jar": "bd38a9fd77a9e94a7306cea018f2a4786fa2e8cd022edade8f10be2fcfae7037",
+    "server/solr-webapp/webapp/WEB-INF/lib/java-semver-0.9.0.jar": "2218c73b40f9af98b570d084420c1b4a81332297bd7fc27ddd552e903be8e93c",
+    "server/solr-webapp/webapp/WEB-INF/lib/jetty-alpn-client-9.4.53.v20231009.jar": "d28732d58add71647c01c9892d481eb30053d8327afad24a31645b22c2fc5c1c",
+    "server/solr-webapp/webapp/WEB-INF/lib/jetty-alpn-java-client-9.4.53.v20231009.jar": "6a52f75aa20153bdd6dd6563df312c30893b3e5d9f9d9281ecaecd63cec09a06",
+    "server/solr-webapp/webapp/WEB-INF/lib/jetty-client-9.4.53.v20231009.jar": "9f5b83f64307bbb5d42dd4273e88d642214b275490363bac954369f029643c66",
+    "server/solr-webapp/webapp/WEB-INF/lib/jetty-http-9.4.53.v20231009.jar": "c0a0cbd25998a13ce68481d6002757e6489ea0253463db761fec0cb30d15d612",
+    "server/solr-webapp/webapp/WEB-INF/lib/jetty-io-9.4.53.v20231009.jar": "779a91750a60957c613ce5013404269717c504c2b21f3a73145e81c3dc41c67f",
+    "server/solr-webapp/webapp/WEB-INF/lib/jetty-util-9.4.53.v20231009.jar": "7e5370022ecd1f682653641169a33e62e26730dd1e786433bed506cb0dcb1abc",
+    "server/solr-webapp/webapp/WEB-INF/lib/jose4j-0.6.5.jar": "0c2d2616b42dba712ff7a05a95ed9d44cf9b71f5632eeca05dbcfce3ba3375b2",
+    "server/solr-webapp/webapp/WEB-INF/lib/json-path-2.7.0.jar": "de82f0e4602eea0187df36779ae8cfc1653b6d920125674af4d365d0bca59508",
+    "server/solr-webapp/webapp/WEB-INF/lib/jts-core-1.19.0.jar": "dbb8644cf324123d06c27aa982f570811e10b4cb1f2aef893b00de237d33efc0",
+    "server/solr-webapp/webapp/WEB-INF/lib/jts-io-common-1.19.0.jar": "e0f0c62024d4282f5f905de1abd2cc96f975a51d9e8d98254234fa14b16bbe9b",
+    "server/solr-webapp/webapp/WEB-INF/lib/kerb-core-1.0.1.jar": "4db26bc4a106603044d8883f7280abc803b055b36f5c510a3fffc41e5de4c651",
+    "server/solr-webapp/webapp/WEB-INF/lib/kerb-util-1.0.1.jar": "9cb1a2715a35cbabc9e8f1be3287bb086100763847e2f17577b72a025f8adaab",
+    "server/solr-webapp/webapp/WEB-INF/lib/kerby-asn1-1.0.1.jar": "010a3c33e5b652f11cb29a6e66826a24331e526cf58662dccb4d6695fc6ca59d",
+    "server/solr-webapp/webapp/WEB-INF/lib/kerby-pkix-1.0.1.jar": "0410bc1950b57f4792ea6b86df59a2ee87e4ad69b33a17ded438e6686894346a",
+    "server/solr-webapp/webapp/WEB-INF/lib/listenablefuture-9999.0-empty-to-avoid-conflict-with-guava.jar": "b372a037d4230aa57fbeffdef30fd6123f9c0c2db85d0aced00c91b974f33f99",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-analyzers-common-8.11.4.jar": "cdd75140d0033c8451d46b42ade5e7f2619a16dfc2cdc9cfc8d68adb752dd8f6",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-analyzers-kuromoji-8.11.4.jar": "295850da9631c1e96e109d7ff5005ce52eaa45124c6e21bdad6df5ed215f92a1",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-analyzers-nori-8.11.4.jar": "f329a058adfe34b19f40ad0de4e3d6bb3904ea406eec588701eebf55ce2940d2",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-analyzers-phonetic-8.11.4.jar": "56074e19df66828bc33d27a917f17325195a47cd6838cec5314942052681d246",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-backward-codecs-8.11.4.jar": "704db9fa767e60689b73efe2b841a2e07dfc854241a9ee899dbe2f4bc6ac125f",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-classification-8.11.4.jar": "424e78e354000bcc28460a5f856bddfa51ea53043ec83cde0f4a74cf79c0c961",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-codecs-8.11.4.jar": "185aa44a0e43c671fd9b3ea322253cf2221a1d580394945441159dd553a16361",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-core-8.11.4.jar": "1a2aae423e3749578524dfdd94377dd8f24d94fa2685b41a34db0ebc1d04f00d",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-expressions-8.11.4.jar": "211cbda8f3c732555257b094cf29a5766c2ddd08506da4141c81b3e58719d34a",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-grouping-8.11.4.jar": "724fa7f359778b394eda00b31632886e6d4450d36a1b0644a5b6b330697dc5b8",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-highlighter-8.11.4.jar": "547067751c73f8d3ee8fb0c5fb5f7c6eef5cc6ba8cb31facabe12f3e8864cd54",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-join-8.11.4.jar": "7a787b08d835dcfb83a8b3ac97b574f699a2d3c93170f99234248900e99ec3ef",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-memory-8.11.4.jar": "1c8bb6a9f6cc4837c44df9c25c58134d8a7e867eb6c0f865a808cf36ac5071a4",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-misc-8.11.4.jar": "7f3d8ed7b97085594297fc82babfc7e41cf5872d303ac885df6bdd222ff69508",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-queries-8.11.4.jar": "895870673ecbe05aec0fea72c0c686f272bdf90344b9f050d9fa1e814ce1577b",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-queryparser-8.11.4.jar": "08ef0c517f5ef756981ce954129e9c9ca764b1e3e6be57c723c665249f28e38d",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-sandbox-8.11.4.jar": "d925fd0275df1d8b0aba987c958024644a5670d468806098ef65bf6e054da665",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-spatial-extras-8.11.4.jar": "a695891a0ce78c42c5dfa2f03787de34ef099cb3587e600c58cfdb90c8bfc5fa",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-spatial3d-8.11.4.jar": "653453aac63153d113ee83813d3054e74839b1da6453d43138fca99ac341f8d7",
+    "server/solr-webapp/webapp/WEB-INF/lib/lucene-suggest-8.11.4.jar": "d61775df8612b2ba5c30976fc1601cbef6f66aa494708c4fcef2ecf1347259b1",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-buffer-4.1.99.Final.jar": "a144d6807e51ab451f6c9b2acd5b729f1a10bb6c192890403f5df73c9b10ee3e",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-codec-4.1.99.Final.jar": "822a998126408411feef09cf5f51fafee21895f3312d9f8ede77f5978ae28c4f",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-common-4.1.99.Final.jar": "65fb8f86768f458703f98a5e04cb543d9bf360c0dcc83396cf6c09be51f9f534",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-handler-4.1.99.Final.jar": "f3988be5dffb5a99a2b05741b46df1ff0f1d911da6185c87596b0ffb5734e751",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-resolver-4.1.99.Final.jar": "e228b16f97b1d0c95df0893055b9b57faf2f1d7afc8508a74877018d00d1da27",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-transport-4.1.99.Final.jar": "ceab3b2e7a92f4f152cf9cb9c4fc732e54091c9d2c128170131e5ffd9ee16329",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-transport-classes-epoll-4.1.99.Final.jar": "8fff8c2e4b361b0144de2f73580133270123c35c4949ebfeb7e7c83e643fedbd",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-transport-native-epoll-4.1.99.Final.jar": "99d5210e0a3c69ac72c5daedb0d10a736bca43d6e659c8376cc02ae5d4e01b5c",
+    "server/solr-webapp/webapp/WEB-INF/lib/netty-transport-native-unix-common-4.1.99.Final.jar": "723dc7beba85250900d4005a83fcd02cdfcec41b5a57d9ca16b84052f56939dc",
+    "server/solr-webapp/webapp/WEB-INF/lib/opentracing-api-0.33.0.jar": "4534541b8e9f41a17bcdf1d09affe45b98c13574db6e529a93a58264b9472c7c",
+    "server/solr-webapp/webapp/WEB-INF/lib/opentracing-noop-0.33.0.jar": "8529f91e10047b2b94cb21b50086a3d3913fa4da43594eddbd9ecf5917efe040",
+    "server/solr-webapp/webapp/WEB-INF/lib/opentracing-util-0.33.0.jar": "22c5dfbb9b0e2f08f7371bf3d68372c7604c804d3129499b43f37a8877c4379e",
+    "server/solr-webapp/webapp/WEB-INF/lib/proj4j-1.1.5.jar": "73d128fbc63ab51c6811edb7da6a470949a1166050131aa483e612b3a981ca1e",
+    "server/solr-webapp/webapp/WEB-INF/lib/protobuf-java-3.15.0.jar": "2f4a3e3f02a5c53900d3931cb5aac432bd4322e41e4351569946e3389145dc9b",
+    "server/solr-webapp/webapp/WEB-INF/lib/re2j-1.2.jar": "e9dc705fd4c570344b54a7146b2e3a819cdc271a29793f4acc1a93b56a388e59",
+    "server/solr-webapp/webapp/WEB-INF/lib/rrd4j-3.5.jar": "89305b495a7ee9e90fc61e183512cbcdd9d9211ed662c3ae1b8052c1ca689448",
+    "server/solr-webapp/webapp/WEB-INF/lib/s2-geometry-library-java-1.0.0.jar": "8e2c74fbe98adf02e93cc831c3a2d9fda9c4c8577eff7bec3ce9ce5863abbda7",
+    "server/solr-webapp/webapp/WEB-INF/lib/simplemagic-1.17.jar": "9c705c1587427a8706fea56e3902bb53c98368ff1fe23ad83cf60e451933e1cb",
+    "server/solr-webapp/webapp/WEB-INF/lib/snappy-java-1.1.10.1.jar": "5a6224cb7f946f5a7db9c77e86af6ccd43ba5ae38b1a15bea23113cc83f8fabd",
+    "server/solr-webapp/webapp/WEB-INF/lib/solr-core-8.11.4.jar": "e83db498c6af8f3eca14483ab42fd9fe30bbf795ceacab3b4d5eaa66f2461536",
+    "server/solr-webapp/webapp/WEB-INF/lib/solr-solrj-8.11.4.jar": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517",
+    "server/solr-webapp/webapp/WEB-INF/lib/spatial4j-0.7.jar": "9adccb1d87f7e0be70567b952c65552607e2dcbde32a1579a8a639bdcfa1a3c8",
+    "server/solr-webapp/webapp/WEB-INF/lib/stax2-api-4.2.1.jar": "678567e48b51a42c65c699f266539ad3d676d4b1a5b0ad7d89ece8b9d5772579",
+    "server/solr-webapp/webapp/WEB-INF/lib/t-digest-3.1.jar": "271f3a5a4bc79d7554c9e9e557669af83bcbda0db871e0b8c969d56e51c123a9",
+    "server/solr-webapp/webapp/WEB-INF/lib/value-annotations-2.9.2.jar": "23ee1c5f78eb0c569db52470f78750599b3d90011c75f01f8616de6a6dfe574d",
+    "server/solr-webapp/webapp/WEB-INF/lib/woodstox-core-6.5.1.jar": "c928d60665c6415fb1c39775cf95cfc44f7f4580cf5ab01b1c380ebffd76887f",
+    "server/solr-webapp/webapp/WEB-INF/lib/zookeeper-3.6.2.jar": "68294c8f41552add34d92181edf18d6e40ad949113c73a50518818a05ac95d76",
+    "server/solr-webapp/webapp/WEB-INF/lib/zookeeper-jute-3.6.2.jar": "f95a9c95598daffc707ec074411e4b52eef3e7426cedd3e4b3cb1b982e8c783f"
+  },
+  "door": {
+    "callee": "org.apache.solr.common.cloud.ZkStateReader#waitForState(Ljava/lang/String;JLjava/util/concurrent/TimeUnit;Ljava/util/function/Predicate;)V",
+    "class": "org.apache.solr.cloud.api.collections.OverseerCollectionMessageHandler",
+    "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)Z",
+    "exception_class": "java.util.concurrent.TimeoutException",
+    "line": 434,
+    "method": "waitForCoreNodeGone"
+  },
+  "files": {
+    "adapter": {
+      "bytes": 276476,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/target/mallory-solr-adapter-v38.jar",
+      "sha256": "86915aa43203d934431126f9cfbe6f534125dc8a198bf7e9a074a3695d8f5947"
+    },
+    "audit": {
+      "bytes": 6245,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/healthy-role-node1-v1/audit_healthy.py",
+      "sha256": "54a6012d0a55eabc601c80d85d10e887c891cc567b4e4755fddd18726ee6bf10"
+    },
+    "config": {
+      "bytes": 7926,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/healthy-role-node1-v1/config.json",
+      "sha256": "560f4e9ffb1876fe404269397c83bbb0a1b3e9a74306bc5fae6b0d5e9b8ea94e"
+    },
+    "core___init__": {
+      "bytes": 81,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/work/Mallory/core/__init__.py",
+      "sha256": "8e2c5945bbfb5d5f3dbf2d058a22f95088106d5506e535c0c3c4430b0c33ba1a"
+    },
+    "core_campaign": {
+      "bytes": 42224,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/work/Mallory/core/campaign.py",
+      "sha256": "658bf806c45117db61201042c43015cac8e504a4f82eb3a166dd71c8a2a6d8dd"
+    },
+    "core_events": {
+      "bytes": 2506,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/work/Mallory/core/events.py",
+      "sha256": "f192ff6447f09600026bcf736ef6e0e471a23955315f0d846e29e88980234153"
+    },
+    "core_feedback": {
+      "bytes": 21444,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/work/Mallory/core/feedback.py",
+      "sha256": "7ae1953e388b644c15ce629d2688c38e9d15f66f5e5bb352e0020b20cc99101c"
+    },
+    "core_graph": {
+      "bytes": 25055,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/work/Mallory/core/graph.py",
+      "sha256": "b3375c52d8f69f52420b3e374cfc9c6a6aeec0d9f7182df63284d52b0140477d"
+    },
+    "core_jar": {
+      "bytes": 6730634,
+      "path": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-core-8.11.4.jar",
+      "sha256": "e83db498c6af8f3eca14483ab42fd9fe30bbf795ceacab3b4d5eaa66f2461536"
+    },
+    "core_junit": {
+      "bytes": 10148,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/work/Mallory/core/junit.py",
+      "sha256": "2575ba497b0bcf14c96f9ab8025e855a0602cbcb76f88c21f276d53234629595"
+    },
+    "core_scheduler": {
+      "bytes": 6759,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/work/Mallory/core/scheduler.py",
+      "sha256": "454c9f0c0f827c80825849ec670e8026aac1a41db559e5bf89d48455174e58c5"
+    },
+    "door_owner_source": {
+      "bytes": 46651,
+      "path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/cloud/api/collections/OverseerCollectionMessageHandler.java",
+      "sha256": "15313dd15ba45ade14ae077b21b7972e26ae49c6400305c2b0605c5da8232d51"
+    },
+    "pilot_junit_source": {
+      "bytes": 1623,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/src/pilot/java/edu/uva/liftlab/mallory/solr/PilotJUnit.java",
+      "sha256": "32c27554d200c84fcdd43aa240e05dac2e3f8790ac1256f86d06691151b2a72c"
+    },
+    "preflight": {
+      "bytes": 10363,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/healthy-role-node1-v1/preflight.py",
+      "sha256": "94343876af63e5a536f1dbec651b63aef10aef87b9afce50c9215f3b92b382a8"
+    },
+    "readme": {
+      "bytes": 2990,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/healthy-role-node1-v1/README.md",
+      "sha256": "a9b3604b929ece3a31fe98cec6a258c814a4a64a735404a95fe50ec0b907464e"
+    },
+    "role_agent": {
+      "bytes": 534276,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/releases/v1/mallory-agent.jar",
+      "sha256": "518030007d63965b483c4875d40b104701be6bf32a845eafe655e54ef06d23f7"
+    },
+    "role_registry_source": {
+      "bytes": 2399,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/runtime-role-v1/agent/src/main/java/edu/uva/liftlab/mallory/instrumentation/CommandRoleBindingRegistry.java",
+      "sha256": "0f630ae43591fc8996c91c41049a5965e4cb6e6b6e63e7777ef596cef6a736f4"
+    },
+    "runner": {
+      "bytes": 3431,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/healthy-role-node1-v1/run_healthy.py",
+      "sha256": "2e6b767985bb8c9e5f2802bf3844be249e6f1a088400b645d1eb7993f37c2dd2"
+    },
+    "sites": {
+      "bytes": 1850,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-09/healthy-role-node1-v1/sites.json",
+      "sha256": "423183ec763ad24da91bd8bd16e5b16164b694ae92651642ef622b1dfd7bc597"
+    },
+    "solrj_jar": {
+      "bytes": 2397599,
+      "path": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-solrj-8.11.4.jar",
+      "sha256": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517"
+    },
+    "state_reader_source": {
+      "bytes": 96476,
+      "path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java",
+      "sha256": "83e14eadfcc4896ff05f9ac77706fdb683e0c181caeee21802f8861f68ac373d"
+    },
+    "target_source": {
+      "bytes": 12907,
+      "path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/java/org/apache/solr/cloud/api/collections/DeleteReplicaCmd.java",
+      "sha256": "da2c12e6a8bc2cfd279fcebdb4c1bc4929c6c020e5aca975a3b5e7c49a6ca793"
+    },
+    "test_source": {
+      "bytes": 22306,
+      "path": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4/solr/core/src/test/org/apache/solr/cloud/DeleteReplicaTest.java",
+      "sha256": "70e79d52bbc9e312cfb739d727b57ee99f66956068ab0a2a65df46efb13bd970"
+    },
+    "v20_inventory": {
+      "bytes": 693586,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v20/inventory.json",
+      "sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47"
+    },
+    "v38_junit_implementation": {
+      "bytes": 14450,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/solr_junit_runner_v14.py",
+      "sha256": "d944bde8606db884bab00015a7afb21442cc80d66fb7e4a43ef086bc799b3844"
+    },
+    "v38_junit_runner": {
+      "bytes": 290,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v38/run_pilot.py",
+      "sha256": "c4056d08d26830d591e6a4aaf1ca063554f9da943f1162623b911718dcfe2423"
+    },
+    "v38_pilot_runner": {
+      "bytes": 1624,
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/run_pilot_v38.py",
+      "sha256": "b588685f79b1ec3ea086e598ea6ba74bcc1c0b975c8d90c5c4546b6d744379cf"
+    }
+  },
+  "host": "node1",
+  "output": "/users/ZhenyuLi/baseline/data/mallory/calibration_solr09_healthy_role_v1_node1/SOLR-09",
+  "schema_version": 1,
+  "source_commit": "e27f44e3d78dfcec230c97e0a1240e3751daeff9"
+}
