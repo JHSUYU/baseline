@@ -49,6 +49,12 @@ class Faithful55StaticTests(unittest.TestCase):
 
     def test_bounded_outage_returns_to_real_updater_rpc(self):
         probe = (Path(__file__).resolve().parent / 'Hdfs55FaithfulProbe.java').read_text()
+        runner = (Path(__file__).resolve().parent / 'run.py').read_text()
+        test_source = self.generated[
+            'test/org/apache/hadoop/hdfs/server/balancer/TestBalancerWithEncryptedTransfer.java']
+        self.assertIn('Long.getLong("hdfs55f.maxOutageMs", 120000L)', probe)
+        self.assertIn("'-Dhdfs55f.maxOutageMs=120000'", runner)
+        self.assertIn('@Test(timeout=180000)', test_source)
         gate = probe[probe.index('public static synchronized void beforeUpdaterGetBlockKeys('):]
         gate = gate[:gate.index('public static synchronized void foregroundKeysFetched(')]
         self.assertIn('updaterFaults >= MAX_UPDATER_IO || elapsedMs >= MAX_OUTAGE_MS', gate)

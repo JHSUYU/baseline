@@ -21,7 +21,7 @@ public final class Hdfs55FaithfulProbe {
   private static final boolean INJECT = Boolean.getBoolean("hdfs55f.inject");
   private static final long WAIT_MS = Long.getLong("hdfs55f.waitMs", 80000L);
   private static final int MAX_UPDATER_IO = Integer.getInteger("hdfs55f.maxUpdaterIo", 512);
-  private static final long MAX_OUTAGE_MS = Long.getLong("hdfs55f.maxOutageMs", 200000L);
+  private static final long MAX_OUTAGE_MS = Long.getLong("hdfs55f.maxOutageMs", 120000L);
   private static final Map<Integer, Set<Integer>> DN_KEYS = new HashMap<>();
   private static final Map<Integer, String> DN_UUID = new HashMap<>();
   private static final Map<Integer, String> DN_ENDPOINT = new HashMap<>();
