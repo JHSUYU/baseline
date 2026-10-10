@@ -61,7 +61,7 @@ class ReportEvidenceTest(unittest.TestCase):
         report = build(baseline / "Mallory/cases/inventory.json", results)
         skipped = {row["case_id"] for row in report["rows"]
                    if row["skipped_no_suitable_cluster_test"]}
-        self.assertEqual({"HBASE-33", "HDFS-13", "HDFS-32", "HDFS-33", "SOLR-16",
+        self.assertEqual({"HBASE-33", "HDFS-13", "HDFS-31", "HDFS-32", "HDFS-33", "SOLR-16",
                           "ZOOKEEPER-08", "ZOOKEEPER-09"},
                          skipped)
         self.assertEqual(report["completed_checks"] + len(skipped),

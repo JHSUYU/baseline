@@ -1,0 +1,70 @@
+{
+  "case_id": "HDFS-31",
+  "classification": "no_suitable_existing_cluster_test_found",
+  "evidence_refs": [
+    {
+      "path": "data/mallory/healthy_observations/HDFS-31-map-state-v3/map-state-audit.json",
+      "sha256": "c5471d499326c8f42444fbea4d6edfb0b8f5c9e393d66d5cf88de7c236b47ac6"
+    },
+    {
+      "path": "data/mallory/evidence_archives/HDFS-31-map-state-healthy-v3.members.json",
+      "sha256": "64fd0d79615e97aa9b34d8f242364dae313043afcc30ac09177ff062ffd65822"
+    }
+  ],
+  "fault_trials_completed": 0,
+  "full_campaign_admitted": false,
+  "healthy_archive": {
+    "path": "data/mallory/evidence_archives/HDFS-31-map-state-healthy-v3.tar.gz",
+    "receipt_path": "data/mallory/evidence_archives/HDFS-31-map-state-healthy-v3.receipt.json",
+    "receipt_sha256": "7e994a13a327cef63e2a75cd45c375e44dd7d6ff2e865b154c6196794de7616e",
+    "sha256": "bf08efe5b87e43e0a6f78c97b85b3689cf964c38e779dc2ea0dcd7630f14dc49"
+  },
+  "map_diagnostic": {
+    "matching_sampled_state_pairs": 1,
+    "named_target_events": 1,
+    "observed_causal_removal_path": false,
+    "observed_map_removal_events": 0
+  },
+  "new_bug": false,
+  "old_calibration": {
+    "exact_target_reached": true,
+    "junit_errors": 0,
+    "junit_failures": 0,
+    "junit_tests": 1,
+    "named_target": "hdfs-cluster-1/dn0",
+    "result_path": "data/mallory/healthy_observations/HDFS-31-dn-receiver-healthy-v2/trials/r0000/result.json",
+    "result_sha256": "2786d3b742c0c649190511e8c69c4e1934e36a95de9abb427f4c4b28bfc40ad8",
+    "status": "calibration_complete"
+  },
+  "schema_version": 1,
+  "scope": "reviewed existing HDFS cluster JUnit and pinned typed IOException injector; not production branch unreachability",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_conclusion": "The existing TestDiskError cluster JUnit passes and reaches the exact named dn0 getBPOSForBlock guard. The v3 keyed map diagnostic records the same object/key put and read, but no map removal or observed typed I/O to null-map path. A pretarget BPServiceActor heartbeat IOException is caught and retried without BlockPoolManager.remove; metadata write IOException aborts the test before transferBlock; later replica file I/O executes after the selected guard. No reviewed existing cluster JUnit plus current typed-I/O fault model changes the null predicate while retaining the selected call. This is a scoped test/fault-model suitability limit, not a claim that production is unreachable or a completed fault campaign.",
+  "source_receipt": {
+    "path": "Mallory/adapters/hdfs/cases/hdfs31-fault-model-audit-v4/source-review.json",
+    "sha256": "138f265de5e73a4fb90bf70f0b6934440cc2c7fd643d9015ec290e19ed86b632"
+  },
+  "source_refs": [
+    {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4"
+    },
+    {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolManager.java",
+      "sha256": "1d3bae5753526ca1bfc9dec3a5e63820564db49c9dedd32b4b7fd5f1f8ad423a"
+    },
+    {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+    },
+    {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "sha256": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294"
+    },
+    {
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java",
+      "sha256": "122183dc0da270317d8bbf2744b6dbdbfe578e720566eee37d23fbe6fd79f3ed"
+    }
+  ],
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3"
+}

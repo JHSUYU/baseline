@@ -158,6 +158,108 @@ def _solr38_corrected_audit(results: Path, result_path: Path,
         return "invalid", str(receipt_path)
 
 
+def _hdfs48_case_audit(results: Path, result_path: Path,
+                       result: dict[str, Any]) -> tuple[str, str | None]:
+    """Bind the finite v6 continuation to its case-local postfault path audit."""
+    if result.get("case_id") != "HDFS-48":
+        return "not_applicable", None
+    root = Path(__file__).resolve().parents[2]
+    canonical = result_path.parent
+    receipt_path = canonical / "canonical-import-receipt.json"
+    audit_path = canonical / "case-local-causal-audit.json"
+    archive = results / "evidence_archives/HDFS-48-rename-presend-full-v6.tar.gz"
+    manifest = results / "evidence_archives/HDFS-48-rename-presend-full-v6.members.json"
+    seal = results / "evidence_archives/HDFS-48-rename-presend-full-v6.receipt.json"
+    auditor = root / "Mallory/adapters/hdfs/cases/hdfs48-rename-presend-node2-v6/audit_terminal.py"
+    depth = results / "quality_reviews/fault_depth/HDFS-48.json"
+    try:
+        receipt, audit, sealed = _json(receipt_path), _json(audit_path), _json(seal)
+        if not all(isinstance(x, dict) for x in (receipt, audit, sealed)):
+            return "invalid", str(receipt_path)
+        hashes = ((result_path, "canonical_result_sha256"),
+                  (canonical / "config.json", "canonical_config_sha256"),
+                  (canonical / "checkpoint.json", "canonical_checkpoint_sha256"),
+                  (audit_path, "case_local_audit_sha256"),
+                  (archive, "archive_sha256"),
+                  (manifest, "archive_manifest_sha256"),
+                  (seal, "archive_receipt_sha256"),
+                  (depth, "depth_review_sha256"),
+                  (auditor, "strict_auditor_sha256"))
+        if (any(not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() !=
+                receipt.get(key) for path, key in hashes)
+                or not (receipt.get("status") == result.get("status") == "queue_exhausted")
+                or receipt.get("valid_fault_trials") != 2
+                or receipt.get("invalid_fault_trials") != 1
+                or sealed.get("strict_audit_sha256") != receipt["case_local_audit_sha256"]
+                or sealed.get("result_sha256") != receipt["canonical_result_sha256"]
+                or audit.get("strict_gate_passed") is not True
+                or audit.get("errors")
+                or audit.get("campaign_result_sha256") != receipt["canonical_result_sha256"]
+                or audit.get("valid_fault_trials") != 2
+                or audit.get("invalid_fault_trials") != 1
+                or audit.get("new_bug") is not False
+                or [row.get("classification") for row in audit.get("rows", [])] != [
+                    "healthy_seed", "strict_multifault_retry_rpc_target",
+                    "strict_multifault_retry_rpc_target", "postfault_retry_door_missing"]
+                or result.get("fault_trials_completed") != 3
+                or result.get("strict_injected_trials") != 3
+                or result.get("strict_target_trials") != 2
+                or result.get("exact_exception_trials") != 0):
+            return "invalid", str(receipt_path)
+        return "verified_case_local", str(audit_path)
+    except (OSError, KeyError, TypeError, ValueError):
+        return "invalid", str(receipt_path)
+
+
+def _solr34_bootstrap_quality(results: Path, result_path: Path,
+                              result: dict[str, Any]) -> tuple[str, str | None]:
+    """Credit the natural budget while retaining its absent-target finding."""
+    if result.get("case_id") != "SOLR-34":
+        return "not_applicable", None
+    canonical = result_path.parent
+    receipt_path = canonical / "canonical-import-receipt.json"
+    audit_path = canonical / "case-local-quality-audit.json"
+    name = "SOLR-34-fault-bootstrap-node1-v6"
+    archive = results / "evidence_archives" / f"{name}.tar.gz"
+    manifest = results / "evidence_archives" / f"{name}.members.json"
+    seal = results / "evidence_archives" / f"{name}.receipt.json"
+    depth = results / "quality_reviews/fault_depth/SOLR-34.json"
+    try:
+        receipt, audit, sealed = _json(receipt_path), _json(audit_path), _json(seal)
+        if not all(isinstance(x, dict) for x in (receipt, audit, sealed)):
+            return "invalid", str(receipt_path)
+        hashes = ((result_path, "canonical_result_sha256"),
+                  (canonical / "config.json", "canonical_config_sha256"),
+                  (canonical / "checkpoint.json", "canonical_checkpoint_sha256"),
+                  (audit_path, "case_local_audit_sha256"),
+                  (archive, "archive_sha256"),
+                  (manifest, "archive_manifest_sha256"),
+                  (seal, "archive_receipt_sha256"),
+                  (depth, "depth_review_sha256"))
+        if (any(not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() !=
+                receipt.get(key) for path, key in hashes)
+                or not (receipt.get("status") == result.get("status") == "budget_exhausted")
+                or receipt.get("quality_classification") != "target_not_activated_under_faults"
+                or audit.get("check_completed") is not False
+                or audit.get("fully_attributed_fault_trials") != 11
+                or audit.get("partially_applied_fault_trials") != 1
+                or audit.get("junit_passed_trials") != 13
+                or audit.get("exact_target_check_events") != 0
+                or audit.get("exact_target_throw_events") != 0
+                or audit.get("new_bug_confirmed") is not False
+                or sealed.get("bootstrap_outcome_audit_sha256") != receipt["case_local_audit_sha256"]
+                or sealed.get("result_sha256") != receipt["canonical_result_sha256"]
+                or result.get("fault_trials_completed") != 12
+                or result.get("strict_injected_trials") != 11
+                or result.get("strict_target_trials") != 0
+                or result.get("target_reached_trials") != 0
+                or result.get("exact_exception_trials") != 0):
+            return "invalid", str(receipt_path)
+        return "verified_target_absent_budget", str(audit_path)
+    except (OSError, KeyError, TypeError, ValueError):
+        return "invalid", str(receipt_path)
+
+
 def _zk13_legacy_integrity_review(results: Path, result_path: Path,
                                   result: dict[str, Any], audit: dict[str, Any]) -> str | None:
     """Recognize the older audit's integrity gate without claiming a graph path."""
@@ -3233,6 +3335,14 @@ def _source_only_gap(results: Path, case_id: str,
                 if (not path.is_relative_to(results.resolve()) or not path.is_file() or
                         hashlib.sha256(path.read_bytes()).hexdigest() != archive[hash_key]):
                     return "invalid_source_gap"
+        for reference in entry.get("evidence_refs", []):
+            name, expected = reference["path"], reference["sha256"]
+            if not isinstance(name, str) or Path(name).is_absolute():
+                return "invalid_source_gap"
+            path = (project_root / name).resolve()
+            if (not path.is_relative_to(project_root) or not path.is_file() or
+                    hashlib.sha256(path.read_bytes()).hexdigest() != expected):
+                return "invalid_source_gap"
         if hdfs_review:
             if (old.get("exact_target_reached") is not False or
                     old.get("junit_tests") != 1 or old.get("junit_failures") != 0 or
@@ -4107,9 +4217,12 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = source_gap
             row["source_gap_receipt"] = str(results / "source_gaps" / case_id / "receipt.json")
             row["skipped_no_suitable_cluster_test"] = True
-            if case_id in {"HDFS-32", "HDFS-33"}:
+            if case_id in {"HDFS-31", "HDFS-32", "HDFS-33"}:
                 row["source_review_status"] = "existing_junit_reaches_target"
                 row["source_review_classification"] = {
+                    "HDFS-31": (
+                        "no_existing_junit_and_pinned_typed_io_fault_model_"
+                        "changes_dn0_block_pool_map_while_retaining_target"),
                     "HDFS-32": (
                         "no_existing_junit_and_pinned_typed_io_fault_model_"
                         "changes_bpid2_mapping_while_retaining_target"),
@@ -4358,6 +4471,33 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = "invalid_result"
             row["quality_status"] = None
             row["result_error"] = "SOLR-38 sealed offline correction or import receipt mismatch"
+    if case_id == "HDFS-48":
+        checked, checked_receipt = _hdfs48_case_audit(results, result_path, result)
+        if checked == "verified_case_local":
+            row["original_causal_audit"] = row["causal_audit"]
+            row["causal_audit"] = checked
+            row["causal_precision_review"] = "observed_event_path"
+            row["causal_precision_receipt"] = checked_receipt
+            row["quality_status"] = "observed_rpc_retry_path_with_invalid_depth3"
+            row["same_actor_target_trials"] = 2
+            row["source_review_classification"] = "no_exact_throw_one_invalid_postfault_retry"
+            row["new_bug"] = False
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "HDFS-48 case-local path audit or archive mismatch"
+    if case_id == "SOLR-34":
+        quality, quality_receipt = _solr34_bootstrap_quality(results, result_path, result)
+        if quality == "verified_target_absent_budget":
+            row["quality_status"] = "bounded_budget_target_not_activated"
+            row["causal_precision_review"] = "target_absent_after_fault"
+            row["causal_precision_receipt"] = quality_receipt
+            row["source_review_classification"] = "eleven_attributed_one_partial_zero_target_checks"
+            row["new_bug"] = False
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "SOLR-34 target-absent bootstrap seal or quality mismatch"
     return row
 
 
