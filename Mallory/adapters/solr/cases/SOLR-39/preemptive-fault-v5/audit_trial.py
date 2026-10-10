@@ -57,6 +57,13 @@ def audit_rows(rows: list[dict], markers: list[dict], result: dict,
     if result.get("site_catalog_validation", {}).get("valid") is not True:
         output["qualification"] = "target_class_binding_invalid"
         return output
+    junit = result.get("junit_validation", {})
+    if (result.get("return_code") != 0 or result.get("timed_out") is not False or
+            junit.get("status") != "passed" or junit.get("tests") != 1 or
+            junit.get("failures") != 0 or junit.get("errors") != 0 or
+            junit.get("skipped") != 0):
+        output["qualification"] = "junit_or_process_not_passed"
+        return output
     if not plan or len(plan) > 3 or result.get("plan") != plan:
         output["qualification"] = "plan_identity_invalid"
         return output

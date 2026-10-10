@@ -24,6 +24,8 @@ The exception is the source-caught ZooKeeper
 `KeeperException.ConnectionLossException`. An applied exception stops this
 watcher invocation before the new `setIfNewer` write; the auditor explicitly
 rejects any publication inside the injected watcher. A valid fault trial must
+finish the unchanged cluster JUnit with one passing test, zero failures,
+errors, or skips, exit code zero, and no timeout. It must also
 still reach the exact `@246` check on that manager through a **prior** exact
 Java `Aliases` reference publication/read and a balanced getter return to
 the caller. The auditor reconstructs this observed path using the v4 overlay;

@@ -41,8 +41,27 @@ class StrictPreemptiveTests(unittest.TestCase):
                        seq=50001, id="test:50001")
         applied = copy.deepcopy(matched)
         applied.update(type="FAULT_APPLIED", seq=50002, id="test:50002")
-        result = {"plan": plan, "site_catalog_validation": {"valid": True}}
+        result = {"plan": plan, "site_catalog_validation": {"valid": True},
+                  "junit_validation": {"status": "passed", "tests": 1,
+                                       "failures": 0, "errors": 0, "skipped": 0},
+                  "return_code": 0, "timed_out": False}
         return self.rows + [gate, matched, applied], result, plan
+
+    def test_failing_junit_and_nonzero_exit_never_credit_trial(self):
+        rows, result, plan = self._synthetic_fault("/aliases.json")
+        failing = copy.deepcopy(result)
+        failing["junit_validation"]["status"] = "failed"
+        failing["junit_validation"]["failures"] = 1
+        post = audit_rows(rows, self.markers, failing, plan, self.errors)
+        self.assertFalse(post["valid"])
+        self.assertFalse(post["novelty_eligible"])
+        self.assertEqual(post["qualification"], "junit_or_process_not_passed")
+        exit_failure = copy.deepcopy(result)
+        exit_failure["return_code"] = 1
+        post = audit_rows(rows, self.markers, exit_failure, plan, self.errors)
+        self.assertFalse(post["valid"])
+        self.assertFalse(post["novelty_eligible"])
+        self.assertEqual(post["qualification"], "junit_or_process_not_passed")
 
     def test_wrong_actual_resource_rejected_despite_matching_actor_ordinal(self):
         rows, result, plan = self._synthetic_fault("/some-other-znode")
