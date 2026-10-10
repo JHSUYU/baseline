@@ -15,7 +15,9 @@ records the corresponding actual host and port. This version admits that
 registered role. Its audit of the immutable v1 trace found, in one split
 occurrence on `control`, the first caller door at sequence 1378 followed by a
 typed ZooKeeper native `exists` door at 1379, and the second caller door at
-1883 followed by that native door at 1884. The second caller is source line
+1883 followed by that native door at 1884. The audit checks the next door on
+the same actor, thread, and context, allowing unrelated threads to interleave.
+The second caller is source line
 523, immediately before the selected line-536 guard. Both doors have the
 `ConnectionLossException` fault type in the loaded site catalog.
 

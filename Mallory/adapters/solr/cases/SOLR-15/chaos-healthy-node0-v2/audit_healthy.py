@@ -56,7 +56,8 @@ def attest(output: Path) -> dict:
     with gzip.open(trace_path, "rt") as stream:
         for line in stream:
             event = json.loads(line)
-            if event.get("site") in (FIRST, SECOND, CHECK, THROW, NATIVE):
+            if (event.get("type") == "DOOR_OBSERVED"
+                    or event.get("site") in (CHECK, THROW)):
                 events.append(event)
     role_lines = ROLE.findall((trial_dir / "junit.log").read_text(errors="replace"))
     roles = {(logical, int(epoch)): physical for logical, physical, epoch in role_lines}
@@ -95,10 +96,14 @@ def attest(output: Path) -> dict:
             continue
         first = next((e for e in firsts if _same_split(e, second)
                       and e["seq"] < second["seq"]), None)
-        nested = next((e for e in natives if _same_thread(e, second)
-                       and e["seq"] == second["seq"] + 1), None)
-        first_native = next((e for e in natives if first and _same_thread(e, first)
-                             and e["seq"] == first["seq"] + 1), None)
+        # Sequence numbers are global: an unrelated thread may interleave
+        # between the caller and its native ZooKeeper operation.
+        next_after_second = next((e for e in events if _same_thread(e, second)
+                                  and e["seq"] > second["seq"]), None)
+        next_after_first = next((e for e in events if first and _same_thread(e, first)
+                                 and e["seq"] > first["seq"]), None)
+        nested = next_after_second if next_after_second and next_after_second.get("site") == NATIVE else None
+        first_native = next_after_first if next_after_first and next_after_first.get("site") == NATIVE else None
         if first and first_native and nested:
             witness = {"physical_actor": actor[0], "physical_address": roles[actor],
                        "epoch": actor[1], "split_occurrence": second.get("occurrence"),
