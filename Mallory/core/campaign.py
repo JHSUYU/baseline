@@ -122,6 +122,25 @@ def validate_config(config: dict[str, Any]) -> None:
             not isinstance(breadth_interval, int) or
             isinstance(breadth_interval, bool) or breadth_interval < 2):
         raise ValueError("single_fault_breadth_interval must be at least 2")
+    bootstrap = config.get("target_absent_bootstrap")
+    if bootstrap is not None:
+        if not isinstance(bootstrap, dict):
+            raise ValueError("target_absent_bootstrap must be an object")
+        sites = bootstrap.get("door_sites")
+        if (not isinstance(sites, list) or not sites or
+                any(not isinstance(site, str) or not site for site in sites) or
+                len(sites) != len(set(sites))):
+            raise ValueError("target_absent_bootstrap needs unique exact door_sites")
+        for key in ("max_trials", "max_doors_per_trial", "max_faults_per_trial"):
+            value = bootstrap.get(key)
+            if not isinstance(value, int) or isinstance(value, bool) or value <= 0:
+                raise ValueError(f"target_absent_bootstrap needs positive {key}")
+        if bootstrap["max_trials"] != budget["trials"]:
+            raise ValueError("bootstrap max_trials must equal the full campaign trial budget")
+        if config.get("require_site_catalog") is False:
+            raise ValueError("target_absent_bootstrap requires a runtime site catalog")
+        if not re.fullmatch(r"[0-9a-f]{64}", str(config.get("expected_target_class_sha256", ""))):
+            raise ValueError("target_absent_bootstrap requires a pinned target class SHA-256")
 
 
 def verify_validated_recovery_sites(config: dict[str, Any]) -> None:
@@ -180,7 +199,9 @@ def _fresh_state(config: dict[str, Any]) -> dict[str, Any]:
             "closure_coverage_ids": [], "edge_fingerprints": [], "tried_sites": [],
             "completed_trials": [], "elapsed_seconds": 0.0,
             "target_exception_candidates": [], "reproduced_candidates": [],
-            "runtime_attestation": None}
+            "runtime_attestation": None, "bootstrap_fault_trials": 0,
+            "bootstrap_seed_doors": 0, "target_discovered_trial": None,
+            "target_binding_trial": None}
 
 
 def _named_node(node: Any) -> bool:
@@ -220,6 +241,46 @@ def _healthy_attestation(config: dict[str, Any], result: dict[str, Any],
             "observed_target_class_sha256": catalog.get("observed_target_class_sha256"),
             "target_class_loader_ids": catalog.get("target_class_loader_ids", []),
             "eligible_doors_before_target": feedback.get("eligible_doors_before_target", 0)}
+
+
+def _bootstrap_attestation(config: dict[str, Any], result: dict[str, Any]) -> dict[str, Any]:
+    """Attest a real healthy workload and exact sites without claiming a target closure."""
+    feedback = result["feedback"]
+    catalog = result["site_catalog_validation"]
+    policy = config["target_absent_bootstrap"]
+    sites = set(policy["door_sites"])
+    admissible = [door for door in feedback.get("doors", [])
+                  if door.get("site") in sites and
+                  isinstance(door.get("point"), dict) and
+                  _named_node(door["point"].get("node"))]
+    plans = mutate([], feedback, config, bootstrap=True)
+    reasons = []
+    if feedback.get("status") != "healthy_target_missing":
+        reasons.append("healthy_run_not_target_absent")
+    if result.get("junit_validation", {}).get("status") != "passed":
+        reasons.append("healthy_cluster_junit_not_passed")
+    if feedback.get("target_reached") or feedback.get("target_threw"):
+        reasons.append("healthy_target_observed")
+    if not admissible:
+        reasons.append("no_named_configured_io_door")
+    elif not plans:
+        reasons.append("no_injectable_bootstrap_plan")
+    if catalog.get("valid") is not True:
+        reasons.append("exact_site_catalog_invalid")
+    if catalog.get("class_hash_match") is not True:
+        reasons.append("loaded_target_class_hash_mismatch")
+    if len(catalog.get("target_class_loader_ids", [])) != 1:
+        reasons.append("target_class_loader_ambiguous")
+    return {"valid": not reasons, "mode": "target_absent_bootstrap",
+            "reasons": reasons, "target_observed": False,
+            "target_closure_proven": False, "bound_nodes": [],
+            "configured_door_sites": policy["door_sites"],
+            "named_configured_io_doors": len(admissible),
+            "injectable_bootstrap_plans": len(plans),
+            "site_catalog_sha256": result.get("site_catalog_sha256"),
+            "expected_target_class_sha256": config.get("expected_target_class_sha256"),
+            "observed_target_class_sha256": catalog.get("observed_target_class_sha256"),
+            "target_class_loader_ids": catalog.get("target_class_loader_ids", [])}
 
 
 def _alive_process_group(pid: int | None) -> bool:
@@ -438,7 +499,8 @@ def _run_trial(config: dict[str, Any], out: Path, trial_id: int,
                            return_code=return_code, timed_out=timed_out,
                            allow_local_timeline_doors=config.get("allow_local_timeline_doors", False),
                            reject_coarse_roots=config.get("reject_coarse_roots", False),
-                           require_event_time_paths=config.get("require_event_time_paths", False))
+                           require_event_time_paths=config.get("require_event_time_paths", False),
+                           bootstrap_without_target=bool(config.get("target_absent_bootstrap")))
     except TraceError as exc:
         trace_error = str(exc)
         feedback = {"status": "trace_invalid", "target_reached": False,
@@ -447,7 +509,8 @@ def _run_trial(config: dict[str, Any], out: Path, trial_id: int,
                     "all_faults_applied": False, "all_faults_effective": False}
     catalog_validation = _validate_site_catalog(
         trial / "sites.jsonl", config["target"],
-        bool(config.get("require_site_catalog", bool(config.get("agent_jar")))),
+        bool(config.get("require_site_catalog", bool(config.get("agent_jar")) or
+                        bool(config.get("target_absent_bootstrap")))),
         config.get("expected_target_class_sha256"))
     if catalog_validation["valid"] is False:
         feedback["status"] = catalog_validation["reason"]
@@ -526,13 +589,50 @@ def _apply_result(state: dict[str, Any], config: dict[str, Any], result: dict[st
                                           "replay_of": trial_id, "priority": 1000.0,
                                           "queued_at": trial_id})
 
+    bootstrap = config.get("target_absent_bootstrap")
+    bootstrap_seed = (trial_id == 0 and bootstrap is not None and
+                      feedback.get("status") == "healthy_target_missing")
+    bootstrap_trial = (trial_id > 0 and bootstrap is not None and
+                       state.get("target_binding") is None)
+    if bootstrap_seed:
+        attestation = _bootstrap_attestation(config, result)
+        state["runtime_attestation"] = attestation
+        state["bootstrap_seed_doors"] = attestation["named_configured_io_doors"]
+        if not attestation["valid"]:
+            state["status"] = "healthy_bootstrap_attestation_failed"
+    if bootstrap_trial:
+        state["bootstrap_fault_trials"] = state.get("bootstrap_fault_trials", 0) + 1
+        named_targets = feedback.get("target_check_actors", [])
+        if (feedback.get("all_faults_effective") and feedback.get("target_check_reached") and
+                feedback.get("target_identity_complete") and
+                feedback.get("target_region_present") and named_targets):
+            # Bind only after an exact target event was observed. Existing
+            # bootstrap plans cannot be credited with target-closure guidance.
+            state["target_binding"] = {"nodes": named_targets}
+            state["target_binding_trial"] = trial_id
+            state["target_discovered_trial"] = trial_id
+            discarded = {queued["signature"] for queued in state["queue"]
+                         if queued.get("selection_reason") != "candidate_replay"}
+            state["queue"] = [queued for queued in state["queue"]
+                              if queued.get("selection_reason") == "candidate_replay"]
+            # A discarded bootstrap plan was never tested. Let the observed
+            # target closure enqueue the same sequence if it is now relevant.
+            state["seen_sequences"] = sorted(set(state["seen_sequences"]) - discarded)
     should_expand = ((trial_id == 0 and feedback.get("status") == "observed" and
                       feedback.get("target_reached") and not feedback.get("target_threw")) or
                      (trial_id > 0 and feedback.get("all_faults_effective") and
-                      feedback.get("target_reached")))
+                      feedback.get("target_reached") and
+                      (not bootstrap_trial or state.get("target_binding") is not None)) or
+                     (bootstrap_seed and state["status"] == "running") or
+                     (bootstrap_trial and state.get("target_binding") is None and
+                      feedback.get("all_faults_effective") and
+                      feedback.get("status") == "target_lost" and
+                      state["bootstrap_fault_trials"] < bootstrap["max_trials"]))
     if should_expand and not (item and item.get("replay_of")):
         seen = set(state["seen_sequences"])
-        for candidate in mutate(result["plan"], feedback, config):
+        for candidate in mutate(result["plan"], feedback, config,
+                                bootstrap=bool((bootstrap_seed or bootstrap_trial) and
+                                               state.get("target_binding") is None)):
             signature = candidate["signature"]
             if signature in seen:
                 continue
@@ -550,13 +650,14 @@ def _apply_result(state: dict[str, Any], config: dict[str, Any], result: dict[st
         if len(state["queue"]) > max_queue:
             state["queue"] = state["queue"][:max_queue]
         state["seen_sequences"] = sorted(seen)
-    if trial_id == 0 and not should_expand:
+    if trial_id == 0 and not should_expand and state["status"] == "running":
         state["status"] = "healthy_seed_invalid"
-    if trial_id == 0 and should_expand:
+    if trial_id == 0 and should_expand and not bootstrap_seed:
         instances = feedback.get("target_instances", [])
         nodes = sorted({instance["node"] for instance in instances
                         if _named_node(instance.get("node"))})
         state["target_binding"] = {"nodes": nodes} if nodes else None
+        state["target_binding_trial"] = 0 if nodes else None
         state["runtime_attestation"] = _healthy_attestation(config, result, nodes)
         if not nodes:
             state["status"] = "healthy_node_identity_missing"
@@ -606,6 +707,14 @@ def _write_summary(out: Path, state: dict[str, Any], config: dict[str, Any]) -> 
                "dispatch_attempt_ids": state.get("dispatch_attempt_ids", []),
                "last_dispatch_attempt_id": state.get("last_dispatch_attempt_id"),
                "target_binding": state.get("target_binding"),
+               "target_binding_trial": state.get("target_binding_trial"),
+               "target_discovered_trial": state.get("target_discovered_trial"),
+               "target_absent_bootstrap_enabled": bool(config.get("target_absent_bootstrap")),
+               "bootstrap_seed_doors": state.get("bootstrap_seed_doors", 0),
+               "bootstrap_fault_trials": state.get("bootstrap_fault_trials", 0),
+               "bootstrap_seed_valid": bool((state.get("runtime_attestation") or {})
+                                            .get("mode") == "target_absent_bootstrap" and
+                                            (state.get("runtime_attestation") or {}).get("valid")),
                "target_node_named": bool((state.get("target_binding") or {}).get("nodes")),
                "runtime_attestation": state.get("runtime_attestation"),
                "healthy_junit_validation": (
@@ -719,7 +828,8 @@ def run(config_path: Path, out: Path, *, calibration_only: bool = False) -> dict
             if calibration_only and 0 in state["completed_trials"]:
                 state["status"] = "calibration_complete"
                 break
-            if 0 in state["completed_trials"] and config.get("agent_jar") and (
+            if 0 in state["completed_trials"] and (
+                    config.get("agent_jar") or config.get("target_absent_bootstrap")) and (
                     not config.get("auto_promote_if_healthy") or
                     not (state.get("runtime_attestation") or {}).get("valid")):
                 state["status"] = "fault_trials_not_attested"
