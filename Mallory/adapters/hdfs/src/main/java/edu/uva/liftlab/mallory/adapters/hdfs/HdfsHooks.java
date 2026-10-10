@@ -419,6 +419,7 @@ public final class HdfsHooks {
     String correlation = correlationFromConnection(connection, call);
     ResponseConsumerScope consumer = RESPONSE_CONSUMER.get();
     if (consumer != null && correlation != null) {
+      if (consumer.latestOnly) consumer.clearResponses();
       Object actor = consumer.actor;
       if (actor != null) {
         try (Probe.NodeScope node = Probe.withRegisteredNode(actor)) {
@@ -454,8 +455,25 @@ public final class HdfsHooks {
         if (RECEIVED_RPC_ERRORS.get(call) == error) return;
         RECEIVED_RPC_ERRORS.put(call, error);
       }
-      Probe.receive("hadoop-ipc", correlation, "response",
-          "org.apache.hadoop.ipc.Client#getRpcResponse.error");
+      ResponseConsumerScope consumer = RESPONSE_CONSUMER.get();
+      if (consumer != null && consumer.latestOnly) {
+        // A failed heartbeat may cause an immediate retry on this exact
+        // BPServiceActor thread. Keep the error reply as that retry's parent
+        // until another response replaces it or the state check completes.
+        consumer.clearResponses();
+        if (consumer.actor != null) {
+          try (Probe.NodeScope node = Probe.withRegisteredNode(consumer.actor)) {
+            consumer.responses.push(Probe.receiveScope("hadoop-ipc", correlation, "response",
+                "org.apache.hadoop.ipc.Client#getRpcResponse.error"));
+          }
+        } else {
+          consumer.responses.push(Probe.receiveScope("hadoop-ipc", correlation, "response",
+              "org.apache.hadoop.ipc.Client#getRpcResponse.error"));
+        }
+      } else {
+        Probe.receive("hadoop-ipc", correlation, "response",
+            "org.apache.hadoop.ipc.Client#getRpcResponse.error");
+      }
     } catch (ReflectiveOperationException ignored) {
       // Missing identity is a graph gap. Never infer a reply from timing.
     }
@@ -544,7 +562,7 @@ public final class HdfsHooks {
     } catch (ReflectiveOperationException failure) {
       actor = null;
     }
-    ResponseConsumerScope scope = new ResponseConsumerScope(RESPONSE_CONSUMER.get(), actor);
+    ResponseConsumerScope scope = new ResponseConsumerScope(RESPONSE_CONSUMER.get(), actor, false);
     RESPONSE_CONSUMER.set(scope);
     return scope;
   }
@@ -552,15 +570,60 @@ public final class HdfsHooks {
   public static final class ResponseConsumerScope implements AutoCloseable {
     private final ResponseConsumerScope previous;
     private final Object actor;
+    private final boolean latestOnly;
     private final Deque<Probe.ContextScope> responses = new ArrayDeque<Probe.ContextScope>();
-    private ResponseConsumerScope(ResponseConsumerScope previous, Object actor) {
+    private ResponseConsumerScope(ResponseConsumerScope previous, Object actor,
+                                  boolean latestOnly) {
       this.previous = previous;
       this.actor = actor;
+      this.latestOnly = latestOnly;
+    }
+    private void clearResponses() {
+      while (!responses.isEmpty()) responses.pop().close();
     }
     @Override public void close() {
-      while (!responses.isEmpty()) responses.pop().close();
+      clearResponses();
       if (previous == null) RESPONSE_CONSUMER.remove();
       else RESPONSE_CONSUMER.set(previous);
+    }
+  }
+
+  /** Keep a heartbeat's concrete DataNode actor through its reply and state check.
+   *
+   * BPServiceActor.offerService consumes sendHeartBeat's response and then calls
+   * BPOfferService.updateActorStatesFromHeartbeat. A scope only on sendHeartBeat
+   * would close before that target check. Retain only the latest exact response
+   * context across the offerService loop so old replies cannot accumulate.
+   */
+  public static HeartbeatScope heartbeatEnter(Object actor) {
+    ActorScope node = actorEnter(actor);
+    Object dn;
+    try { dn = field(actor, "dn"); }
+    catch (ReflectiveOperationException failure) { dn = null; }
+    ResponseConsumerScope response = new ResponseConsumerScope(RESPONSE_CONSUMER.get(), dn, true);
+    RESPONSE_CONSUMER.set(response);
+    return new HeartbeatScope(node, response);
+  }
+
+  /** End the exact reply's continuation after the heartbeat state check. */
+  public static void heartbeatStateUpdated() {
+    ResponseConsumerScope consumer = RESPONSE_CONSUMER.get();
+    if (consumer != null && consumer.latestOnly) consumer.clearResponses();
+  }
+
+  public static final class HeartbeatScope implements AutoCloseable {
+    private final ActorScope node;
+    private final ResponseConsumerScope response;
+    private boolean closed;
+    private HeartbeatScope(ActorScope node, ResponseConsumerScope response) {
+      this.node = node;
+      this.response = response;
+    }
+    @Override public void close() {
+      if (closed) return;
+      closed = true;
+      response.close();
+      node.close();
     }
   }
 

@@ -316,6 +316,32 @@ public final class HdfsMiniClusterTransformer implements ClassFileTransformer {
             HOOKS + "$ResponseConsumerScope", true);
         changed = true;
       } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/BPServiceActor")
+          && method.name.equals("offerService") && method.desc.equals("()V")) {
+        // offerService consumes the exact heartbeat reply and immediately
+        // enters the updateActorStatesFromHeartbeat target. The reply's actor
+        // and correlation must survive sendHeartBeat's return. Close that
+        // continuation immediately after the state check, before unrelated
+        // report work in the next loop iteration can inherit it.
+        int stateChecks = 0;
+        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+          if (!(instruction instanceof MethodInsnNode)) continue;
+          MethodInsnNode call = (MethodInsnNode) instruction;
+          if (!call.owner.equals("org/apache/hadoop/hdfs/server/datanode/BPOfferService")
+              || !call.name.equals("updateActorStatesFromHeartbeat")
+              || !call.desc.endsWith(")V")) continue;
+          InsnList after = new InsnList();
+          after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS,
+              "heartbeatStateUpdated", "()V", false));
+          method.instructions.insert(instruction, after);
+          stateChecks++;
+        }
+        if (stateChecks > 0) {
+          wrap(method, HOOKS, "heartbeatEnter",
+              "(Ljava/lang/Object;)L" + HOOKS + "$HeartbeatScope;",
+              HOOKS + "$HeartbeatScope", true);
+          changed = true;
+        }
+      } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/BPServiceActor")
           && method.name.equals("checkNNVersion")) {
         wrap(method, HOOKS, "serviceActorEnter",
             "(Ljava/lang/Object;)L" + PROBE + "$NodeScope;", PROBE + "$NodeScope", true);
