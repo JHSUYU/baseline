@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-23",
+  "audit_date_utc": "2026-10-09",
+  "scope": "Source and archived-healthy review only; no JVM, fault trial, or checklist edit",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "selected_check": "ZKProcedureCoordinator.sendGlobalBarrierReached(Procedure,List) @127 branch:5; selected IOException @131",
+  "decision": "Existing unmodified MiniCluster JUnit reaches the exact check intermittently. A physical ZooKeeper read with an internal retry is a source-backed pretarget fault-door candidate, but it is absent from the current case site file and has no observed causal-door admission receipt.",
+  "selector": "org.apache.hadoop.hbase.procedure.TestProcedureManager#testSimpleProcedureManager",
+  "source_evidence": [
+    "TestProcedureManager.java:41-51 starts a two-RS MiniCluster with SimpleMasterProcedureManager and SimpleRSProcedureManager; :60-66 calls Admin.execProcedureWithReturn and checks returned data.",
+    "SimpleMasterProcedureManager.java:66-72 installs ZKProcedureCoordinator; :81-102 starts the procedure and waits for completion. ProcedureCoordinator.java:162-167 submits it to a worker; Procedure.java:190-208 calls sendGlobalBarrierReached after the acquire latch.",
+    "ZKProcedureMemberRpcs.java:265-278 writes a PB-prefixed completion child. ZKProcedureCoordinator.java:119-127 reaches the selected check only when watchAndCheckExists sees that child during the synchronous scan and getData returns nonempty data. A later child is handled at the distinct callback check at :208-211.",
+    "TestZKProcedureControllers.java:213 calls sendGlobalBarrierReached before :216-218 posts member completion, so that original direct-controller selector does not naturally reach @127. Its callback is not the selected check.",
+    "Physical candidate hook: RecoverableZooKeeper.getData(String,Watcher,Stat) @405, callee org.apache.zookeeper.ZooKeeper#getData(String,Watcher,Stat), inject KeeperException.ConnectionLossException. ZKUtil.java:340-345 calls this read from ZKProcedureCoordinator.java:124, immediately before @127. RecoverableZooKeeper.java:397-423 retries CONNECTIONLOSS; :119-132 configures three retries by default. A transient single fault followed by a successful read can continue to @127. An exhausted fault exits or returns null upstream and cannot be counted as the selected @131 throw.",
+    "Current Mallory/cases/HBASE-23.sites.json selects RpcServer.call @447 IOException, not the ZooKeeper read. The archived exact-hit seed has no observed causal path door because its procedure worker region starts at root without a submit/claim edge."
+  ],
+  "archived_evidence": {
+    "positive_seed": "data/mallory/calibration_v13/HBASE-23/result.json (sha256 dd7a4aa9c4d97bc475746b1065e8de841bccccadbdd969ed34eb1e06a705b1bd): JUnit 1/1 passed, one named nonthrowing exact @127 check, 29 observed doors, zero fault trials",
+    "causal_audit": "data/mallory/calibration_v13/HBASE-23/offline-causal-audit.json (sha256 f3cbf512c7a31c4c5691dff6ae513a2b926571b28f47c90ef20b55e101f5dc8d): healthy_observed_path_doors=0",
+    "repeat_seeds": "Mallory/adapters/hbase/pilot/HBASE-23-natural-race-v1/evidence.json: v21, v22, v23 each entered the named method and passed JUnit but missed exact @127"
+  },
+  "source_sha256": {
+    "ZKProcedureCoordinator.java": "7f1ebc383086f82c98d0460d7c0504d5fd59e590176b65931c3061bcdac947b7",
+    "RecoverableZooKeeper.java": "f946cd3195c5969b55ce5d079c272a7b12d673c5406a98ef026dc8fcea18fa88",
+    "ZKUtil.java": "413a0487863e7b7c8c5299f939eaec45ac33321fec8af2c5d160b64c7cf04b40",
+    "TestProcedureManager.java": "35dee7363efa0ade2a906fb1b75bc1ab1396ae48c02ff75db0b18f676d6cd135"
+  },
+  "next_gate": "Only a separately staged typed ZooKeeper read hook and healthy replay can establish a named observed pretarget door and causal path. Retain the exact-hit race and require target continuation after any injected fault. The selected malformed-prefix exception is not inferred from a connection fault."
+}
