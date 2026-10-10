@@ -3587,11 +3587,19 @@ def _fault_depth_review(results: Path, result_path: Path, result: dict[str, Any]
         assert review["fault_trials_completed"] == result["fault_trials_completed"]
         assert review["campaign_config_sha256"] == hashlib.sha256(config_path.read_bytes()).hexdigest()
         release = config["core_release"]
-        release_path = Path(release["path"] if isinstance(release, dict) else release)
+        if isinstance(release, dict) and "path" not in release:
+            release_id = release["release_id"]
+            assert release_id == Path(release_id).name
+            release_path = Path(__file__).resolve().parents[2] / "Mallory/dispatch/releases" / release_id
+        else:
+            release_path = Path(release["path"] if isinstance(release, dict) else release)
         manifest_path = release_path / "manifest.json"
         manifest = _json(manifest_path)
         assert manifest["release_id"] == review["controller_release_id"] == release_path.name
         assert review["controller_release_manifest_sha256"] == hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+        if isinstance(release, dict):
+            assert release.get("release_id", release_path.name) == release_path.name
+            assert release.get("manifest_sha256", review["controller_release_manifest_sha256"]) == review["controller_release_manifest_sha256"]
         assert review["scheduler_sha256"] == manifest["files"]["Mallory/core/scheduler.py"]
         assert review["scheduler_policy_commit"] == config.get("mapping", {}).get("scheduler_policy_commit")
 
@@ -3606,14 +3614,39 @@ def _fault_depth_review(results: Path, result_path: Path, result: dict[str, Any]
             trial_hashes = raw_files
         elif (canonical / "canonical-import-receipt.json").is_file():
             receipt = _json(canonical / "canonical-import-receipt.json")
-            archive_path = path.with_name(f"{case_id}.archive-manifest.json")
-            archive = _json(archive_path)
-            assert receipt["result_sha256"] == review["campaign_result_sha256"]
-            assert receipt["checkpoint_sha256"] == review["campaign_checkpoint_sha256"]
-            assert receipt["manifest_sha256"] == hashlib.sha256(archive_path.read_bytes()).hexdigest()
-            trial_hashes = {item["path"].split("/trials/", 1)[-1]: item["sha256"]
-                            for item in archive["members"] if "/trials/" in item["path"]}
-            trial_prefix = ""
+            if "canonical_result_sha256" in receipt:
+                assert receipt["canonical_result_sha256"] == review["campaign_result_sha256"]
+                assert receipt["canonical_config_sha256"] == review["campaign_config_sha256"]
+                assert receipt["canonical_checkpoint_sha256"] == review["campaign_checkpoint_sha256"]
+                matches = []
+                for candidate in (canonical / "campaigns").iterdir():
+                    if (candidate.is_dir() and
+                            all((candidate / name).is_file() for name in
+                                ("result.json", "config.json", "checkpoint.json")) and
+                            hashlib.sha256((candidate / "result.json").read_bytes()).hexdigest() ==
+                            review["campaign_result_sha256"] and
+                            hashlib.sha256((candidate / "config.json").read_bytes()).hexdigest() ==
+                            review["campaign_config_sha256"] and
+                            hashlib.sha256((candidate / "checkpoint.json").read_bytes()).hexdigest() ==
+                            review["campaign_checkpoint_sha256"]):
+                        matches.append(candidate)
+                assert len(matches) == 1
+                source = matches[0]
+                trial_hashes = {
+                    f"trials/r{number:04d}/result.json": hashlib.sha256(
+                        (source / "trials" / f"r{number:04d}" / "result.json").read_bytes()
+                    ).hexdigest()
+                    for number in range(1, review["fault_trials_completed"] + 1)
+                }
+            else:
+                archive_path = path.with_name(f"{case_id}.archive-manifest.json")
+                archive = _json(archive_path)
+                assert receipt["result_sha256"] == review["campaign_result_sha256"]
+                assert receipt["checkpoint_sha256"] == review["campaign_checkpoint_sha256"]
+                assert receipt["manifest_sha256"] == hashlib.sha256(archive_path.read_bytes()).hexdigest()
+                trial_hashes = {item["path"].split("/trials/", 1)[-1]: item["sha256"]
+                                for item in archive["members"] if "/trials/" in item["path"]}
+                trial_prefix = ""
         else:
             seal = _json(canonical / "terminal-seal.json")
             assert seal["case_id"] == case_id and seal["status"] == result["status"]

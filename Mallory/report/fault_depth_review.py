@@ -37,10 +37,23 @@ def review(campaign: Path) -> dict:
         raise ValueError("campaign has no consistent natural full terminal")
 
     release = config["core_release"]
-    release_path = Path(release["path"] if isinstance(release, dict) else release)
+    if isinstance(release, dict):
+        if "path" in release:
+            release_path = Path(release["path"])
+        elif "release_id" in release:
+            if release["release_id"] != Path(release["release_id"]).name:
+                raise ValueError("controller release_id must be a basename")
+            repository = Path(__file__).resolve().parents[2]
+            release_path = repository / "Mallory/dispatch/releases" / release["release_id"]
+        else:
+            raise ValueError("controller release has no path or release_id")
+    else:
+        release_path = Path(release)
     release_manifest_path = release_path / "manifest.json"
     release_manifest = json.loads(release_manifest_path.read_text())
     if (release_manifest.get("release_id") != release_path.name or
+            (isinstance(release, dict) and release.get("release_id", release_path.name) !=
+             release_path.name) or
             (isinstance(release, dict) and
              release.get("manifest_sha256") != digest(release_manifest_path)) or
             digest(release_path / "Mallory/core/scheduler.py") !=
