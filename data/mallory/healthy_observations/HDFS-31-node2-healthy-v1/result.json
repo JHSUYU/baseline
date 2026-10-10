@@ -1,0 +1,121 @@
+{
+  "calibration_only": true,
+  "case_id": "HDFS-31",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 5,
+  "cluster_test": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+  "coverage_ids_seen": 705,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 15.119,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": "DataNode.java:1833-1835 getBPOSForBlock; IOException iff BPOfferService lookup is null",
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 29,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_e9ee858a9a404c1489ed302a435a72be",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.datanode.TestDiskError-mallory_0000_e9ee858a9a404c1489ed302a435a72be.xml",
+        "sha256": "0223f652ace1e8be9b7970dba692219cdab9c2599a833961462202825b1f177a"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "f119c9f04e195dc0994ae5e14b75c43ae5d05f5a4344940f1d3fb697cef2fcf6",
+    "tests": 1
+  },
+  "healthy_local_timeline_doors": null,
+  "healthy_observed_door_events": 31,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-client"
+    ],
+    "eligible_doors_before_target": 29,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "9adbbabe330f09303c5fab84997b68879055cb4f97a9377b4da03a87bc1250cf",
+    "observed_target_class_sha256": "9adbbabe330f09303c5fab84997b68879055cb4f97a9377b4da03a87bc1250cf",
+    "reasons": [],
+    "site_catalog_sha256": "b4ac9dd349ba08ab163aa4f4a63179c7a5a29a59dd1c811dfab070f62b687501",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (bpos == null) {\nthrow new IOException(\"cannot locate OfferService thread for bp=\"+\nblock.getBlockPoolId());",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.server.datanode.DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;@1833:branch:1"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)",
+    "original_source_line": 1835,
+    "site_id": "<org.apache.hadoop.hdfs.server.datanode.DataNode: org.apache.hadoop.hdfs.server.datanode.BPOfferService getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)>#u15",
+    "source_line": 1835,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+    "throw_site": "org.apache.hadoop.hdfs.server.datanode.DataNode#getBPOSForBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;@1835:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "hdfs-client"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 15.119,
+      "eligible_doors_before_target": 29,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 5,
+        "coverage": 705
+      },
+      "observed_door_events": 31,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}
