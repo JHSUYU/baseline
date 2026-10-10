@@ -20,6 +20,47 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_zk13_legacy_audit_proves_integrity_without_inventing_path(self):
+        from Mallory.report.build import _zk13_legacy_integrity_review
+        baseline = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            names = [f"cases/ZOOKEEPER-13/{name}" for name in (
+                "config.json", "result.json", "checkpoint.json",
+                "offline-causal-audit.json", "terminal-seal.json")]
+            names += [f"evidence_archives/ZOOKEEPER-13-connectpath-retry-full-v1{name}"
+                      for name in (".tar.gz", ".manifest.json")]
+            for name in names:
+                destination = results / name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(baseline / "data/mallory" / name, destination)
+            result_path = results / "cases/ZOOKEEPER-13/result.json"
+            result = json.loads(result_path.read_text())
+            audit = json.loads(result_path.with_name("offline-causal-audit.json").read_text())
+            self.assertEqual(_zk13_legacy_integrity_review(results, result_path, result, audit),
+                             "legacy_integrity_verified_path_unclassified")
+            archive = results / "evidence_archives/ZOOKEEPER-13-connectpath-retry-full-v1.tar.gz"
+            archive.write_bytes(archive.read_bytes() + b"tampered")
+            self.assertEqual(_zk13_legacy_integrity_review(results, result_path, result, audit),
+                             "invalid_legacy_integrity_review")
+
+    def test_hbase34_alternate_cluster_seed_supersedes_skip_only_with_pins(self):
+        from Mallory.report.build import _hbase34_cluster_stage
+        baseline = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            relative = "Mallory/adapters/hbase/pilot/hbase32-34-broad-review-v1"
+            shutil.copytree(baseline / relative, root / relative)
+            archive_name = "data/mallory/evidence_archives/calibration/HBASE-33.tar.gz"
+            archive = root / archive_name
+            archive.parent.mkdir(parents=True)
+            shutil.copy2(baseline / archive_name, archive)
+            results = root / "data/mallory"
+            self.assertEqual(_hbase34_cluster_stage(results, "HBASE-34")[0], "pending_seed")
+            archive.write_bytes(archive.read_bytes() + b"tampered")
+            self.assertEqual(_hbase34_cluster_stage(results, "HBASE-34")[0],
+                             "invalid_cluster_stage_receipt")
+
     def test_solr_fault_discovery_bootstrap_is_pinned_and_not_completed(self):
         from Mallory.report.build import _solr_fault_discovery_bootstrap
         baseline = Path(__file__).resolve().parents[2]

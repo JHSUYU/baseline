@@ -111,6 +111,55 @@ def _causal_audit(result_path: Path, result: dict[str, Any]) -> str | None:
     return "verified" if valid else "invalid"
 
 
+def _zk13_legacy_integrity_review(results: Path, result_path: Path,
+                                  result: dict[str, Any], audit: dict[str, Any]) -> str | None:
+    """Recognize the older audit's integrity gate without claiming a graph path."""
+    if result.get("case_id") != "ZOOKEEPER-13":
+        return None
+    seal_path = result_path.with_name("terminal-seal.json")
+    if not seal_path.is_file():
+        return None
+    invalid = "invalid_legacy_integrity_review"
+    try:
+        seal = _json(seal_path)
+        archive = results / "evidence_archives/ZOOKEEPER-13-connectpath-retry-full-v1.tar.gz"
+        manifest = results / "evidence_archives/ZOOKEEPER-13-connectpath-retry-full-v1.manifest.json"
+        files = ((result_path, "result_sha256"),
+                 (result_path.with_name("config.json"), "config_sha256"),
+                 (result_path.with_name("checkpoint.json"), "checkpoint_sha256"),
+                 (result_path.with_name("offline-causal-audit.json"), "audit_sha256"),
+                 (archive, "archive_sha256"),
+                 (manifest, "archive_manifest_sha256"))
+        if (not isinstance(seal, dict) or seal.get("case_id") != "ZOOKEEPER-13" or
+                seal.get("status") != result.get("status") or
+                seal.get("fault_trials_completed") != result.get("fault_trials_completed") or
+                any(not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() !=
+                    seal.get(key) for path, key in files)):
+            return invalid
+        listed = _json(manifest)
+        if (not isinstance(listed, dict) or listed.get("case_id") != "ZOOKEEPER-13" or
+                listed.get("archive_sha256") != seal["archive_sha256"] or
+                listed.get("member_count") != seal.get("archive_members") or
+                len(listed.get("members", [])) != seal.get("archive_members")):
+            return invalid
+        if (audit.get("audit_kind") != "offline_causal_quality" or
+                audit.get("campaign_result_sha256") != seal["result_sha256"] or
+                audit.get("terminal_status") != result.get("status") or
+                audit.get("trial_count") != result.get("fault_trials_completed", -1) + 1 or
+                any(audit.get(key) is not True for key in (
+                    "archive_integrity_valid", "applied_fault_identity_valid",
+                    "target_claims_reverified", "guidance_consistent", "report_gate_passed")) or
+                audit.get("unknown_applied_faults") != 0 or
+                audit.get("target_retained_fault_trials") != result.get("strict_target_trials") or
+                any(key in audit for key in ("healthy_closure_proven",
+                                             "healthy_observed_path_doors",
+                                             "healthy_closure_evidence_types"))):
+            return invalid
+        return "legacy_integrity_verified_path_unclassified"
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return invalid
+
+
 def _causal_precision_review(results: Path, result_path: Path,
                              result: dict[str, Any]) -> tuple[str | None, str | None]:
     """Bind a superseding causal precision review to unchanged campaign evidence.
@@ -2412,6 +2461,52 @@ def _solr_fault_discovery_bootstrap(results: Path, case_id: str) -> tuple[str | 
         return invalid
 
 
+def _hbase34_cluster_stage(results: Path, case_id: str) -> tuple[str | None, str | None, str | None]:
+    """Check the alternate passing token JUnit that reaches the selected guard."""
+    if case_id != "HBASE-34":
+        return None, None, None
+    baseline = results.resolve().parent.parent
+    package = baseline / "Mallory/adapters/hbase/pilot/hbase32-34-broad-review-v1"
+    stage_path = package / "hbase34/stage-receipt.json"
+    review_path = package / "review-receipt.json"
+    if not stage_path.is_file():
+        return None, None, None
+    invalid = ("invalid_cluster_stage_receipt", str(stage_path), None)
+    try:
+        stage, review = _json(stage_path), _json(review_path)
+        if (not isinstance(stage, dict) or not isinstance(review, dict) or
+                stage.get("schema_version") != 1 or stage.get("case_id") != case_id or
+                stage.get("status") != "staged_no_jvm" or
+                stage.get("jvm_trials_started") != 0 or
+                hashlib.sha256(review_path.read_bytes()).hexdigest() !=
+                stage.get("review_receipt_sha256")):
+            return invalid
+        if any(not (package / "hbase34" / name).is_file() or
+               hashlib.sha256((package / "hbase34" / name).read_bytes()).hexdigest() != digest
+               for name, digest in stage["files"].items()):
+            return invalid
+        case_review = review["cases"][case_id]
+        archive_path = baseline / case_review["archive"]
+        if (case_review.get("classification") !=
+                "prior_skip_contradicted_guard_reached_package_staged" or
+                not archive_path.is_file() or
+                hashlib.sha256(archive_path.read_bytes()).hexdigest() !=
+                case_review["archive_sha256"]):
+            return invalid
+        healthy = _json(package / "hbase34/healthy.json")
+        full = _json(package / "hbase34/full.json")
+        selector = "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation"
+        if (healthy.get("case_id") != case_id or full.get("case_id") != case_id or
+                healthy.get("cluster_test") != selector or
+                full.get("cluster_test") != selector or
+                full.get("budget") != stage.get("full_budget") or
+                selector.split(".")[-1] not in case_review["passing_existing_test"]):
+            return invalid
+        return "pending_seed", str(stage_path), selector
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return invalid
+
+
 def _hbase37_cluster_stage(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Recognize the newer cluster workload without rewriting the older gap."""
     if case_id != "HBASE-37":
@@ -3359,6 +3454,19 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             if bootstrap_status.startswith("invalid_"):
                 row["source_gap_error"] = "fault-discovery bootstrap review or pinned evidence mismatch"
             return row
+        hbase34_status, hbase34_receipt, hbase34_selector = _hbase34_cluster_stage(results, case_id)
+        if hbase34_status is not None:
+            row["report_status"] = hbase34_status
+            row["source_review_status"] = "prior_skip_contradicted_guard_reached"
+            row["source_review_receipt"] = hbase34_receipt
+            row["source_gap_receipt"] = hbase34_receipt
+            if hbase34_selector is not None:
+                row["inventory_cluster_test"] = row["cluster_test"]
+                row["cluster_test"] = hbase34_selector
+                row["source_review_classification"] = "alternate_passing_existing_cluster_junit_staged"
+            else:
+                row["source_gap_error"] = "alternate token JUnit stage or pinned archive mismatch"
+            return row
         staged_status, staged_receipt = _hbase37_cluster_stage(results, case_id)
         if staged_status is not None:
             row["report_status"] = staged_status
@@ -3470,6 +3578,12 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
     row["quality_status"] = _quality(result)
     row["causal_audit"] = _causal_audit(result_path, result)
     audit = _json(result_path.with_name("offline-causal-audit.json")) or {}
+    if row["causal_audit"] == "invalid" and case_id == "ZOOKEEPER-13":
+        legacy_review = _zk13_legacy_integrity_review(results, result_path, result, audit)
+        if legacy_review == "legacy_integrity_verified_path_unclassified":
+            row["causal_audit"] = legacy_review
+            row["causal_precision_review"] = legacy_review
+            row["causal_precision_receipt"] = str(result_path.with_name("terminal-seal.json"))
     if audit.get("local_timeline_only") is True:
         row["local_timeline_only"] = True
         row["same_actor_target_trials"] = audit.get("same_actor_target_trials")
@@ -3524,6 +3638,8 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 row["quality_status"] = "causal_precision_pending"
         elif row["causal_audit"] is None:
             row["quality_status"] = "causal_audit_unproven"
+        elif row["causal_audit"] == "legacy_integrity_verified_path_unclassified":
+            row["quality_status"] = "causal_path_unclassified"
         elif row["causal_audit"] != "verified":
             row["quality_status"] = "causal_audit_invalid"
         else:
@@ -3689,6 +3805,12 @@ def markdown(report: dict[str, Any]) -> str:
              "HBASE37 `pending_seed` records a newer staged LocalHBaseCluster "
              "workload; its prior exact target had unknown actor identity and "
              "the new typed door still needs a fresh healthy run. "
+             "HBASE34 `pending_seed` records a staged alternate existing token "
+             "JUnit whose archived healthy trace reaches the selected guard; "
+             "its new typed I/O door still needs a fresh healthy run. "
+             "ZOOKEEPER13 `legacy_integrity_verified_path_unclassified` means "
+             "its older audit verifies archive and fault identities but does not "
+             "contain the later graph-path fields. "
              "`fault_model_no_target_retaining_pretarget_door` records ten "
              "effective HDFS48 faults that all lose the named target. "
              "`fault_model_packet_io_no_target_retention` records that ZK10 "

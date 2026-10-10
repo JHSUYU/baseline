@@ -1,0 +1,379 @@
+{
+  "case_id": "HBASE-24",
+  "dispatch_attempt_id": null,
+  "elapsed_seconds": 5.338,
+  "events_evidence": {
+    "gzip_bytes": 19745,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "b8df6c20b22d1a627ca72aae9189dca7c3c3e528d55532c3fedc30e87151936f",
+    "raw_bytes": 563092,
+    "raw_path": null,
+    "raw_sha256": "5c46b6bf2c19a3b74509991f5e200c21363f3c17522d504936d865584671ce64"
+  },
+  "events_sha256": "5c46b6bf2c19a3b74509991f5e200c21363f3c17522d504936d865584671ce64",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": false,
+    "all_faults_matched": true,
+    "allow_local_timeline_doors": true,
+    "applied_fault_ids": [],
+    "closure_coverage_ids": [
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@191:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@205:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#checkZk()Lorg/apache/zookeeper/ZooKeeper;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#checkZk()Lorg/apache/zookeeper/ZooKeeper;@167:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;@269:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;@269:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@424:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@424:branch:2:TAKEN"
+    ],
+    "closure_edges": [],
+    "closure_occurrences": [
+      "[\"zk-member:four\",\"0\",\"zk-member:four:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+      "[\"zk-member:one\",\"0\",\"zk-member:one:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+      "[\"zk-member:three\",\"0\",\"zk-member:three:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+      "[\"zk-member:two\",\"0\",\"zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]"
+    ],
+    "coverage_ids": [
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#<init>(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#abort(Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#abort(Ljava/lang/String;)V@324:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#abort(Ljava/lang/String;)V@324:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#access$000()Lorg/slf4j/Logger;",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#access$100(Lorg/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#access$200(Lorg/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#access$300(Lorg/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs;Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#close()V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#receivedReachedGlobalBarrier(Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#sendMemberAcquired(Lorg/apache/hadoop/hbase/procedure/Subprocedure;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#sendMemberAcquired(Lorg/apache/hadoop/hbase/procedure/Subprocedure;)V@251:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#sendMemberCompleted(Lorg/apache/hadoop/hbase/procedure/Subprocedure;[B)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#sendMemberCompleted(Lorg/apache/hadoop/hbase/procedure/Subprocedure;[B)V@272:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#start(Ljava/lang/String;Lorg/apache/hadoop/hbase/procedure/ProcedureMember;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@191:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V@205:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#waitForNewProcedures()V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#waitForNewProcedures()V@159:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#waitForNewProcedures()V@167:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#waitForNewProcedures()V@171:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#waitForNewProcedures()V@171:branch:3:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#watchForAbortedProcedures()V",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#watchForAbortedProcedures()V@139:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#watchForAbortedProcedures()V@139:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#watchForAbortedProcedures()V@139:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#watchForAbortedProcedures()V@142:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#watchForAbortedProcedures()V@142:branch:3:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#<init>(Ljava/lang/String;ILorg/apache/zookeeper/Watcher;IIILjava/lang/String;ILorg/apache/zookeeper/client/ZKClientConfig;)V",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#<init>(Ljava/lang/String;ILorg/apache/zookeeper/Watcher;IIILjava/lang/String;ILorg/apache/zookeeper/client/ZKClientConfig;)V@134:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#<init>(Ljava/lang/String;ILorg/apache/zookeeper/Watcher;IIILjava/lang/String;ILorg/apache/zookeeper/client/ZKClientConfig;)V@134:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#checkZk()Lorg/apache/zookeeper/ZooKeeper;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#checkZk()Lorg/apache/zookeeper/ZooKeeper;@167:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#checkZk()Lorg/apache/zookeeper/ZooKeeper;@167:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#connect(Lorg/apache/hadoop/conf/Configuration;Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;Lorg/apache/zookeeper/client/ZKClientConfig;)Lorg/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#connect(Lorg/apache/hadoop/conf/Configuration;Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;Lorg/apache/zookeeper/client/ZKClientConfig;)Lorg/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper;@112:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#connect(Lorg/apache/hadoop/conf/Configuration;Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;Lorg/apache/zookeeper/client/ZKClientConfig;)Lorg/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper;@116:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#create(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#create(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@610:branch:1:CASE:2",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#create(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@627:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#create(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@627:branch:3:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#create(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@627:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#create(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@627:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#createNonSequential(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#createNonSequential(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@643:branch:1:CASE:6",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#createNonSequential(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@643:branch:1:DEFAULT",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#createNonSequential(Ljava/lang/String;[BLjava/util/List;Lorg/apache/zookeeper/CreateMode;)Ljava/lang/String;@645:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;@269:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Lorg/apache/zookeeper/data/Stat;@269:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Z)Lorg/apache/zookeeper/data/Stat;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Z)Lorg/apache/zookeeper/data/Stat;@306:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#exists(Ljava/lang/String;Z)Lorg/apache/zookeeper/data/Stat;@306:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getChildren(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getChildren(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;@351:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getChildren(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;)Ljava/util/List;@351:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@424:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@424:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getMaxMultiSizeLimit()I",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getSessionId()J",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getSessionId()J@795:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#multi(Ljava/lang/Iterable;)Ljava/util/List;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#multi(Ljava/lang/Iterable;)Ljava/util/List;@769:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#multi(Ljava/lang/Iterable;)Ljava/util/List;@769:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#prepareZKMulti(Ljava/lang/Iterable;)Ljava/lang/Iterable;",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#prepareZKMulti(Ljava/lang/Iterable;)Ljava/lang/Iterable;@715:branch:1:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#prepareZKMulti(Ljava/lang/Iterable;)Ljava/lang/Iterable;@720:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#prepareZKMulti(Ljava/lang/Iterable;)Ljava/lang/Iterable;@720:branch:2:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#prepareZKMulti(Ljava/lang/Iterable;)Ljava/lang/Iterable;@721:branch:3:TAKEN",
+      "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#prepareZKMulti(Ljava/lang/Iterable;)Ljava/lang/Iterable;@725:branch:4:FALLTHROUGH"
+    ],
+    "coverage_ref_errors": [],
+    "doors": [
+      {
+        "event_id": "HBASE-24-r0000:375",
+        "event_seq": 375,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "local_timeline_evidence": {
+          "door_event_id": "HBASE-24-r0000:375",
+          "door_seq": 375,
+          "epoch": 0,
+          "kind": "observed_local_timeline",
+          "node": "zk-member:two",
+          "occurrence": "zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+          "target_check_event_id": "HBASE-24-r0000:398",
+          "target_check_seq": 398
+        },
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk-member:two",
+          "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+      },
+      {
+        "event_id": "HBASE-24-r0000:383",
+        "event_seq": 383,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "local_timeline_evidence": {
+          "door_event_id": "HBASE-24-r0000:383",
+          "door_seq": 383,
+          "epoch": 0,
+          "kind": "observed_local_timeline",
+          "node": "zk-member:one",
+          "occurrence": "zk-member:one:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+          "target_check_event_id": "HBASE-24-r0000:406",
+          "target_check_seq": 406
+        },
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk-member:one",
+          "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+      },
+      {
+        "event_id": "HBASE-24-r0000:387",
+        "event_seq": 387,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "local_timeline_evidence": {
+          "door_event_id": "HBASE-24-r0000:387",
+          "door_seq": 387,
+          "epoch": 0,
+          "kind": "observed_local_timeline",
+          "node": "zk-member:four",
+          "occurrence": "zk-member:four:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+          "target_check_event_id": "HBASE-24-r0000:405",
+          "target_check_seq": 405
+        },
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk-member:four",
+          "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+      },
+      {
+        "event_id": "HBASE-24-r0000:390",
+        "event_seq": 390,
+        "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "local_timeline_evidence": {
+          "door_event_id": "HBASE-24-r0000:390",
+          "door_seq": 390,
+          "epoch": 0,
+          "kind": "observed_local_timeline",
+          "node": "zk-member:three",
+          "occurrence": "zk-member:three:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1",
+          "target_check_event_id": "HBASE-24-r0000:408",
+          "target_check_seq": 408
+        },
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk-member:three",
+          "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+        },
+        "site": "org.apache.hadoop.hbase.zookeeper.RecoverableZooKeeper#getData(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@405:door:1"
+      }
+    ],
+    "eligible_doors_before_target": 4,
+    "event_count": 958,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 0,
+      "candidate_edges_by_kind": {},
+      "edges": 0,
+      "edges_by_kind": {},
+      "gaps": {
+        "door_unknown_actor": 13
+      },
+      "occurrences": 4
+    },
+    "last_fault_seq": -1,
+    "local_timeline_doors": 4,
+    "matched_fault_ids": [],
+    "observed_door_events": 17,
+    "pairing_order_valid": true,
+    "qualified_request_followups": [],
+    "qualified_target_throw_evidence": [],
+    "reject_coarse_roots": false,
+    "require_event_time_paths": false,
+    "status": "observed",
+    "target_anchor": "[\"zk-member:two\",\"0\",\"zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+    "target_closures": [
+      {
+        "anchor": "[\"zk-member:two\",\"0\",\"zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+        "closure_occurrences": [
+          "[\"zk-member:two\",\"0\",\"zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]"
+        ],
+        "epoch": 0,
+        "node": "zk-member:two",
+        "occurrence": "zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      },
+      {
+        "anchor": "[\"zk-member:four\",\"0\",\"zk-member:four:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+        "closure_occurrences": [
+          "[\"zk-member:four\",\"0\",\"zk-member:four:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]"
+        ],
+        "epoch": 0,
+        "node": "zk-member:four",
+        "occurrence": "zk-member:four:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      },
+      {
+        "anchor": "[\"zk-member:one\",\"0\",\"zk-member:one:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+        "closure_occurrences": [
+          "[\"zk-member:one\",\"0\",\"zk-member:one:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]"
+        ],
+        "epoch": 0,
+        "node": "zk-member:one",
+        "occurrence": "zk-member:one:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      },
+      {
+        "anchor": "[\"zk-member:three\",\"0\",\"zk-member:three:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]",
+        "closure_occurrences": [
+          "[\"zk-member:three\",\"0\",\"zk-member:three:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1\"]"
+        ],
+        "epoch": 0,
+        "node": "zk-member:three",
+        "occurrence": "zk-member:three:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      }
+    ],
+    "target_exception_candidate": false,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [
+      {
+        "epoch": 0,
+        "node": "zk-member:four",
+        "occurrence": "zk-member:four:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      },
+      {
+        "epoch": 0,
+        "node": "zk-member:one",
+        "occurrence": "zk-member:one:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      },
+      {
+        "epoch": 0,
+        "node": "zk-member:three",
+        "occurrence": "zk-member:three:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      },
+      {
+        "epoch": 0,
+        "node": "zk-member:two",
+        "occurrence": "zk-member:two:0:org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#startNewSubprocedure(Ljava/lang/String;)V:root:1"
+      }
+    ],
+    "target_reached": true,
+    "target_region_present": true,
+    "target_threw": false,
+    "target_throw_evidence": [],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "13a5cd08ece5efe9015d090e2654cc04ebfa78ce6e083bdd16ef56d158a5b54a",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "09e075610e204a260da2d92acd9ee21b5fa372492eb78d4585c4a600c5286f9c",
+    "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "novelty": {
+    "closure_coverage": 11,
+    "closure_edges": 0,
+    "coverage": 72
+  },
+  "plan": [],
+  "return_code": 0,
+  "schema_version": 1,
+  "selection_reason": "healthy_seed",
+  "site_catalog_sha256": "c440349213c9afae63c6f09498d44f8c405b3289e7a3ac19a4151e92ba45824e",
+  "site_catalog_validation": {
+    "catalog_rows": 4,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "845ed06384339ccc65b1d33c38d75a7265f4245c4b4871454a6662c24814f48b",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "845ed06384339ccc65b1d33c38d75a7265f4245c4b4871454a6662c24814f48b"
+    ],
+    "observed_target_class_sha256": "845ed06384339ccc65b1d33c38d75a7265f4245c4b4871454a6662c24814f48b",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791598868.5469348,
+  "stderr_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 33061,
+    "raw_path": "stderr.log",
+    "raw_sha256": "09e075610e204a260da2d92acd9ee21b5fa372492eb78d4585c4a600c5286f9c"
+  },
+  "stderr_sha256": "09e075610e204a260da2d92acd9ee21b5fa372492eb78d4585c4a600c5286f9c",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 0,
+    "raw_path": "stdout.log",
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 0
+}
