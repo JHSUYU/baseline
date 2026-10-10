@@ -20,6 +20,43 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_hbase27_passing_seed_with_no_door_remains_unfinished(self):
+        from Mallory.report.build import _hbase27_no_door_review
+        baseline = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            relative = "data/mallory/calibration_hbase27_boot_order_v1/HBASE-27"
+            shutil.copytree(baseline / relative, root / relative)
+            review = ("Mallory/adapters/hbase/pilot/HBASE-27-boot-order-monitor-v1/"
+                      "full-v1/healthy-audit.json")
+            path = root / review
+            path.parent.mkdir(parents=True)
+            shutil.copy2(baseline / review, path)
+            results = root / "data/mallory"
+            self.assertEqual(_hbase27_no_door_review(results, "HBASE-27")[0],
+                             "healthy_no_injectable_door")
+            (root / relative / "result.json").write_text("{}\n")
+            self.assertEqual(_hbase27_no_door_review(results, "HBASE-27")[0],
+                             "invalid_healthy_no_injectable_door_review")
+
+    def test_zk08_09_cluster_review_is_hash_bound_and_not_completion(self):
+        from Mallory.report.build import _zk08_09_cluster_junit_review
+        baseline = Path(__file__).resolve().parents[2]
+        relative = ("Mallory/adapters/zookeeper/cases/"
+                    "ZOOKEEPER-08-09-cluster-junit-source-audit-v2.md")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            path = root / relative
+            path.parent.mkdir(parents=True)
+            shutil.copy2(baseline / relative, path)
+            results = root / "data/mallory"
+            for case_id in ("ZOOKEEPER-08", "ZOOKEEPER-09"):
+                self.assertEqual(_zk08_09_cluster_junit_review(results, case_id)[0],
+                                 "source_review_no_mapped_cluster_test")
+            path.write_text(path.read_text() + "\nchanged\n")
+            self.assertEqual(_zk08_09_cluster_junit_review(results, "ZOOKEEPER-08")[0],
+                             "invalid_cluster_junit_source_review")
+
     def test_zk13_legacy_audit_proves_integrity_without_inventing_path(self):
         from Mallory.report.build import _zk13_legacy_integrity_review
         baseline = Path(__file__).resolve().parents[2]

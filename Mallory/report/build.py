@@ -2507,6 +2507,64 @@ def _hbase34_cluster_stage(results: Path, case_id: str) -> tuple[str | None, str
         return invalid
 
 
+def _zk08_09_cluster_junit_review(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Attach the pinned source review without treating it as campaign evidence."""
+    if case_id not in {"ZOOKEEPER-08", "ZOOKEEPER-09"}:
+        return None, None
+    path = (results.resolve().parent.parent / "Mallory/adapters/zookeeper/cases"
+            / "ZOOKEEPER-08-09-cluster-junit-source-audit-v2.md")
+    if not path.is_file():
+        return None, None
+    expected = "fcef7f81aec905cf4661214a28ea1f895fe5073ffa76551324b86c9cf331a96f"
+    if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
+        return "invalid_cluster_junit_source_review", str(path)
+    return "source_review_no_mapped_cluster_test", str(path)
+
+
+def _hbase27_no_door_review(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Distinguish the passing target seed from a runnable fault campaign."""
+    if case_id != "HBASE-27":
+        return None, None
+    baseline = results.resolve().parent.parent
+    calibration = results / "calibration_hbase27_boot_order_v1/HBASE-27"
+    receipt_path = calibration / "negative-receipt.json"
+    review_path = (baseline / "Mallory/adapters/hbase/pilot"
+                   / "HBASE-27-boot-order-monitor-v1/full-v1/healthy-audit.json")
+    if not receipt_path.is_file():
+        return None, None
+    invalid = ("invalid_healthy_no_injectable_door_review", str(receipt_path))
+    try:
+        if (hashlib.sha256(receipt_path.read_bytes()).hexdigest() !=
+                "9637398f1d2ff9ecaced22a728494cdf5a16c3a1af53c6e70bd8464ae443afbf" or
+                not review_path.is_file() or
+                hashlib.sha256(review_path.read_bytes()).hexdigest() !=
+                "be2b4de5855d5347de2b5ed57ee18ba98bbbf80deb8ac9c26b99f252d8757829"):
+            return invalid
+        receipt = _json(receipt_path)
+        result_path = calibration / "result.json"
+        result = _json(result_path)
+        review = _json(review_path)
+        if (receipt.get("case_id") != case_id or
+                receipt.get("counts_as_completed_campaign") is not False or
+                receipt.get("result_sha256") !=
+                hashlib.sha256(result_path.read_bytes()).hexdigest() or
+                result.get("status") != "healthy_no_injectable_door" or
+                result.get("fault_trials_completed") != 0 or
+                result.get("healthy_junit_validation", {}).get("status") != "passed" or
+                result.get("target_node_named") is not True or
+                result.get("healthy_eligible_doors") != 0 or
+                review.get("doors", {}).get("eligible_before_target") != 0):
+            return invalid
+        for member in receipt["members"]:
+            path = (calibration / member["path"]).resolve()
+            if (not path.is_relative_to(calibration.resolve()) or not path.is_file() or
+                    hashlib.sha256(path.read_bytes()).hexdigest() != member["sha256"]):
+                return invalid
+        return "healthy_no_injectable_door", str(receipt_path)
+    except (OSError, KeyError, TypeError, ValueError, AttributeError):
+        return invalid
+
+
 def _hbase37_cluster_stage(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Recognize the newer cluster workload without rewriting the older gap."""
     if case_id != "HBASE-37":
@@ -3445,6 +3503,12 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         row["source_review_receipt"] = supplementary_receipt
     elif supplementary is not None:
         row["source_gap_error"] = "independent source review or referenced evidence mismatch"
+    cluster_review, cluster_review_path = _zk08_09_cluster_junit_review(results, case_id)
+    if cluster_review == "source_review_no_mapped_cluster_test":
+        row["source_review_status"] = cluster_review
+        row["source_review_receipt"] = cluster_review_path
+    elif cluster_review is not None:
+        row["source_gap_error"] = "cluster JUnit source review hash mismatch"
     if result is None:
         bootstrap_status, bootstrap_receipt = _solr_fault_discovery_bootstrap(results, case_id)
         if bootstrap_status is not None:
@@ -3453,6 +3517,14 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["source_review_receipt"] = bootstrap_receipt
             if bootstrap_status.startswith("invalid_"):
                 row["source_gap_error"] = "fault-discovery bootstrap review or pinned evidence mismatch"
+            return row
+        no_door_status, no_door_receipt = _hbase27_no_door_review(results, case_id)
+        if no_door_status is not None:
+            row["report_status"] = no_door_status
+            row["source_review_status"] = no_door_status
+            row["source_review_receipt"] = no_door_receipt
+            if no_door_status.startswith("invalid_"):
+                row["source_gap_error"] = "healthy no-door receipt or pinned evidence mismatch"
             return row
         hbase34_status, hbase34_receipt, hbase34_selector = _hbase34_cluster_stage(results, case_id)
         if hbase34_status is not None:
