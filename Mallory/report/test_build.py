@@ -16,11 +16,39 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
                                   _hdfs11_faulted_event_review,
                                   _local_timeline_review,
                                   _posthoc_attestation, _quality,
-                                  _row, _source_gap, _source_review, build,
+                                  _row, _solr38_corrected_audit, _source_gap,
+                                  _source_review, build,
                                   markdown)
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_solr38_corrected_audit_requires_untampered_seal(self):
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        canonical = source / "cases/SOLR-38"
+        result = json.loads((canonical / "result.json").read_text())
+        self.assertEqual("verified_corrected_offline",
+                         _solr38_corrected_audit(source, canonical / "result.json", result)[0])
+        with tempfile.TemporaryDirectory() as directory:
+            results = Path(directory) / "data/mallory"
+            copied = results / "cases/SOLR-38"
+            copied.mkdir(parents=True)
+            for name in ("result.json", "config.json", "checkpoint.json",
+                         "offline-causal-audit.json", "causal-audit-correction.json",
+                         "canonical-import-receipt.json"):
+                shutil.copy2(canonical / name, copied / name)
+            archive = results / "evidence_archives"
+            archive.mkdir()
+            for suffix in ("tar.gz", "members.json", "receipt.json"):
+                name = f"SOLR-38-strict-fault-node1-v3.{suffix}"
+                shutil.copy2(source / "evidence_archives" / name, archive / name)
+            self.assertEqual("verified_corrected_offline",
+                             _solr38_corrected_audit(results, copied / "result.json", result)[0])
+            with (copied / "causal-audit-correction.json").open("a") as stream:
+                stream.write(" ")
+            self.assertEqual("invalid",
+                             _solr38_corrected_audit(results, copied / "result.json", result)[0])
+
     def test_source_proven_skip_accounting_excludes_staged_bootstrap(self):
         from Mallory.report.build import (_hbase32_target_discovery_stage,
                                           _hbase34_environment_repair)

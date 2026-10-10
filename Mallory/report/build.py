@@ -111,6 +111,53 @@ def _causal_audit(result_path: Path, result: dict[str, Any]) -> str | None:
     return "verified" if valid else "invalid"
 
 
+def _solr38_corrected_audit(results: Path, result_path: Path,
+                            result: dict[str, Any]) -> tuple[str, str | None]:
+    """Check the sealed offline correction without changing the original audit."""
+    if result.get("case_id") != "SOLR-38":
+        return "not_applicable", None
+    root = Path(__file__).resolve().parents[2]
+    canonical = result_path.parent
+    receipt_path = canonical / "canonical-import-receipt.json"
+    correction_path = canonical / "causal-audit-correction.json"
+    archive = results / "evidence_archives/SOLR-38-strict-fault-node1-v3.tar.gz"
+    manifest = results / "evidence_archives/SOLR-38-strict-fault-node1-v3.members.json"
+    original_seal = results / "evidence_archives/SOLR-38-strict-fault-node1-v3.receipt.json"
+    auditor = root / "Mallory/adapters/solr/cases/SOLR-38/election-v3-offline-salvage-v4/audit.py"
+    try:
+        receipt, correction = _json(receipt_path), _json(correction_path)
+        original = _json(result_path.with_name("offline-causal-audit.json"))
+        if not all(isinstance(item, dict) for item in (receipt, correction, original)):
+            return "invalid", str(receipt_path)
+        hashes = ((result_path, "canonical_result_sha256"),
+                  (canonical / "config.json", "canonical_config_sha256"),
+                  (canonical / "checkpoint.json", "canonical_checkpoint_sha256"),
+                  (canonical / "offline-causal-audit.json", "canonical_audit_sha256"),
+                  (correction_path, "salvage_receipt_sha256"),
+                  (auditor, "salvage_auditor_sha256"),
+                  (archive, "archive_sha256"),
+                  (manifest, "archive_manifest_sha256"),
+                  (original_seal, "archive_receipt_sha256"))
+        if (any(not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() !=
+                receipt.get(key) for path, key in hashes)
+                or receipt.get("case_id") != "SOLR-38"
+                or not (receipt.get("status") == result.get("status") == "queue_exhausted")
+                or correction.get("archive_sha256") != receipt["archive_sha256"]
+                or correction.get("archive_receipt_sha256") != receipt["archive_receipt_sha256"]
+                or correction.get("old_offline_audit_sha256") != receipt["canonical_audit_sha256"]
+                or correction.get("eligible_for_canonical_completed_row") is not True
+                or correction.get("configured_campaign_complete") is not True
+                or correction.get("same_actor_postfault_strict_target_trials") != 2
+                or not (correction.get("fault_trials_run") == result.get("fault_trials_completed") == 2)
+                or not (correction.get("exact_target_exception_trials") == result.get("exact_exception_trials") == 0)
+                or correction.get("new_bug_confirmed") is not False
+                or original.get("report_gate_passed") is not False):
+            return "invalid", str(receipt_path)
+        return "verified_corrected_offline", str(correction_path)
+    except (OSError, KeyError, TypeError, ValueError):
+        return "invalid", str(receipt_path)
+
+
 def _zk13_legacy_integrity_review(results: Path, result_path: Path,
                                   result: dict[str, Any], audit: dict[str, Any]) -> str | None:
     """Recognize the older audit's integrity gate without claiming a graph path."""
@@ -4296,6 +4343,21 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = "invalid_result"
             row["quality_status"] = None
             row["result_error"] = "HBASE-12 archive or expected-exception review mismatch"
+    if case_id == "SOLR-38":
+        corrected, corrected_receipt = _solr38_corrected_audit(results, result_path, result)
+        if corrected == "verified_corrected_offline":
+            row["original_causal_audit"] = row["causal_audit"]
+            row["causal_audit"] = corrected
+            row["causal_precision_review"] = "observed_event_path"
+            row["causal_precision_receipt"] = corrected_receipt
+            row["quality_status"] = "observed_event_path_corrected_offline"
+            row["source_review_status"] = "source_reviewed_no_new_bug"
+            row["source_review_classification"] = "postfault_guard_fallthrough"
+            row["new_bug"] = False
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "SOLR-38 sealed offline correction or import receipt mismatch"
     return row
 
 
