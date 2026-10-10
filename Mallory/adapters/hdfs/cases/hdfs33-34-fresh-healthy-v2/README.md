@@ -38,7 +38,14 @@ On node0, run `python3 -B preflight.py HDFS-33 --static` and then the HDFS-34
 equivalent. Both archived static receipts pass. The preflight verifies the
 source digest, all pinned class, release, fixture, config, and site hashes,
 the one-run gate, typed door identity, and Mallory static frontier. It starts
-no JVM. On node2, dispatch repeats `preflight.py HDFS-33` and then HDFS-34
+no JVM. The node2 check resolves node0 `hdfs-lane2` source and class pins
+under the equivalent node2 `hdfs-identity-v8` root, retaining each original
+SHA-256 value; its receipt names the paths actually checked. The copied
+node2 source root lacks `.git/HEAD`; the preflight checks the pinned
+15,586-path source digest and frozen commit label there and records that
+evidence in its receipt. A source root with a Git HEAD also has its HEAD
+checked directly. The archived node2 preflight receipts for both cases pass.
+Dispatch repeats `preflight.py HDFS-33` and then HDFS-34
 without `--static`, after assigning the shared HDFS source lane. Queue
 **HDFS-33 first**, then **HDFS-34**, with no overlap on that source/build
 lane. HDFS-33 is the shorter one-DataNode actor-identity probe; HDFS-34's

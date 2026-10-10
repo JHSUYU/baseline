@@ -58,17 +58,30 @@ def main():
     pins = json.loads(PROVENANCE.read_text())
     if pins["stage"] != "node2_fresh_healthy_only":
         raise RuntimeError("package stage changed")
-    for spec in pins["pins"].values():
-        require(Path(spec["path"]), spec["sha256"])
-
     runtime_root = Path(pins["node2_source_root"])
-    root = Path(pins["static_source_root"]) if args.static else runtime_root
-    head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root,
-                          capture_output=True, text=True, check=True).stdout.strip()
-    if head != pins["source_commit"]:
-        raise RuntimeError(f"Hadoop commit changed: {head}")
+    static_root = Path(pins["static_source_root"])
+    root = static_root if args.static else runtime_root
+    source_pin_paths = {}
+    for name, spec in pins["pins"].items():
+        path = Path(spec["path"])
+        if path.is_relative_to(static_root):
+            if not args.static:
+                path = runtime_root / path.relative_to(static_root)
+            source_pin_paths[name] = str(path)
+        require(path, spec["sha256"])
+
     reference = json.loads((BASE / "Mallory/dispatch/source_reference.json").read_text())
     frozen = reference["roots"]["/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3"]
+    if frozen["commit"] != pins["source_commit"]:
+        raise RuntimeError("frozen Hadoop commit label changed")
+    if args.static or (root / ".git" / "HEAD").is_file():
+        head = subprocess.run(["git", "rev-parse", "HEAD"], cwd=root,
+                              capture_output=True, text=True, check=True).stdout.strip()
+        if head != pins["source_commit"]:
+            raise RuntimeError(f"Hadoop commit changed: {head}")
+        commit_evidence = "git_head_and_full_digest"
+    else:
+        commit_evidence = "frozen_commit_label_and_full_digest_no_git_head"
     if frozen["digest"] != pins["source_digest"] or source_digest(root, frozen) != pins["source_digest"]:
         raise RuntimeError("source digest changed")
 
@@ -127,6 +140,9 @@ def main():
               "status": "static_preflight_pass" if args.static else "preflight_pass",
               "config_sha256": sha(cfg_path), "site_sha256": sha(HERE / f"{case}.sites.json"),
               "source_digest": pins["source_digest"],
+              "source_commit_evidence": commit_evidence,
+              "verified_source_root": str(root),
+              "verified_source_pin_paths": source_pin_paths,
               "fresh_named_healthy_admitted": False,
               "full_campaign_admitted": False, "jvm_launched": False}
     text = json.dumps(result, indent=2) + "\n"
