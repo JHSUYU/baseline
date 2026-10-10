@@ -2,7 +2,7 @@
   "artifacts": [
     {
       "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-no-suitable-fault-v1/README.md",
-      "sha256": "7e8f983e71e024672fde9c01790608198d326df874d2369fcbf146f8647033bf"
+      "sha256": "e39f01a29ac07541723309f85a02d8b4b47e8eeb4057ce77defdc5f272723b1a"
     },
     {
       "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
@@ -129,6 +129,10 @@
     {
       "candidate": "existing actor-removal JUnits",
       "outcome": "no concurrent real hot-add builder; unit manager test uses mocks"
+    },
+    {
+      "candidate": "unchecked RuntimeException or Error at heartbeat door",
+      "outcome": "RuntimeException is retried by BPServiceActor.run; Error reaches cleanup but is outside typed I/O exception model and lacks observed retained builder window"
     }
   ],
   "case_id": "HDFS-33",

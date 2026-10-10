@@ -49,6 +49,11 @@ available heartbeat exception fault does not produce this shutdown. An
 initial-handshake `IOException` can end an actor only on the non-retry path;
 the selected hot-swap test starts its DataNode before adding a volume, and an
 initialization failure does not establish a retained builder check.
+An unchecked `RuntimeException` from `offerService` is caught by the
+per-iteration `BPServiceActor.run` handler and retried. An injected `Error`
+would reach its outer `catch (Throwable)` and cleanup, but it is outside the
+typed I/O exception model and still has no observed retained builder window
+in an existing test.
 
 `BlockPoolManager.refreshNamenodes` (149–173) catches address-discovery
 `IOException`, then throws if the address map is absent, before
