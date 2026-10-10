@@ -1,0 +1,96 @@
+{
+  "adapter_33": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs26-retry-io-admission-v2/releases/9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811/adapter.jar",
+    "sha256": "9d828a425cb5f16f1bb02ce53075e3f7fd5ef71aeffca014eb185d77deb71811"
+  },
+  "adapter_34": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/adapter-v10.jar",
+    "sha256": "1f65f6346288e92e514f6e815be35aea6d446cd0432a429fa130ad9aab581585"
+  },
+  "agent": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+    "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+  },
+  "core_release": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f/manifest.json",
+    "sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8"
+  },
+  "full_gate": [
+    "fresh JUnit >0, zero errors/failures",
+    "exact target check reached without selected throw",
+    "named DN actor and epoch",
+    "at least one observed injectable I/O door; fault-to-target path quality recorded",
+    "SHA-pinned healthy result/catalog/audit; runtime_attested mapping"
+  ],
+  "healthy_cases": [
+    {
+      "case_id": "HDFS-33",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/HDFS-33-node2-healthy-v1.json",
+        "sha256": "af9fb92b46a16eb7ea41191adfb56ecf0caf5e03abcbc450495fe632d57b7f95"
+      },
+      "original_config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/original-33-healthy.json",
+        "sha256": "b0ce01b4fa7e815ee09d217441227041950585935ea23c57f0d0c5e4a1e5f52c"
+      },
+      "source_review": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/source-review-33.md",
+        "sha256": "9b56facc91519d172f156b2727f2a52d7f90713d64bc2ed91127cb04b7afb428"
+      },
+      "target_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/DataStorage$VolumeBuilder.class",
+        "sha256": "6ddba23351786ba9c6aba0e88bb4f9fb6feb9ade5bde23c66ae7c907d5aaa587"
+      },
+      "test_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.class",
+        "sha256": "1b4e6c614bdc1fa49142da0ff98ed5509e69cdc14b6e5b0334315cd593326e1e"
+      }
+    },
+    {
+      "case_id": "HDFS-34",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/HDFS-34-node2-healthy-v1.json",
+        "sha256": "23babe4c59dd019115310b4ba8a9c76bd8df48ce8b7ece50e589c3ecd005363e"
+      },
+      "original_config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/original-34-healthy.json",
+        "sha256": "69c7fea84c8cb14712efa0a1a87374129847b7ddd22ad58366387881c56fce83"
+      },
+      "source_review": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/source-review-34.md",
+        "sha256": "4b08ec41b5393d15bdae6e40e209ed940eb349d0f0c85c49e5f9bc50cde6e9ce"
+      },
+      "target_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/DataStorage.class",
+        "sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f"
+      },
+      "test_class": {
+        "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/TestDFSUpgradeFromImage.class",
+        "sha256": "a84ac55ffb306f4e0778bf641c9979a0876e14fafd590dd9f2b98bf31cb4f5a5"
+      }
+    }
+  ],
+  "healthy_output": {
+    "HDFS-33": "/tmp/mallory-hdfs-33-node2-healthy-v1",
+    "HDFS-34": "/tmp/mallory-hdfs-34-node2-healthy-v1"
+  },
+  "healthy_runner": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/run_healthy.sh",
+    "sha256": "5d2921b8cf91c82b6487d8a1d97d3163fb62bfa42f3b2387791cec2a5ea3a4b8"
+  },
+  "next_budget": {
+    "max_faults_per_trial": 3,
+    "seconds": 3600,
+    "trials": 80
+  },
+  "no_jvm_launched": true,
+  "preflight": {
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs33-34-node2-stage-v1/preflight.py",
+    "sha256": "3d4dd6d68e308f835b1fe5df032a902f2be0fff5c022e9bb5bfa380661ba1d85"
+  },
+  "schema_version": 1,
+  "source_digest": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+  "source_lock": "/tmp/mallory-lanes/hdfs-identity-v8-node2.lock",
+  "source_root": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8",
+  "status": "healthy_only_staged_full_admission_blocked"
+}

@@ -1,0 +1,10 @@
+# HDFS-33/34 node2 healthy admission and conditional full budget
+
+These are source-backed, SHA-pinned **healthy-only** MiniDFSCluster candidates. Dispatch must independently admit one JUnit at a time on the node2 `hdfs-identity-v8` source lock. No JVM or fault run was started while preparing this package.
+
+- HDFS-33: `TestDataNodeHotSwapVolumes#testAddOneNewVolume`, exact `DataStorage.VolumeBuilder.build` assertion. Prior JUnit passed and reached the check with unknown actor. The identity adapter is pinned here, but a fresh named DataNode target and an observed injectable I/O door are still required. Source review found no proven retained I/O path that makes `bpStorageMap` null; record that as an outcome if full runs.
+- HDFS-34: `TestDFSUpgradeFromImage#testUpgradeFromRel22Image`, exact `DataStorage.doTransition` namespace guard. The old-image archive and reference file are SHA-pinned. Original `TestDFSStartupVersions#testVersions` expected the selected exception in healthy runs and is superseded only for this versioned calibration. Runtime target reach and named I/O are unverified.
+
+`handoff.json` pins both configs, frozen fa5f core, agent, adapters, target/test classes and source review. On node2, run `python3 preflight.py HDFS-33` or `HDFS-34` to check hashes, the full source digest and Mallory static validation without starting Hadoop. After dispatch GO, `MALLORY_DISPATCH_ADMITTED=1 ./run_healthy.sh HDFS-33` (or `HDFS-34`) runs one worker-held calibration-only JUnit with fresh `/tmp` output. The runner refuses an existing output.
+
+The intended subsequent full budget is **80 fault trials / 3600 seconds / max 3 faults per trial**. Full configs cannot be runtime-attested until the fresh healthy result proves JUnit success, exact nonthrowing target on a named DN/epoch, and an observed injectable I/O door. Pin the target class/catalog and frozen audit before promotion. A fault-to-target causal gap must be reported accurately; it does not by itself change the user's completed-case budget rule.

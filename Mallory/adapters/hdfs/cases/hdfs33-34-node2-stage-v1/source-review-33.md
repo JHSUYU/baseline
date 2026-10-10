@@ -1,0 +1,13 @@
+# HDFS-33 volume map source audit
+
+Status: **nonterminal fault-model and identity gap**. This is an offline source review; no new healthy JUnit, HDFS JVM, fault trial, or full campaign was run.
+
+The selected check is `DataStorage.VolumeBuilder.build()` at line 259: `assert bpStorage != null`. The bytecode contains both selected branch sites and the `AssertionError` construction. The existing `TestDataNodeHotSwapVolumes#testAddOneNewVolume` starts a one-DataNode MiniDFSCluster, hot-adds a volume, creates blocks, and checks reports. Its archived no-fault run passed JUnit 1/0/0 and reached the exact nonthrowing check once, but both branch events had DataNode `unknown`. It is not a named healthy seed.
+
+The closest pretarget file-I/O door is in `DataStorage.prepareVolume`: it loads the volume storage directory, calls `makeBlockPoolDir`, then calls `getBlockPoolSliceStorage(nsInfo)` before loading block-pool storage directories and returning a `VolumeBuilder`. `getBlockPoolSliceStorage` creates and stores `bpStorageMap[bpid]` when absent. Failure in `makeBlockPoolDir` occurs before insertion but aborts the builder. Failure in the later directory load occurs after insertion and also aborts the builder. `FsDatasetImpl.addVolume` catches I/O from `prepareVolume` and rethrows. It also catches I/O while constructing the `FsVolume`, but throws before `builder.build`. `DataNode.refreshVolumes` records failed workers and raises an `IOException` to the test's reconfiguration call; a failed builder is not built later. These caught I/O outcomes do not make the selected map lookup null while retaining this check.
+
+`DataNode.shutdownBlockPool` can remove the entry when the last `BPServiceActor` shuts down. That is an independent concurrent lifecycle path. A generic heartbeat `IOException` in `BPServiceActor.offerService` is caught and retried, leaving the actor running; it does not itself take the shutdown path. The source does not show a single caught/retrying RPC or file-I/O fault in this test that both removes the map entry and preserves the same builder's call to `build`. A hypothetical concurrent shutdown would need precise task, DataNode, block-pool, and event-time correlation before any causal claim.
+
+No new healthy-only runtime config is staged because the proposed I/O door lacks a credible causal path to the selected operand. Existing identity-overlay work is separate and was left untouched. If a later source-backed door is found, first require a fresh JUnit 1/0/0, the exact nonthrowing check on a named DataNode and epoch, and a strict root-free observed path. Fault/full remains unadmitted.
+
+Run `python3 -B check_offline.py` for SHA, archived-run, source-ordering, and classfile checks without starting a JVM.
