@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import copy
 import fcntl
+import getpass
 import json
+import shutil
 import socket
 import subprocess
 import sys
@@ -120,6 +122,8 @@ def main() -> int:
         parser.error("node0 runtime required")
     if args.admission_receipt is None:
         parser.error("node0 steward GO receipt required before starting a JVM")
+    if args.admission_receipt.resolve() != HERE / "admission-healthy-node0.json":
+        parser.error("case-local node0 GO receipt required")
     receipt = read(args.admission_receipt)
     required = {"go": True, "host": "node0", "case_id": "SOLR-15",
                 "mode": "healthy", "config_sha256": metadata["config_sha256"],
@@ -138,6 +142,17 @@ def main() -> int:
             fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         if OUT.exists():
             raise ValueError("healthy output appeared while acquiring locks")
+        if shutil.disk_usage(ROOT).free < 7_650_410_496:
+            raise ValueError("insufficient free disk for healthy trial")
+        available_kib = next(int(row.split()[1]) for row in
+                             Path('/proc/meminfo').read_text().splitlines()
+                             if row.startswith('MemAvailable:'))
+        if available_kib < 8_388_608:
+            raise ValueError("insufficient available RAM for healthy trial")
+        processes = subprocess.check_output(['ps', '-eo', 'user=,comm='], text=True)
+        if any(row.split() == [getpass.getuser(), 'java']
+               for row in processes.splitlines()):
+            raise ValueError("another user JVM is running on node0")
         print(json.dumps({"status": "admitted", "go_receipt_sha256": sha(args.admission_receipt),
                           **metadata}, sort_keys=True), flush=True)
         state = campaign.run(HERE / "config-healthy-node0.json", OUT)
