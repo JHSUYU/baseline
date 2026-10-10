@@ -1,7 +1,11 @@
 package edu.uva.liftlab.mallory.hbase.clientowner;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.instrument.ClassFileTransformer;
 import java.security.ProtectionDomain;
+import java.util.HashSet;
+import java.util.Set;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
@@ -62,22 +66,8 @@ public final class ClientRpcOwnerTransformer implements ClassFileTransformer {
       }
       if (patched != (UTILITY.equals(className) ? 1 : 2))
         throw new IllegalStateException("HBase 2.6.6 client ownership sites missing: " + patched);
-      ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS) {
-        @Override protected String getCommonSuperClass(String left, String right) {
-          if (left.equals(right)) return left;
-          try {
-            Class<?> a = Class.forName(left.replace('/', '.'), false, loader);
-            Class<?> b = Class.forName(right.replace('/', '.'), false, loader);
-            if (a.isAssignableFrom(b)) return left;
-            if (b.isAssignableFrom(a)) return right;
-            if (a.isInterface() || b.isInterface()) return "java/lang/Object";
-            do { a = a.getSuperclass(); } while (a != null && !a.isAssignableFrom(b));
-            return a == null ? "java/lang/Object" : Type.getInternalName(a);
-          } catch (Throwable ignored) {
-            return "java/lang/Object";
-          }
-        }
-      };
+      ClassWriter writer =
+          new SafeWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, loader);
       owner.accept(writer);
       return writer.toByteArray();
     } catch (Throwable failure) {
@@ -133,5 +123,52 @@ public final class ClientRpcOwnerTransformer implements ClassFileTransformer {
     insns.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS, "closeScope",
         "(L" + SCOPE + ";)V", false));
     return insns;
+  }
+
+  /** Resolve hierarchy from class resources without loading HBase during transformation. */
+  private static final class SafeWriter extends ClassWriter {
+    private final ClassLoader loader;
+    SafeWriter(int flags, ClassLoader loader) { super(flags); this.loader = loader; }
+    @Override protected String getCommonSuperClass(String left, String right) {
+      if (left.equals(right)) return left;
+      if (left.startsWith("[") || right.startsWith("[")) return "java/lang/Object";
+      try {
+        if (assignable(left, right, new HashSet<String>())) return left;
+        if (assignable(right, left, new HashSet<String>())) return right;
+        ClassReader a = reader(left);
+        ClassReader b = reader(right);
+        if (a == null || b == null ||
+            (a.getAccess() & Opcodes.ACC_INTERFACE) != 0 ||
+            (b.getAccess() & Opcodes.ACC_INTERFACE) != 0) return "java/lang/Object";
+        String parent = a.getSuperName();
+        while (parent != null) {
+          if (assignable(parent, right, new HashSet<String>())) return parent;
+          ClassReader next = reader(parent);
+          parent = next == null ? null : next.getSuperName();
+        }
+      } catch (IOException ignored) { }
+      return "java/lang/Object";
+    }
+
+    private boolean assignable(String target, String source, Set<String> seen)
+        throws IOException {
+      if (target.equals(source)) return true;
+      if (!seen.add(source)) return false;
+      ClassReader current = reader(source);
+      if (current == null) return false;
+      String parent = current.getSuperName();
+      if (parent != null && assignable(target, parent, seen)) return true;
+      for (String face : current.getInterfaces())
+        if (assignable(target, face, seen)) return true;
+      return false;
+    }
+
+    private ClassReader reader(String name) throws IOException {
+      InputStream stream = loader == null ? null : loader.getResourceAsStream(name + ".class");
+      if (stream == null) stream = ClassLoader.getSystemResourceAsStream(name + ".class");
+      if (stream == null) return null;
+      try { return new ClassReader(stream); }
+      finally { stream.close(); }
+    }
   }
 }

@@ -35,6 +35,10 @@ ADAPTER_HASHES = {
 }
 CLIENT_JAR = DIST / "lib/hbase-client-2.6.6.jar"
 TESTS_JAR = DIST / "lib/hbase-server-2.6.6-tests.jar"
+ADAPTER_JAR = (
+    REPO / "Mallory/adapters/hbase/overlays/"
+    "hbase28-constructor-actor-v1/runtime/adapter.jar"
+)
 CLASS_HASHES = {
     "org/apache/hadoop/hbase/client/ConnectionImplementation.class":
         "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
@@ -143,7 +147,9 @@ def check_pins() -> None:
     for jar, expected in ((CLIENT_JAR,
                            "b3c9537a0c5f4b057134c59298b453ae207d2e6279be66d71c80da36d0d2de54"),
                           (TESTS_JAR,
-                           "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5")):
+                           "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"),
+                          (ADAPTER_JAR,
+                           "5f83ae1146141c3559073c13fd5b9b952f09af87e4c9d83d2288fbd2c4fd2827")):
         require(sha(jar.read_bytes()) == expected, f"JAR changed: {jar}")
     with zipfile.ZipFile(CLIENT_JAR) as client, zipfile.ZipFile(TESTS_JAR) as tests:
         classes = {name: (tests if "HBaseTestingUtility" in name else client).read(name)

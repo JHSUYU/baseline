@@ -21,7 +21,7 @@ completion token remain the only handoff evidence.
 The source and compiled HBase 2.6.6 sites, base adapter protocol, and staged
 Java files are checked by `python3 preflight.py` without starting a JVM.
 The overlay has **not** been compiled, installed, or run. A future isolated
-build must place
+Maven build runs the staged bytecode tests and must place
 `edu.uva.liftlab.mallory.hbase.clientowner.ClientRpcOwnerTransformer`
 **after** `HBaseAdapterTransformer` in `adapter.transformers`, then test
 its transformed classes offline before any healthy MiniCluster run. Do not
