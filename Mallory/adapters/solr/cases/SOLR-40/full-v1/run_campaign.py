@@ -17,6 +17,7 @@ PINNED = ROOT / "Mallory/adapters/solr/cases/SOLR-13/runtime-role-v1/work"
 sys.path.insert(0, str(PINNED))
 
 from Mallory.core import campaign  # noqa: E402
+from Mallory.core.events import event_seq  # noqa: E402
 
 DOOR = ("org.apache.solr.common.cloud.ZkStateReader$AliasesManager"
         "#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1")
@@ -32,16 +33,53 @@ def sha(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def same_occurrence_pretarget_door(trace, door):
+    """Admit only an exact door preceding the exact check in one occurrence.
+
+    The alias watcher normally runs in a separate callback occurrence. Its
+    presence on the same physical node alone is not a causal path to a routed
+    update request, so such doors cannot promote the healthy seed.
+    """
+    proof = door.get("local_timeline_evidence")
+    if not isinstance(proof, dict) or proof.get("kind") != "observed_local_timeline":
+        return False
+    observed = [event for event in trace.events
+                if event.get("id") == door.get("event_id")
+                and event.get("type") == "DOOR_OBSERVED"
+                and event.get("site") == DOOR]
+    checks = [event for event in trace.events
+              if event.get("id") == proof.get("target_check_event_id")
+              and event.get("type") == "TARGET_CHECK"
+              and event.get("site") == CHECK]
+    if len(observed) != 1 or len(checks) != 1:
+        return False
+    read, check = observed[0], checks[0]
+    read_seq, check_seq = event_seq(read), event_seq(check)
+    if read_seq < 0 or check_seq <= read_seq:
+        return False
+    if any(read.get(key) != check.get(key) or read.get(key) is None
+           for key in ("node", "epoch", "occurrence")):
+        return False
+    if read.get("node") in ("", "unknown", "null", "None"):
+        return False
+    if (read.get("thread_id") is not None and check.get("thread_id") is not None
+            and read["thread_id"] != check["thread_id"]):
+        return False
+    return (proof.get("door_event_id") == read.get("id")
+            and proof.get("door_seq") == read_seq
+            and proof.get("target_check_seq") == check_seq
+            and door.get("event_seq") == read_seq
+            and all(proof.get(key) == read.get(key) == door.get("point", {}).get(key)
+                    for key in ("node", "epoch"))
+            and proof.get("occurrence") == read.get("occurrence"))
+
+
 def analyze(trace, target, plan, **kwargs):
     feedback = BASE_ANALYZE(trace, target, plan, **kwargs)
-    target_nodes = {row.get("node") for row in feedback.get("target_instances", [])}
-    # The watcher and the selected check must both be seen on a named actor.
-    # This is an actor constraint; it does not assert a causal watcher edge.
     exact = [door for door in feedback.get("doors", [])
              if door.get("site") == DOOR
-             and door.get("point", {}).get("node") in target_nodes
-             and door.get("point", {}).get("node") not in (None, "unknown")]
-    feedback["watcher_doors_on_target_nodes"] = len(exact)
+             and same_occurrence_pretarget_door(trace, door)]
+    feedback["watcher_doors_on_target_occurrences"] = len(exact)
     feedback["doors"] = exact
     feedback["eligible_doors_before_target"] = len(exact)
     if not plan and feedback.get("status") == "observed" and not exact:

@@ -1,0 +1,70 @@
+{
+  "admission": "conditional_fresh_healthy_first; full_runs_only_if_exact_junit_named_target_and_exact_same_occurrence_pretarget_watcher",
+  "budget": {
+    "fault_trials": 80,
+    "max_faults_per_trial": 3,
+    "seconds": 3600
+  },
+  "candidate_exception": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+  "candidate_io_door": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1",
+  "case_id": "SOLR-40",
+  "causal_path_status": "watcher_to_update_request_edge_unproven; cross_occurrence_promotion_disallowed",
+  "door_status": "source_caught_async_watcher; exact_same_occurrence_pretarget_runtime_evidence_unverified",
+  "files": {
+    "admission_request": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/full-v1/admission-request.json",
+      "sha256": "c7be27930f90f8ea3506cea6d04d25a27a7517f25a29dfe6542c93787943a340"
+    },
+    "full_config": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/full-v1/config-full-node2.json",
+      "sha256": "07d389558670f86ef3a6b4be44befb763d078ed0ee9394e8bc0b25a68fa5624b"
+    },
+    "full_runner": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/full-v1/run_campaign.py",
+      "sha256": "93260e5c2b53fba34f3b575182200f786876a2090480a7b3b9f90c7e2b85192b"
+    },
+    "healthy_gate_test": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/full-v1/test_healthy_gate.py",
+      "sha256": "e9e3ee95977e723af1e74ba666301dad40004b10d94ff6fdaa960373a3cf5d43"
+    },
+    "junit_runner": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/full-v1/run_pilot.py",
+      "sha256": "39ae53c5a8fe40ce3d524d1414f10dfb11517b3706cfde84a7fced6aaeb1ba41"
+    },
+    "launcher": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/full-v1/run_full_node2.sh",
+      "sha256": "379471abdf06f2d0a980e48485e90020caf417a06bfbb1f925d0bae7016ad384"
+    },
+    "prior_invalid_calibration": {
+      "path": "data/mallory/calibration_v10_lane1_remaining/SOLR-40/result.json",
+      "sha256": "a6e1e19d36bac7314fc90cb0b91748874ba5776539426425f3ad5176d78fa75c"
+    },
+    "prior_invalid_junit_log": {
+      "path": "data/mallory/calibration_v10_lane1_remaining/SOLR-40/trials/r0000/junit.log",
+      "sha256": "79f35320cfce7d41f1b42525f61deb9e906a39b704f49fae920b83a539f34412"
+    },
+    "site_rules": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/full-v1/sites.json",
+      "sha256": "b82c24893b4e4b2ce4aacc5920ddc6c6bb81d1e87b77b4d74a3b84af83e86992"
+    },
+    "source_review": {
+      "path": "Mallory/adapters/solr/cases/SOLR-40/source-admission-v1/README.md",
+      "sha256": "e166780c2ddde332d34c03bf2f7b100caa4e708bc9cc4a282751469dcf9e7707"
+    }
+  },
+  "fixture_flag": "-Dsolr.disableConfigSetsCreateAuthChecks=true (ConfigSetsHandler.java:80,483-486)",
+  "jvm_run_for_this_review": false,
+  "kind": "offline_package_gate_repair_review",
+  "preflight": {
+    "node0_no_jvm_config_source_runtime_sha": "passed after gate repair",
+    "offline_healthy_gate_tests": "2 passed: cross_occurrence_rejected and same_occurrence_admitted",
+    "python_compile": "passed",
+    "shell_syntax": "passed"
+  },
+  "previous_calibration": "junit_failed_pretarget_configset_create_auth; no target event",
+  "schema_version": 1,
+  "selected_check": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#getAliasProps(Lorg/apache/solr/request/SolrQueryRequest;Ljava/lang/String;)Ljava/util/Map;@132:branch:1",
+  "selected_junit": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+  "source_commit": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "target_status": "source_reachable_nonthrowing_runtime_unverified"
+}

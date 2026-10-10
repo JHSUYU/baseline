@@ -14,14 +14,17 @@ typed `KeeperException.ConnectionLossException` from that call is caught in
 the watcher callback. Existing SOLR-18 calibration observed this exact
 compiled site. The selected SOLR-40 check performs no local I/O or retry;
 the watcher runs asynchronously. No watcher-to-request causal edge has been
-established. The graph/path result is recorded as an outcome of the campaign,
-not used as a launch gate or treated as a bug claim.
+established. The healthy gate therefore accepts the watcher read only when
+the exact door event precedes the exact target check in the same named node,
+epoch, and occurrence. A door on the same physical node in a separate watcher
+callback does not qualify. No cross-occurrence source-backed path is currently
+admitted, and this gate does not make a bug claim.
 
 `config-full-node2.json` stages a fresh healthy seed and then up to 80 fault
 trials, 3600 cumulative trial seconds, and three faults per trial. The fresh
 healthy run must pass exactly the selected JUnit, reach the selected check on
-a named actor, and observe the exact watcher door before that check on a
-named actor that also reaches the check. The campaign queues only this door,
+a named actor, and observe the exact watcher door earlier in that same target
+occurrence. The campaign queues only this door,
 using its physical node, epoch, and door ordinal. Across fresh cluster runs,
 the routed update may move between physical nodes; missed fault matches and
 paths are reported as outcomes. The prior SOLR-40 JUnit failed during
@@ -40,10 +43,13 @@ shared Solr source locks and enforces disk and RAM floors. A separate
 config SHA, runner SHA, and output. `admission-request.json` has `go=false`;
 no node2 JVM was launched for this package.
 
-Node0 verification: Python compile, shell syntax, SHA preflight, and refusal
-of a `go=false` receipt passed. The pinned agent SHA-256 is
+Node0 verification: Python compile, shell syntax, SHA preflight, refusal
+of a `go=false` receipt, and two offline healthy-gate trace tests passed.
+The pinned agent SHA-256 is
 `bee26189cf56dc3030ab0f7d5997c352f5998c9f65bf3b8da2de1f99bec3f89e`.
 The config SHA-256 is
 `07d389558670f86ef3a6b4be44befb763d078ed0ee9394e8bc0b25a68fa5624b`;
 the runner SHA-256 is
-`f1183dd33b7461d81d553d7edce173a5115dc4091a5851c47fb650f584b4b173`.
+`93260e5c2b53fba34f3b575182200f786876a2090480a7b3b9f90c7e2b85192b`.
+`offline-preflight-v2.json` records the earlier same-node gate; the current
+offline result is `offline-preflight-v3.json`.
