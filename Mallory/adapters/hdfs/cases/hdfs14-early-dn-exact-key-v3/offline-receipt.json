@@ -1,0 +1,39 @@
+{
+  "case_id": "HDFS-14",
+  "config_sha256": "d24ffc2ba9075361decfc2c0096aa7c7d82ebc087bf681d35ddfd3adada5fbd1",
+  "hooks": {
+    "exact_state": "HDFS12_KEY_STATE matched write/read emitted as STATE_WRITE/STATE_READ exact",
+    "minicluster_factory": "MiniDFSCluster.startDataNodes -> DataNode.instantiateDataNode @1808",
+    "pre_actor_binding": "DataNode.startDataNode -> BlockPoolManager.refreshNamenodes @1955"
+  },
+  "node2_jvm_started": false,
+  "offline": {
+    "adapter_tests": {
+      "errors": 0,
+      "failures": 0,
+      "tests": 3
+    },
+    "compiled_hadoop_class_transforms": 4,
+    "instrumentation_tests": {
+      "errors": 0,
+      "failures": 0,
+      "tests": 25
+    },
+    "static_preflight": "pass"
+  },
+  "release": {
+    "adapter_sha256": "5ff9588deaf4fabace9c04dfab14c81680b9006525b95790da0069605ce6a442",
+    "agent_sha256": "49a25e6f07ace7e008acdc240223c02812493a8793e8cca2f370fbba39cda708",
+    "manifest_sha256": "185422f985f7b43a06a3873a5fae2ad8eb677f90509f0850106a29f61a4060a5",
+    "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs14-early-dn-exact-key-v3/releases/5ff9588deaf4fabace9c04dfab14c81680b9006525b95790da0069605ce6a442"
+  },
+  "runtime_gate": "Two passing JUnit instances, named @829 door and exact target on the same DataNode, observed event-time door->exact allKeys write/read->target path; faulted target retention still unverified.",
+  "source_class": "Hadoop 3.4.3",
+  "stage": "healthy_only_pending_dispatch",
+  "v2_saved_trace": {
+    "exact_value_identity_pairs": 4,
+    "gzip_sha256": "eb247aa2214451dab9ba5104a6d3368653fa089df7bb5e933eb7a44bb11cac22",
+    "inference": "new binding and exact state edge require a fresh healthy trace",
+    "registration_door_node": "unknown"
+  }
+}
