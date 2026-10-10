@@ -228,6 +228,83 @@ def _solr39_offline_completion(results: Path, result_path: Path,
         return "invalid", str(receipt_path)
 
 
+def _solr37_actor_aware_completion(results: Path, result_path: Path,
+                                   result: dict[str, Any]) -> tuple[str, str | None]:
+    """Verify the sealed actor-aware run and expose JUnit-invalid strict paths."""
+    if result.get("case_id") != "SOLR-37":
+        return "not_applicable", None
+    base = Path(__file__).resolve().parents[2]
+    canonical = result_path.parent
+    receipt_path = canonical / "canonical-import-receipt.json"
+    quality_path = canonical / "terminal-quality.json"
+    depth_path = canonical / "fault-depth-review.json"
+    seal = results / "evidence_archives/SOLR-37-target-actor-full-node0-v6.receipt.json"
+    archive = results / "evidence_archives/SOLR-37-target-actor-full-node0-v6.tar.gz"
+    manifest = results / "evidence_archives/SOLR-37-target-actor-full-node0-v6.members.json"
+    sealer = base / "Mallory/ops/seal_solr37_target_actor_node0_v6.py"
+    importer = base / "Mallory/ops/import_solr37_target_actor_v6.py"
+    try:
+        receipt, quality, depth, sealed = (_json(path) for path in
+                                           (receipt_path, quality_path, depth_path, seal))
+        if not all(isinstance(x, dict) for x in (receipt, quality, depth, sealed)):
+            return "invalid", str(receipt_path)
+        hashes = ((result_path, "result_sha256"),
+                  (canonical / "config.json", "config_sha256"),
+                  (canonical / "checkpoint.json", "checkpoint_sha256"),
+                  (quality_path, "quality_sha256"),
+                  (depth_path, "depth_review_sha256"),
+                  (archive, "archive_sha256"),
+                  (manifest, "manifest_sha256"),
+                  (seal, "terminal_seal_sha256"),
+                  (sealer, "sealer_sha256"),
+                  (importer, "importer_sha256"))
+        if any(not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() !=
+               receipt.get(key) for path, key in hashes):
+            return "invalid", str(receipt_path)
+        valid = quality.get("strict_new_valid_trials", [])
+        junit_valid = quality.get("strict_new_junit_qualified_trials", [])
+        junit_invalid = quality.get("strict_new_path_valid_junit_invalid_trials", [])
+        invalid = quality.get("strict_new_invalid_trials", [])
+        completed = _json(canonical / "checkpoint.json").get("completed_trials", [])
+        if (not (result.get("status") == receipt.get("status") == quality.get("status")
+                 in TERMINAL)
+                or receipt.get("completion_criterion") !=
+                "natural_terminal_actor_aware_v6_after_sealed_v5_import"
+                or sealed.get("all_archive_members_verified") is not True
+                or sealed.get("result_sha256") != receipt["result_sha256"]
+                or sealed.get("checkpoint_sha256") != receipt["checkpoint_sha256"]
+                or sealed.get("quality_sidecar_sha256") != receipt["quality_sha256"]
+                or sealed.get("depth_review_sha256") != receipt["depth_review_sha256"]
+                or not (result.get("fault_trials_completed") ==
+                        receipt.get("fault_trials_completed") ==
+                        quality.get("fault_trials_completed"))
+                or not (result.get("strict_target_trials") ==
+                        receipt.get("controller_strict_target_trials") ==
+                        quality.get("strict_target_trials"))
+                or result.get("exact_exception_trials") != 0
+                or quality.get("exact_target_exception_trials") != []
+                or quality.get("raw_exact_target_throw_events") != []
+                or receipt.get("new_bug") is not False or quality.get("new_bug") is not False
+                or quality.get("imported_valid_parent_trials") != [0, 1, 2]
+                or quality.get("excluded_unmatched_parent_trials") != [3, 4, 5, 6]
+                or valid != sorted([*junit_valid, *junit_invalid])
+                or set(valid) & set(invalid)
+                or completed[:3] != [0, 1, 2]
+                or completed[3:] != list(range(7, 7 + len(completed[3:])))
+                or len(completed) != result["fault_trials_completed"] + 1
+                or receipt.get("junit_qualified_strict_trials") != [1, 2, *junit_valid]
+                or receipt.get("path_valid_junit_invalid_trials") != junit_invalid
+                or receipt.get("junit_invalid_novelty_credit") !=
+                quality.get("junit_invalid_novelty_credit")
+                or depth.get("campaign_result_sha256") != receipt["result_sha256"]
+                or sum(depth.get("depth_distribution", {}).values()) !=
+                result["fault_trials_completed"]):
+            return "invalid", str(receipt_path)
+        return "verified_actor_aware_terminal", str(quality_path)
+    except (OSError, KeyError, TypeError, ValueError, AttributeError):
+        return "invalid", str(receipt_path)
+
+
 def _hdfs48_case_audit(results: Path, result_path: Path,
                        result: dict[str, Any]) -> tuple[str, str | None]:
     """Bind the finite v6 continuation to its case-local postfault path audit."""
@@ -4619,6 +4696,35 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = "invalid_result"
             row["quality_status"] = None
             row["result_error"] = "SOLR-38 sealed offline correction or import receipt mismatch"
+    if case_id == "SOLR-37":
+        completed, completed_receipt = _solr37_actor_aware_completion(results, result_path, result)
+        if completed == "verified_actor_aware_terminal":
+            quality = _json(result_path.with_name("terminal-quality.json"))
+            depth = _json(result_path.with_name("fault-depth-review.json"))
+            row["causal_audit"] = completed
+            row["causal_precision_review"] = "observed_exact_reference_path"
+            row["causal_precision_receipt"] = completed_receipt
+            row["quality_status"] = (
+                "actor_aware_path_with_junit_invalid_credit_caveat"
+                if quality["strict_new_path_valid_junit_invalid_trials"]
+                else "actor_aware_path_verified")
+            row["same_actor_target_trials"] = 2 + len(quality["strict_new_valid_trials"])
+            row["junit_qualified_strict_trials"] = quality[
+                "junit_qualified_strict_trials_including_imported"]
+            row["path_valid_junit_invalid_trials"] = quality[
+                "strict_new_path_valid_junit_invalid_trials"]
+            row["junit_invalid_novelty_credit"] = quality["junit_invalid_novelty_credit"]
+            row["fault_depth_distribution"] = depth["depth_distribution"]
+            row["fault_depth_review_receipt"] = str(result_path.with_name(
+                "fault-depth-review.json"))
+            row.pop("fault_depth_review_error", None)
+            row["source_review_status"] = "no_exact_target_throw_observed"
+            row["source_review_classification"] = "no_exact_target_exception"
+            row["new_bug"] = False
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "SOLR-37 actor-aware terminal seal or import receipt mismatch"
     if case_id == "SOLR-39":
         completed, completed_receipt = _solr39_offline_completion(results, result_path, result)
         if completed == "verified_sealed_queue_exhaustion":
