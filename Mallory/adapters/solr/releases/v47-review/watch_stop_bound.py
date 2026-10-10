@@ -17,7 +17,7 @@ def main() -> None:
     parser.add_argument("--controller-pid", type=int, required=True)
     args = parser.parse_args()
     root = args.campaign.resolve()
-    seen_candidates = set()
+    reviewed_trials = set()
     while True:
         result = json.loads((root / "result.json").read_text())
         if result["status"] != "running":
@@ -30,9 +30,9 @@ def main() -> None:
         witness_trial = None
         for row in result["trials"][1:]:
             trial_id = row["trial_id"]
-            if not row.get("target_exception_candidate") or trial_id in seen_candidates:
+            if trial_id in reviewed_trials:
                 continue
-            seen_candidates.add(trial_id)
+            reviewed_trials.add(trial_id)
             if exact_repeat(root, trial_id, result):
                 reason, witness_trial = "strict_repeat", trial_id
                 break

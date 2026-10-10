@@ -213,6 +213,8 @@ def review(root: Path) -> dict:
                                                         for f in r["faults"]) for r in fault_rows),
             "selected_throw_trials": sum(r["bound_selected_throw_count"] > 0
                                          for r in fault_rows),
+            "exact_selected_throw_trials_any_named_actor": sum(
+                r["exact_selected_throw_count"] > 0 for r in fault_rows),
             "same_reader_selected_throw_trials": sum(any(
                 (f["state_witness"] or {}).get("selected_throw_seqs")
                 for f in r["faults"]) for r in fault_rows),
@@ -230,7 +232,8 @@ def main() -> None:
     print(json.dumps({key: output[key] for key in
                       ("campaign_status", "fault_trials_completed", "exact_applied_trials",
                        "target_reached_trials", "same_reader_state_witness_trials",
-                       "selected_throw_trials", "same_reader_selected_throw_trials")},
+                       "selected_throw_trials", "exact_selected_throw_trials_any_named_actor",
+                       "same_reader_selected_throw_trials")},
                      sort_keys=True))
 
 
