@@ -2558,6 +2558,35 @@ def _hbase23_28_source_audit(results: Path, case_id: str) -> tuple[str | None, s
     return "source_audit_verified_pending", str(path)
 
 
+def _hdfs13_18_37_source_audit(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Check the superseding source review before relabeling adapted tests."""
+    if case_id not in {"HDFS-13", "HDFS-18", "HDFS-37"}:
+        return None, None
+    baseline = results.resolve().parent.parent
+    path = baseline / "Mallory/adapters/hdfs/cases/original102-source-audit-v2/review.json"
+    if not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() != (
+            "140ab3ebfc92a5abf8167d8c101ce2075a6b580700f5ddd3be6e8de29c9e71f8"):
+        return "invalid_source_audit_receipt", str(path)
+    review = _json(path)
+    expected = {
+        "HDFS-13": "no_unchanged_cluster_junit_identified",
+        "HDFS-18": "unchanged_cluster_junit_not_proven_to_reach_selected_duplicate_branch",
+        "HDFS-37": "existing_cluster_junit_reaches_guard_but_is_not_zero_throw_healthy",
+    }
+    if (not isinstance(review, dict) or
+            {item.get("case_id"): item.get("assessment") for item in review.get("cases", [])}
+            != expected):
+        return "invalid_source_audit_receipt", str(path)
+    for artifact in review.get("artifacts", []):
+        target = Path(artifact["path"])
+        if not target.is_absolute():
+            target = baseline / target
+        if not target.is_file() or hashlib.sha256(target.read_bytes()).hexdigest() != artifact["sha256"]:
+            return "invalid_source_audit_receipt", str(path)
+    return ("adapted_cluster_healthy_pending" if case_id != "HDFS-13" else
+            "source_review_no_suitable_test"), str(path)
+
+
 def _hbase27_no_door_review(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Distinguish the passing target seed from a runnable fault campaign."""
     if case_id != "HBASE-27":
@@ -3552,7 +3581,18 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         row["source_review_receipt"] = hbase_audit_path
     elif hbase_audit is not None:
         row["source_gap_error"] = "HBase source audit receipt hash mismatch"
+    hdfs_audit, hdfs_audit_path = _hdfs13_18_37_source_audit(results, case_id)
+    if hdfs_audit in {"adapted_cluster_healthy_pending", "source_review_no_suitable_test"}:
+        row["source_review_status"] = hdfs_audit
+        row["source_review_receipt"] = hdfs_audit_path
+    elif hdfs_audit is not None:
+        row["source_gap_error"] = "HDFS source audit receipt or referenced artifact mismatch"
     if result is None:
+        if hdfs_audit == "adapted_cluster_healthy_pending":
+            row["report_status"] = "pending_seed"
+            row["source_review_classification"] = "adapted_cluster_junit_unexecuted"
+            row["source_gap_receipt"] = hdfs_audit_path
+            return row
         bootstrap_status, bootstrap_receipt = _solr_fault_discovery_bootstrap(results, case_id)
         if bootstrap_status is not None:
             row["report_status"] = bootstrap_status
@@ -3943,7 +3983,8 @@ def markdown(report: dict[str, Any]) -> str:
     for row in report["rows"]:
         location = f'{row["source_path"]}:{row["source_line"]}'
         source_receipts = row["source_gap_receipt"]
-        if (row["source_review_status"] == "source_audit_verified_pending"
+        if (row["source_review_status"] in {"source_audit_verified_pending",
+                                               "source_review_no_suitable_test"}
                 and row["source_review_receipt"]):
             source_receipts = ", ".join(
                 value for value in (source_receipts, row["source_review_receipt"]) if value)

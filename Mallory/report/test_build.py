@@ -20,6 +20,25 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_hdfs13_18_37_source_review_preserves_adapted_pending_status(self):
+        from Mallory.report.build import _hdfs13_18_37_source_audit
+        baseline = Path(__file__).resolve().parents[2]
+        results = baseline / "data/mallory"
+        self.assertEqual(_hdfs13_18_37_source_audit(results, "HDFS-13")[0],
+                         "source_review_no_suitable_test")
+        for case_id in ("HDFS-18", "HDFS-37"):
+            self.assertEqual(_hdfs13_18_37_source_audit(results, case_id)[0],
+                             "adapted_cluster_healthy_pending")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            relative = "Mallory/adapters/hdfs/cases/original102-source-audit-v2/review.json"
+            path = root / relative
+            path.parent.mkdir(parents=True)
+            shutil.copy2(baseline / relative, path)
+            path.write_text(path.read_text() + "\n")
+            self.assertEqual(_hdfs13_18_37_source_audit(root / "data/mallory", "HDFS-37")[0],
+                             "invalid_source_audit_receipt")
+
     def test_hbase23_28_source_audit_is_pinned_without_completing_cases(self):
         from Mallory.report.build import _hbase23_28_source_audit
         baseline = Path(__file__).resolve().parents[2]
