@@ -85,6 +85,19 @@ check JUnit separately. The original r0002 JUnit seed is
 the test alone; that line does not inject the fault. Repeating the test alone
 is therefore not a reproduction of this mechanism.
 
+The bounded v46p diagnostic subsequently terminated with four exact applied
+faults. Only r0002 has the same-reader stale ACTIVE operand and selected
+`@1477` throw (one strict witness in four trials). r0001 and r0003 never
+reach the target. r0004 reaches `@1476` on the **control** node with a
+different reader (`42e7b724`), version 8 and no leader; the selected throw
+does not occur, and JUnit instead fails at a 330-second recovery wait. Thus
+the cohort does not provide a second reproduction of the r0002 failure.
+The SHA-bound compact terminal review is
+`data/mallory/quality_reviews/solr31_v46_state/SOLR-31-diagnostic.json`,
+SHA-256 `074fd9bc7a019a5ce5f44d722320950bef1a39e0be793de8c938179c6f5e4f94`;
+the terminal campaign `result.json` SHA-256 is
+`35333243e45dd7cee0d2d021b70b8014de41c206e6e5a1f5cb1f1fb98276ab60`.
+
 ## Prior issue check
 
 On 2026-10-09, bounded Apache Solr JIRA REST searches for
