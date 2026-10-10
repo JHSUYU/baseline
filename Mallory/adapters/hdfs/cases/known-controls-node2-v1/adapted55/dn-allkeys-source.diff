@@ -1,0 +1,13 @@
+--- released-3.4.3/dn-allkeys-source.diff
++++ adapted55/dn-allkeys-source.diff
+@@ -549,6 +549,10 @@
+     BlockKey key = null;
+     synchronized (this) {
+       key = allKeys.get(keyId);
++      if (org.apache.hadoop.hdfs.server.balancer.Hdfs17899Probe
++          .forceMissingAtAllKeys(keyId, blockPoolId, nonce, key != null)) {
++        key = null;
++      }
+       if (key == null) {
+         throw new InvalidEncryptionKeyException("Can't re-compute encryption key"
+             + " for nonce, since the required block key (keyID=" + keyId
