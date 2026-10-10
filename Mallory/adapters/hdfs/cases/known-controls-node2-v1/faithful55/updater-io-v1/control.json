@@ -1,0 +1,40 @@
+{
+  "case_id": "HDFS-55",
+  "known_issue": "HDFS-17899",
+  "variant": "faithful_updater_io_v1",
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "cluster_test": "org.apache.hadoop.hdfs.server.balancer.TestBalancerWithEncryptedTransfer#testEncryptedBalancer0",
+  "status": "source_patched_runtime_unverified",
+  "detection_claim": false,
+  "counts_in_original_102": false,
+  "fault": {
+    "location": "KeyManager$BlockKeyUpdater.run before namenode.getBlockKeys at source line 180",
+    "exception_class": "java.io.IOException",
+    "scope": "selected Balancer manager + NN proxy + NN endpoint + block pool + background updater actor",
+    "policy": "one persistent background updater outage window; every matched call throws until JUnit terminates",
+    "maximum_call_exceptions": 512,
+    "independent_mallory_max3_equivalent": false,
+    "foreground_refetch_faulted": false,
+    "dn_key_map_mutated_by_fault": false,
+    "dn_lookup_overridden": false
+  },
+  "timing_gate": {
+    "nn_update_interval_ms": 2000,
+    "nn_token_lifetime_ms": 2000,
+    "fresh_post_start_key_required": true,
+    "first_move_wait_ms": 80000,
+    "release": "NN no longer exports selected k; destination DN actual addKeys map lacks k and includes newer NN current key; at least one updater IOException observed"
+  },
+  "required_oracle": {
+    "healthy": "one passing JUnit, fresh key and named manager, no injected updater IOException",
+    "original": "same manager and key-ID/nonce digest repeated refresh=false; actual DN allKeys.get(k)==null; native InvalidEncryptionKeyException and INVALID_KEY; no clear; NO_MOVE_PROGRESS and failed JUnit",
+    "fixed": "same outage policy; actual DN null guard and INVALID_KEY; successful foreground NN getBlockKeys returns k' before clear; new DEK and successful JUnit",
+    "negative_gates": [
+      "manager, NN endpoint, DN UUID, block pool, key ID, nonce digest, or event order cannot be joined",
+      "earlier block-token/SASL failure prevents selected lookup",
+      "DN retains k or move misses the destination",
+      "healthy cluster test fails or JUnit times out"
+    ]
+  },
+  "runtime": "node2 dispatch-only; shared hdfs-identity-v8-node2 lock; fresh output; no JVM run yet"
+}

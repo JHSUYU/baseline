@@ -1,0 +1,14 @@
+--- released/BPOfferService.java
++++ faithful55/main/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java
+@@ -782,6 +782,11 @@
+         dn.blockPoolTokenSecretManager.addKeys(
+             getBlockPoolId(), 
+             ((KeyUpdateCommand) cmd).getExportedKeys());
++        org.apache.hadoop.hdfs.server.balancer.Hdfs55FaithfulProbe
++            .dnKeysApplied(dn.getDatanodeId().getDatanodeUuid(),
++                dn.getXferAddress().toString(), getBlockPoolId(),
++                dn.blockPoolTokenSecretManager.get(getBlockPoolId()),
++                ((KeyUpdateCommand) cmd).getExportedKeys());
+       }
+       break;
+     case DatanodeProtocol.DNA_BALANCERBANDWIDTHUPDATE:
