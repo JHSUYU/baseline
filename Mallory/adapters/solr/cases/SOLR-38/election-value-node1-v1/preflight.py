@@ -47,6 +47,12 @@ def main() -> dict:
             'Probe.stateWrite(descriptor, "solr38:isLeader=" + value',
             'Probe.stateRead(descriptor, "solr38:isLeader=" + value')):
         raise ValueError("structured value event absent")
+    pilot = (HERE / "run_pilot.py").read_text(encoding="utf-8")
+    if not all(fragment in pilot for fragment in (
+            'runner.ADAPTER = ADAPTER',
+            'os.environ["MALLORY_SOLR_ADAPTER_JAR"] = str(ADAPTER)',
+            'runner.run(args.case_id, args.source, args.distribution')):
+        raise ValueError("case adapter override absent from direct JUnit entry")
     return {"case_id": "SOLR-38", "mode": "healthy", "host": "node1",
             "base_preflight": base_result["case_id"],
             "source_manifest_sha256": sha(MANIFEST),

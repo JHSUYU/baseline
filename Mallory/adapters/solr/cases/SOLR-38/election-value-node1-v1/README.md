@@ -25,7 +25,9 @@ may create `admission-healthy-node1.json` matching the preflight fields, with
 Only then may it run
 `python3 -B run_healthy.py --admission-receipt admission-healthy-node1.json`.
 The runner takes node1 and Solr-source locks, builds the isolated adapter on
-node1, and runs one fresh fault-free JUnit. It leaves the prior output and
+node1, and runs one fresh fault-free JUnit through a case-local v38 entry that
+pins the new adapter (the shared v38 entry overrides adapter environment
+variables). It leaves the prior output and
 shared core/checklist untouched. Audit the result with
 `python3 -B audit_healthy.py <healthy-output> --out <audit-file>`.
 

@@ -51,11 +51,15 @@ def generated_config() -> dict:
     config["admission"]["intended_output"] = str(OUT)
     config["agent_properties"]["adapter.jar"] = str(ADAPTER)
     config["env"]["MALLORY_SOLR_ADAPTER_JAR"] = str(ADAPTER)
+    config["command"][1] = str(HERE / "run_pilot.py")
     config["mapping"]["election_adapter_sha256"] = sha(ADAPTER)
     config["mapping"]["value_diagnostic_adapter_sha256"] = sha(ADAPTER)
+    config["mapping"]["value_diagnostic_runner_sha256"] = sha(HERE / "run_pilot.py")
     for artifact in config["runtime_artifacts"]:
         if artifact["path"] == original:
             artifact.update(path=str(ADAPTER), sha256=sha(ADAPTER))
+    config["runtime_artifacts"].append(
+        {"path": str(HERE / "run_pilot.py"), "sha256": sha(HERE / "run_pilot.py")})
     if config["budget"]["trials"] != 1 or not config["calibration_only"]:
         raise ValueError("healthy-only bound changed")
     return config
