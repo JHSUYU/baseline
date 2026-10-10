@@ -41,9 +41,8 @@ def main() -> None:
             config["reject_coarse_roots"] is True and
             config["allow_local_timeline_doors"] is False and
             config["agent_jar"] == str(HERE / "releases/mallory-agent.jar") and
-            config["mapping"]["agent_sha256"] == "PENDING_ISOLATED_RELEASE" and
-            not (HERE / "releases/mallory-agent.jar").exists()):
-        raise ValueError("v2 is not an unbuilt, healthy-only stage")
+            config["mapping"]["agent_sha256"] == "PENDING_ISOLATED_RELEASE"):
+        raise ValueError("v2 template is not a healthy-only source stage")
     subprocess.run(["git", "apply", "--check", str(HERE / "exact-reference-field.patch")],
                    cwd=ROOT, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     subprocess.run([sys.executable, "-m", "unittest", "-q", str(HERE / "test_stage.py")],
@@ -55,8 +54,20 @@ def main() -> None:
             receipt["candidate_paths_with_sampled_state"] > 0 and
             receipt["full_campaign_go"] is False):
         raise ValueError("v1 gap receipt no longer supports the v2 source stage")
+    release = HERE / "releases/mallory-agent.jar"
+    if release.exists():
+        manifest = json.loads((HERE / "release-manifest.json").read_text())
+        final = json.loads((HERE / "config.json").read_text())
+        if not (sha(release) == manifest["agent_jar_sha256"] ==
+                final["mapping"]["agent_sha256"] and
+                sha(HERE / "config.json") == manifest["config_sha256"] and
+                final["calibration_only"] is True and
+                final["auto_promote_if_healthy"] is False and
+                final["budget"]["trials"] == 1):
+            raise ValueError("built release or final healthy config changed")
     print(json.dumps({"case_id": "SOLR-40", "status": "offline_stage_passed",
-                      "jvm_run": False, "healthy_only": True, "agent_release_built": False,
+                      "solr_junit_run": False, "healthy_only": True,
+                      "agent_release_built": release.exists(),
                       "candidate_paths": receipt["candidate_paths_with_sampled_state"],
                       "full_campaign_go": False}, sort_keys=True))
 

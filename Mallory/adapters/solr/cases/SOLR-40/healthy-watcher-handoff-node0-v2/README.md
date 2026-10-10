@@ -19,9 +19,12 @@ time order alone is insufficient.
 
 The isolated `exact-reference-field.patch` changes generic object-reference
 field instrumentation to record the actual value reference from the
-`GETFIELD`/`GETSTATIC` result or `PUTFIELD`/`PUTSTATIC` operand. The graph
-still requires a unique producer for the owner, field key, and value identity.
-Primitive and null values retain sampled status. `call_return.py` adds a
+`GETFIELD`/`GETSTATIC` result or `PUTFIELD`/`PUTSTATIC` operand. It retains
+the existing numeric sampled version and adds a separate `value_object`
+identity. The v2 graph adds an observed `state_ref` edge only for a unique
+producer with the same node, epoch, owner, field key, and actual value
+reference. Repeated writes of the same reference remain ambiguous. Primitive
+and null values retain sampled status. `call_return.py` adds a
 general child-return bridge only when the entire actor/thread region stack is
 balanced, IDs and sequence numbers are unique, and the child exits to a
 still-live parent. `gate_v2.py` admits only an observed event-time path that
@@ -29,16 +32,21 @@ contains the exact alias field write and read, exact reference identity, and
 the child-return edge. Sampled state stays candidate and cannot promote a
 healthy seed.
 
-The v2 release is **source-staged and unbuilt**. `config.staged.json` is
-healthy-only (`calibration_only=true`, one trial, no auto-promotion) and
-contains `PENDING_ISOLATED_RELEASE` placeholders. It must not be launched.
-`admission-request.json` has `go=false`; no JVM was started for this stage.
-Run `python3 preflight_stage.py` for a read-only source, patch, evidence,
-and offline-test check. The v1 output is never edited.
+The patched agent was built in the case-local isolated work directory. Its
+26 instrumentation tests passed. The release JAR SHA-256 is
+`880c61708bd50f5e91d01bf8ce5c70c34072330164e029f4b1e7661fb10a0ee9`.
+`config.json` pins the release and remains healthy-only
+(`calibration_only=true`, one trial, no auto-promotion). The old
+`config.staged.json` remains as a source-stage template. Run
+`python3 run_healthy_v2.py --preflight-only` for a no-Solr-JVM check of the
+release, source, bytecode, runner, and fixture. `admission-request.json`
+has `go=false`; the Solr JUnit and fault campaign have not been launched.
+The v1 output was never edited.
 
-To proceed, build the patched agent in an isolated work directory, pin its
-SHA and bytecode into a finalized v2 config, and run exactly one fresh
-healthy JUnit on node0 with the existing disk, RAM, source, and lane locks.
+The node0 steward may run exactly one fresh healthy JUnit using
+`run_healthy_v2.py --admission-receipt admission-healthy-node0.json` after
+issuing a matching GO receipt and obtaining the existing disk, RAM, source,
+and lane locks.
 The fresh result must pass the JUnit, reach the exact nonthrowing target on a
 named physical actor, observe the typed watcher door before it, and provide
 an observed door → alias write → exact alias read → target path in one

@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import gzip
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -66,8 +68,8 @@ class ReturnBridgeTests(unittest.TestCase):
         self.assertIsNone(self.path(fixture(wrong_exit_thread=True), include_candidates=True))
 
     def test_case_gate_requires_actual_reference_identity(self) -> None:
-        def evaluate(confidence: str) -> dict:
-            events = list(fixture(confidence=confidence))
+        def evaluate(actual_reference: bool) -> dict:
+            events = list(fixture(confidence="sampled"))
             events[1]["site"] = gate_v2.DOOR
             events[1]["door_ordinal"] = 1
             events[1]["exception_class"] = (
@@ -75,8 +77,9 @@ class ReturnBridgeTests(unittest.TestCase):
             events[10]["site"] = gate_v2.CHECK
             for row, site in ((events[3], "A#setIfNewer"),
                               (events[8], "A#getAliases")):
-                row.update(site=site, key=gate_v2.ALIAS_KEY,
-                           value_object="value7", identity_kind="reference_value")
+                row.update(site=site, key=gate_v2.ALIAS_KEY)
+                if actual_reference:
+                    row.update(value_object="value7", identity_kind="reference_value")
             return gate_v2.analyze(
                 Trace(tuple(events)),
                 {"check_sites": [gate_v2.CHECK], "throw_site": "T#throw",
@@ -85,8 +88,48 @@ class ReturnBridgeTests(unittest.TestCase):
                 allow_local_timeline_doors=False,
                 reject_coarse_roots=True, require_event_time_paths=True)
 
-        self.assertEqual(evaluate("sampled")["eligible_doors_before_target"], 0)
-        self.assertEqual(evaluate("exact")["eligible_doors_before_target"], 1)
+        self.assertEqual(evaluate(False)["eligible_doors_before_target"], 0)
+        positive = evaluate(True)
+        self.assertEqual(positive["eligible_doors_before_target"], 1)
+        witness = positive["watcher_exact_reference_witnesses"]["e2"]
+        self.assertEqual(witness["reference_write_event"], "e4")
+        self.assertEqual(witness["reference_read_event"], "e9")
+        self.assertIn("state_ref", witness["edge_kinds"])
+        self.assertIn("return", witness["edge_kinds"])
+
+    def test_duplicate_reference_writer_is_ambiguous(self) -> None:
+        events = list(fixture(confidence="sampled"))
+        events[1].update(site=gate_v2.DOOR, door_ordinal=1,
+                         exception_class=(
+                             "org.apache.zookeeper.KeeperException$ConnectionLossException"))
+        events[10]["site"] = gate_v2.CHECK
+        for index, site in ((3, "A#setIfNewer"), (8, "A#getAliases")):
+            events[index].update(site=site, key=gate_v2.ALIAS_KEY,
+                                 value_object="value7", identity_kind="reference_value")
+        for later in events[4:]:
+            later["seq"] += 1
+        repeated = dict(events[3], id="e4b", seq=5)
+        events.insert(4, repeated)
+        result = gate_v2.analyze(
+            Trace(tuple(events)),
+            {"check_sites": [gate_v2.CHECK], "throw_site": "T#throw",
+             "exception_class": "org.apache.solr.common.SolrException"}, [],
+            return_code=0, timed_out=False,
+            allow_local_timeline_doors=False,
+            reject_coarse_roots=True, require_event_time_paths=True)
+        self.assertEqual(result["eligible_doors_before_target"], 0)
+
+    def test_sealed_v1_sampled_trace_cannot_promote(self) -> None:
+        old = ROOT / "data/mallory/calibration_solr40_watcher_handoff_v1_node0/SOLR-40"
+        with gzip.open(old / "trials/r0000/events.jsonl.gz", "rt") as stream:
+            trace = Trace(tuple(json.loads(line) for line in stream if line.strip()))
+        target = json.loads((HERE / "config.json").read_text())["target"]
+        result = gate_v2.analyze(trace, target, [], return_code=0, timed_out=False,
+                                 allow_local_timeline_doors=False,
+                                 reject_coarse_roots=True,
+                                 require_event_time_paths=True)
+        self.assertEqual(result["eligible_doors_before_target"], 0)
+        self.assertEqual(result["watcher_exact_reference_witnesses"], {})
 
 
 if __name__ == "__main__":
