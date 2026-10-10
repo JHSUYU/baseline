@@ -1,0 +1,107 @@
+--- a/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/Probe.java
++++ b/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/Probe.java
+@@ -528,6 +528,34 @@
+     }
+     event("STATE_READ", site, fields("object", objectId, "key", keyText,
+         "version", version, "version_confidence", "sampled"));
++  }
++
++  /** Exact object identity captured from the actual GETFIELD/GETSTATIC result. */
++  public static void stateReadObject(Object owner, Object key, Object value, String site) {
++    if (value == null) { stateRead(owner, key, site); return; }
++    String ownerId;
++    String valueId;
++    synchronized (STATE_LOCK) {
++      ownerId = objectId(owner);
++      valueId = objectId(value);
++    }
++    event("STATE_READ", site, fields("object", ownerId, "key", safeKey(key),
++        "version", valueId, "value_object", valueId,
++        "version_confidence", "exact", "identity_kind", "reference_value"));
++  }
++
++  /** Exact object identity captured from the actual PUTFIELD/PUTSTATIC operand. */
++  public static void stateWriteObject(Object owner, Object key, Object value, String site) {
++    if (value == null) { stateWrite(owner, key, site); return; }
++    String ownerId;
++    String valueId;
++    synchronized (STATE_LOCK) {
++      ownerId = objectId(owner);
++      valueId = objectId(value);
++    }
++    event("STATE_WRITE", site, fields("object", ownerId, "key", safeKey(key),
++        "version", valueId, "value_object", valueId,
++        "version_confidence", "exact", "identity_kind", "reference_value"));
+   }
+ 
+   public static void stateWrite(Object object, Object key, String site) {
+--- a/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/MalloryTransformer.java
++++ b/Mallory/instrumentation/src/main/java/edu/uva/liftlab/mallory/instrumentation/MalloryTransformer.java
+@@ -489,6 +489,7 @@
+     int valueLocal = ownerLocal + 1;
+     method.maxLocals += 1 + type.getSize();
+     String key = field.owner.replace('/', '.') + "#" + field.name;
++    boolean referenceValue = type.getSort() == Type.OBJECT || type.getSort() == Type.ARRAY;
+     InsnList before = new InsnList();
+     InsnList after = new InsnList();
+     if (opcode == Opcodes.GETFIELD) {
+@@ -497,9 +498,13 @@
+       after.add(new VarInsnNode(type.getOpcode(Opcodes.ISTORE), valueLocal));
+       after.add(new VarInsnNode(Opcodes.ALOAD, ownerLocal));
+       after.add(new LdcInsnNode(key));
++      if (referenceValue) after.add(new VarInsnNode(Opcodes.ALOAD, valueLocal));
+       after.add(new LdcInsnNode(site));
+-      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "stateRead",
+-          "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
++      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE,
++          referenceValue ? "stateReadObject" : "stateRead",
++          referenceValue
++              ? "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V"
++              : "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
+       after.add(new VarInsnNode(type.getOpcode(Opcodes.ILOAD), valueLocal));
+     } else if (opcode == Opcodes.PUTFIELD) {
+       before.add(new VarInsnNode(type.getOpcode(Opcodes.ISTORE), valueLocal));
+@@ -508,25 +513,37 @@
+       before.add(new VarInsnNode(type.getOpcode(Opcodes.ILOAD), valueLocal));
+       after.add(new VarInsnNode(Opcodes.ALOAD, ownerLocal));
+       after.add(new LdcInsnNode(key));
++      if (referenceValue) after.add(new VarInsnNode(Opcodes.ALOAD, valueLocal));
+       after.add(new LdcInsnNode(site));
+-      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "stateWrite",
+-          "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
++      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE,
++          referenceValue ? "stateWriteObject" : "stateWrite",
++          referenceValue
++              ? "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V"
++              : "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
+     } else if (opcode == Opcodes.GETSTATIC) {
+       after.add(new VarInsnNode(type.getOpcode(Opcodes.ISTORE), valueLocal));
+       after.add(new InsnNode(Opcodes.ACONST_NULL));
+       after.add(new LdcInsnNode(key));
++      if (referenceValue) after.add(new VarInsnNode(Opcodes.ALOAD, valueLocal));
+       after.add(new LdcInsnNode(site));
+-      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "stateRead",
+-          "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
++      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE,
++          referenceValue ? "stateReadObject" : "stateRead",
++          referenceValue
++              ? "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V"
++              : "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
+       after.add(new VarInsnNode(type.getOpcode(Opcodes.ILOAD), valueLocal));
+     } else if (opcode == Opcodes.PUTSTATIC) {
+       before.add(new VarInsnNode(type.getOpcode(Opcodes.ISTORE), valueLocal));
+       before.add(new VarInsnNode(type.getOpcode(Opcodes.ILOAD), valueLocal));
+       after.add(new InsnNode(Opcodes.ACONST_NULL));
+       after.add(new LdcInsnNode(key));
++      if (referenceValue) after.add(new VarInsnNode(Opcodes.ALOAD, valueLocal));
+       after.add(new LdcInsnNode(site));
+-      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "stateWrite",
+-          "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
++      after.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE,
++          referenceValue ? "stateWriteObject" : "stateWrite",
++          referenceValue
++              ? "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V"
++              : "(Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/String;)V", false));
+     }
+     method.instructions.insertBefore(field, before);
+     method.instructions.insert(field, after);
