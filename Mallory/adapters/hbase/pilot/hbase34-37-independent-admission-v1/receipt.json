@@ -1,0 +1,118 @@
+{
+  "HBASE-34": {
+    "admission": "Retain original true-cluster test as source-backed candidate, but do not count checked or launch full fault campaign until dependency setup is repaired and fresh healthy runtime proves JUnit pass, exact named @159 check, typed pretarget door, and observed path. Do not classify no suitable cluster test.",
+    "alternate_package": "Mallory/adapters/hbase/pilot/hbase32-34-broad-review-v1/hbase34",
+    "alternate_package_stage_sha256": "dfbf10e7361edcdbe8b57fb1a0666b28b43eb11de8694cef33845fca7e64a41c",
+    "alternate_test_gap": "TestTokenAuthentication#testTokenCreation starts MiniZK and a single TokenServer but explicitly avoids spinning up an HBase mini cluster at TestTokenAuthentication.java:370-391. The typed RecoverableZooKeeper.exists@250 door occurs during startup, while idSeq is a mutable key sequence, not a server node ID; no same-actor or causal path to @159 has been observed. Its source-only preflight passes locally, but the package does not exist on node1.",
+    "classification": "true_LocalHBaseCluster_JUnit_exists_but_original_calibration_blocked_before_test",
+    "original_calibration": {
+      "archive": "data/mallory/evidence_archives/calibration/HBASE-34.tar.gz",
+      "archive_sha256": "b3a60c91407a24e82c2537e646fb5cb817076e5527fa8d5815e829350531ac15",
+      "failure": "MiniKdc.start failed before JUnit with NoSuchFieldError ERR_00003_INVALID_OID (archive trials/r0000/stderr.log lines 119,139-141); zero observed target or door events.",
+      "result": "data/mallory/calibration/HBASE-34/result.json",
+      "result_sha256": "05b16d99ccea2e35556c74ee8c84a5f996c9d9fe3b3721ac478e5e2e19ac1f68"
+    },
+    "selected_original_test": "org.apache.hadoop.hbase.security.token.TestGenerateDelegationToken#testOnlyToken",
+    "source_proof": [
+      "SecureTestCluster.java:71-93 starts MiniKdc, MiniZK, MiniDFS, and LocalHBaseCluster(1).",
+      "TestGenerateDelegationToken.java:63-69 obtains a token; :127-143 copies that token to a no-Kerberos user and calls testToken.",
+      "TestGenerateDelegationToken.java:90-110 calls WhoAmI through RPC and asserts TOKEN authentication.",
+      "DigestSaslServerAuthenticationProvider.java:76-77 invokes secretManager.retrievePassword during DIGEST SASL.",
+      "AuthenticationTokenSecretManager.java:132-163 executes the selected line-159 masterKey-null guard for every unexpired token after lookup; a present key takes the nonthrowing branch."
+    ],
+    "target_check": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@159:branch:7"
+  },
+  "HBASE-37": {
+    "classification": "healthy_v2_static_pins_passed_on_node1_runtime_attestation_pending",
+    "fault_interpretation": "The source intentionally turns NoNode into null, selected IOException, and ActiveMasterManager port 0. A target throw alone is not a new bug.",
+    "node1_no_jvm_preflight": "PASS HBASE-37 JVM-free healthy-v2 preflight: cluster test, exact guard, typed NoNode door, source/class/site/core/artifact pins",
+    "package": "Mallory/adapters/hbase/pilot/HBASE-37-cluster-status-v1/healthy-v2",
+    "package_stage_sha256": "fcb313bfcac6496537fe31377aab440645628ba0111f3c1626c44502d5f32b41",
+    "runtime_gate": "Fresh unchanged JUnit must pass, @205 target must have named master actor, @343 typed door must be observed before target with a strict event-time path. No such fresh runtime evidence yet; no fault/full launch from this healthy-only package.",
+    "selected_test": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+    "source_proof": [
+      "TestRSStatusPage.java:61-78 starts MiniZK, MiniDFS and LocalHBaseCluster(1); :93-99 calls HMaster.getActiveMasterInfoPort.",
+      "MasterAddressTracker.java:197-206 calls ZKUtil.getData, then checks data == null at @205.",
+      "ZKUtil.java:340-349 catches typed KeeperException.NoNodeException from RecoverableZooKeeper.getData@343 and returns null, so a fault at the exact door can reach the check."
+    ]
+  },
+  "compiled_classes": [
+    {
+      "class_sha256": "29ff2466145be015e2c1cb5af8ce145367b40dc5ef5209d84fb86c79381172f0",
+      "jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+      "jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+      "member": "org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.class"
+    },
+    {
+      "class_sha256": "c6bd703fd1d518c6693648cc39a627b6adbf632bdb70d1ba83bdfd3925352906",
+      "jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "jar_sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+      "member": "org/apache/hadoop/hbase/security/token/TestGenerateDelegationToken.class"
+    },
+    {
+      "class_sha256": "f412271882202c3cccf3b7383f0a321b3e99203d25a373db1cc97a7410c3c106",
+      "jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-zookeeper-2.6.6.jar",
+      "jar_sha256": "6ad67305af4910e61e324034cab9ce0f50b966ce203c195581daeff552a8b957",
+      "member": "org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.class"
+    }
+  ],
+  "kind": "independent_hbase34_37_source_and_static_admission",
+  "schema_version": 1,
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_files": {
+    "active_manager": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ActiveMasterManager.java",
+      "sha256": "edcf8ec32db64ceac9147dcb00fefc36ff5b92f499e37e9256f0ec8552252fde"
+    },
+    "alternate_test": {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java",
+      "sha256": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e"
+    },
+    "alternate_watcher": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java",
+      "sha256": "0f721f46c26ade96e120029da1e4370bc167ee7107f35b1fa11370ef76b3d008"
+    },
+    "master_status_test": {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java",
+      "sha256": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b"
+    },
+    "master_target": {
+      "path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+      "sha256": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987"
+    },
+    "sasl_provider": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/provider/DigestSaslServerAuthenticationProvider.java",
+      "sha256": "ad7da376bb3ace7257be31383b722234c7b33d85fedeff16c7ecab998a87c458"
+    },
+    "secure_fixture": {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/SecureTestCluster.java",
+      "sha256": "3dd1aa965cd6e6204175613621dc67b5477dd972dbff92900c8ceeecbc2780a5"
+    },
+    "target": {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+      "sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f"
+    },
+    "true_cluster_test": {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestGenerateDelegationToken.java",
+      "sha256": "0e3d43a6abde10e82b85aca87b1183b91138e36c3d1d3ea19421df01b80ea8bd"
+    },
+    "zk_util": {
+      "path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKUtil.java",
+      "sha256": "413a0487863e7b7c8c5299f939eaec45ac33321fec8af2c5d160b64c7cf04b40"
+    }
+  },
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_version": "HBase 2.6.6",
+  "work_performed": {
+    "checklist_modified": false,
+    "jvm_trials_started": 0,
+    "local_commands": [
+      "HBASE-34 preflight.py --mode healthy passed.",
+      "HBASE-34 preflight.py --mode full passed."
+    ],
+    "node1_commands": [
+      "HBASE-34 package preflight attempted on node1: file path absent, exit 2.",
+      "HBASE-37 healthy-v2 preflight.py --node1 passed."
+    ]
+  }
+}

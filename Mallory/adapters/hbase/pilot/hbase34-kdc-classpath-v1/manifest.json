@@ -1,0 +1,37 @@
+{
+  "case_files": {
+    "healthy.json": "6866f1c89bfa7a4fb352cb3d3892a2972dad5e243b578ced298befcfed008b9d",
+    "sites.json": "b8e1c5670e3251c91058595ef38426f162e589de5a99bda57aa75153f779bbaa"
+  },
+  "case_id": "HBASE-34",
+  "core_manifest_sha256": "addd46568f8d29029e6b4f68df491c098fa37feb153c1f406f278b7cb35fda8c",
+  "jars": {
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/api-all-1.0.0-M20.jar": "344af05830488c4f497a6f79009626e43112cb3e0f67d39104d0ca3d80622e75",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/api-asn1-api-1.0.0-M20.jar": "484aaf4b888b0eb699d95bea265c2d5b6ebec951d70e5c5f7691cd52dd4c8298",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/api-asn1-api-2.1.7.jar": "1dd63125beb379406ee15365aa3e5e8eddd2113991271a3305e2ef7dfb7b38fe",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/api-i18n-1.0.0-M20.jar": "68f6534c79930a4ac59aef3c396ce3e903f11e17b8e1cf9278a270729ed98434",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/api-i18n-2.1.7.jar": "3ef86d83182cb402c03defa5fbb833759ad2776fc8e72d224140f754a34cc39b",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/api-ldap-model-1.0.0-M20.jar": "2206ab451bf57160c8485f525c2770ff6f8ef0b6c88627cd9427873a9fa7b338",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hadoop-minikdc-2.10.2.jar": "9c84e28acd8652e6ca4672776c4a899ea0209bf7016b71deaec9f6402727b873",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5",
+    "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696"
+  },
+  "kind": "isolated_MiniKdc_classpath_repair_healthy_only",
+  "old_archive_sha256": "b3a60c91407a24e82c2537e646fb5cb817076e5527fa8d5815e829350531ac15",
+  "schema_version": 1,
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_files": {
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/provider/DigestSaslServerAuthenticationProvider.java": "ad7da376bb3ace7257be31383b722234c7b33d85fedeff16c7ecab998a87c458",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/SecureTestCluster.java": "3dd1aa965cd6e6204175613621dc67b5477dd972dbff92900c8ceeecbc2780a5",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestGenerateDelegationToken.java": "0e3d43a6abde10e82b85aca87b1183b91138e36c3d1d3ea19421df01b80ea8bd"
+  },
+  "source_receipt": {
+    "path": "Mallory/adapters/hbase/pilot/hbase34-37-independent-admission-v1/receipt.json",
+    "sha256": "4cfd06853d4b7bbee4ff9faedbdee1fca14f1200649064db13ed6de9c49deda2"
+  },
+  "target_check": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@159:branch:7",
+  "target_class_sha256": "29ff2466145be015e2c1cb5af8ce145367b40dc5ef5209d84fb86c79381172f0",
+  "target_throw": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager#retrievePassword(Lorg/apache/hadoop/hbase/security/token/AuthenticationTokenIdentifier;)[B@160:throw:1",
+  "test_class_sha256": "c6bd703fd1d518c6693648cc39a627b6adbf632bdb70d1ba83bdfd3925352906"
+}
