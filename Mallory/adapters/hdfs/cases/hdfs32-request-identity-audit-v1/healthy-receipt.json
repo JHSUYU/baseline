@@ -1,0 +1,64 @@
+{
+  "case_id": "HDFS-32",
+  "fault_applied_seqs": [],
+  "force_binding_basis": "pinned source order plus complete paired passing requests",
+  "interpretation": "A TARGET_THROW after an effective fault is a candidate; review the concrete request and source before claiming a new bug.",
+  "junit_status": "passed",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_0f8b4d0ecd6e45ce86194196b28928e0",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool-mallory_0000_0f8b4d0ecd6e45ce86194196b28928e0.xml",
+        "sha256": "4a19b93ed2e56f07da099622f97aba96a749604dc1a069945926757e9446e0b4"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "30a6a8c87dbcd96353defef5d7cf0f2fa5259ac01fbc43791ee9a75e2c067815",
+    "tests": 1
+  },
+  "named_target_checks": 2,
+  "named_target_throws": 0,
+  "request_pairs": [
+    {
+      "client_door_seq": 160,
+      "client_send_seq": 161,
+      "force_from_pinned_source_order": false,
+      "request_correlation": "051f6af4954d40eb8f4677af6f97e130:27:0",
+      "response": "org.apache.hadoop.ipc.Client#getRpcResponse.error",
+      "server_recv_seq": 162,
+      "target_check_seq": 165,
+      "target_epoch": 0,
+      "target_node": "hdfs-cluster-1/dn0",
+      "target_outcome": "TAKEN",
+      "target_throw_seq": null
+    },
+    {
+      "client_door_seq": 169,
+      "client_send_seq": 170,
+      "force_from_pinned_source_order": true,
+      "request_correlation": "051f6af4954d40eb8f4677af6f97e130:28:0",
+      "response": "org.apache.hadoop.ipc.Client#getRpcResponse",
+      "server_recv_seq": 171,
+      "target_check_seq": 174,
+      "target_epoch": 0,
+      "target_node": "hdfs-cluster-1/dn0",
+      "target_outcome": "TAKEN",
+      "target_throw_seq": null
+    }
+  ],
+  "request_target_pairing_complete": true,
+  "source_sha256": "31467bca1249b93cae7ed984bac01d405cde8ec1409a9ef78fa0a0c469a3bb3a",
+  "trial": "data/mallory/healthy_observations/HDFS-32-node2-healthy-v1/trials/r0000"
+}
