@@ -1,0 +1,112 @@
+{
+  "calibration_only": true,
+  "case_id": "SOLR-14",
+  "closure_coverage_ids_seen": 233,
+  "closure_edge_fingerprints_seen": 9,
+  "cluster_test": "org.apache.solr.cloud.SplitShardTest#doTest",
+  "coverage_ids_seen": 638,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 21.645,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 6,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 0,
+    "junit_log_sha256": "20ff533b9f71df1f9ddd4a5c27dfaf1d588881c07d6e25666141c6f474ee7f91",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=0 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "531004a9c818b5c8691ad9d4a435c2dc44b3ffb345265d097b52655e929f1799",
+    "tests": 1,
+    "wrapper_sha256": "ee659878da703da168850b636c4e8c9802f842d8c9250ba947c7643641f56020"
+  },
+  "healthy_local_timeline_doors": 6,
+  "healthy_observed_door_events": 6,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1"
+    ],
+    "eligible_doors_before_target": 6,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "590ff068f83f4c7644891c19db9900911bf93a1a306de2f30c176568850ea93a",
+    "observed_target_class_sha256": "590ff068f83f4c7644891c19db9900911bf93a1a306de2f30c176568850ea93a",
+    "reasons": [],
+    "site_catalog_sha256": "25117e32eece9d696f3e99498cee0431bda25672b3aebd87ce1502ae94fb8767",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "solr",
+  "target": {
+    "check_code": "if (leaderZnodeStat == null)  {\n// we just got to know the leader but its live node is gone already!\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR, \"The shard leader node: \" + parentShardLeader.getNodeName() + \" is not live anymore!\");",
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@165:branch:5"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.api.collections.SplitShardCmd.split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+    "original_source_line": 167,
+    "site_id": "<org.apache.solr.cloud.api.collections.SplitShardCmd: boolean split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)>#u110",
+    "source_line": 167,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+    "throw_site": "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@167:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1"
+    ]
+  },
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 21.645,
+      "eligible_doors_before_target": 6,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": 6,
+      "novelty": {
+        "closure_coverage": 233,
+        "closure_edges": 9,
+        "coverage": 638
+      },
+      "observed_door_events": 6,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}
