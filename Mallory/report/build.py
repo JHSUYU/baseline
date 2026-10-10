@@ -3571,12 +3571,74 @@ def _zk_independent_source_review(results: Path, case_id: str) -> tuple[str | No
     return "supplementary_source_review_verified", str(receipt_path)
 
 
+def _case_local_fault_depth_review(result_path: Path, result: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
+    """Verify a campaign whose pinned core has file hashes but no release ID."""
+    canonical = result_path.parent
+    path = canonical / "fault-depth-review.json"
+    if not path.is_file():
+        return None, None
+    try:
+        review = _json(path)
+        config_path = canonical / "config.json"
+        checkpoint_path = canonical / "checkpoint.json"
+        config = _json(config_path)
+        pinned = config["mapping"]["pinned_core"]
+        core_root = Path(pinned["root"])
+        core_files = pinned["files"]
+        assert review["schema_version"] == 1
+        assert review["case_id"] == result["case_id"] == config["case_id"]
+        assert review["status"] == result["status"] in TERMINAL
+        assert review["fault_trials_completed"] == result["fault_trials_completed"]
+        assert review["campaign_result_sha256"] == hashlib.sha256(result_path.read_bytes()).hexdigest()
+        assert review["campaign_config_sha256"] == hashlib.sha256(config_path.read_bytes()).hexdigest()
+        assert review["campaign_checkpoint_sha256"] == hashlib.sha256(checkpoint_path.read_bytes()).hexdigest()
+        assert review["pinned_core_root"] == str(core_root)
+        assert review["pinned_core_files_sha256"] == core_files
+        assert review["scheduler_sha256"] == core_files["Mallory/core/scheduler.py"]
+        for relative, digest in core_files.items():
+            name = Path(relative)
+            assert name.parts[:2] == ("Mallory", "core") and ".." not in name.parts
+            assert hashlib.sha256((core_root / name).read_bytes()).hexdigest() == digest
+
+        campaign_dir = canonical / "campaigns"
+        if campaign_dir.is_dir():
+            candidates = list(campaign_dir.iterdir())
+        else:
+            seal = _json(canonical / "terminal-seal.json")
+            assert seal["case_id"] == result["case_id"] and seal["status"] == result["status"]
+            assert seal["compact_files_sha256"]["fault-depth-review.json"] == hashlib.sha256(path.read_bytes()).hexdigest()
+            source = Path(seal["source_campaign"])
+            if not source.is_absolute():
+                source = Path(__file__).resolve().parents[2] / source
+            assert source.resolve().is_relative_to(Path(__file__).resolve().parents[2] / "data/mallory")
+            candidates = [source]
+        campaigns = [candidate for candidate in candidates
+                     if candidate.is_dir() and (candidate / "result.json").is_file()
+                     and hashlib.sha256((candidate / "result.json").read_bytes()).hexdigest()
+                     == review["campaign_result_sha256"]]
+        assert len(campaigns) == 1
+        distribution: dict[str, int] = {}
+        trials = review["trials"]
+        assert len(trials) == review["fault_trials_completed"]
+        for expected_id, trial in enumerate(trials, start=1):
+            assert trial["trial_id"] == expected_id
+            trial_path = campaigns[0] / "trials" / f"r{expected_id:04d}" / "result.json"
+            assert hashlib.sha256(trial_path.read_bytes()).hexdigest() == trial["result_sha256"]
+            depth = trial["depth"]
+            assert isinstance(depth, int) and 1 <= depth <= config["budget"]["max_faults_per_trial"]
+            distribution[str(depth)] = distribution.get(str(depth), 0) + 1
+        assert distribution == review["depth_distribution"]
+        return dict(review, controller_release_id=None, scheduler_policy_commit=None), str(path)
+    except (AssertionError, KeyError, TypeError, ValueError, OSError):
+        return None, str(path)
+
+
 def _fault_depth_review(results: Path, result_path: Path, result: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
     """Verify an offhost depth review against the terminal result and raw SHA index."""
     case_id = result["case_id"]
     path = results / "quality_reviews/fault_depth" / f"{case_id}.json"
     if not path.is_file():
-        return None, None
+        return _case_local_fault_depth_review(result_path, result)
     try:
         review = _json(path)
         canonical = result_path.parent
