@@ -20,7 +20,9 @@ exceptional exits; it does not infer an actor from the thread name.
 `healthy-v4.json` is a **future-only, one-run calibration**, with the original
 cluster JUnit, target sites, and HBase jars. It loads the immutable actor
 overlay after the existing HBase adapter. Run the read-only preflight with
-`python3 preflight.py`. Maven offline unit tests validate the hook's object
+`python3 preflight.py --verify-prior-evidence` on node1. The guarded
+`run-healthy-node1.sh` requires `MALLORY_HBASE34_V4_NODE1_GRANT=healthy-only`
+from the lane owner. Maven offline unit tests validate the hook's object
 identity behavior and balanced bytecode scope without running the cluster
 JUnit. The node1 lane owner may stage this package and run a healthy trial
 when that lane is free.

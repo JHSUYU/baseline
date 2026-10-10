@@ -6,6 +6,7 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
+import sys
 
 
 HERE = Path(__file__).resolve().parent
@@ -61,6 +62,9 @@ def verify():
     require(config["mapping"]["node_identity_binding_verified"] is False and
             config["mapping"]["full_campaign_gate"].startswith("HOLD"),
             "future full campaign gate removed")
+    sys.path.insert(0, str(Path(config["core_release"])))
+    from Mallory.core.campaign import validate_config
+    validate_config(config)
     return {"case_id": "HBASE-34", "go": True, "mode": "healthy_only",
             "actor_binding": "exact secret-manager ZKWatcher receiver alias",
             "full_campaign_go": False,
