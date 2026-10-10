@@ -1,0 +1,181 @@
+{
+  "admission": {
+    "full_promotion": false,
+    "host": "node1",
+    "intended_output": "/users/ZhenyuLi/baseline/data/mallory/solr34_healthy_path_node1_v4/SOLR-34",
+    "mode": "healthy_only"
+  },
+  "agent_include": [
+    "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider",
+    "org.apache.solr.client.solrj.impl.Http2SolrClient",
+    "org.apache.solr.client.solrj.impl.HttpSolrClient",
+    "org.apache.solr.cloud.ZkController",
+    "org.apache.solr.cloud.api.collections.CreateCollectionCmd",
+    "org.apache.solr.cloud.api.collections.OverseerCollectionMessageHandler",
+    "org.apache.solr.common.cloud.SolrZkClient",
+    "org.apache.solr.common.cloud.ZkStateReader",
+    "org.apache.solr.servlet.CoordinatorHttpSolrCall",
+    "org.apache.solr.update.processor.DistributedZkUpdateProcessor"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4/mallory-agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/target/mallory-solr-adapter-v38.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.solr.SolrTransformer",
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "max.bytes": 104857600,
+    "max.events": 1000000,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "allow_local_timeline_doors": true,
+  "auto_promote_if_healthy": false,
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 600,
+    "trial_timeout_seconds": 480,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "SOLR-34",
+  "cluster_test": "org.apache.solr.search.TestCoordinatorRole#testSimple",
+  "command": [
+    "python3",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-34/healthy-path-node1-v4/run_pilot.py",
+    "SOLR-34",
+    "--source",
+    "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+    "--output",
+    "{trial_dir}",
+    "--campaign",
+    "--timeout",
+    "420"
+  ],
+  "core_release": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/815cba9b-target-absent-v1",
+  "cwd": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "env": {
+    "JAVA_TOOL_OPTIONS": "-Dsolr.disableConfigSetsCreateAuthChecks=true",
+    "MALLORY_SOLR_ADAPTER_JAR": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/target/mallory-solr-adapter-v38.jar",
+    "MALLORY_SOLR_AGENT_JAR": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4/mallory-agent.jar"
+  },
+  "exact_check_location": "solr/core/src/java/org/apache/solr/servlet/CoordinatorHttpSolrCall.java:143",
+  "expected_target_class_sha256": "e1fbaaed7d0348b722277cefd66e4aec61f2463e968a9a336d794dc3bf4dd087",
+  "explore_outside_closure": true,
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "mapping": {
+    "agent_build": {
+      "release_manifest": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4/manifest.json",
+      "release_manifest_sha256": "b5f49f4d2b9ecb2b946af2a8932824d7963c5101e9e3f5a1acfb75e8ef47a966"
+    },
+    "agent_sha256": "b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-core-8.11.4.jar",
+    "compiled_class_sha256": "e1fbaaed7d0348b722277cefd66e4aec61f2463e968a9a336d794dc3bf4dd087",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-core-8.11.4.jar",
+    "compiled_jar_sha256": "e83db498c6af8f3eca14483ab42fd9fe30bbf795ceacab3b4d5eaa66f2461536",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4",
+    "distribution_root_env": "MALLORY_SOLR_DIST_ROOT",
+    "door_status": "path_aware_native_getdata_pending_node1_healthy",
+    "healthy_seed_verified": false,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+    "node_identity_binding_configured": true,
+    "node_identity_binding_verified": false,
+    "runner_status": "unchanged_TestCoordinatorRole_testSimple_case_local_path_agent_v4",
+    "solr_zk_client_class_sha256": "51b3131fed142509b80da408d0d3f8d036045237b51a48c2a4dd9cf574a72dc0",
+    "solr_zk_client_source_sha256": "4a256a0fb563515451b5b733dbb4e320fceb9fa5dcc04912e4dd003d1a109c32",
+    "solrj_compiled_jar": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-solrj-8.11.4.jar",
+    "solrj_compiled_jar_sha256": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517",
+    "source_git_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+    "source_root_env": "MALLORY_SOLR_SOURCE_ROOT",
+    "status": "node1_healthy_only_pending_go",
+    "target_source_sha256": "4812135778c67bfa9d466ff9d66d67ed1dfe48f0afeb2e8b18ddecd9c5b24fc9",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "2e2c6a24b8f2ea37bb1dc4b95842e7974b166e000acf8393ba7d1342bddb59b3",
+    "verified_healthy_probe": null
+  },
+  "max_queue": 400,
+  "reject_coarse_roots": true,
+  "require_event_time_paths": false,
+  "require_site_catalog": true,
+  "revision": "SOLR-34-healthy-path-node1-v4",
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/contrib/analysis-extras/lucene-libs/lucene-analyzers-icu-8.11.4.jar",
+      "sha256": "58c77ae7f37abcecf06c5aca175074ee79814bc0dac6b87ff5020508a484d3b0"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-analysis-extras-8.11.4.jar",
+      "sha256": "c31678e86cd383b41f791620fd1aa788a0fb53f72992e3f409074941ec4f3738"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/target/mallory-solr-adapter-v38.jar",
+      "sha256": "86915aa43203d934431126f9cfbe6f534125dc8a198bf7e9a074a3695d8f5947"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/solr_junit_runner_v14.py",
+      "sha256": "d944bde8606db884bab00015a7afb21442cc80d66fb7e4a43ef086bc799b3844"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v20/inventory.json",
+      "sha256": "fcc824e5142cede4effadee9f46e64c3132be177f353e4cc543d46cb5c1b5b47"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v20/source_reference.json",
+      "sha256": "e600ce9827adc7fdc9baf8cef1fca70bfcb616f39310a7053a50feab0d0b613d"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/fault_discovery_runner.py",
+      "sha256": "12b4a154c88d10a47cfff59ce79a2517be069526031ac31d1abdf969c58d2ac3"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-solrj-8.11.4.jar",
+      "sha256": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4/mallory-agent.jar",
+      "sha256": "b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/b4bb6493699d87dceb966ff63b6f727455e5afdbbe1ddce4cd2247faab17eae4/manifest.json",
+      "sha256": "b5f49f4d2b9ecb2b946af2a8932824d7963c5101e9e3f5a1acfb75e8ef47a966"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-34/healthy-path-node1-v4/sites.json",
+      "sha256": "93de85a61e0621660875831d5ce271ae52ad8cdacc286cf4d4975ea82bad3e9e"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-34/healthy-path-node1-v4/run_pilot.py",
+      "sha256": "e9ab7e9b5b529f9ec41eafda558a5b2a32ee950b106e25cf2f4c99f0212b8cb2"
+    }
+  ],
+  "schema_version": 1,
+  "single_fault_breadth_interval": 3,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-34/healthy-path-node1-v4/sites.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+  "system": "solr",
+  "target": {
+    "check_code": "if (createException != null) {\nthrow createException; // rethrow the exception since such collection was not\n// created\n} else {\nthrow new SolrException(\nSolrException.ErrorCode.SERVER_ERROR,\n\"Could not locate synthetic collection [\"\n+ syntheticCollectionName\n+ \"] after creation!\");",
+    "check_sites": [
+      "org.apache.solr.servlet.CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;@139:branch:6"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.servlet.CoordinatorHttpSolrCall.getCore(org.apache.solr.servlet.CoordinatorHttpSolrCall$Factory,org.apache.solr.servlet.HttpSolrCall,java.lang.String,boolean)",
+    "original_source_line": 143,
+    "site_id": "<org.apache.solr.servlet.CoordinatorHttpSolrCall: org.apache.solr.core.SolrCore getCore(org.apache.solr.servlet.CoordinatorHttpSolrCall$Factory,org.apache.solr.servlet.HttpSolrCall,java.lang.String,boolean)>#u69",
+    "source_line": 143,
+    "source_path": "solr/core/src/java/org/apache/solr/servlet/CoordinatorHttpSolrCall.java",
+    "throw_site": "org.apache.solr.servlet.CoordinatorHttpSolrCall#getCore(Lorg/apache/solr/servlet/CoordinatorHttpSolrCall$Factory;Lorg/apache/solr/servlet/HttpSolrCall;Ljava/lang/String;Z)Lorg/apache/solr/core/SolrCore;@143:throw:1"
+  },
+  "target_absent_bootstrap": {
+    "door_sites": [
+      "org.apache.solr.common.cloud.SolrZkClient#lambda$getData$6(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Lorg/apache/zookeeper/data/Stat;)[B@349:door:1"
+    ],
+    "max_doors_per_trial": 1,
+    "max_faults_per_trial": 1,
+    "max_trials": 1
+  }
+}
