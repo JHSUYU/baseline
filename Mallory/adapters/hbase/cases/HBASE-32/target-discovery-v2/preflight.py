@@ -18,7 +18,7 @@ PACKAGE = HERE.parent / "target-discovery-v1"
 ROOT = HERE.parents[5]
 CORE = ROOT / "Mallory/dispatch/releases/815cba9b-target-absent-v1"
 SOURCE = Path("/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6")
-PRIOR = ROOT / "data/mallory/calibration_v19/HBASE-32/result.json"
+PRIOR = HERE / "prior-negative-result.json"
 EXPECTED_COMMIT = "d5f63f523c065f963992ea4e74db268d17816631"
 DOOR = ("org.apache.hadoop.hbase.client.FlushRegionCallable#call"
         "(Lorg/apache/hadoop/hbase/ipc/HBaseRpcController;)"

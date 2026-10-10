@@ -18,7 +18,9 @@ changed modes, changed pointer, or broken existing Git metadata fail closed.
 
 The v1 manifest still independently pins the selected cluster JUnit source and
 class, the target source and class, the flush RPC door source and class, all
-runtime JARs, and the prior negative healthy receipt.
+runtime JARs, and the prior negative healthy receipt. The receipt is copied
+into this revision because node1 does not keep node0's full result store; its
+bytes must match the v1 manifest's SHA-256.
 
 Offline admission and provenance tests (no Java launch):
 
