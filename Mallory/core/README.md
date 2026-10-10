@@ -91,6 +91,55 @@ could otherwise leave a reachable target with no testable candidate. Set
 `explore_outside_closure: false` for a strict ablation. Every trial records
 the selection reason.
 
+### Target-absent bootstrap for an existing cluster test
+
+Some real cluster tests pass without executing a selected guard, while a fault
+may expose it. A **new, separately pinned campaign** may opt in to bounded
+target discovery with:
+
+```json
+"target_absent_bootstrap": {
+  "door_sites": ["exact.Class#io()V@42:door:1"],
+  "max_trials": 12,
+  "max_doors_per_trial": 16,
+  "max_faults_per_trial": 2
+}
+```
+
+The full config must also pin `expected_target_class_sha256`, keep an exact
+`check_sites`/`throw_site` target, and set `auto_promote_if_healthy: true` for
+fault trials. Choose `door_sites` from I/O sites actually observed in a fresh,
+successful run of the existing cluster JUnit; the list is an explicit search
+policy, not an inferred causal relationship. The healthy bootstrap receipt
+requires that JUnit passed, the exact check and throw sites were woven into
+one loaded target class with the pinned hash, and at least one listed I/O door
+has a named actor and replayable identity. An old calibration with zero
+`DOOR_OBSERVED` events cannot start this campaign.
+`max_trials` must equal `budget.trials` in a promoted config, so the bootstrap
+phase cannot silently end a case before its declared full campaign budget.
+
+While the target is absent, feedback records global coverage and exact I/O
+doors, but `closure_occurrences` and closure coverage remain empty; the graph
+summary says `analysis_skipped`. Each bootstrap mutation adds one fault after
+the last applied fault, chooses only a listed observed I/O site, and obeys the
+smaller of the global and bootstrap fault-depth caps. A matched fault with no
+target can expose another eligible I/O door for the next mutation. If no exact
+target is discovered, the campaign ends as `budget_exhausted` or
+`queue_exhausted` and reports zero target hits.
+
+The first effective fault trial with an exact target check on a named actor
+records `target_discovered_trial` and binds that actor for later trials. Only
+its **observed** target occurrence is used to build a backward graph; pending
+bootstrap plans are discarded and subsequent mutations use the normal graph
+feedback. A target exception still needs the original strict matched/applied
+fault, check-before-throw, class, site, node, epoch, and occurrence oracle.
+Discovery alone does not prove that the fault caused the target or establish a
+new bug. `healthy_seed_valid` remains false because the target was absent;
+`bootstrap_seed_valid` separately records the honest bootstrap attestation.
+The offline audit rechecks each trial under its binding at that time. Its
+`healthy_closure_proven` and `report_gate_passed` remain false for bootstrap
+campaigns, since no healthy target closure exists.
+
 For workloads where deeper sequences replay unreliably, optional
 `single_fault_breadth_interval: 3` chooses the highest ranked one-fault plan
 on two of every three fault-trial picks while one remains queued. Every third

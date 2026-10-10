@@ -60,12 +60,31 @@ def _replay_point(door: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def mutate(parent: list[dict[str, Any]], feedback: dict[str, Any],
-           config: dict[str, Any]) -> list[dict[str, Any]]:
+           config: dict[str, Any], *, bootstrap: bool = False) -> list[dict[str, Any]]:
     budget = config["budget"]
-    if len(parent) >= int(budget["max_faults_per_trial"]):
+    bootstrap_config = config.get("target_absent_bootstrap", {}) if bootstrap else {}
+    max_faults = min(int(budget["max_faults_per_trial"]),
+                     int(bootstrap_config.get("max_faults_per_trial",
+                                              budget["max_faults_per_trial"])))
+    if len(parent) >= max_faults:
         return []
-    if parent and not (feedback["all_faults_effective"] and feedback["target_reached"]):
+    if parent and not feedback["all_faults_effective"]:
         return []
+    if parent and not bootstrap and not feedback["target_reached"]:
+        return []
+    if bootstrap:
+        # An absent target has no observed backward closure. Exact site names
+        # are an explicit exploration policy, not a causal claim.
+        allowed = set(bootstrap_config["door_sites"])
+        last_fault_seq = int(feedback.get("last_fault_seq", -1))
+        doors = [door for door in feedback["doors"]
+                 if door.get("site") in allowed and
+                 int(door.get("event_seq", -1)) > last_fault_seq]
+        doors.sort(key=lambda door: (bootstrap_config["door_sites"].index(door["site"]),
+                                     int(door.get("event_seq", -1)),
+                                     digest(door.get("point"))))
+        doors = doors[:int(bootstrap_config["max_doors_per_trial"])]
+        return _make_candidates(parent, doors, config, "bootstrap_io", feedback)
     validated_sites = {row["site"] for row in config.get("validated_recovery_sites", [])}
     validated = [d for d in feedback["doors"] if d.get("site") in validated_sites]
     dynamic = [d for d in feedback["doors"] if d.get("in_closure")
@@ -78,10 +97,21 @@ def mutate(parent: list[dict[str, Any]], feedback: dict[str, Any],
     outside = ([d for d in feedback["doors"]
                 if d not in validated and d not in dynamic and d not in static]
                if include_outside else [])
+    return _make_candidates(parent, validated + dynamic + static + outside,
+                            config, None, feedback,
+                            validated=validated, dynamic=dynamic, static=static)
+
+
+def _make_candidates(parent: list[dict[str, Any]], doors: list[dict[str, Any]],
+                     config: dict[str, Any], reason: str | None,
+                     feedback: dict[str, Any], *,
+                     validated: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
+                     dynamic: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
+                     static: tuple[dict[str, Any], ...] | list[dict[str, Any]] = ()) -> list[dict[str, Any]]:
     seen = {sequence_signature(parent)}
     result = []
     last_fault_seq = int(feedback.get("last_fault_seq", -1))
-    for door in validated + dynamic + static + outside:
+    for door in doors:
         if int(door.get("event_seq", -1)) <= last_fault_seq:
             continue
         point = _replay_point(door)
@@ -98,11 +128,12 @@ def mutate(parent: list[dict[str, Any]], feedback: dict[str, Any],
             sequence = parent + [fault]
             sig = sequence_signature(sequence)
             if sig not in seen:
+                selection_reason = reason or ("validated_recovery" if door in validated else
+                                              "dynamic_closure" if door in dynamic else
+                                              "static_candidate" if door in static else
+                                              "bounded_exploration")
                 result.append({"faults": sequence,
-                               "selection_reason": ("validated_recovery" if door in validated else
-                                                    "dynamic_closure" if door in dynamic else
-                                                    "static_candidate" if door in static else
-                                                    "bounded_exploration"),
+                               "selection_reason": selection_reason,
                                "signature": sig})
                 seen.add(sig)
     return result

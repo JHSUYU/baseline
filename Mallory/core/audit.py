@@ -23,6 +23,7 @@ SCHEMA = 1
 TERMINAL = {"budget_exhausted", "queue_exhausted", "healthy_seed_invalid",
             "healthy_node_identity_missing", "healthy_seed_ambiguous",
             "healthy_no_injectable_door", "healthy_attestation_failed",
+            "healthy_bootstrap_attestation_failed",
             "fault_trials_not_attested", "calibration_complete"}
 UNKNOWN_NODES = {"", "unknown", "null", "None"}
 
@@ -263,7 +264,14 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
             plan = result.get("plan", [])
             if not isinstance(plan, list):
                 raise ValueError("trial plan is not a list")
-            target = {**config["target"], **(binding if trial_id > 0 else {})}
+            # Bootstrap learns actor binding from the first exact post-fault
+            # target event. Earlier trials, including discovery itself, ran
+            # without that future binding and must be audited the same way.
+            binding_trial = summary.get("target_binding_trial")
+            if binding_trial is None:
+                binding_trial = 0  # archived target-present campaigns
+            target = {**config["target"],
+                      **(binding if trial_id > binding_trial else {})}
             recomputed = analyze(trace, target, plan,
                                  return_code=result.get("return_code"),
                                  timed_out=bool(result.get("timed_out")),
@@ -271,7 +279,9 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                                      "allow_local_timeline_doors", False),
                                  reject_coarse_roots=config.get("reject_coarse_roots", False),
                                  require_event_time_paths=config.get(
-                                     "require_event_time_paths", False))
+                                     "require_event_time_paths", False),
+                                 bootstrap_without_target=bool(
+                                     config.get("target_absent_bootstrap")))
             old = result.get("feedback", {})
             if trial_id == 0:
                 healthy_closure_observed_edges = sum(
@@ -293,8 +303,7 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                 healthy_local_timeline_evidence_sample = local_evidence[:10]
                 # Invalid healthy seeds with no exact target have no closure
                 # to verify. Match feedback's explicit target-absent fast path.
-                graph = (None if recomputed["graph"].get("analysis_skipped") ==
-                         "healthy_target_absent" else OccurrenceGraph(
+                graph = (None if recomputed["graph"].get("analysis_skipped") else OccurrenceGraph(
                              trace.events,
                              reject_coarse_roots=(config.get("reject_coarse_roots", False) or
                                                   config.get("require_event_time_paths", False))))

@@ -47,7 +47,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             *, return_code: int | None, timed_out: bool,
             allow_local_timeline_doors: bool = False,
             reject_coarse_roots: bool = False,
-            require_event_time_paths: bool = False) -> dict[str, Any]:
+            require_event_time_paths: bool = False,
+            bootstrap_without_target: bool = False) -> dict[str, Any]:
     events = trace.events
     truncated = [e for e in events if e.get("type") == "TRACE_TRUNCATED"]
     expected = _fault_ids(plan)
@@ -108,6 +109,11 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
                                 str(e.get("occurrence"))) for e in checks + throws})
     target_ambiguous = False
     target_reached = bool(post_checks or post_throws) if expected else bool(checks or throws)
+    target_check_reached = bool(post_checks) if expected else bool(checks)
+    target_check_actors = sorted({str(e["node"]) for e in (post_checks if expected else checks)
+                                  if _named_node(e.get("node")) and
+                                  event_address(e) is not None and
+                                  isinstance(e.get("region"), str) and e["region"]})
     target_threw = bool(post_throws) if expected else bool(throws)
     qualifying_throws = [e for e in post_throws
                          if _named_node(e.get("node")) and any(
@@ -127,8 +133,10 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
     # Preserve its oracle, global coverage, and observed doors, but avoid the
     # expensive whole-trace graph build. The raw trace remains available for
     # diagnosis; the summary explicitly says that edges were not computed.
-    graph_skipped = _skip_graph_for_missing_target(expected, all_checks,
-                                                  throw_site_events)
+    graph_skipped = (_skip_graph_for_missing_target(expected, all_checks,
+                                                   throw_site_events) or
+                     bootstrap_without_target and not all_checks and
+                     not throw_site_events)
     graph = (None if graph_skipped else OccurrenceGraph(events, reject_coarse_roots=(
         reject_coarse_roots or require_event_time_paths)))
     graph_gaps: dict[str, int] = {} if graph_skipped else graph.gaps
@@ -338,7 +346,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             "edges": 0, "candidate_edges": 0,
             "edges_by_kind": {}, "candidate_edges_by_kind": {},
             "gaps": dict(sorted(graph_gaps.items())),
-            "analysis_skipped": "healthy_target_absent",
+            "analysis_skipped": ("bootstrap_target_absent" if expected else
+                                 "healthy_target_absent"),
         }
     else:
         graph_summary = graph.summary()
@@ -350,6 +359,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             "fault_identity_valid": fault_identity_valid,
             "unexpected_applied_fault_ids": [e.get("fault_id") for e in unexpected],
             "target_reached": target_reached, "target_threw": target_threw,
+            "target_check_reached": target_check_reached,
+            "target_check_actors": target_check_actors,
             "target_throw_evidence": [
                 {key: e.get(key) for key in ("id", "seq", "node", "epoch",
                                            "occurrence", "site", "exception_class")}
