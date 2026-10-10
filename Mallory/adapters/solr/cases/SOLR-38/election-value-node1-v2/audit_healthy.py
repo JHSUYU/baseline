@@ -131,6 +131,7 @@ def value_witnesses(events: list[dict]) -> list[dict]:
 def audit(out: Path) -> dict:
     trial = out / "trials/r0000"
     result = json.loads((trial / "result.json").read_text(encoding="utf-8"))
+    campaign_result = json.loads((out / "result.json").read_text(encoding="utf-8"))
     junit = result.get("junit_validation", {})
     if (result.get("case_id") != "SOLR-38" or result.get("plan") != []
             or junit.get("status") != "passed" or junit.get("tests") != 1):
@@ -150,7 +151,7 @@ def audit(out: Path) -> dict:
                        for artifact in config.get("runtime_artifacts", []))
             or pilot.get("adapter_sha256") != adapter_sha
             or pilot.get("agent_sha256") != build_adapter.sha(build_adapter.AGENT)
-            or not result.get("runtime_attestation", {}).get("valid")):
+            or not campaign_result.get("runtime_attestation", {}).get("valid")):
         raise ValueError("value diagnostic adapter or runtime identity not attested")
     events = load_events(trial)
     witnesses = value_witnesses(events)
