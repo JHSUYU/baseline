@@ -3488,6 +3488,65 @@ def _zk_independent_source_review(results: Path, case_id: str) -> tuple[str | No
     return "supplementary_source_review_verified", str(receipt_path)
 
 
+def _fault_depth_review(results: Path, result_path: Path, result: dict[str, Any]) -> tuple[dict[str, Any] | None, str | None]:
+    """Verify an offhost depth review against the terminal result and raw SHA index."""
+    case_id = result["case_id"]
+    path = results / "quality_reviews/fault_depth" / f"{case_id}.json"
+    if not path.is_file():
+        return None, None
+    try:
+        review = _json(path)
+        canonical = result_path.parent
+        config_path = canonical / "config.json"
+        config = _json(config_path)
+        assert review["case_id"] == case_id
+        assert review["status"] == result["status"] in TERMINAL
+        assert review["fault_trials_completed"] == result["fault_trials_completed"]
+        assert review["campaign_config_sha256"] == hashlib.sha256(config_path.read_bytes()).hexdigest()
+        release = config["core_release"]
+        release_path = Path(release["path"] if isinstance(release, dict) else release)
+        manifest_path = release_path / "manifest.json"
+        manifest = _json(manifest_path)
+        assert manifest["release_id"] == review["controller_release_id"] == release_path.name
+        assert review["controller_release_manifest_sha256"] == hashlib.sha256(manifest_path.read_bytes()).hexdigest()
+        assert review["scheduler_sha256"] == manifest["files"]["Mallory/core/scheduler.py"]
+        assert review["scheduler_policy_commit"] == config.get("mapping", {}).get("scheduler_policy_commit")
+
+        raw_copy = _json(canonical / "raw-copy-receipt.json")
+        if raw_copy is not None:
+            raw_files = raw_copy["files"]
+            sync = _json(canonical / "sync-receipt.json")
+            assert raw_files["result.json"] == sync["remote_raw_result_sha256"] == review["campaign_result_sha256"]
+            assert raw_files["checkpoint.json"] == review["campaign_checkpoint_sha256"]
+            assert raw_files["config.json"] == review["campaign_config_sha256"]
+            trial_hashes = raw_files
+        else:
+            receipt = _json(canonical / "canonical-import-receipt.json")
+            archive_path = path.with_name(f"{case_id}.archive-manifest.json")
+            archive = _json(archive_path)
+            assert receipt["result_sha256"] == review["campaign_result_sha256"]
+            assert receipt["checkpoint_sha256"] == review["campaign_checkpoint_sha256"]
+            assert receipt["manifest_sha256"] == hashlib.sha256(archive_path.read_bytes()).hexdigest()
+            trial_hashes = {item["path"].split("/trials/", 1)[-1]: item["sha256"]
+                            for item in archive["members"] if "/trials/" in item["path"]}
+        distribution: dict[str, int] = {}
+        trials = review["trials"]
+        assert len(trials) == review["fault_trials_completed"]
+        for expected_id, trial in enumerate(trials, start=1):
+            assert trial["trial_id"] == expected_id
+            key = f"trials/r{expected_id:04d}/result.json"
+            if raw_copy is None:
+                key = f"r{expected_id:04d}/result.json"
+            assert trial_hashes[key] == trial["result_sha256"]
+            depth = trial["depth"]
+            assert isinstance(depth, int) and 1 <= depth <= config["budget"]["max_faults_per_trial"]
+            distribution[str(depth)] = distribution.get(str(depth), 0) + 1
+        assert distribution == review["depth_distribution"]
+        return review, str(path)
+    except (AssertionError, KeyError, TypeError, ValueError, OSError):
+        return None, str(path)
+
+
 def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
     case_id = case["case_id"]
     target = case["target"]
@@ -3547,6 +3606,11 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         "campaign_status": None,
         "duration_seconds": None,
         "fault_trials_completed": None,
+        "fault_depth_distribution": None,
+        "controller_release_id": None,
+        "controller_scheduler_sha256": None,
+        "controller_scheduler_policy_commit": None,
+        "fault_depth_review_receipt": None,
         "strict_injected_trials": None,
         "strict_target_trials": None,
         "target_reached_trials": None,
@@ -3841,6 +3905,15 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                 "closure_edge_fingerprints_seen", "target_node_named",
                 "source_review_status", "new_bug"):
         row[key] = result.get(key)
+    depth_review, depth_path = _fault_depth_review(results, result_path, result)
+    if depth_review is not None:
+        row["fault_depth_distribution"] = depth_review["depth_distribution"]
+        row["controller_release_id"] = depth_review["controller_release_id"]
+        row["controller_scheduler_sha256"] = depth_review["scheduler_sha256"]
+        row["controller_scheduler_policy_commit"] = depth_review["scheduler_policy_commit"]
+        row["fault_depth_review_receipt"] = depth_path
+    elif depth_path is not None:
+        row["fault_depth_review_error"] = "depth review or raw SHA index mismatch"
     review = _source_review(results, result_path, result)
     if review is not None:
         row["source_review_status"] = review["status"]
