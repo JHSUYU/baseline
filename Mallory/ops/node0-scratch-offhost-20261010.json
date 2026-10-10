@@ -1,0 +1,31 @@
+{
+  "date_utc": "2026-10-10",
+  "source_host": "node0",
+  "destination_host": "node1",
+  "destination_root": "/users/ZhenyuLi/baseline/data/mallory/evidence_archives/offhost_tmp_cache/node0-scratch-20261010",
+  "source_paths": [
+    "/tmp/solr07-events-snapshot",
+    "/tmp/solr10-role-audit",
+    "/tmp/zk387-zk11-20261006"
+  ],
+  "verification": {
+    "source_file_count_before": 4048,
+    "destination_file_count_after": 4048,
+    "rsync_checksum_dry_run_itemized_changes": 0,
+    "source_file_count_after_verified_remove_source_files": 0,
+    "source_empty_directories_removed": 800,
+    "open_source_files_at_move": 0,
+    "destination_tree_sha256": {
+      "solr07-events-snapshot": "ff4b79552d17f5f95978f7f342d96f008fdc29a04a3e4ba14341c4d8a6f3f2f3",
+      "solr10-role-audit": "a659f9cd00e4907ae59168eadaf6b9e458bfd71e29f4c988d6a2c69635873da5",
+      "zk387-zk11-20261006": "36b6769167e49e6928440ca7d308bf68dd41a7834644e6ea0c558da4e3e55e5e"
+    },
+    "zookeeper_sparse_log_files_recompacted_on_destination": 54,
+    "zookeeper_sparse_log_allocated_bytes_before": 3560689664,
+    "zookeeper_sparse_log_allocated_bytes_after": 663552,
+    "zookeeper_tree_digest_rechecked_after_compaction": true
+  },
+  "node0_available_bytes_after": 7683493888,
+  "node1_available_bytes_after_compaction": 11209207808,
+  "note": "The copied ZooKeeper transaction logs were sparse on node0. Per-file SHA checks and the full tree digest show that punching zero holes on node1 preserved bytes. The original temp trees were removed only after a checksum-identical transfer."
+}
