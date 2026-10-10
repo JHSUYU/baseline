@@ -23,6 +23,8 @@ JUnit runner's classpath, along with the v38 entry point, its underlying
 runner, v20 inventory, `PilotJUnit.java`, case-local agent/core, adapter, and
 this package's code. The classpath inventory digest is
 `52ce1270fd871bbfa7e0a4faeaf4e5a91c801a637518fa02f1164e0509092644`.
+The offline preflight also hashes the selected Java 8 `javac` and `java`
+binaries, which are byte-identical on node0 and node1.
 The v38 wrapper also checks its generic agent JAR even in campaign mode; that
 existing node1 JAR is pinned at SHA-256
 `38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9`.

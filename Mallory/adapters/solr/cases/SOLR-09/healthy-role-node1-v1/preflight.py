@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import shutil
 import subprocess
 import sys
 import zipfile
@@ -134,6 +135,12 @@ def main() -> dict:
         path = dist / rel
         require(path.is_file() and sha(path) == expected,
                 f"JUnit classpath JAR changed: {path}")
+    for tool, record in manifest["toolchain"].items():
+        selected = shutil.which(tool)
+        require(selected == record["path"], f"selected {tool} path changed")
+        binary = Path(selected).resolve()
+        require(str(binary) == record["realpath"] and sha(binary) == record["sha256"],
+                f"selected {tool} binary changed")
     sys.path.insert(0, str(CORE))
     from Mallory.core import campaign  # noqa: E402
     require(Path(campaign.__file__).resolve().is_relative_to(CORE),
