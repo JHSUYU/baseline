@@ -1,0 +1,34 @@
+# HDFS-31/32 sealed healthy-trace and source review
+
+This is a read-only review of two node2 **fault-free** MiniDFSCluster runs. It does not admit a fault campaign or change either entry in the 102-check checklist. A healthy check hit establishes target reachability only; it does not establish that the available typed I/O faults can change the selected predicate while preserving that hit.
+
+## Evidence pins
+
+| Case | Sealed receipt (SHA-256) | `result.json` (SHA-256) | `r0000/result.json` (SHA-256) | `r0000/events.jsonl.gz` (SHA-256) |
+| --- | --- | --- | --- | --- |
+| HDFS-31 | `data/mallory/evidence_archives/healthy/HDFS-31-node2-healthy-v1.receipt.json` (`9508821d970e1765e68fab18909a963054b39bf4c40bd3b0fe855b970d44b5a3`) | `4f7e10ec5220fb272e95e08104c8b08a0e849a59f862feda26b79ea8948bd124` | `e67ce285f35d0eb64a53822528bfe827f3a62720ebba1dbffd0e7f281c5659a1` | `c3c86d5f4e756b78d2bfe445ed4396e21635d9c76cea47c2d37c602237248dc0` |
+| HDFS-32 | `data/mallory/evidence_archives/healthy/HDFS-32-node2-healthy-v1.receipt.json` (`380454e44ec638b6772911f7971ebf788fa4691519e3cd26bdc03e7308a40cdd`) | `fe3005cf208430f3e8bf738d4a077f0aedcc9ee314145f48188fefad5a9d4467` | `27156252b42ed1235cb67e358be18d7e53d2b2e7d9db8ac9f515da7cd9bf2469` | `3ba2d55d56a0a5b43f891c11cb36109256bfcba3e93f5376fdcbf13f001ba139` |
+
+The raw observations are at `data/mallory/healthy_observations/HDFS-{31,32}-node2-healthy-v1/`. Each receipt says `calibration_complete`, `fault_trials_completed=0`, and `full_campaign_completed=false`. Both JUnit receipts validate one test, zero failures, zero errors, zero skipped. Neither run reports a target exception or a new bug.
+
+The source review uses Hadoop commit `9d50c6884666e794e45102260a4017bb31802e1b`. Source-file SHA-256 pins: `DataNode.java` `60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4`; `BlockPoolManager.java` `1d3bae5753526ca1bfc9dec3a5e63820564db49c9dedd32b4b7fd5f1f8ad423a`; `BPServiceActor.java` `fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833`; `DFSAdmin.java` `ec3b8dfa9768db3ee3188ae926dd9c8242074aff4353e0c3281d2d8336102313`; `TestDiskError.java` `122183dc0da270317d8bbf2744b6dbdbfe578e720566eee37d23fbe6fd79f3ed`; `TestDeleteBlockPool.java` `31467bca1249b93cae7ed984bac01d405cde8ec1409a9ef78fa0a0c469a3bb3a`.
+
+## HDFS-31: reached check, incorrect physical actor
+
+`TestDiskError#testDataTransferWhenBytesPerChecksumIsZero` writes block metadata at lines 259-260, then directly invokes `dn0.transferBlock(block, ...)` at line 277. `DataNode.transferBlock` calls `getBPOSForBlock` at line 2834. The selected check is `DataNode.getBPOSForBlock:1833`, where `blockPoolManager.get(block.getBlockPoolId()) == null` would throw an `IOException` (lines 1829-1836). The healthy event `HDFS-31-r0000:139` reaches that exact branch once with no exception.
+
+The event says `node=hdfs-client`, `thread=main`, epoch 0. This is the JUnit caller identity, not the receiver's physical actor: the receiver is the MiniDFSCluster's registered `dn0`. Thus `healthy_seed_valid=true`, `target_node_named=true`, and the reported 29 eligible doors do **not** satisfy the physical-actor gate for this version. The client-root backward closure is stale for fault admission. The isolated receiver-scope adapter in commit `bd3131fd` wraps the exact `DataNode.getBPOSForBlock(ExtendedBlock)` overload; offline bytecode and exception-safe scope checks passed. A new fault-free node2 trace must verify `hdfs-cluster-1/dn0`, epoch 0, before any HDFS-31 fault run.
+
+In the v1 trace, the metadata `writeByte` and `writeInt` doors at events 91-92 and NameNode RPC doors at 95, 105, 110, and 135 are labeled in closure. The DataNode `sendHeartBeat` doors at events 20 (`dn0`) and 118 (`dn1`) are outside it. These labels are observations of the *mis-scoped* v1 graph. Source inspection also constrains fault effect: an exception from the metadata writes precedes and aborts the direct `transferBlock` call; `BPServiceActor.offerService` catches plain `IOException` and retries at lines 786-788, whereas `BlockPoolManager.remove` changes the block-pool map at lines 89-95. The current plain heartbeat `IOException` therefore has no demonstrated path to make the line-1833 null check fail while the target remains reachable. A specifically constructed fatal `RemoteException` would be a different fault model and is not evidenced by this run.
+
+## HDFS-32: correct actor, typed-door effect unproven
+
+`TestDeleteBlockPool#testDfsAdminDeleteBlockPool` starts one DataNode with two federated NameNodes, removes the second nameservice through `dn1.refreshNamenodes` at lines 166-169, then calls `DFSAdmin -deleteBlockPool` without force and with force at lines 173-184. `BlockPoolManager.doRefreshNamenodes` stops and joins the removed service at lines 239-250; `BlockPoolManager.remove` removes its block-pool mapping at lines 89-95. The selected check is `DataNode.deleteBlockPool:3819`, which rejects deletion if that mapping is still present.
+
+The healthy events `HDFS-32-r0000:165` and `:174` hit that check without exception on `hdfs-cluster-1/dn0`, epoch 0, in two RPC handler threads. Corresponding client typed doors at `DFSAdmin.deleteBlockPool:2702` are events 160 and 169. The first/second door's no-force/force roles follow the test source order; the trace does not itself record the `force` argument. Injecting `IOException` at either client door prevents its corresponding server-side check from running; `DFSAdmin.run` catches the exception and returns a nonzero exit code at lines 2634-2643. The first such failure could satisfy the test's expected nonzero return without testing the server predicate, while the second would defeat the expected successful forced delete. The `dn0` heartbeat doors at events 39-40 are outside the reported closure. The current evidence does not show a typed door that leaves the RPC check reachable *and* changes the block-pool map state.
+
+The global `in_closure=true` label on client door 169 must not be read as a predecessor of the **first** target event 165: 169 occurs later. Evaluate each target occurrence with its own event order and RPC correlation, especially if generating a fault plan from the global door list.
+
+## Disposition
+
+HDFS-31 has a suitable existing cluster JUnit and exact healthy target reachability, but its v1 runtime identity is wrong; run the staged v2 healthy-only receiver probe before considering faults. HDFS-32 has a suitable existing cluster JUnit and correct target actor, but its current typed frontier lacks a demonstrated target-preserving mutation of the map predicate. Both remain uncompleted fault campaigns with zero fault trials and zero confirmed new bugs. HDFS-33 already has a separately staged healthy-only package; no additional repair follows from these HDFS-31/32 observations.
