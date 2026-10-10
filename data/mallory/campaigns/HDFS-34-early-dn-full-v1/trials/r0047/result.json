@@ -1,0 +1,2209 @@
+{
+  "case_id": "HDFS-34",
+  "dispatch_attempt_id": null,
+  "elapsed_seconds": 19.296,
+  "events_evidence": {
+    "gzip_bytes": 46383,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "02cea941f37c3e1eb7747ecab5452081b8dc07f7d0272e5c4c56db8fe5c1943c",
+    "raw_bytes": 806932,
+    "raw_path": null,
+    "raw_sha256": "fa5f376d05733cd6052626aa7ac43d63e6d439097769ade1fc6fe3ffec9823e1"
+  },
+  "events_sha256": "fa5f376d05733cd6052626aa7ac43d63e6d439097769ade1fc6fe3ffec9823e1",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": true,
+    "all_faults_matched": true,
+    "applied_fault_ids": [
+      "f4ade5914a2f8c6dcaa3f",
+      "f30a182b9a9cb735d48fd",
+      "fe3f9a63cb707c037a6ac"
+    ],
+    "closure_coverage_ids": [],
+    "closure_edges": [
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:291",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:289",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:108:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:298",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:289",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:108:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:286",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:285",
+        "source": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:root:thread:108:segment:1\"]",
+        "target": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:71:segment:14\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:364",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:353",
+        "source": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:143:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:371",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:353",
+        "source": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:143:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:350",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:347",
+        "source": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:root:thread:143:segment:1\"]",
+        "target": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:68:segment:22\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:322",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:317",
+        "source": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:180:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:329",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:317",
+        "source": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:180:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:314",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:313",
+        "source": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:root:thread:180:segment:1\"]",
+        "target": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:63:segment:26\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:41",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:39",
+        "source": "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:215:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:48",
+        "evidence": "unique_parent_id_or_handoff_token",
+        "kind": "region_parent",
+        "producer_event": "HDFS-34-r0047:39",
+        "source": "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:215:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:36",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:35",
+        "source": "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:root:thread:215:segment:1\"]",
+        "target": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:64:segment:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:33",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:32",
+        "source": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:0:0:thread:63:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:root:thread:143:segment:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:39",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:38",
+        "source": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:64:segment:2\"]",
+        "target": "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:215:segment:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:289",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:288",
+        "source": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:71:segment:14\"]",
+        "target": "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:108:segment:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:317",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:316",
+        "source": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:63:segment:26\"]",
+        "target": "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:180:segment:2\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "HDFS-34-r0047:353",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "HDFS-34-r0047:352",
+        "source": "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:68:segment:22\"]",
+        "target": "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:143:segment:2\"]"
+      }
+    ],
+    "closure_occurrences": [
+      "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:1\"]",
+      "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:2\"]",
+      "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:108:segment:2\"]",
+      "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:root:thread:108:segment:1\"]",
+      "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:1\"]",
+      "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:2\"]",
+      "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:143:segment:2\"]",
+      "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:root:thread:143:segment:1\"]",
+      "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:1\"]",
+      "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:2\"]",
+      "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:180:segment:2\"]",
+      "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:root:thread:180:segment:1\"]",
+      "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:1\"]",
+      "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:2\"]",
+      "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:215:segment:2\"]",
+      "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:root:thread:215:segment:1\"]",
+      "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:0:0:thread:63:segment:2\"]",
+      "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:64:segment:2\"]",
+      "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:71:segment:14\"]",
+      "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:63:segment:26\"]",
+      "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:68:segment:22\"]"
+    ],
+    "coverage_ids": [
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#<init>(IILjava/lang/String;JLorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$NodeType;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#<init>(Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$NodeType;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#<init>(Lorg/apache/hadoop/hdfs/server/common/StorageInfo;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#checkStorageType(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#checkStorageType(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@183:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#checkStorageType(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@187:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getCTime()J",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getClusterID()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getLayoutVersion()I",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getNamespaceID()I",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getProperty(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Ljava/lang/String;)Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getProperty(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Ljava/lang/String;)Ljava/lang/String;@255:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getServiceLayoutFeatureMap()Ljava/util/Map;",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getServiceLayoutFeatureMap()Ljava/util/Map;@248:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getServiceLayoutFeatureMap()Ljava/util/Map;@248:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getServiceLayoutVersion()I",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getServiceLayoutVersion()I@242:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#getServiceLayoutVersion()I@242:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#readProperties(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@263:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@274:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setClusterId(Ljava/util/Properties;ILorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setClusterId(Ljava/util/Properties;ILorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@204:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@170:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setLayoutVersion(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setLayoutVersion(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@219:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setNamespaceID(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setNamespaceID(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@230:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setNamespaceID(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@230:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setNamespaceID(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@230:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setNamespaceID(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@230:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setServiceLayoutVersion(I)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setStorageInfo(Lorg/apache/hadoop/hdfs/server/common/StorageInfo;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#setcTime(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#toString()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.common.StorageInfo#versionSupportsFederation(Ljava/util/Map;)Z",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#<init>(Ljava/lang/String;Ljava/lang/String;Ljava/net/InetSocketAddress;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#<init>(Ljava/lang/String;Ljava/lang/String;Ljava/net/InetSocketAddress;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V@136:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#<init>(Ljava/lang/String;Ljava/lang/String;Ljava/net/InetSocketAddress;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V@138:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#<init>(Ljava/lang/String;Ljava/lang/String;Ljava/net/InetSocketAddress;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V@151:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#<init>(Ljava/lang/String;Ljava/lang/String;Ljava/net/InetSocketAddress;Ljava/net/InetSocketAddress;Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;)V@154:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#access$1202(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;Z)Z",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#access$1300(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;)Lorg/apache/hadoop/hdfs/server/datanode/DNConf;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#access$400(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;)Z",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#access$600(Lorg/apache/hadoop/hdfs/server/datanode/BPServiceActor;)Lorg/apache/hadoop/hdfs/server/datanode/DataNode;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;@404:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;@404:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;@421:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;@430:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;@457:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;@459:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#blockReport(J)Ljava/util/List;@475:branch:12:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#cacheReport()Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#cacheReport()Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@492:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#calculateBlockReportPBSize(Z[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;)I",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#calculateBlockReportPBSize(Z[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;)I@526:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#calculateBlockReportPBSize(Z[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;)I@526:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#calculateBlockReportPBSize(Z[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;)I@527:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#checkNNVersion(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#checkNNVersion(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@286:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#checkNNVersion(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@293:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#cleanUp()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#connectToNNAndHandshake()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#formatThreadName(Ljava/lang/String;Ljava/net/InetSocketAddress;)Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#formatThreadName(Ljava/lang/String;Ljava/net/InetSocketAddress;)Ljava/lang/String;@609:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#generateUniqueBlockReportId()J",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#generateUniqueBlockReportId()J@373:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#getNNSocketAddress()Ljava/net/InetSocketAddress;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#getNameNodeAddress()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#getRpcMetricSuffix()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#getRpcMetricSuffix()Ljava/lang/String;@479:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#getRpcMetricSuffix()Ljava/lang/String;@479:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#handleRollingUpgradeStatus(Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#handleRollingUpgradeStatus(Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;)V@650:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#isAlive()Z",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#isAlive()Z@170:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#isAlive()Z@170:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#isAlive()Z@173:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#isAlive()Z@173:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#isAlive()Z@173:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#join()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#join()V@630:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#join()V@633:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@667:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@678:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@678:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@690:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@698:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@699:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@699:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@700:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@704:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@704:branch:8:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@705:branch:9:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@705:branch:9:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@706:branch:10:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@728:branch:11:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@728:branch:11:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@734:branch:12:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@741:branch:13:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@742:branch:14:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@742:branch:15:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@750:branch:16:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@753:branch:17:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@753:branch:17:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@753:branch:18:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@759:branch:19:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#offerService()V@764:branch:20:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#processQueueMessages()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#processQueueMessages()V@996:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#register(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#register(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@826:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#register(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@847:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@258:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@273:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#run()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#run()V@908:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#run()V@912:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#run()V@912:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@542:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@551:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@554:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@554:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@554:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@558:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@558:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@558:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@577:branch:9:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sendHeartBeat(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;@577:branch:9:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#shouldRun()Z",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#shouldRun()Z@935:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#shouldRun()Z@935:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#shouldRun()Z@935:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#sleepAndLogInterrupts(ILjava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#start()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#start()V@592:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#start()V@599:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#stop()V",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#stop()V@616:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#stop()V@619:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#stop()V@622:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#toString()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#<init>()V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#access$500(Lorg/apache/hadoop/hdfs/server/datanode/DataStorage;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#addStorageLocations(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;)Ljava/util/List;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#addStorageLocations(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;)Ljava/util/List;@392:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#cleanupDetachDir(Ljava/io/File;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#cleanupDetachDir(Ljava/io/File;)V@888:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ILorg/apache/hadoop/conf/Configuration;)Z",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ILorg/apache/hadoop/conf/Configuration;)Z@138:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ILorg/apache/hadoop/conf/Configuration;)Z@138:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ILorg/apache/hadoop/conf/Configuration;)Z@140:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ILorg/apache/hadoop/conf/Configuration;)Z@141:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZLorg/apache/hadoop/conf/Configuration;)Z",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZLorg/apache/hadoop/conf/Configuration;)Z@150:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZLorg/apache/hadoop/conf/Configuration;)Z@151:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZLorg/apache/hadoop/conf/Configuration;)Z@158:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZLorg/apache/hadoop/conf/Configuration;)Z@158:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#createStorageID(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZLorg/apache/hadoop/conf/Configuration;)Z@161:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@722:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@726:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@731:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@732:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@739:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@740:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@748:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@756:branch:9:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@762:branch:10:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z@763:branch:11:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgrade(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgradePreFederation(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgradePreFederation(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)V@818:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgradePreFederation(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)V@818:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgradePreFederation(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)V@823:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgradePreFederation(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)V@827:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgradePreFederation(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)V@827:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#doUpgradePreFederation(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)V@839:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;@1191:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;@1191:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;@1195:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;@1195:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;@1196:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;@1196:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#findDuplicateEntries(Ljava/util/ArrayList;)Ljava/util/ArrayList;@1199:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#getBPStorage(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#getBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)Lorg/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#getBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)Lorg/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage;@1413:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#getBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)Lorg/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage;@1413:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#getDatanodeUuid()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#getParallelVolumeLoadThreadsNum(ILorg/apache/hadoop/conf/Configuration;)I",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#getParallelVolumeLoadThreadsNum(ILorg/apache/hadoop/conf/Configuration;)I@352:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@679:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@686:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@692:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@695:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@695:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@695:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@695:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#lambda$linkBlocksHelper$0(Ljava/io/File;Ljava/io/File;)Ljava/io/File;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkAllBlocks(Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkAllBlocks(Ljava/io/File;Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/conf/Configuration;)V@1047:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1114:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1115:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1115:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1127:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1139:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1139:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1155:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V@1155:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocks(Ljava/io/File;Ljava/io/File;Ljava/lang/String;ILorg/apache/hadoop/fs/HardLink;Lorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1326:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1329:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1347:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1347:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1347:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1349:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1355:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1355:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1356:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1357:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1357:branch:8:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1360:branch:9:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1360:branch:9:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1361:branch:10:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1396:branch:11:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#linkBlocksHelper(Ljava/io/File;Ljava/io/File;Lorg/apache/hadoop/fs/HardLink;ZLjava/io/File;Ljava/util/List;Ljava/util/Map;)V@1397:branch:12:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@459:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@459:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@466:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@467:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@467:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@480:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadBlockPoolSliceStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@486:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@408:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@408:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@409:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@416:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@420:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@420:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@433:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@435:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadDataStorage(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/concurrent/ExecutorService;)Ljava/util/List;@435:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadStorageDirectory(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/datanode/StorageLocation;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;)Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadStorageDirectory(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/datanode/StorageLocation;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;)Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;@276:branch:1:CASE:1",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#loadStorageDirectory(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/datanode/StorageLocation;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;)Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;@296:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#recoverTransitionRead(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#recoverTransitionRead(Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Ljava/util/Collection;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;)V@566:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#removeBlockPoolStorage(Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setDatanodeUuid(Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V@625:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V@628:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V@638:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V@646:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V@651:branch:5:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V@657:branch:9:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setFieldsFromProperties(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;ZI)V@662:branch:10:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setPropertiesFromFields(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setPropertiesFromFields(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@601:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setPropertiesFromFields(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@601:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#setPropertiesFromFields(Ljava/util/Properties;Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)V@606:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataStorage#upgradeProperties(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/conf/Configuration;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#<init>(Lorg/apache/hadoop/hdfs/net/Peer;Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/datanode/DataXceiverServer;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#<init>(Lorg/apache/hadoop/hdfs/net/Peer;Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/datanode/DataXceiverServer;)V@151:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAccess(Ljava/io/OutputStream;ZLorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;Lorg/apache/hadoop/hdfs/security/token/block/BlockTokenIdentifier$AccessMode;[Lorg/apache/hadoop/fs/StorageType;[Ljava/lang/String;)V@1448:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#checkAndWaitForBP(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#collectThreadLocalStates()V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#collectThreadLocalStates()V@353:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#create(Lorg/apache/hadoop/hdfs/net/Peer;Lorg/apache/hadoop/hdfs/server/datanode/DataNode;Lorg/apache/hadoop/hdfs/server/datanode/DataXceiverServer;)Lorg/apache/hadoop/hdfs/server/datanode/DataXceiver;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#decrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#decrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1488:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#elapsed()J",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#getBufferedOutputStream()Ljava/io/DataOutputStream;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#getOutputStream()Ljava/io/OutputStream;",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#incrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#incrReadWriteOpMetrics(Lorg/apache/hadoop/hdfs/protocol/datatransfer/Op;)V@1480:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@599:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@599:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@623:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#readBlock(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;Lorg/apache/hadoop/security/token/Token;Ljava/lang/String;JJZLorg/apache/hadoop/hdfs/server/datanode/CachingStrategy;)V@629:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@267:branch:4:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@267:branch:4:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@268:branch:5:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@268:branch:6:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@289:branch:7:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@289:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@295:branch:8:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@295:branch:8:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@301:branch:9:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@302:branch:10:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@302:branch:11:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@338:branch:12:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#run()V@339:branch:13:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@167:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@167:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#updateCurrentThreadName(Ljava/lang/String;)V@171:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.datanode.DataXceiver#writeSuccessWithChecksumInfo(Lorg/apache/hadoop/hdfs/server/datanode/BlockSender;Ljava/io/DataOutputStream;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@351:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@405:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@449:branch:6:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@460:branch:7:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@498:branch:8:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@550:branch:11:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@553:branch:12:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@558:branch:13:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#<init>(Lorg/apache/hadoop/conf/Configuration;Lorg/apache/hadoop/hdfs/server/namenode/NameNode;)V@558:branch:14:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1642:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1643:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1643:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#blockReport(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;Ljava/lang/String;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;@1668:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkNNStartup()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#checkNNStartup()V@2358:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getBlockLocations(Ljava/lang/String;JJ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlocks;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getClientMachine()Ljava/lang/String;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getClientRpcServer()Lorg/apache/hadoop/ipc/RPC$Server;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getDatanodeReport(Lorg/apache/hadoop/hdfs/protocol/HdfsConstants$DatanodeReportType;)[Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getFileInfo(Ljava/lang/String;)Lorg/apache/hadoop/hdfs/protocol/HdfsFileStatus;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getLifelineRpcAddress()Ljava/net/InetSocketAddress;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getListing(Ljava/lang/String;[BZ)Lorg/apache/hadoop/hdfs/protocol/DirectoryListing;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getListing(Ljava/lang/String;[BZ)Lorg/apache/hadoop/hdfs/protocol/DirectoryListing;@1197:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getRpcAddress()Ljava/net/InetSocketAddress;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getServerDefaults()Lorg/apache/hadoop/fs/FsServerDefaults;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#getServiceRpcAddress()Ljava/net/InetSocketAddress;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#join()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#join()V@601:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#join()V@604:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#lambda$blockReport$0(Lorg/apache/hadoop/hdfs/server/blockmanagement/BlockManager;Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;[Lorg/apache/hadoop/hdfs/server/protocol/StorageBlockReport;ILorg/apache/hadoop/hdfs/protocol/BlockListAsLongs;Lorg/apache/hadoop/hdfs/server/protocol/BlockReportContext;)Ljava/lang/Boolean;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#recoverLease(Ljava/lang/String;Ljava/lang/String;)Z",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#registerDatanode(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#sendHeartbeat(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;[Lorg/apache/hadoop/hdfs/server/protocol/StorageReport;JJIIILorg/apache/hadoop/hdfs/server/protocol/VolumeFailureSummary;ZLorg/apache/hadoop/hdfs/server/protocol/SlowPeerReports;Lorg/apache/hadoop/hdfs/server/protocol/SlowDiskReports;)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#setSafeMode(Lorg/apache/hadoop/hdfs/protocol/HdfsConstants$SafeModeAction;Z)Z",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#setSafeMode(Lorg/apache/hadoop/hdfs/protocol/HdfsConstants$SafeModeAction;Z)Z@1300:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#start()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#start()V@588:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#start()V@591:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V@613:branch:1:FALLTHROUGH",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V@616:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#stop()V@619:branch:3:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifyRequest(Lorg/apache/hadoop/hdfs/server/protocol/NodeRegistration;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifyRequest(Lorg/apache/hadoop/hdfs/server/protocol/NodeRegistration;)V@1767:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V@1892:branch:1:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#verifySoftwareVersion(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;)V@1899:branch:2:TAKEN",
+      "org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer#versionRequest()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;I)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;II)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#<init>(Lorg/apache/hadoop/ipc/Server;Lorg/apache/hadoop/ipc/Server$Connection;IILorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/RPC$RpcKind;[BLorg/apache/hadoop/tracing/Span;Lorg/apache/hadoop/ipc/CallerContext;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#doResponse(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/protobuf/RpcHeaderProtos$RpcResponseHeaderProto$RpcStatusProto;)V@1311:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#getHostInetAddress()Ljava/net/InetAddress;",
+      "org.apache.hadoop.ipc.Server$RpcCall#getProtocol()Ljava/lang/String;",
+      "org.apache.hadoop.ipc.Server$RpcCall#getRemoteUser()Lorg/apache/hadoop/security/UserGroupInformation;",
+      "org.apache.hadoop.ipc.Server$RpcCall#isOpen()Z",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1281:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1285:branch:2:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#populateResponseParamsOnError(Ljava/lang/Throwable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V@1298:branch:3:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Object;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1236:branch:1:TAKEN",
+      "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1251:branch:2:FALLTHROUGH",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponse(Ljava/nio/ByteBuffer;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#setResponseFields(Lorg/apache/hadoop/io/Writable;Lorg/apache/hadoop/ipc/Server$RpcCall$ResponseParams;)V",
+      "org.apache.hadoop.ipc.Server$RpcCall#toString()Ljava/lang/String;"
+    ],
+    "coverage_ref_errors": [],
+    "doors": [
+      {
+        "event_id": "HDFS-34-r0047:2",
+        "event_seq": 2,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:5",
+        "event_seq": 5,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:8",
+        "event_seq": 8,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:11",
+        "event_seq": 11,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:14",
+        "event_seq": 14,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:20",
+        "event_seq": 20,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:23",
+        "event_seq": 23,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn1",
+          "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:24",
+        "event_seq": 24,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:29",
+        "event_seq": 29,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:34",
+        "event_seq": 34,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn3",
+          "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:37",
+        "event_seq": 37,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:40",
+        "event_seq": 40,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn3",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:43",
+        "event_seq": 43,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn3",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:47",
+        "event_seq": 47,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn3",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:50",
+        "event_seq": 50,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn3",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:55",
+        "event_seq": 55,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn3",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:58",
+        "event_seq": 58,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn3",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:62",
+        "event_seq": 62,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:67",
+        "event_seq": 67,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:72",
+        "event_seq": 72,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:77",
+        "event_seq": 77,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:80",
+        "event_seq": 80,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:87",
+        "event_seq": 87,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:96",
+        "event_seq": 96,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:101",
+        "event_seq": 101,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:106",
+        "event_seq": 106,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:111",
+        "event_seq": 111,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:116",
+        "event_seq": 116,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:121",
+        "event_seq": 121,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:126",
+        "event_seq": 126,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:131",
+        "event_seq": 131,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 16,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:136",
+        "event_seq": 136,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 17,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:141",
+        "event_seq": 141,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 18,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:146",
+        "event_seq": 146,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 19,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:151",
+        "event_seq": 151,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 20,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:156",
+        "event_seq": 156,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 21,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:161",
+        "event_seq": 161,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 22,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:166",
+        "event_seq": 166,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 23,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:171",
+        "event_seq": 171,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 24,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:176",
+        "event_seq": 176,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 25,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:181",
+        "event_seq": 181,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 26,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:186",
+        "event_seq": 186,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 27,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:191",
+        "event_seq": 191,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 28,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:196",
+        "event_seq": 196,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 29,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:201",
+        "event_seq": 201,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 30,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:206",
+        "event_seq": 206,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 31,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:211",
+        "event_seq": 211,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 32,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:216",
+        "event_seq": 216,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 33,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:221",
+        "event_seq": 221,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 34,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:226",
+        "event_seq": 226,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 35,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:231",
+        "event_seq": 231,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 36,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:236",
+        "event_seq": 236,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 37,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:241",
+        "event_seq": 241,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 38,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:246",
+        "event_seq": 246,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 39,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:251",
+        "event_seq": 251,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 40,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:256",
+        "event_seq": 256,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 41,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:261",
+        "event_seq": 261,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 42,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:266",
+        "event_seq": 266,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 43,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:271",
+        "event_seq": 271,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 44,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:276",
+        "event_seq": 276,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 45,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:281",
+        "event_seq": 281,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 46,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:284",
+        "event_seq": 284,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:287",
+        "event_seq": 287,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 47,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:290",
+        "event_seq": 290,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:293",
+        "event_seq": 293,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:297",
+        "event_seq": 297,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:300",
+        "event_seq": 300,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:305",
+        "event_seq": 305,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:309",
+        "event_seq": 309,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 48,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:312",
+        "event_seq": 312,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:315",
+        "event_seq": 315,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 49,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:319",
+        "event_seq": 319,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn0",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:320",
+        "event_seq": 320,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:324",
+        "event_seq": 324,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:328",
+        "event_seq": 328,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:331",
+        "event_seq": 331,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:338",
+        "event_seq": 338,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 50,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:340",
+        "event_seq": 340,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 51,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:346",
+        "event_seq": 346,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn1",
+          "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:349",
+        "event_seq": 349,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 52,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:351",
+        "event_seq": 351,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 53,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:358",
+        "event_seq": 358,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 54,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/nn0",
+          "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+        },
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:363",
+        "event_seq": 363,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn1",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:366",
+        "event_seq": 366,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn1",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:370",
+        "event_seq": 370,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn1",
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage#isPreUpgradableLayout(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;)Z@691:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:374",
+        "event_seq": 374,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn1",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      },
+      {
+        "event_id": "HDFS-34-r0047:375",
+        "event_seq": 375,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "hdfs-cluster-1/dn2",
+          "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+        },
+        "site": "org.apache.hadoop.hdfs.server.common.StorageInfo#readPropertiesFile(Ljava/io/File;)Ljava/util/Properties;@272:door:1"
+      }
+    ],
+    "eligible_doors_before_target": 87,
+    "event_count": 1881,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 0,
+      "candidate_edges_by_kind": {},
+      "edges": 323,
+      "edges_by_kind": {
+        "region_parent": 37,
+        "rpc": 276,
+        "task": 10
+      },
+      "gaps": {
+        "unmatched_parent": 80
+      },
+      "occurrences": 347
+    },
+    "last_fault_seq": 31,
+    "matched_fault_ids": [
+      "f4ade5914a2f8c6dcaa3f",
+      "f30a182b9a9cb735d48fd",
+      "fe3f9a63cb707c037a6ac"
+    ],
+    "observed_door_events": 262,
+    "pairing_order_valid": true,
+    "qualified_target_throw_evidence": [],
+    "reject_coarse_roots": true,
+    "require_event_time_paths": true,
+    "status": "observed",
+    "target_anchor": "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:1\"]",
+    "target_closures": [
+      {
+        "anchor": "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:1\"]",
+        "anchor_event_id": "HDFS-34-r0047:45",
+        "anchor_seq": 45,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:1\"]",
+          "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:215:segment:2\"]",
+          "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:root:thread:215:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:64:segment:2\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn3",
+        "occurrence": "hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:2\"]",
+        "anchor_event_id": "HDFS-34-r0047:52",
+        "anchor_seq": 52,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn3\",\"0\",\"hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:2\"]",
+          "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:215:segment:2\"]",
+          "[\"hdfs-cluster-1/dn3\",\"0\",\"unscoped:hdfs-cluster-1/dn3:0:root:thread:215:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:thread:64:segment:2\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn3",
+        "occurrence": "hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:2"
+      },
+      {
+        "anchor": "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:1\"]",
+        "anchor_event_id": "HDFS-34-r0047:295",
+        "anchor_seq": 295,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:1\"]",
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:108:segment:2\"]",
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:root:thread:108:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:71:segment:14\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn0",
+        "occurrence": "hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:2\"]",
+        "anchor_event_id": "HDFS-34-r0047:302",
+        "anchor_seq": 302,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:2\"]",
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:108:segment:2\"]",
+          "[\"hdfs-cluster-1/dn0\",\"0\",\"unscoped:hdfs-cluster-1/dn0:0:root:thread:108:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:thread:71:segment:14\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn0",
+        "occurrence": "hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:2"
+      },
+      {
+        "anchor": "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:1\"]",
+        "anchor_event_id": "HDFS-34-r0047:326",
+        "anchor_seq": 326,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:1\"]",
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:180:segment:2\"]",
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:root:thread:180:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:63:segment:26\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn2",
+        "occurrence": "hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:2\"]",
+        "anchor_event_id": "HDFS-34-r0047:333",
+        "anchor_seq": 333,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:2\"]",
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:180:segment:2\"]",
+          "[\"hdfs-cluster-1/dn2\",\"0\",\"unscoped:hdfs-cluster-1/dn2:0:root:thread:180:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:thread:63:segment:26\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn2",
+        "occurrence": "hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:2"
+      },
+      {
+        "anchor": "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:1\"]",
+        "anchor_event_id": "HDFS-34-r0047:368",
+        "anchor_seq": 368,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:1\"]",
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:143:segment:2\"]",
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:root:thread:143:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:0:0:thread:63:segment:2\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:68:segment:22\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn1",
+        "occurrence": "hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:1"
+      },
+      {
+        "anchor": "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:2\"]",
+        "anchor_event_id": "HDFS-34-r0047:378",
+        "anchor_seq": 378,
+        "closure_occurrences": [
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:2\"]",
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:143:segment:2\"]",
+          "[\"hdfs-cluster-1/dn1\",\"0\",\"unscoped:hdfs-cluster-1/dn1:0:root:thread:143:segment:1\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:0:0:thread:63:segment:2\"]",
+          "[\"hdfs-cluster-1/nn0\",\"0\",\"unscoped:hdfs-cluster-1/nn0:0:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:thread:68:segment:22\"]"
+        ],
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn1",
+        "occurrence": "hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:2"
+      }
+    ],
+    "target_exception_candidate": false,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn0",
+        "occurrence": "hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn0",
+        "occurrence": "hdfs-cluster-1/dn0:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:46:0:2"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn1",
+        "occurrence": "hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn1",
+        "occurrence": "hdfs-cluster-1/dn1:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:52:0:2"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn2",
+        "occurrence": "hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn2",
+        "occurrence": "hdfs-cluster-1/dn2:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:48:0:2"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn3",
+        "occurrence": "hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:1"
+      },
+      {
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn3",
+        "occurrence": "hdfs-cluster-1/dn3:0:org.apache.hadoop.hdfs.server.datanode.DataStorage#doTransition(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;Lorg/apache/hadoop/hdfs/server/common/HdfsServerConstants$StartupOption;Ljava/util/List;Lorg/apache/hadoop/conf/Configuration;)Z:20bdcf9d2b1c4121b24c1dd791bb6f25:1:0:2"
+      }
+    ],
+    "target_reached": true,
+    "target_region_present": true,
+    "target_threw": false,
+    "target_throw_evidence": [],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "48d79500455c69f0f1826e74f4da010ea48398185d9a9cf364c4c0a48d25cfff",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0047_74ec9170600a472dba7ac9605666df99",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestDFSUpgradeFromImage-mallory_0047_74ec9170600a472dba7ac9605666df99.xml",
+        "sha256": "47be7a2e96e21086f5ccdd7be046e3d7350c9991185c40e3a02e76adc0616298"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "fd4b23af724f16a34f93ecab7d86012241c9c1a460c1b14e0ccad4187a3d049f",
+    "tests": 1
+  },
+  "novelty": {
+    "closure_coverage": 0,
+    "closure_edges": 17,
+    "coverage": 0
+  },
+  "plan": [
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "f4ade5914a2f8c6dcaa3f",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "door_ordinal": 1,
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn0",
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      }
+    },
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "f30a182b9a9cb735d48fd",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "door_ordinal": 1,
+        "epoch": 0,
+        "node": "hdfs-cluster-1/dn2",
+        "site": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor#retrieveNamespaceInfo()Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;@260:door:1"
+      }
+    },
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "fe3f9a63cb707c037a6ac",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "door_ordinal": 1,
+        "epoch": 0,
+        "node": "hdfs-cluster-1/nn0",
+        "site": "org.apache.hadoop.ipc.Server$RpcCall#run()Ljava/lang/Void;@1246:door:1"
+      }
+    }
+  ],
+  "return_code": 0,
+  "schema_version": 1,
+  "selection_reason": "dynamic_closure",
+  "site_catalog_sha256": "8b6ecdad0594ba27c9fca8954a2c966806e780b9692911a76ad7af6fa58baef2",
+  "site_catalog_validation": {
+    "catalog_rows": 20,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f"
+    ],
+    "observed_target_class_sha256": "e0ad835edca2264c5aa1352e0a86926c602c6106315f3995b0e9fa32b0befd7f",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.hadoop.hdfs.server.datanode.DataStorage",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791614664.5365458,
+  "stderr_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 0,
+    "raw_path": "stderr.log",
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 1730,
+    "raw_path": "stdout.log",
+    "raw_sha256": "fd4b23af724f16a34f93ecab7d86012241c9c1a460c1b14e0ccad4187a3d049f"
+  },
+  "stdout_sha256": "fd4b23af724f16a34f93ecab7d86012241c9c1a460c1b14e0ccad4187a3d049f",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 47
+}
