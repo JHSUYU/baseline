@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-37",
+  "kind": "natural_full_terminal",
+  "status": "queue_exhausted",
+  "full_campaign_completed": true,
+  "fault_trials_completed": 3,
+  "budget": {
+    "trials": 80,
+    "seconds": 3600,
+    "max_faults_per_trial": 3
+  },
+  "healthy_gate_sha256": "422a45daa3fff14482d7b81912ca115aad2a8c2b188e5b447acaa8b7069fee47",
+  "healthy_target_actor": "master0",
+  "healthy_typed_door_seq": 205,
+  "healthy_exact_check_seq": 206,
+  "campaign_result_sha256": "613241a128316dda87ac1a0f92ff6bbcedb7c479a2bd1bd561c9a5df4eb6caa7",
+  "offline_audit_sha256": "0c8b74bcf4cfb37c6a08ea1fa8874d638dfe8bf0a1a31f3349fb3d61372a9522",
+  "strict_injected_trials": 3,
+  "strict_target_trials": 3,
+  "exact_exception_trials": 3,
+  "reproduced_candidates": 2,
+  "new_bug": null,
+  "source_interpretation": "ZKUtil catches NoNode and returns null, so the selected IOException may occur as designed. ActiveMasterManager catches it and returns port 0. A reproduced target exception requires independent source and user-visible invariant review before labeling a product bug."
+}
