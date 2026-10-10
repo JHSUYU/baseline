@@ -1,0 +1,142 @@
+{
+  "campaign": {
+    "archive_receipt_sha256": "e860de5a51e6d21186a47cbda2da4b74ef8400bbab51fad7df5ea8d12b4057ce",
+    "audit_identity_valid": true,
+    "audit_report_gate_passed": false,
+    "canonical_audit_sha256": "a18a8cebee4dbb79b7018b30eb05b16c87f7a126922e53763de9467dcb471d2d",
+    "canonical_import_receipt_sha256": "e025f7773c41dcfad7c641a0bbbb05e5f4532f7fc4631623f6ca7f67705e7e11",
+    "canonical_result_path": "data/mallory/cases/HBASE-27/result.json",
+    "canonical_result_sha256": "1943f15919f615d8685ea93f2314e76d59053cdea35770de796e3cd7c9366c05",
+    "duration_seconds": 274.66,
+    "exact_exception_trials": 9,
+    "fault_trials_completed": 11,
+    "strict_injected_trials": 11,
+    "strict_target_trials": 9,
+    "terminal_status": "queue_exhausted"
+  },
+  "case_id": "HBASE-27",
+  "classification": "expected_shutdown_guard_after_master_abort",
+  "files": [
+    {
+      "bytes": 12037,
+      "path": "source-triage-v1.json",
+      "sha256": "40069ea6c9a585f8c17dc7f429ddf904b1e145380d23c355fefcfec165004038"
+    },
+    {
+      "bytes": 28949,
+      "path": "trials/r0001/result.json",
+      "sha256": "2846134336b01a7ef7066aae8f3617092ef25801c24a84d018591f2455a5d032"
+    },
+    {
+      "bytes": 5931,
+      "path": "trials/r0001/events.jsonl.gz",
+      "sha256": "e464c542dab0912822d78e60bd2efb212804aca802d1726c59ddccc29940def7"
+    },
+    {
+      "bytes": 28945,
+      "path": "trials/r0002/result.json",
+      "sha256": "47cc3451cb2b54d4bfe02b9f7ffa07ed50d3fc95d58e0548dedbfa1adc16ed9c"
+    },
+    {
+      "bytes": 5898,
+      "path": "trials/r0002/events.jsonl.gz",
+      "sha256": "d8823dfc3cac18c661b5a79093f4b1010c0b53554965b06355acdaaa84983483"
+    },
+    {
+      "bytes": 28945,
+      "path": "trials/r0003/result.json",
+      "sha256": "82c1b76d0aeb42b5242acb88191701be01b79254908135f82663d89873fd06d9"
+    },
+    {
+      "bytes": 5890,
+      "path": "trials/r0003/events.jsonl.gz",
+      "sha256": "9d85748a1d0b203647828ade9053d22a065adc1cc51706184083abda20576edd"
+    },
+    {
+      "bytes": 28948,
+      "path": "trials/r0004/result.json",
+      "sha256": "e3d31f9f657b9e11c221939efb566855dc8ce345db25ada1a82377f3add98d6d"
+    },
+    {
+      "bytes": 5934,
+      "path": "trials/r0004/events.jsonl.gz",
+      "sha256": "41470ae2ca35376958cc62ff0beb8d648c5da3999ac84256b0bbfe00aa05aa2e"
+    },
+    {
+      "bytes": 28945,
+      "path": "trials/r0005/result.json",
+      "sha256": "279d9b72282b49d4b67ebdaa98ab3d26f5741350e90f6ee6af9c6e6feaf4d79a"
+    },
+    {
+      "bytes": 5893,
+      "path": "trials/r0005/events.jsonl.gz",
+      "sha256": "1a76712aed627d54c6d384596adda1e11063df520ec8dc3114bdce809bc76b64"
+    },
+    {
+      "bytes": 28945,
+      "path": "trials/r0006/result.json",
+      "sha256": "d23dc2bd9e78fc019db608b08fdf95c912f97bf971ac5657281faab10861d0d4"
+    },
+    {
+      "bytes": 5888,
+      "path": "trials/r0006/events.jsonl.gz",
+      "sha256": "381de661820e6846c437f195ef6ea3d0916b583580b0c295ee41f5644f9f6a66"
+    },
+    {
+      "bytes": 29373,
+      "path": "trials/r0009/result.json",
+      "sha256": "e4878928eddadd3deb581323e40ac82fc4875c3f513fefb0992f159c7e9ad894"
+    },
+    {
+      "bytes": 5939,
+      "path": "trials/r0009/events.jsonl.gz",
+      "sha256": "aead6756be1ac0e6a26b14007e149b34268260a190ec13e263dbe67cdd8461c9"
+    },
+    {
+      "bytes": 29371,
+      "path": "trials/r0010/result.json",
+      "sha256": "0cf31894409acd294890c5fd3a53a55508cadf929eb2bbb3629761358572f6d0"
+    },
+    {
+      "bytes": 5957,
+      "path": "trials/r0010/events.jsonl.gz",
+      "sha256": "7f0fc5ecae0e0793ef05d248af9c0fe15a4981acdb83ef9a74707d52bfad03ac"
+    },
+    {
+      "bytes": 29370,
+      "path": "trials/r0011/result.json",
+      "sha256": "cb47038b3607c049782ef5b0ab340ac93e4120c004c9649ca096d22d4ff13d3d"
+    },
+    {
+      "bytes": 5956,
+      "path": "trials/r0011/events.jsonl.gz",
+      "sha256": "35bcaa62224256e0e80280799a7581b60dc512718e22c6cab389e3f7fb9159e2"
+    }
+  ],
+  "kind": "independent_source_disposition",
+  "new_bug": false,
+  "schema_version": 1,
+  "source_analysis": [
+    "Injected ConnectionLossException at master0 ZKNodeTracker.start is caught and explicitly aborts the master.",
+    "The unchanged JUnit startMaster assertion fails because the master is not alive; @AfterEach shuts down the cluster.",
+    "Cluster shutdown sets rs0.stopped; its pending blockAndCheckIfStopped guard then intentionally throws the selected IOException.",
+    "The nine exact throws are shutdown effects after the injected master abort, not an independent coordination invariant violation."
+  ],
+  "source_receipt": {
+    "path": "Mallory/adapters/hbase/pilot/HBASE-27-boot-order-monitor-v1/full-v3/source-triage-v1.json",
+    "reviewed_trial_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "sha256": "40069ea6c9a585f8c17dc7f429ddf904b1e145380d23c355fefcfec165004038"
+  },
+  "source_review_status": "expected_guard",
+  "system": "hbase"
+}

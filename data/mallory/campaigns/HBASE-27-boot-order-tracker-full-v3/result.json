@@ -1,0 +1,431 @@
+{
+  "calibration_only": false,
+  "case_id": "HBASE-27",
+  "closure_coverage_ids_seen": 20,
+  "closure_edge_fingerprints_seen": 1,
+  "cluster_test": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+  "coverage_ids_seen": 536,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 274.66,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 9,
+  "fault_trials_completed": 11,
+  "healthy_eligible_doors": 4,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "marker": "MALLORY_JUNIT found=1 succeeded=1 failed=0",
+    "runner": "hbase_junit_platform",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "f30a7b43421345e188f7014657ece2fc39e29017b6fb26400e57684c00bcb604",
+    "stdout_sha256": "2b6e6586dec57fd549157ee5fd181e1439bd8321c45aca693ef4d6b4bd76d8f3",
+    "succeeded": 1,
+    "tests": 1
+  },
+  "healthy_local_timeline_doors": 0,
+  "healthy_observed_door_events": 36,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [
+    {
+      "first_trial": 1,
+      "replay_trial": 2
+    },
+    {
+      "first_trial": 1,
+      "replay_trial": 3
+    },
+    {
+      "first_trial": 4,
+      "replay_trial": 5
+    },
+    {
+      "first_trial": 4,
+      "replay_trial": 6
+    },
+    {
+      "first_trial": 9,
+      "replay_trial": 10
+    },
+    {
+      "first_trial": 9,
+      "replay_trial": 11
+    }
+  ],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "rs0"
+    ],
+    "eligible_doors_before_target": 4,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "c1a746ab4b1aeac4744da76363b330c950b03fbfda9dfdcac7f57f64eb76270b",
+    "observed_target_class_sha256": "c1a746ab4b1aeac4744da76363b330c950b03fbfda9dfdcac7f57f64eb76270b",
+    "reasons": [],
+    "site_catalog_sha256": "2cb4b63d949b18dc1e7ce596f1ec32f55e9d511d2d87e67803290bf1cf7a9bbd",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "queue_exhausted",
+  "strict_injected_trials": 11,
+  "strict_target_trials": 9,
+  "system": "hbase",
+  "target": {
+    "check_code": "if (this.stopped) {\nthrow new IOException(\"Received the shutdown message while waiting.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1052:branch:2"
+    ],
+    "exception_class": "java.io.IOException",
+    "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)",
+    "original_source_line": 1053,
+    "site_id": "<org.apache.hadoop.hbase.regionserver.HRegionServer: void blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)>#u10",
+    "source_line": 1053,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.HRegionServer#blockAndCheckIfStopped(Lorg/apache/hadoop/hbase/zookeeper/ZKNodeTracker;)V@1053:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "rs0"
+    ]
+  },
+  "target_exception_candidate_trials": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    9,
+    10,
+    11
+  ],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 9,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 39.661,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 19,
+        "closure_edges": 1,
+        "coverage": 517
+      },
+      "observed_door_events": 36,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 23.157,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 1,
+        "closure_edges": 0,
+        "coverage": 19
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0001/result.json",
+      "selection_reason": "bounded_exploration",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 1
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 22.953,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0002/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 2
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 22.605,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0003/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 3
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 22.703,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0004/result.json",
+      "selection_reason": "bounded_exploration",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 4
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 22.757,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0005/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 5
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 22.905,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0006/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 6
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 14.775,
+      "eligible_doors_before_target": 2,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 2,
+      "result": "trials/r0007/result.json",
+      "selection_reason": "bounded_exploration",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 7
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 14.776,
+      "eligible_doors_before_target": 2,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 2,
+      "result": "trials/r0008/result.json",
+      "selection_reason": "bounded_exploration",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 8
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 22.255,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0009/result.json",
+      "selection_reason": "bounded_exploration",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 9
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 23.106,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0010/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 10
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 23.007,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 0,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0011/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 11
+    }
+  ]
+}

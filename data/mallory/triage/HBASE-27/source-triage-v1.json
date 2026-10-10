@@ -1,0 +1,213 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-27",
+  "system": "hbase",
+  "version": "2.6.6",
+  "classification": "expected_shutdown_guard_after_master_abort",
+  "source_review_status": "source_proven_expected_guard",
+  "new_bug": false,
+  "campaign": "/users/ZhenyuLi/baseline/data/mallory/cases/HBASE-27/campaigns/boot-order-tracker-v3-full",
+  "terminal_campaign": {
+    "status": "queue_exhausted",
+    "duration_seconds": 274.66,
+    "fault_trials_completed": 11,
+    "strict_injected_trials": 11,
+    "strict_target_trials": 9,
+    "exact_exception_trials": 9,
+    "exact_trial_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      9,
+      10,
+      11
+    ],
+    "target_erased_trial_ids": [
+      7,
+      8
+    ]
+  },
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "conclusion": "The injected KeeperException causes the master to abort by explicit source policy. The test then fails its master-is-alive assertion and runs teardown. Teardown stops the region server, which makes its pending target loop throw the exact IOException by design. The target exception is a shutdown observation after the test has already failed; these trials do not establish a new coordination bug.",
+  "source_evidence": [
+    {
+      "path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKNodeTracker.java",
+      "sha256": "c30ebadfb0e12252ff9c0d6fcf056dd53dea7253744e230eddfefaad9a1dc1c3",
+      "lines": "72-87",
+      "finding": "start() performs the injected watchAndCheckExists call at line 75 and explicitly catches KeeperException, calling abortable.abort at line 86."
+    },
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+      "sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+      "lines": "724-728, 977-983, 1002-1009, 1049-1055, 2587-2603",
+      "finding": "The master starts ZKNodeTracker from HRegionServer construction; rs0 waits for master address in blockAndCheckIfStopped. stop sets this.stopped=true at line 2602; the target at lines 1051-1054 deliberately throws IOException when that stopped flag is observed while still waiting."
+    },
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java",
+      "sha256": "6d47807a0bf39b6cf48677bd8acbd7eaf0bc0a6a148a04d013573cefa4b4deb1",
+      "lines": "486-487",
+      "finding": "HMaster construction invokes HRegionServer construction, so the master0 tracker abort policy applies before master startup completes."
+    },
+    {
+      "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestClusterBootOrder.java",
+      "sha256": "7ac0843f5cc522b4494fa2570f91ba334b70492da8bf73c58ea4d3baf9f0c630",
+      "lines": "55-60, 74-81, 102-107",
+      "finding": "testBootRegionServerFirst starts rs0 before master0. startMaster asserts master.isAlive at line 80. @AfterEach always calls cluster.shutdown."
+    },
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/LocalHBaseCluster.java",
+      "sha256": "3e9865e035bc5782e90404fae93cd47c37ccf4b2621923c73b56f5fcbc1ed5cb",
+      "lines": "413-415",
+      "finding": "cluster.shutdown delegates to JVMClusterUtil.shutdown."
+    },
+    {
+      "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/JVMClusterUtil.java",
+      "sha256": "62ac5f8b5b42b57630c9421e16bd5371856064b312f3db06aefd03e35391e4b3",
+      "lines": "235-276",
+      "finding": "Teardown explicitly calls stop(\"Shutdown requested\") on every region server at line 276."
+    }
+  ],
+  "trials": [
+    {
+      "id": "r0001",
+      "fault": "master0 ZKNodeTracker.start@75, ConnectionLossException, door ordinal 2, FAULT_APPLIED event 8",
+      "plan_sha256": "c222c686de1a59673304f1eeae06cd43581a08c4b9a149567ffebff40021241e",
+      "result_sha256": "2846134336b01a7ef7066aae8f3617092ef25801c24a84d018591f2455a5d032",
+      "events_gzip_sha256": "e464c542dab0912822d78e60bd2efb212804aca802d1726c59ddccc29940def7",
+      "stderr_sha256": "8807e67786207723ef7400a52a02dfbbe7116a367fe928b1f649b9acc2bdfdb1",
+      "log_chronology": [
+        "stderr:508 05:20:52.592 master0 ABORTING after injected ConnectionLossException",
+        "stderr:599 05:20:52.594 master0 STOPPING",
+        "stderr:630-631 05:20:55.570-571 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:634 05:20:57.071 rs0 target IOException from blockAndCheckIfStopped@1053",
+        "stderr:753 JUnit failure originates at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "rs0 TARGET_CHECK TAKEN event 9; FALLTHROUGH event 10; TARGET_THROW event 11",
+      "junit": "1 test, 1 assertion failure at master.isAlive"
+    },
+    {
+      "id": "r0002",
+      "fault": "same as r0001; replay",
+      "plan_sha256": "c222c686de1a59673304f1eeae06cd43581a08c4b9a149567ffebff40021241e",
+      "result_sha256": "47cc3451cb2b54d4bfe02b9f7ffa07ed50d3fc95d58e0548dedbfa1adc16ed9c",
+      "events_gzip_sha256": "d8823dfc3cac18c661b5a79093f4b1010c0b53554965b06355acdaaa84983483",
+      "stderr_sha256": "e851df64328c9df43acd7730ee90d0d0b5f0733af4f6faeb7990f56c45f74103",
+      "log_chronology": [
+        "stderr:504 05:21:15.661 master0 ABORTING",
+        "stderr:625-626 05:21:18.645-646 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:629 rs0 target IOException",
+        "stderr:747 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED event 8; rs0 target FALLTHROUGH event 10 and TARGET_THROW event 11"
+    },
+    {
+      "id": "r0003",
+      "fault": "same as r0001; replay",
+      "plan_sha256": "c222c686de1a59673304f1eeae06cd43581a08c4b9a149567ffebff40021241e",
+      "result_sha256": "82c1b76d0aeb42b5242acb88191701be01b79254908135f82663d89873fd06d9",
+      "events_gzip_sha256": "9d85748a1d0b203647828ade9053d22a065adc1cc51706184083abda20576edd",
+      "stderr_sha256": "c29e5bdfeed6a2cc049826857707d4f5e8b0ccc2acd3b43ff2dedc7cb778fbf0",
+      "log_chronology": [
+        "stderr:504 05:21:38.341 master0 ABORTING",
+        "stderr:625-626 05:21:41.422 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:629 rs0 target IOException",
+        "stderr:748 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED event 8; rs0 target FALLTHROUGH event 10 and TARGET_THROW event 11"
+    },
+    {
+      "id": "r0004",
+      "fault": "master0 ZKNodeTracker.start@75, ConnectionLossException, door ordinal 1, FAULT_APPLIED event 7",
+      "plan_sha256": "65f5c585bab5a5e8be342d30c4d26a47dd5c1711d9f0098006bd40c33ad8a207",
+      "result_sha256": "e3d31f9f657b9e11c221939efb566855dc8ce345db25ada1a82377f3add98d6d",
+      "events_gzip_sha256": "41470ae2ca35376958cc62ff0beb8d648c5da3999ac84256b0bbfe00aa05aa2e",
+      "stderr_sha256": "d0edd70a50def2356551ca62a0efe9bf973a2f2442d3f935e21f6b6b8d3bba33",
+      "log_chronology": [
+        "stderr:506 05:22:01.213 master0 ABORTING",
+        "stderr:627-628 05:22:04.149-150 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:631 rs0 target IOException",
+        "stderr:749 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED event 7; rs0 target FALLTHROUGH event 10 and TARGET_THROW event 11"
+    },
+    {
+      "id": "r0005",
+      "fault": "same as r0004; replay",
+      "plan_sha256": "65f5c585bab5a5e8be342d30c4d26a47dd5c1711d9f0098006bd40c33ad8a207",
+      "result_sha256": "279d9b72282b49d4b67ebdaa98ab3d26f5741350e90f6ee6af9c6e6feaf4d79a",
+      "events_gzip_sha256": "1a76712aed627d54c6d384596adda1e11063df520ec8dc3114bdce809bc76b64",
+      "stderr_sha256": "42a2f492bcdfdbd316e6372ce5c1518e6cbd63735181b69d4ab683019626256c",
+      "log_chronology": [
+        "stderr:508 05:22:24.115 master0 ABORTING",
+        "stderr:629-630 05:22:27.095 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:633 rs0 target IOException",
+        "stderr:751 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED event 7; rs0 target FALLTHROUGH event 10 and TARGET_THROW event 11"
+    },
+    {
+      "id": "r0006",
+      "fault": "same as r0004; replay",
+      "plan_sha256": "65f5c585bab5a5e8be342d30c4d26a47dd5c1711d9f0098006bd40c33ad8a207",
+      "result_sha256": "d23dc2bd9e78fc019db608b08fdf95c912f97bf971ac5657281faab10861d0d4",
+      "events_gzip_sha256": "381de661820e6846c437f195ef6ea3d0916b583580b0c295ee41f5644f9f6a66",
+      "stderr_sha256": "d09bfee569f223b6ade5dc26370bd54b0e7d7db8bb3593dba4a48f4a962472ba",
+      "log_chronology": [
+        "stderr:504 05:22:47.096 master0 ABORTING",
+        "stderr:625-626 05:22:50.267 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:629 rs0 target IOException",
+        "stderr:747 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED event 7; rs0 target FALLTHROUGH event 10 and TARGET_THROW event 11"
+    },
+    {
+      "id": "r0009",
+      "fault": "master0 ZKNodeTracker.start@75, ConnectionLossException at door ordinals 1 and 2, FAULT_APPLIED events 7 and 10",
+      "plan_sha256": "313fc564db3e44f335c328c92db7fa5e6ffada2a63630502fa21218e53fb5cc2",
+      "result_sha256": "e4878928eddadd3deb581323e40ac82fc4875c3f513fefb0992f159c7e9ad894",
+      "events_gzip_sha256": "aead6756be1ac0e6a26b14007e149b34268260a190ec13e263dbe67cdd8461c9",
+      "stderr_sha256": "f1555f5b3b10f65e422dcea081110d8e67c750e07acd78f5bf72642aa0ef0ca5",
+      "log_chronology": [
+        "stderr:508 05:23:39.293 master0 ABORTING",
+        "stderr:629-630 05:23:42.282-283 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:633 rs0 target IOException",
+        "stderr:751 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED events 7 and 10; rs0 target FALLTHROUGH event 12 and TARGET_THROW event 13"
+    },
+    {
+      "id": "r0010",
+      "fault": "same as r0009; replay",
+      "plan_sha256": "313fc564db3e44f335c328c92db7fa5e6ffada2a63630502fa21218e53fb5cc2",
+      "result_sha256": "0cf31894409acd294890c5fd3a53a55508cadf929eb2bbb3629761358572f6d0",
+      "events_gzip_sha256": "7f0fc5ecae0e0793ef05d248af9c0fe15a4981acdb83ef9a74707d52bfad03ac",
+      "stderr_sha256": "0ec99ed96c802f78f8aeb5a284d1f1d1457574f02c76ce0b8636070f1accbb3a",
+      "log_chronology": [
+        "stderr:506 05:24:02.507 master0 ABORTING",
+        "stderr:627-628 05:24:05.474-475 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:631 rs0 target IOException",
+        "stderr:750 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED events 7 and 10; rs0 target FALLTHROUGH event 12 and TARGET_THROW event 13"
+    },
+    {
+      "id": "r0011",
+      "fault": "same as r0009; replay",
+      "plan_sha256": "313fc564db3e44f335c328c92db7fa5e6ffada2a63630502fa21218e53fb5cc2",
+      "result_sha256": "cb47038b3607c049782ef5b0ab340ac93e4120c004c9649ca096d22d4ff13d3d",
+      "events_gzip_sha256": "35bcaa62224256e0e80280799a7581b60dc512718e22c6cab389e3f7fb9159e2",
+      "stderr_sha256": "0893d97fc86327fa8c52e9f5dba70ada12d942e02d9926b3f6e3d07db2f1eb55",
+      "log_chronology": [
+        "stderr:508 05:24:25.605 master0 ABORTING",
+        "stderr:629-630 05:24:28.472 rs0 STOPPING then STOPPED: Shutdown requested",
+        "stderr:633 rs0 target IOException",
+        "stderr:751 JUnit failure at TestClusterBootOrder.startMaster@80"
+      ],
+      "target_events": "master0 FAULT_APPLIED events 7 and 10; rs0 target FALLTHROUGH event 12 and TARGET_THROW event 13"
+    }
+  ],
+  "triage_note": "The campaign records strict injection and exact target throws correctly, but those throws occur after cluster teardown sets rs0.stopped. They must be retained as candidate observations and classified as expected shutdown behavior, not counted as confirmed bugs. No causal trace showed a target throw before rs0 was requested to stop."
+}
