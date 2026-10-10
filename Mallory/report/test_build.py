@@ -12,6 +12,7 @@ from pathlib import Path
 
 from Mallory.report.build import (_causal_audit, _causal_precision_review,
                                   _event_path_review, _faulted_path_review,
+                                  _fault_depth_review,
                                   _hdfs11_faulted_event_review,
                                   _local_timeline_review,
                                   _posthoc_attestation, _quality,
@@ -20,6 +21,29 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_fault_depth_review_is_bound_to_each_offhost_trial(self):
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        with tempfile.TemporaryDirectory() as temporary:
+            results = Path(temporary) / "data/mallory"
+            case = "HDFS-19"
+            canonical = results / "cases" / case
+            canonical.mkdir(parents=True)
+            for name in ("result.json", "config.json", "raw-copy-receipt.json",
+                         "sync-receipt.json"):
+                shutil.copy2(source / "cases" / case / name, canonical / name)
+            review = results / "quality_reviews/fault_depth" / f"{case}.json"
+            review.parent.mkdir(parents=True)
+            shutil.copy2(source / "quality_reviews/fault_depth" / f"{case}.json", review)
+            result = json.loads((canonical / "result.json").read_text())
+            verified, _ = _fault_depth_review(results, canonical / "result.json", result)
+            self.assertEqual({"1": 80}, verified["depth_distribution"])
+            changed = json.loads(review.read_text())
+            changed["trials"][0]["result_sha256"] = "0" * 64
+            review.write_text(json.dumps(changed))
+            rejected, _ = _fault_depth_review(results, canonical / "result.json", result)
+            self.assertIsNone(rejected)
+
     def test_hdfs13_18_37_source_review_preserves_adapted_pending_status(self):
         from Mallory.report.build import _hdfs13_18_37_source_audit
         baseline = Path(__file__).resolve().parents[2]
