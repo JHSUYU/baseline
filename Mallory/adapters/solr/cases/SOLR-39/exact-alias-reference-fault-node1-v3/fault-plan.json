@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "case_id": "SOLR-39",
+  "selection": {
+    "healthy_archive_sha256": "d84c06f6b10af3375c807aab723c3794c7ff66d2b58bfb177bf21ce1298106db",
+    "healthy_watcher_door_seq": 4593,
+    "healthy_cache_write_seq": 4630,
+    "healthy_constructor_read_seq": 4849,
+    "healthy_target_read_seq": 4867,
+    "healthy_target_check_seq": 4870,
+    "healthy_manager_ref": 3,
+    "healthy_aliases_ref": 14
+  },
+  "faults": [
+    {
+      "fault_id": "solr39_node2_alias_watcher_ordinal1",
+      "point": {
+        "site": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager#process(Lorg/apache/zookeeper/WatchedEvent;)V@2312:door:1",
+        "node": "node2",
+        "epoch": 0,
+        "door_ordinal": 1
+      },
+      "fault_type": "EXCEPTION",
+      "exception_class": "org.apache.zookeeper.KeeperException$ConnectionLossException"
+    }
+  ]
+}

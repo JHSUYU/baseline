@@ -36,7 +36,8 @@ def markers_from(trial: Path) -> tuple[list[dict], int]:
     return rows, log.count("MALLORY_ALIAS_REF_TRANSFORM_ERROR")
 
 
-def audit_rows(events: list[dict], markers: list[dict], transform_errors: int = 0) -> dict:
+def join_field_events(events: list[dict], markers: list[dict]) -> tuple[list[dict], dict]:
+    """Pair exact field events with pre-access Java reference markers."""
     fields = defaultdict(list)
     for event in events:
         if event.get("type") not in ("STATE_READ", "STATE_WRITE") or event.get("key") != FIELD:
@@ -80,7 +81,11 @@ def audit_rows(events: list[dict], markers: list[dict], transform_errors: int = 
     }
     if any(collisions.values()):
         raise ValueError(f"AliasesManager identity collision: {collisions}")
+    return paired, collisions
 
+
+def audit_rows(events: list[dict], markers: list[dict], transform_errors: int = 0) -> dict:
+    paired, collisions = join_field_events(events, markers)
     writes = [row for row in paired if row["kind"] == "write"]
     reads = [row for row in paired if row["kind"] == "read"]
     doors = [row for row in events if row.get("type") == "DOOR_OBSERVED" and
