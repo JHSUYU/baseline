@@ -9,16 +9,16 @@
        client = NameNodeProxies.createProxy(conf,
            cluster.getFileSystem(0).getUri(), ClientProtocol.class).getProxy();
  
-@@ -756,6 +758,12 @@
-           }
-         }
-       }
-+      // Choose a fresh post-start NN key already installed on the new DN.
-+      org.apache.hadoop.hdfs.server.datanode.DataNode targetDn =
-+          cluster.getDataNodes().get(cluster.getDataNodes().size() - 1);
-+      Hdfs55FaithfulProbe.selectDestination(
-+          targetDn.getDatanodeId().getDatanodeUuid(),
-+          targetDn.getXferAddress().toString());
-       // run balancer and validate results
-       BalancerParameters.Builder pBuilder =
-           new BalancerParameters.Builder();
+@@ -809,6 +811,12 @@
+       int excludedNodes, boolean checkExcludeNodesUtilization)
+       throws Exception {
+     waitForHeartBeat(totalDfsUsedSpace, totalCapacity, client, cluster);
++    // Choose a fresh NN key at the last boundary before Balancer startup.
++    org.apache.hadoop.hdfs.server.datanode.DataNode targetDn =
++        cluster.getDataNodes().get(cluster.getDataNodes().size() - 1);
++    Hdfs55FaithfulProbe.selectDestination(
++        targetDn.getDatanodeId().getDatanodeUuid(),
++        targetDn.getXferAddress().toString());
+ 
+     int retry = 5;
+     while (retry > 0) {

@@ -47,6 +47,23 @@ class Faithful55StaticTests(unittest.TestCase):
             self.assertLess(section.index('Hdfs55FaithfulProbe.beforeMove('),
                             section.index('sock.connect('))
 
+    def test_bounded_outage_returns_to_real_updater_rpc(self):
+        probe = (Path(__file__).resolve().parent / 'Hdfs55FaithfulProbe.java').read_text()
+        gate = probe[probe.index('public static synchronized void beforeUpdaterGetBlockKeys('):]
+        gate = gate[:gate.index('public static synchronized void foregroundKeysFetched(')]
+        self.assertIn('updaterFaults >= MAX_UPDATER_IO || elapsedMs >= MAX_OUTAGE_MS', gate)
+        self.assertLess(gate.index('event("updater_outage_cap_reached'),
+                        gate.index('++updaterFaults;'))
+        self.assertIn('      return;\n    }\n    ++updaterFaults;', gate)
+
+    def test_fresh_key_is_chosen_after_heartbeat_before_balancer(self):
+        test = self.generated['test/org/apache/hadoop/hdfs/server/balancer/TestBalancer.java']
+        section = test[test.index('private void runBalancer(Configuration conf, long totalDfsUsedSpace,') :]
+        self.assertLess(section.index('waitForHeartBeat(totalDfsUsedSpace, totalCapacity, client, cluster);'),
+                        section.index('Hdfs55FaithfulProbe.selectDestination('))
+        self.assertLess(section.index('Hdfs55FaithfulProbe.selectDestination('),
+                        section.index('final int run = runBalancer(namenodes, p, conf);'))
+
     def test_junit_failure_without_native_dn_lookup_is_no_proof(self):
         witness = audit.fault_witness(
             {'returncode': 1},

@@ -21,6 +21,7 @@ public final class Hdfs55FaithfulProbe {
   private static final boolean INJECT = Boolean.getBoolean("hdfs55f.inject");
   private static final long WAIT_MS = Long.getLong("hdfs55f.waitMs", 80000L);
   private static final int MAX_UPDATER_IO = Integer.getInteger("hdfs55f.maxUpdaterIo", 512);
+  private static final long MAX_OUTAGE_MS = Long.getLong("hdfs55f.maxOutageMs", 200000L);
   private static final Map<Integer, Set<Integer>> DN_KEYS = new HashMap<>();
   private static final Map<Integer, String> DN_UUID = new HashMap<>();
   private static final Map<Integer, String> DN_ENDPOINT = new HashMap<>();
@@ -37,6 +38,8 @@ public final class Hdfs55FaithfulProbe {
   private static int selectedNnProxy;
   private static String selectedNnEndpoint;
   private static int updaterFaults;
+  private static long firstUpdaterFaultNano;
+  private static boolean outageCapLogged;
   private static boolean managerSelected;
   private static boolean moveReleased;
 
@@ -151,13 +154,27 @@ public final class Hdfs55FaithfulProbe {
     if (!INJECT || !managerSelected || System.identityHashCode(manager) != selectedManager
         || System.identityHashCode(namenode) != selectedNnProxy
         || !selectedNnEndpoint.equals(RPC.getServerAddress(namenode).toString())) return;
+    long now = System.nanoTime();
+    if (firstUpdaterFaultNano == 0L) firstUpdaterFaultNano = now;
+    long elapsedMs = (now - firstUpdaterFaultNano) / 1000000L;
+    if (updaterFaults >= MAX_UPDATER_IO || elapsedMs >= MAX_OUTAGE_MS) {
+      if (!outageCapLogged) {
+        outageCapLogged = true;
+        event("updater_outage_cap_reached manager=" + selectedManager
+            + " nn_proxy=" + selectedNnProxy + " nn_endpoint=" + selectedNnEndpoint
+            + " bpid=" + selectedBlockPool + " key_id=" + selectedKey
+            + " count=" + updaterFaults + " elapsed_ms=" + elapsedMs
+            + " max_calls=" + MAX_UPDATER_IO + " max_outage_ms=" + MAX_OUTAGE_MS);
+      }
+      return;
+    }
     ++updaterFaults;
     event("updater_io_exception ordinal=" + updaterFaults + " manager="
         + selectedManager + " nn_proxy=" + selectedNnProxy + " bpid="
         + selectedBlockPool + " nn_endpoint=" + selectedNnEndpoint
         + " key_id=" + selectedKey
         + " actor=" + Thread.currentThread().getName()
-        + " budget_ok=" + (updaterFaults <= MAX_UPDATER_IO));
+        + " elapsed_ms=" + elapsedMs + " budget_ok=true");
     throw new IOException("HDFS-55 faithful Balancer background updater I/O outage");
   }
 

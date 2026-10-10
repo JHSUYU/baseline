@@ -11,8 +11,9 @@
     "location": "KeyManager$BlockKeyUpdater.run before namenode.getBlockKeys at source line 180",
     "exception_class": "java.io.IOException",
     "scope": "selected Balancer manager + NN proxy + NN endpoint + block pool + background updater actor",
-    "policy": "one persistent background updater outage window; every matched call throws until JUnit terminates",
+    "policy": "one persistent background updater outage window; matched calls throw until the first of 512 exceptions or 200000 ms after the first exception, then ordinary NN RPC resumes",
     "maximum_call_exceptions": 512,
+    "maximum_outage_ms": 200000,
     "independent_mallory_max3_equivalent": false,
     "foreground_refetch_faulted": false,
     "dn_key_map_mutated_by_fault": false,
@@ -23,7 +24,7 @@
     "nn_token_lifetime_ms": 2000,
     "fresh_post_start_key_required": true,
     "first_move_wait_ms": 80000,
-    "release": "NN no longer exports selected k; destination DN actual addKeys map lacks k and includes newer NN current key; at least one updater IOException observed"
+    "release": "NN no longer exports selected k; destination DN actual addKeys map lacks k and includes newer NN current key; at least one updater IOException observed before the bound expires"
   },
   "required_oracle": {
     "healthy": "one passing JUnit, fresh key and named manager, no injected updater IOException",
@@ -33,7 +34,8 @@
       "manager, NN endpoint, DN UUID, block pool, key ID, nonce digest, or event order cannot be joined",
       "earlier block-token/SASL failure prevents selected lookup",
       "DN retains k or move misses the destination",
-      "healthy cluster test fails or JUnit times out"
+      "healthy cluster test fails or JUnit times out",
+      "updater outage reaches its call or elapsed-time cap before the terminal oracle"
     ]
   },
   "runtime": "node2 dispatch-only; shared hdfs-identity-v8-node2 lock; fresh output; no JVM run yet"

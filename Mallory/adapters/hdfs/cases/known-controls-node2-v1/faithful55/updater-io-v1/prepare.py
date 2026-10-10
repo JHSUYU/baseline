@@ -176,16 +176,18 @@ def test_balancer(data: str) -> str:
         '      client = NameNodeProxies.createProxy(conf,',
         'MiniDFSCluster NN post-start key interval')
     data = replace_once(data,
-        '      // run balancer and validate results\n'
-        '      BalancerParameters.Builder pBuilder =',
-        '      // Choose a fresh post-start NN key already installed on the new DN.\n'
-        '      org.apache.hadoop.hdfs.server.datanode.DataNode targetDn =\n'
-        '          cluster.getDataNodes().get(cluster.getDataNodes().size() - 1);\n'
-        '      Hdfs55FaithfulProbe.selectDestination(\n'
-        '          targetDn.getDatanodeId().getDatanodeUuid(),\n'
-        '          targetDn.getXferAddress().toString());\n'
-        '      // run balancer and validate results\n'
-        '      BalancerParameters.Builder pBuilder =',
+        '    waitForHeartBeat(totalDfsUsedSpace, totalCapacity, client, cluster);\n'
+        '\n'
+        '    int retry = 5;',
+        '    waitForHeartBeat(totalDfsUsedSpace, totalCapacity, client, cluster);\n'
+        '    // Choose a fresh NN key at the last boundary before Balancer startup.\n'
+        '    org.apache.hadoop.hdfs.server.datanode.DataNode targetDn =\n'
+        '        cluster.getDataNodes().get(cluster.getDataNodes().size() - 1);\n'
+        '    Hdfs55FaithfulProbe.selectDestination(\n'
+        '        targetDn.getDatanodeId().getDatanodeUuid(),\n'
+        '        targetDn.getXferAddress().toString());\n'
+        '\n'
+        '    int retry = 5;',
         'one-node destination and fresh-key gate')
     return data
 

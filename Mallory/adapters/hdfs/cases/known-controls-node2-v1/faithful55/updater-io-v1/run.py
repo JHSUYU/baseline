@@ -152,6 +152,7 @@ def junit_run(output: Path, name: str, mode: str, inject: bool, overlay: Path,
             '-Dhadoop.log.dir=' + str(scratch / 'logs'),
             '-Dhdfs55f.inject=' + str(inject).lower(),
             '-Dhdfs55f.waitMs=80000', '-Dhdfs55f.maxUpdaterIo=512',
+            '-Dhdfs55f.maxOutageMs=200000',
             '-cp', cp, 'RunOneJUnitExit', TEST_CLASS, TEST_METHOD]
     started = time.monotonic()
     rc = invoke(argv, cwd=scratch, env=env, log=trial / 'junit.log', timeout=240)
@@ -162,6 +163,7 @@ def junit_run(output: Path, name: str, mode: str, inject: bool, overlay: Path,
                'junit_log_sha256': sha(trial / 'junit.log'),
                'overlay': str(overlay), 'test_overlay': str(test_overlay),
                'wait_ms': 80000, 'max_updater_io': 512,
+               'max_outage_ms': 200000,
                'source_pins_sha256': sha(HERE / 'source-pins.json')}
     (trial / 'manifest.json').write_text(json.dumps(receipt, indent=2, sort_keys=True) + '\n')
     return receipt

@@ -15,11 +15,31 @@ is a typed `IOException` immediately before the *background updater's*
 NameNode proxy and endpoint, block pool, and updater actor; the fixed
 foreground `updateBlockKeys()` RPC is unaffected. This is one persistent
 outage window with repeated call exceptions, not three independent Mallory
-faults. It needs separate fault-model admission.
+faults. The window ends at the first of 512 matched exceptions or 200 seconds
+after the first exception. At the first call after either cap, the hook logs
+`updater_outage_cap_reached` and lets the real NN RPC proceed. This is a
+separate known-control diagnostic, outside the original 102 max3 budget.
+
+The fresh key is chosen after the initial Balancer heartbeat wait, immediately
+before its first run. In Hadoop 3.4.3, the updater sleeps for one quarter of
+the exported 2000 ms key interval after each caught `IOException`, so calls
+are nominally 500 ms apart. If the 200-second cap is reached while the
+Balancer remains alive, the first subsequent updater call can fetch current
+NN keys and update its cache; the exact recovery time depends on thread
+scheduling and RPC duration. The fixed foreground fetch is outside this
+outage and can succeed earlier. The auditor rejects any cap event before its
+terminal comparison; recovery after cap is therefore an incomplete control,
+not a positive HDFS-17899 witness.
 
 The first Balancer move waits until the NameNode has retired and removed
 `k`, the destination DataNode has naturally pruned `k` during a successful
-`addKeys`, and both have the newer current key. The read-only probe records
+`addKeys`, and both have the newer current key. With the 2000 ms interval and
+lifetime, the released NN `updateKeys()` gives
+retiring `k` an expiry about 4000 ms after it is retired;
+the following NN update removes expired keys, and the next DN `addKeys()`
+prunes its copy. Thus the target wait is several key intervals plus DN
+heartbeat latency, bounded here by 80000 ms; the trace must show actual
+NN and DN removal rather than rely on that estimate. The probe records
 NN rotations, expiry times, DN UUID/manager/map keys, Balancer manager and
 cached `(keyId, nonce digest)`, exact DN `allKeys.get(keyId)` result, and
 native `INVALID_KEY` wire response. No code writes the DN map or overrides
@@ -33,7 +53,8 @@ positive candidate requires a passed healthy JUnit, repeated original
 no cache clear, then a fixed foreground NN refetch of `k'`, cache clear,
 successful retry, and passing JUnit under the same outage policy. The
 case-local `audit.py` rejects missing identities, earlier block-token/SASL
-failure, or a missing natural DN null lookup. Even a complete machine
+failure, a missing natural DN null lookup, or exhaustion of the outage bound.
+Even a complete machine
 candidate keeps `detection_claim=false` for review of the archived trace.
 
 Run `python3 prepare.py --static`, `python3 -m unittest test_static.py`, and
@@ -45,7 +66,7 @@ The runner first requires the modified healthy JUnit to pass, then runs
 original and fixed fault phases, writes SHA-bound manifests, `audit.json`,
 an archive, and a terminal receipt. No live JVM has run for this package.
 
-Risks requiring runtime admission: the 180-second JUnit may not allow both
+Risks requiring runtime admission: the 240-second JUnit timeout may not allow both
 natural key retirement and Balancer no-progress completion; the 2000 ms
 token lifetime may cause an earlier failure; Balancer may construct its
 manager after `k` rotates; and a move may not reach the selected DN lookup.

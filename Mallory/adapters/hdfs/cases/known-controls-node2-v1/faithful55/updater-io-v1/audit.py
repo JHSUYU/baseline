@@ -69,6 +69,13 @@ def fault_witness(manifest: dict, log: str, rows: list[dict], *, fixed: bool) ->
               and row.get('actor') not in (None, 'null')]
     if not faults or any(row.get('budget_ok') != 'true' for row in faults):
         gaps.append('typed_updater_IO_or_budget_missing')
+    if any(row['event'] == 'updater_outage_cap_reached' for row in rows):
+        gaps.append('bounded_updater_outage_exhausted_before_terminal_oracle')
+    if faults and (len(faults) > manifest['max_updater_io']
+                   or any(int(row.get('elapsed_ms', '-1')) < 0 or
+                          int(row.get('elapsed_ms', '-1')) >= manifest['max_outage_ms']
+                          for row in faults)):
+        gaps.append('updater_fault_outside_declared_call_or_time_bound')
     rotations = [row for row in rows if row['event'] == 'nn_rotation']
     if (not any(row.get('current') == key for row in rotations)
             or not any(row.get('current') != key and row['index'] > fresh['index']
@@ -169,7 +176,8 @@ def audit(output: Path) -> dict:
     same_policy = (om['inject_updater_io'] is True
                    and fm['inject_updater_io'] is True
                    and om['wait_ms'] == fm['wait_ms']
-                   and om['max_updater_io'] == fm['max_updater_io'])
+                   and om['max_updater_io'] == fm['max_updater_io']
+                   and om['max_outage_ms'] == fm['max_outage_ms'])
     complete = (not healthy_gaps and original['witness_passed']
                 and fixed['witness_passed'] and same_policy)
     return {'case_id': 'HDFS-55', 'variant': 'faithful_updater_io_v1',
