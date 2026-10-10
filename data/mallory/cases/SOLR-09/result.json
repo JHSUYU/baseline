@@ -1,0 +1,229 @@
+{
+  "calibration_only": false,
+  "case_id": "SOLR-09",
+  "closure_coverage_ids_seen": 61,
+  "closure_edge_fingerprints_seen": 15,
+  "cluster_test": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup",
+  "coverage_ids_seen": 459,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 78.426,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 3,
+  "fault_trials_completed": 4,
+  "healthy_eligible_doors": 8,
+  "healthy_junit_validation": {
+    "assumption_failures": 0,
+    "errors": 0,
+    "failures": 0,
+    "junit_log_sha256": "baa0fb8d42349da85b0869f797df16a85dccc1e36186a6c4782332032d703b0b",
+    "marker": "MALLORY_TEST_RESULT run=1 failures=0 ignored=0",
+    "runner": "solr_junit_wrapper",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "873250ea768fde1c17fa87b172d233dfc5361a7c6830227a0ec656eeddc3bc14",
+    "stdout_sha256": "9d3cfc20f53b025269f759f820e41006d05fe42f2b29b7609656551e9b39820d",
+    "tests": 1,
+    "wrapper_sha256": "cf2d955fe241a4f79b2aac4d86ed11b9c1ef09906f1fbea45668324a12751bcb"
+  },
+  "healthy_local_timeline_doors": 1,
+  "healthy_observed_door_events": 8,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [
+    {
+      "first_trial": 2,
+      "replay_trial": 3
+    },
+    {
+      "first_trial": 2,
+      "replay_trial": 4
+    }
+  ],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "node1"
+    ],
+    "eligible_doors_before_target": 8,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "a76f7f732bd13437f37a44e4e0eaee13e053b0a6ae72b571bea1b3ec6b623c3b",
+    "observed_target_class_sha256": "a76f7f732bd13437f37a44e4e0eaee13e053b0a6ae72b571bea1b3ec6b623c3b",
+    "reasons": [],
+    "site_catalog_sha256": "4097d59a663abd18b1ed014bc8ce090dd9adc5759178ebd47cda22610f866d26",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "queue_exhausted",
+  "strict_injected_trials": 4,
+  "strict_target_trials": 4,
+  "system": "solr",
+  "target": {
+    "check_code": "if (!callable.call())\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR,\n\"Could not remove replica : \" + collectionName + \"/\" + shard + \"/\" + replicaName);",
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V@277:branch:7"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd.deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)",
+    "original_source_line": 278,
+    "site_id": "<org.apache.solr.cloud.api.collections.DeleteReplicaCmd: void deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)>#u118",
+    "source_line": 278,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/DeleteReplicaCmd.java",
+    "throw_site": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd#deleteCore(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V@278:throw:1"
+  },
+  "target_binding": {
+    "nodes": [
+      "node1"
+    ]
+  },
+  "target_exception_candidate_trials": [
+    2,
+    3,
+    4
+  ],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 4,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 16.123,
+      "eligible_doors_before_target": 8,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": 1,
+      "novelty": {
+        "closure_coverage": 50,
+        "closure_edges": 3,
+        "coverage": 435
+      },
+      "observed_door_events": 8,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 15.776,
+      "eligible_doors_before_target": 9,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 1,
+      "local_timeline_doors": 2,
+      "novelty": {
+        "closure_coverage": 5,
+        "closure_edges": 3,
+        "coverage": 4
+      },
+      "observed_door_events": 9,
+      "result": "trials/r0001/result.json",
+      "selection_reason": "runtime_deletecore_role",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 1
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 15.828,
+      "eligible_doors_before_target": 9,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 2,
+      "novelty": {
+        "closure_coverage": 6,
+        "closure_edges": 3,
+        "coverage": 20
+      },
+      "observed_door_events": 9,
+      "result": "trials/r0002/result.json",
+      "selection_reason": "runtime_deletecore_role",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 2
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 15.826,
+      "eligible_doors_before_target": 9,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 2,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 3,
+        "coverage": 0
+      },
+      "observed_door_events": 9,
+      "result": "trials/r0003/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 3
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 14.873,
+      "eligible_doors_before_target": 9,
+      "junit_errors": 0,
+      "junit_failures": 1,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 1,
+      "local_timeline_doors": 2,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 3,
+        "coverage": 0
+      },
+      "observed_door_events": 9,
+      "result": "trials/r0004/result.json",
+      "selection_reason": "candidate_replay",
+      "status": "target_exception_candidate",
+      "target_exception_candidate": true,
+      "target_reached": true,
+      "trial_id": 4
+    }
+  ]
+}
