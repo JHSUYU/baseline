@@ -1,0 +1,32 @@
+{
+  "case_id": "SOLR-39",
+  "schema_version": 1,
+  "selected_cluster_test": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+  "selected_check": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor#lookupShardLeadersOfCollections()Ljava/util/List;@246:branch:1",
+  "source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "source_path": [
+    "TimeRoutedAliasUpdateProcessorTest.java:132-135 creates a time-routed alias; line 139 commits through it; lines 175-176 delete and commit through it.",
+    "RoutedAliasUpdateProcessor.java:102 reads collection properties to select the routed processor; lines 119-121 read cached alias properties and construct the processor.",
+    "RoutedAliasUpdateProcessor.java:195 and 201 invoke lookupShardLeadersOfCollections for delete and commit; lines 244-247 read the cached alias list and test its presence.",
+    "ZkStateReader.java:2312 reads /aliases.json in the AliasesManager watch callback; line 2314 may publish the new cached Aliases reference; lines 2317-2319 catch a ConnectionLossException without publishing it."
+  ],
+  "typed_fault_candidate": {
+    "callsite": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager.process@2312",
+    "callee": "org.apache.solr.common.cloud.SolrZkClient.getData",
+    "exception": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+    "source_support": "The callback catches this exception and can leave an older cached Aliases reference; a subsequent request can still reach the check if its routed processor is constructed."
+  },
+  "semantic_limit": "The alias properties and alias list are read at different times, but ordinary immutable Aliases updates remove a deleted alias from both maps together (Aliases.java:299-305). A watcher failure by itself is not proof of a missing list at the check. The fault could also leave both reads stale, or an earlier property lookup could fail before the selected check. Runtime target retention and the watch-to-cache-to-request path must be measured.",
+  "existing_package": "Mallory/adapters/solr/cases/SOLR-39/healthy-source-admission-v2",
+  "offline_preflight": {
+    "status": "offline_preflight_passed_healthy_only",
+    "config_sha256": "51165a762fb089a1848e1b9b411adae325f2644dd08976c6ce0d74adcc56579f",
+    "site_sha256": "3c9ae0c6cb109c777afbe367c9fae7a6dbb65ecd32276b2660e11b22f732f313",
+    "target_class_sha256": "a146513b1cf3bdd7a724fd83ba203021b02348f92adc0d6784c3fa86b286baf0",
+    "watcher_class_sha256": "11316fa5cf00d33d779e5ae96fbb04048e9a61070fb827641395589b84e2e8ad",
+    "jvm_run": false
+  },
+  "runtime_status": "healthy_not_launched; exact target and watcher path unobserved",
+  "full_campaign_status": "not_admitted",
+  "new_bug_confirmed": false
+}
