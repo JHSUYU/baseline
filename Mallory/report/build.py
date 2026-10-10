@@ -2370,6 +2370,48 @@ def _hbase37_source_fault_gap(results: Path, case_id: str) -> tuple[str | None, 
         return invalid
 
 
+def _solr_fault_discovery_bootstrap(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Supersede an obsolete no-healthy-guard label with pinned cluster evidence."""
+    if case_id not in {"SOLR-15", "SOLR-16", "SOLR-34"}:
+        return None, None
+    baseline = results.resolve().parent.parent
+    index_path = results / "quality_reviews/solr_fault_discovered_target_v1/index.json"
+    if not index_path.is_file():
+        return None, None
+    invalid = ("invalid_fault_discovery_bootstrap_review", str(index_path))
+    try:
+        index = _json(index_path)
+        if (not isinstance(index, dict) or index.get("schema_version") != 1 or
+                index.get("kind") != "fault_discovered_target_bootstrap_review" or
+                index.get("classification") != "pending_fault_discovery_bootstrap" or
+                index.get("completed_campaign_count_delta") != 0 or
+                set(index.get("cases", {})) != {"SOLR-15", "SOLR-16", "SOLR-34"}):
+            return invalid
+        review_path = (baseline / index["review_path"]).resolve()
+        if (not review_path.is_relative_to(baseline) or not review_path.is_file() or
+                hashlib.sha256(review_path.read_bytes()).hexdigest() != index["review_sha256"]):
+            return invalid
+        for reviewed_case, evidence in index["cases"].items():
+            calibration_path = results / "calibration" / reviewed_case / "result.json"
+            archive_path = results / "evidence_archives/calibration" / f"{reviewed_case}.tar.gz"
+            if (not calibration_path.is_file() or not archive_path.is_file() or
+                    hashlib.sha256(calibration_path.read_bytes()).hexdigest() !=
+                    evidence["calibration_result_sha256"] or
+                    hashlib.sha256(archive_path.read_bytes()).hexdigest() !=
+                    evidence["calibration_archive_sha256"]):
+                return invalid
+            calibration = _json(calibration_path)
+            if (calibration.get("case_id") != reviewed_case or
+                    calibration.get("cluster_test") != evidence["cluster_test"] or
+                    calibration.get("calibration_only") is not True or
+                    calibration.get("status") != "healthy_seed_invalid" or
+                    calibration.get("fault_trials_completed") != 0):
+                return invalid
+        return "pending_fault_discovery_bootstrap", str(index_path)
+    except (OSError, ValueError, TypeError, KeyError, AttributeError):
+        return invalid
+
+
 def _hbase37_cluster_stage(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Recognize the newer cluster workload without rewriting the older gap."""
     if case_id != "HBASE-37":
@@ -3309,6 +3351,14 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
     elif supplementary is not None:
         row["source_gap_error"] = "independent source review or referenced evidence mismatch"
     if result is None:
+        bootstrap_status, bootstrap_receipt = _solr_fault_discovery_bootstrap(results, case_id)
+        if bootstrap_status is not None:
+            row["report_status"] = bootstrap_status
+            row["source_review_status"] = bootstrap_status
+            row["source_review_receipt"] = bootstrap_receipt
+            if bootstrap_status.startswith("invalid_"):
+                row["source_gap_error"] = "fault-discovery bootstrap review or pinned evidence mismatch"
+            return row
         staged_status, staged_receipt = _hbase37_cluster_stage(results, case_id)
         if staged_status is not None:
             row["report_status"] = staged_status
@@ -3613,6 +3663,9 @@ def markdown(report: dict[str, Any]) -> str:
              "not a healthy-run causal audit. "
              "`source_weak_candidate` records a hash-checked source finding "
              "with an undemonstrated fault relation, and "
+             "`pending_fault_discovery_bootstrap` records three passing Solr "
+             "cluster JUnits whose exact selected guard is absent in healthy traces; "
+             "fault-discovery admission and a full campaign remain pending. "
              "`healthy_exact_guard_observed` records a passing existing JUnit "
              "that reached the exact nonthrowing HBASE-19/20 guard, with no "
              "observed pretarget graph-path door or completed fault campaign. "

@@ -20,6 +20,31 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_solr_fault_discovery_bootstrap_is_pinned_and_not_completed(self):
+        from Mallory.report.build import _solr_fault_discovery_bootstrap
+        baseline = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results = root / "data/mallory"
+            names = [
+                "Mallory/adapters/solr/original102-fault-discovered-target-audit-v1.md",
+                "data/mallory/quality_reviews/solr_fault_discovered_target_v1/index.json",
+            ]
+            for case_id in ("SOLR-15", "SOLR-16", "SOLR-34"):
+                names.extend((f"data/mallory/calibration/{case_id}/result.json",
+                              f"data/mallory/evidence_archives/calibration/{case_id}.tar.gz"))
+            for name in names:
+                destination = root / name
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(baseline / name, destination)
+            for case_id in ("SOLR-15", "SOLR-16", "SOLR-34"):
+                self.assertEqual(_solr_fault_discovery_bootstrap(results, case_id)[0],
+                                 "pending_fault_discovery_bootstrap")
+            archive = results / "evidence_archives/calibration/SOLR-16.tar.gz"
+            archive.write_bytes(archive.read_bytes() + b"tampered")
+            self.assertEqual(_solr_fault_discovery_bootstrap(results, "SOLR-16")[0],
+                             "invalid_fault_discovery_bootstrap_review")
+
     def test_solr18_recovery_gate_replays_raw_and_rejects_rehashed_witness(self):
         from Mallory.report.build import _solr18_badversion_recovery_review
         baseline = Path(__file__).resolve().parents[2]
