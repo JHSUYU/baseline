@@ -3888,6 +3888,15 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             return row
         if hbase32_status is not None:
             row["source_gap_error"] = "HBASE-32 discovery package or prior evidence mismatch"
+        if case_id == "SOLR-16":
+            source_gap = _source_gap(results, case_id, calibration)
+            if source_gap == "source_review_no_suitable_test":
+                row["report_status"] = source_gap
+                row["source_gap_receipt"] = str(results / "source_gaps" / case_id / "receipt.json")
+                row["skipped_no_suitable_cluster_test"] = True
+                return row
+            if source_gap == "invalid_source_gap":
+                row["source_gap_error"] = "source-gap receipt or healthy evidence mismatch"
         bootstrap_status, bootstrap_receipt = _solr_fault_discovery_bootstrap(results, case_id)
         if bootstrap_status is not None:
             row["report_status"] = bootstrap_status
