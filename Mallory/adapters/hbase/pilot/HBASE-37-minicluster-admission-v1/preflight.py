@@ -27,7 +27,8 @@ def main() -> None:
     report = json.loads((HERE / "source-gap.json").read_text())
     receipt = json.loads((HERE / "stage-receipt.json").read_text())
     site = json.loads((HERE / "candidate-sites.json").read_text())
-    require(receipt["status"] == "source_gap_no_jvm" and receipt["case_id"] == "HBASE-37",
+    require(receipt["status"] == "historical_minihbasecluster_only_gap_superseded" and
+            receipt["case_id"] == "HBASE-37",
             "wrong stage receipt")
     for name in ("source-gap.json", "candidate-sites.json", "preflight.py"):
         require(sha(HERE / name) == receipt[name.replace(".", "_") + "_sha256"],
