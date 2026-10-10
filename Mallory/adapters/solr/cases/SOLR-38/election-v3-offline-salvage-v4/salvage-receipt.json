@@ -1,0 +1,169 @@
+{
+  "archive_receipt_sha256": "0f1463d080418c8e139b21ba768fdccd61db68cb393b8bc0f164a303a326b65b",
+  "archive_sha256": "19440785b619ef7d80f0105ef86359767f35c674728421d875a0d9e3ffc4f455",
+  "bounded_pilot_evidence_valid": true,
+  "case_id": "SOLR-38",
+  "completion_basis": "fresh strict healthy seed; two of four permitted fault trials ran; both eligible in-closure typed points were exercised; fault queue naturally exhausted; both exact same-actor postfault target paths verified offline",
+  "configured_campaign_complete": true,
+  "duration_seconds": 53.985,
+  "eligible_for_canonical_completed_row": true,
+  "exact_target_exception_trials": 0,
+  "fault_trial_cap": 4,
+  "fault_trials_run": 2,
+  "healthy_eligible_exact_door_points": 2,
+  "kind": "sealed_v3_offline_gate_correction",
+  "new_bug_confirmed": false,
+  "old_gate_false_reason": "v3 runner read absent pinned-feedback target_check_reached; generic audit same_actor_target_after_fault applies only to local-timeline doors; r0001 closure fingerprint chose candidate versus observed duplicate state edges nondeterministically",
+  "old_offline_audit_sha256": "7c3fbc9b780c439fcf5642e6335dc32fdf97409e7c6c3517210cfca5c93a4e83",
+  "same_actor_postfault_strict_target_trials": 2,
+  "schema_version": 1,
+  "source_review": "ConnectionLossException at getChildren is caught in waitForReplicasToComeUp; the election loop retries before setLeader(true). Both injected trials subsequently reached the target on the fault actor with a source-backed CloudDescriptor value path.",
+  "terminal_status": "queue_exhausted",
+  "trials": [
+    {
+      "canonical_closure_edge_fingerprints": [
+        "07aea59c5deedc341b67",
+        "0d4b688986955b90b97e",
+        "1a8bb8f11c0cf5c27d16",
+        "1b66381c709376fcf93e",
+        "35d568b42880139a9a3f",
+        "3f0fa0434d4889fa6f89",
+        "4b30ba976c9675d06fbd",
+        "55cfdb377a36581f79ca",
+        "5aef1d7e2e37b8b8fc1e",
+        "75f0ec64d47fadcc9e4c",
+        "802104c703a558a0ce1b",
+        "8e3f84b72b5c1ca68970",
+        "8ef76b50d4041bd08397",
+        "9025f59fd2beeda93204",
+        "9095f45ce73b1f3b4c49",
+        "93e3c2e427c7306baa5e",
+        "9a697c0276935fcd8c46",
+        "b59ace9a8a34cb186e7e",
+        "be9a00546213fa5483fb",
+        "beb4ba01343f354d2c39",
+        "bedb8b195aa4b6299fac",
+        "f79868a471a2233b92eb"
+      ],
+      "canonical_graph_state_edges": 4,
+      "original_gate_flag": null,
+      "trial_id": 0
+    },
+    {
+      "canonical_closure_edge_fingerprints": [
+        "04a63a32f14e803a8bb4",
+        "0778ec486afa418ba012",
+        "0b3e93f2ec3d93311ff0",
+        "0f4b60825090c1f9cc21",
+        "0fad7b6d1c3eac0f0e51",
+        "129a043caa5b30897be2",
+        "33deea2518e7c4a290df",
+        "3998e449ce0815c87ae2",
+        "4e136a9a528b07475cf4",
+        "51debc8b0de31ddd5580",
+        "540ab08c277786f45031",
+        "577f6d149b89557cf4a4",
+        "603e7f264b956f1e484e",
+        "68c7939897c7e18f0d84",
+        "84aaa6ac2de5fd16a703",
+        "85192d9e8466b48b1581",
+        "ba0c871aaf2e1ee521ce",
+        "c0133002e05222a54e75",
+        "c893ba96b6e58a8550c5",
+        "cc31ebebee31fb4d63cc",
+        "e6e95634358437ef2751",
+        "feee5c54906a908f4595"
+      ],
+      "canonical_graph_state_edges": 4,
+      "original_gate_flag": false,
+      "postfault_path": {
+        "descriptor_object": "o24",
+        "door_occurrence": "node2:0:org.apache.solr.cloud.ShardLeaderElectionContext#waitForReplicasToComeUp(I)Z:ff7ad15a-54be-4276-91ec-b1565d1edfdd:62:1",
+        "epoch": 0,
+        "event_ids": {
+          "door": "SOLR-38-r0001:1315",
+          "fault_applied": "SOLR-38-r0001:1317",
+          "fault_matched": "SOLR-38-r0001:1316",
+          "native_read": "SOLR-38-r0001:2811",
+          "native_write": "SOLR-38-r0001:1523",
+          "target": "SOLR-38-r0001:2818",
+          "value_read": "SOLR-38-r0001:2813",
+          "value_write": "SOLR-38-r0001:1525"
+        },
+        "fault_id": "f03d952e9bab50ab38761",
+        "node": "node2",
+        "path_edges": [
+          {
+            "consumer_event": "SOLR-38-r0001:1525",
+            "evidence": "solr38_source_backed_same_thread_nested_return",
+            "kind": "program_order",
+            "producer_event": "SOLR-38-r0001:1485"
+          },
+          {
+            "consumer_event": "SOLR-38-r0001:2813",
+            "evidence": "solr38_source_backed_last_writer_same_object_same_thread",
+            "kind": "state",
+            "producer_event": "SOLR-38-r0001:1525"
+          }
+        ],
+        "target_occurrence": "node2:0:org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V:ff7ad15a-54be-4276-91ec-b1565d1edfdd:173:1",
+        "target_outcome": "FALLTHROUGH",
+        "thread_id": 178
+      },
+      "trial_id": 1
+    },
+    {
+      "canonical_closure_edge_fingerprints": [
+        "21cfa72e820794663cac",
+        "2675ca792e5e41059f58",
+        "3fd8f26d5d193b86ea63",
+        "91af0513ca20f5a9e3cd",
+        "9c2275622cadddef5efe",
+        "a5de0ae00dbc21e0f0c8",
+        "b0daffc9acfb7a5e57f6",
+        "b89a9a22cfac41ae2ed3",
+        "ead133a48d7a4b0f0c85",
+        "f95c8369bc6058ba728a",
+        "fb7063d0ec35ed809cf3"
+      ],
+      "canonical_graph_state_edges": 4,
+      "original_gate_flag": false,
+      "postfault_path": {
+        "descriptor_object": "o37",
+        "door_occurrence": "node1:0:org.apache.solr.cloud.ShardLeaderElectionContext#waitForReplicasToComeUp(I)Z:64f1cb89-814a-4a6d-babf-e7a148cb2c8a:114:1",
+        "epoch": 0,
+        "event_ids": {
+          "door": "SOLR-38-r0002:2195",
+          "fault_applied": "SOLR-38-r0002:2200",
+          "fault_matched": "SOLR-38-r0002:2199",
+          "native_read": "SOLR-38-r0002:3780",
+          "native_write": "SOLR-38-r0002:2377",
+          "target": "SOLR-38-r0002:3787",
+          "value_read": "SOLR-38-r0002:3782",
+          "value_write": "SOLR-38-r0002:2379"
+        },
+        "fault_id": "f25af52df0aed7fc8bd0b",
+        "node": "node1",
+        "path_edges": [
+          {
+            "consumer_event": "SOLR-38-r0002:2379",
+            "evidence": "solr38_source_backed_same_thread_nested_return",
+            "kind": "program_order",
+            "producer_event": "SOLR-38-r0002:2339"
+          },
+          {
+            "consumer_event": "SOLR-38-r0002:3782",
+            "evidence": "solr38_source_backed_last_writer_same_object_same_thread",
+            "kind": "state",
+            "producer_event": "SOLR-38-r0002:2379"
+          }
+        ],
+        "target_occurrence": "node1:0:org.apache.solr.update.processor.DistributedZkUpdateProcessor#doDefensiveChecks(Lorg/apache/solr/update/processor/DistributedUpdateProcessor$DistribPhase;)V:64f1cb89-814a-4a6d-babf-e7a148cb2c8a:206:1",
+        "target_outcome": "FALLTHROUGH",
+        "thread_id": 202
+      },
+      "trial_id": 2
+    }
+  ],
+  "v3_graph_overlay_sha256": "4e833e933bee54f4c05864a21b7e44245b08d951ce9dc20ba0f5376ace5612ce"
+}
