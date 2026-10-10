@@ -3443,21 +3443,20 @@ def build(inventory_path: Path, results: Path) -> dict[str, Any]:
         raise ValueError("inventory must contain 102 unique original checks")
     rows = [_row(case, results) for case in cases]
     control_rows = [_row(case, results) for case in controls]
-    quality_counts = Counter(row["quality_status"] for row in rows
-                             if row["quality_status"] is not None)
+    status_counts = Counter(row["report_status"] for row in rows)
+    evidence_counts = Counter(row["quality_status"] for row in rows
+                              if row["quality_status"] is not None)
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "method": "Mallory",
         "original_selection_count": 102,
         "known_issue_control_count": len(control_rows),
-        "counts": dict(Counter(row["report_status"] for row in rows)),
+        "counts": dict(status_counts),
+        "completed_checks": status_counts["completed_campaign"],
+        "not_completed_checks": len(rows) - status_counts["completed_campaign"],
         "calibration_counts": dict(Counter(row["calibration_status"] for row in rows
                                            if row["calibration_status"] is not None)),
-        "quality_counts": dict(quality_counts),
-        "strict_graph_path_completed": quality_counts["observed_event_path"],
-        "local_timeline_completed": quality_counts["observed_local_timeline"],
-        "high_quality_completed": (quality_counts["observed_local_timeline"] +
-                                   quality_counts["observed_event_path"]),
+        "evidence_counts": dict(evidence_counts),
         "rows": rows,
         "known_issue_controls": control_rows,
     }
@@ -3471,12 +3470,11 @@ def _cell(value: Any) -> str:
 
 def markdown(report: dict[str, Any]) -> str:
     lines = ["# Mallory check results", "",
-             f'{report["high_quality_completed"]} of 102 original checks have verified '
-             'fault-to-target continuation: '
-             f'{report["strict_graph_path_completed"]} observed graph paths and '
-             f'{report["local_timeline_completed"]} named same-occurrence local timelines. '
-             f'{report["counts"].get("completed_campaign", 0)} campaigns are terminal; '
-             'a terminal campaign may still fail a quality gate.', "",
+             f'{report["completed_checks"]} of 102 original checks have completed '
+             f'a fault-injection campaign; {report["not_completed_checks"]} have not. '
+             'Completion means the campaign ended at its configured budget or '
+             'exhausted its fault queue. Fault-to-target evidence and selected '
+             'exceptions are recorded as outcomes, not extra completion gates.', "",
              "Rows are generated from `Mallory/cases/inventory.json` and "
              "`data/mallory/cases/<ID>/result.json`. Pending rows are not run results. "
              "`source_review_no_suitable_test` records a hash-checked source review, "
@@ -3508,14 +3506,14 @@ def markdown(report: dict[str, Any]) -> str:
              "`fault_model_packet_io_no_target_retention` records that ZK10 "
              "healthy packet doors are caught by connection-ending handlers, "
              "without a target-retaining fault trial. "
-             "Local-timeline-only quality also requires a same-actor, "
+             "Local timeline evidence requires a same-actor, "
              "same-epoch, same-occurrence target check after an admitted fault door. "
-             "A SHA-bound faulted-path review is required for high-quality status. "
+             "A SHA-bound faulted-path review supports the reported path evidence. "
              "`observed_local_timeline` means an ordered same-region continuation "
-             "in a legacy trace, not an inter-region path. Terminal runs without a "
-             "positive review remain pending; unsupported paths retain their raw "
-             "results under an unverified label.", "",
-             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Quality | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source disposition receipt | New bug |",
+             "in a legacy trace, not an inter-region path. Terminal runs without "
+             "a positive path review remain completed; their path evidence stays "
+             "unverified.", "",
+             "| ID | System | Exact check | Function | Check code | Inventory cluster test | Calibrated cluster test | Campaign cluster test | Calibration | Cal. time (s) | Status | Fault-to-target evidence | Causal audit | Precision review | Closure evidence | Local doors | Posthoc audit | Campaign time (s) | Strict injected trials | Target after fault (generic) | Same actor target after fault | Exact exceptions | Coverage IDs | Closure edges | Source review | Source disposition receipt | New bug |",
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |"]
     for row in report["rows"]:
         location = f'{row["source_path"]}:{row["source_line"]}'

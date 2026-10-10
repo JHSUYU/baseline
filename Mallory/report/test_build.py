@@ -1674,6 +1674,9 @@ class ReportEvidenceTest(unittest.TestCase):
             report = build(inventory, root / "results")
             self.assertEqual(101, report["counts"]["pending_seed"])
             self.assertEqual(1, report["counts"]["completed_campaign"])
+            self.assertEqual(1, report["completed_checks"])
+            self.assertEqual(101, report["not_completed_checks"])
+            self.assertNotIn("high_quality_completed", report)
             self.assertEqual(3, report["rows"][0]["strict_injected_trials"])
             self.assertIsNone(report["rows"][0]["new_bug"])
 

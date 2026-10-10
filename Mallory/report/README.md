@@ -13,6 +13,12 @@ preliminary outcomes while full campaigns are pending.
 If a corrected calibration is stored under `calibration_v2` (or a later
 numbered cohort), the table shows the newest status and keeps all attempts
 in `calibration_history`. Earlier receipts and evidence remain untouched.
+
+The generated checklist schema is version 2. `completed_checks` counts only
+terminal campaigns; `not_completed_checks` is the rest of the fixed 102.
+Fault-to-target evidence and source reviews are outcome fields, never a
+second completion count.
+
 The table shows the inventory test, latest calibration test, and actual
 campaign test separately, since a source-backed alternate calibration may
 use a different JUnit selector before the inventory is versioned.
@@ -40,7 +46,10 @@ the newest healthy calibration result, and its offline audit, and that audit
 shows zero observed I/O paths to the target. A newer calibration or completed
 campaign supersedes the gap; a stale receipt never counts as a tested check.
 
-`quality_status` is a separate gate. `target_exercised` requires a valid
+Campaign completion has one definition: a terminal result. The report keeps
+`quality_status` as a fault-to-target evidence annotation; it does not affect
+`completed_checks` or a row's `completed_campaign` status. `target_exercised`
+requires a valid
 healthy seed, valid runtime attestation, at least one fully effective fault
 trial, a target check reached after that fault, and a verified offline causal
 audit. Run `python3 -m Mallory.core.audit --campaign data/mallory/cases/<ID> --out data/mallory/cases/<ID>/offline-causal-audit.json` after collecting a terminal
@@ -56,12 +65,13 @@ fault at an admitted healthy local door site and a later exact target check
 in the same named node, epoch, and occurrence. `strict_target_trials` remains
 the generic post-fault reach count and can include a different actor. This
 stronger audit applies to future re-audits; frozen 5820 results and releases
-are unchanged, though a new audit may lower a local-only case's quality mark.
+are unchanged, though a new audit may change a local-only case's evidence mark.
 A missing or failed audit is
 shown as `causal_audit_unproven` or `causal_audit_invalid`. A terminal campaign with
-no effective fault or with only target-losing faults remains visibly below
-that gate. `quality_counts` totals these categories for the original 102
-checks; calibration results never enter this table.
+no effective fault or with only target-losing faults retains its completed
+status and receives the corresponding evidence annotation. `evidence_counts`
+totals these annotations for the original 102 checks; calibration results
+never enter this table.
 
 A later causal precision review can supersede an earlier verified audit
 without changing its result or runtime. Reviews live in
@@ -69,10 +79,10 @@ without changing its result or runtime. Reviews live in
 the cases listed in `index.json`, verifies the individual sidecar hash and
 its bindings to the exact campaign result and offline audit hashes, and
 checks the terminal status, duration, and strict target count. A valid
-`causal_precision_unverified` review removes the case from
-`high_quality_completed` while retaining its completed campaign, time,
-fault counts, and source review. A damaged or stale listed review is shown
-as `causal_precision_review_invalid` and cannot restore the old quality
+`causal_precision_unverified` review changes only the evidence annotation;
+the completed campaign, time, fault counts, and source review stay intact.
+A damaged or stale listed review is shown as
+`causal_precision_review_invalid` and cannot restore an unsupported path
 claim. These reviews distinguish exact post-fault target reach from an
 observed root-free occurrence path from the admitted healthy door to the
 target. That historical criterion admitted 23 rows. Their archived traces
@@ -81,9 +91,10 @@ retroactively prove exact event order on the path. SHA-bound
 `data/mallory/quality_reviews/event_time_v1/` sidecars document the timing
 gap; `data/mallory/quality_reviews/faulted_path_v1/` then checks whether each
 applied fault has an observed continuation to the later target. Cases without
-that evidence are labeled `faulted_path_unverified`, retaining their original
-trial counts and time. A new terminal case stays `causal_precision_pending`
-until a SHA-bound precision review is available.
+that evidence are labeled `faulted_path_unverified`, retaining their completed
+status, original trial counts, and time. A new terminal case has a
+`causal_precision_pending` evidence annotation until a SHA-bound precision
+review is available; it is already counted as completed.
 
 An older completed campaign can be marked `target_exercised_posthoc` only
 when a separate `posthoc-attestation.json` binds to the unchanged result
