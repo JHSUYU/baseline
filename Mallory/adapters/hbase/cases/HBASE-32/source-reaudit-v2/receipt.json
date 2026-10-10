@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "case_id": "HBASE-32",
+  "classification": "target_absent_bootstrap_source_backed_pending_fresh_healthy",
+  "scope": "Offline re-audit of unchanged HBase 2.6.6 cluster JUnits and existing case-local Mallory package; no JVM, fault trial, or checklist edit",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "target": {
+    "source_file": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java",
+    "source_sha256": "439a8078aadec70f1727f13204e128b79625c5786cfa920026fb4265a8285509",
+    "class_sha256": "3a112d21b10907eaaf74f17f47bfddc00ac96a5ecd10c90e7a9b19f3ea6390f0",
+    "check_site": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V@130:branch:6",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler#triggerFlushInPrimaryRegion(Lorg/apache/hadoop/hbase/regionserver/HRegion;)V@136:throw:1",
+    "source_lines": "RegionReplicaFlushHandler.java:104-136",
+    "path_condition": "A nondefault replica handler must enter triggerFlushInPrimaryRegion and its callWithRetries(FlushRegionCallable) at lines 126-128 must throw IOException. The selected catch guard at lines 130-133 then returns for TableNotFoundException or a disabled table; otherwise the expected code rethrows the exception at line 136. Ordinary successful flushes never visit @130."
+  },
+  "entry_source": {
+    "file": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+    "sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+    "lines": "2779-2804",
+    "condition": "HRegionServer submits this handler only for a nondefault replica with replica replication, wait-for-primary-flush, and memstore replication enabled."
+  },
+  "candidate_selector": {
+    "junit": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testSecondaryRegionKill",
+    "source_file": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java",
+    "source_sha256": "22909412f4d72ff81db40b58d2e7e0d414df5580261de7631a218e30cd684d35",
+    "class_sha256": "65892147861fa0b3debde6e9264bc394778b6edf9561db4414dcf2463d0e4ee0",
+    "source_lines": "61,75-88,202-235",
+    "source_path": "Three RegionServers and three replicas are created with replica replication and wait-for-primary-flush enabled; the test aborts a secondary and waits for the replica to reopen and serve rows. The test does not deliberately fail the primary flush RPC."
+  },
+  "prior_mallory_healthy": {
+    "result": "data/mallory/calibration_v19/HBASE-32/result.json",
+    "result_sha256": "a164b17c98f4098b40438393dccb3a256229984e362c949e5c17b7d67a9e21a7",
+    "events": "data/mallory/calibration_v19/HBASE-32/trials/r0000/events.jsonl.gz",
+    "events_sha256": "981f2d337eb40e7f552cf7c06a5f85ca0685cd0efab9cab5c761e3c4288f21b1",
+    "site_catalog_sha256": "90d01e46361828476f97e73b9de59af99fb2fbb0c1a5173b5737e4d6afd366cc",
+    "junit_receipt_sha256": "6e81f7357c08b7031a19f2556300357cdcb025792e31f882a9bca8a87f8f5cc4",
+    "observation": "JUnit passed 1/1. Direct offline trace count: three REGION_ENTER events for the exact method, zero @130 check events, and node=unknown for these method events. The site catalog bound @130 and @136 to target class SHA 3a112d21... . Zero fault trials were run. A prior receipt's 56-entry count is not supported by this archived trace."
+  },
+  "physical_pretarget_door": {
+    "site": "org.apache.hadoop.hbase.client.FlushRegionCallable#call(Lorg/apache/hadoop/hbase/ipc/HBaseRpcController;)Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$FlushRegionResponse;@81:door:1",
+    "callee": "org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$AdminService$BlockingInterface#flushRegion(Lorg/apache/hbase/thirdparty/com/google/protobuf/RpcController;Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$FlushRegionRequest;)Lorg/apache/hadoop/hbase/shaded/protobuf/generated/AdminProtos$FlushRegionResponse;",
+    "source_file": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/FlushRegionCallable.java",
+    "source_sha256": "0c03b0089919c583d2758dbd6a45fc814e04f80963803ec92d6818a5049fbcf8",
+    "class_sha256": "39dfca972e451d1a35b44051a19b0ff1001036e00121aa26910b7d95742ce6a2",
+    "exception": "org.apache.hadoop.hbase.DoNotRetryIOException",
+    "source_chain": "FlushRegionCallable.java:65-81 issues the primary RegionServer flush RPC; RpcRetryingCallerImpl.java:101-116,225-248 (SHA 83d85c0d92c140a84f62a8ae7a76144d459f23ee9d05f3873ee02e3d279465b2) propagates DoNotRetryIOException without another retry; RegionReplicaFlushHandler.java:126-136 catches it as IOException and evaluates the selected guard. This is a pretarget RPC boundary on the handler's synchronous call path."
+  },
+  "separate_original_campaign": {
+    "result": "data/crashfuzz/cases/HBASE-32/result.json",
+    "sha256": "b97eb72e315d68abfa43c8215775d81a02ea5dffbc3ab41c7b5e7fd1ea4d2f44",
+    "selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+    "observation": "The separate original campaign reports 542 healthy handler invocations, zero healthy exact-guard evaluations, and 128 target-after-fault trials. Its expected DoNotRetryIOException rethrow is not itself a new bug. This is plausibility evidence, not a Mallory runtime attestation for the staged secondary-kill selector."
+  },
+  "staged_package": {
+    "path": "Mallory/adapters/hbase/cases/HBASE-32/target-discovery-v1",
+    "sha_manifest_sha256": "bf21b73c5ac9eea9dfea46c32570d6492691dfa6bd4df1686adfa8e8144e7151",
+    "core_release": "815cba9b-target-absent-v1",
+    "preflight": "python3 Mallory/adapters/hbase/cases/HBASE-32/target-discovery-v1/preflight.py",
+    "preflight_result": "Both healthy and full static preflight passed offline; source commit, source files, compiled target/door/JUnit classes, case files, runtime artifacts, frozen core, exact IDs, and configuration pins matched. No healthy runtime attestation is claimed.",
+    "actor_overlay": "HBase32ActorTransformer scopes RegionReplicaFlushHandler.process() and HBase32ActorHooks binds its inherited EventHandler.server via Probe.withRegisteredNode; unknown owners remain unknown. Fresh runtime evidence must prove the named RegionServer and exact door observation."
+  },
+  "admission_recommendation": "The staged target-absent bootstrap is justified for discovery because the unchanged MiniCluster JUnit reaches the exact handler and the explicit flush RPC boundary can causally generate the IOException required for @130. After HBASE-20 releases node1, dispatch may admit only a fresh healthy calibration in an isolated output directory. Promote to full trials only if that run passes JUnit, binds exact target class/site, observes the named @81 door, and validates actor identity and event-time relation. A faulted run must independently demonstrate exact postfault @130; do not count the expected @136 rethrow as a new bug."
+}
