@@ -34,7 +34,26 @@ python3 "$case_dir/preflight.py" --verify-prior-evidence
 cd "$repo"
 release=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["core_release"])' \
   "$case_dir/healthy-v4.json")
-python3 -m Mallory.dispatch.core_release --verify "$release/manifest.json"
+python3 - "$release" <<'PY'
+import hashlib
+import json
+import sys
+from pathlib import Path
+
+release = Path(sys.argv[1])
+manifest_path = release / "manifest.json"
+digest = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+if (release.name != "815cba9b-target-absent-v1" or
+        digest(manifest_path) !=
+        "addd46568f8d29029e6b4f68df491c098fa37feb153c1f406f278b7cb35fda8c"):
+    raise SystemExit("HBASE-34 pinned core release manifest changed")
+manifest = json.loads(manifest_path.read_text())
+if manifest.get("release_id") != release.name or not manifest.get("files"):
+    raise SystemExit("HBASE-34 core release identity changed")
+for relative, expected in manifest["files"].items():
+    if digest(release / relative) != expected:
+        raise SystemExit(f"HBASE-34 core release file changed: {relative}")
+PY
 export PYTHONPATH="$release:$repo"
 
 set +e
