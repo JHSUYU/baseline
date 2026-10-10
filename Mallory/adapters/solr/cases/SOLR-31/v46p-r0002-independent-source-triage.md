@@ -102,3 +102,18 @@ in FORCELEADER. Related reports are
 (general ZooKeeper retry policy). These documented mechanisms differ from
 the injected server watcher failure. A bounded search cannot establish issue
 novelty, so the status remains `novelty_unverified`.
+
+The bounded Apache Solr GitHub issues/PR search additionally found
+[PR #909](https://github.com/apache/solr/pull/909), which fixes the
+`collectionWatches`/`watchedCollectionStates` map race from SOLR-16257;
+its description says that race can leave collection state stale until a new
+watch is registered. It does not describe a caught `ConnectionLossException`
+in a fired `StateWatcher` or the FORCELEADER active-leader guard.
+[PR #1964](https://github.com/apache/solr/pull/1964) fixes duplicate
+`StateWatcher` registration and callback flooding from SOLR-11535, and
+[PR #1752](https://github.com/apache/solr/pull/1752) removes a coordinator
+watch after collection deletion. Those mechanisms also differ. GitHub
+searches pairing `forceLeaderElection` with `stale`, `FORCELEADER` with
+`active leader`, and `StateWatcher` with `ConnectionLoss` returned no direct
+match in the repository's issue/PR index. This is a search limit, not proof
+that the observed mechanism has never been reported elsewhere.
