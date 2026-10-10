@@ -6,31 +6,52 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
 /** Exact same-tracker monitor transfers for HBase's ZKNodeTracker. */
 public final class TrackerMonitorHooks {
+  private static final ThreadLocal<String> CONSTRUCTING_NODE = new ThreadLocal<String>();
   private static final Map<Object, IdentityHashMap<Thread, Waiter>> WAITERS =
-      new WeakHashMap<Object, IdentityHashMap<Thread, Waiter>>();
+      new IdentityHashMap<Object, IdentityHashMap<Thread, Waiter>>();
 
   private TrackerMonitorHooks() { }
 
-  /** Bind the callback to the watcher registered from its actual MiniCluster server. */
+  /** The MiniCluster factory knows the index before it constructs the server and its trackers. */
+  public static FactoryScope enterConstruction(int index, String role) {
+    if (index < 0 || !("rs".equals(role) || "master".equals(role)))
+      throw new IllegalArgumentException("Expected a MiniCluster server role and index");
+    String previous = CONSTRUCTING_NODE.get();
+    String node = role + index;
+    CONSTRUCTING_NODE.set(node);
+    return new FactoryScope(previous, Probe.withNode(node, 0));
+  }
+
+  /** Bind a tracker operation through its exact abortable or watcher receiver. */
   public static Scope enterCallback(Object tracker) {
-    Object watcher = null;
+    Object abortable = field(tracker, "abortable");
+    Object watcher = field(tracker, "watcher");
+    String constructing = CONSTRUCTING_NODE.get();
+    // In HBase 2.6.6, HRegionServer constructs both trackers with itself as abortable.
+    // Its ZKWatcher has the same abortable; the factory scope supplies the real index.
+    if (constructing != null && constructing.equals(Probe.currentNode()) && abortable != null
+        && abortable == field(watcher, "abortable")) return new Scope(null);
+    Probe.NodeScope owner = Probe.withRegisteredNode(abortable);
+    if (!"unknown".equals(Probe.currentNode())) return new Scope(owner);
+    owner.close();
+    return new Scope(Probe.withRegisteredNode(watcher));
+  }
+
+  private static Object field(Object receiver, String name) {
+    if (receiver == null) return null;
     try {
-      for (Class<?> type = tracker.getClass(); type != null; type = type.getSuperclass()) {
+      for (Class<?> type = receiver.getClass(); type != null; type = type.getSuperclass()) {
         try {
-          Field field = type.getDeclaredField("watcher");
+          Field field = type.getDeclaredField(name);
           field.setAccessible(true);
-          watcher = field.get(tracker);
-          break;
+          return field.get(receiver);
         } catch (NoSuchFieldException ignored) { }
       }
-    } catch (ReflectiveOperationException | RuntimeException ignored) {
-      // Missing owner remains unknown. A guessed server name would create a false edge.
-    }
-    return new Scope(Probe.withRegisteredNode(watcher));
+    } catch (ReflectiveOperationException | RuntimeException ignored) { }
+    return null;
   }
 
   /** Called while holding the exact tracker monitor, just before Object.wait. */
@@ -58,6 +79,7 @@ public final class TrackerMonitorHooks {
       IdentityHashMap<Thread, Waiter> byThread = WAITERS.get(tracker);
       if (byThread == null) return;
       for (Waiter waiter : byThread.values()) {
+        if (waiter.token != null) continue;
         String token = Probe.newTaskToken();
         waiter.token = token;
         tokens.add(token);
@@ -93,6 +115,20 @@ public final class TrackerMonitorHooks {
   public static final class Scope implements AutoCloseable {
     private final Probe.NodeScope node;
     private Scope(Probe.NodeScope node) { this.node = node; }
-    @Override public void close() { node.close(); }
+    @Override public void close() { if (node != null) node.close(); }
+  }
+
+  public static final class FactoryScope implements AutoCloseable {
+    private final String previous;
+    private final Probe.NodeScope node;
+    private FactoryScope(String previous, Probe.NodeScope node) {
+      this.previous = previous;
+      this.node = node;
+    }
+    @Override public void close() {
+      node.close();
+      if (previous == null) CONSTRUCTING_NODE.remove();
+      else CONSTRUCTING_NODE.set(previous);
+    }
   }
 }

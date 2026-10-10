@@ -1,0 +1,54 @@
+{
+  "bug_interpretation": "A KeeperException in nodeCreated aborts the owning RegionServer; the selected IOException after stopped becomes true is the explicit shutdown path. An independent service or recovery invariant is required before classifying it as a product bug.",
+  "case_id": "HBASE-27",
+  "class_sha256": {
+    "hbase-server-2.6.6.jar": {
+      "org/apache/hadoop/hbase/regionserver/HRegionServer.class": "c1a746ab4b1aeac4744da76363b330c950b03fbfda9dfdcac7f57f64eb76270b",
+      "org/apache/hadoop/hbase/util/JVMClusterUtil.class": "31ac1cda375224c976c15196d0bb2bc823683bdc9400d62cbb4478f246a9d672"
+    },
+    "hbase-zookeeper-2.6.6.jar": {
+      "org/apache/hadoop/hbase/zookeeper/ZKNodeTracker.class": "a64795d0854c94149a7124d1c864869475cad6268c85b97d641002af8e1a7b2c"
+    }
+  },
+  "config_sha256": "91e9a57a809cf914f0f233a6d006142c3876a9257f693635afe7ec1ff752ef4f",
+  "dispatch_note": "Healthy calibration only; no fault trial or full campaign GO is implied.",
+  "fault_trials_started": false,
+  "healthy_admission_criteria": [
+    "one selected JUnit succeeds and exact rs0 target check is observed without a healthy throw",
+    "at least one real named pretarget ZK I/O door is in an observed event-time path to the selected check",
+    "callback-to-waiter evidence has a unique TASK_SUBMIT and TASK_CLAIM on the identical tracker monitor; no actor-only or clock-only edge",
+    "runtime class, source, site and artifact SHAs pass preflight"
+  ],
+  "jvm_started_from_this_stage": false,
+  "kind": "healthy_only_tracker_identity_v2_stage",
+  "offline_tests": {
+    "command": "mvn -o -q package -Dmallory.hbase.zookeeper.jar=/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-zookeeper-2.6.6.jar -Dmallory.hbase.server.jar=/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6.jar",
+    "errors": 0,
+    "failures": 0,
+    "tests": 11
+  },
+  "overlay_source_sha256": {
+    "pom.xml": "01d90002a963b9f8080da03ceafb06789fe174c045503a7e25ba456f3270ba54",
+    "src/main/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorHooks.java": "07d668788943486803a00a713f388ee60c2f8d7a57d2b3837cc2609f6dd0488b",
+    "src/main/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorTransformer.java": "780f6bea1bcfbf0b243747a6833eac10bd4badaa6b3b1a87c2b210dac2da4b8f",
+    "src/test/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorHooksTest.java": "efc2951fe952df96445de44a467fc5338ba365132c021a468e88e272e3cb9451",
+    "src/test/java/edu/uva/liftlab/mallory/hbase/zkmonitor/TrackerMonitorTransformerTest.java": "0645c396f422a3db3f60d9d669308ae23615a3e514dfcd7e8c42b51fbf9b6298",
+    "src/test/java/org/apache/hadoop/hbase/zookeeper/ZKNodeTracker.java": "ac90478260c1beb3b5fc6398e57be5e2653b8aedd93afbe961f675bdf67acdc1"
+  },
+  "preflight_sha256": "ee91ffd6aadf7da036d10e3d4eb2de320e91585eaa34e23c51e6de97fc041ad3",
+  "release_jar_path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/overlays/zk-tracker-monitor-v1/releases/fb2835d2b2bcd3d3/adapter.jar",
+  "release_jar_sha256": "fb2835d2b2bcd3d338011f0120685e51c6c28e2f7c87b3f0284c9465726e021e",
+  "runtime_jar_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane2-v2/runtime/zk-tracker-monitor-fb2835d2.jar",
+  "schema_version": 1,
+  "site_sha256": "04a3b1ffe92c8fe35bb7d24e275dc8b0973cd9f284eef4840eaffa25543ca69c",
+  "source_sha256": {
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/util/JVMClusterUtil.java": "62ac5f8b5b42b57630c9421e16bd5371856064b312f3db06aefd03e35391e4b3",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/TestClusterBootOrder.java": "7ac0843f5cc522b4494fa2570f91ba334b70492da8bf73c58ea4d3baf9f0c630",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKNodeTracker.java": "c30ebadfb0e12252ff9c0d6fcf056dd53dea7253744e230eddfefaad9a1dc1c3",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKWatcher.java": "515e1682fc99944fd823205f0e0b044f3edb71b3617e35396c54b12c2a9be979"
+  },
+  "status": "staged_no_jvm",
+  "suggested_output_path": "/users/ZhenyuLi/baseline/data/mallory/calibration_hbase27_tracker_identity_v2/HBASE-27",
+  "target_host": "node1"
+}

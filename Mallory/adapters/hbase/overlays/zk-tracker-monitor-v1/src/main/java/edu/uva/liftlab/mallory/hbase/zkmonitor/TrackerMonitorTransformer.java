@@ -25,18 +25,36 @@ import org.objectweb.asm.tree.VarInsnNode;
 /** Add only observed ZKNodeTracker monitor handoffs to the existing HBase adapter. */
 public final class TrackerMonitorTransformer implements ClassFileTransformer {
   private static final String TRACKER = "org/apache/hadoop/hbase/zookeeper/ZKNodeTracker";
+  private static final String FACTORY = "org/apache/hadoop/hbase/util/JVMClusterUtil";
   private static final String HOOKS = Type.getInternalName(TrackerMonitorHooks.class);
   private static final String SCOPE = Type.getInternalName(TrackerMonitorHooks.Scope.class);
+  private static final String FACTORY_SCOPE =
+      Type.getInternalName(TrackerMonitorHooks.FactoryScope.class);
 
   @Override public byte[] transform(ClassLoader loader, String className, Class<?> redefining,
                                     ProtectionDomain domain, byte[] original) {
-    if (!TRACKER.equals(className)) return null;
+    if (!TRACKER.equals(className) && !FACTORY.equals(className)) return null;
     try {
       ClassNode owner = new ClassNode();
       new ClassReader(original).accept(owner, ClassReader.EXPAND_FRAMES);
       boolean changed = false;
       for (MethodNode method : owner.methods) {
-        if ("blockUntilAvailable".equals(method.name) && "(JZ)[B".equals(method.desc)) {
+        if (FACTORY.equals(className)) {
+          if ("createRegionServerThread".equals(method.name)
+              && method.desc.equals("(Lorg/apache/hadoop/conf/Configuration;Ljava/lang/Class;I)"
+                  + "Lorg/apache/hadoop/hbase/util/JVMClusterUtil$RegionServerThread;")) {
+            wrapFactory(method, "rs");
+            changed = true;
+          } else if ("createMasterThread".equals(method.name)
+              && method.desc.equals("(Lorg/apache/hadoop/conf/Configuration;Ljava/lang/Class;I)"
+                  + "Lorg/apache/hadoop/hbase/util/JVMClusterUtil$MasterThread;")) {
+            wrapFactory(method, "master");
+            changed = true;
+          }
+        } else if ("start".equals(method.name) && "()V".equals(method.desc)) {
+          wrapCallback(method);
+          changed = true;
+        } else if ("blockUntilAvailable".equals(method.name) && "(JZ)[B".equals(method.desc)) {
           changed |= instrumentWait(method);
         } else if ("nodeCreated".equals(method.name)
             && "(Ljava/lang/String;)V".equals(method.desc)) {
@@ -153,10 +171,38 @@ public final class TrackerMonitorTransformer implements ClassFileTransformer {
     method.tryCatchBlocks.add(new TryCatchBlockNode(start, end, handler, null));
   }
 
+  private static void wrapFactory(MethodNode method, String role) {
+    int local = method.maxLocals++;
+    LabelNode start = new LabelNode();
+    InsnList entry = new InsnList();
+    entry.add(new VarInsnNode(Opcodes.ILOAD, 2));
+    entry.add(new LdcInsnNode(role));
+    entry.add(hook("enterConstruction", "(ILjava/lang/String;)L" + FACTORY_SCOPE + ";"));
+    entry.add(new VarInsnNode(Opcodes.ASTORE, local));
+    entry.add(start);
+    method.instructions.insert(entry);
+    for (AbstractInsnNode instruction : method.instructions.toArray()) {
+      int op = instruction.getOpcode();
+      if (op >= Opcodes.IRETURN && op <= Opcodes.RETURN)
+        method.instructions.insertBefore(instruction, close(local, FACTORY_SCOPE));
+    }
+    LabelNode end = new LabelNode();
+    LabelNode handler = new LabelNode();
+    method.instructions.add(end);
+    method.instructions.add(handler);
+    method.instructions.add(close(local, FACTORY_SCOPE));
+    method.instructions.add(new InsnNode(Opcodes.ATHROW));
+    method.tryCatchBlocks.add(new TryCatchBlockNode(start, end, handler, null));
+  }
+
   private static InsnList close(int local) {
+    return close(local, SCOPE);
+  }
+
+  private static InsnList close(int local, String scope) {
     InsnList close = new InsnList();
     close.add(new VarInsnNode(Opcodes.ALOAD, local));
-    close.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, SCOPE, "close", "()V", false));
+    close.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, scope, "close", "()V", false));
     return close;
   }
 

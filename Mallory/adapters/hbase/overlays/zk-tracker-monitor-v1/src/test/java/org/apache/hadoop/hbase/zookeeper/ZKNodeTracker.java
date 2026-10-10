@@ -4,6 +4,8 @@ package org.apache.hadoop.hbase.zookeeper;
 public class ZKNodeTracker extends ZKListener {
   private byte[] data;
 
+  public synchronized void start() { }
+
   public synchronized byte[] blockUntilAvailable(long timeout, boolean refresh)
       throws InterruptedException {
     if (data == null) wait(timeout);
