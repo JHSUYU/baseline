@@ -260,6 +260,84 @@ def _solr34_bootstrap_quality(results: Path, result_path: Path,
         return "invalid", str(receipt_path)
 
 
+def _solr15_continuation_quality(results: Path, result_path: Path,
+                                 result: dict[str, Any]) -> tuple[str, str | None]:
+    """Verify the exhausted bounded continuation and its protective guard."""
+    if result.get("case_id") != "SOLR-15":
+        return "not_applicable", None
+    canonical = result_path.parent
+    receipt_path = canonical / "canonical-import-receipt.json"
+    audit_path = canonical / "case-local-quality-audit.json"
+    review_path = canonical / "source-review.json"
+    name = "SOLR-15-fault-bootstrap-node0-v3"
+    archive = results / "evidence_archives" / f"{name}.tar.gz"
+    manifest = results / "evidence_archives" / f"{name}.members.json"
+    seal = results / "evidence_archives" / f"{name}.receipt.json"
+    depth = results / "quality_reviews/fault_depth/SOLR-15.json"
+    try:
+        receipt, audit, review, sealed = [
+            _json(path) for path in (receipt_path, audit_path, review_path, seal)]
+        if not all(isinstance(x, dict) for x in (receipt, audit, review, sealed)):
+            return "invalid", str(receipt_path)
+        hashes = ((result_path, "canonical_result_sha256"),
+                  (canonical / "config.json", "canonical_config_sha256"),
+                  (canonical / "checkpoint.json", "canonical_checkpoint_sha256"),
+                  (audit_path, "case_local_audit_sha256"),
+                  (review_path, "source_review_sha256"),
+                  (depth, "depth_review_sha256"),
+                  (archive, "archive_sha256"),
+                  (manifest, "archive_manifest_sha256"),
+                  (seal, "archive_receipt_sha256"))
+        if any(not path.is_file() or hashlib.sha256(path.read_bytes()).hexdigest() !=
+               receipt.get(key) for path, key in hashes):
+            return "invalid", str(receipt_path)
+        config = _json(canonical / "config.json")
+        source_root = Path(review["source_root"])
+        if (not isinstance(config, dict) or
+                review.get("source_root") != config.get("mapping", {}).get("source_root") or
+                review.get("source_revision") !=
+                config.get("mapping", {}).get("source_git_revision") or
+                review.get("source_review_status") != "expected_guard" or
+                review.get("classification") != "protective_leader_live_znode_guard" or
+                review.get("new_bug") is not False or
+                review.get("same_resource_guard_trials") != [2, 3, 5, 6] or
+                review.get("uncredited_trials") != [4, 7, 8, 9, 10, 11, 12] or
+                any(not (source_root / review[name]).is_file() or
+                    hashlib.sha256((source_root / review[name]).read_bytes()).hexdigest() !=
+                    review[digest] for name, digest in
+                    (("source_file", "source_sha256"), ("test_file", "test_sha256"))) or
+                sealed.get("result_sha256") != receipt["canonical_result_sha256"] or
+                sealed.get("quality_sidecar_sha256") != receipt["case_local_audit_sha256"] or
+                sealed.get("campaign_completion_credited") is not True or
+                audit.get("campaign_completion_credited") is not True or
+                audit.get("strict_candidate_trials") != [2, 3, 5, 6] or
+                audit.get("prior_uncredited_trial") != 4 or
+                audit.get("new_dropped_uncredited_trials") != list(range(7, 13)) or
+                audit.get("new_bug") is not False or
+                result.get("status") != "budget_exhausted" or
+                result.get("fault_trials_completed") != 12 or
+                result.get("strict_injected_trials") != 5 or
+                result.get("strict_target_trials") != 4 or
+                result.get("exact_exception_trials") != 4):
+            return "invalid", str(receipt_path)
+        campaign = canonical / "campaigns/continuation-v3"
+        for number in range(1, 13):
+            trial = _json(campaign / "trials" / f"r{number:04d}" / "result.json")
+            if not isinstance(trial, dict) or trial.get("trial_id") != number:
+                return "invalid", str(receipt_path)
+            resource = trial.get("resource_attestation", {})
+            if number in (2, 3, 5, 6):
+                if (resource.get("valid") is not True or
+                        trial.get("feedback", {}).get("target_threw") is not True or
+                        trial.get("junit_validation", {}).get("status") != "passed"):
+                    return "invalid", str(receipt_path)
+            elif number in (4, 7, 8, 9, 10, 11, 12) and resource.get("valid") is not False:
+                return "invalid", str(receipt_path)
+        return "verified_expected_guard_bounded_budget", str(review_path)
+    except (OSError, KeyError, TypeError, ValueError, AttributeError):
+        return "invalid", str(receipt_path)
+
+
 def _zk13_legacy_integrity_review(results: Path, result_path: Path,
                                   result: dict[str, Any], audit: dict[str, Any]) -> str | None:
     """Recognize the older audit's integrity gate without claiming a graph path."""
@@ -4498,6 +4576,21 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = "invalid_result"
             row["quality_status"] = None
             row["result_error"] = "SOLR-34 target-absent bootstrap seal or quality mismatch"
+    if case_id == "SOLR-15":
+        quality, quality_receipt = _solr15_continuation_quality(results, result_path, result)
+        if quality == "verified_expected_guard_bounded_budget":
+            row["quality_status"] = "bounded_budget_four_guard_trials_seven_uncredited"
+            row["causal_precision_review"] = "resource_qualified_guard_trials"
+            row["causal_precision_receipt"] = quality_receipt
+            row["source_review_status"] = "expected_guard"
+            row["source_review_receipt"] = quality_receipt
+            row["source_review_classification"] = "protective_leader_live_znode_guard"
+            row["same_actor_target_trials"] = 4
+            row["new_bug"] = False
+        else:
+            row["report_status"] = "invalid_result"
+            row["quality_status"] = None
+            row["result_error"] = "SOLR-15 continuation seal, resource audit, or source review mismatch"
     return row
 
 
