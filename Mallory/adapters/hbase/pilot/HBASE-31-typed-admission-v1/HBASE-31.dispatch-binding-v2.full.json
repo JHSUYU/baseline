@@ -1,0 +1,129 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.regionserver.RSRpcServices",
+    "org.apache.hadoop.hbase.master.procedure.RSProcedureDispatcher$ExecuteProceduresRemoteCall"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+  "agent_properties": {
+    "adapter.jars": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar,/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-31-typed-admission-v1/binding-overlay/releases/a8ddd472a72345b4/adapter.jar",
+    "adapter.transformers": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer,edu.uva.liftlab.mallory.hbase31.DispatchBindingTransformer",
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "allow_local_timeline_doors": false,
+  "auto_promote_if_healthy": true,
+  "budget": {
+    "max_faults_per_trial": 3,
+    "seconds": 3600,
+    "trial_timeout_seconds": 600,
+    "trials": 80
+  },
+  "calibration_attestation": {
+    "healthy_audit_sha256": "9986a77714ae2437f5b2be6cab4381ddda68784c5c48f50447f2985da0bb16b1",
+    "healthy_receipt_sha256": "d701841da9596ba1f652929a6394767a58098ec76fce26d2ca14484a3915fa05",
+    "healthy_result_sha256": "639ab0dd7fc12161de6b102709bd57648ac4c15f57f62c5014fdc18675e6cef7",
+    "healthy_trace_sha256": "8bd5c8bc8e8c84e0312af4526919731eabccc92668dd9880806a8606fb1cec97",
+    "junit_passed": true,
+    "strict_named_paths": 8,
+    "target_checks": 16,
+    "target_throws": 0
+  },
+  "calibration_only": false,
+  "case_id": "HBASE-31",
+  "cluster_test": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/mallory-hbase-selected-junit-v3.jar:/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar:/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-31-typed-admission-v1/binding-overlay/releases/a8ddd472a72345b4/adapter.jar:/users/ZhenyuLi/baseline/crashfuzz/vendor/0b0beaeb6880a311-junit-platform-launcher-1.13.4.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.regionserver.TestRegionMove",
+    "testDisableAndMove"
+  ],
+  "core_release": {
+    "manifest_sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8",
+    "release_id": "fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f"
+  },
+  "cwd": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "expected_target_class_sha256": "52905795b7b29a665da3ef94b73c43e7233fb0d96748a1054d0a57b53fe1224f",
+  "explore_outside_closure": false,
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "mapping": {
+    "binding_source": "registered this$0.master scoped only to ExecuteProceduresRemoteCall.sendRequest; existing exact RPC token unchanged",
+    "compiled_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "compiled_target_class_sha256": "52905795b7b29a665da3ef94b73c43e7233fb0d96748a1054d0a57b53fe1224f",
+    "dispatcher_compiled_class_sha256": "d3d8d4ea265e4b271371ca7876d266b0ccfa9067b1e7a78307d679a00c3038da",
+    "dispatcher_source_sha256": "6beca1074fd22fa499213a324c3cbdc3091bc3fd6f0a81764b8047ad927896f2",
+    "fault_admission_blocked": false,
+    "fault_gate": "Use only the observed named master0 typed door and exact target guard under the strict event-time path policy; a fault trial does not establish target causality without an observed postfault path.",
+    "healthy_seed_verified_for_this_stage": true,
+    "predicate_source_gap": "One pre-send plain IOException retries the same final ServerName and does not itself change the wrong-start-code predicate; record campaign outcome without claiming a bug absent exact selected throw and source review.",
+    "predicate_source_gap_receipt_sha256": "62c59d56f3adc259c97f500a21b50c2286d2553b22215295028e3118d1a3f074",
+    "prior_typed_healthy_negative_receipt_sha256": "7c49dab3d64647b1d1ace72762a0976df5c2419aa3f42701f3bf950b625f6abe",
+    "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+    "status": "healthy_named_typed_path_qualified_for_full_campaign",
+    "target_source_sha256": "2e472a4c969be81260d397d75e3c7ddd9fe854d306f72cb4ef0b1289c43125c6",
+    "test_source_sha256": "50f65033ce822967d3dde237c26e60bbf0891bc9587c3dfa004886d55165ec7a"
+  },
+  "reject_coarse_roots": true,
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar",
+      "sha256": "ab943e3fda02126261f99703cafeb4b6b0f71b6b5d645a29abb3498d43851cd1"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/mallory-hbase-selected-junit-v3.jar",
+      "sha256": "671a202e8c1418906789aeb7aeb09456e64e1ff5ed52489e2a3a35e22b16b632"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/crashfuzz/vendor/0b0beaeb6880a311-junit-platform-launcher-1.13.4.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-31-37-typed-door-v1/HBASE-31.sites.json",
+      "sha256": "33cbe025ef04a0c58067deaeb9fb7ec60de4a2b0eb9a4e31d5b0ee1e80ca66ca"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-31-typed-admission-v1/binding-overlay/releases/a8ddd472a72345b4/adapter.jar",
+      "sha256": "a8ddd472a72345b43d9f382ffd0cf36aae7d3aa461db264fb2e5498735e44e20"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-31-37-typed-door-v1/HBASE-31.sites.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "system": "hbase",
+  "target": {
+    "check_code": "if (regionServer.serverName.getStartcode() != serverStartCode) {\nthrow new ServiceException(new DoNotRetryIOException(\n\"This RPC was intended for a \" + \"different server with startCode: \" + serverStartCode\n+ \", this server is: \" + regionServer.serverName));",
+    "check_sites": [
+      "org.apache.hadoop.hbase.regionserver.RSRpcServices#throwOnWrongStartCode(J)V@2010:branch:1"
+    ],
+    "exception_class": "java.lang.Throwable",
+    "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(long)",
+    "original_source_line": 2011,
+    "site_id": "<org.apache.hadoop.hbase.regionserver.RSRpcServices: void throwOnWrongStartCode(long)>#u21",
+    "source_line": 2011,
+    "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+    "throw_site": "org.apache.hadoop.hbase.regionserver.RSRpcServices#throwOnWrongStartCode(J)V@2011:throw:1"
+  }
+}
