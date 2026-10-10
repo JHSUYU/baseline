@@ -818,10 +818,27 @@ def _solr10_role_event_review(results: Path, result_path: Path,
             (results / "replays/SOLR-10-role-v1-full-metadata/result.json").resolve()):
         return "invalid", str(index_path)
     try:
-        check = subprocess.run(
-            ["python3", str(verifier), "--base", str(baseline), "--canonical",
-             str(result_path.parent), "--index", str(index_path)],
-            cwd=baseline, capture_output=True, text=True, timeout=30)
+        # The role receipt pins the historical core audit source.  Current
+        # Mallory/core/audit.py may evolve, so expose that pinned release in a
+        # read-only verification root while leaving the campaign files in place.
+        frozen_audit = (baseline / "Mallory/dispatch/releases/"
+                        "4390310699b695ba002ed541508b359204a2d95529df09bb9f702db5dac3cde4/"
+                        "Mallory/core/audit.py")
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            replay = root / "data/mallory/replays/SOLR-10-role-v1-full-metadata"
+            replay.parent.mkdir(parents=True)
+            replay.symlink_to(result_path.parent.resolve(), target_is_directory=True)
+            case = root / "Mallory/adapters/solr/cases/SOLR-10-role-binding-v1"
+            case.parent.mkdir(parents=True)
+            case.symlink_to(verifier.parents[1], target_is_directory=True)
+            audit = root / "Mallory/core/audit.py"
+            audit.parent.mkdir(parents=True)
+            audit.symlink_to(frozen_audit)
+            check = subprocess.run(
+                ["python3", str(verifier), "--base", str(root), "--canonical",
+                 str(result_path.parent), "--index", str(index_path)],
+                cwd=baseline, capture_output=True, text=True, timeout=30)
     except (OSError, subprocess.TimeoutExpired):
         return "invalid", str(index_path)
     return ("observed_event_path" if check.returncode == 0 else "invalid"), str(index_path)
@@ -2521,6 +2538,26 @@ def _zk08_09_cluster_junit_review(results: Path, case_id: str) -> tuple[str | No
     return "source_review_no_mapped_cluster_test", str(path)
 
 
+def _hbase23_28_source_audit(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Attach the immutable source finding without changing pending status."""
+    expected = {
+        "HBASE-23": "c7128fb2a477b19a2b88ddc55b1e1f78a45e310798dbb2ca41d425fa4833c4ce",
+        "HBASE-28": "85eaa927600f03b9949a114179d75e807d533d97192103bff26235bd98a63d14",
+    }
+    if case_id not in expected:
+        return None, None
+    path = (results.resolve().parent.parent / "Mallory/adapters/hbase/pilot"
+            / "original102-source-audit-v1" / f"{case_id}.source-audit.json")
+    if not path.is_file():
+        return None, None
+    if hashlib.sha256(path.read_bytes()).hexdigest() != expected[case_id]:
+        return "invalid_source_audit_receipt", str(path)
+    receipt = _json(path)
+    if not isinstance(receipt, dict) or receipt.get("case_id") != case_id:
+        return "invalid_source_audit_receipt", str(path)
+    return "source_audit_verified_pending", str(path)
+
+
 def _hbase27_no_door_review(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Distinguish the passing target seed from a runnable fault campaign."""
     if case_id != "HBASE-27":
@@ -3509,6 +3546,12 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
         row["source_review_receipt"] = cluster_review_path
     elif cluster_review is not None:
         row["source_gap_error"] = "cluster JUnit source review hash mismatch"
+    hbase_audit, hbase_audit_path = _hbase23_28_source_audit(results, case_id)
+    if hbase_audit == "source_audit_verified_pending":
+        row["source_review_status"] = hbase_audit
+        row["source_review_receipt"] = hbase_audit_path
+    elif hbase_audit is not None:
+        row["source_gap_error"] = "HBase source audit receipt hash mismatch"
     if result is None:
         bootstrap_status, bootstrap_receipt = _solr_fault_discovery_bootstrap(results, case_id)
         if bootstrap_status is not None:
@@ -3899,6 +3942,11 @@ def markdown(report: dict[str, Any]) -> str:
              "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | ---: | --- | --- | --- | --- | --- | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- | --- |"]
     for row in report["rows"]:
         location = f'{row["source_path"]}:{row["source_line"]}'
+        source_receipts = row["source_gap_receipt"]
+        if (row["source_review_status"] == "source_audit_verified_pending"
+                and row["source_review_receipt"]):
+            source_receipts = ", ".join(
+                value for value in (source_receipts, row["source_review_receipt"]) if value)
         values = [row["case_id"], row["system"], location, row["function"],
                   row["check_code"],
                   row["cluster_test"], row["calibration_cluster_test"],
@@ -3912,7 +3960,7 @@ def markdown(report: dict[str, Any]) -> str:
                   row["strict_target_trials"], row["same_actor_target_trials"],
                   row["exact_exception_trials"],
                   row["coverage_ids_seen"], row["closure_edge_fingerprints_seen"],
-                  row["source_review_status"], row["source_gap_receipt"],
+                  row["source_review_status"], source_receipts,
                   row["new_bug"]]
         lines.append("| " + " | ".join(_cell(value) for value in values) + " |")
     if report["known_issue_controls"]:

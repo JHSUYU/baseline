@@ -20,6 +20,24 @@ from Mallory.report.build import (_causal_audit, _causal_precision_review,
 
 
 class ReportEvidenceTest(unittest.TestCase):
+    def test_hbase23_28_source_audit_is_pinned_without_completing_cases(self):
+        from Mallory.report.build import _hbase23_28_source_audit
+        baseline = Path(__file__).resolve().parents[2]
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            relative = "Mallory/adapters/hbase/pilot/original102-source-audit-v1"
+            (root / relative).mkdir(parents=True)
+            results = root / "data/mallory"
+            for case_id in ("HBASE-23", "HBASE-28"):
+                name = f"{case_id}.source-audit.json"
+                shutil.copy2(baseline / relative / name, root / relative / name)
+                self.assertEqual(_hbase23_28_source_audit(results, case_id)[0],
+                                 "source_audit_verified_pending")
+            path = root / relative / "HBASE-23.source-audit.json"
+            path.write_text(path.read_text() + "\nchanged\n")
+            self.assertEqual(_hbase23_28_source_audit(results, "HBASE-23")[0],
+                             "invalid_source_audit_receipt")
+
     def test_hbase27_passing_seed_with_no_door_remains_unfinished(self):
         from Mallory.report.build import _hbase27_no_door_review
         baseline = Path(__file__).resolve().parents[2]
@@ -421,7 +439,10 @@ class ReportEvidenceTest(unittest.TestCase):
             case_copy.symlink_to(case_source, target_is_directory=True)
             audit_copy = root / "Mallory/core/audit.py"
             audit_copy.parent.mkdir(parents=True)
-            audit_copy.symlink_to(baseline / "Mallory/core/audit.py")
+            audit_copy.symlink_to(
+                baseline / "Mallory/dispatch/releases/"
+                "4390310699b695ba002ed541508b359204a2d95529df09bb9f702db5dac3cde4/"
+                "Mallory/core/audit.py")
 
             def check():
                 return subprocess.run(
@@ -434,6 +455,7 @@ class ReportEvidenceTest(unittest.TestCase):
             original = trace.read_bytes()
             trace.write_bytes(original[:-1] + bytes([original[-1] ^ 1]))
             self.assertNotEqual(check().returncode, 0)
+
             trace.write_bytes(original)
             index_json = json.loads(index.read_text())
             index_json["offhost_postfault_path_trials"] = 78
@@ -443,6 +465,14 @@ class ReportEvidenceTest(unittest.TestCase):
             archive_receipt = sparse / "SOLR-10-role-v1-export-receipt.json"
             archive_receipt.write_text(archive_receipt.read_text() + " ")
             self.assertNotEqual(check().returncode, 0)
+
+    def test_solr10_report_review_uses_pinned_audit_source(self):
+        from Mallory.report.build import _solr10_role_event_review
+        baseline = Path(__file__).resolve().parents[2]
+        results = baseline / "data/mallory"
+        path = results / "replays/SOLR-10-role-v1-full-metadata/result.json"
+        self.assertEqual(_solr10_role_event_review(results, path, json.loads(path.read_text()))[0],
+                         "observed_event_path")
 
     def test_hbase07_client_review_requires_pinned_archive_and_verifier(self):
         from Mallory.report.build import _hbase07_client_event_review
