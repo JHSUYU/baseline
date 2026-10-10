@@ -6,6 +6,7 @@
     "org.apache.solr.cloud.ZkController",
     "org.apache.solr.cloud.api.collections.CreateCollectionCmd",
     "org.apache.solr.cloud.api.collections.OverseerCollectionMessageHandler",
+    "org.apache.solr.common.cloud.ZkStateReader",
     "org.apache.solr.servlet.CoordinatorHttpSolrCall",
     "org.apache.solr.update.processor.DistributedZkUpdateProcessor"
   ],
@@ -79,6 +80,8 @@
     "node_identity_binding_configured": true,
     "node_identity_binding_verified": false,
     "runner_status": "direct_junit_runner_v38",
+    "solrj_compiled_jar": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-solrj-8.11.4.jar",
+    "solrj_compiled_jar_sha256": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517",
     "source_git_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
     "source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
     "source_root_env": "MALLORY_SOLR_SOURCE_ROOT",
@@ -136,15 +139,19 @@
     },
     {
       "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-34/target-discovery-v1/sites.json",
-      "sha256": "39fb56335acc5f791334ea87bab5d8a7504438e9cef39a376b6378a834f4910e"
+      "sha256": "7d0ae8afe14c595c238839c4ad28df59970c796f0c2d5c1fce40f7f3b94c8db1"
     },
     {
       "path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/815cba9b-target-absent-v1/manifest.json",
-      "sha256": "19d2464441069849af5370945d6a0de0a2057981ff8d4699ecd8004069c80a35"
+      "sha256": "addd46568f8d29029e6b4f68df491c098fa37feb153c1f406f278b7cb35fda8c"
     },
     {
       "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/fault_discovery_runner.py",
-      "sha256": "a17d02b6417b035d8972d952d64c5737bc5c2021c4555d4e3782ce32c7bbf7e0"
+      "sha256": "9e9e0c54be0611cf7c14838ff658c35567e07f25c92d1afbca1e2f3f24374115"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-solrj-8.11.4.jar",
+      "sha256": "b274e65f3607224b3337e9fc797137d8093c7981bcb54b695644dfd5d2242517"
     }
   ],
   "schema_version": 1,
@@ -170,7 +177,9 @@
       "org.apache.solr.client.solrj.impl.Http2SolrClient#request(Lorg/apache/solr/client/solrj/SolrRequest;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;@776:door:1",
       "org.apache.solr.client.solrj.impl.HttpSolrClient#request(Lorg/apache/solr/client/solrj/SolrRequest;Ljava/lang/String;)Lorg/apache/solr/common/util/NamedList;@248:door:1",
       "org.apache.solr.cloud.ZkController#register(Ljava/lang/String;Lorg/apache/solr/core/CoreDescriptor;ZZZ)Ljava/lang/String;@1267:door:1",
-      "org.apache.solr.cloud.ZkController#linkConfSet(Lorg/apache/solr/common/cloud/SolrZkClient;Ljava/lang/String;Ljava/lang/String;)V@2129:door:1"
+      "org.apache.solr.cloud.ZkController#linkConfSet(Lorg/apache/solr/common/cloud/SolrZkClient;Ljava/lang/String;Ljava/lang/String;)V@2129:door:1",
+      "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;)Lorg/apache/solr/common/cloud/DocCollection;@1641:door:1",
+      "org.apache.solr.common.cloud.ZkStateReader#readConfigName(Ljava/lang/String;)Ljava/lang/String;@311:door:1"
     ],
     "max_doors_per_trial": 16,
     "max_faults_per_trial": 3,

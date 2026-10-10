@@ -79,6 +79,28 @@ def preflight(here: Path, mode: str) -> dict:
         raise ValueError("selected check absent from the site catalog")
     if not sites["doors"] or not sites["regions"]:
         raise ValueError("I/O or target region missing from the site catalog")
+    if case in {"SOLR-15", "SOLR-16"}:
+        split = "org.apache.solr.cloud.api.collections.SplitShardCmd"
+        if (split not in config["agent_include"] or
+                not any(row.get("class") == split and
+                        row.get("callee", "").startswith(
+                            "org.apache.solr.common.cloud.SolrZkClient#exists")
+                        for row in sites["doors"]) or
+                not any(site.startswith(split + "#split(") and
+                        site.endswith("@523:door:3")
+                        for site in policy["door_sites"])):
+            raise ValueError("selected split leader-znode I/O door is not configured")
+    if case == "SOLR-34":
+        reader = "org.apache.solr.common.cloud.ZkStateReader"
+        if (reader not in config["agent_include"] or
+                not any(row.get("class") == reader and
+                        row.get("callee", "").startswith(
+                            "org.apache.solr.common.cloud.SolrZkClient#getData")
+                        for row in sites["doors"]) or
+                not any(site.startswith(reader + "#fetchCollectionState(")
+                        and site.endswith("@1641:door:1")
+                        for site in policy["door_sites"])):
+            raise ValueError("coordinator collection-state getData I/O is not configured")
     for row in config["runtime_artifacts"]:
         path = Path(row["path"])
         if not path.is_file() or sha(path) != row["sha256"]:
@@ -90,6 +112,17 @@ def preflight(here: Path, mode: str) -> dict:
             or sha(source / config["target"]["source_path"]) !=
             config["mapping"]["target_source_sha256"]):
         raise ValueError("pinned Solr JUnit or target source missing/changed")
+    if case in {"SOLR-15", "SOLR-16"}:
+        split_source = (source / config["target"]["source_path"]).read_text().splitlines()
+        if ("getZkClient().exists(" not in split_source[163] or
+                "getZkClient().exists(" not in split_source[522]):
+            raise ValueError("leader-znode read locations changed")
+    if case == "SOLR-34":
+        reader_source = (source / "solr/solrj/src/java/org/apache/solr/common/cloud/"
+                         "ZkStateReader.java").read_text().splitlines()
+        if ("zkClient.getData(" not in reader_source[310] or
+                "zkClient.getData(" not in reader_source[1640]):
+            raise ValueError("collection-state getData locations changed")
     compiled = Path(config["mapping"]["compiled_jar"])
     if sha(compiled) != config["mapping"]["compiled_jar_sha256"]:
         raise ValueError("compiled Solr JAR changed")
