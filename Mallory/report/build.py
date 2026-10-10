@@ -3142,6 +3142,50 @@ def _source_only_gap(results: Path, case_id: str,
                 not old_path.is_file() or
                 hashlib.sha256(old_path.read_bytes()).hexdigest() != old_hash):
             return "invalid_source_gap"
+        if old.get("exact_target_reached") is True:
+            trial = _json(old_path)
+            feedback = trial.get("feedback", {}) if isinstance(trial, dict) else {}
+            junit = trial.get("junit_validation", {}) if isinstance(trial, dict) else {}
+            if (feedback.get("target_reached") is not True or
+                    not any(item.get("node") == old.get("named_target")
+                            for item in feedback.get("target_instances", [])) or
+                    (junit.get("tests"), junit.get("failures"), junit.get("errors")) !=
+                    (old.get("junit_tests"), old.get("junit_failures"),
+                     old.get("junit_errors")) or junit.get("status") != "passed"):
+                return "invalid_source_gap"
+        source_receipt = entry.get("source_receipt")
+        if source_receipt is not None:
+            name = source_receipt["path"]
+            if not isinstance(name, str) or Path(name).is_absolute():
+                return "invalid_source_gap"
+            path = (project_root / name).resolve()
+            if (not path.is_relative_to(mallory_root) or not path.is_file() or
+                    hashlib.sha256(path.read_bytes()).hexdigest() !=
+                    source_receipt.get("sha256")):
+                return "invalid_source_gap"
+            verifier_name = source_receipt.get("verifier")
+            if verifier_name is not None:
+                if not isinstance(verifier_name, str) or Path(verifier_name).is_absolute():
+                    return "invalid_source_gap"
+                verifier = (project_root / verifier_name).resolve()
+                if not verifier.is_relative_to(mallory_root) or not verifier.is_file():
+                    return "invalid_source_gap"
+                check = subprocess.run(["python3", "-B", str(verifier)],
+                                       capture_output=True, text=True, timeout=30)
+                if check.returncode != 0 or json.loads(check.stdout).get("status") != \
+                        source_receipt.get("verifier_status"):
+                    return "invalid_source_gap"
+        archive = entry.get("healthy_archive")
+        if archive is not None:
+            for name_key, hash_key in (("path", "sha256"),
+                                       ("receipt_path", "receipt_sha256")):
+                name = archive[name_key]
+                if not isinstance(name, str) or Path(name).is_absolute():
+                    return "invalid_source_gap"
+                path = (project_root / name).resolve()
+                if (not path.is_relative_to(results.resolve()) or not path.is_file() or
+                        hashlib.sha256(path.read_bytes()).hexdigest() != archive[hash_key]):
+                    return "invalid_source_gap"
         if hdfs_review:
             if (old.get("exact_target_reached") is not False or
                     old.get("junit_tests") != 1 or old.get("junit_failures") != 0 or
@@ -3159,7 +3203,9 @@ def _source_only_gap(results: Path, case_id: str,
                         hashlib.sha256(path.read_bytes()).hexdigest() != expected):
                     return "invalid_source_gap"
         return "source_review_no_suitable_test"
-    except (OSError, KeyError, TypeError, ValueError, subprocess.CalledProcessError):
+    except (OSError, KeyError, TypeError, ValueError, AttributeError,
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired):
         return "invalid_source_gap"
 
 
@@ -4014,6 +4060,11 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["report_status"] = source_gap
             row["source_gap_receipt"] = str(results / "source_gaps" / case_id / "receipt.json")
             row["skipped_no_suitable_cluster_test"] = True
+            if case_id == "HDFS-33":
+                row["source_review_status"] = "existing_junit_reaches_target"
+                row["source_review_classification"] = (
+                    "no_existing_junit_and_pinned_typed_io_fault_model_combines_"
+                    "retained_builder_with_same_bpid_map_removal")
         elif source_gap == "invalid_source_gap":
             row["source_gap_error"] = "source-gap receipt or healthy evidence mismatch"
         if source_gap is None:
