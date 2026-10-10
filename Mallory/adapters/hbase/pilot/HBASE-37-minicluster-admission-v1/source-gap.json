@@ -1,0 +1,77 @@
+{
+  "candidate_fault": {
+    "door": "ZKUtil.getData at compiled source line 343 before RecoverableZooKeeper.getData",
+    "exception_class": "org.apache.zookeeper.KeeperException$NoNodeException",
+    "pending": "Confirm bytecode callsite/NoNode construction and observe named target plus pretarget door in healthy trace before fault trial.",
+    "site_file": "candidate-sites.json",
+    "site_file_sha256": "d6fd5e4085a6284c7a85a8fd1d1ef4215d33a4cff595f41a6c3ec884d527a5cc",
+    "status": "source_candidate_not_runtime_admitted"
+  },
+  "case_id": "HBASE-37",
+  "checklist_snapshot": {
+    "calibration_status": "healthy_node_identity_missing",
+    "campaign_status": null,
+    "cohort": "original_102",
+    "report_status": "source_review_fault_model_gap"
+  },
+  "compiled_artifact": {
+    "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-zookeeper-2.6.6.jar",
+    "sha256": "6ad67305af4910e61e324034cab9ce0f50b966ce203c195581daeff552a8b957",
+    "target_class_sha256": "f412271882202c3cccf3b7383f0a321b3e99203d25a373db1cc97a7410c3c106"
+  },
+  "existing_binding_overlay": "Mallory/adapters/hbase/overlays/master-tracker-binding-v1/HBASE-37-binding-v1-stage.json",
+  "jvm_started": false,
+  "kind": "source_backed_test_admission_gap",
+  "next_gate": "Find an existing MiniHBaseCluster JUnit that executes the static selected guard, or authorize the already-observed LocalHBaseCluster test. Then run case-local owner-binding healthy calibration; require named nonthrowing target and observed candidate door before a separate fault pilot. Natural full budget/queue terminal is completion; graph path and predicate effect remain outcomes.",
+  "schema_version": 1,
+  "selected_target": {
+    "guard": "MasterAddressTracker.java:205 data == null",
+    "method": "MasterAddressTracker.getMasterInfoPort(ZKWatcher)",
+    "selected_site": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I@205:branch:1",
+    "throw": "MasterAddressTracker.java:206 IOException"
+  },
+  "source_locations": {
+    "ActiveMasterManager.java": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ActiveMasterManager.java",
+    "MasterAddressTracker.java": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+    "TestGetInfoPort.java": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/TestGetInfoPort.java",
+    "TestInfoServers.java": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java",
+    "TestRSStatusPage.java": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java",
+    "ZKUtil.java": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKUtil.java",
+    "ZKWatcher.java": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKWatcher.java",
+    "backupMasterStatus.jsp": "hbase-server/src/main/resources/hbase-webapps/master/backupMasterStatus.jsp"
+  },
+  "source_proof": [
+    {
+      "finding": "A KeeperException.NoNodeException from RecoverableZooKeeper.getData is caught inside ZKUtil.getData, which returns null. The caller at MasterAddressTracker.java:200 then reaches the selected data == null guard and throws at 206.",
+      "location": "ZKUtil.java:343,346-349"
+    },
+    {
+      "finding": "Other KeeperException values, including ConnectionLossException, call ZKWatcher.keeperException, which rethrows; a ConnectionLoss injected at the older MasterAddressTracker:200 door skips the selected guard.",
+      "location": "ZKUtil.java:350-353; ZKWatcher.java:710-712"
+    },
+    {
+      "finding": "The caller catches the selected IOException and returns port 0. A passing JUnit alone cannot show recovery or predicate effect.",
+      "location": "ActiveMasterManager.java:164-170"
+    }
+  ],
+  "source_sha256": {
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ActiveMasterManager.java": "edcf8ec32db64ceac9147dcb00fefc36ff5b92f499e37e9256f0ec8552252fde",
+    "hbase-server/src/main/resources/hbase-webapps/master/backupMasterStatus.jsp": "e1988661584d7a529aaae19c05aefb40c52c4c1d7d0d49a0825408da660101d4",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java": "7b0d83c60833a5427396477fed836873b6d58b297cb656867008a221d0e2067e",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/master/TestGetInfoPort.java": "2c617f85524a112b34d3d6a310dc4c7b1f69ab9fd4c17285f49e2646287ba38f",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKUtil.java": "413a0487863e7b7c8c5299f939eaec45ac33321fec8af2c5d160b64c7cf04b40",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKWatcher.java": "515e1682fc99944fd823205f0e0b044f3edb71b3617e35396c54b12c2a9be979"
+  },
+  "status": "no_proven_existing_minihbasecluster_junit_for_selected_static_guard",
+  "terminal": false,
+  "test_admission": {
+    "conclusion": "No existing MiniHBaseCluster JUnit was source-proven to execute the selected static target. Do not substitute an unrelated same-named getter or the LocalHBaseCluster JUnit without explicitly changing the workload criterion.",
+    "directly_observed_cluster": "LocalHBaseCluster at TestRSStatusPage.java:76",
+    "directly_observed_junit": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+    "minihbasecluster_candidate_1": "TestGetInfoPort#test uses HBaseTestingUtility.startMiniCluster but calls MasterAddressTracker instance getMasterInfoPort(), not selected static getMasterInfoPort(ZKWatcher).",
+    "minihbasecluster_candidate_2": "TestInfoServers uses HBaseTestingUtility.startMiniCluster and renders an active master page; backupMasterStatus.jsp invokes getActiveMasterInfoPort only in the backup-master branch, which the one-master setup does not establish.",
+    "prior_healthy": "data/mallory/calibration/HBASE-37/result.json: exact check reached on unknown actor; named healthy invalid"
+  }
+}
