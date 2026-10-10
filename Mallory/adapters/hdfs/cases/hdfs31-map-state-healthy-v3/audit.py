@@ -36,15 +36,15 @@ def main() -> None:
              and all(w.get(k) == r.get(k) for k in ("object", "key", "version"))]
     junit = result.get("junit_validation", {})
     passed = (junit.get("tests"), junit.get("failures"), junit.get("errors")) == (1, 0, 0)
-    feedback = result.get("feedback", {})
     report = {
         "case_id": "HDFS-31", "healthy_junit_passed": passed,
         "named_target_events": len(targets), "map_reads": len(reads),
         "scoped_pretarget_map_reads": len(scoped_reads),
         "map_add_writes": len(writes), "matching_sampled_state_pairs": len(pairs),
-        "observed_path_doors": len(feedback.get("observed_path_doors", [])),
-        "candidate_path_doors": len(feedback.get("candidate_path_doors", [])),
-        "target_exception_candidate": feedback.get("target_exception_candidate", False),
+        "graph_candidate_state_edges": result.get("feedback", {}).get("graph", {})
+        .get("candidate_edges_by_kind", {}).get("state", 0),
+        "target_exception_candidate": result.get("feedback", {}).get(
+            "target_exception_candidate", False),
         "map_keys_at_read": sorted({str(r.get("key")) for r in reads}),
         "map_objects_at_read": sorted({str(r.get("object")) for r in reads}),
         "status": "healthy_map_evidence" if passed and targets and scoped_reads and pairs
