@@ -1,0 +1,31 @@
+{
+  "binding_overlay_sha256": "ab0d9d13c6dc1073d27d844398408d4614e820ba901a52b52f701eb131ee193e",
+  "case_id": "HBASE-37",
+  "compiled_class_sha256": {
+    "org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.class": "f412271882202c3cccf3b7383f0a321b3e99203d25a373db1cc97a7410c3c106",
+    "org/apache/hadoop/hbase/zookeeper/ZKUtil.class": "c355fd476e81ec304bb968eb909c725dfea59e3a5f24e62382bdc2c93b68bac6"
+  },
+  "compiled_jar_sha256": "6ad67305af4910e61e324034cab9ce0f50b966ce203c195581daeff552a8b957",
+  "config_sha256": "b86fbe1d8f39d2dd66b576628dcadfe0caeb80e43e470b6014036491be6feee2",
+  "dispatch_note": "Healthy only. Copy sites.json to the pinned lane7 runtime site destination, then run preflight.py --node1 before scheduling the selected JUnit; no full GO is implied.",
+  "fault_interpretation": "ZKUtil catches NoNode and returns null; the selected IOException follows by design and ActiveMasterManager returns port 0. An independent service invariant is needed to classify a fault result as a product bug.",
+  "fault_trials_started": false,
+  "healthy_admission_criteria": [
+    "selected JUnit succeeds 1/0/0",
+    "exact @205 target check appears on named master actor with no healthy target throw",
+    "a named ZKUtil.getData@343 NoNode-capable I/O door precedes the selected check in a strict observed event-time path",
+    "runtime target class, typed site, source and artifact hashes match frozen pins"
+  ],
+  "jvm_started_from_this_stage": false,
+  "kind": "typed_nonode_healthy_v2_stage",
+  "negative_outcome": "If the door or named exact target is absent, preserve a healthy path/identity gap; do not start fault trials or mark the full campaign complete.",
+  "preflight_sha256": "78f228e6572298c0dc6e6779339f95b425fa54fa08b01d526cd65a9bf5e5f125",
+  "prior_healthy_result_sha256": "ad9d6192508bde706947ef33961e1442217bb8b48ea2a807e7a28772775856fd",
+  "runtime_site_destination": "/users/ZhenyuLi/.mallory-worktrees/hbase/lane7/runtime/cases/HBASE-37-nonode-healthy-v2/sites.json",
+  "schema_version": 1,
+  "site_sha256": "d6fd5e4085a6284c7a85a8fd1d1ef4215d33a4cff595f41a6c3ec884d527a5cc",
+  "source_review_sha256": "1744eb396f393cfae983cc4cc7975d5a9e033aa4e772dea3b5dcc603d8802bdd",
+  "status": "staged_no_jvm",
+  "suggested_output_path": "/users/ZhenyuLi/baseline/data/mallory/calibration_hbase37_typed_nonode_healthy_v2/HBASE-37",
+  "target_host": "node1"
+}

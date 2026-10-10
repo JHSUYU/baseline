@@ -1,0 +1,53 @@
+{
+  "caller_outcome": "ActiveMasterManager catches the selected IOException and returns port 0; a target throw alone is not a product bug without an independent user-visible invariant.",
+  "case_id": "HBASE-37",
+  "kind": "exact_source_and_cluster_test_review",
+  "mapped_junit": {
+    "call_chain": "testStatusPage -> HMaster.getActiveMasterInfoPort -> ActiveMasterManager.getActiveMasterInfoPort -> MasterAddressTracker.getMasterInfoPort(ZKWatcher)",
+    "cluster": "MiniZK and MiniDFS with LocalHBaseCluster(1 master, 1 RegionServer); this is not a MiniHBaseCluster instance",
+    "selector": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+    "source_lines": "61-78,93-99",
+    "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java"
+  },
+  "negative_comparison": "ConnectionLoss at MasterAddressTracker:200 propagates from ZKUtil through ZKWatcher.keeperException and can bypass the selected null guard; it is not the typed candidate.",
+  "prior_healthy": {
+    "exact_check_observed": true,
+    "named_actor": false,
+    "path": "data/mallory/calibration/HBASE-37/result.json",
+    "status": "healthy_node_identity_missing",
+    "typed_nonode_door_observed": false
+  },
+  "runtime_gate": "Fresh healthy JUnit pass, named master target check, observed named pretarget typed NoNode door, and exact event-time path; no fault trial or full campaign from this package.",
+  "schema_version": 1,
+  "selected_check": {
+    "exception": "java.io.IOException",
+    "predicate": "data == null",
+    "site": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I@205:branch:1",
+    "throw_site": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker#getMasterInfoPort(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;)I@206:throw:1"
+  },
+  "source_paths": {
+    "local_cluster": "hbase-server/src/main/java/org/apache/hadoop/hbase/LocalHBaseCluster.java",
+    "manager": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ActiveMasterManager.java",
+    "master": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java",
+    "target": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+    "test": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java",
+    "typed_io": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKUtil.java",
+    "watcher": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKWatcher.java"
+  },
+  "source_sha256": {
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/LocalHBaseCluster.java": "3e9865e035bc5782e90404fae93cd47c37ccf4b2621923c73b56f5fcbc1ed5cb",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ActiveMasterManager.java": "edcf8ec32db64ceac9147dcb00fefc36ff5b92f499e37e9256f0ec8552252fde",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/master/HMaster.java": "6d47807a0bf39b6cf48677bd8acbd7eaf0bc0a6a148a04d013573cefa4b4deb1",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKUtil.java": "413a0487863e7b7c8c5299f939eaec45ac33321fec8af2c5d160b64c7cf04b40",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKWatcher.java": "515e1682fc99944fd823205f0e0b044f3edb71b3617e35396c54b12c2a9be979"
+  },
+  "source_version": "hbase-2.6.6",
+  "status": "healthy_runtime_admission_pending",
+  "typed_door": {
+    "exception": "org.apache.zookeeper.KeeperException$NoNodeException",
+    "site": "org.apache.hadoop.hbase.zookeeper.ZKUtil#getData(Lorg/apache/hadoop/hbase/zookeeper/ZKWatcher;Ljava/lang/String;)[B@343:door:1",
+    "source_behavior": "ZKUtil catches NoNodeException at 346 and returns null at 349; MasterAddressTracker then reaches data == null at 205."
+  }
+}
