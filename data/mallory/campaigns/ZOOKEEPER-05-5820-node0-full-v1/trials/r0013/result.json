@@ -1,0 +1,1950 @@
+{
+  "case_id": "ZOOKEEPER-05",
+  "dispatch_attempt_id": "zk05-node0-full-20261010T010722Z",
+  "elapsed_seconds": 19.576,
+  "events_evidence": {
+    "gzip_bytes": 7215,
+    "gzip_path": "events.jsonl.gz",
+    "gzip_sha256": "6655802bba8fa05d1fa8e7ddb0201d20ab229b9773e38ee8d106562aa85bd419",
+    "raw_bytes": 142725,
+    "raw_path": null,
+    "raw_sha256": "4e0945bea6045d6ef1673dc9bdbed2354af2d9474ae078b77548e2a1e4f7c91c"
+  },
+  "events_sha256": "4e0945bea6045d6ef1673dc9bdbed2354af2d9474ae078b77548e2a1e4f7c91c",
+  "feedback": {
+    "all_faults_applied": true,
+    "all_faults_effective": true,
+    "all_faults_matched": true,
+    "applied_fault_ids": [
+      "f1d90ac56ea745341ca8a"
+    ],
+    "closure_coverage_ids": [
+      "org.apache.zookeeper.server.quorum.Follower#<init>(Lorg/apache/zookeeper/server/quorum/QuorumPeer;Lorg/apache/zookeeper/server/quorum/FollowerZooKeeperServer;)V",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@114:branch:3:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@124:branch:4:FALLTHROUGH",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@136:branch:5:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@141:branch:6:FALLTHROUGH",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@93:branch:1:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@99:branch:2:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#shutdown()V"
+    ],
+    "closure_edges": [
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:201",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:198",
+        "source": "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:286",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:285",
+        "source": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:249",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:247",
+        "source": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:294",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:293",
+        "source": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:257",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:255",
+        "source": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:213",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:209",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:253",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:251",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:266",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:263",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:291",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:290",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:268",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:265",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:236",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:235",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:276",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:275",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:241",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:240",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:214",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:210",
+        "source": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+        "target": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:205",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:204",
+        "source": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:230",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:228",
+        "source": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:271",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:270",
+        "source": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      },
+      {
+        "certainty": "observed",
+        "consumer_event": "ZOOKEEPER-05-r0013:279",
+        "evidence": "unique:transport,correlation,port",
+        "kind": "rpc",
+        "producer_event": "ZOOKEEPER-05-r0013:278",
+        "source": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "target": "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]"
+      }
+    ],
+    "closure_occurrences": [
+      "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+      "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+      "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+      "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+    ],
+    "coverage_ids": [
+      "org.apache.zookeeper.server.quorum.Follower#<init>(Lorg/apache/zookeeper/server/quorum/QuorumPeer;Lorg/apache/zookeeper/server/quorum/FollowerZooKeeperServer;)V",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@114:branch:3:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@124:branch:4:FALLTHROUGH",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@136:branch:5:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@141:branch:6:FALLTHROUGH",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@93:branch:1:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#followLeader()V@99:branch:2:TAKEN",
+      "org.apache.zookeeper.server.quorum.Follower#shutdown()V"
+    ],
+    "doors": [
+      {
+        "event_id": "ZOOKEEPER-05-r0013:7",
+        "event_seq": 7,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:8",
+        "event_seq": 8,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:11",
+        "event_seq": 11,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:12",
+        "event_seq": 12,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:13",
+        "event_seq": 13,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:14",
+        "event_seq": 14,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:17",
+        "event_seq": 17,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:18",
+        "event_seq": 18,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:21",
+        "event_seq": 21,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:22",
+        "event_seq": 22,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:25",
+        "event_seq": 25,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:26",
+        "event_seq": 26,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:37",
+        "event_seq": 37,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:38",
+        "event_seq": 38,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:39",
+        "event_seq": 39,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:40",
+        "event_seq": 40,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:41",
+        "event_seq": 41,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:42",
+        "event_seq": 42,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:45",
+        "event_seq": 45,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:46",
+        "event_seq": 46,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:51",
+        "event_seq": 51,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:52",
+        "event_seq": 52,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:55",
+        "event_seq": 55,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:56",
+        "event_seq": 56,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:59",
+        "event_seq": 59,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:60",
+        "event_seq": 60,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:63",
+        "event_seq": 63,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:64",
+        "event_seq": 64,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:65",
+        "event_seq": 65,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:66",
+        "event_seq": 66,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:71",
+        "event_seq": 71,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:72",
+        "event_seq": 72,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:75",
+        "event_seq": 75,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:79",
+        "event_seq": 79,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:82",
+        "event_seq": 82,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 0,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:84",
+        "event_seq": 84,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:94",
+        "event_seq": 94,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:95",
+        "event_seq": 95,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:97",
+        "event_seq": 97,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:99",
+        "event_seq": 99,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:101",
+        "event_seq": 101,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:103",
+        "event_seq": 103,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:109",
+        "event_seq": 109,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:110",
+        "event_seq": 110,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:113",
+        "event_seq": 113,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:114",
+        "event_seq": 114,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:116",
+        "event_seq": 116,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:118",
+        "event_seq": 118,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:121",
+        "event_seq": 121,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:122",
+        "event_seq": 122,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:123",
+        "event_seq": 123,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:126",
+        "event_seq": 126,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:129",
+        "event_seq": 129,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:132",
+        "event_seq": 132,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:142",
+        "event_seq": 142,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:143",
+        "event_seq": 143,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 16,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:145",
+        "event_seq": 145,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:147",
+        "event_seq": 147,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 13,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:149",
+        "event_seq": 149,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 17,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:151",
+        "event_seq": 151,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:157",
+        "event_seq": 157,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:158",
+        "event_seq": 158,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 14,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:161",
+        "event_seq": 161,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 18,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:162",
+        "event_seq": 162,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 15,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:164",
+        "event_seq": 164,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:166",
+        "event_seq": 166,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:168",
+        "event_seq": 168,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:170",
+        "event_seq": 170,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 19,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:171",
+        "event_seq": 171,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 16,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:174",
+        "event_seq": 174,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 4,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:177",
+        "event_seq": 177,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 20,
+          "epoch": 0,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk3:0:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:180",
+        "event_seq": 180,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": false,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:197",
+        "event_seq": 197,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:199",
+        "event_seq": 199,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:200",
+        "event_seq": 200,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:202",
+        "event_seq": 202,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:203",
+        "event_seq": 203,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 1,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:206",
+        "event_seq": 206,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 1,
+          "epoch": 1,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:207",
+        "event_seq": 207,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 5,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:208",
+        "event_seq": 208,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:211",
+        "event_seq": 211,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:212",
+        "event_seq": 212,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:217",
+        "event_seq": 217,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 6,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:222",
+        "event_seq": 222,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:227",
+        "event_seq": 227,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 1,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:233",
+        "event_seq": 233,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 2,
+          "epoch": 1,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:234",
+        "event_seq": 234,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:237",
+        "event_seq": 237,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 3,
+          "epoch": 1,
+          "node": "zk3",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:238",
+        "event_seq": 238,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 10,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:239",
+        "event_seq": 239,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:245",
+        "event_seq": 245,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 11,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:246",
+        "event_seq": 246,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 7,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:248",
+        "event_seq": 248,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:250",
+        "event_seq": 250,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 9,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:252",
+        "event_seq": 252,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 12,
+          "epoch": 1,
+          "node": "zk2",
+          "site": "zookeeper.quorum.archive.readRecord"
+        },
+        "site": "zookeeper.quorum.archive.readRecord",
+        "trace_occurrence": "unscoped:zk2:1:root"
+      },
+      {
+        "event_id": "ZOOKEEPER-05-r0013:254",
+        "event_seq": 254,
+        "exception_class": "java.io.IOException",
+        "fault_type": "EXCEPTION",
+        "fault_types": null,
+        "in_closure": true,
+        "point": {
+          "door_ordinal": 8,
+          "epoch": 1,
+          "node": "zk1",
+          "site": "zookeeper.quorum.archive.writeRecord"
+        },
+        "site": "zookeeper.quorum.archive.writeRecord",
+        "trace_occurrence": "zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      }
+    ],
+    "eligible_doors_before_target": 96,
+    "event_count": 309,
+    "fault_identity_valid": true,
+    "fault_order_valid": true,
+    "graph": {
+      "candidate_edges": 0,
+      "candidate_edges_by_kind": {},
+      "edges": 50,
+      "edges_by_kind": {
+        "rpc": 50
+      },
+      "gaps": {
+        "task_consumer_missing_identity": 6
+      },
+      "occurrences": 21
+    },
+    "last_fault_seq": 216,
+    "matched_fault_ids": [
+      "f1d90ac56ea745341ca8a"
+    ],
+    "observed_door_events": 115,
+    "pairing_order_valid": true,
+    "qualified_target_throw_evidence": [],
+    "status": "observed",
+    "target_anchor": "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+    "target_closures": [
+      {
+        "anchor": "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "closure_occurrences": [
+          "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+          "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+          "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+          "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+        ],
+        "epoch": 1,
+        "node": "zk1",
+        "occurrence": "zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "anchor": "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "closure_occurrences": [
+          "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+          "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+          "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+          "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+        ],
+        "epoch": 1,
+        "node": "zk3",
+        "occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "anchor": "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+        "closure_occurrences": [
+          "[\"zk1\",\"1\",\"zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+          "[\"zk1\",\"1\",\"zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]",
+          "[\"zk2\",\"1\",\"unscoped:zk2:1:root\"]",
+          "[\"zk3\",\"1\",\"zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1\"]"
+        ],
+        "epoch": 1,
+        "node": "zk1",
+        "occurrence": "zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      }
+    ],
+    "target_exception_candidate": false,
+    "target_identity_ambiguous": false,
+    "target_identity_complete": true,
+    "target_identity_gaps": [],
+    "target_instances": [
+      {
+        "epoch": 0,
+        "node": "zk1",
+        "occurrence": "zk1:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "epoch": 1,
+        "node": "zk1",
+        "occurrence": "zk1:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "epoch": 1,
+        "node": "zk1",
+        "occurrence": "zk1:2:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "epoch": 1,
+        "node": "zk1",
+        "occurrence": "zk1:3:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "epoch": 0,
+        "node": "zk2",
+        "occurrence": "zk2:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "epoch": 1,
+        "node": "zk2",
+        "occurrence": "zk2:1:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      },
+      {
+        "epoch": 1,
+        "node": "zk3",
+        "occurrence": "zk3:0:org.apache.zookeeper.server.quorum.Follower#followLeader()V:root:1"
+      }
+    ],
+    "target_reached": true,
+    "target_region_present": true,
+    "target_threw": false,
+    "target_throw_evidence": [],
+    "trace_truncated": false,
+    "trace_truncation_events": [],
+    "unexpected_applied_fault_ids": []
+  },
+  "junit_receipt_sha256": "fc33087f605085c7e96fce71e39ecbd9640d34bd11e969fa1a33005732b89fcd",
+  "junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0013_2b775ee51c594864a889b8d2ec9f8254",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 1
+        },
+        "path": "junit-reports/000-TEST-org.apache.zookeeper.test.QuorumRestartTest-mallory_0013_2b775ee51c594864a889b8d2ec9f8254.xml",
+        "sha256": "b9adf8e211512d5f0e09c20a24c89a8c89cb7fb5617ffc45068bb8e534c6655a"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "960ce524862319c9b2334a5e434eb5daf3f34ed8162e8f98f0064d8af0386060",
+    "tests": 1
+  },
+  "novelty": {
+    "closure_coverage": 0,
+    "closure_edges": 0,
+    "coverage": 0
+  },
+  "plan": [
+    {
+      "exception_class": "java.io.IOException",
+      "fault_id": "f1d90ac56ea745341ca8a",
+      "fault_type": "EXCEPTION",
+      "point": {
+        "door_ordinal": 8,
+        "epoch": 1,
+        "node": "zk2",
+        "site": "zookeeper.quorum.archive.readRecord"
+      }
+    }
+  ],
+  "return_code": 0,
+  "schema_version": 1,
+  "selection_reason": "dynamic_closure",
+  "site_catalog_sha256": "078675563819ef8a96374e0bd54fd05a554b96b3fe473b404792982890befcca",
+  "site_catalog_validation": {
+    "catalog_rows": 4,
+    "class_hash_match": true,
+    "duplicate_target_sites": [],
+    "expected_target_class_sha256": "84bef2abdba2030a86f820626c3039ed60c176aa2c412c5f67262edbc6124318",
+    "missing_check_sites": [],
+    "missing_throw_site": null,
+    "observed_target_class_hashes": [
+      "84bef2abdba2030a86f820626c3039ed60c176aa2c412c5f67262edbc6124318"
+    ],
+    "observed_target_class_sha256": "84bef2abdba2030a86f820626c3039ed60c176aa2c412c5f67262edbc6124318",
+    "reason": "ok",
+    "required": true,
+    "target_class": "org.apache.zookeeper.server.quorum.Follower",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "valid": true
+  },
+  "started_at": 1791594707.6330352,
+  "stderr_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 0,
+    "raw_path": "stderr.log",
+    "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stdout_evidence": {
+    "gzip_bytes": null,
+    "gzip_path": null,
+    "gzip_sha256": null,
+    "raw_bytes": 11061,
+    "raw_path": "stdout.log",
+    "raw_sha256": "960ce524862319c9b2334a5e434eb5daf3f34ed8162e8f98f0064d8af0386060"
+  },
+  "stdout_sha256": "960ce524862319c9b2334a5e434eb5daf3f34ed8162e8f98f0064d8af0386060",
+  "timed_out": false,
+  "trace_error": null,
+  "trial_id": 13
+}
