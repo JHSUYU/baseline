@@ -109,7 +109,8 @@ def summarize(out: Path) -> dict:
     junit = result.get("healthy_junit_validation") or trial_result.get("junit_validation") or {}
     passed = junit.get("status") == "passed" and junit.get("tests") == 1
     target_ok = bool(checks) and not trial_result.get("feedback", {}).get("target_threw")
-    strict = bool(exact_local or observed_paths)
+    committed_gate_pairs = trial_result.get("feedback", {}).get("watcher_doors_on_target_occurrences", 0)
+    strict = bool(observed_paths) or (bool(exact_local) and committed_gate_pairs > 0)
     status = ("observed_handoff_ready_for_dispatch_review" if passed and target_ok and strict else
               "sampled_state_handoff_candidate_only" if passed and target_ok and sampled_handoffs else
               "exact_door_and_target_no_causal_handoff" if passed and target_ok and exact_doors else
@@ -120,6 +121,7 @@ def summarize(out: Path) -> dict:
                                      for (node, epoch), physical in sorted(actors.items())],
             "named_exact_door_events": len(exact_doors), "named_exact_target_checks": len(checks),
             "same_occurrence_pretarget_pairs": exact_local[:20],
+            "committed_gate_same_occurrence_doors": committed_gate_pairs,
             "observed_graph_paths": observed_paths[:20], "candidate_graph_paths": candidate_paths[:20],
             "sampled_state_handoffs": sampled_handoffs[:20],
             "sampled_state_is_admission_proof": False,
