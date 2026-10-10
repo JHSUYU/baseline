@@ -1,0 +1,32 @@
+{
+  "case_id": "SOLR-16",
+  "cluster_test": "org.apache.solr.cloud.api.collections.ShardSplitTest#testSplitWithChaosMonkey",
+  "control_flow_inference": "The selected line-539 check is nested under the line-524 missing-node-or-owner-change condition and after the line-536 null test. This run continued into later replica creation without executing line 539, so the same-path second lookup did not expose a replacement session. Stat return values are not directly traced.",
+  "exact_check_line": 539,
+  "exact_check_reached": false,
+  "exact_throw_line": 543,
+  "exact_throw_reached": false,
+  "first_native_event_id": "SOLR-16-r0000:1414",
+  "first_seq": 1414,
+  "gate_sha256": "9f311f42f64598afa29bd4ae91a12abd86a2667e3edfa7157a286f1fc1034b59",
+  "healthy_faults": 0,
+  "healthy_junit": "1/0/0",
+  "leader_path": "/live_nodes/127.0.0.1:43151_",
+  "next_action": "No fault campaign or completed-check promotion. A future cluster workload must replace the same parent's ZooKeeper session between the two reads and reach the exact line-539 check before target-closure injection is admissible.",
+  "outer_branch_coverage": [
+    "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@524:branch:37:FALLTHROUGH",
+    "org.apache.solr.cloud.api.collections.SplitShardCmd#split(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)Z@524:branch:38:TAKEN"
+  ],
+  "outer_condition_line": 524,
+  "result_sha256": "018071c9fa844e45b904a233a997d049203f1c710bf7d84ccf81ad3fe98660e7",
+  "same_actor_epoch_thread_split": true,
+  "schema_version": 1,
+  "second_native_event_id": "SOLR-16-r0000:1919",
+  "second_seq": 1919,
+  "source_revision": "e27f44e3d78dfcec230c97e0a1240e3751daeff9",
+  "source_sha256": "995355f882947b528cedf9b7b38032f334afec74b5226d217f3f7828f2fb34f3",
+  "status": "candidate_skip_target_unreached",
+  "test_sha256": "877be1fdba4d626214d647a8ca6b25957b0a87cc381821a125fff71dfe0dc352",
+  "trace_sha256": "d4396bd40a8e6b0a419ddf43b66bb45735578185be5e563765b18e72e1f9ea65",
+  "workload_limit": "The unchanged chaos JUnit stops the parent leader after two sub-shard replicas appear and a 1000-1499 ms delay, but restarts that same node only after waiting for the asynchronous split result. If the second lookup occurs while the node is stopped, line 538 throws for a null stat; if it precedes the stop, the original owner remains. The selected line-539 check needs that same live-node path to reappear with a new ZooKeeper session before the second lookup. Reviewed adjacent split tests do not deliberately create that window."
+}
