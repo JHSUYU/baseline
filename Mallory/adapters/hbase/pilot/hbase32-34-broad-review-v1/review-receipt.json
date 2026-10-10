@@ -1,0 +1,72 @@
+{
+  "cases": {
+    "HBASE-32": {
+      "classification": "source_review_no_suitable_test_reaffirmed",
+      "prior_receipt": "Mallory/cases/revisions/HBASE-32-no-suitable-cluster-test-v2.json",
+      "required_path": "Secondary flush RPC callWithRetries must throw IOException, then TableNotFoundException or disabled table must make catch guard nonthrowing.",
+      "reviewed_tests": [
+        "TestRegionReplicaFailover#testSecondaryRegionKill: passing three-region-server JUnit, method entered 56 times but exact guard 0; result SHA a164b17c98f4098b40438393dccb3a256229984e362c949e5c17b7d67a9e21a7",
+        "TestRegionReplicaFailover#testPrimaryRegionKill: aborts primary without a controlled caught IOException in secondary handler",
+        "TestRegionReplicaFailover#testSecondaryRegionWithNonEmptyRegion: disable/enable table but no source-backed overlap of a failing flush RPC with a live secondary handler",
+        "TestRegionReplicasWithRestartScenarios#testWhenRestart: restart and recovery, no selected catch arm",
+        "TestRegionReplicaWaitForPrimaryFlushConf#testSecondaryReplicaReadEnabled: disables wait-for-primary-flush feature"
+      ],
+      "source_refs": [
+        "RegionReplicaFlushHandler.java:120-137",
+        "TestRegionReplicaFailover.java:68-99,118-194,202-238"
+      ],
+      "target": "RegionReplicaFlushHandler.triggerFlushInPrimaryRegion @130:branch:6; rethrow @136"
+    },
+    "HBASE-33": {
+      "archive": "data/mallory/evidence_archives/calibration/HBASE-33.tar.gz",
+      "archive_sha256": "61860a486f68136e19b0d80a46a124053c1af6be3fbd3fe4f8cd7f4d99ad4268",
+      "classification": "source_review_no_suitable_test_reaffirmed",
+      "prior_receipt": "Mallory/adapters/hbase/pilot/pending-triage-v1/HBASE-33-no-suitable-test-v1.json",
+      "required_path": "Initial allKeys.get(identifier.keyId) must miss at line 137; watcher must not be aborted at line 139.",
+      "reviewed_tests": [
+        "TestTokenAuthentication#testTokenCreation: MiniZK and TokenServer, 2/2 passing, zero @139 events; token uses currentKey and immediate same-manager retrieval",
+        "TestZKSecretWatcher#testKeyUpdate and TestZKSecretWatcherRefreshKeys#testRefreshKeys: key refresh but no retrievePassword",
+        "TestGenerateDelegationToken#testOnlyToken and TestDelegationTokenWithEncryption#testPutGetWithDelegationToken: LocalHBaseCluster via SecureTestCluster, but no source-backed initial-key miss; original MiniKdc setup failure is not a passing run"
+      ],
+      "source_refs": [
+        "AuthenticationTokenSecretManager.java:132-154",
+        "TestTokenAuthentication.java:370-426",
+        "SecureTestCluster.java:71-93"
+      ],
+      "target": "AuthenticationTokenSecretManager.retrievePassword @139:branch:3; InvalidToken @141"
+    },
+    "HBASE-34": {
+      "actor": "The selector creates one TokenServer manager. Case-local target binding uses numeric idSeq as a per-run manager label; uniqueness beyond this one-manager selector is unproven.",
+      "archive": "data/mallory/evidence_archives/calibration/HBASE-33.tar.gz",
+      "archive_sha256": "61860a486f68136e19b0d80a46a124053c1af6be3fbd3fe4f8cd7f4d99ad4268",
+      "classification": "prior_skip_contradicted_guard_reached_package_staged",
+      "guard_logic": "After the optional initial-miss/refresh block, every unexpired call checks masterKey at line 159. A current-key hit takes the nonthrowing arm; the prior review incorrectly said that hit bypasses the guard.",
+      "original_localhbasecluster_test": "TestGenerateDelegationToken#testOnlyToken uses SecureTestCluster LocalHBaseCluster but old MiniKdc setup failed before JUnit, so it does not establish a passing guard path.",
+      "package": "Mallory/adapters/hbase/pilot/hbase32-34-broad-review-v1/hbase34",
+      "passing_existing_test": "TestTokenAuthentication#testTokenCreation: two parameterized invocations pass with MiniZK plus TokenServer; archived HBASE-33 trace has @159 TAKEN at seq 43 and 90 on main thread.",
+      "pretarget_io": "ZKSecretWatcher.start lines 56-65 calls ZKUtil.watchAndCheckExists, which calls RecoverableZooKeeper.exists and ZooKeeper.exists at line 250 before token creation/retrieval; ConnectionLossException has a retry case. The new case-local typed door is source-backed but not yet observed in the archived trace because its class was not instrumented.",
+      "quality_gap": "Archived trace has no DOOR events, and current-key hit depends on in-memory allKeys; no same-actor or causal ZooKeeper-to-guard graph path is claimed. Healthy calibration must report observed door/check and node identity. Full outcome and graph quality are separate.",
+      "source_refs": [
+        "AuthenticationTokenSecretManager.java:132-163,235-260",
+        "ZKSecretWatcher.java:56-65",
+        "ZKUtil.java:106-125",
+        "RecoverableZooKeeper.java:243-269",
+        "TestTokenAuthentication.java:370-426"
+      ],
+      "target": "AuthenticationTokenSecretManager.retrievePassword @159:branch:7; InvalidToken @160"
+    }
+  },
+  "schema_version": 1,
+  "scope": "Original-102 HBASE-32, HBASE-33, HBASE-34; existing HBase 2.6.6 cluster-based JUnit, including LocalHBaseCluster and MiniZK plus TokenServer; no new JVM and no checklist edit",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "source_sha256": {
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java": "439a8078aadec70f1727f13204e128b79625c5786cfa920026fb4265a8285509",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f",
+    "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/ZKSecretWatcher.java": "0f721f46c26ade96e120029da1e4370bc167ee7107f35b1fa11370ef76b3d008",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java": "22909412f4d72ff81db40b58d2e7e0d414df5580261de7631a218e30cd684d35",
+    "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/RecoverableZooKeeper.java": "f946cd3195c5969b55ce5d079c272a7b12d673c5406a98ef026dc8fcea18fa88",
+    "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/ZKUtil.java": "413a0487863e7b7c8c5299f939eaec45ac33321fec8af2c5d160b64c7cf04b40"
+  }
+}
