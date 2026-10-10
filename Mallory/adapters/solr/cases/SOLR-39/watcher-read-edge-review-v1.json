@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "case_id": "SOLR-39",
+  "review_kind": "sealed_healthy_watcher_to_target_edge_audit",
+  "evidence": {
+    "healthy_result": "data/mallory/healthy_observations/SOLR-39-watcher-node1-healthy-v1/result.json",
+    "healthy_result_sha256": "697968d48e5d87c7aebfed668f7e444f81a56c06d422f01455aa44cfc56ada0a",
+    "offline_audit_sha256": "c72becd00ed111ef3bd82a1239a77fc9022d0f69ae76a88949db4e33f200d657",
+    "compressed_events_sha256": "8335b9a06456274e67b829563abb129d5bd1eced8e9f487aa5a6ed337056e294",
+    "raw_events_sha256": "d462df33075a46c5d1dd384ebd517b5251721a67a6ff17ac5149f5e5a9f2caf9",
+    "junit": "1 test, 0 failures, 0 errors",
+    "exact_target_checks": 4,
+    "pretarget_typed_watcher_doors": 13,
+    "observed_watcher_to_target_paths": 0,
+    "candidate_state_edges": 475
+  },
+  "source": {
+    "test": "TimeRoutedAliasUpdateProcessorTest#test creates and uses a routed alias with a four-node MiniSolrCloudCluster",
+    "watcher": "ZkStateReader$AliasesManager.process@2312 reads /aliases.json with SolrZkClient.getData; @2314 calls setIfNewer; @2317-2319 catches ConnectionLossException",
+    "cache": "ZkStateReader$AliasesManager.aliases is a volatile Aliases reference; setIfNewer@2342 writes it, getAliases@2223 reads it",
+    "check": "RoutedAliasUpdateProcessor.wrap/getAliasProps@119-130 reads alias properties to construct the processor; lookupShardLeadersOfCollections@244-247 later reads its collection list and tests for null",
+    "source_sha256": {
+      "target": "6ed4337435f68d00ba85d7b05eeb324cea9a14298c34cabd137756d682f24590",
+      "state_reader": "83e14eadfcc4896ff05f9ac77706fdb683e0c181caeee21802f8861f68ac373d",
+      "aliases": "b08e3367deb7366783943a4f091a87c090d74cc07f54564e0f601f84b54de99b"
+    }
+  },
+  "nearest_candidate_chain": {
+    "node": "node2",
+    "epoch": 0,
+    "aliases_manager_object": "o7",
+    "watcher_getData_door_seq": 4558,
+    "watcher_process_occurrence_suffix": "task:261:1",
+    "cache_write_seq": 4592,
+    "cache_write_field_version": 3,
+    "constructor_alias_read_seq": 4822,
+    "target_alias_read_seq": 4840,
+    "target_check_seq": 4843,
+    "read_field_version": 3,
+    "field_version_confidence": "sampled",
+    "qualification": "The write occurs in setIfNewer nested under the same watcher process occurrence as door 4558, and both later reads are on manager o7 in the target request. The graph classifies the write/read link as candidate because its version is sampled; these event numbers do not prove the exact Aliases reference read."
+  },
+  "other_targets": "The three node3 target reads use manager o12 version 4 written at seq 6183 by an Overseer thread. Node3 watcher door 6208 occurs after that write, so it cannot be credited as the producer of those reads.",
+  "semantic_limit": "The healthy request's constructor and target reads both report version 3, so no alias snapshot change is demonstrated between them. A failed watcher read can leave the old cache reference intact and may prevent processor construction; it does not by itself prove the target's null-list branch or target retention. Ordinary alias removal updates properties and collection list together in Aliases.cloneWithCollectionAlias.",
+  "precise_next_probe": "In an isolated Solr adapter/agent variant, capture the actual Aliases object identity and ZooKeeper version at setIfNewer@2342 and getAliases@2223, tied to the AliasesManager owner and named server. Require matching written/read Aliases identity, an observed watcher parent for the write, and the exact target on the same request before promoting this door into the target closure. Then run a bounded single-fault target-retention pilot.",
+  "current_full_campaign_go": false,
+  "current_fault_pilot_go": false,
+  "diagnostic_healthy_go_after_exclusive_lane": true,
+  "new_bug_confirmed": false
+}
