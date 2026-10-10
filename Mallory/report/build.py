@@ -3582,9 +3582,34 @@ def _case_local_fault_depth_review(result_path: Path, result: dict[str, Any]) ->
         config_path = canonical / "config.json"
         checkpoint_path = canonical / "checkpoint.json"
         config = _json(config_path)
-        pinned = config["mapping"]["pinned_core"]
-        core_root = Path(pinned["root"])
-        core_files = pinned["files"]
+        pinned = config.get("mapping", {}).get("pinned_core")
+        if pinned is not None:
+            core_root = Path(pinned["root"])
+            core_files = pinned["files"]
+        elif result["case_id"] == "SOLR-13":
+            # This release predates config.core_release. Its immutable runner
+            # selects the release, and the archive receipt pins that runner.
+            release_id = review["controller_release_id"]
+            assert release_id == Path(release_id).name
+            root = Path(__file__).resolve().parents[2]
+            core_root = root / "Mallory/dispatch/releases" / release_id
+            manifest_path = core_root / "manifest.json"
+            manifest = _json(manifest_path)
+            assert manifest["release_id"] == release_id
+            assert review["controller_release_manifest_sha256"] == hashlib.sha256(
+                manifest_path.read_bytes()).hexdigest()
+            core_files = manifest["files"]
+            package = root / "Mallory/adapters/solr/cases/SOLR-13/source-exploratory-full-node0-v1"
+            package_manifest = _json(package / "sha-manifest.json")
+            runner = package / "run_campaign.py"
+            runner_sha = hashlib.sha256(runner.read_bytes()).hexdigest()
+            receipt = _json(root / "data/mallory/evidence_archives/"
+                            "SOLR-13-source-exploratory-full-node0-v1.receipt.json")
+            assert package_manifest["files"]["run_campaign.py"]["sha256"] == runner_sha
+            assert receipt["package_runner_sha256"] == runner_sha
+            assert f"Mallory/dispatch/releases/{release_id}" in runner.read_text()
+        else:
+            raise ValueError("case-local controller provenance is absent")
         assert review["schema_version"] == 1
         assert review["case_id"] == result["case_id"] == config["case_id"]
         assert review["status"] == result["status"] in TERMINAL
@@ -3592,12 +3617,15 @@ def _case_local_fault_depth_review(result_path: Path, result: dict[str, Any]) ->
         assert review["campaign_result_sha256"] == hashlib.sha256(result_path.read_bytes()).hexdigest()
         assert review["campaign_config_sha256"] == hashlib.sha256(config_path.read_bytes()).hexdigest()
         assert review["campaign_checkpoint_sha256"] == hashlib.sha256(checkpoint_path.read_bytes()).hexdigest()
-        assert review["pinned_core_root"] == str(core_root)
-        assert review["pinned_core_files_sha256"] == core_files
+        if pinned is not None:
+            assert review["pinned_core_root"] == str(core_root)
+            assert review["pinned_core_files_sha256"] == core_files
         assert review["scheduler_sha256"] == core_files["Mallory/core/scheduler.py"]
         for relative, digest in core_files.items():
             name = Path(relative)
-            assert name.parts[:2] == ("Mallory", "core") and ".." not in name.parts
+            assert name.parts[0] == "Mallory" and ".." not in name.parts
+            if pinned is not None:
+                assert name.parts[:2] == ("Mallory", "core")
             assert hashlib.sha256((core_root / name).read_bytes()).hexdigest() == digest
 
         campaign_dir = canonical / "campaigns"
@@ -3628,7 +3656,8 @@ def _case_local_fault_depth_review(result_path: Path, result: dict[str, Any]) ->
             assert isinstance(depth, int) and 1 <= depth <= config["budget"]["max_faults_per_trial"]
             distribution[str(depth)] = distribution.get(str(depth), 0) + 1
         assert distribution == review["depth_distribution"]
-        return dict(review, controller_release_id=None, scheduler_policy_commit=None), str(path)
+        return dict(review, controller_release_id=(review["controller_release_id"]
+                  if pinned is None else None), scheduler_policy_commit=None), str(path)
     except (AssertionError, KeyError, TypeError, ValueError, OSError):
         return None, str(path)
 
@@ -4074,6 +4103,19 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
             row["quality_status"] = "causal_audit_unproven"
         elif row["causal_audit"] == "legacy_integrity_verified_path_unclassified":
             row["quality_status"] = "causal_path_unclassified"
+        elif (case_id == "SOLR-13" and row["causal_audit"] == "invalid"
+              and audit.get("archive_integrity_valid") is True
+              and audit.get("applied_fault_identity_valid") is True
+              and audit.get("target_claims_reverified") is True
+              and audit.get("guidance_consistent") is True
+              and audit.get("healthy_closure_proven") is False
+              and audit.get("healthy_observed_path_doors") == 0
+              and (_json(result_path.with_name("terminal-quality.json")) or {}).get(
+                  "offline_audit_sha256") == hashlib.sha256(
+                      result_path.with_name("offline-causal-audit.json").read_bytes()).hexdigest()):
+            row["quality_status"] = "causal_path_unverified"
+            row["causal_precision_review"] = "faulted_path_unverified"
+            row["causal_precision_receipt"] = str(result_path.with_name("terminal-quality.json"))
         elif row["causal_audit"] != "verified":
             row["quality_status"] = "causal_audit_invalid"
         else:
