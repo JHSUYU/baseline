@@ -27,18 +27,16 @@ candidates, not healthy admission or fault results.
   `DataXceiver.checkAccess` also forwards through the storage-aware
   six-argument overload (`DataXceiver.java:1434-1454`;
   `BlockPoolTokenSecretManager.java:119-138`).
-- **Broad cluster-based adaptation:** extend the existing
-  `TestBlockToken#testBlockTokenInLastLocatedBlockLegacy/Protobuf` phase just
-  after it obtains the `LocatedBlock`. Call the live NN
-  `cluster.getNamesystem().getBlockManager().getBlockTokenSecretManager()`
-  (`BlockManager.java:782`) and invoke its exact four-argument `checkAccess`
-  on `locatedBlocks.getLastLocatedBlock().getBlockToken()`, its
-  `getBlock()`, a null user ID, and `READ`. The fixture already enables block
-  tokens (`TestBlockToken.java:511-518`). This is an explicit test extension;
-  it establishes a viable cluster *fixture*, not reachability in the
-  unchanged JUnit or a natural DataXceiver call. Require a passing adapted
-  healthy run and exact bytecode event before admitting any fault campaign.
-  If adaptation is disallowed, retain the source-backed unchanged-test skip.
+- **Natural path ruling:** a test-side call to the live NN manager would
+  synthesize the selected invocation rather than exercise the system's own
+  path, so it is unsuitable under the cluster JUnit criterion. The only
+  production forwarding definition for the `Token` four-argument overload is
+  `BlockPoolTokenSecretManager.java:122-125`; the HDFS production call-site
+  search found no caller of that wrapper. `DataXceiver.java:1452` calls its
+  six-argument `Token` overload, and `DataNode.java:2512,3578` calls the
+  distinct `BlockTokenIdentifier` overload. Existing cluster token tests
+  therefore cannot naturally reach the exact selected method. Retain the
+  source-backed `source_review_no_suitable_test` classification for HDFS-13.
 
 ## HDFS-18: duplicate PROVIDED storage identity assertion
 
@@ -56,7 +54,7 @@ candidates, not healthy admission or fault results.
   `TestProvidedStorageMap#testProvidedStorageMap` directly calls
   `injectStorage`, but uses a mocked `BlockManager` and local descriptor
   (`TestProvidedStorageMap.java:49-101`), so it is not a cluster workload.
-- **Broad cluster-based adaptation:** extend the existing secure alias-map
+- **Cluster-based adaptation:** extend the existing secure alias-map
   MiniDFSCluster JUnit to trigger and await a further real DN heartbeat
   after first PROVIDED storage insertion. `MiniDFSCluster.triggerHeartbeats`
   delegates to the DN actor (`MiniDFSCluster.java:2846-2851`); the DN obtains
@@ -68,7 +66,10 @@ candidates, not healthy admission or fault results.
   `BlockManager.java:2815-2823`; `ProvidedStorageMap.java:192-202`). For a
   reported PROVIDED ID, that path passes the shared `providedStorageInfo`
   object to `node.injectStorage`, so a second delivery to the same DN should
-  evaluate the identity assertion and pass. This remains a **candidate**:
+  evaluate the identity assertion and pass. The test uses the DN actor's
+  ordinary heartbeat scheduler and its real FsDataset report. It neither
+  supplies a duplicate ID nor invokes `injectStorage` from test code.
+  This remains a **candidate**:
   the baseline logged only one injection, and source inspection does not
   prove the requested heartbeat will carry that PROVIDED storage after
   initialization. Record the actual report storage ID/type, DN descriptor,
@@ -113,7 +114,8 @@ candidates, not healthy admission or fault results.
   too strong under the broad existing-cluster-JUnit criterion.
 
 **Conclusion:** HDFS-37 has an existing exact-target cluster JUnit with
-phase-specific baseline expectations. HDFS-13 and HDFS-18 have viable
-cluster-based adaptations, but their unchanged measured JUnits do not reach
-the exact selected checks. None of these source findings is a new fault or
-bug result.
+phase-specific baseline expectations. HDFS-18 has a real-heartbeat adaptation
+candidate of an existing cluster JUnit, but its unchanged measured JUnit did
+not reach the exact selected check. HDFS-13 has no identified natural cluster
+JUnit path to its selected overload. None of these source findings is a new
+fault or bug result.
