@@ -7,6 +7,9 @@ check on `hdfs-cluster-2/dn0`, and did not throw the selected `InvalidToken`.
 The case-local audit verifies the heartbeat command, `addKeys`, map read, and
 selected check path. Frozen fa5f's generic graph audit remains negative because
 it lacks that key read-from edge; the full campaign records this limitation.
+The full config admits named pretarget I/O through the local timeline and
+outside-closure exploration. Graph path strength is an outcome, not a gate on
+the natural full campaign terminal.
 
 The prior one-, two-, and three-heartbeat IOException diagnostics were
 target-retaining but did not produce a missing key. The full budget is

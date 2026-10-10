@@ -20,7 +20,7 @@ OUTPUT = Path("/tmp/mallory-hdfs12-key-update-v3-full")
 HEALTHY = BASE / "data/mallory/calibration_hdfs12_key_v2/HDFS-12"
 PILOT = BASE / "data/mallory/calibration_hdfs12_key_v2_pilot/HDFS-12"
 RELEASE = BASE / "Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f"
-CONFIG_SHA = "4e3eea38479369f9e4fec96aaa907b0351e99a667c8a6f0369aae5bf14ed0456"
+CONFIG_SHA = "e695aefef696f08613b4de570f43e786895dae4ee6e1d1099334f52b2ea7248d"
 SOURCE_DIGEST = "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7"
 RELEASE_MANIFEST_SHA = "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8"
 MIN_FREE_BYTES = 6_000_000_000
@@ -86,9 +86,10 @@ def main() -> None:
             config.get("mapping", {}).get("status") != "runtime_attested" or
             (budget["trials"], budget["seconds"], budget["max_faults_per_trial"],
              budget["trial_timeout_seconds"]) != (80, 3600, 3, 240) or
-            config.get("reject_coarse_roots") is not True or
-            config.get("require_event_time_paths") is not True or
-            config.get("explore_outside_closure") is not False or
+            config.get("reject_coarse_roots") is not False or
+            config.get("require_event_time_paths") is not False or
+            config.get("explore_outside_closure") is not True or
+            config.get("healthy_gate", {}).get("allow_local_timeline_doors") is not True or
             config.get("cwd") != str(SOURCE) or
             config.get("source_equivalent_root") != str(SOURCE)):
         raise RuntimeError("not the exact indexed HDFS-12 full campaign")
