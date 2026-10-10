@@ -1395,6 +1395,44 @@ class ReportEvidenceTest(unittest.TestCase):
             self.assertEqual("invalid_source_gap",
                              _source_gap(results, "CASE-000", calibration))
 
+    def test_hbase19_20_existing_junit_review_supersedes_only_verified_legacy_label(self):
+        from Mallory.report.build import _hbase19_20_existing_junit_review
+        baseline = Path(__file__).resolve().parents[2]
+        source = baseline / "data/mallory"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            results = root / "data/mallory"
+            review = root / "Mallory/cases/revisions/HBASE-19-20-remote-modify-gap-v1.json"
+            review.parent.mkdir(parents=True)
+            shutil.copy2(baseline / "Mallory/cases/revisions/HBASE-19-20-remote-modify-gap-v1.json",
+                         review)
+            for case_id in ("HBASE-19", "HBASE-20"):
+                for relative in (
+                    f"source_gaps/{case_id}/receipt.json",
+                    f"calibration_v8/{case_id}/calibration-receipt.json",
+                    f"calibration_v8/{case_id}/result.json",
+                    f"calibration_v8/{case_id}/offline-causal-audit.json",
+                    f"calibration_v8/{case_id}/trials/r0000/result.json",
+                    f"calibration_v8/{case_id}/trials/r0000/junit-receipt.json",
+                    f"quality_reviews/hbase19_20_existing_junit/{case_id}.json",
+                ):
+                    dest = results / relative
+                    dest.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(source / relative, dest)
+                self.assertEqual(_hbase19_20_existing_junit_review(results, case_id)[0],
+                                 "healthy_exact_guard_observed")
+            trial_path = results / "calibration_v8/HBASE-19/trials/r0000/result.json"
+            trial = json.loads(trial_path.read_text())
+            trial["feedback"]["target_reached"] = False
+            trial_path.write_text(json.dumps(trial))
+            receipt_path = results / "quality_reviews/hbase19_20_existing_junit/HBASE-19.json"
+            receipt = json.loads(receipt_path.read_text())
+            receipt["evidence_sha256"]["trial_result"] = hashlib.sha256(
+                trial_path.read_bytes()).hexdigest()
+            receipt_path.write_text(json.dumps(receipt))
+            self.assertEqual(_hbase19_20_existing_junit_review(results, "HBASE-19")[0],
+                             "invalid_existing_junit_review")
+
     def test_source_review_requires_terminal_result_and_matching_preserved_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

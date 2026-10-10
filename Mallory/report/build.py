@@ -1508,6 +1508,71 @@ def _source_gap(results: Path, case_id: str,
     return "no_suitable_cluster_test" if valid else "invalid_source_gap"
 
 
+def _hbase19_20_existing_junit_review(results: Path, case_id: str) -> tuple[str | None, str | None]:
+    """Bind the observed exact healthy guards without rewriting the older RPC review."""
+    if case_id not in {"HBASE-19", "HBASE-20"}:
+        return None, None
+    root = results.resolve().parent.parent
+    receipt_path = results / "quality_reviews/hbase19_20_existing_junit" / f"{case_id}.json"
+    receipt = _json(receipt_path)
+    if receipt is None:
+        return None, None
+    evidence = {
+        "legacy_source_gap": results / "source_gaps" / case_id / "receipt.json",
+        "source_review": root / "Mallory/cases/revisions/HBASE-19-20-remote-modify-gap-v1.json",
+        "calibration_receipt": results / "calibration_v8" / case_id / "calibration-receipt.json",
+        "healthy_result": results / "calibration_v8" / case_id / "result.json",
+        "healthy_audit": results / "calibration_v8" / case_id / "offline-causal-audit.json",
+        "trial_result": results / "calibration_v8" / case_id / "trials/r0000/result.json",
+        "junit_receipt": results / "calibration_v8" / case_id / "trials/r0000/junit-receipt.json",
+    }
+    try:
+        if (receipt.get("schema_version") != 1 or
+                receipt.get("kind") != "existing_cluster_junit_exact_guard_review" or
+                receipt.get("case_id") != case_id or
+                receipt.get("status") != "healthy_exact_guard_observed" or
+                receipt.get("legacy_interpretation") != "no_remote_modify_rpc_selector_identified" or
+                receipt.get("eligible_doors_before_target") != 46 or
+                receipt.get("observed_path_doors") != 0 or
+                receipt.get("fault_trials_completed") != 0):
+            raise ValueError("review metadata mismatch")
+        for name, path in evidence.items():
+            if receipt["evidence_sha256"][name] != hashlib.sha256(path.read_bytes()).hexdigest():
+                raise ValueError(f"{name} SHA mismatch")
+        legacy = _json(evidence["legacy_source_gap"])
+        review = _json(evidence["source_review"])
+        calibration_receipt = _json(evidence["calibration_receipt"])
+        healthy = _json(evidence["healthy_result"])
+        audit = _json(evidence["healthy_audit"])
+        trial = _json(evidence["trial_result"])
+        junit = _json(evidence["junit_receipt"])
+        review_case = next(entry for entry in review["cases"] if entry["case_id"] == case_id)
+        feedback = trial["feedback"]
+        if (legacy["status"] != "no_suitable_cluster_test" or
+                review_case["existing_remote_selector"] is not None or
+                review_case["current_validated_selector"] != healthy["cluster_test"] or
+                calibration_receipt["result_sha256"] != receipt["evidence_sha256"]["healthy_result"] or
+                calibration_receipt["audit_sha256"] != receipt["evidence_sha256"]["healthy_audit"] or
+                healthy["case_id"] != case_id or
+                healthy["status"] != "calibration_complete" or
+                healthy["healthy_seed_valid"] is not True or
+                healthy["fault_trials_completed"] != 0 or
+                healthy["target_node_named"] is not True or
+                audit["campaign_result_sha256"] != receipt["evidence_sha256"]["healthy_result"] or
+                audit["healthy_observed_path_doors"] != 0 or
+                audit["report_gate_passed"] is not False or
+                feedback["target_reached"] is not True or
+                feedback["target_threw"] is not False or
+                feedback["target_identity_complete"] is not True or
+                feedback["eligible_doors_before_target"] != 46 or
+                trial["junit_validation"]["status"] != "passed" or
+                junit["status"] != "passed"):
+            raise ValueError("healthy exact-guard evidence mismatch")
+    except (OSError, KeyError, TypeError, ValueError, StopIteration):
+        return "invalid_existing_junit_review", str(receipt_path)
+    return "healthy_exact_guard_observed", str(receipt_path)
+
+
 def _fault_model_target_lost(results: Path, case_id: str) -> tuple[str | None, str | None]:
     """Recognize a bounded effective fault that bypasses its exact target."""
     candidates = sorted((results / "admissions").glob(
@@ -3274,6 +3339,16 @@ def _row(case: dict[str, Any], results: Path) -> dict[str, Any]:
                     results / "source_weak" / case_id / "receipt-v1.json")
             elif source_weak == "invalid_source_weak":
                 row["source_gap_error"] = "source-weak receipt or evidence mismatch"
+        existing_junit, review_receipt = _hbase19_20_existing_junit_review(results, case_id)
+        if existing_junit == "healthy_exact_guard_observed":
+            row["report_status"] = existing_junit
+            row["source_review_status"] = existing_junit
+            row["source_review_classification"] = "remote_modify_rpc_selector_unproven"
+            row["source_review_receipt"] = review_receipt
+            row["source_gap_receipt"] = review_receipt
+        elif existing_junit == "invalid_existing_junit_review":
+            row["report_status"] = existing_junit
+            row["source_gap_error"] = "superseding exact-JUnit review or pinned evidence mismatch"
         return row
     if result.get("case_id") != case_id:
         row["report_status"] = "invalid_result"
@@ -3482,6 +3557,9 @@ def markdown(report: dict[str, Any]) -> str:
              "not a healthy-run causal audit. "
              "`source_weak_candidate` records a hash-checked source finding "
              "with an undemonstrated fault relation, and "
+             "`healthy_exact_guard_observed` records a passing existing JUnit "
+             "that reached the exact nonthrowing HBASE-19/20 guard, with no "
+             "observed pretarget graph-path door or completed fault campaign. "
              "`healthy_target_unreliable` records repeated healthy target misses "
              "despite an earlier hit. "
              "`Target after fault (generic)` can count "
