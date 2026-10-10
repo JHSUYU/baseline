@@ -5,8 +5,10 @@ from __future__ import annotations
 
 import argparse
 import fcntl
+import getpass
 import hashlib
 import json
+import shutil
 import socket
 import subprocess
 import sys
@@ -204,6 +206,17 @@ def main() -> int:
             locks.append(handle)
         if OUT.exists():
             raise ValueError("healthy output appeared while acquiring locks")
+        if shutil.disk_usage(ROOT).free < 7_650_410_496:
+            raise ValueError("node0 has less than 7,650,410,496 free bytes")
+        available_kib = next(int(row.split()[1]) for row in
+                             Path("/proc/meminfo").read_text().splitlines()
+                             if row.startswith("MemAvailable:"))
+        if available_kib < 8_388_608:
+            raise ValueError("node0 has less than 8 GiB MemAvailable")
+        processes = subprocess.check_output(["ps", "-eo", "user=,comm="], text=True)
+        if any(row.split() == [getpass.getuser(), "java"]
+               for row in processes.splitlines()):
+            raise ValueError("another user JVM is running on node0")
         state = campaign.run(HERE / "config-healthy-node0.json", OUT)
     finally:
         for handle in reversed(locks):
