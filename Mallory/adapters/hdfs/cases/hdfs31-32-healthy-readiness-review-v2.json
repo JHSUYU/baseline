@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "kind": "no_jvm_healthy_readiness_review",
+  "reviewed_at_utc_date": "2026-10-09",
+  "disposition": "existing_cluster_junit_suitable_for_healthy_probe_target_unproven",
+  "healthy_only_package": {
+    "path": "Mallory/adapters/hdfs/cases/hdfs31-32-node2-healthy-stage-v1",
+    "existing_stage_commit": "c231bd1c",
+    "manifest_sha256": "1c9918ec91cb706071baf990b5a3b1c4acf4b433c000a5e925ab28dd692f4c8e",
+    "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+    "source_digest": "825878fdb546b98f0c1c17339d83625e62fa0aadd5b76284a2640fac3926bef7",
+    "source_root_on_node2": "/users/ZhenyuLi/.mallory-worktrees/hdfs-identity-v8",
+    "node0_static_preflight": "pass",
+    "node2_static_preflight": "pass",
+    "static_preflight_jvm_started": false,
+    "runner": "Mallory/adapters/hdfs/cases/hdfs31-32-node2-healthy-stage-v1/run_healthy.sh",
+    "runner_sha256": "04af38e6c2f03ea86003f7c3bc33058f86852d882b3dc44ee92b42420bc47ec4"
+  },
+  "cases": {
+    "HDFS-31": {
+      "config": "Mallory/adapters/hdfs/cases/hdfs31-32-node2-healthy-stage-v1/HDFS-31-node2-healthy-v1.json",
+      "config_sha256": "04544f739cda7fe97974bbeccf2df578b42870c3649b5d153aa3305da5a2bd71",
+      "site_catalog_sha256": "b818c71ac4c5ce1f06a67d5df0083e3d2b6a1e00c7dfc8a8bc360beb6bd48528",
+      "cluster_junit": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+      "source_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java",
+      "source_test_lines": "241-283",
+      "target": "DataNode.getBPOSForBlock:1833 null-BPOfferService check; IOException:1835",
+      "source_reachability": "The existing test directly calls dn0.transferBlock(block, ...) at line 277; transferBlock calls getBPOSForBlock before starting transfer.",
+      "prior_calibration": {
+        "result": "data/mallory/calibration/HDFS-31/result.json",
+        "result_sha256": "93f24571afa22b7e4f19eb83cc1e7c1bf2248617ed419b1246a33a15b3e915e8",
+        "stdout_sha256": "10e6a5865e21f43a21af9a7b0df56d204efad4d369e83e156fb6518819a3784d",
+        "status": "healthy_seed_invalid",
+        "junit_tests": 1,
+        "junit_errors": 1,
+        "startup_error": "obsolete agent duplicate DataNode class LinkageError before the transfer step"
+      },
+      "admission": "healthy_probe_only",
+      "exact_target_reached": "unproven",
+      "named_target_actor": "unproven",
+      "pretarget_typed_io_to_guard_effect": "unproven"
+    },
+    "HDFS-32": {
+      "config": "Mallory/adapters/hdfs/cases/hdfs31-32-node2-healthy-stage-v1/HDFS-32-node2-healthy-v1.json",
+      "config_sha256": "de2e10671adbb42ab24e94f8571625f83ff0722694751804f5bc662e9ecc26cf",
+      "site_catalog_sha256": "51f9c946c0b8b3e219d4e287ed136ff5b76a8adfb88a63dacae603b08f1a8d5f",
+      "cluster_junit": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDfsAdminDeleteBlockPool",
+      "source_test_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java",
+      "source_test_lines": "142-187",
+      "target": "DataNode.deleteBlockPool:3819 running-BPOfferService check; IOException:3822",
+      "source_reachability": "The existing federated test calls refreshNamenodes, then sends a no-force and a force deleteBlockPool RPC to the DataNode; both requests enter the selected method if delivered.",
+      "prior_calibration": {
+        "result": "data/mallory/calibration/HDFS-32/result.json",
+        "result_sha256": "004b0ae2cf6885b50afd9e4fb963f39603e08424eca4f918e4c40a16323469a6",
+        "stdout_sha256": "e01e550c6401e1635629a599d25fdc46efb46ee0bf426fb209a0645081ab66be",
+        "status": "healthy_seed_invalid",
+        "junit_tests": 1,
+        "junit_errors": 1,
+        "startup_error": "obsolete agent duplicate DataNode class LinkageError before the delete request",
+        "prior_junit": "TestDeleteBlockPool#testDeleteBlockPool"
+      },
+      "admission": "healthy_probe_only",
+      "exact_target_reached": "unproven",
+      "named_target_actor": "unproven",
+      "force_flag_runtime_identity": "unproven",
+      "pretarget_typed_io_to_guard_effect": "unproven"
+    }
+  },
+  "fault_campaign_admission": false,
+  "next_gate": "An idle node2 HDFS lane runs each existing JUnit once through its isolated healthy-only package; inspect a 1/0/0 JUnit receipt, exact nonthrowing target event, named DataNode and epoch, and pretarget typed I/O observations before any fault campaign.",
+  "source_gap_review": {
+    "path": "Mallory/adapters/hdfs/cases/hdfs14-31-32-target-retention-limit-v1.md",
+    "sha256": "a0a74b7bcf5afeff7fb17ff1e4efc4af66ff03c4d53e332be4cab59d16211951"
+  },
+  "checklist_change": "none"
+}
