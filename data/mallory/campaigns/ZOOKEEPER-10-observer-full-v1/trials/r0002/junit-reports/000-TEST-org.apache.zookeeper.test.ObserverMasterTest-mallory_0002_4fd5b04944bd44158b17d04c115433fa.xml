@@ -1,0 +1,602 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" name="org.apache.zookeeper.test.ObserverMasterTest(mallory_0002_4fd5b04944bd44158b17d04c115433fa)" time="11.437" tests="2" errors="1" skipped="0" failures="0">
+  <properties>
+    <property name="build.test.dir" value="/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire"/>
+    <property name="awt.toolkit" value="sun.awt.X11.XToolkit"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="sun.cpu.isalist" value=""/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.class.path" value="/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/test-classes:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/classes:/users/ZhenyuLi/.m2/repository/com/github/spotbugs/spotbugs-annotations/4.0.2/spotbugs-annotations-4.0.2.jar:/users/ZhenyuLi/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-library/2.2/hamcrest-library-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/users/ZhenyuLi/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-jute/target/classes:/users/ZhenyuLi/.m2/repository/commons-cli/commons-cli/1.5.0/commons-cli-1.5.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/yetus/audience-annotations/0.12.0/audience-annotations-0.12.0.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-handler/4.1.137.Final/netty-handler-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-common/4.1.137.Final/netty-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-resolver/4.1.137.Final/netty-resolver-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-buffer/4.1.137.Final/netty-buffer-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport/4.1.137.Final/netty-transport-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.137.Final/netty-transport-native-unix-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-codec/4.1.137.Final/netty-codec-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-epoll/4.1.137.Final/netty-transport-native-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.137.Final/netty-transport-classes-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-server/9.4.58.v20250814/jetty-server-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-http/9.4.58.v20250814/jetty-http-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util/9.4.58.v20250814/jetty-util-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-io/9.4.58.v20250814/jetty-io-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.58.v20250814/jetty-servlet-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-security/9.4.58.v20250814/jetty-security-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.58.v20250814/jetty-util-ajax-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-client/9.4.58.v20250814/jetty-client-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.22.2/jackson-databind-2.22.2.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.22.2/jackson-core-2.22.2.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.60/bcprov-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.60/bcpkix-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/jline/jline/3.30.14/jline-3.30.14-jdk8.jar:/users/ZhenyuLi/.m2/repository/io/dropwizard/metrics/metrics-core/4.1.12.1/metrics-core-4.1.12.1.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-core/2.0.0/kerb-core-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-pkix/2.0.0/kerby-pkix-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-asn1/2.0.0/kerby-asn1-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-util/2.0.0/kerby-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-simplekdc/2.0.0/kerb-simplekdc-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-client/2.0.0/kerb-client-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-common/2.0.0/kerb-common-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-crypto/2.0.0/kerb-crypto-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-util/2.0.0/kerb-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/token-provider/2.0.0/token-provider-2.0.0.jar:/users/ZhenyuLi/.m2/repository/com/nimbusds/nimbus-jose-jwt/4.41.2/nimbus-jose-jwt-4.41.2.jar:/users/ZhenyuLi/.m2/repository/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar:/users/ZhenyuLi/.m2/repository/net/minidev/json-smart/2.3/json-smart-2.3.jar:/users/ZhenyuLi/.m2/repository/net/minidev/accessors-smart/1.2/accessors-smart-1.2.jar:/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/5.0.4/asm-5.0.4.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-admin/2.0.0/kerb-admin-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-server/2.0.0/kerb-server-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-identity/2.0.0/kerb-identity-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-xdr/2.0.0/kerby-xdr-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-config/2.0.0/kerby-config-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/mockito/mockito-core/4.9.0/mockito-core-4.9.0.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy/1.12.16/byte-buddy-1.12.16.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy-agent/1.12.16/byte-buddy-agent-1.12.16.jar:/users/ZhenyuLi/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/users/ZhenyuLi/.m2/repository/org/jmockit/jmockit/1.48/jmockit-1.48.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.6.2/junit-jupiter-api-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar:/users/ZhenyuLi/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-commons/1.6.2/junit-platform-commons-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.6.2/junit-jupiter-engine-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-engine/1.6.2/junit-platform-engine-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.6.2/junit-jupiter-params-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-runner/1.6.2/junit-platform-runner-1.6.2.jar:/users/ZhenyuLi/.m2/repository/junit/junit/4.13/junit-4.13.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-launcher/1.6.2/junit-platform-launcher-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-suite-api/1.6.2/junit-platform-suite-api-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/tools/0.25.4/tools-0.25.4.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/core/12.62.5/core-12.62.5.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/jvm-driver/8.14.0/jvm-driver-8.14.0.jar:/users/ZhenyuLi/.m2/repository/io/github/toolfactory/jvm-driver/9.4.2/jvm-driver-9.4.2.jar:/users/ZhenyuLi/.m2/repository/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar:/users/ZhenyuLi/.m2/repository/commons-io/commons-io/2.17.0/commons-io-2.17.0.jar:"/>
+    <property name="java.vm.vendor" value="Private Build"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.vendor.url" value="http://java.oracle.com/"/>
+    <property name="user.timezone" value=""/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="os.name" value="Linux"/>
+    <property name="mallory.agent.arg" value="-javaagent:/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar=config=/users/ZhenyuLi/baseline/data/mallory/campaigns/ZOOKEEPER-10-observer-full-v1/trials/r0002/agent.properties"/>
+    <property name="user.country" value="US"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.boot.library.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/amd64"/>
+    <property name="sun.java.command" value="/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/surefirebooter4060799758910187522.jar /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire 2026-10-10T02-27-21_231-jvmRun1 surefire4627852089004230998tmp surefire_08634331844767513748tmp"/>
+    <property name="test" value="ObserverMasterTest#testObserver"/>
+    <property name="surefire.test.class.path" value="/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/test-classes:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/classes:/users/ZhenyuLi/.m2/repository/com/github/spotbugs/spotbugs-annotations/4.0.2/spotbugs-annotations-4.0.2.jar:/users/ZhenyuLi/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-library/2.2/hamcrest-library-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/users/ZhenyuLi/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-jute/target/classes:/users/ZhenyuLi/.m2/repository/commons-cli/commons-cli/1.5.0/commons-cli-1.5.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/yetus/audience-annotations/0.12.0/audience-annotations-0.12.0.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-handler/4.1.137.Final/netty-handler-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-common/4.1.137.Final/netty-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-resolver/4.1.137.Final/netty-resolver-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-buffer/4.1.137.Final/netty-buffer-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport/4.1.137.Final/netty-transport-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.137.Final/netty-transport-native-unix-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-codec/4.1.137.Final/netty-codec-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-epoll/4.1.137.Final/netty-transport-native-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.137.Final/netty-transport-classes-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-server/9.4.58.v20250814/jetty-server-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-http/9.4.58.v20250814/jetty-http-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util/9.4.58.v20250814/jetty-util-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-io/9.4.58.v20250814/jetty-io-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.58.v20250814/jetty-servlet-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-security/9.4.58.v20250814/jetty-security-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.58.v20250814/jetty-util-ajax-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-client/9.4.58.v20250814/jetty-client-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.22.2/jackson-databind-2.22.2.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.22.2/jackson-core-2.22.2.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.60/bcprov-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.60/bcpkix-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/jline/jline/3.30.14/jline-3.30.14-jdk8.jar:/users/ZhenyuLi/.m2/repository/io/dropwizard/metrics/metrics-core/4.1.12.1/metrics-core-4.1.12.1.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-core/2.0.0/kerb-core-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-pkix/2.0.0/kerby-pkix-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-asn1/2.0.0/kerby-asn1-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-util/2.0.0/kerby-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-simplekdc/2.0.0/kerb-simplekdc-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-client/2.0.0/kerb-client-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-common/2.0.0/kerb-common-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-crypto/2.0.0/kerb-crypto-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-util/2.0.0/kerb-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/token-provider/2.0.0/token-provider-2.0.0.jar:/users/ZhenyuLi/.m2/repository/com/nimbusds/nimbus-jose-jwt/4.41.2/nimbus-jose-jwt-4.41.2.jar:/users/ZhenyuLi/.m2/repository/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar:/users/ZhenyuLi/.m2/repository/net/minidev/json-smart/2.3/json-smart-2.3.jar:/users/ZhenyuLi/.m2/repository/net/minidev/accessors-smart/1.2/accessors-smart-1.2.jar:/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/5.0.4/asm-5.0.4.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-admin/2.0.0/kerb-admin-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-server/2.0.0/kerb-server-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-identity/2.0.0/kerb-identity-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-xdr/2.0.0/kerby-xdr-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-config/2.0.0/kerby-config-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/mockito/mockito-core/4.9.0/mockito-core-4.9.0.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy/1.12.16/byte-buddy-1.12.16.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy-agent/1.12.16/byte-buddy-agent-1.12.16.jar:/users/ZhenyuLi/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/users/ZhenyuLi/.m2/repository/org/jmockit/jmockit/1.48/jmockit-1.48.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.6.2/junit-jupiter-api-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar:/users/ZhenyuLi/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-commons/1.6.2/junit-platform-commons-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.6.2/junit-jupiter-engine-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-engine/1.6.2/junit-platform-engine-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.6.2/junit-jupiter-params-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-runner/1.6.2/junit-platform-runner-1.6.2.jar:/users/ZhenyuLi/.m2/repository/junit/junit/4.13/junit-4.13.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-launcher/1.6.2/junit-platform-launcher-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-suite-api/1.6.2/junit-platform-suite-api-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/tools/0.25.4/tools-0.25.4.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/core/12.62.5/core-12.62.5.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/jvm-driver/8.14.0/jvm-driver-8.14.0.jar:/users/ZhenyuLi/.m2/repository/io/github/toolfactory/jvm-driver/9.4.2/jvm-driver-9.4.2.jar:/users/ZhenyuLi/.m2/repository/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar:/users/ZhenyuLi/.m2/repository/commons-io/commons-io/2.17.0/commons-io-2.17.0.jar:"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="/users/ZhenyuLi"/>
+    <property name="user.language" value="en"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.home" value="/usr/lib/jvm/java-8-openjdk-amd64/jre"/>
+    <property name="zookeeper.DigestAuthenticationProvider.superDigest" value="super:D/InIHSb7yEEbrWz8b9l71RjZJU="/>
+    <property name="basedir" value="/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server"/>
+    <property name="file.separator" value="/"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="mallory.test.dir" value="/users/ZhenyuLi/baseline/data/mallory/campaigns/ZOOKEEPER-10-observer-full-v1/trials/r0002/test-data"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.X11GraphicsEnvironment"/>
+    <property name="test.junit.threads" value="8"/>
+    <property name="surefire.reportNameSuffix" value="mallory_0002_4fd5b04944bd44158b17d04c115433fa"/>
+    <property name="surefire.real.class.path" value="/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/surefirebooter4060799758910187522.jar:/users/ZhenyuLi/.m2/repository/org/jmockit/jmockit/1.48/jmockit-1.48.jar:/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar"/>
+    <property name="zookeeper.junit.threadid" value="1"/>
+    <property name="sun.boot.class.path" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-8-openjdk-amd64/jre/classes"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="1.8.0_492-8u492-ga~us2-0ubuntu1~22.04.1-b09"/>
+    <property name="user.name" value="ZhenyuLi"/>
+    <property name="path.separator" value=":"/>
+    <property name="os.version" value="5.15.0-177-generic"/>
+    <property name="java.endorsed.dirs" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/endorsed"/>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="surefire.failIfNoSpecifiedTests" value="false"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="localRepository" value="/users/ZhenyuLi/.m2/repository"/>
+    <property name="java.vendor.url.bug" value="http://bugreport.sun.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="/tmp"/>
+    <property name="java.version" value="1.8.0_492"/>
+    <property name="user.dir" value="/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="java.awt.printerjob" value="sun.print.PSPrinterJob"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.library.path" value="/usr/java/packages/lib/amd64:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib"/>
+    <property name="junit.jupiter.extensions.autodetection.enabled" value="true"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.vendor" value="Private Build"/>
+    <property name="java.vm.version" value="25.492-b09"/>
+    <property name="java.specification.maintenance.version" value="6"/>
+    <property name="java.ext.dirs" value="/usr/lib/jvm/java-8-openjdk-amd64/jre/lib/ext:/usr/java/packages/lib/ext"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="52.0"/>
+  </properties>
+  <testcase name="testObserver{boolean}[1]" classname="org.apache.zookeeper.test.ObserverMasterTest(mallory_0002_4fd5b04944bd44158b17d04c115433fa)" time="1.671">
+    <error message="KeeperErrorCode = ConnectionLoss for /obstest" type="org.apache.zookeeper.KeeperException$ConnectionLossException">org.apache.zookeeper.KeeperException$ConnectionLossException: KeeperErrorCode = ConnectionLoss for /obstest
+	at org.apache.zookeeper.KeeperException.create(KeeperException.java:102)
+	at org.apache.zookeeper.KeeperException.create(KeeperException.java:54)
+	at org.apache.zookeeper.ZooKeeper.setData(ZooKeeper.java:2181)
+	at org.apache.zookeeper.test.ObserverMasterTest.testObserver(ObserverMasterTest.java:105)
+</error>
+    <system-out><![CDATA[2026-10-10 02:27:30,208 [myid:] - INFO  [main:o.a.z.ZKTestCase@77] - STARTING Optional[public void org.apache.zookeeper.test.ObserverMasterTest.testObserver(boolean) throws java.lang.Exception]
+2026-10-10 02:27:30,248 [myid:] - INFO  [main:o.a.z.PortAssignment@154] - Test process 1/8 using ports from 11221 - 13913.
+2026-10-10 02:27:30,254 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11222 from range 11221 - 13913.
+2026-10-10 02:27:30,254 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11223 from range 11221 - 13913.
+2026-10-10 02:27:30,255 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11224 from range 11221 - 13913.
+2026-10-10 02:27:30,255 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11225 from range 11221 - 13913.
+2026-10-10 02:27:30,256 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11226 from range 11221 - 13913.
+2026-10-10 02:27:30,256 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11227 from range 11221 - 13913.
+2026-10-10 02:27:30,257 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11228 from range 11221 - 13913.
+2026-10-10 02:27:30,257 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11229 from range 11221 - 13913.
+2026-10-10 02:27:30,258 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11230 from range 11221 - 13913.
+2026-10-10 02:27:30,258 [myid:] - INFO  [main:o.a.z.PortAssignment@87] - Assigned port 11231 from range 11221 - 13913.
+2026-10-10 02:27:30,268 [myid:] - INFO  [main:o.a.z.s.q.QuorumPeerTestBase$MainThread@205] - id = 1 tmpDir = /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test3242489196707428759.junit.dir clientPort = 11228 adminServerPort = 8080
+2026-10-10 02:27:30,270 [myid:] - INFO  [main:o.a.z.s.q.QuorumPeerTestBase$MainThread@205] - id = 2 tmpDir = /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test8108808818730586401.junit.dir clientPort = 11229 adminServerPort = 8080
+2026-10-10 02:27:30,270 [myid:] - INFO  [main:o.a.z.s.q.QuorumPeerTestBase$MainThread@205] - id = 3 tmpDir = /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test7753477416641886711.junit.dir clientPort = 11230 adminServerPort = 8080
+2026-10-10 02:27:30,275 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11228
+2026-10-10 02:27:30,277 [myid:] - INFO  [main:o.a.z.t.ClientBase@268] - server 127.0.0.1:11228 not up: java.net.ConnectException: Connection refused (Connection refused)
+2026-10-10 02:27:30,278 [myid:] - INFO  [Thread-1:o.a.z.s.q.QuorumPeerConfig@177] - Reading configuration from: /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test3242489196707428759.junit.dir/zoo.cfg
+2026-10-10 02:27:30,278 [myid:] - INFO  [Thread-2:o.a.z.s.q.QuorumPeerConfig@177] - Reading configuration from: /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test8108808818730586401.junit.dir/zoo.cfg
+2026-10-10 02:27:30,286 [myid:] - INFO  [Thread-2:o.a.z.s.q.QuorumPeerConfig@440] - clientPortAddress is 0.0.0.0:11229
+2026-10-10 02:27:30,286 [myid:] - INFO  [Thread-1:o.a.z.s.q.QuorumPeerConfig@440] - clientPortAddress is 0.0.0.0:11228
+2026-10-10 02:27:30,286 [myid:] - INFO  [Thread-2:o.a.z.s.q.QuorumPeerConfig@444] - secureClientPort is not set
+2026-10-10 02:27:30,286 [myid:] - INFO  [Thread-1:o.a.z.s.q.QuorumPeerConfig@444] - secureClientPort is not set
+2026-10-10 02:27:30,287 [myid:] - INFO  [Thread-2:o.a.z.s.q.QuorumPeerConfig@463] - observerMasterPort is 11231
+2026-10-10 02:27:30,287 [myid:] - INFO  [Thread-1:o.a.z.s.q.QuorumPeerConfig@463] - observerMasterPort is 11231
+2026-10-10 02:27:30,287 [myid:] - INFO  [Thread-2:o.a.z.s.q.QuorumPeerConfig@477] - metricsProvider.className is org.apache.zookeeper.metrics.impl.DefaultMetricsProvider
+2026-10-10 02:27:30,287 [myid:] - INFO  [Thread-1:o.a.z.s.q.QuorumPeerConfig@477] - metricsProvider.className is org.apache.zookeeper.metrics.impl.DefaultMetricsProvider
+2026-10-10 02:27:30,293 [myid:] - WARN  [Thread-1:o.a.z.s.q.QuorumPeerConfig@709] - No server failure will be tolerated. You need at least 3 servers.
+2026-10-10 02:27:30,293 [myid:] - WARN  [Thread-2:o.a.z.s.q.QuorumPeerConfig@709] - No server failure will be tolerated. You need at least 3 servers.
+2026-10-10 02:27:30,295 [myid:1] - INFO  [Thread-1:o.a.z.s.DatadirCleanupManager@78] - autopurge.snapRetainCount set to 3
+2026-10-10 02:27:30,295 [myid:2] - INFO  [Thread-2:o.a.z.s.DatadirCleanupManager@78] - autopurge.snapRetainCount set to 3
+2026-10-10 02:27:30,295 [myid:1] - INFO  [Thread-1:o.a.z.s.DatadirCleanupManager@79] - autopurge.purgeInterval set to 0
+2026-10-10 02:27:30,295 [myid:2] - INFO  [Thread-2:o.a.z.s.DatadirCleanupManager@79] - autopurge.purgeInterval set to 0
+2026-10-10 02:27:30,295 [myid:1] - INFO  [Thread-1:o.a.z.s.DatadirCleanupManager@101] - Purge task is not scheduled.
+2026-10-10 02:27:30,296 [myid:2] - INFO  [Thread-2:o.a.z.s.DatadirCleanupManager@101] - Purge task is not scheduled.
+2026-10-10 02:27:30,296 [myid:1] - INFO  [Thread-1:o.a.z.j.ManagedUtil@46] - Log4j 1.2 jmx support not found; jmx disabled.
+2026-10-10 02:27:30,297 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeerMain@152] - Starting quorum peer, myid=1
+2026-10-10 02:27:30,297 [myid:2] - INFO  [Thread-2:o.a.z.j.ManagedUtil@46] - Log4j 1.2 jmx support not found; jmx disabled.
+2026-10-10 02:27:30,297 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeerMain@152] - Starting quorum peer, myid=2
+2026-10-10 02:27:30,311 [myid:2] - INFO  [Thread-2:o.a.z.s.ServerMetrics@64] - ServerMetrics initialized with provider org.apache.zookeeper.metrics.impl.DefaultMetricsProvider@718790e1
+2026-10-10 02:27:30,311 [myid:1] - INFO  [Thread-1:o.a.z.s.ServerMetrics@64] - ServerMetrics initialized with provider org.apache.zookeeper.metrics.impl.DefaultMetricsProvider@5e3d83cd
+2026-10-10 02:27:30,314 [myid:2] - INFO  [Thread-2:o.a.z.s.a.DigestAuthenticationProvider@47] - ACL digest algorithm is: SHA1
+2026-10-10 02:27:30,315 [myid:2] - INFO  [Thread-2:o.a.z.s.a.DigestAuthenticationProvider@61] - zookeeper.DigestAuthenticationProvider.enabled = true
+2026-10-10 02:27:30,315 [myid:1] - INFO  [Thread-1:o.a.z.s.a.DigestAuthenticationProvider@61] - zookeeper.DigestAuthenticationProvider.enabled = true
+2026-10-10 02:27:30,323 [myid:2] - INFO  [Thread-2:o.a.z.s.ServerCnxnFactory@169] - Using org.apache.zookeeper.server.NIOServerCnxnFactory as server connection factory
+2026-10-10 02:27:30,323 [myid:1] - INFO  [Thread-1:o.a.z.s.ServerCnxnFactory@169] - Using org.apache.zookeeper.server.NIOServerCnxnFactory as server connection factory
+2026-10-10 02:27:30,324 [myid:2] - WARN  [Thread-2:o.a.z.s.ServerCnxnFactory@309] - maxCnxns is not configured, using default value 0.
+2026-10-10 02:27:30,324 [myid:1] - WARN  [Thread-1:o.a.z.s.ServerCnxnFactory@309] - maxCnxns is not configured, using default value 0.
+2026-10-10 02:27:30,326 [myid:2] - INFO  [Thread-2:o.a.z.s.NIOServerCnxnFactory@652] - Configuring NIO connection handler with 10s sessionless connection timeout, 2 selector thread(s), 32 worker threads, and 64 kB direct buffers.
+2026-10-10 02:27:30,326 [myid:1] - INFO  [Thread-1:o.a.z.s.NIOServerCnxnFactory@652] - Configuring NIO connection handler with 10s sessionless connection timeout, 2 selector thread(s), 32 worker threads, and 64 kB direct buffers.
+2026-10-10 02:27:30,335 [myid:2] - INFO  [Thread-2:o.a.z.s.NIOServerCnxnFactory@660] - binding to port /0.0.0.0:11229
+2026-10-10 02:27:30,335 [myid:1] - INFO  [Thread-1:o.a.z.s.NIOServerCnxnFactory@660] - binding to port /0.0.0.0:11228
+2026-10-10 02:27:30,364 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@798] - zookeeper.quorumCnxnTimeoutMs=-1
+2026-10-10 02:27:30,375 [myid:1] - INFO  [Thread-1:o.a.z.c.X509Util@81] - Setting -D jdk.tls.rejectClientInitiatedRenegotiation=true to disable client-initiated TLS renegotiation
+2026-10-10 02:27:30,383 [myid:1] - INFO  [Thread-1:o.a.z.s.p.FileTxnSnapLog@124] - zookeeper.snapshot.trust.empty : false
+2026-10-10 02:27:30,383 [myid:2] - INFO  [Thread-2:o.a.z.s.p.FileTxnSnapLog@124] - zookeeper.snapshot.trust.empty : false
+2026-10-10 02:27:30,390 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1771] - Local sessions disabled
+2026-10-10 02:27:30,390 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1771] - Local sessions disabled
+2026-10-10 02:27:30,390 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1782] - Local session upgrading disabled
+2026-10-10 02:27:30,390 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1782] - Local session upgrading disabled
+2026-10-10 02:27:30,390 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1749] - tickTime set to 4000
+2026-10-10 02:27:30,391 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1793] - minSessionTimeout set to 8000
+2026-10-10 02:27:30,391 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1749] - tickTime set to 4000
+2026-10-10 02:27:30,391 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1804] - maxSessionTimeout set to 80000
+2026-10-10 02:27:30,391 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1793] - minSessionTimeout set to 8000
+2026-10-10 02:27:30,392 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1829] - initLimit set to 10
+2026-10-10 02:27:30,392 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1804] - maxSessionTimeout set to 80000
+2026-10-10 02:27:30,392 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2016] - syncLimit set to 5
+2026-10-10 02:27:30,392 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2031] - connectToLearnerMasterLimit set to 5
+2026-10-10 02:27:30,392 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1829] - initLimit set to 10
+2026-10-10 02:27:30,393 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2016] - syncLimit set to 5
+2026-10-10 02:27:30,393 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2031] - connectToLearnerMasterLimit set to 5
+2026-10-10 02:27:30,426 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] - 
+2026-10-10 02:27:30,427 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -   ______                  _                                          
+2026-10-10 02:27:30,427 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -  |___  /                 | |                                         
+2026-10-10 02:27:30,427 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -     / /    ___     ___   | | __   ___    ___   _ __     ___   _ __   
+2026-10-10 02:27:30,428 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -    / /    / _ \   / _ \  | |/ /  / _ \  / _ \ | '_ \   / _ \ | '__|
+2026-10-10 02:27:30,428 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -   / /__  | (_) | | (_) | |   <  |  __/ |  __/ | |_) | |  __/ | |    
+2026-10-10 02:27:30,428 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -  /_____|  \___/   \___/  |_|\_\  \___|  \___| | .__/   \___| |_|
+2026-10-10 02:27:30,428 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -                                               | |                     
+2026-10-10 02:27:30,429 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] -                                               |_|                     
+2026-10-10 02:27:30,429 [myid:2] - INFO  [Thread-2:o.a.z.ZookeeperBanner@42] - 
+2026-10-10 02:27:30,438 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:zookeeper.version=3.8.7-9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae-dirty, built on 2026-10-10 02:27 UTC
+2026-10-10 02:27:30,438 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:host.name=ms1140.utah.cloudlab.us
+2026-10-10 02:27:30,439 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:java.version=1.8.0_492
+2026-10-10 02:27:30,439 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:java.vendor=Private Build
+2026-10-10 02:27:30,439 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:java.home=/usr/lib/jvm/java-8-openjdk-amd64/jre
+2026-10-10 02:27:30,440 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:java.class.path=/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/test-classes:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/classes:/users/ZhenyuLi/.m2/repository/com/github/spotbugs/spotbugs-annotations/4.0.2/spotbugs-annotations-4.0.2.jar:/users/ZhenyuLi/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-library/2.2/hamcrest-library-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/users/ZhenyuLi/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-jute/target/classes:/users/ZhenyuLi/.m2/repository/commons-cli/commons-cli/1.5.0/commons-cli-1.5.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/yetus/audience-annotations/0.12.0/audience-annotations-0.12.0.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-handler/4.1.137.Final/netty-handler-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-common/4.1.137.Final/netty-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-resolver/4.1.137.Final/netty-resolver-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-buffer/4.1.137.Final/netty-buffer-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport/4.1.137.Final/netty-transport-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.137.Final/netty-transport-native-unix-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-codec/4.1.137.Final/netty-codec-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-epoll/4.1.137.Final/netty-transport-native-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.137.Final/netty-transport-classes-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-server/9.4.58.v20250814/jetty-server-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-http/9.4.58.v20250814/jetty-http-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util/9.4.58.v20250814/jetty-util-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-io/9.4.58.v20250814/jetty-io-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.58.v20250814/jetty-servlet-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-security/9.4.58.v20250814/jetty-security-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.58.v20250814/jetty-util-ajax-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-client/9.4.58.v20250814/jetty-client-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.22.2/jackson-databind-2.22.2.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.22.2/jackson-core-2.22.2.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.60/bcprov-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.60/bcpkix-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/jline/jline/3.30.14/jline-3.30.14-jdk8.jar:/users/ZhenyuLi/.m2/repository/io/dropwizard/metrics/metrics-core/4.1.12.1/metrics-core-4.1.12.1.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-core/2.0.0/kerb-core-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-pkix/2.0.0/kerby-pkix-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-asn1/2.0.0/kerby-asn1-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-util/2.0.0/kerby-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-simplekdc/2.0.0/kerb-simplekdc-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-client/2.0.0/kerb-client-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-common/2.0.0/kerb-common-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-crypto/2.0.0/kerb-crypto-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-util/2.0.0/kerb-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/token-provider/2.0.0/token-provider-2.0.0.jar:/users/ZhenyuLi/.m2/repository/com/nimbusds/nimbus-jose-jwt/4.41.2/nimbus-jose-jwt-4.41.2.jar:/users/ZhenyuLi/.m2/repository/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar:/users/ZhenyuLi/.m2/repository/net/minidev/json-smart/2.3/json-smart-2.3.jar:/users/ZhenyuLi/.m2/repository/net/minidev/accessors-smart/1.2/accessors-smart-1.2.jar:/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/5.0.4/asm-5.0.4.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-admin/2.0.0/kerb-admin-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-server/2.0.0/kerb-server-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-identity/2.0.0/kerb-identity-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-xdr/2.0.0/kerby-xdr-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-config/2.0.0/kerby-config-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/mockito/mockito-core/4.9.0/mockito-core-4.9.0.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy/1.12.16/byte-buddy-1.12.16.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy-agent/1.12.16/byte-buddy-agent-1.12.16.jar:/users/ZhenyuLi/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/users/ZhenyuLi/.m2/repository/org/jmockit/jmockit/1.48/jmockit-1.48.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.6.2/junit-jupiter-api-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar:/users/ZhenyuLi/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-commons/1.6.2/junit-platform-commons-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.6.2/junit-jupiter-engine-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-engine/1.6.2/junit-platform-engine-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.6.2/junit-jupiter-params-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-runner/1.6.2/junit-platform-runner-1.6.2.jar:/users/ZhenyuLi/.m2/repository/junit/junit/4.13/junit-4.13.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-launcher/1.6.2/junit-platform-launcher-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-suite-api/1.6.2/junit-platform-suite-api-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/tools/0.25.4/tools-0.25.4.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/core/12.62.5/core-12.62.5.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/jvm-driver/8.14.0/jvm-driver-8.14.0.jar:/users/ZhenyuLi/.m2/repository/io/github/toolfactory/jvm-driver/9.4.2/jvm-driver-9.4.2.jar:/users/ZhenyuLi/.m2/repository/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar:/users/ZhenyuLi/.m2/repository/commons-io/commons-io/2.17.0/commons-io-2.17.0.jar:
+2026-10-10 02:27:30,441 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:java.library.path=/usr/java/packages/lib/amd64:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib
+2026-10-10 02:27:30,441 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:java.io.tmpdir=/tmp
+2026-10-10 02:27:30,442 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:java.compiler=<NA>
+2026-10-10 02:27:30,442 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:os.name=Linux
+2026-10-10 02:27:30,442 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:os.arch=amd64
+2026-10-10 02:27:30,442 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:os.version=5.15.0-177-generic
+2026-10-10 02:27:30,443 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:user.name=ZhenyuLi
+2026-10-10 02:27:30,443 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:user.home=/users/ZhenyuLi
+2026-10-10 02:27:30,443 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:user.dir=/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server
+2026-10-10 02:27:30,443 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:os.memory.free=424MB
+2026-10-10 02:27:30,444 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:os.memory.max=491MB
+2026-10-10 02:27:30,444 [myid:2] - INFO  [Thread-2:o.a.z.Environment@98] - Server environment:os.memory.total=491MB
+2026-10-10 02:27:30,444 [myid:2] - INFO  [Thread-2:o.a.z.s.ZooKeeperServer@140] - zookeeper.enableEagerACLCheck = false
+2026-10-10 02:27:30,445 [myid:2] - INFO  [Thread-2:o.a.z.s.ZooKeeperServer@153] - zookeeper.digest.enabled = true
+2026-10-10 02:27:30,445 [myid:2] - INFO  [Thread-2:o.a.z.s.ZooKeeperServer@157] - zookeeper.closeSessionTxn.enabled = true
+2026-10-10 02:27:30,445 [myid:2] - INFO  [Thread-2:o.a.z.s.ZooKeeperServer@1510] - zookeeper.flushDelay = 0 ms
+2026-10-10 02:27:30,446 [myid:2] - INFO  [Thread-2:o.a.z.s.ZooKeeperServer@1519] - zookeeper.maxWriteQueuePollTime = 0 ms
+2026-10-10 02:27:30,446 [myid:2] - INFO  [Thread-2:o.a.z.s.ZooKeeperServer@1528] - zookeeper.maxBatchSize=1000
+2026-10-10 02:27:30,447 [myid:2] - INFO  [Thread-2:o.a.z.s.ZooKeeperServer@275] - zookeeper.intBufferStartingSizeBytes = 1024
+2026-10-10 02:27:30,461 [myid:2] - INFO  [Thread-2:o.a.z.s.w.WatchManagerFactory@42] - Using org.apache.zookeeper.server.watch.WatchManager as watch manager
+2026-10-10 02:27:30,461 [myid:2] - INFO  [Thread-2:o.a.z.s.w.WatchManagerFactory@42] - Using org.apache.zookeeper.server.watch.WatchManager as watch manager
+2026-10-10 02:27:30,461 [myid:1] - INFO  [Thread-1:o.a.z.s.w.WatchManagerFactory@42] - Using org.apache.zookeeper.server.watch.WatchManager as watch manager
+2026-10-10 02:27:30,462 [myid:1] - INFO  [Thread-1:o.a.z.s.w.WatchManagerFactory@42] - Using org.apache.zookeeper.server.watch.WatchManager as watch manager
+2026-10-10 02:27:30,462 [myid:2] - INFO  [Thread-2:o.a.z.s.ZKDatabase@132] - zookeeper.snapshotSizeFactor = 0.33
+2026-10-10 02:27:30,462 [myid:1] - INFO  [Thread-1:o.a.z.s.ZKDatabase@132] - zookeeper.snapshotSizeFactor = 0.33
+2026-10-10 02:27:30,462 [myid:2] - INFO  [Thread-2:o.a.z.s.ZKDatabase@152] - zookeeper.commitLogCount=500
+2026-10-10 02:27:30,462 [myid:1] - INFO  [Thread-1:o.a.z.s.ZKDatabase@152] - zookeeper.commitLogCount=500
+2026-10-10 02:27:30,464 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2355] - Updated learner master list to be /127.0.0.1:11231,/127.0.0.1:11231,
+2026-10-10 02:27:30,464 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2355] - Updated learner master list to be /127.0.0.1:11231,/127.0.0.1:11231,
+2026-10-10 02:27:30,475 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2095] - Using insecure (non-TLS) quorum communication
+2026-10-10 02:27:30,475 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2095] - Using insecure (non-TLS) quorum communication
+2026-10-10 02:27:30,476 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2101] - Port unification disabled
+2026-10-10 02:27:30,476 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2101] - Port unification disabled
+2026-10-10 02:27:30,476 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@181] - multiAddress.enabled set to false
+2026-10-10 02:27:30,476 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@181] - multiAddress.enabled set to false
+2026-10-10 02:27:30,477 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@206] - multiAddress.reachabilityCheckEnabled set to true
+2026-10-10 02:27:30,477 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@206] - multiAddress.reachabilityCheckEnabled set to true
+2026-10-10 02:27:30,477 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@193] - multiAddress.reachabilityCheckTimeoutMs set to 1000
+2026-10-10 02:27:30,477 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@193] - multiAddress.reachabilityCheckTimeoutMs set to 1000
+2026-10-10 02:27:30,477 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2556] - QuorumPeer communication is not secured! (SASL auth disabled)
+2026-10-10 02:27:30,478 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2581] - quorum.cnxn.threads.size set to 20
+2026-10-10 02:27:30,478 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2556] - QuorumPeer communication is not secured! (SASL auth disabled)
+2026-10-10 02:27:30,478 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2581] - quorum.cnxn.threads.size set to 20
+2026-10-10 02:27:30,481 [myid:2] - INFO  [Thread-2:o.a.z.s.p.FileTxnSnapLog@260] - Initialize file found, an empty database will not block voting participation
+2026-10-10 02:27:30,481 [myid:1] - INFO  [Thread-1:o.a.z.s.p.FileTxnSnapLog@260] - Initialize file found, an empty database will not block voting participation
+2026-10-10 02:27:30,494 [myid:2] - INFO  [Thread-2:o.a.z.s.p.SnapStream@61] - zookeeper.snapshot.compression.method = CHECKED
+2026-10-10 02:27:30,495 [myid:2] - INFO  [Thread-2:o.a.z.s.p.FileTxnSnapLog@479] - Snapshotting: 0x0 to /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test8108808818730586401.junit.dir/data/version-2/snapshot.0
+2026-10-10 02:27:30,495 [myid:1] - INFO  [Thread-1:o.a.z.s.p.FileTxnSnapLog@479] - Snapshotting: 0x0 to /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test3242489196707428759.junit.dir/data/version-2/snapshot.0
+2026-10-10 02:27:30,504 [myid:2] - INFO  [Thread-2:o.a.z.s.ZKDatabase@289] - Snapshot loaded in 25 ms, highest zxid is 0x0, digest is 1371985504
+2026-10-10 02:27:30,504 [myid:1] - INFO  [Thread-1:o.a.z.s.ZKDatabase@289] - Snapshot loaded in 26 ms, highest zxid is 0x0, digest is 1371985504
+2026-10-10 02:27:30,505 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1158] - currentEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+2026-10-10 02:27:30,505 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1158] - currentEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+2026-10-10 02:27:30,514 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@1186] - acceptedEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+2026-10-10 02:27:30,514 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@1186] - acceptedEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+2026-10-10 02:27:30,525 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumPeer@2598] - Using 20000ms as the quorum cnxn socket timeout
+2026-10-10 02:27:30,525 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumPeer@2598] - Using 20000ms as the quorum cnxn socket timeout
+2026-10-10 02:27:30,527 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11228
+2026-10-10 02:27:30,537 [myid:] - INFO  [NIOWorkerThread-1:o.a.z.s.c.FourLetterCommands@223] - The list of known four letter word commands is : [{1936881266=srvr, 1937006964=stat, 2003003491=wchc, 1685417328=dump, 1668445044=crst, 1936880500=srst, 1701738089=envi, 1668247142=conf, -720899=telnet close, 1751217000=hash, 2003003507=wchs, 2003003504=wchp, 1684632179=dirs, 1668247155=cons, 1835955314=mntr, 1769173615=isro, 1920298859=ruok, 1735683435=gtmk, 1937010027=stmk}]
+2026-10-10 02:27:30,537 [myid:] - INFO  [NIOWorkerThread-1:o.a.z.s.c.FourLetterCommands@224] - The list of enabled four letter word commands is : [[wchs, stat, wchp, dirs, stmk, conf, ruok, mntr, srvr, wchc, envi, srst, isro, dump, gtmk, telnet close, crst, hash, cons]]
+2026-10-10 02:27:30,538 [myid:] - INFO  [NIOWorkerThread-1:o.a.z.s.NIOServerCnxn@525] - Processing stat command from /127.0.0.1:50056
+2026-10-10 02:27:30,540 [myid:2] - INFO  [Thread-2:o.a.z.s.q.QuorumCnxManager$Listener@924] - Election port bind maximum retries is 3
+2026-10-10 02:27:30,540 [myid:1] - INFO  [Thread-1:o.a.z.s.q.QuorumCnxManager$Listener@924] - Election port bind maximum retries is 3
+2026-10-10 02:27:30,544 [myid:] - INFO  [ListenerHandler-/127.0.0.1:11225:o.a.z.s.q.QuorumCnxManager$Listener$ListenerHandler@1071] - 1 is accepting connections now, my election bind port: /127.0.0.1:11225
+2026-10-10 02:27:30,544 [myid:] - INFO  [ListenerHandler-/127.0.0.1:11226:o.a.z.s.q.QuorumCnxManager$Listener$ListenerHandler@1071] - 2 is accepting connections now, my election bind port: /127.0.0.1:11226
+2026-10-10 02:27:30,544 [myid:2] - INFO  [Thread-2:o.a.z.s.q.FastLeaderElection@90] - zookeeper.fastleader.minNotificationInterval = 200 ms
+2026-10-10 02:27:30,544 [myid:2] - INFO  [Thread-2:o.a.z.s.q.FastLeaderElection@92] - zookeeper.fastleader.maxNotificationInterval = 60000 ms
+2026-10-10 02:27:30,548 [myid:1] - INFO  [Thread-1:o.a.z.a.ZKAuditProvider@42] - ZooKeeper audit is disabled.
+2026-10-10 02:27:30,613 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@1456] - LOOKING
+2026-10-10 02:27:30,613 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.QuorumPeer@1456] - LOOKING
+2026-10-10 02:27:30,615 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.FastLeaderElection@947] - New election. My id = 1, proposed zxid=0x0
+2026-10-10 02:27:30,615 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.FastLeaderElection@947] - New election. My id = 2, proposed zxid=0x0
+2026-10-10 02:27:30,627 [myid:] - INFO  [ListenerHandler-/127.0.0.1:11225:o.a.z.s.q.QuorumCnxManager$Listener$ListenerHandler@1076] - Received connection request from /127.0.0.1:36086
+2026-10-10 02:27:30,627 [myid:] - INFO  [ListenerHandler-/127.0.0.1:11226:o.a.z.s.q.QuorumCnxManager$Listener$ListenerHandler@1076] - Received connection request from /127.0.0.1:53944
+2026-10-10 02:27:30,628 [myid:] - INFO  [WorkerReceiver[myid=1]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:LOOKING, n.leader:1, n.round:0x1, n.peerEpoch:0x0, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:30,628 [myid:] - INFO  [WorkerReceiver[myid=2]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:2, n.state:LOOKING, n.leader:2, n.round:0x1, n.peerEpoch:0x0, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:30,628 [myid:] - INFO  [QuorumConnectionThread-[myid=1]-1:o.a.z.s.q.QuorumCnxManager@514] - Have smaller server identifier, so dropping the connection: (myId:1 --> sid:2)
+2026-10-10 02:27:30,631 [myid:] - INFO  [WorkerReceiver[myid=1]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:2, n.state:LOOKING, n.leader:2, n.round:0x1, n.peerEpoch:0x0, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:30,631 [myid:] - INFO  [WorkerReceiver[myid=2]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:LOOKING, n.leader:1, n.round:0x1, n.peerEpoch:0x0, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:30,632 [myid:] - INFO  [WorkerReceiver[myid=1]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:LOOKING, n.leader:2, n.round:0x1, n.peerEpoch:0x0, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:30,632 [myid:] - INFO  [WorkerReceiver[myid=2]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:LOOKING, n.leader:2, n.round:0x1, n.peerEpoch:0x0, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:30,792 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11228
+2026-10-10 02:27:30,795 [myid:] - INFO  [NIOWorkerThread-2:o.a.z.s.NIOServerCnxn@525] - Processing stat command from /127.0.0.1:50062
+2026-10-10 02:27:30,832 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@903] - Peer state changed: following
+2026-10-10 02:27:30,833 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.QuorumPeer@903] - Peer state changed: leading
+2026-10-10 02:27:30,833 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@1538] - FOLLOWING
+2026-10-10 02:27:30,834 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.QuorumPeer@1550] - LEADING
+2026-10-10 02:27:30,925 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.LearnerMaster@47] - zookeeper.leader.maxConcurrentSnapSyncs = 10
+2026-10-10 02:27:30,926 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.LearnerMaster@50] - zookeeper.leader.maxConcurrentDiffSyncs = 100
+2026-10-10 02:27:30,926 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.Leader@90] - TCP NoDelay set to: true
+2026-10-10 02:27:30,927 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.Leader@111] - zookeeper.leader.ackLoggingFrequency = 1000
+2026-10-10 02:27:30,927 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.Leader@1377] - zookeeper.leader.maxTimeToWaitForEpoch = -1ms
+2026-10-10 02:27:30,934 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.BlueThrottle@141] - Weighed connection throttling is disabled
+2026-10-10 02:27:30,937 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ZooKeeperServer@1311] - minSessionTimeout set to 8000 ms
+2026-10-10 02:27:30,938 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ZooKeeperServer@1320] - maxSessionTimeout set to 80000 ms
+2026-10-10 02:27:30,940 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ResponseCache@50] - getData response cache size is initialized with value 400.
+2026-10-10 02:27:30,941 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ResponseCache@50] - getChildren response cache size is initialized with value 400.
+2026-10-10 02:27:30,943 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@109] - zookeeper.pathStats.slotCapacity = 60
+2026-10-10 02:27:30,944 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@110] - zookeeper.pathStats.slotDuration = 15
+2026-10-10 02:27:30,944 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@111] - zookeeper.pathStats.maxDepth = 6
+2026-10-10 02:27:30,944 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@112] - zookeeper.pathStats.initialDelay = 5
+2026-10-10 02:27:30,945 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@113] - zookeeper.pathStats.delay = 5
+2026-10-10 02:27:30,945 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@114] - zookeeper.pathStats.enabled = false
+2026-10-10 02:27:30,949 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ZooKeeperServer@1547] - The max bytes for all large requests are set to 104857600
+2026-10-10 02:27:30,950 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ZooKeeperServer@1561] - The large request threshold is set to -1
+2026-10-10 02:27:30,951 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.AuthenticationHelper@66] - zookeeper.enforce.auth.enabled = false
+2026-10-10 02:27:30,952 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.AuthenticationHelper@67] - zookeeper.enforce.auth.schemes = []
+2026-10-10 02:27:30,952 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ZooKeeperServer@376] - Created server with tickTime 4000 ms minSessionTimeout 8000 ms maxSessionTimeout 80000 ms clientPortListenBacklog -1 datadir /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test8108808818730586401.junit.dir/data/version-2 snapdir /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test8108808818730586401.junit.dir/data/version-2
+2026-10-10 02:27:30,959 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.Leader@596] - LEADING - LEADER ELECTION TOOK - 344 MS
+2026-10-10 02:27:30,965 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: leading - discovery
+2026-10-10 02:27:30,967 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.p.FileTxnSnapLog@479] - Snapshotting: 0x0 to /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test8108808818730586401.junit.dir/data/version-2/snapshot.0
+2026-10-10 02:27:30,970 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ZooKeeperServer@558] - Snapshot taken in 2 ms
+2026-10-10 02:27:31,038 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@133] - leaderConnectDelayDuringRetryMs: 100
+2026-10-10 02:27:31,039 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@134] - TCP NoDelay set to: true
+2026-10-10 02:27:31,039 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@135] - zookeeper.learner.asyncSending = false
+2026-10-10 02:27:31,039 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@136] - zookeeper.learner.closeSocketAsync = false
+2026-10-10 02:27:31,040 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ZooKeeperServer@1311] - minSessionTimeout set to 8000 ms
+2026-10-10 02:27:31,040 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ZooKeeperServer@1320] - maxSessionTimeout set to 80000 ms
+2026-10-10 02:27:31,040 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ResponseCache@50] - getData response cache size is initialized with value 400.
+2026-10-10 02:27:31,040 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ResponseCache@50] - getChildren response cache size is initialized with value 400.
+2026-10-10 02:27:31,040 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@109] - zookeeper.pathStats.slotCapacity = 60
+2026-10-10 02:27:31,040 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@110] - zookeeper.pathStats.slotDuration = 15
+2026-10-10 02:27:31,040 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@111] - zookeeper.pathStats.maxDepth = 6
+2026-10-10 02:27:31,041 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@112] - zookeeper.pathStats.initialDelay = 5
+2026-10-10 02:27:31,041 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@113] - zookeeper.pathStats.delay = 5
+2026-10-10 02:27:31,041 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@114] - zookeeper.pathStats.enabled = false
+2026-10-10 02:27:31,041 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ZooKeeperServer@1547] - The max bytes for all large requests are set to 104857600
+2026-10-10 02:27:31,041 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ZooKeeperServer@1561] - The large request threshold is set to -1
+2026-10-10 02:27:31,041 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.AuthenticationHelper@66] - zookeeper.enforce.auth.enabled = false
+2026-10-10 02:27:31,041 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.AuthenticationHelper@67] - zookeeper.enforce.auth.schemes = []
+2026-10-10 02:27:31,042 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ZooKeeperServer@376] - Created server with tickTime 4000 ms minSessionTimeout 8000 ms maxSessionTimeout 80000 ms clientPortListenBacklog -1 datadir /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test3242489196707428759.junit.dir/data/version-2 snapdir /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test3242489196707428759.junit.dir/data/version-2
+2026-10-10 02:27:31,045 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Follower@78] - FOLLOWING - LEADER ELECTION TOOK - 431 MS
+2026-10-10 02:27:31,046 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11228
+2026-10-10 02:27:31,047 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: following - discovery
+2026-10-10 02:27:31,050 [myid:] - INFO  [NIOWorkerThread-3:o.a.z.s.NIOServerCnxn@525] - Processing stat command from /127.0.0.1:36962
+2026-10-10 02:27:31,051 [myid:] - INFO  [LeaderConnector-/127.0.0.1:11223:o.a.z.s.q.Learner$LeaderConnector@387] - Successfully connected to leader, using address: /127.0.0.1:11223
+2026-10-10 02:27:31,055 [myid:] - INFO  [LearnerCnxAcceptorHandler-/127.0.0.1:11223:o.a.z.s.q.LearnerHandler@75] - zookeeper.leader.closeSocketAsync = false
+2026-10-10 02:27:31,080 [myid:] - INFO  [LearnerHandler-/127.0.0.1:58444:o.a.z.s.q.LearnerHandler@510] - Follower sid: 1 : info : 127.0.0.1:11222:11225:participant;0.0.0.0:11228
+2026-10-10 02:27:31,089 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.QuorumPeer@1899] - Dynamic reconfig is disabled, we don't store the last seen config.
+2026-10-10 02:27:31,096 [myid:] - INFO  [LearnerHandler-/127.0.0.1:58444:o.a.z.s.ZKDatabase@345] - On disk txn sync enabled with snapshotSizeFactor 0.33
+2026-10-10 02:27:31,096 [myid:] - INFO  [LearnerHandler-/127.0.0.1:58444:o.a.z.s.q.LearnerHandler@805] - Synchronizing with Learner sid: 1 maxCommittedLog=0x0 minCommittedLog=0x0 lastProcessedZxid=0x0 peerLastZxid=0x0
+2026-10-10 02:27:31,096 [myid:] - INFO  [LearnerHandler-/127.0.0.1:58444:o.a.z.s.q.LearnerHandler@850] - Sending DIFF zxid=0x0 for peer sid: 1
+2026-10-10 02:27:31,098 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: following - synchronization
+2026-10-10 02:27:31,100 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: leading - synchronization
+2026-10-10 02:27:31,102 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@570] - Getting a diff from the leader 0x0
+2026-10-10 02:27:31,102 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@922] - Peer state changed: following - synchronization - diff
+2026-10-10 02:27:31,108 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@742] - Learner received NEWLEADER message
+2026-10-10 02:27:31,109 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@1899] - Dynamic reconfig is disabled, we don't store the last seen config.
+2026-10-10 02:27:31,109 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@922] - Peer state changed: following - synchronization
+2026-10-10 02:27:31,119 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.CommitProcessor@490] - Configuring CommitProcessor with readBatchSize -1 commitBatchSize 1
+2026-10-10 02:27:31,120 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.CommitProcessor@451] - Configuring CommitProcessor with 16 worker threads.
+2026-10-10 02:27:31,122 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.FollowerRequestProcessor@59] - Initialized FollowerRequestProcessor with zookeeper.follower.skipLearnerRequestToNextProcessor as false
+2026-10-10 02:27:31,126 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.RequestThrottler@75] - zookeeper.request_throttler.shutdownTimeout = 10000 ms
+2026-10-10 02:27:31,149 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@776] - 0 txns have been persisted and it took 0ms
+2026-10-10 02:27:31,156 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@783] - Set the current epoch to 1
+2026-10-10 02:27:31,157 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@787] - Sent NEWLEADER ack to leader with zxid 100000000
+2026-10-10 02:27:31,157 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.Leader@1527] - Have quorum of supporters, sids: [[1, 2]]; starting up and setting last processed zxid: 0x100000000
+2026-10-10 02:27:31,157 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.Leader@1549] - Dynamic reconfig feature is disabled, skip designatedLeader calculation and reconfig processing.
+2026-10-10 02:27:31,159 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.CommitProcessor@490] - Configuring CommitProcessor with readBatchSize -1 commitBatchSize 1
+2026-10-10 02:27:31,159 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.CommitProcessor@451] - Configuring CommitProcessor with 16 worker threads.
+2026-10-10 02:27:31,161 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.ProposalRequestProcessor@57] - zookeeper.forward_learner_requests_to_commit_processor_disabled = false
+2026-10-10 02:27:31,170 [myid:] - INFO  [ProcessThread(sid:2 cport:-1)::o.a.z.s.PrepRequestProcessor@138] - PrepRequestProcessor (sid:2) started, reconfigEnabled=false
+2026-10-10 02:27:31,173 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.ContainerManager@84] - Using checkIntervalMs=60000 maxPerMinute=10000 maxNeverUsedIntervalMs=0
+2026-10-10 02:27:31,179 [myid:] - INFO  [QuorumPeer[myid=2](plain=[0:0:0:0:0:0:0:0]:11229)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: leading - broadcast
+2026-10-10 02:27:31,181 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@726] - Learner received UPTODATE message
+2026-10-10 02:27:31,182 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@819] - 0 txns have been logged asynchronously
+2026-10-10 02:27:31,183 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Learner@824] - 0 txns have been committed
+2026-10-10 02:27:31,183 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: following - broadcast
+2026-10-10 02:27:31,183 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Follower@115] - Starting ObserverMaster
+2026-10-10 02:27:31,301 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11228
+2026-10-10 02:27:31,304 [myid:] - INFO  [NIOWorkerThread-4:o.a.z.s.NIOServerCnxn@525] - Processing stat command from /127.0.0.1:36976
+2026-10-10 02:27:31,305 [myid:] - INFO  [NIOWorkerThread-4:o.a.z.s.c.StatCommand@52] - Stat command output
+2026-10-10 02:27:31,306 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11229
+2026-10-10 02:27:31,309 [myid:] - INFO  [NIOWorkerThread-1:o.a.z.s.NIOServerCnxn@525] - Processing stat command from /127.0.0.1:51758
+2026-10-10 02:27:31,309 [myid:] - INFO  [NIOWorkerThread-1:o.a.z.s.c.StatCommand@52] - Stat command output
+2026-10-10 02:27:31,311 [myid:] - INFO  [Thread-5:o.a.z.s.q.QuorumPeerConfig@177] - Reading configuration from: /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test7753477416641886711.junit.dir/zoo.cfg
+2026-10-10 02:27:31,311 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11230
+2026-10-10 02:27:31,312 [myid:] - INFO  [Thread-5:o.a.z.s.q.QuorumPeerConfig@440] - clientPortAddress is 0.0.0.0:11230
+2026-10-10 02:27:31,313 [myid:] - INFO  [Thread-5:o.a.z.s.q.QuorumPeerConfig@444] - secureClientPort is not set
+2026-10-10 02:27:31,313 [myid:] - INFO  [Thread-5:o.a.z.s.q.QuorumPeerConfig@463] - observerMasterPort is 11231
+2026-10-10 02:27:31,313 [myid:] - INFO  [Thread-5:o.a.z.s.q.QuorumPeerConfig@477] - metricsProvider.className is org.apache.zookeeper.metrics.impl.DefaultMetricsProvider
+2026-10-10 02:27:31,312 [myid:] - INFO  [main:o.a.z.t.ClientBase@268] - server 127.0.0.1:11230 not up: java.net.ConnectException: Connection refused (Connection refused)
+2026-10-10 02:27:31,313 [myid:] - WARN  [Thread-5:o.a.z.s.q.QuorumPeerConfig@709] - No server failure will be tolerated. You need at least 3 servers.
+2026-10-10 02:27:31,314 [myid:3] - WARN  [Thread-5:o.a.z.s.q.QuorumPeerConfig@774] - Peer type from servers list (OBSERVER) doesn't match peerType (PARTICIPANT). Defaulting to servers list.
+2026-10-10 02:27:31,314 [myid:3] - INFO  [Thread-5:o.a.z.s.DatadirCleanupManager@78] - autopurge.snapRetainCount set to 3
+2026-10-10 02:27:31,314 [myid:3] - INFO  [Thread-5:o.a.z.s.DatadirCleanupManager@79] - autopurge.purgeInterval set to 0
+2026-10-10 02:27:31,315 [myid:3] - INFO  [Thread-5:o.a.z.s.DatadirCleanupManager@101] - Purge task is not scheduled.
+2026-10-10 02:27:31,315 [myid:3] - INFO  [Thread-5:o.a.z.j.ManagedUtil@46] - Log4j 1.2 jmx support not found; jmx disabled.
+2026-10-10 02:27:31,315 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeerMain@152] - Starting quorum peer, myid=3
+2026-10-10 02:27:31,315 [myid:3] - INFO  [Thread-5:o.a.z.s.ServerMetrics@64] - ServerMetrics initialized with provider org.apache.zookeeper.metrics.impl.DefaultMetricsProvider@3fd265ce
+2026-10-10 02:27:31,316 [myid:3] - INFO  [Thread-5:o.a.z.s.a.DigestAuthenticationProvider@61] - zookeeper.DigestAuthenticationProvider.enabled = true
+2026-10-10 02:27:31,316 [myid:3] - INFO  [Thread-5:o.a.z.s.ServerCnxnFactory@169] - Using org.apache.zookeeper.server.NIOServerCnxnFactory as server connection factory
+2026-10-10 02:27:31,316 [myid:3] - WARN  [Thread-5:o.a.z.s.ServerCnxnFactory@309] - maxCnxns is not configured, using default value 0.
+2026-10-10 02:27:31,316 [myid:3] - INFO  [Thread-5:o.a.z.s.NIOServerCnxnFactory@652] - Configuring NIO connection handler with 10s sessionless connection timeout, 2 selector thread(s), 32 worker threads, and 64 kB direct buffers.
+2026-10-10 02:27:31,317 [myid:3] - INFO  [Thread-5:o.a.z.s.NIOServerCnxnFactory@660] - binding to port /0.0.0.0:11230
+2026-10-10 02:27:31,317 [myid:3] - INFO  [Thread-5:o.a.z.s.p.FileTxnSnapLog@124] - zookeeper.snapshot.trust.empty : false
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1771] - Local sessions disabled
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1782] - Local session upgrading disabled
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1749] - tickTime set to 4000
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1793] - minSessionTimeout set to 8000
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1804] - maxSessionTimeout set to 80000
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1829] - initLimit set to 10
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2016] - syncLimit set to 5
+2026-10-10 02:27:31,318 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2031] - connectToLearnerMasterLimit set to 5
+2026-10-10 02:27:31,319 [myid:3] - INFO  [Thread-5:o.a.z.s.w.WatchManagerFactory@42] - Using org.apache.zookeeper.server.watch.WatchManager as watch manager
+2026-10-10 02:27:31,319 [myid:3] - INFO  [Thread-5:o.a.z.s.w.WatchManagerFactory@42] - Using org.apache.zookeeper.server.watch.WatchManager as watch manager
+2026-10-10 02:27:31,319 [myid:3] - INFO  [Thread-5:o.a.z.s.ZKDatabase@132] - zookeeper.snapshotSizeFactor = 0.33
+2026-10-10 02:27:31,319 [myid:3] - INFO  [Thread-5:o.a.z.s.ZKDatabase@152] - zookeeper.commitLogCount=500
+2026-10-10 02:27:31,319 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2355] - Updated learner master list to be /127.0.0.1:11231,/127.0.0.1:11231,
+2026-10-10 02:27:31,320 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2095] - Using insecure (non-TLS) quorum communication
+2026-10-10 02:27:31,320 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2101] - Port unification disabled
+2026-10-10 02:27:31,320 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@181] - multiAddress.enabled set to false
+2026-10-10 02:27:31,320 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@206] - multiAddress.reachabilityCheckEnabled set to true
+2026-10-10 02:27:31,320 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@193] - multiAddress.reachabilityCheckTimeoutMs set to 1000
+2026-10-10 02:27:31,321 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2556] - QuorumPeer communication is not secured! (SASL auth disabled)
+2026-10-10 02:27:31,321 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2581] - quorum.cnxn.threads.size set to 20
+2026-10-10 02:27:31,321 [myid:3] - INFO  [Thread-5:o.a.z.s.p.FileTxnSnapLog@260] - Initialize file found, an empty database will not block voting participation
+2026-10-10 02:27:31,321 [myid:3] - INFO  [Thread-5:o.a.z.s.p.FileTxnSnapLog@479] - Snapshotting: 0x0 to /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test7753477416641886711.junit.dir/data/version-2/snapshot.0
+2026-10-10 02:27:31,322 [myid:3] - INFO  [Thread-5:o.a.z.s.ZKDatabase@289] - Snapshot loaded in 1 ms, highest zxid is 0x0, digest is 1371985504
+2026-10-10 02:27:31,322 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1158] - currentEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+2026-10-10 02:27:31,328 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@1186] - acceptedEpoch not found! Creating with a reasonable default of 0. This should only happen when you are upgrading your installation
+2026-10-10 02:27:31,333 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumPeer@2598] - Using 20000ms as the quorum cnxn socket timeout
+2026-10-10 02:27:31,333 [myid:3] - INFO  [Thread-5:o.a.z.s.q.QuorumCnxManager$Listener@924] - Election port bind maximum retries is 3
+2026-10-10 02:27:31,335 [myid:] - INFO  [ListenerHandler-/127.0.0.1:11227:o.a.z.s.q.QuorumCnxManager$Listener$ListenerHandler@1071] - 3 is accepting connections now, my election bind port: /127.0.0.1:11227
+2026-10-10 02:27:31,335 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@1456] - LOOKING
+2026-10-10 02:27:31,336 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.FastLeaderElection@947] - New election. My id = 3, proposed zxid=0x8000000000000000
+2026-10-10 02:27:31,338 [myid:] - INFO  [ListenerHandler-/127.0.0.1:11225:o.a.z.s.q.QuorumCnxManager$Listener$ListenerHandler@1076] - Received connection request from /127.0.0.1:40968
+2026-10-10 02:27:31,338 [myid:] - INFO  [ListenerHandler-/127.0.0.1:11226:o.a.z.s.q.QuorumCnxManager$Listener$ListenerHandler@1076] - Received connection request from /127.0.0.1:48492
+2026-10-10 02:27:31,340 [myid:] - INFO  [WorkerReceiver[myid=3]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:2, n.state:LEADING, n.leader:2, n.round:0x1, n.peerEpoch:0x1, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,341 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.FastLeaderElection@1206] - Oracle indicates not to follow
+2026-10-10 02:27:31,341 [myid:] - INFO  [WorkerReceiver[myid=3]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:FOLLOWING, n.leader:2, n.round:0x1, n.peerEpoch:0x1, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,342 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@903] - Peer state changed: observing
+2026-10-10 02:27:31,342 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@1519] - OBSERVING
+2026-10-10 02:27:31,344 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Observer@74] - zookeeper.observer.reconnectDelayMs = 0
+2026-10-10 02:27:31,344 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Observer@76] - zookeeper.observer.election.DelayMs = 200
+2026-10-10 02:27:31,344 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ZooKeeperServer@1311] - minSessionTimeout set to 8000 ms
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ZooKeeperServer@1320] - maxSessionTimeout set to 80000 ms
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ResponseCache@50] - getData response cache size is initialized with value 400.
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ResponseCache@50] - getChildren response cache size is initialized with value 400.
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@109] - zookeeper.pathStats.slotCapacity = 60
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@110] - zookeeper.pathStats.slotDuration = 15
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@111] - zookeeper.pathStats.maxDepth = 6
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@112] - zookeeper.pathStats.initialDelay = 5
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@113] - zookeeper.pathStats.delay = 5
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.u.RequestPathMetricsCollector@114] - zookeeper.pathStats.enabled = false
+2026-10-10 02:27:31,345 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ZooKeeperServer@1547] - The max bytes for all large requests are set to 104857600
+2026-10-10 02:27:31,346 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ZooKeeperServer@1561] - The large request threshold is set to -1
+2026-10-10 02:27:31,346 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.AuthenticationHelper@66] - zookeeper.enforce.auth.enabled = false
+2026-10-10 02:27:31,346 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.AuthenticationHelper@67] - zookeeper.enforce.auth.schemes = []
+2026-10-10 02:27:31,346 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ZooKeeperServer@376] - Created server with tickTime 4000 ms minSessionTimeout 8000 ms maxSessionTimeout 80000 ms clientPortListenBacklog -1 datadir /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test7753477416641886711.junit.dir/data/version-2 snapdir /users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/surefire/test7753477416641886711.junit.dir/data/version-2
+2026-10-10 02:27:31,346 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.ObserverZooKeeperServer@55] - syncEnabled =true
+2026-10-10 02:27:31,348 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: observing - discovery
+2026-10-10 02:27:31,348 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Observer@169] - Observing new leader sid=2 addr=/127.0.0.1:11231
+2026-10-10 02:27:31,350 [myid:] - INFO  [LeaderConnector-/127.0.0.1:11231:o.a.z.s.q.Learner$LeaderConnector@387] - Successfully connected to leader, using address: /127.0.0.1:11231
+2026-10-10 02:27:31,352 [myid:] - INFO  [LearnerHandler-/127.0.0.1:41794:o.a.z.s.q.LearnerHandler@510] - Follower sid: 3 : info : 127.0.0.1:11224:11227:observer;0.0.0.0:11230
+2026-10-10 02:27:31,358 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: observing - synchronization
+2026-10-10 02:27:31,358 [myid:] - INFO  [LearnerHandler-/127.0.0.1:41794:o.a.z.s.ZKDatabase@345] - On disk txn sync enabled with snapshotSizeFactor 0.33
+2026-10-10 02:27:31,359 [myid:] - INFO  [LearnerHandler-/127.0.0.1:41794:o.a.z.s.q.LearnerHandler@805] - Synchronizing with Learner sid: 3 maxCommittedLog=0x0 minCommittedLog=0x0 lastProcessedZxid=0x0 peerLastZxid=0x0
+2026-10-10 02:27:31,359 [myid:] - INFO  [LearnerHandler-/127.0.0.1:41794:o.a.z.s.q.LearnerHandler@850] - Sending DIFF zxid=0x0 for peer sid: 3
+2026-10-10 02:27:31,361 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Learner@570] - Getting a diff from the leader 0x0
+2026-10-10 02:27:31,361 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@922] - Peer state changed: observing - synchronization - diff
+2026-10-10 02:27:31,362 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Learner@742] - Learner received NEWLEADER message
+2026-10-10 02:27:31,362 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@1899] - Dynamic reconfig is disabled, we don't store the last seen config.
+2026-10-10 02:27:31,362 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@922] - Peer state changed: observing - synchronization
+2026-10-10 02:27:31,363 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.CommitProcessor@490] - Configuring CommitProcessor with readBatchSize -1 commitBatchSize 1
+2026-10-10 02:27:31,363 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.CommitProcessor@451] - Configuring CommitProcessor with 16 worker threads.
+2026-10-10 02:27:31,370 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Learner@783] - Set the current epoch to 1
+2026-10-10 02:27:31,371 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Learner@787] - Sent NEWLEADER ack to leader with zxid 100000000
+2026-10-10 02:27:31,372 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Learner@726] - Learner received UPTODATE message
+2026-10-10 02:27:31,374 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: observing - broadcast
+2026-10-10 02:27:31,563 [myid:] - INFO  [main:o.a.z.c.FourLetterWordMain@94] - connecting to 127.0.0.1 11230
+2026-10-10 02:27:31,566 [myid:] - INFO  [NIOWorkerThread-1:o.a.z.s.NIOServerCnxn@525] - Processing stat command from /127.0.0.1:34874
+2026-10-10 02:27:31,567 [myid:] - INFO  [NIOWorkerThread-1:o.a.z.s.c.StatCommand@52] - Stat command output
+2026-10-10 02:27:31,595 [myid:] - INFO  [main:o.a.z.t.ObserverMasterTest@93] - port 11231 11231
+2026-10-10 02:27:31,602 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:zookeeper.version=3.8.7-9085db92dd679e1e90a63bfe6ae6345ab6cbc4ae-dirty, built on 2026-10-10 02:27 UTC
+2026-10-10 02:27:31,603 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:host.name=ms1140.utah.cloudlab.us
+2026-10-10 02:27:31,604 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:java.version=1.8.0_492
+2026-10-10 02:27:31,604 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:java.vendor=Private Build
+2026-10-10 02:27:31,605 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:java.home=/usr/lib/jvm/java-8-openjdk-amd64/jre
+2026-10-10 02:27:31,605 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:java.class.path=/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/test-classes:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server/target/classes:/users/ZhenyuLi/.m2/repository/com/github/spotbugs/spotbugs-annotations/4.0.2/spotbugs-annotations-4.0.2.jar:/users/ZhenyuLi/.m2/repository/com/google/code/findbugs/jsr305/3.0.2/jsr305-3.0.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-library/2.2/hamcrest-library-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest-core/2.2/hamcrest-core-2.2.jar:/users/ZhenyuLi/.m2/repository/org/hamcrest/hamcrest/2.2/hamcrest-2.2.jar:/users/ZhenyuLi/.m2/repository/org/apache/commons/commons-collections4/4.4/commons-collections4-4.4.jar:/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-jute/target/classes:/users/ZhenyuLi/.m2/repository/commons-cli/commons-cli/1.5.0/commons-cli-1.5.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/yetus/audience-annotations/0.12.0/audience-annotations-0.12.0.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-handler/4.1.137.Final/netty-handler-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-common/4.1.137.Final/netty-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-resolver/4.1.137.Final/netty-resolver-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-buffer/4.1.137.Final/netty-buffer-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport/4.1.137.Final/netty-transport-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-unix-common/4.1.137.Final/netty-transport-native-unix-common-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-codec/4.1.137.Final/netty-codec-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-native-epoll/4.1.137.Final/netty-transport-native-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/io/netty/netty-transport-classes-epoll/4.1.137.Final/netty-transport-classes-epoll-4.1.137.Final.jar:/users/ZhenyuLi/.m2/repository/org/slf4j/slf4j-api/2.0.13/slf4j-api-2.0.13.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-core/1.3.15/logback-core-1.3.15.jar:/users/ZhenyuLi/.m2/repository/ch/qos/logback/logback-classic/1.3.15/logback-classic-1.3.15.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-server/9.4.58.v20250814/jetty-server-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/javax/servlet/javax.servlet-api/3.1.0/javax.servlet-api-3.1.0.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-http/9.4.58.v20250814/jetty-http-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util/9.4.58.v20250814/jetty-util-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-io/9.4.58.v20250814/jetty-io-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-servlet/9.4.58.v20250814/jetty-servlet-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-security/9.4.58.v20250814/jetty-security-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-util-ajax/9.4.58.v20250814/jetty-util-ajax-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/org/eclipse/jetty/jetty-client/9.4.58.v20250814/jetty-client-9.4.58.v20250814.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.22.2/jackson-databind-2.22.2.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.22/jackson-annotations-2.22.jar:/users/ZhenyuLi/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.22.2/jackson-core-2.22.2.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcprov-jdk15on/1.60/bcprov-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/bouncycastle/bcpkix-jdk15on/1.60/bcpkix-jdk15on-1.60.jar:/users/ZhenyuLi/.m2/repository/org/jline/jline/3.30.14/jline-3.30.14-jdk8.jar:/users/ZhenyuLi/.m2/repository/io/dropwizard/metrics/metrics-core/4.1.12.1/metrics-core-4.1.12.1.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-core/2.0.0/kerb-core-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-pkix/2.0.0/kerby-pkix-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-asn1/2.0.0/kerby-asn1-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-util/2.0.0/kerby-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-simplekdc/2.0.0/kerb-simplekdc-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-client/2.0.0/kerb-client-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-common/2.0.0/kerb-common-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-crypto/2.0.0/kerb-crypto-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-util/2.0.0/kerb-util-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/token-provider/2.0.0/token-provider-2.0.0.jar:/users/ZhenyuLi/.m2/repository/com/nimbusds/nimbus-jose-jwt/4.41.2/nimbus-jose-jwt-4.41.2.jar:/users/ZhenyuLi/.m2/repository/com/github/stephenc/jcip/jcip-annotations/1.0-1/jcip-annotations-1.0-1.jar:/users/ZhenyuLi/.m2/repository/net/minidev/json-smart/2.3/json-smart-2.3.jar:/users/ZhenyuLi/.m2/repository/net/minidev/accessors-smart/1.2/accessors-smart-1.2.jar:/users/ZhenyuLi/.m2/repository/org/ow2/asm/asm/5.0.4/asm-5.0.4.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-admin/2.0.0/kerb-admin-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-server/2.0.0/kerb-server-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerb-identity/2.0.0/kerb-identity-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-xdr/2.0.0/kerby-xdr-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/apache/kerby/kerby-config/2.0.0/kerby-config-2.0.0.jar:/users/ZhenyuLi/.m2/repository/org/mockito/mockito-core/4.9.0/mockito-core-4.9.0.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy/1.12.16/byte-buddy-1.12.16.jar:/users/ZhenyuLi/.m2/repository/net/bytebuddy/byte-buddy-agent/1.12.16/byte-buddy-agent-1.12.16.jar:/users/ZhenyuLi/.m2/repository/org/objenesis/objenesis/3.3/objenesis-3.3.jar:/users/ZhenyuLi/.m2/repository/org/jmockit/jmockit/1.48/jmockit-1.48.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-api/5.6.2/junit-jupiter-api-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/apiguardian/apiguardian-api/1.1.0/apiguardian-api-1.1.0.jar:/users/ZhenyuLi/.m2/repository/org/opentest4j/opentest4j/1.2.0/opentest4j-1.2.0.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-commons/1.6.2/junit-platform-commons-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-engine/5.6.2/junit-jupiter-engine-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-engine/1.6.2/junit-platform-engine-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.6.2/junit-jupiter-params-5.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-runner/1.6.2/junit-platform-runner-1.6.2.jar:/users/ZhenyuLi/.m2/repository/junit/junit/4.13/junit-4.13.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-launcher/1.6.2/junit-platform-launcher-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/junit/platform/junit-platform-suite-api/1.6.2/junit-platform-suite-api-1.6.2.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/tools/0.25.4/tools-0.25.4.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/core/12.62.5/core-12.62.5.jar:/users/ZhenyuLi/.m2/repository/org/burningwave/jvm-driver/8.14.0/jvm-driver-8.14.0.jar:/users/ZhenyuLi/.m2/repository/io/github/toolfactory/jvm-driver/9.4.2/jvm-driver-9.4.2.jar:/users/ZhenyuLi/.m2/repository/org/xerial/snappy/snappy-java/1.1.10.5/snappy-java-1.1.10.5.jar:/users/ZhenyuLi/.m2/repository/commons-io/commons-io/2.17.0/commons-io-2.17.0.jar:
+2026-10-10 02:27:31,606 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:java.library.path=/usr/java/packages/lib/amd64:/usr/lib/x86_64-linux-gnu/jni:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu:/usr/lib/jni:/lib:/usr/lib
+2026-10-10 02:27:31,607 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:java.io.tmpdir=/tmp
+2026-10-10 02:27:31,607 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:java.compiler=<NA>
+2026-10-10 02:27:31,608 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:os.name=Linux
+2026-10-10 02:27:31,609 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:os.arch=amd64
+2026-10-10 02:27:31,609 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:os.version=5.15.0-177-generic
+2026-10-10 02:27:31,609 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:user.name=ZhenyuLi
+2026-10-10 02:27:31,610 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:user.home=/users/ZhenyuLi
+2026-10-10 02:27:31,610 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:user.dir=/users/ZhenyuLi/.mallory-worktrees/zookeeper/zookeeper-server
+2026-10-10 02:27:31,611 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:os.memory.free=336MB
+2026-10-10 02:27:31,611 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:os.memory.max=455MB
+2026-10-10 02:27:31,612 [myid:] - INFO  [main:o.a.z.Environment@98] - Client environment:os.memory.total=379MB
+2026-10-10 02:27:31,616 [myid:] - INFO  [main:o.a.z.ZooKeeper@637] - Initiating client connection, connectString=127.0.0.1:11230 sessionTimeout=30000 watcher=org.apache.zookeeper.test.ObserverMasterTest@6f10d5b6
+2026-10-10 02:27:31,623 [myid:] - INFO  [main:o.a.z.ClientCnxnSocket@239] - jute.maxbuffer value is 1048575 Bytes
+2026-10-10 02:27:31,634 [myid:] - INFO  [main:o.a.z.ClientCnxn@1749] - zookeeper.request.timeout value is 0. feature enabled=false
+2026-10-10 02:27:31,639 [myid:127.0.0.1:11230] - INFO  [main-SendThread(127.0.0.1:11230):o.a.z.ClientCnxn$SendThread@1177] - Opening socket connection to server localhost/127.0.0.1:11230.
+2026-10-10 02:27:31,639 [myid:127.0.0.1:11230] - INFO  [main-SendThread(127.0.0.1:11230):o.a.z.ClientCnxn$SendThread@1179] - SASL config status: Will not attempt to authenticate using SASL (unknown error)
+2026-10-10 02:27:31,640 [myid:127.0.0.1:11230] - INFO  [main-SendThread(127.0.0.1:11230):o.a.z.ClientCnxn$SendThread@1013] - Socket connection established, initiating session, client: /127.0.0.1:34884, server: localhost/127.0.0.1:11230
+2026-10-10 02:27:31,650 [myid:] - INFO  [SyncThread:2:o.a.z.s.p.FileTxnLog@285] - Creating new log file: log.100000001
+2026-10-10 02:27:31,652 [myid:] - WARN  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Follower@170] - Got zxid 0x100000001 expected 0x1
+2026-10-10 02:27:31,653 [myid:] - INFO  [SyncThread:1:o.a.z.s.p.FileTxnLog@285] - Creating new log file: log.100000001
+2026-10-10 02:27:31,663 [myid:] - INFO  [CommitProcessor:2:o.a.z.s.q.LeaderSessionTracker@104] - Committing global session 0x30030fc9fd10000
+2026-10-10 02:27:31,664 [myid:] - INFO  [CommitProcessor:1:o.a.z.s.q.LearnerSessionTracker@116] - Committing global session 0x30030fc9fd10000
+2026-10-10 02:27:31,666 [myid:] - INFO  [SyncThread:3:o.a.z.s.p.FileTxnLog@285] - Creating new log file: log.100000001
+2026-10-10 02:27:31,666 [myid:] - INFO  [CommitProcessor:3:o.a.z.s.q.LearnerSessionTracker@116] - Committing global session 0x30030fc9fd10000
+2026-10-10 02:27:31,673 [myid:127.0.0.1:11230] - INFO  [main-SendThread(127.0.0.1:11230):o.a.z.ClientCnxn$SendThread@1453] - Session establishment complete on server localhost/127.0.0.1:11230, session id = 0x30030fc9fd10000, negotiated timeout = 30000
+2026-10-10 02:27:31,674 [myid:] - INFO  [main-EventThread:o.a.z.t.ObserverMasterTestBase@113] - Latch got event :: WatchedEvent state:SyncConnected type:None path:null
+2026-10-10 02:27:31,710 [myid:] - WARN  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Follower@129] - Exception when following the leader
+java.io.IOException: Mallory fault f95416543e37bede0412c
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance0(Native Method)
+	at sun.reflect.NativeConstructorAccessorImpl.newInstance(NativeConstructorAccessorImpl.java:62)
+	at sun.reflect.DelegatingConstructorAccessorImpl.newInstance(DelegatingConstructorAccessorImpl.java:45)
+	at java.lang.reflect.Constructor.newInstance(Constructor.java:423)
+	at edu.uva.liftlab.mallory.instrumentation.Probe.exceptionFor(Probe.java:509)
+	at edu.uva.liftlab.mallory.instrumentation.Probe.beforeDoor(Probe.java:482)
+	at edu.uva.liftlab.mallory.instrumentation.Probe.beforeDoor(Probe.java:462)
+	at sun.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.lang.reflect.Method.invoke(Method.java:498)
+	at org.apache.zookeeper.server.quorum.MalloryZkHooks.beforeDoor(MalloryZkHooks.java:138)
+	at org.apache.zookeeper.server.quorum.MalloryZkHooks.access$200(MalloryZkHooks.java:24)
+	at org.apache.zookeeper.server.quorum.MalloryZkHooks$Input.readRecord(MalloryZkHooks.java:181)
+	at org.apache.zookeeper.server.quorum.Learner.readPacket(Learner.java:231)
+	at org.apache.zookeeper.server.quorum.Follower.followLeader(Follower.java:125)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:1540)
+2026-10-10 02:27:31,713 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.LearnerHandler@1159] - Synchronously closing socket to learner 3.
+2026-10-10 02:27:31,713 [myid:] - ERROR [LearnerHandler-/127.0.0.1:58444:o.a.z.s.q.LearnerHandler@719] - Unexpected exception in LearnerHandler: 
+java.io.EOFException: null
+	at java.io.DataInputStream.readInt(DataInputStream.java:392)
+	at org.apache.jute.BinaryInputArchive.readInt(BinaryInputArchive.java:98)
+	at org.apache.zookeeper.server.quorum.QuorumPacket.deserialize(QuorumPacket.java:86)
+	at org.apache.jute.BinaryInputArchive.readRecord(BinaryInputArchive.java:136)
+	at org.apache.zookeeper.server.quorum.MalloryZkHooks$Input.readRecord(MalloryZkHooks.java:182)
+	at org.apache.zookeeper.server.quorum.LearnerHandler.run(LearnerHandler.java:656)
+2026-10-10 02:27:31,714 [myid:] - INFO  [LearnerHandler-/127.0.0.1:58444:o.a.z.s.q.LearnerHandler@1159] - Synchronously closing socket to learner 1.
+2026-10-10 02:27:31,714 [myid:] - ERROR [LearnerHandler-/127.0.0.1:41794:o.a.z.s.q.LearnerHandler@719] - Unexpected exception in LearnerHandler: 
+java.net.SocketException: Socket closed
+	at java.net.SocketInputStream.read(SocketInputStream.java:204)
+	at java.net.SocketInputStream.read(SocketInputStream.java:141)
+	at java.io.BufferedInputStream.fill(BufferedInputStream.java:246)
+	at java.io.BufferedInputStream.read(BufferedInputStream.java:265)
+	at java.io.DataInputStream.readInt(DataInputStream.java:387)
+	at org.apache.jute.BinaryInputArchive.readInt(BinaryInputArchive.java:98)
+	at org.apache.zookeeper.server.quorum.QuorumPacket.deserialize(QuorumPacket.java:86)
+	at org.apache.jute.BinaryInputArchive.readRecord(BinaryInputArchive.java:136)
+	at org.apache.zookeeper.server.quorum.MalloryZkHooks$Input.readRecord(MalloryZkHooks.java:182)
+	at org.apache.zookeeper.server.quorum.LearnerHandler.run(LearnerHandler.java:656)
+2026-10-10 02:27:31,714 [myid:] - WARN  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Observer@133] - Exception when observing the leader
+java.io.EOFException: null
+	at java.io.DataInputStream.readInt(DataInputStream.java:392)
+	at org.apache.jute.BinaryInputArchive.readInt(BinaryInputArchive.java:98)
+	at org.apache.zookeeper.server.quorum.QuorumPacket.deserialize(QuorumPacket.java:86)
+	at org.apache.jute.BinaryInputArchive.readRecord(BinaryInputArchive.java:136)
+	at org.apache.zookeeper.server.quorum.MalloryZkHooks$Input.readRecord(MalloryZkHooks.java:182)
+	at org.apache.zookeeper.server.quorum.Learner.readPacket(Learner.java:231)
+	at org.apache.zookeeper.server.quorum.Observer.observeLeader(Observer.java:129)
+	at org.apache.zookeeper.server.quorum.QuorumPeer.run(QuorumPeer.java:1521)
+2026-10-10 02:27:31,714 [myid:] - WARN  [LearnerHandler-/127.0.0.1:41794:o.a.z.s.q.LearnerHandler@735] - ******* GOODBYE /127.0.0.1:41794 ********
+2026-10-10 02:27:31,714 [myid:] - WARN  [LearnerHandler-/127.0.0.1:58444:o.a.z.s.q.LearnerHandler@735] - ******* GOODBYE /127.0.0.1:58444 ********
+2026-10-10 02:27:31,714 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Follower@143] - Disconnected from leader (with address: /127.0.0.1:11223). Was connected for 662ms. Sync state: true
+2026-10-10 02:27:31,714 [myid:] - WARN  [LearnerHandler-/127.0.0.1:41794:o.a.z.s.q.LearnerHandler@1049] - Ignoring unexpected exception
+java.lang.InterruptedException: null
+	at java.util.concurrent.locks.AbstractQueuedSynchronizer.acquireInterruptibly(AbstractQueuedSynchronizer.java:1220)
+	at java.util.concurrent.locks.ReentrantLock.lockInterruptibly(ReentrantLock.java:335)
+	at java.util.concurrent.LinkedBlockingQueue.put(LinkedBlockingQueue.java:339)
+	at org.apache.zookeeper.server.quorum.LearnerHandler.shutdown(LearnerHandler.java:1047)
+	at org.apache.zookeeper.server.quorum.LearnerHandler.run(LearnerHandler.java:737)
+2026-10-10 02:27:31,714 [myid:] - WARN  [SyncThread:1:o.a.z.s.q.SendAckRequestProcessor@65] - Closing connection to leader, exception during packet send
+java.net.SocketException: Socket closed
+	at java.net.SocketOutputStream.socketWrite(SocketOutputStream.java:118)
+	at java.net.SocketOutputStream.write(SocketOutputStream.java:155)
+	at java.io.BufferedOutputStream.flushBuffer(BufferedOutputStream.java:82)
+	at java.io.BufferedOutputStream.flush(BufferedOutputStream.java:140)
+	at org.apache.zookeeper.server.quorum.Learner.writePacketNow(Learner.java:209)
+	at org.apache.zookeeper.server.quorum.Learner.writePacket(Learner.java:198)
+	at org.apache.zookeeper.server.quorum.SendAckRequestProcessor.flush(SendAckRequestProcessor.java:63)
+	at org.apache.zookeeper.server.SyncRequestProcessor.flush(SyncRequestProcessor.java:248)
+	at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:169)
+2026-10-10 02:27:31,714 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.Follower@287] - shutdown Follower
+2026-10-10 02:27:31,714 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Observer@145] - Disconnected from leader (with address: /127.0.0.1:11231). Was connected for 363ms. Sync state: true
+2026-10-10 02:27:31,715 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.ZooKeeperServer@853] - shutting down
+2026-10-10 02:27:31,715 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Observer@250] - shutdown Observer
+2026-10-10 02:27:31,715 [myid:] - ERROR [SyncThread:1:o.a.z.s.ZooKeeperCriticalThread@49] - Severe unrecoverable error, from thread : SyncThread:1
+java.lang.NullPointerException: null
+	at org.apache.zookeeper.server.quorum.SendAckRequestProcessor.flush(SendAckRequestProcessor.java:67)
+	at org.apache.zookeeper.server.SyncRequestProcessor.flush(SyncRequestProcessor.java:248)
+	at org.apache.zookeeper.server.SyncRequestProcessor.run(SyncRequestProcessor.java:169)
+2026-10-10 02:27:31,715 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.RequestThrottler@259] - Shutting down
+2026-10-10 02:27:31,715 [myid:] - INFO  [RequestThrottler:o.a.z.s.RequestThrottler@219] - Draining request throttler queue
+2026-10-10 02:27:31,715 [myid:] - INFO  [RequestThrottler:o.a.z.s.RequestThrottler@197] - RequestThrottler shutdown. Dropped 0 requests
+2026-10-10 02:27:31,715 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.ZooKeeperServer@853] - shutting down
+2026-10-10 02:27:31,715 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.FollowerRequestProcessor@172] - Shutting down
+2026-10-10 02:27:31,715 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.RequestThrottler@259] - Shutting down
+2026-10-10 02:27:31,715 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.CommitProcessor@631] - Shutting down
+2026-10-10 02:27:31,715 [myid:] - INFO  [FollowerRequestProcessor:1:o.a.z.s.q.FollowerRequestProcessor@128] - FollowerRequestProcessor exited loop!
+2026-10-10 02:27:31,715 [myid:127.0.0.1:11230] - WARN  [main-SendThread(127.0.0.1:11230):o.a.z.ClientCnxn$SendThread@1300] - Session 0x30030fc9fd10000 for server localhost/127.0.0.1:11230, Closing socket connection. Attempting reconnect except it is a SessionExpiredException.
+org.apache.zookeeper.ClientCnxn$EndOfStreamException: Unable to read additional data from server sessionid 0x30030fc9fd10000, likely server has closed socket
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doIO(ClientCnxnSocketNIO.java:77)
+	at org.apache.zookeeper.ClientCnxnSocketNIO.doTransport(ClientCnxnSocketNIO.java:350)
+	at org.apache.zookeeper.ClientCnxn$SendThread.run(ClientCnxn.java:1289)
+2026-10-10 02:27:31,715 [myid:] - INFO  [RequestThrottler:o.a.z.s.RequestThrottler@219] - Draining request throttler queue
+2026-10-10 02:27:31,715 [myid:] - INFO  [SyncThread:1:o.a.z.s.ZooKeeperServerListenerImpl@43] - Thread SyncThread:1 exits, error code 1
+2026-10-10 02:27:31,715 [myid:] - INFO  [RequestThrottler:o.a.z.s.RequestThrottler@197] - RequestThrottler shutdown. Dropped 0 requests
+2026-10-10 02:27:31,715 [myid:] - INFO  [CommitProcessor:1:o.a.z.s.q.CommitProcessor@419] - CommitProcessor exited loop!
+2026-10-10 02:27:31,716 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.FinalRequestProcessor@693] - shutdown of request processor complete
+2026-10-10 02:27:31,716 [myid:] - INFO  [SyncThread:1:o.a.z.s.SyncRequestProcessor@224] - SyncRequestProcessor exited!
+2026-10-10 02:27:31,716 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.ObserverRequestProcessor@161] - Shutting down
+2026-10-10 02:27:31,716 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.CommitProcessor@631] - Shutting down
+2026-10-10 02:27:31,716 [myid:] - INFO  [ObserverRequestProcessor:3:o.a.z.s.q.ObserverRequestProcessor@129] - ObserverRequestProcessor exited loop!
+2026-10-10 02:27:31,716 [myid:] - INFO  [CommitProcessor:3:o.a.z.s.q.CommitProcessor@419] - CommitProcessor exited loop!
+2026-10-10 02:27:31,716 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.FinalRequestProcessor@693] - shutdown of request processor complete
+2026-10-10 02:27:31,717 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: looking
+2026-10-10 02:27:31,717 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.p.FileTxnSnapLog@372] - 1 txns loaded in 0 ms
+2026-10-10 02:27:31,717 [myid:] - WARN  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@1586] - PeerState set to LOOKING
+2026-10-10 02:27:31,717 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.Observer@265] - Waiting for 92 ms before reconnecting with the leader
+2026-10-10 02:27:31,717 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@917] - Peer state changed: looking
+2026-10-10 02:27:31,717 [myid:] - WARN  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@1586] - PeerState set to LOOKING
+2026-10-10 02:27:31,717 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.QuorumPeer@1456] - LOOKING
+2026-10-10 02:27:31,717 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.FastLeaderElection@947] - New election. My id = 1, proposed zxid=0x100000003
+2026-10-10 02:27:31,718 [myid:] - INFO  [WorkerReceiver[myid=1]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:LOOKING, n.leader:1, n.round:0x2, n.peerEpoch:0x1, n.zxid:0x100000003, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,719 [myid:] - INFO  [WorkerReceiver[myid=2]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LEADING; n.sid:1, n.state:LOOKING, n.leader:1, n.round:0x2, n.peerEpoch:0x1, n.zxid:0x100000003, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,720 [myid:] - INFO  [WorkerReceiver[myid=1]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:2, n.state:LEADING, n.leader:2, n.round:0x1, n.peerEpoch:0x1, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,720 [myid:] - INFO  [QuorumPeer[myid=1](plain=[0:0:0:0:0:0:0:0]:11228)(secure=disabled):o.a.z.s.q.FastLeaderElection@1206] - Oracle indicates not to follow
+2026-10-10 02:27:31,809 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.QuorumPeer@1456] - LOOKING
+2026-10-10 02:27:31,810 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.FastLeaderElection@947] - New election. My id = 3, proposed zxid=0x8000000000000000
+2026-10-10 02:27:31,814 [myid:] - INFO  [WorkerReceiver[myid=3]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:LOOKING, n.leader:2, n.round:0x2, n.peerEpoch:0x1, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,815 [myid:] - INFO  [WorkerReceiver[myid=3]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:2, n.state:LEADING, n.leader:2, n.round:0x1, n.peerEpoch:0x1, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,817 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.FastLeaderElection@1206] - Oracle indicates not to follow
+2026-10-10 02:27:31,817 [myid:] - INFO  [main-EventThread:o.a.z.t.ObserverMasterTestBase@113] - Latch got event :: WatchedEvent state:Disconnected type:None path:null
+2026-10-10 02:27:31,820 [myid:] - INFO  [WorkerReceiver[myid=3]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:1, n.state:LOOKING, n.leader:2, n.round:0x2, n.peerEpoch:0x1, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,821 [myid:] - INFO  [WorkerReceiver[myid=3]:o.a.z.s.q.FastLeaderElection$Messenger$WorkerReceiver@391] - Notification: my state:LOOKING; n.sid:2, n.state:LEADING, n.leader:2, n.round:0x1, n.peerEpoch:0x1, n.zxid:0x0, message format version:0x2, n.config version:0x0
+2026-10-10 02:27:31,821 [myid:] - INFO  [QuorumPeer[myid=3](plain=[0:0:0:0:0:0:0:0]:11230)(secure=disabled):o.a.z.s.q.FastLeaderElection@1206] - Oracle indicates not to follow
+2026-10-10 02:27:31,842 [myid:] - INFO  [main:o.a.z.s.q.QuorumPeerTestBase@64] - No servers to shutdown!
+2026-10-10 02:27:31,843 [myid:] - INFO  [main:o.a.z.ZKTestCase@82] - FINISHED Optional[public void org.apache.zookeeper.test.ObserverMasterTest.testObserver(boolean) throws java.lang.Exception]
+]]></system-out>
+  </testcase>
+  <testcase name="testObserver{boolean}[2]" classname="org.apache.zookeeper.test.ObserverMasterTest(mallory_0002_4fd5b04944bd44158b17d04c115433fa)" time="9.514"/>
+</testsuite>
