@@ -1,0 +1,38 @@
+diff --git a/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java b/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
+--- a/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
++++ b/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java
+@@ -777,8 +777,13 @@
+       return Probe.withNode("unknown", 0);
+     }
+   }
+ 
++  /** Scope a direct DataNode call by its lifecycle-registered receiver. */
++  public static Probe.NodeScope dataNodeReceiverEnter(Object dn) {
++    return Probe.withRegisteredNode(dn);
++  }
++
+   /** Bind a data-transfer worker to the registered DataNode that owns it. */
+   public static Probe.NodeScope datanodeEnter(Object xceiver) {
+     try {
+       return Probe.withRegisteredNode(field(xceiver, "datanode"));
+diff --git a/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java b/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
+--- a/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
++++ b/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
+@@ -374,8 +374,17 @@
+           changed = true;
+         }
+         if (refreshes != 1)
+           throw new IllegalStateException("Expected one HDFS block-pool refresh");
++      } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/DataNode")
++          && method.name.equals("getBPOSForBlock")
++          && method.desc.equals("(Lorg/apache/hadoop/hdfs/protocol/ExtendedBlock;)"
++              + "Lorg/apache/hadoop/hdfs/server/datanode/BPOfferService;")) {
++        // TestDiskError invokes this DataNode method on the JUnit client thread.
++        // The registered receiver, rather than the thread, is the target actor.
++        wrap(method, HOOKS, "dataNodeReceiverEnter",
++            "(Ljava/lang/Object;)L" + PROBE + "$NodeScope;", PROBE + "$NodeScope", true);
++        changed = true;
+       } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/DataStorage")
+           && method.name.equals("getBlockPoolSliceStorage")) {
+         for (AbstractInsnNode instruction : method.instructions.toArray()) {
+           if (instruction.getOpcode() != Opcodes.ARETURN) continue;
