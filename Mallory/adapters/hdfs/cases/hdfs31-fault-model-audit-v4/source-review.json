@@ -1,0 +1,82 @@
+{
+  "artifacts": [
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4"
+    },
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolManager.java",
+      "sha256": "1d3bae5753526ca1bfc9dec3a5e63820564db49c9dedd32b4b7fd5f1f8ad423a"
+    },
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+    },
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "sha256": "21c5c65c5c023cc004aee8ca4814037de86de811db0e7960cb17c2909ccb8294"
+    },
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java",
+      "sha256": "122183dc0da270317d8bbf2744b6dbdbfe578e720566eee37d23fbe6fd79f3ed"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/healthy_observations/HDFS-31-dn-receiver-healthy-v2/trials/r0000/result.json",
+      "sha256": "2786d3b742c0c649190511e8c69c4e1934e36a95de9abb427f4c4b28bfc40ad8"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/healthy_observations/HDFS-31-dn-receiver-healthy-v2/trials/r0000/events.jsonl.gz",
+      "sha256": "435e1e9ac9e34f5c9b9688be1f4f4b327116d46a4bff1875e057f25f45ae53e3"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/data/mallory/healthy_observations/HDFS-31-dn-receiver-healthy-v2/trials/r0000/junit-receipt.json",
+      "sha256": "c73c4be8975550220e859eb2f53a641f2243167a3fb358c97f78be531f145af5"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs31-map-state-healthy-v3/HDFS-31-node2-map-healthy-v3.json",
+      "sha256": "36f288c5ddbc3fa94f0c72d62c6a98b25811cc1b5791a89710feb56e6cebe6b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs31-map-state-healthy-v3/HDFS-31.sites.json",
+      "sha256": "83fc5f25f0b6fd4a993c8d64103555ccec4bcc4d6c65ae1c65d311f9c1a5f42f"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs31-map-state-healthy-v3/manifest.json",
+      "sha256": "48be1d5d67a51c51fb71e35f00a2221db4226183f9911e7a9e7ba1464c8a2ad9"
+    }
+  ],
+  "case_id": "HDFS-31",
+  "current_typed_io_fault_model": "none of the reviewed existing-test pretarget IOException doors changes the null predicate while retaining the selected call",
+  "fault_admitted": false,
+  "full_admitted": false,
+  "healthy_observation": {
+    "check_seq": 139,
+    "epoch": 0,
+    "junit": "1 pass, 0 failures, 0 errors",
+    "named_actor": "hdfs-cluster-1/dn0",
+    "outcome": "TAKEN (nonnull)",
+    "posttarget_heartbeat_door_seq": 141,
+    "pretarget_heartbeat_door_seq": 20,
+    "selected_throw_count": 0,
+    "state_read_write_count": 0
+  },
+  "jvm_started_by_this_audit": false,
+  "next_experiment": {
+    "condition": "dispatch grants idle HDFS lane after HDFS-48 v4; no fault plan",
+    "interpretation": "A healthy map read-from candidate confirms operand identity, but sampled versions and absent remove instrumentation do not prove a fault path. No fault/full follows without a separate source-backed map removal or wrong-bpid mechanism that retains transferBlock.",
+    "kind": "healthy_only_map_identity_diagnostic",
+    "measurement": "existing v3 traces BlockPoolManager map put/get with bpid, object, sampled version; audit named selected read and exact source-order with put",
+    "package": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs31-map-state-healthy-v3"
+  },
+  "schema_version": 1,
+  "selected_check": "DataNode.getBPOSForBlock(ExtendedBlock) @1833:branch:1; null BPOfferService throws IOException @1835",
+  "selected_junit": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+  "source_path": {
+    "heartbeat": "pre-call sendHeartbeat IOException is caught in offerService and retried; it does not call stop, shutdownActor, or BlockPoolManager.remove.",
+    "later_file_io": "transferBlock catches ReplicaNotFound/FileNotFound/EOF/IOException from data.checkBlock only after getBPOSForBlock returned, so it cannot change this guard in the same call.",
+    "metadata_file_io": "writeByte/writeInt IOException is uncaught by the JUnit method and prevents the direct transferBlock call; metadata corruption affects data.checkBlock only after the selected guard.",
+    "operand": "block.getBlockPoolId() looks up local BlockPoolManager.bpByBlockPoolId; addBlockPool puts and shutdownBlockPool/remove deletes the entry.",
+    "test_order": "write/hflush/close -> corrupt metadata via RandomAccessFile.writeByte/writeInt -> start dn1 -> direct dn0.transferBlock(existing ExtendedBlock) -> selected getBPOSForBlock before data.checkBlock."
+  },
+  "status": "named_healthy_target_confirmed_typed_io_predicate_effect_gap"
+}
