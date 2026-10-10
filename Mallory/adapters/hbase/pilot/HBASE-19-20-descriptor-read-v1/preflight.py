@@ -72,8 +72,8 @@ def check_case(number: int) -> None:
             "full campaign budget or healthy promotion changed")
     require(config["fault_types"] == ["EXCEPTION"] and
             config["explore_outside_closure"] is True and
-            config["require_event_time_paths"] is True and
-            config["reject_coarse_roots"] is True and
+            config["require_event_time_paths"] is False and
+            config["reject_coarse_roots"] is False and
             config["allow_local_timeline_doors"] is False and
             config["agent_properties"]["auto.io.doors"] is False,
             "fault model or graph policy changed")
@@ -128,7 +128,7 @@ def check_case(number: int) -> None:
     require(config["agent_jar"] in [row["path"] for row in config["runtime_artifacts"]],
             "agent is not pinned")
 
-    prior = BASE / f"data/mallory/calibration_v8/{case}"
+    prior = HERE / "historical-v8" / case
     check(prior / "result.json", config["mapping"]["prior_healthy_result_sha256"])
     check(prior / "offline-causal-audit.json", config["mapping"]["prior_healthy_audit_sha256"])
     result = json.loads((prior / "result.json").read_text())
