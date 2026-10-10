@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import shutil
 import subprocess
 import sys
 import time
@@ -105,10 +106,12 @@ def stop_child(process: subprocess.Popen, reason: str) -> None:
 
 def write_collection(receipt: dict, exit_code: int) -> None:
     tracked = {"staging_receipt": RECEIPT, "config": Path(receipt["config"]),
+               "core_manifest": OUTPUT / "core-release-manifest.json",
                "checkpoint": OUTPUT / "checkpoint.json", "result": OUTPUT / "result.json",
                "audit": OUTPUT / "offline-causal-audit.json",
                "journal": OUTPUT / "resource-journal.jsonl",
-               "driver_log": OUTPUT / "driver.log"}
+               "driver_log": OUTPUT / "driver.log",
+               "driver_exit": OUTPUT / "driver-exit.json"}
     files = {key: {"path": str(path), "sha256": sha(path), "bytes": path.stat().st_size}
              for key, path in tracked.items() if path.is_file()}
     result = read_json(OUTPUT / "result.json") if (OUTPUT / "result.json").is_file() else {}
@@ -149,12 +152,14 @@ def run(*, resume: bool) -> int:
                 "config_sha256": receipt["config_sha256"],
                 "staging_receipt_sha256": sha(RECEIPT), "resume": resume})
         core = Path(receipt["core_release"])
+        shutil.copyfile(core / "manifest.json", OUTPUT / "core-release-manifest.json")
         env = os.environ.copy()
         env["PYTHONPATH"] = f"{core}:{BASE}"
         env["MALLORY_CORE_RELEASE_ID"] = core.name
         env["MALLORY_ATTEMPT_ID"] = f"zk04-node1-{time.strftime('%Y%m%dT%H%M%SZ', time.gmtime())}"
         command = [sys.executable, "-m", "Mallory.core.campaign", "--config",
                    receipt["config"], "--out", str(OUTPUT)]
+        started_utc = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         with (OUTPUT / "driver.log").open("ab") as log:
             process = subprocess.Popen(command, cwd=core, env=env, stdout=log,
                                        stderr=subprocess.STDOUT, start_new_session=True)
@@ -174,6 +179,16 @@ def run(*, resume: bool) -> int:
                     break
                 time.sleep(5)
             code = process.wait()
+        exit_record = {"started_utc": started_utc,
+                       "finished_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                       "exit_code": code, "attempt_id": env["MALLORY_ATTEMPT_ID"]}
+        exit_tmp = OUTPUT / "driver-exit.json.tmp"
+        with exit_tmp.open("w", encoding="utf-8") as stream:
+            json.dump(exit_record, stream, sort_keys=True)
+            stream.write("\n")
+            stream.flush()
+            os.fsync(stream.fileno())
+        exit_tmp.replace(OUTPUT / "driver-exit.json")
         append({"event": "campaign_exit", "exit_code": code,
                 "free_bytes": free_bytes()})
         result = OUTPUT / "result.json"
