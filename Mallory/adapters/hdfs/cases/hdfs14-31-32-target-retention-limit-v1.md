@@ -22,6 +22,7 @@ SHA-256 pins, checked on node0's equivalent tree:
 | `hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java` | `d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957` |
 | `hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java` | `e61685e14fcda7c598fc76299cbdbd1677e2ef5c52c75a20d8cc4fa0f914d151` |
 | `hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RemoteException.java` | `02722c5b18093192baebeb7be11956d7566befbc52855710ee6911bd008c1418` |
+| `hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/IOUtils.java` | `c504d7e96e44861784df631939e8fce88553a8f9b36e307b538b30bef9151842` |
 | `hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java` | `122183dc0da270317d8bbf2744b6dbdbfe578e720566eee37d23fbe6fd79f3ed` |
 | `hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java` | `31467bca1249b93cae7ed984bac01d405cde8ec1409a9ef78fa0a0c469a3bb3a` |
 | `hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java` | `8272862b11d4a645ffa6029c3f1462a14dcfce7b873815fcccc949d74a4bc0a5` |
@@ -70,7 +71,9 @@ at 194-251 stops and joins the removed nameservice before refresh returns.
 `BPServiceActor.run:920-927` always enters `cleanUp:640-646`, which calls
 `BPOfferService.shutdownActor`; `DataNode.shutdownBlockPool:2147-2168`
 removes the map entry **before** dataset and storage cleanup. A physical
-I/O exception during those later cleanup operations cannot retain the
+I/O exception while closing the RPC proxy or lifeline sender is swallowed
+by `IOUtils.cleanupWithLogger:255-269`, before `shutdownActor`. An exception
+during the later dataset or storage cleanup likewise cannot retain the
 `blockPoolId` map entry. A refresh exception before the call returns aborts
 the uncaught test statement, so no later delete check is reached. A plain
 heartbeat RPC `IOException` retries, without retaining the stopped service.
