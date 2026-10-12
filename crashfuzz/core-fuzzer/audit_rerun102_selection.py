@@ -19,6 +19,20 @@ def applied_digests(trace: Path) -> list[str]:
                 if (event := json.loads(line)).get('event') == 'STATIC_SELECTION_APPLIED']
 
 
+def audit_runtime_scope(trace: Path, selection: dict) -> None:
+    methods = set(selection['coverage_methods'])
+    io_sites = {row['site_id'] for row in selection['io_calls']}
+    with trace.open() as stream:
+        for line in stream:
+            event = json.loads(line)
+            kind = event.get('event')
+            if kind in {'METHOD_ENTER', 'BRANCH'} and event.get('method') not in methods:
+                raise ValueError('runtime coverage escaped Soot method selection')
+            if (kind == 'FAULT_POINT_OBSERVED' and
+                    event.get('siteId') not in io_sites):
+                raise ValueError('runtime I/O escaped Soot callsite selection')
+
+
 def audit(result_root: Path, checklist: Path) -> dict:
     original = {row['case_id']: row for row in json.loads(checklist.read_text())['rows']
                 if row.get('selection_group') == 'original_102'}
@@ -67,6 +81,7 @@ def audit(result_root: Path, checklist: Path) -> dict:
                 raise ValueError('healthy JUnit did not pass')
             if applied_digests(Path(manifest['trace'])) != [selection['input_digest']]:
                 raise ValueError('runtime selection digest differs from Soot artifact')
+            audit_runtime_scope(Path(manifest['trace']), selection)
             config = json.loads((base / 'campaign-config.json').read_text())
             if Path(config['static_selection']['artifact']).resolve() != artifact.resolve():
                 raise ValueError('campaign uses another selection artifact')

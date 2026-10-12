@@ -40,6 +40,12 @@ class SelectionAuditTest(unittest.TestCase):
             checkpoint.parent.mkdir(parents=True)
             checkpoint.write_text(json.dumps({'static_selection_digest': 'expected'}))
             self.assertEqual(audit(root / 'results', checklist)['errors'], [])
+            trace.write_text('\n'.join(json.dumps(row) for row in (
+                {'event': 'STATIC_SELECTION_APPLIED', 'digest': 'expected'},
+                {'event': 'FAULT_POINT_OBSERVED', 'siteId':
+                 '<example.Other: void run()>#u1'})) + '\n')
+            self.assertIn('runtime I/O escaped Soot callsite selection',
+                          audit(root / 'results', checklist)['errors'][0]['error'])
             trace.write_text(json.dumps({'event': 'STATIC_SELECTION_APPLIED',
                                          'digest': 'wrong'}) + '\n')
             self.assertIn('runtime selection digest differs',
