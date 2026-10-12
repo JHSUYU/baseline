@@ -540,6 +540,19 @@ def fault_family(point: dict[str, Any]) -> str:
     return fingerprint(family)
 
 
+def temporal_diversity_key(point: dict[str, Any]) -> tuple[str, int]:
+    """Distinguish early and later executions of a recurring I/O site.
+
+    A single call stack can execute before and after a distributed state
+    update.  Logarithmic buckets preserve CrashFuzz's call-stack grouping
+    without treating every heartbeat or retry as a separate I/O family.
+    """
+    ordinal = point.get("hitOrdinal")
+    bucket = (min(ordinal.bit_length() - 1, 4)
+              if isinstance(ordinal, int) and ordinal > 0 else 0)
+    return fault_family(point), bucket
+
+
 def identity_priority(point: dict[str, Any]) -> int:
     """Favor replayable observed actors without weakening exact matching."""
     occurrence = point.get("occurrence", "")
@@ -688,20 +701,23 @@ def choose_next_sequence(state: dict[str, Any],
                                         item["sequence"][-1])) >= 80]
         if focused:
             eligible = focused
-    family_counts: dict[str, int] = {}
-    root_counts: dict[str, int] = {}
+    diversity_key = (temporal_diversity_key
+                     if state.get("temporal_diversity_version", 1) >= 2
+                     else fault_family)
+    family_counts: dict[Any, int] = {}
+    root_counts: dict[Any, int] = {}
     for sequence in previous:
-        last = fault_family(sequence[-1])
-        root = fault_family(sequence[0])
+        last = diversity_key(sequence[-1])
+        root = diversity_key(sequence[0])
         family_counts[last] = family_counts.get(last, 0) + 1
         root_counts[root] = root_counts.get(root, 0) + 1
 
     def rank(entry: tuple[int, dict[str, Any]]) -> tuple[Any, ...]:
         index, item = entry
         sequence = item["sequence"]
-        root_penalty = (root_counts.get(fault_family(sequence[0]), 0)
+        root_penalty = (root_counts.get(diversity_key(sequence[0]), 0)
                         if len(sequence) > 1 else 0)
-        return (family_counts.get(fault_family(sequence[-1]), 0),
+        return (family_counts.get(diversity_key(sequence[-1]), 0),
                 root_penalty,
                 -item["priority"], item["created"], index)
 
@@ -1210,6 +1226,7 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "coverage_include_prefixes": state.get("coverage_include_prefixes", []),
         "static_selection_digest": state.get("static_selection_digest"),
         "static_selection_artifact": state.get("static_selection_artifact"),
+        "temporal_diversity_version": state.get("temporal_diversity_version", 1),
         "io_family_gain": max(0, len(state.get("io_families", [])) - len({
             fault_family(point) for point in
             seed.get("feedback", {}).get("points", [])})),
@@ -1359,6 +1376,9 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("seed_runtime_seconds", 0.0)
             state.setdefault("fault_runtime_seconds", 0.0)
             state.setdefault("io_families", [])
+            # Preserve the selection order of a campaign that started before
+            # temporal buckets were introduced, including after a restart.
+            state.setdefault("temporal_diversity_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1427,6 +1447,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "identity_priority_version": 1,
                      "fault_family_version": 2,
                      "static_priority_version": 1,
+                     "temporal_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,
                      "fault_runtime_seconds": 0.0,

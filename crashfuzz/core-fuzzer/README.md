@@ -185,6 +185,11 @@ prefers untested I/O families and coverage while balancing one fault and
 longer sequences. Every third trial reserves a slot for an I/O point selected
 near a target-side field writer or its actor callback, when one is queued.
 This rule uses the same Soot reasons for every check.
+New campaigns also distinguish the first, second to third, fourth to seventh,
+eighth to fifteenth, and later occurrences of a recurring I/O site when
+diversifying the queue. This gives later protocol rounds a chance within a
+bounded budget while retaining call-stack families. Resumed campaigns keep
+the scheduler version with which they started.
 
 A valid trial must prove all requested faults were applied in exact order and
 must execute the target check after the final fault. A `lost_target` trial is

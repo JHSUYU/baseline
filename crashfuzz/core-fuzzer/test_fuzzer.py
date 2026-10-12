@@ -297,6 +297,16 @@ class CoverageIoTest(unittest.TestCase):
                            {'sequence': [A], 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state, {A['siteId']: 85}), 1)
 
+    def test_temporal_diversity_explores_later_occurrences_of_a_site(self):
+        later = {**A, 'hitOrdinal': 4}
+        state = {'completed': [{'sequence': [A]}],
+                 'queue': [{'sequence': [later], 'priority': 20, 'created': 1},
+                           {'sequence': [B], 'priority': 10, 'created': 2}],
+                 'temporal_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+        state['temporal_diversity_version'] = 2
+        self.assertEqual(choose_next_sequence(state), 0)
+
     def test_zookeeper_fault_uses_connection_loss_and_exact_identity(self):
         observed = {**A, 'sourceKey':
                     '<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String)>'}
