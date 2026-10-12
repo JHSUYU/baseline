@@ -64,6 +64,36 @@ class ExceptionResolutionTest(unittest.TestCase):
             self.assertIsNone(rerun102_worker.live_selection_artifact(
                 base, 'CHECK-01', '<Other: void check()>'))
 
+    def test_expanded_selection_is_pinned_before_initial_selection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            initial = base / 'soot-selection.json'
+            initial.write_text(json.dumps({'target_method': '<T: void check()>',
+                                           'input_digest': 'initial'}))
+            expanded = base / 'caller-expanded/soot-selection.json'
+            expanded.parent.mkdir()
+            expanded.write_text(json.dumps({'target_method': '<T: void check()>',
+                                            'input_digest': 'expanded',
+                                            'selection_profile': 'caller_expanded'}))
+            for name, digest in (('campaign', 'initial'),
+                                 ('campaign-expanded', 'expanded')):
+                checkpoint = base / name / 'CHECK-01/state.json'
+                checkpoint.parent.mkdir(parents=True)
+                checkpoint.write_text(json.dumps({'static_selection_digest': digest,
+                                                  'seed': {'trace': 'healthy'},
+                                                  'completed': []}))
+            self.assertEqual(rerun102_worker.live_selection_artifact(
+                base, 'CHECK-01', '<T: void check()>'), expanded)
+
+    def test_fault_point_detection_uses_runtime_event(self):
+        with tempfile.TemporaryDirectory() as directory:
+            trace = Path(directory) / 'trace.jsonl'
+            trace.write_text('{"event":"CHECK_REACHED"}\n')
+            self.assertFalse(rerun102_worker.observed_fault_points(trace))
+            trace.write_text('{"event":"CHECK_REACHED"}\n'
+                             '{"event":"FAULT_POINT_OBSERVED"}\n')
+            self.assertTrue(rerun102_worker.observed_fault_points(trace))
+
     def test_parallel_claim_preserves_running_case_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

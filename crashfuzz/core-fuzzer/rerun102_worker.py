@@ -159,22 +159,29 @@ def healthy_matches(manifest: Path, digest: str) -> bool:
     return False
 
 
+def observed_fault_points(trace: Path) -> bool:
+    with trace.open() as stream:
+        return any(json.loads(line).get('event') == 'FAULT_POINT_OBSERVED'
+                   for line in stream)
+
+
 def live_selection_artifact(base: Path, cid: str, target: str) -> Path | None:
     """Keep an unfinished case's exact Soot result across worker restarts."""
-    artifact = base / 'soot-selection.json'
-    if not artifact.is_file():
-        return None
-    try:
-        selected = json.loads(artifact.read_text())
-        if selected.get('target_method') != target or not selected.get('input_digest'):
-            return None
-        for state_path in base.glob('campaign*/' + cid + '/state.json'):
-            state = json.loads(state_path.read_text())
-            if (state.get('static_selection_digest') == selected['input_digest']
-                    and (state.get('seed') or state.get('completed'))):
-                return artifact
-    except (OSError, ValueError):
-        return None
+    for artifact in (base / 'caller-expanded/soot-selection.json',
+                     base / 'soot-selection.json'):
+        if not artifact.is_file():
+            continue
+        try:
+            selected = json.loads(artifact.read_text())
+            if selected.get('target_method') != target or not selected.get('input_digest'):
+                continue
+            for state_path in base.glob('campaign*/' + cid + '/state.json'):
+                state = json.loads(state_path.read_text())
+                if (state.get('static_selection_digest') == selected['input_digest']
+                        and (state.get('seed') or state.get('completed'))):
+                    return artifact
+        except (OSError, ValueError):
+            continue
     return None
 
 
@@ -229,7 +236,8 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                        static_io_calls=len(selection['io_calls']),
                        static_coverage_methods=len(selection['coverage_methods']))
         atomic_json(summary_path, summary)
-        healthy = base / 'healthy'
+        healthy = base / ('healthy-expanded' if selection.get('selection_profile')
+                          == 'caller_expanded' else 'healthy')
         manifest = healthy / 'manifest.json'
         if not healthy_matches(manifest, selection['input_digest']):
             argv = ['python3', str(HERE / RUNNER[family(row['system'])]),
@@ -239,6 +247,36 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
             if run_logged(argv, base / 'healthy-run.log') != 0:
                 raise RuntimeError('original healthy JUnit did not pass')
         healthy_record = json.loads(manifest.read_text())
+        if (not observed_fault_points(Path(healthy_record['trace']))
+                and selection.get('selection_profile') != 'caller_expanded'):
+            # A check can be reached through a deeper caller path than the
+            # default coarse selection covers. Widen the Soot caller walk
+            # automatically before declaring that the workload has no I/O.
+            expanded_analysis = analysis_for(row['system'])
+            expanded_analysis.update(max_caller_depth=6, max_callee_depth=0)
+            selection = prepare({'target': {'method': target},
+                                 'static_selection': {'analysis': expanded_analysis}},
+                                base / 'caller-expanded')
+            artifact = Path(selection['artifact_path'])
+            selection.update(target_site_id=location['site_id'],
+                             target_check_line=location['check_start_line'],
+                             target_selected_line=location['selected_line'],
+                             selection_profile='caller_expanded')
+            atomic_json(artifact, selection)
+            summary.update(static_io_calls=len(selection['io_calls']),
+                           static_coverage_methods=len(selection['coverage_methods']),
+                           selection_profile='caller_expanded')
+            atomic_json(summary_path, summary)
+            healthy = base / 'healthy-expanded'
+            manifest = healthy / 'manifest.json'
+            if not healthy_matches(manifest, selection['input_digest']):
+                argv = ['python3', str(HERE / RUNNER[family(row['system'])]),
+                        '--case-id', cid, '--test-class', clazz, '--test-method', method,
+                        '--output', str(healthy), '--static-selection', str(artifact),
+                        '--timeout', str(TIMEOUT[family(row['system'])])]
+                if run_logged(argv, base / 'healthy-expanded-run.log') != 0:
+                    raise RuntimeError('original healthy JUnit did not pass with expanded selection')
+            healthy_record = json.loads(manifest.read_text())
         workspace = base / 'campaign-workspace'
         temp = base / 'campaign-temp'
         workspace.mkdir(exist_ok=True)
