@@ -1,6 +1,9 @@
+import json
+import tempfile
 import unittest
+from pathlib import Path
 
-from collect_rerun102 import enrich_live_trials, reconcile_elapsed
+from collect_rerun102 import enrich_live_summary, enrich_live_trials, reconcile_elapsed
 
 
 class LiveTrialSummaryTest(unittest.TestCase):
@@ -24,6 +27,25 @@ class LiveTrialSummaryTest(unittest.TestCase):
                    'active_runtime_seconds': 4969.506}
         reconcile_elapsed(summary)
         self.assertEqual(summary['total_elapsed_seconds'], 4969.506)
+
+    def test_live_summary_reads_expanded_selection_campaign(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            artifact = base / 'caller-expanded/soot-selection.json'
+            artifact.parent.mkdir()
+            artifact.write_text(json.dumps({'input_digest': 'expanded'}))
+            state_path = base / 'campaign-expanded/CHECK-01/state.json'
+            state_path.parent.mkdir(parents=True)
+            state_path.write_text(json.dumps({
+                'static_selection_digest': 'expanded',
+                'completed': [{'status': 'checked'}],
+                'active': {'number': 2},
+                'active_runtime_seconds': 12.5}))
+            summary = {'case_id': 'CHECK-01', 'status': 'fuzzing',
+                       'finished': False, 'selection_profile': 'caller_expanded'}
+            enrich_live_summary(base, summary)
+            self.assertEqual(summary['fault_trials'], 1)
+            self.assertEqual(summary['active_trial'], 2)
 
 
 if __name__ == '__main__':
