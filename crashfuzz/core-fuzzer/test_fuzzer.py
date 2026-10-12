@@ -13,7 +13,7 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     rows, static_reason_priority, strict_injection,
                     trace_feedback, stable_occurrence,
                     selected_target_throw_lines, validate,
-                    write_case_result)
+                    write_case_result, write_trial)
 
 TARGET = '<example.Target: void check()>'
 SITE = TARGET + '#u8'
@@ -132,6 +132,35 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_post_call_phase_has_distinct_replay_identity(self):
+        before = point_from_event(marker(A, 'FAULT_POINT_OBSERVED', 1,
+                                         phase='before'))
+        after = point_from_event(marker(A, 'FAULT_POINT_OBSERVED', 2,
+                                        phase='after'))
+        self.assertEqual(before, A)
+        self.assertEqual(after['phase'], 'after')
+        self.assertNotEqual(fingerprint(before), fingerprint(after))
+        self.assertNotEqual(fault_family(before), fault_family(after))
+        self.assertIsNone(point_from_event(marker(A, 'FAULT_POINT_OBSERVED', 3,
+                                                   phase='unknown')))
+        applied = {'applied_count': 1, 'matched_count': 1,
+                   'applied_points': [after],
+                   'applied_fault_ids': [fingerprint(after)]}
+        self.assertTrue(strict_injection(applied, [after]))
+        self.assertFalse(strict_injection(applied, [before]))
+        explicit_before = {**before, 'phase': 'before'}
+        before_applied = {'applied_count': 1, 'matched_count': 1,
+                          'applied_points': [before],
+                          'applied_fault_ids': [fingerprint(explicit_before)]}
+        self.assertTrue(strict_injection(before_applied, [explicit_before]))
+        with tempfile.TemporaryDirectory() as directory:
+            trial = Path(directory) / 'fault-trial.json'
+            write_trial(trial, [before, after], {})
+            faults = json.loads(trial.read_text())['faults']
+            self.assertEqual([fault['phase'] for fault in faults],
+                             ['before', 'after'])
+            self.assertEqual(faults[0]['faultId'], fingerprint(before))
+
     def test_hbase_embedded_cluster_ports_keep_replayable_actor_identity(self):
         site = '/<example.RpcServer: void call()>#u5'
         first = ('local/hdfs://localhost:46863 RpcServer.port=45509 '
@@ -237,6 +266,17 @@ class CoverageIoTest(unittest.TestCase):
         variants = fault_variants_for_io(A, {A['siteId']: [typed]})
         self.assertEqual(variants, [A, {**A, 'exceptionClass': typed}])
         self.assertNotEqual(fault_family(variants[0]), fault_family(variants[1]))
+
+    def test_post_call_fault_only_models_lost_transport_response(self):
+        typed = 'example.CalleeRejectedIOException'
+        after = {**A, 'phase': 'after', 'exceptionClass': typed}
+        self.assertEqual(fault_variants_for_io(after, {A['siteId']: [typed]}),
+                         [{**after, 'exceptionClass': 'java.io.IOException'}])
+        zk = {**after, 'sourceKey':
+              'org.apache.zookeeper.ZooKeeper: java.lang.String create()'}
+        self.assertEqual(fault_variants_for_io(zk, {A['siteId']: [typed]}),
+                         [{**zk, 'exceptionClass':
+                           'org.apache.zookeeper.KeeperException$ConnectionLossException'}])
 
     def test_adaptive_budget_counts_target_retaining_trials(self):
         budget = {'max_trials': 240, 'base_trials': 80,

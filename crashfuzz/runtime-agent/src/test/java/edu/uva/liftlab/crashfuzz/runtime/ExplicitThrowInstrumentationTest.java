@@ -5,6 +5,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.apache.hadoop.hdfs.server.datanode.BPServiceActor;
 import org.junit.Test;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -76,6 +81,27 @@ public class ExplicitThrowInstrumentationTest {
                 throw caught;
             }
         }
+    }
+
+    public static class FakeClientSideTranslatorPB {
+        static int calls;
+        public String reference() { calls++; return "reply"; }
+        public int integer() { calls++; return 17; }
+        public long wide() { calls++; return 19L; }
+        public void nothing() { calls++; }
+        public String fail() throws IOException {
+            calls++;
+            throw new IOException("original RPC failure");
+        }
+    }
+
+    public static class RpcFixture {
+        private final FakeClientSideTranslatorPB rpc = new FakeClientSideTranslatorPB();
+        public String reference() { return rpc.reference(); }
+        public int integer() { return rpc.integer(); }
+        public long wide() { return rpc.wide(); }
+        public void nothing() { rpc.nothing(); }
+        public String fail() throws IOException { return rpc.fail(); }
     }
 
     @Test
@@ -195,6 +221,7 @@ public class ExplicitThrowInstrumentationTest {
                     observed.get(4).get("occurrenceAddress").getAsString());
             assertTrue(observed.get(5).get("identityGap").getAsBoolean());
             assertEquals(1, identityGaps);
+            verifyPostCallRpcFaults(trace);
         } finally {
             System.clearProperty("crashfuzz.trace.path");
         }
@@ -261,6 +288,219 @@ public class ExplicitThrowInstrumentationTest {
         } finally {
             planned.set(null, previous);
             next.setInt(null, previousNext);
+        }
+    }
+
+    private static void verifyPostCallRpcFaults(Path trace) throws Exception {
+        String rpcOwner = FakeClientSideTranslatorPB.class.getName().replace('.', '/');
+        assertTrue(SelectionAgent.supportsPostCallFault(rpcOwner, "reference",
+                "()Ljava/lang/String;"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(rpcOwner, "<init>", "()V"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(rpcOwner, "<clinit>", "()V"));
+        assertTrue(!SelectionAgent.supportsPostCallFault("java/io/FileInputStream", "read",
+                "()I"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(rpcOwner, "getProxy",
+                "()Ljava/lang/Object;"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(rpcOwner,
+                "getUnderlyingProxyObject", "()Ljava/lang/Object;"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(rpcOwner, "reference",
+                "()Ljava/util/concurrent/Future;"));
+        assertTrue(SelectionAgent.supportsPostCallFault(
+                "org/apache/hadoop/hdfs/protocolPB/DatanodeProtocolClientSideTranslatorPB",
+                "sendHeartbeat", "()Ljava/lang/Object;"));
+        assertTrue(SelectionAgent.supportsPostCallFault(
+                "org/apache/zookeeper/ZooKeeper", "create", "()Ljava/lang/String;"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(
+                "org/apache/zookeeper/ZooKeeper", "create",
+                "(Lorg/apache/zookeeper/AsyncCallback$StringCallback;)V"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(
+                "org/apache/hadoop/hbase/ipc/BlockingRpcConnection", "sendRequest",
+                "(Lorg/apache/hadoop/hbase/ipc/Call;)V"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(
+                "org/apache/hadoop/hbase/ipc/NettyRpcConnection", "sendRequest",
+                "(Lorg/apache/hadoop/hbase/ipc/Call;)V"));
+        assertTrue(!SelectionAgent.supportsPostCallFault(
+                "org/apache/hbase/thirdparty/com/google/protobuf/RpcChannel", "callMethod",
+                "(Lorg/apache/hbase/thirdparty/com/google/protobuf/RpcCallback;)V"));
+
+        String[] names = {"reference", "integer", "wide", "nothing", "fail"};
+        String[] types = {"java.lang.String", "int", "long", "void", "java.lang.String"};
+        String[] descriptors = {"()Ljava/lang/String;", "()I", "()J", "()V",
+                "()Ljava/lang/String;"};
+        JsonArray specs = new JsonArray();
+        JsonArray ioCalls = new JsonArray();
+        for (int index = 0; index < names.length; index++) {
+            String signature = "<" + RpcFixture.class.getName() + ": " + types[index]
+                    + " " + names[index] + "()>";
+            JsonObject spec = new JsonObject();
+            spec.addProperty("signature", signature);
+            spec.addProperty("owner", RpcFixture.class.getName().replace('.', '/'));
+            spec.addProperty("name", names[index]);
+            spec.addProperty("descriptor", descriptors[index]);
+            specs.add(spec);
+            JsonObject io = new JsonObject();
+            io.addProperty("method", signature);
+            io.addProperty("site_id", signature + "#u1");
+            io.addProperty("callee", "<" + FakeClientSideTranslatorPB.class.getName()
+                    + ": " + types[index] + " " + names[index] + "()>");
+            io.addProperty("line", invocationLine(names[index], rpcOwner));
+            io.addProperty("call_owner", rpcOwner);
+            io.addProperty("call_name", names[index]);
+            io.addProperty("call_descriptor", descriptors[index]);
+            io.addProperty("line_ordinal", 0);
+            ioCalls.add(io);
+        }
+        JsonObject selection = new JsonObject();
+        selection.addProperty("target_method", specs.get(0).getAsJsonObject()
+                .get("signature").getAsString());
+        selection.addProperty("post_call_rpc_enabled", true);
+        selection.add("method_specs", specs);
+        selection.add("io_calls", ioCalls);
+        selection.add("branches", new JsonArray());
+        Class<?> instrumented = instrumentClass(RpcFixture.class, selection);
+        Object fixture = instrumented.getConstructor().newInstance();
+
+        Field planned = SelectionProbe.class.getDeclaredField("planned");
+        planned.setAccessible(true);
+        JsonArray previous = (JsonArray) planned.get(null);
+        Field next = SelectionProbe.class.getDeclaredField("nextFault");
+        next.setAccessible(true);
+        int previousNext = next.getInt(null);
+        try {
+            assertEquals("reply", instrumented.getMethod("reference").invoke(fixture));
+            assertEquals(17, instrumented.getMethod("integer").invoke(fixture));
+            assertEquals(19L, instrumented.getMethod("wide").invoke(fixture));
+            assertNull(instrumented.getMethod("nothing").invoke(fixture));
+            for (String name : new String[]{"reference", "integer", "wide", "nothing"}) {
+                String site = siteFor(ioCalls, name);
+                JsonObject prior = latest(trace, "FAULT_POINT_OBSERVED", site, "after");
+                assertTrue("missing after observation for " + name, prior != null);
+                JsonObject wanted = nextOccurrence(prior, "after");
+                JsonArray plan = new JsonArray();
+                plan.add(wanted);
+                planned.set(null, plan);
+                next.setInt(null, 0);
+                int callsBefore = FakeClientSideTranslatorPB.calls;
+                try {
+                    instrumented.getMethod(name).invoke(fixture);
+                    throw new AssertionError("expected post-call IOException for " + name);
+                } catch (InvocationTargetException error) {
+                    assertTrue(error.getCause() instanceof IOException);
+                    assertTrue(error.getCause().getMessage().startsWith("CrashFuzz injected"));
+                }
+                assertEquals(callsBefore + 1, FakeClientSideTranslatorPB.calls);
+                assertEquals(1, next.getInt(null));
+                assertTrue(latest(trace, "FAULT_APPLIED", site, "after") != null);
+            }
+
+            planned.set(null, new JsonArray());
+            next.setInt(null, 0);
+            String failSite = siteFor(ioCalls, "fail");
+            try {
+                instrumented.getMethod("fail").invoke(fixture);
+                throw new AssertionError("expected original RPC failure");
+            } catch (InvocationTargetException error) {
+                assertEquals("original RPC failure", error.getCause().getMessage());
+            }
+            assertNull(latest(trace, "FAULT_POINT_OBSERVED", failSite, "after"));
+
+            // A plan without a phase remains a pre-call fault and prevents the call.
+            String voidSite = siteFor(ioCalls, "nothing");
+            JsonObject before = latest(trace, "FAULT_POINT_OBSERVED", voidSite, "before");
+            JsonObject legacy = nextOccurrence(before, "before");
+            legacy.remove("phase");
+            JsonArray oldPlan = new JsonArray();
+            oldPlan.add(legacy);
+            planned.set(null, oldPlan);
+            next.setInt(null, 0);
+            int callsBefore = FakeClientSideTranslatorPB.calls;
+            try {
+                instrumented.getMethod("nothing").invoke(fixture);
+                throw new AssertionError("expected legacy pre-call IOException");
+            } catch (InvocationTargetException error) {
+                assertTrue(error.getCause() instanceof IOException);
+            }
+            assertEquals(callsBefore, FakeClientSideTranslatorPB.calls);
+            assertEquals(1, next.getInt(null));
+
+            JsonObject oldSelection = selection.deepCopy();
+            oldSelection.remove("post_call_rpc_enabled");
+            String oldSite = siteFor(ioCalls, "reference") + "-legacy";
+            oldSelection.getAsJsonArray("io_calls").get(0).getAsJsonObject()
+                    .addProperty("site_id", oldSite);
+            planned.set(null, new JsonArray());
+            Class<?> oldInstrumented = instrumentClass(RpcFixture.class, oldSelection);
+            assertEquals("reply", oldInstrumented.getMethod("reference").invoke(
+                    oldInstrumented.getConstructor().newInstance()));
+            assertTrue(latest(trace, "FAULT_POINT_OBSERVED", oldSite, "before") != null);
+            assertNull(latest(trace, "FAULT_POINT_OBSERVED", oldSite, "after"));
+        } finally {
+            planned.set(null, previous);
+            next.setInt(null, previousNext);
+        }
+    }
+
+    private static String siteFor(JsonArray calls, String name) {
+        for (int i = 0; i < calls.size(); i++) {
+            JsonObject call = calls.get(i).getAsJsonObject();
+            if (name.equals(call.get("call_name").getAsString())) {
+                return call.get("site_id").getAsString();
+            }
+        }
+        throw new IllegalArgumentException(name);
+    }
+
+    private static JsonObject nextOccurrence(JsonObject observed, String phase) {
+        JsonObject wanted = new JsonObject();
+        wanted.addProperty("marker", observed.get("marker").getAsString());
+        wanted.addProperty("siteId", observed.get("siteId").getAsString());
+        wanted.addProperty("sourceKey", observed.get("sourceKey").getAsString());
+        wanted.addProperty("occurrence", observed.get("occurrenceAddress").getAsString());
+        wanted.addProperty("hitOrdinal", observed.get("hitOrdinal").getAsInt() + 1);
+        wanted.addProperty("occurrenceOrdinal",
+                observed.get("occurrenceOrdinal").getAsInt() + 1);
+        wanted.addProperty("phase", phase);
+        wanted.addProperty("faultId", "test-" + phase);
+        return wanted;
+    }
+
+    private static JsonObject latest(Path trace, String eventName, String site, String phase)
+            throws IOException {
+        JsonObject found = null;
+        for (String line : Files.readAllLines(trace, StandardCharsets.UTF_8)) {
+            JsonObject event = JsonParser.parseString(line).getAsJsonObject();
+            if (eventName.equals(event.get("event").getAsString())
+                    && event.has("siteId") && site.equals(event.get("siteId").getAsString())
+                    && event.has("phase") && phase.equals(event.get("phase").getAsString())) {
+                found = event;
+            }
+        }
+        return found;
+    }
+
+    private static int invocationLine(String name, String owner) throws IOException {
+        String resource = RpcFixture.class.getName().replace('.', '/') + ".class";
+        try (InputStream input = RpcFixture.class.getClassLoader()
+                .getResourceAsStream(resource)) {
+            final int[] found = {-1};
+            new ClassReader(input).accept(new ClassVisitor(Opcodes.ASM9) {
+                @Override public MethodVisitor visitMethod(int access, String method,
+                        String descriptor, String signature, String[] exceptions) {
+                    if (!name.equals(method)) return null;
+                    return new MethodVisitor(Opcodes.ASM9) {
+                        int line;
+                        @Override public void visitLineNumber(int number, Label start) {
+                            line = number;
+                        }
+                        @Override public void visitMethodInsn(int opcode, String callOwner,
+                                String callName, String callDescriptor, boolean isInterface) {
+                            if (owner.equals(callOwner) && name.equals(callName)) found[0] = line;
+                        }
+                    };
+                }
+            }, 0);
+            assertTrue("missing RPC invocation line for " + name, found[0] > 0);
+            return found[0];
         }
     }
 

@@ -54,6 +54,18 @@ An observed target exception is a candidate for replay and source review.
 The HBase runner supplies the original test-only SSL utility needed by its
 Kerberos cluster JUnit and pins matching Directory API dependencies.
 
+New Soot selections enable two phases for eligible synchronous RPC callsites:
+`before` runs just before the call, while `after` runs only when the call
+returns normally. An `after` fault models a completed RPC whose response is
+lost to the caller; it does not undo the remote operation. The agent excludes
+constructors, asynchronous callback/future APIs, and ordinary local I/O from
+post-call injection. Phase is part of each observation and replay identity,
+with independent hit and occurrence ordinals for each phase. Generated plans
+write the phase explicitly. Post-call plans use only a transport-level response
+loss exception; typed callee rejection variants apply only before the call.
+Older selections without `post_call_rpc_enabled`
+observe only `before`, and older plans without a phase still match `before`.
+
 ## Run a selected check
 
 ```sh

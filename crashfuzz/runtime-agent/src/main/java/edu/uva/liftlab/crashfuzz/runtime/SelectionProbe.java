@@ -33,6 +33,8 @@ public final class SelectionProbe {
             ThreadLocal.withInitial(HashMap::new);
     private static final String NODE = System.getProperty("crashfuzz.node", "local");
     private static final String MARKER = "FAULT:STATIC:IO";
+    private static final String BEFORE = "before";
+    private static final String AFTER = "after";
     private static BufferedWriter output;
     private static boolean closed;
     private static long sequence;
@@ -282,6 +284,16 @@ public final class SelectionProbe {
     }
 
     public static void io(String siteId, String callee, Object owner) throws IOException {
+        ioAtPhase(siteId, callee, owner, BEFORE);
+    }
+
+    /** Called only after a selected RPC invocation has returned normally. */
+    public static void ioAfter(String siteId, String callee, Object owner) throws IOException {
+        ioAtPhase(siteId, callee, owner, AFTER);
+    }
+
+    private static void ioAtPhase(String siteId, String callee, Object owner,
+                                  String phase) throws IOException {
         String occurrence = OccurrenceIdentity.stable(NODE + "/"
                 + Thread.currentThread().getName() + "/" + siteId);
         ActorIdentity.Resolution identity = ActorIdentity.resolve(owner);
@@ -293,8 +305,9 @@ public final class SelectionProbe {
             }
         }
         Map<String, Integer> hits = HITS.get();
-        int hit = hits.getOrDefault(siteId, 0) + 1;
-        hits.put(siteId, hit);
+        String phaseSite = phase + "|" + siteId;
+        int hit = hits.getOrDefault(phaseSite, 0) + 1;
+        hits.put(phaseSite, hit);
         Throwable selectedFault;
         synchronized (SelectionProbe.class) {
             if (identity.gap && seenIdentityGaps.add(identity.logicalNodeId)) {
@@ -308,10 +321,11 @@ public final class SelectionProbe {
             // Several short-lived actors can normalize to the same address,
             // each with a thread-local hit of one. Keep their observed order
             // so a fault can address a later occurrence of that actor/site.
-            int occurrenceOrdinal = occurrenceHits.getOrDefault(occurrence, 0) + 1;
-            occurrenceHits.put(occurrence, occurrenceOrdinal);
+            String phaseOccurrence = phase + "|" + occurrence;
+            int occurrenceOrdinal = occurrenceHits.getOrDefault(phaseOccurrence, 0) + 1;
+            occurrenceHits.put(phaseOccurrence, occurrenceOrdinal);
             JsonObject observed = faultEvent("FAULT_POINT_OBSERVED", siteId,
-                    callee, occurrence, hit, occurrenceOrdinal, identity);
+                    callee, occurrence, hit, occurrenceOrdinal, identity, phase);
             write(observed, true);
             // A missing HDFS actor slot must never match a different DN
             // merely because both thread names normalize to the same actor.
@@ -319,6 +333,8 @@ public final class SelectionProbe {
             if (nextFault >= planned.size()) return;
             JsonObject wanted = planned.get(nextFault).getAsJsonObject();
             if (!MARKER.equals(string(wanted, "marker"))
+                    || !phase.equals(wanted.has("phase")
+                    ? string(wanted, "phase") : BEFORE)
                     || !siteId.equals(string(wanted, "siteId"))
                     || !callee.equals(string(wanted, "sourceKey"))
                     || !occurrence.equals(OccurrenceIdentity.stable(string(wanted, "occurrence")))
@@ -328,12 +344,12 @@ public final class SelectionProbe {
             String exceptionClass = string(wanted, "exceptionClass");
             selectedFault = makeFault(exceptionClass, siteId);
             JsonObject matched = faultEvent("FAULT_MATCHED", siteId, callee,
-                    occurrence, hit, occurrenceOrdinal, identity);
+                    occurrence, hit, occurrenceOrdinal, identity, phase);
             matched.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) matched.addProperty("exceptionClass", exceptionClass);
             write(matched, true);
             JsonObject appliedRow = faultEvent("FAULT_APPLIED", siteId, callee,
-                    occurrence, hit, occurrenceOrdinal, identity);
+                    occurrence, hit, occurrenceOrdinal, identity, phase);
             appliedRow.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) appliedRow.addProperty("exceptionClass", exceptionClass);
             write(appliedRow, true);
@@ -378,7 +394,7 @@ public final class SelectionProbe {
 
     private static JsonObject faultEvent(String kind, String siteId, String callee,
                                          String occurrence, int hit, int occurrenceOrdinal,
-                                         ActorIdentity.Resolution identity) {
+                                         ActorIdentity.Resolution identity, String phase) {
         JsonObject row = event(kind);
         row.addProperty("marker", MARKER);
         row.addProperty("siteId", siteId);
@@ -386,6 +402,7 @@ public final class SelectionProbe {
         row.addProperty("occurrenceAddress", occurrence);
         row.addProperty("hitOrdinal", hit);
         row.addProperty("occurrenceOrdinal", occurrenceOrdinal);
+        row.addProperty("phase", phase);
         if (identity.applies()) {
             row.addProperty("logicalNodeId", identity.logicalNodeId);
             if (identity.gap) row.addProperty("identityGap", true);

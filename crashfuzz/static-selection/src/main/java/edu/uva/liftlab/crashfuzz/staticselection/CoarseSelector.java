@@ -443,6 +443,7 @@ public final class CoarseSelector {
         JsonObject result = new JsonObject();
         result.addProperty("schema_version", 1);
         result.addProperty("analysis_kind", "crashfuzz_coarse_soot_selection");
+        result.addProperty("post_call_rpc_enabled", true);
         result.addProperty("target_method", target);
         result.add("coverage_methods", coverage);
         result.add("io_methods", ioMethods);

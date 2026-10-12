@@ -78,8 +78,57 @@ public final class SelectionAgent {
         return line + ":" + owner + ":" + name + descriptor + ":" + ordinal;
     }
 
+    /** Calls where a completed remote operation can lose its reply at the caller. */
+    static boolean supportsPostCallFault(String owner, String name,
+                                         String descriptor) {
+        if ("<init>".equals(name) || "<clinit>".equals(name)
+                || "close".equals(name) || "getProxy".equals(name)
+                || "waitForProxy".equals(name)
+                || name.startsWith("getUnderlying")) return false;
+        // A callback/future-returning API has only submitted a request when it
+        // returns. Throwing there would not model loss of a completed reply.
+        if (descriptor.contains("AsyncCallback")
+                || descriptor.contains("RpcCallback")
+                || descriptor.endsWith("Ljava/util/concurrent/Future;")
+                || descriptor.endsWith("Ljava/util/concurrent/CompletableFuture;")) {
+            return false;
+        }
+        if (owner.endsWith("ClientSideTranslatorPB")) return true;
+        if (owner.endsWith("/SaslDataTransferClient")
+                && "socketSend".equals(name)) return true;
+        if (owner.contains("/ipc/") || owner.contains("/protobuf/")) {
+            return "call".equals(name) || "callBlockingMethod".equals(name)
+                    || "callMethod".equals(name)
+                    || "readResponse".equals(name);
+        }
+        if (owner.endsWith("/ZooKeeper") || owner.endsWith("/SolrZkClient")) {
+            return "create".equals(name) || "delete".equals(name)
+                    || "exists".equals(name) || "getData".equals(name)
+                    || "setData".equals(name) || "getChildren".equals(name)
+                    || "multi".equals(name) || "sync".equals(name)
+                    || "makePath".equals(name) || "atomicUpdate".equals(name);
+        }
+        if (owner.startsWith("org/apache/hadoop/hbase/client/")
+                && (owner.endsWith("/Table") || owner.endsWith("/Admin"))) {
+            return "get".equals(name) || "put".equals(name)
+                    || "delete".equals(name) || "append".equals(name)
+                    || "increment".equals(name) || "mutateRow".equals(name)
+                    || "createTable".equals(name) || "disableTable".equals(name)
+                    || "enableTable".equals(name) || "truncateTable".equals(name);
+        }
+        if (owner.endsWith("/SolrClient")) {
+            return "request".equals(name) || "query".equals(name)
+                    || "add".equals(name) || "deleteById".equals(name)
+                    || "deleteByQuery".equals(name) || "commit".equals(name);
+        }
+        return false;
+    }
+
     private static Map<String, Map<String, MethodPlan>> parse(JsonObject selection) {
         Map<String, Map<String, MethodPlan>> classes = new HashMap<>();
+        // Existing campaign selections have no opt-in and keep their corpus.
+        boolean postCallRpc = selection.has("post_call_rpc_enabled")
+                && selection.get("post_call_rpc_enabled").getAsBoolean();
         JsonArray specs = selection.getAsJsonArray("method_specs");
         if (specs == null) throw new IllegalArgumentException("selection has no method_specs");
         Map<String, MethodPlan> bySignature = new HashMap<>();
@@ -103,7 +152,10 @@ public final class SelectionAgent {
             method.ioSites.put(ioKey(row.get("line").getAsInt(), text(row, "call_owner"),
                     text(row, "call_name"), text(row, "call_descriptor"),
                     row.get("line_ordinal").getAsInt()),
-                    new IoSite(text(row, "site_id"), text(row, "callee")));
+                    new IoSite(text(row, "site_id"), text(row, "callee"),
+                            postCallRpc && supportsPostCallFault(
+                                    text(row, "call_owner"), text(row, "call_name"),
+                                    text(row, "call_descriptor"))));
         }
         for (JsonElement element : selection.getAsJsonArray("branches")) {
             JsonObject row = element.getAsJsonObject();
@@ -128,9 +180,11 @@ public final class SelectionAgent {
     private static final class IoSite {
         final String siteId;
         final String callee;
-        IoSite(String siteId, String callee) {
+        final boolean postCallRpc;
+        IoSite(String siteId, String callee, boolean postCallRpc) {
             this.siteId = siteId;
             this.callee = callee;
+            this.postCallRpc = postCallRpc;
         }
     }
 
@@ -359,6 +413,17 @@ public final class SelectionAgent {
                         "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
             }
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
+            // The original return value (including category-2 primitives) stays
+            // below the probe arguments on the operand stack. If the invocation
+            // throws, execution never reaches this hook.
+            if (site != null && site.postCallRpc) {
+                mv.visitLdcInsn(site.siteId);
+                mv.visitLdcInsn(site.callee);
+                if (thisAvailable) mv.visitVarInsn(ALOAD, 0);
+                else mv.visitInsn(ACONST_NULL);
+                mv.visitMethodInsn(INVOKESTATIC, PROBE, "ioAfter",
+                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
+            }
         }
 
         @Override public void visitJumpInsn(int opcode, Label target) {

@@ -99,11 +99,13 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
     address = event.get("occurrenceAddress", "")
     ordinal = event.get("hitOrdinal", 0)
     occurrence_ordinal = event.get("occurrenceOrdinal")
+    phase = event.get("phase", "before")
     if (event.get("event") not in FAULT_EVENTS or
             event.get("schemaVersion") != TRACE_SCHEMA or
             not isinstance(marker, str) or not marker.startswith("FAULT:") or
             not isinstance(site, str) or "#u" not in site or
             not isinstance(address, str) or not address.strip() or
+            not isinstance(phase, str) or phase not in {"before", "after"} or
             not isinstance(ordinal, int) or ordinal < 1 or
             (occurrence_ordinal is not None and
              (not isinstance(occurrence_ordinal, int) or
@@ -111,6 +113,9 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
         return None
     point = {"marker": marker, "siteId": site,
              "occurrence": address, "hitOrdinal": ordinal}
+    # Keep existing before-phase fingerprints and checkpoints replayable.
+    if phase == "after":
+        point["phase"] = phase
     if occurrence_ordinal is not None:
         point["occurrenceOrdinal"] = occurrence_ordinal
     if event.get("sourceKey"):
@@ -121,8 +126,16 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def fault_point_for_io(point: dict[str, Any]) -> dict[str, Any]:
-    """Use the checked exception understood by a ZooKeeper client callsite."""
+    """Select a transport failure understood at this callsite and phase."""
     source = point.get("sourceKey", "")
+    if point.get("phase") == "after":
+        # A successful call may lose its reply, but cannot be changed into a
+        # callee-side protocol rejection after the callee has accepted it.
+        return {**point, "exceptionClass": (
+            "org.apache.zookeeper.KeeperException$ConnectionLossException"
+            if ("org.apache.solr.common.cloud.SolrZkClient:" in source or
+                "org.apache.zookeeper.ZooKeeper:" in source)
+            else "java.io.IOException")}
     if ("org.apache.solr.common.cloud.SolrZkClient:" in source or
             "org.apache.zookeeper.ZooKeeper:" in source):
         return {**point, "exceptionClass":
@@ -133,9 +146,11 @@ def fault_point_for_io(point: dict[str, Any]) -> dict[str, Any]:
 def fault_variants_for_io(point: dict[str, Any],
                           static_exceptions: dict[str, list[str]] | None = None
                           ) -> list[dict[str, Any]]:
-    """Try the generic I/O failure and statically observed protocol failures."""
+    """Try typed failures before calls; use only reply loss after calls."""
     base = fault_point_for_io(point)
     variants = [base]
+    if point.get("phase") == "after":
+        return variants
     for name in (static_exceptions or {}).get(point["siteId"], []):
         typed = {**point, "exceptionClass": name}
         if typed not in variants:
@@ -489,6 +504,8 @@ def strict_injection(result: dict[str, Any],
     expected = [fingerprint(point) for point in sequence]
     def stable(point: dict[str, Any], requested: dict[str, Any]) -> dict[str, Any]:
         normalized = {**point, "occurrence": stable_occurrence(point["occurrence"])}
+        if normalized.get("phase", "before") == "before":
+            normalized.pop("phase", None)
         # Checkpoints made before occurrenceOrdinal existed still have a valid
         # exact actor/site/hit selector. The runtime reports the new field,
         # but it was not part of their requested fault identity.
@@ -516,8 +533,11 @@ def enqueue(state: dict[str, Any], sequence: list[dict[str, Any]],
 
 def fault_family(point: dict[str, Any]) -> str:
     """Stable fault identity; protocol exception types are distinct behaviors."""
-    return fingerprint({key: point.get(key) for key in
-                        ("marker", "siteId", "sourceKey", "exceptionClass")})
+    family = {key: point.get(key) for key in
+              ("marker", "siteId", "sourceKey", "exceptionClass")}
+    if point.get("phase") == "after":
+        family["phase"] = "after"
+    return fingerprint(family)
 
 
 def identity_priority(point: dict[str, Any]) -> int:
@@ -691,7 +711,8 @@ def choose_next_sequence(state: dict[str, Any],
 def write_trial(path: Path, sequence: list[dict[str, Any]],
                 target: dict[str, Any]) -> None:
     trial = {"schemaVersion": 1, "faults": [
-        {"faultId": fingerprint(point), **point, "value": True}
+        {"faultId": fingerprint(point), **point,
+         "phase": point.get("phase", "before"), "value": True}
         for point in sequence]}
     if target.get("site_id"):
         trial["targetSiteId"] = target["site_id"]
