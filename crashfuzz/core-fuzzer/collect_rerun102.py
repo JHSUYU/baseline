@@ -21,7 +21,10 @@ COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
            'check_code', 'cluster_test', 'total_elapsed_seconds',
            'active_runtime_seconds',
            'healthy_seconds', 'fault_trials', 'active_trial', 'strict_injections',
-           'post_fault_target_reach_trials', 'target_exception_candidates',
+           'healthy_target_reached', 'post_fault_target_reach_trials',
+           'lost_target_trials', 'target_outcome_changed_trials',
+           'coverage_gain_methods', 'coverage_gain_branches',
+           'target_exception_candidates',
            'static_io_calls', 'static_coverage_methods', 'campaign_result',
            'archive_host', 'archive_path', 'error')
 
@@ -49,6 +52,15 @@ def reconcile_elapsed(value: dict) -> None:
     value['total_elapsed_seconds'] = round(max(float(total or 0), float(active)), 3)
 
 
+def enrich_result_metrics(value: dict, record: dict) -> None:
+    gain = record.get('coverage_gain_by_kind') or {}
+    value['healthy_target_reached'] = record.get('target_reached')
+    value['lost_target_trials'] = record.get('lost_target_trials')
+    value['target_outcome_changed_trials'] = record.get('target_outcome_changed_trials')
+    value['coverage_gain_methods'] = gain.get('methods')
+    value['coverage_gain_branches'] = gain.get('branch_outcomes')
+
+
 def enrich_live_summary(base: Path, value: dict) -> None:
     if value.get('status') != 'fuzzing' or value.get('finished'):
         return
@@ -66,6 +78,9 @@ def enrich_live_summary(base: Path, value: dict) -> None:
         active = state.get('active')
         value['active_trial'] = active.get('number') if isinstance(active, dict) else None
         value['active_runtime_seconds'] = state.get('active_runtime_seconds')
+        result_path = state_path.with_name('result.json')
+        if result_path.is_file():
+            enrich_result_metrics(value, json.loads(result_path.read_text()))
         break
 
 
@@ -74,11 +89,13 @@ def local_summaries() -> dict[str, dict]:
     for path in LOCAL_ROOT.glob('*/case-summary.json'):
         try:
             value = json.loads(path.read_text())
-            if value.get('campaign_result') and not value.get('active_runtime_seconds'):
+            if value.get('campaign_result'):
                 result_path = Path(value['campaign_result'])
                 if result_path.is_file():
-                    value['active_runtime_seconds'] = json.loads(
-                        result_path.read_text()).get('total_elapsed_seconds')
+                    record = json.loads(result_path.read_text())
+                    enrich_result_metrics(value, record)
+                    if not value.get('active_runtime_seconds'):
+                        value['active_runtime_seconds'] = record.get('total_elapsed_seconds')
             enrich_live_summary(path.parent, value)
             reconcile_elapsed(value)
             result[value['case_id']] = value
@@ -95,8 +112,11 @@ def remote_summaries(host: str) -> dict[str, dict]:
               "        row=json.load(open(p))\n"
               "        base=pathlib.Path(p).parent\n"
               "        result=row.get('campaign_result')\n"
-              "        if result and not row.get('active_runtime_seconds'):\n"
-              "            row['active_runtime_seconds']=json.load(open(result)).get('total_elapsed_seconds')\n"
+              "        if result and pathlib.Path(result).is_file():\n"
+              "            record=json.load(open(result))\n"
+              "            gain=record.get('coverage_gain_by_kind') or {}\n"
+              "            row.update(healthy_target_reached=record.get('target_reached'),lost_target_trials=record.get('lost_target_trials'),target_outcome_changed_trials=record.get('target_outcome_changed_trials'),coverage_gain_methods=gain.get('methods'),coverage_gain_branches=gain.get('branch_outcomes'))\n"
+              "            if not row.get('active_runtime_seconds'): row['active_runtime_seconds']=record.get('total_elapsed_seconds')\n"
               "        if row.get('status')=='fuzzing' and not row.get('finished'):\n"
               "            artifact=base/('caller-expanded/soot-selection.json' if row.get('selection_profile')=='caller_expanded' else 'soot-selection.json')\n"
               "            digest=json.load(open(artifact)).get('input_digest') if artifact.is_file() else None\n"
@@ -113,6 +133,11 @@ def remote_summaries(host: str) -> dict[str, dict]:
               "                active=state.get('active')\n"
               "                row['active_trial']=active.get('number') if isinstance(active,dict) else None\n"
               "                row['active_runtime_seconds']=state.get('active_runtime_seconds')\n"
+              "                result_path=state_path.with_name('result.json')\n"
+              "                if result_path.is_file():\n"
+              "                    record=json.load(open(result_path))\n"
+              "                    gain=record.get('coverage_gain_by_kind') or {}\n"
+              "                    row.update(healthy_target_reached=record.get('target_reached'),lost_target_trials=record.get('lost_target_trials'),target_outcome_changed_trials=record.get('target_outcome_changed_trials'),coverage_gain_methods=gain.get('methods'),coverage_gain_branches=gain.get('branch_outcomes'))\n"
               "                break\n"
               "        active=row.get('active_runtime_seconds')\n"
               "        if active is not None: row['total_elapsed_seconds']=round(max(float(row.get('total_elapsed_seconds') or 0),float(active)),3)\n"

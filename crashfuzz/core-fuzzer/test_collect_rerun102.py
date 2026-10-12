@@ -3,7 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from collect_rerun102 import enrich_live_summary, enrich_live_trials, reconcile_elapsed
+from collect_rerun102 import (enrich_live_summary, enrich_live_trials,
+                              enrich_result_metrics, reconcile_elapsed)
 
 
 class LiveTrialSummaryTest(unittest.TestCase):
@@ -46,6 +47,17 @@ class LiveTrialSummaryTest(unittest.TestCase):
             enrich_live_summary(base, summary)
             self.assertEqual(summary['fault_trials'], 1)
             self.assertEqual(summary['active_trial'], 2)
+
+    def test_result_metrics_expose_target_and_coverage_feedback(self):
+        summary = {}
+        enrich_result_metrics(summary, {
+            'target_reached': True, 'lost_target_trials': 3,
+            'target_outcome_changed_trials': 1,
+            'coverage_gain_by_kind': {'methods': 5, 'branch_outcomes': 2}})
+        self.assertEqual(summary, {
+            'healthy_target_reached': True, 'lost_target_trials': 3,
+            'target_outcome_changed_trials': 1,
+            'coverage_gain_methods': 5, 'coverage_gain_branches': 2})
 
 
 if __name__ == '__main__':
