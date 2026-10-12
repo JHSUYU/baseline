@@ -162,11 +162,12 @@ public final class SelectionFixture {
         public int second() { return first(); }
         public int third() { return second(); }
         public int fourth() { return third(); }
-        public int fifth() throws IOException {
+        public int fifth() { return fourth(); }
+        public int sixth() throws IOException {
             try (FileOutputStream file = new FileOutputStream("/tmp/wire-sender")) {
                 file.write(1);
             }
-            return fourth();
+            return fifth();
         }
     }
 }

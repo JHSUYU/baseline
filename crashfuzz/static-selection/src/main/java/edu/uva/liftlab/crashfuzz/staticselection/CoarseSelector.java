@@ -271,7 +271,7 @@ public final class CoarseSelector {
         // field-writer expansion consumes the method budget.
         extendWireSenderCallers(selected, near, wireProducers, callers,
                 directIoMethods, Math.min(maxMethods, Math.max(selected.size(),
-                        maxMethods * 3 / 8)), gaps);
+                        maxMethods * 3 / 8)), Math.max(1, maxMethods / 2), gaps);
         Set<String> directWriters = new LinkedHashSet<>();
         MethodInfo targetInfo = methods.get(target);
         for (String field : sorted(targetInfo.reads)) {
@@ -515,7 +515,7 @@ public final class CoarseSelector {
     private static void extendWireSenderCallers(Map<String, String> selected,
             Set<String> consumers, Map<String, Set<String>> wireProducers,
             Map<String, Set<String>> callers, Set<String> directIoMethods,
-            int limit, Set<String> gaps) {
+            int limit, int directIoLimit, Set<String> gaps) {
         for (String consumer : consumers) {
             for (String producer : sorted(wireProducers.getOrDefault(consumer,
                     Collections.emptySet()))) {
@@ -536,6 +536,21 @@ public final class CoarseSelector {
                         }
                     }
                     frontier = next;
+                }
+                // A shallow wrapper of the last selected sender method can
+                // be the actual I/O boundary. Admit only direct I/O callers
+                // at this final step, rather than spending the method budget
+                // on another full level of helper methods.
+                Set<String> directCallers = new LinkedHashSet<>();
+                for (String method : frontier) {
+                    for (String caller : callers.getOrDefault(method,
+                            Collections.emptySet())) {
+                        if (directIoMethods.contains(caller)) directCallers.add(caller);
+                    }
+                }
+                for (String caller : sorted(directCallers)) {
+                    add(selected, caller, "rpc_wire_sender_direct_io_caller_depth_6",
+                            directIoLimit, gaps);
                 }
             }
         }

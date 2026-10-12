@@ -14,7 +14,9 @@ the optional HDFS communication mapping are configured in
 system.
 For mapped RPC values, the selector also follows a bounded chain of callers
 from the sender's value producer to an I/O call. This can select a transport
-send that is several helper calls away from the producer.
+send that is several helper calls away from the producer. At the last hop it
+admits direct I/O callers without expanding every remaining helper, so an
+overloaded transport wrapper does not hide the sending operation.
 For a check that explicitly throws its target exception, Soot also records
 typed throw sites and the branches that can select them. The fuzzer uses the
 selected source line to recognize the corresponding runtime `ATHROW`; a

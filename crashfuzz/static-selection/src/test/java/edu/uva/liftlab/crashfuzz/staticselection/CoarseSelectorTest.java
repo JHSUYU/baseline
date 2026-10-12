@@ -230,10 +230,10 @@ public class CoarseSelectorTest {
             input.add("analysis", analysis);
 
             JsonObject result = CoarseSelector.analyze(input);
-            String sender = "<" + PREFIX + "$WireSender: int fifth()>";
+            String sender = "<" + PREFIX + "$WireSender: int sixth()>";
             assertTrue(result.getAsJsonObject("selection_reasons").has(sender));
             assertTrue(result.getAsJsonObject("selection_reasons").get(sender)
-                    .getAsString().startsWith("rpc_wire_sender_caller_depth_5"));
+                    .getAsString().startsWith("rpc_wire_sender_direct_io_caller_depth_6"));
             assertTrue(result.getAsJsonArray("io_calls").toString()
                     .contains("java.io.FileOutputStream: void write(int)"));
             assertTrue(result.getAsJsonArray("coverage_methods").size() <= 100);
