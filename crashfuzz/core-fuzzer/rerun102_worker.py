@@ -190,11 +190,7 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
     if summary_path.is_file():
         prior = json.loads(summary_path.read_text())
         previous_seconds = float(prior.get('total_elapsed_seconds') or 0)
-        if prior.get('finished') and prior.get('fault_trials', 0) >= max_trials:
-            return prior
-        if prior.get('status') in {'no_cluster_test',
-                                   'healthy_target_unreached',
-                                   'no_io_fault_points'} and prior.get('finished'):
+        if prior.get('finished') and not (refresh_selection or campaign_suffix):
             return prior
     location = row['exact_check_location']
     summary = {'case_id': cid, 'system': row['system'],

@@ -80,6 +80,19 @@ class ExceptionResolutionTest(unittest.TestCase):
             self.assertEqual(json.loads((base / 'case-summary.json').read_text()),
                              summary)
 
+    def test_finished_queue_exhaustion_is_not_repeated(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = root / 'HDFS-01'
+            base.mkdir()
+            summary = {'case_id': 'HDFS-01', 'system': 'HDFS 3.4.3',
+                       'status': 'no_valid_target_trial', 'finished': True,
+                       'fault_trials': 7}
+            (base / 'case-summary.json').write_text(json.dumps(summary))
+            observed = rerun102_worker.run_case(
+                {'case_id': 'HDFS-01', 'system': 'HDFS 3.4.3'}, root, 80, 10)
+            self.assertEqual(observed, summary)
+
 
 if __name__ == '__main__':
     unittest.main()
