@@ -8,6 +8,7 @@ checkpoint, and summary; restarting a worker skips finished cases.
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import re
 import subprocess
@@ -177,14 +178,15 @@ def live_selection_artifact(base: Path, cid: str, target: str) -> Path | None:
     return None
 
 
-def run_case(row: dict, result_root: Path, max_trials: int,
-             max_faults: int, campaign_suffix: str = '',
-             refresh_selection: bool = False) -> dict:
+def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
+                       max_faults: int, campaign_suffix: str = '',
+                       refresh_selection: bool = False) -> dict:
     cid = row['case_id']
     base = result_root / cid
     base.mkdir(parents=True, exist_ok=True)
     summary_path = base / 'case-summary.json'
     previous_seconds = 0.0
+    prior = None
     if summary_path.is_file():
         prior = json.loads(summary_path.read_text())
         previous_seconds = float(prior.get('total_elapsed_seconds') or 0)
@@ -295,12 +297,37 @@ def run_case(row: dict, result_root: Path, max_trials: int,
                                                    time.monotonic() - started, 3),
                        campaign_result=str(record_path))
     except Exception as error:
+        if str(error).startswith('case already claimed:') and prior is not None:
+            atomic_json(summary_path, prior)
+            return prior
         summary.update(status='blocked_setup', error=str(error),
                        total_elapsed_seconds=round(previous_seconds +
                                                    time.monotonic() - started, 3))
     summary['updated_at'] = time.time()
     atomic_json(summary_path, summary)
     return summary
+
+
+def run_case(row: dict, result_root: Path, max_trials: int,
+             max_faults: int, campaign_suffix: str = '',
+             refresh_selection: bool = False) -> dict:
+    """Claim a case before setup so parallel workers cannot overwrite it."""
+    base = result_root / row['case_id']
+    base.mkdir(parents=True, exist_ok=True)
+    with (base / '.run-case.lock').open('a+') as claim:
+        try:
+            fcntl.flock(claim, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            summary = base / 'case-summary.json'
+            if summary.is_file():
+                return json.loads(summary.read_text())
+            return {'case_id': row['case_id'], 'system': row['system'],
+                    'status': 'claimed_elsewhere', 'finished': False}
+        try:
+            return _run_case_unlocked(row, result_root, max_trials, max_faults,
+                                      campaign_suffix, refresh_selection)
+        finally:
+            fcntl.flock(claim, fcntl.LOCK_UN)
 
 
 def main() -> int:

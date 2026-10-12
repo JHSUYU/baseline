@@ -1,4 +1,5 @@
 import tempfile
+import fcntl
 import json
 import unittest
 from pathlib import Path
@@ -62,6 +63,22 @@ class ExceptionResolutionTest(unittest.TestCase):
                 base, 'CHECK-01', '<T: void check()>'), artifact)
             self.assertIsNone(rerun102_worker.live_selection_artifact(
                 base, 'CHECK-01', '<Other: void check()>'))
+
+    def test_parallel_claim_preserves_running_case_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            base = root / 'HDFS-01'
+            base.mkdir()
+            summary = {'case_id': 'HDFS-01', 'system': 'HDFS 3.4.3',
+                       'status': 'fuzzing', 'finished': False}
+            (base / 'case-summary.json').write_text(json.dumps(summary))
+            with (base / '.run-case.lock').open('a+') as claim:
+                fcntl.flock(claim, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                observed = rerun102_worker.run_case(
+                    {'case_id': 'HDFS-01', 'system': 'HDFS 3.4.3'}, root, 80, 10)
+            self.assertEqual(observed, summary)
+            self.assertEqual(json.loads((base / 'case-summary.json').read_text()),
+                             summary)
 
 
 if __name__ == '__main__':

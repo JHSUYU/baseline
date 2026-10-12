@@ -42,7 +42,8 @@ python3 rerun102_worker.py \
 to process the system's checklist. Workers can divide one system with
 `--shard-index` and `--shard-count`. Each case has its own atomic checkpoint;
 restarting a worker resumes unfinished work without replaying completed
-trials. A check without an original cluster JUnit test is marked
+trials. A case lock prevents overlapping workers from replacing each other's
+summary or setup state. A check without an original cluster JUnit test is marked
 `no_cluster_test`.
 
 The current three-node run writes a per-check summary beside each result and
