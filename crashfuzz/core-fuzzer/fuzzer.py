@@ -834,42 +834,55 @@ def archive_trial_attempts(trial_dir: Path, final_result: dict[str, Any]) -> lis
         if not attempt_result_path.is_file():
             continue
         attempt_result = json.loads(attempt_result_path.read_text())
+        manifest_path = attempt_dir / "trace" / "manifest.json"
+        manifest = json.loads(manifest_path.read_text()) if manifest_path.is_file() else None
         changed = False
+        manifest_changed = False
         attempt_archived = []
         for name in ("runtime_trace.jsonl", "junit.log", "jacoco.exec"):
             path = attempt_dir / "trace" / name
-            if not path.is_file():
-                continue
             target = path.with_name(path.name + ".gz")
-            temporary = target.with_name(target.name + f".tmp.{os.getpid()}")
-            try:
-                source_digest = hashlib.sha256()
-                with path.open("rb") as source, gzip.open(
-                        temporary, "wb", compresslevel=3) as sink:
-                    for chunk in iter(lambda: source.read(1024 * 1024), b""):
-                        source_digest.update(chunk)
-                        sink.write(chunk)
-                restored_digest = hashlib.sha256()
-                with gzip.open(temporary, "rb") as restored:
-                    for chunk in iter(lambda: restored.read(1024 * 1024), b""):
-                        restored_digest.update(chunk)
-                if restored_digest.digest() != source_digest.digest():
-                    raise IOError(f"compressed artifact differs from source: {path}")
-                os.replace(temporary, target)
-                path.unlink()
-            finally:
-                temporary.unlink(missing_ok=True)
+            if path.is_file():
+                temporary = target.with_name(target.name + f".tmp.{os.getpid()}")
+                try:
+                    source_digest = hashlib.sha256()
+                    with path.open("rb") as source, gzip.open(
+                            temporary, "wb", compresslevel=3) as sink:
+                        for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                            source_digest.update(chunk)
+                            sink.write(chunk)
+                    restored_digest = hashlib.sha256()
+                    with gzip.open(temporary, "rb") as restored:
+                        for chunk in iter(lambda: restored.read(1024 * 1024), b""):
+                            restored_digest.update(chunk)
+                    if restored_digest.digest() != source_digest.digest():
+                        raise IOError(f"compressed artifact differs from source: {path}")
+                    os.replace(temporary, target)
+                    path.unlink()
+                finally:
+                    temporary.unlink(missing_ok=True)
+            elif not target.is_file():
+                continue
             archived.append(str(target))
             attempt_archived.append(str(target))
-            if attempt_result.get("trace") == str(path):
-                attempt_result["trace"] = str(target)
-            if final_result.get("trace") == str(path):
-                final_result["trace"] = str(target)
-            changed = True
+            for record in (attempt_result, final_result):
+                for key in ("trace", "junit_log", "jacoco_exec"):
+                    if record.get(key) == str(path):
+                        record[key] = str(target)
+                        changed = True
+            if manifest is not None:
+                for key in ("trace", "junit_log", "jacoco_exec"):
+                    if manifest.get(key) == str(path):
+                        manifest[key] = str(target)
+                        manifest_changed = True
+            if str(target) not in attempt_result.get("archived_artifacts", []):
+                changed = True
         if changed:
             attempt_result["archived_artifacts"] = sorted(set(
                 attempt_result.get("archived_artifacts", []) + attempt_archived))
             atomic_json(attempt_result_path, attempt_result)
+        if manifest_changed:
+            atomic_json(manifest_path, manifest)
     return archived
 
 

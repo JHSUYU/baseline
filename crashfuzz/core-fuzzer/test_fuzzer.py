@@ -550,6 +550,25 @@ class CoverageIoTest(unittest.TestCase):
                 self.assertEqual(record['trace'], str(trace) + '.gz')
             self.assertEqual(final['trace'], str(trial / 'attempt-02/trace/runtime_trace.jsonl.gz'))
 
+    def test_archive_repairs_legacy_attempt_pointer_to_existing_gzip(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp) / 'trial'
+            attempt = trial / 'attempt-01'
+            trace = attempt / 'trace/runtime_trace.jsonl'
+            trace.parent.mkdir(parents=True)
+            with gzip.open(str(trace) + '.gz', 'wt') as stream:
+                stream.write('preserved trace\n')
+            (attempt / 'result.json').write_text(json.dumps({'trace': str(trace)}))
+            (attempt / 'trace/manifest.json').write_text(
+                json.dumps({'trace': str(trace)}))
+            final = {'trace': str(trace)}
+            self.assertEqual(archive_trial_attempts(trial, final), [str(trace) + '.gz'])
+            self.assertEqual(final['trace'], str(trace) + '.gz')
+            self.assertEqual(json.loads((attempt / 'result.json').read_text())['trace'],
+                             str(trace) + '.gz')
+            self.assertEqual(json.loads((attempt / 'trace/manifest.json').read_text())
+                             ['trace'], str(trace) + '.gz')
+
 
 if __name__ == '__main__':
     unittest.main()
