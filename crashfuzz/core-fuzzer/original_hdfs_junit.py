@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import hashlib
 import json
 import os
@@ -11,6 +12,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import time
+import zipfile
 
 HERE = Path(__file__).resolve().parent
 BUILD = HERE / "build-original-hdfs-junit"
@@ -18,18 +20,30 @@ JDK = Path("/usr/lib/jvm/java-8-openjdk-amd64/bin")
 HADOOP = Path("/users/ZhenyuLi/.baseline-deps/hadoop-3.4.3")
 JACOCO = Path("/users/ZhenyuLi/.m2/repository/org/jacoco/org.jacoco.agent/0.8.15/org.jacoco.agent-0.8.15-runtime.jar")
 TESTS = HADOOP / "share/hadoop/hdfs/hadoop-hdfs-3.4.3-tests.jar"
+TEST_CLASSES = HERE / "build-original-hdfs-test-classes"
 RESOURCE = Path("/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/resources")
 
 
 def build() -> None:
     source = HERE / "RunOriginalHdfsJUnit.java"
     target = BUILD / "RunOriginalHdfsJUnit.class"
-    if target.exists() and target.stat().st_mtime >= source.stat().st_mtime:
-        return
-    BUILD.mkdir(parents=True, exist_ok=True)
-    junit = HADOOP / "share/hadoop/tools/lib/junit-4.13.2.jar"
-    subprocess.run([str(JDK / "javac"), "-cp", str(junit), "-d", str(BUILD),
-                    str(source)], check=True)
+    if not target.exists() or target.stat().st_mtime < source.stat().st_mtime:
+        BUILD.mkdir(parents=True, exist_ok=True)
+        junit = HADOOP / "share/hadoop/tools/lib/junit-4.13.2.jar"
+        subprocess.run([str(JDK / "javac"), "-cp", str(junit), "-d", str(BUILD),
+                        str(source)], check=True)
+    # Some unchanged Hadoop tests call KeyStoreTestUtil.getClasspathDir(),
+    # which requires a file: class resource rather than a jar: URL.
+    marker = TEST_CLASSES / ".source-jar"
+    stamp = f"{TESTS.stat().st_size}:{TESTS.stat().st_mtime_ns}"
+    with (HERE / ".build-original-hdfs-test-classes.lock").open("a+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        if not marker.exists() or marker.read_text() != stamp:
+            shutil.rmtree(TEST_CLASSES, ignore_errors=True)
+            TEST_CLASSES.mkdir(parents=True)
+            with zipfile.ZipFile(TESTS) as archive:
+                archive.extractall(TEST_CLASSES)
+            marker.write_text(stamp)
 
 
 def main() -> int:
@@ -53,13 +67,16 @@ def main() -> int:
     hadoop_cp = subprocess.check_output([str(HADOOP / "bin/hadoop"), "classpath", "--glob"],
                                          env=env, text=True).strip()
     m2 = Path("/users/ZhenyuLi/.m2/repository")
-    extra = [m2 / "org/mockito/mockito-core/4.9.0/mockito-core-4.9.0.jar",
+    extra = [m2 / "org/apache/hadoop/hadoop-minikdc/3.4.3/hadoop-minikdc-3.4.3.jar",
+             m2 / "org/mockito/mockito-core/4.9.0/mockito-core-4.9.0.jar",
              m2 / "net/bytebuddy/byte-buddy/1.12.16/byte-buddy-1.12.16.jar",
              m2 / "net/bytebuddy/byte-buddy-agent/1.12.16/byte-buddy-agent-1.12.16.jar",
              m2 / "org/objenesis/objenesis/3.3/objenesis-3.3.jar"]
-    cp = os.pathsep.join([str(BUILD), str(RESOURCE), str(TESTS),
+    kerby = sorted(path for path in (m2 / "org/apache/kerby").glob("*/2.0.3/*.jar")
+                   if path.name == path.parent.parent.name + "-2.0.3.jar")
+    cp = os.pathsep.join([str(BUILD), str(TEST_CLASSES), str(RESOURCE), str(TESTS),
                           str(HADOOP / "share/hadoop/common/hadoop-common-3.4.3-tests.jar"),
-                          hadoop_cp, *(str(path) for path in extra),
+                          hadoop_cp, *(str(path) for path in extra + kerby),
                           *(str(path) for path in sorted((HADOOP / "share/hadoop/tools/lib").glob("*.jar")))])
     assert not any(("graphchecker" in part.lower() or "causynth" in part.lower())
                    and part.lower().endswith(".jar") for part in cp.split(os.pathsep))
