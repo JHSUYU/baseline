@@ -57,6 +57,14 @@ public final class SelectionFixture {
         }
     }
 
+    public static final class ThrowLineReader {
+        public void check() {
+            if (shared == 7) {
+                throw new IllegalStateException("target on a later source line");
+            }
+        }
+    }
+
     public static final class WatchedReader {
         public void check() {
             if (watchedValue == 7) throw new IllegalStateException("watch target");

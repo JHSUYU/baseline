@@ -143,6 +143,13 @@ public final class SelectionAgent {
             Map<String, MethodPlan> methods = classes.get(className);
             if (methods == null) return null;
             try {
+                WeaveStats stats = new WeaveStats();
+                int expectedIo = 0;
+                int expectedBranches = 0;
+                for (MethodPlan method : methods.values()) {
+                    expectedIo += method.ioSites.size();
+                    expectedBranches += method.branches.size();
+                }
                 ClassReader reader = new ClassReader(original);
                 ClassWriter writer = new SafeClassWriter(reader,
                         ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS, loader);
@@ -152,12 +159,16 @@ public final class SelectionAgent {
                         MethodVisitor originalVisitor = super.visitMethod(access, name,
                                 descriptor, signature, exceptions);
                         MethodPlan plan = methods.get(methodKey(name, descriptor));
+                        if (plan != null && originalVisitor != null) stats.methods++;
                         return plan == null || originalVisitor == null ? originalVisitor
                                 : new SelectedMethod(originalVisitor, access, name,
-                                        descriptor, plan);
+                                        descriptor, plan, stats);
                     }
                 }, ClassReader.EXPAND_FRAMES);
-                return writer.toByteArray();
+                byte[] rewritten = writer.toByteArray();
+                SelectionProbe.weaveClass(className, methods.size(), stats.methods,
+                        expectedIo, stats.io, expectedBranches, stats.branches);
+                return rewritten;
             } catch (Throwable error) {
                 System.err.println("CrashFuzz selection weave failed for " + className
                         + ": " + error);
@@ -165,6 +176,12 @@ public final class SelectionAgent {
                 throw new IllegalStateException("static selection weave failed", error);
             }
         }
+    }
+
+    private static final class WeaveStats {
+        int methods;
+        int io;
+        int branches;
     }
 
     /** Resolve frame merges from class resources without defining classes mid-transform. */
@@ -239,17 +256,24 @@ public final class SelectionAgent {
 
     private static final class SelectedMethod extends AdviceAdapter {
         final MethodPlan plan;
+        final WeaveStats stats;
         final Map<String, Integer> ioOrdinals = new HashMap<>();
         final Map<Integer, Integer> branchOrdinals = new HashMap<>();
+        final Map<Integer, Integer> throwOrdinals = new HashMap<>();
+        final Set<Label> catchAllHandlers = new HashSet<>();
         final Label tryStart = new Label();
         final Label tryEnd = new Label();
         final Label tryHandler = new Label();
         int line = -1;
+        int catchAllExceptionSlot = -1;
+        boolean awaitingCatchAllStore;
+        boolean lastLoadedCatchAllException;
 
         SelectedMethod(MethodVisitor delegate, int access, String name,
-                       String descriptor, MethodPlan plan) {
+                       String descriptor, MethodPlan plan, WeaveStats stats) {
             super(Opcodes.ASM9, delegate, access, name, descriptor);
             this.plan = plan;
+            this.stats = stats;
         }
 
         @Override protected void onMethodEnter() {
@@ -289,13 +313,40 @@ public final class SelectionAgent {
             }
         }
 
+        @Override public void visitTryCatchBlock(Label start, Label end,
+                                                  Label handler, String type) {
+            if (type == null) catchAllHandlers.add(handler);
+            super.visitTryCatchBlock(start, end, handler, type);
+        }
+
+        @Override public void visitLabel(Label label) {
+            if (catchAllHandlers.contains(label)) {
+                awaitingCatchAllStore = true;
+                catchAllExceptionSlot = -1;
+                lastLoadedCatchAllException = false;
+            }
+            super.visitLabel(label);
+        }
+
+        @Override public void visitVarInsn(int opcode, int var) {
+            if (awaitingCatchAllStore) {
+                catchAllExceptionSlot = opcode == ASTORE ? var : -1;
+                awaitingCatchAllStore = false;
+            }
+            lastLoadedCatchAllException = opcode == ALOAD
+                    && var == catchAllExceptionSlot && catchAllExceptionSlot >= 0;
+            super.visitVarInsn(opcode, var);
+        }
+
         @Override public void visitMethodInsn(int opcode, String owner, String name,
                 String descriptor, boolean isInterface) {
+            lastLoadedCatchAllException = false;
             String ordinalKey = line + ":" + owner + ":" + name + descriptor;
             int ordinal = ioOrdinals.getOrDefault(ordinalKey, 0);
             ioOrdinals.put(ordinalKey, ordinal + 1);
             IoSite site = plan.ioSites.get(ioKey(line, owner, name, descriptor, ordinal));
             if (site != null) {
+                stats.io++;
                 mv.visitLdcInsn(site.siteId);
                 mv.visitLdcInsn(site.callee);
                 mv.visitMethodInsn(INVOKESTATIC, PROBE, "io",
@@ -305,11 +356,15 @@ public final class SelectionAgent {
         }
 
         @Override public void visitJumpInsn(int opcode, Label target) {
+            lastLoadedCatchAllException = false;
+            if (opcode == GOTO) catchAllExceptionSlot = -1;
             if (opcode >= IFEQ && opcode <= IF_ACMPNE || opcode == IFNULL
                     || opcode == IFNONNULL) {
                 int ordinal = branchOrdinals.getOrDefault(line, 0);
                 branchOrdinals.put(line, ordinal + 1);
-                String site = plan.branches.getOrDefault(line + ":" + ordinal,
+                String branchKey = line + ":" + ordinal;
+                if (plan.branches.containsKey(branchKey)) stats.branches++;
+                String site = plan.branches.getOrDefault(branchKey,
                         plan.signature + "#bytecode:" + line + ":" + ordinal);
                 if (opcode >= IFEQ && opcode <= IFLE) {
                     mv.visitInsn(DUP);
@@ -338,6 +393,83 @@ public final class SelectionAgent {
                 }
             }
             super.visitJumpInsn(opcode, target);
+        }
+
+        @Override public void visitInsn(int opcode) {
+            boolean compilerRethrow = opcode == ATHROW && lastLoadedCatchAllException;
+            lastLoadedCatchAllException = false;
+            if (opcode >= IRETURN && opcode <= RETURN) catchAllExceptionSlot = -1;
+            if (opcode == ATHROW) {
+                // javac's synchronized/finally cleanup stores the caught
+                // Throwable, runs cleanup, then reloads and rethrows it. It
+                // is the same throw already observed at its source site.
+                if (compilerRethrow) {
+                    catchAllExceptionSlot = -1;
+                    super.visitInsn(opcode);
+                    return;
+                }
+                int ordinal = throwOrdinals.getOrDefault(line, 0);
+                throwOrdinals.put(line, ordinal + 1);
+                String site = plan.signature + "#bytecode:throw:" + line + ":" + ordinal;
+                // Keep the Throwable on the operand stack for the original ATHROW.
+                mv.visitInsn(DUP);
+                mv.visitLdcInsn(plan.signature);
+                mv.visitLdcInsn(site);
+                mv.visitLdcInsn(line);
+                mv.visitLdcInsn(ordinal);
+                mv.visitMethodInsn(INVOKESTATIC, PROBE, "explicitThrow",
+                        "(Ljava/lang/Throwable;Ljava/lang/String;Ljava/lang/String;II)V", false);
+            }
+            super.visitInsn(opcode);
+        }
+
+        @Override public void visitIntInsn(int opcode, int operand) {
+            lastLoadedCatchAllException = false;
+            super.visitIntInsn(opcode, operand);
+        }
+
+        @Override public void visitTypeInsn(int opcode, String type) {
+            lastLoadedCatchAllException = false;
+            super.visitTypeInsn(opcode, type);
+        }
+
+        @Override public void visitFieldInsn(int opcode, String owner, String name,
+                                             String descriptor) {
+            lastLoadedCatchAllException = false;
+            super.visitFieldInsn(opcode, owner, name, descriptor);
+        }
+
+        @Override public void visitInvokeDynamicInsn(String name, String descriptor,
+                org.objectweb.asm.Handle bootstrapMethod, Object... bootstrapArguments) {
+            lastLoadedCatchAllException = false;
+            super.visitInvokeDynamicInsn(name, descriptor, bootstrapMethod, bootstrapArguments);
+        }
+
+        @Override public void visitLdcInsn(Object value) {
+            lastLoadedCatchAllException = false;
+            super.visitLdcInsn(value);
+        }
+
+        @Override public void visitIincInsn(int var, int increment) {
+            lastLoadedCatchAllException = false;
+            super.visitIincInsn(var, increment);
+        }
+
+        @Override public void visitTableSwitchInsn(int min, int max, Label dflt,
+                                                    Label... labels) {
+            lastLoadedCatchAllException = false;
+            super.visitTableSwitchInsn(min, max, dflt, labels);
+        }
+
+        @Override public void visitLookupSwitchInsn(Label dflt, int[] keys,
+                                                     Label[] labels) {
+            lastLoadedCatchAllException = false;
+            super.visitLookupSwitchInsn(dflt, keys, labels);
+        }
+
+        @Override public void visitMultiANewArrayInsn(String descriptor, int dimensions) {
+            lastLoadedCatchAllException = false;
+            super.visitMultiANewArrayInsn(descriptor, dimensions);
         }
     }
 }

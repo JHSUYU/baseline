@@ -42,10 +42,14 @@ public final class SelectionProbe {
     private static String targetMethod;
     private static final Set<String> seenMethods = new HashSet<>();
     private static final Set<String> seenBranches = new HashSet<>();
+    private static final Map<String, Integer> occurrenceHits = new HashMap<>();
 
     static {
         try {
             String trace = System.getenv("CRASHFUZZ_TRACE_PATH");
+            if (trace == null || trace.isEmpty()) {
+                trace = System.getProperty("crashfuzz.trace.path");
+            }
             if (trace == null || trace.isEmpty()) {
                 String directory = System.getenv("CAUSYNTH_TRACE_OUTPUT_DIR");
                 if (directory == null || directory.isEmpty()) {
@@ -115,6 +119,24 @@ public final class SelectionProbe {
         }
     }
 
+    public static synchronized void weaveClass(String className,
+            int selectedMethods, int wovenMethods, int selectedIo, int wovenIo,
+            int selectedBranches, int wovenBranches) {
+        try {
+            JsonObject row = event("STATIC_WEAVE_CLASS");
+            row.addProperty("className", className);
+            row.addProperty("selectedMethods", selectedMethods);
+            row.addProperty("wovenMethods", wovenMethods);
+            row.addProperty("selectedIo", selectedIo);
+            row.addProperty("wovenIo", wovenIo);
+            row.addProperty("selectedBranches", selectedBranches);
+            row.addProperty("wovenBranches", wovenBranches);
+            write(row, true);
+        } catch (IOException error) {
+            throw new IllegalStateException("cannot record static weave", error);
+        }
+    }
+
     public static synchronized void setTargetMethod(String method) {
         targetMethod = method;
     }
@@ -160,6 +182,29 @@ public final class SelectionProbe {
     public static void exitNormal(String method) { end(method, "METHOD_EXIT_NORMAL", null); }
     public static void exitThrow(String method, Throwable thrown) {
         end(method, "METHOD_EXIT_THROW", thrown);
+    }
+
+    /** Record an actual ATHROW, including one caught later within the same method. */
+    public static void explicitThrow(Throwable thrown, String method, String siteId,
+                                     int sourceLine, int throwOrdinal) {
+        Deque<Long> calls = CALLS.get();
+        synchronized (SelectionProbe.class) {
+            try {
+                JsonObject row = event("EXPLICIT_THROW");
+                row.addProperty("method", method);
+                row.addProperty("siteId", siteId);
+                row.addProperty("sourceLine", sourceLine);
+                row.addProperty("throwOrdinal", throwOrdinal);
+                row.addProperty("callId", calls.isEmpty() ? 0 : calls.peek());
+                // ATHROW with a null operand raises NullPointerException itself.
+                row.addProperty("runtimeType", thrown == null
+                        ? NullPointerException.class.getName() : thrown.getClass().getName());
+                if (thrown == null) row.addProperty("nullThrowable", true);
+                write(row, true);
+            } catch (IOException error) {
+                throw new IllegalStateException("cannot record explicit throw", error);
+            }
+        }
     }
 
     public static void check(String siteId) {
@@ -239,8 +284,13 @@ public final class SelectionProbe {
         hits.put(siteId, hit);
         Throwable selectedFault;
         synchronized (SelectionProbe.class) {
+            // Several short-lived actors can normalize to the same address,
+            // each with a thread-local hit of one. Keep their observed order
+            // so a fault can address a later occurrence of that actor/site.
+            int occurrenceOrdinal = occurrenceHits.getOrDefault(occurrence, 0) + 1;
+            occurrenceHits.put(occurrence, occurrenceOrdinal);
             JsonObject observed = faultEvent("FAULT_POINT_OBSERVED", siteId,
-                    callee, occurrence, hit);
+                    callee, occurrence, hit, occurrenceOrdinal);
             write(observed, true);
             if (nextFault >= planned.size()) return;
             JsonObject wanted = planned.get(nextFault).getAsJsonObject();
@@ -248,16 +298,18 @@ public final class SelectionProbe {
                     || !siteId.equals(string(wanted, "siteId"))
                     || !callee.equals(string(wanted, "sourceKey"))
                     || !occurrence.equals(OccurrenceIdentity.stable(string(wanted, "occurrence")))
-                    || hit != wanted.get("hitOrdinal").getAsInt()) return;
+                    || hit != wanted.get("hitOrdinal").getAsInt()
+                    || (wanted.has("occurrenceOrdinal")
+                    && occurrenceOrdinal != wanted.get("occurrenceOrdinal").getAsInt())) return;
             String exceptionClass = string(wanted, "exceptionClass");
             selectedFault = makeFault(exceptionClass, siteId);
             JsonObject matched = faultEvent("FAULT_MATCHED", siteId, callee,
-                    occurrence, hit);
+                    occurrence, hit, occurrenceOrdinal);
             matched.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) matched.addProperty("exceptionClass", exceptionClass);
             write(matched, true);
             JsonObject appliedRow = faultEvent("FAULT_APPLIED", siteId, callee,
-                    occurrence, hit);
+                    occurrence, hit, occurrenceOrdinal);
             appliedRow.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) appliedRow.addProperty("exceptionClass", exceptionClass);
             write(appliedRow, true);
@@ -301,13 +353,14 @@ public final class SelectionProbe {
     }
 
     private static JsonObject faultEvent(String kind, String siteId, String callee,
-                                         String occurrence, int hit) {
+                                         String occurrence, int hit, int occurrenceOrdinal) {
         JsonObject row = event(kind);
         row.addProperty("marker", MARKER);
         row.addProperty("siteId", siteId);
         row.addProperty("sourceKey", callee);
         row.addProperty("occurrenceAddress", occurrence);
         row.addProperty("hitOrdinal", hit);
+        row.addProperty("occurrenceOrdinal", occurrenceOrdinal);
         return row;
     }
 }

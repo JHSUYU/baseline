@@ -22,7 +22,9 @@ import soot.jimple.NewExpr;
 import soot.jimple.SpecialInvokeExpr;
 import soot.jimple.Stmt;
 import soot.jimple.CastExpr;
+import soot.jimple.ThrowStmt;
 import soot.options.Options;
+import soot.toolkits.graph.BriefUnitGraph;
 import soot.toolkits.graph.ExceptionalUnitGraph;
 import soot.toolkits.scalar.SimpleLocalDefs;
 
@@ -193,12 +195,14 @@ public final class CoarseSelector {
         Map<String, Set<String>> callers = new HashMap<>();
         Map<String, Set<String>> writers = new HashMap<>();
         Map<String, Set<String>> callTargets = new HashMap<>();
+        Set<String> directIoMethods = new HashSet<>();
         Map<String, List<MethodInfo>> bySubSignature = new HashMap<>();
         for (MethodInfo info : methods.values()) {
             bySubSignature.computeIfAbsent(info.method.getSubSignature(),
                     ignored -> new ArrayList<>()).add(info);
         }
         for (MethodInfo info : methods.values()) {
+            if (!info.ioCalls.isEmpty()) directIoMethods.add(info.signature);
             Set<String> resolved = new LinkedHashSet<>();
             for (Invocation invocation : info.invocations) {
                 if (methods.containsKey(invocation.signature)) resolved.add(invocation.signature);
@@ -298,7 +302,7 @@ public final class CoarseSelector {
         // wrapped by several local calls before the RPC/async handler that
         // installs a value, so follow that chain farther than other fields.
         Set<String> writerAncestors = extendWriterCallers(selected, directWriters,
-                callers, 5, 8,
+                callers, directIoMethods, 5, 8,
                 new int[] {maxMethods / 2, maxMethods * 5 / 8,
                         writerCallerLimit, maxMethods * 7 / 8,
                         maxMethods * 15 / 16}, maxMethods, gaps);
@@ -316,7 +320,7 @@ public final class CoarseSelector {
         extendLocalCallees(selected, writerNeighborhood, callTargets, methods,
                 2, 8, maxMethods, gaps);
         nearWriters.removeAll(directWriters);
-        extendWriterCallers(selected, nearWriters, callers, 2, 8,
+        extendWriterCallers(selected, nearWriters, callers, directIoMethods, 2, 8,
                 new int[] {maxMethods * 15 / 16, maxMethods * 15 / 16},
                 maxMethods, gaps);
         Deque<Step> pending = new ArrayDeque<>();
@@ -374,6 +378,7 @@ public final class CoarseSelector {
         JsonArray ioCalls = new JsonArray();
         JsonArray methodSpecs = new JsonArray();
         JsonArray branches = new JsonArray();
+        JsonArray targetThrowSites = new JsonArray();
         JsonObject reasons = new JsonObject();
         for (String signature : sorted(selected.keySet())) {
             coverage.add(signature);
@@ -411,6 +416,20 @@ public final class CoarseSelector {
                 row.addProperty("line_ordinal", branch.lineOrdinal);
                 branches.add(row);
             }
+            if (signature.equals(target)) {
+                for (ThrowSite site : info.throwSites) {
+                    JsonObject row = new JsonObject();
+                    row.addProperty("method", signature);
+                    row.addProperty("soot_site_id", signature + "#u" + site.unitIndex);
+                    row.addProperty("line", site.line);
+                    row.addProperty("unit_index", site.unitIndex);
+                    row.addProperty("thrown_type", site.thrownType);
+                    JsonArray controls = new JsonArray();
+                    for (String branch : site.controlledBy) controls.add(branch);
+                    row.add("controlled_by", controls);
+                    targetThrowSites.add(row);
+                }
+            }
         }
         if (ioMethods.size() == 0) gaps.add("no_static_io_call_in_selected_methods");
         JsonObject result = new JsonObject();
@@ -422,6 +441,7 @@ public final class CoarseSelector {
         result.add("io_calls", ioCalls);
         result.add("method_specs", methodSpecs);
         result.add("branches", branches);
+        result.add("target_throw_sites", targetThrowSites);
         result.add("selection_reasons", reasons);
         JsonArray gapRows = new JsonArray();
         for (String gap : gaps) gapRows.add(gap);
@@ -440,7 +460,8 @@ public final class CoarseSelector {
     }
 
     private static Set<String> extendWriterCallers(Map<String, String> selected,
-            Set<String> roots, Map<String, Set<String>> callers, int depthLimit,
+            Set<String> roots, Map<String, Set<String>> callers,
+            Set<String> directIoMethods, int depthLimit,
             int fanout, int[] limits, int maxMethods, Set<String> gaps) {
         Set<String> frontier = roots;
         Set<String> higherCallers = new LinkedHashSet<>();
@@ -451,9 +472,15 @@ public final class CoarseSelector {
                         Collections.emptySet()));
                 String owner = writer.substring(0, writer.indexOf(':'));
                 nearCallers.sort((left, right) -> {
+                    // A direct I/O caller is already an injectable boundary,
+                    // including when dispatch crosses into another actor.
+                    int byIo = Boolean.compare(directIoMethods.contains(right),
+                            directIoMethods.contains(left));
+                    if (byIo != 0) return byIo;
                     boolean leftLocal = left.startsWith(owner + ":");
                     boolean rightLocal = right.startsWith(owner + ":");
-                    return Boolean.compare(rightLocal, leftLocal);
+                    int byLocal = Boolean.compare(rightLocal, leftLocal);
+                    return byLocal != 0 ? byLocal : left.compareTo(right);
                 });
                 for (int i = 0; i < Math.min(fanout, nearCallers.size()); i++) {
                     String caller = nearCallers.get(i);
@@ -877,14 +904,46 @@ public final class CoarseSelector {
     }
 
     private static final class Branch {
+        final Unit unit;
         final int line;
         final int unitIndex;
         final int lineOrdinal;
-        Branch(int line, int unitIndex, int lineOrdinal) {
+        Branch(Unit unit, int line, int unitIndex, int lineOrdinal) {
+            this.unit = unit;
             this.line = line;
             this.unitIndex = unitIndex;
             this.lineOrdinal = lineOrdinal;
         }
+    }
+
+    private static final class ThrowSite {
+        final Unit unit;
+        final int line;
+        final int unitIndex;
+        final String thrownType;
+        final List<String> controlledBy = new ArrayList<>();
+
+        ThrowSite(Unit unit, int line, int unitIndex, String thrownType) {
+            this.unit = unit;
+            this.line = line;
+            this.unitIndex = unitIndex;
+            this.thrownType = thrownType;
+        }
+    }
+
+    /** Normal-path reachability, stopping at a revisit of the deciding branch. */
+    private static boolean reachesThrow(BriefUnitGraph graph, Unit start,
+                                        Unit target, Unit decidingBranch) {
+        Deque<Unit> pending = new ArrayDeque<>();
+        Set<Unit> seen = new HashSet<>();
+        pending.add(start);
+        while (!pending.isEmpty()) {
+            Unit unit = pending.removeFirst();
+            if (unit.equals(target)) return true;
+            if (unit.equals(decidingBranch) || !seen.add(unit)) continue;
+            pending.addAll(graph.getSuccsOf(unit));
+        }
+        return false;
     }
 
     private static final class MethodInfo {
@@ -898,6 +957,7 @@ public final class CoarseSelector {
         boolean launchesTask;
         final List<IoCall> ioCalls = new ArrayList<>();
         final List<Branch> branches = new ArrayList<>();
+        final List<ThrowSite> throwSites = new ArrayList<>();
 
         MethodInfo(SootMethod method, Body body, List<String> ioPatterns) {
             this.method = method;
@@ -914,7 +974,12 @@ public final class CoarseSelector {
                     int line = unit.getJavaSourceStartLineNumber();
                     int ordinal = branchOrdinals.getOrDefault(line, 0);
                     branchOrdinals.put(line, ordinal + 1);
-                    branches.add(new Branch(line, unitIndex - 1, ordinal));
+                    branches.add(new Branch(unit, line, unitIndex - 1, ordinal));
+                }
+                if (stmt instanceof ThrowStmt) {
+                    int line = unit.getJavaSourceStartLineNumber();
+                    throwSites.add(new ThrowSite(unit, line, unitIndex - 1,
+                            ((ThrowStmt) stmt).getOp().getType().toString()));
                 }
                 if (stmt instanceof AssignStmt && ((AssignStmt) stmt).getRightOp() instanceof NewExpr) {
                     newTypes.add(((NewExpr) ((AssignStmt) stmt).getRightOp())
@@ -963,6 +1028,24 @@ public final class CoarseSelector {
                     }
                 }
             }
+            if (!throwSites.isEmpty() && !branches.isEmpty()) {
+                BriefUnitGraph graph = new BriefUnitGraph(body);
+                for (ThrowSite site : throwSites) {
+                    for (Branch branch : branches) {
+                        List<Unit> successors = graph.getSuccsOf(branch.unit);
+                        if (successors.size() != 2) continue;
+                        boolean first = reachesThrow(graph, successors.get(0),
+                                site.unit, branch.unit);
+                        boolean second = reachesThrow(graph, successors.get(1),
+                                site.unit, branch.unit);
+                        if (first != second) controlledBy(site, branch);
+                    }
+                }
+            }
+        }
+
+        private void controlledBy(ThrowSite site, Branch branch) {
+            site.controlledBy.add(signature + "#u" + branch.unitIndex);
         }
     }
 }

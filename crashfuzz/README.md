@@ -12,6 +12,10 @@ selected methods, branches, and I/O callsites. System-wide binary paths and
 the optional HDFS communication mapping are configured in
 `core-fuzzer/prepare_case_selection.py`; they are shared by all checks in that
 system.
+For a check that explicitly throws its target exception, Soot also records
+typed throw sites and the branches that can select them. The fuzzer uses the
+selected source line to recognize the corresponding runtime `ATHROW`; a
+passing JUnit result can still contain a target exception caught by its caller.
 
 The ASM Java agent in `runtime-agent/` instruments only the selected sites.
 A healthy run records the I/O points and code paths that actually execute.
@@ -31,8 +35,10 @@ seed single-fault trials that may expose it.
 JUnit test, and uses new selected I/O and method/branch coverage to choose
 later plans. A fault counts only when its full runtime identity matches and
 the target check still executes afterward. Object identity hashes in generated
-thread names are normalized across JUnit runs; the I/O site, actor class, and
-hit ordinal remain part of the match. ZooKeeper calls can receive a
+thread names and temporary cluster ports are normalized across JUnit runs;
+the I/O site, actor class, and hit ordinal remain part of the match. Repeated
+observations with the same normalized address also carry an occurrence ordinal.
+ZooKeeper calls can receive a
 `ConnectionLossException`; other selected calls receive an `IOException`.
 An observed target exception is a candidate for replay and source review.
 The HBase runner supplies the original test-only SSL utility needed by its

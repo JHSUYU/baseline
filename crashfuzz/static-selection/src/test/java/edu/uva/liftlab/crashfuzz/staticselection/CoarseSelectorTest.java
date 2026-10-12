@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,6 +32,28 @@ public class CoarseSelectorTest {
         assertEquals(2, selected.size());
     }
 
+    @Test public void boundedWriterFanoutKeepsDirectIoCaller() throws Exception {
+        String writer = "<example.Actor: void write()>";
+        String ordinary = "<example.Actor: void alpha()>";
+        String io = "<example.RemoteActor: void zetaIo()>";
+        Map<String, String> selected = new LinkedHashMap<>();
+        selected.put(writer, "writer");
+        Map<String, Set<String>> callers = new LinkedHashMap<>();
+        Set<String> possibilities = new LinkedHashSet<>();
+        possibilities.add(ordinary);
+        possibilities.add(io);
+        callers.put(writer, possibilities);
+        Method select = CoarseSelector.class.getDeclaredMethod("extendWriterCallers",
+                Map.class, Set.class, Map.class, Set.class, int.class, int.class,
+                int[].class, int.class, Set.class);
+        select.setAccessible(true);
+        select.invoke(null, selected, Collections.singleton(writer), callers,
+                Collections.singleton(io), 1, 1, new int[] {2}, 2,
+                new LinkedHashSet<String>());
+        assertEquals(2, selected.size());
+        assertTrue(selected.containsKey(io));
+    }
+
     @Test public void neverExceedsMethodBudgetAcrossSelectionPhases() {
         JsonObject input = new JsonObject();
         input.addProperty("target_method", "<" + PREFIX + "$Reader: void check()>");
@@ -43,6 +66,44 @@ public class CoarseSelectorTest {
         input.add("analysis", analysis);
         JsonObject result = CoarseSelector.analyze(input);
         assertTrue(result.getAsJsonArray("coverage_methods").size() <= 3);
+    }
+
+    @Test public void reportsTargetThrowAndItsControllingBranch() {
+        String target = "<" + PREFIX + "$ThrowLineReader: void check()>";
+        JsonObject input = new JsonObject();
+        input.addProperty("target_method", target);
+        JsonObject analysis = new JsonObject();
+        JsonArray dirs = new JsonArray();
+        dirs.add("target/test-classes");
+        analysis.add("process_dirs", dirs);
+        analysis.add("classpath", new JsonArray());
+        input.add("analysis", analysis);
+        JsonObject result = CoarseSelector.analyze(input);
+        JsonArray sites = result.getAsJsonArray("target_throw_sites");
+        boolean found = false;
+        for (com.google.gson.JsonElement element : sites) {
+            JsonObject site = element.getAsJsonObject();
+            if (!"java.lang.IllegalStateException".equals(
+                    site.get("thrown_type").getAsString())) continue;
+            assertEquals(target, site.get("method").getAsString());
+            assertTrue(site.get("line").getAsInt() > 0);
+            assertTrue(site.getAsJsonArray("controlled_by").size() >= 1);
+            String branchId = site.getAsJsonArray("controlled_by").get(0)
+                    .getAsString();
+            assertTrue(branchId.startsWith(target + "#u"));
+            assertTrue(site.has("soot_site_id"));
+            boolean branchFound = false;
+            for (com.google.gson.JsonElement branch : result.getAsJsonArray("branches")) {
+                JsonObject check = branch.getAsJsonObject();
+                if (branchId.equals(check.get("site_id").getAsString())) {
+                    assertTrue(check.get("line").getAsInt() < site.get("line").getAsInt());
+                    branchFound = true;
+                }
+            }
+            assertTrue(branchFound);
+            found = true;
+        }
+        assertTrue(found);
     }
 
     @Test public void followsIoFromNestedWriterIntoItsOuterClass() {

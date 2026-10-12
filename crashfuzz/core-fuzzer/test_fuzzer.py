@@ -10,8 +10,10 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     choose_next_sequence, fault_family, fault_point_for_io,
                     fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
-                    static_reason_priority, strict_injection, trace_feedback,
-    stable_occurrence, validate, write_case_result)
+                    rows, static_reason_priority, strict_injection,
+                    trace_feedback, stable_occurrence,
+                    selected_target_throw_lines, validate,
+                    write_case_result)
 
 TARGET = '<example.Target: void check()>'
 SITE = TARGET + '#u8'
@@ -130,6 +132,93 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_hbase_embedded_cluster_ports_keep_replayable_actor_identity(self):
+        site = '/<example.RpcServer: void call()>#u5'
+        first = ('local/hdfs://localhost:46863 RpcServer.port=45509 '
+                 'ms1140:41175' + site)
+        second = ('local/hdfs://localhost:38291 RpcServer.port=34170 '
+                  'ms1140:33812' + site)
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+
+    def test_soot_controlled_throw_uses_line_not_unit_ordinal(self):
+        guard = TARGET + '#u4'
+        selection = {'target_check_line': 20, 'target_selected_line': 23,
+                     'branches': [{'method': TARGET, 'line': 20,
+                                   'site_id': guard}],
+                     'target_throw_sites': [
+                         {'method': TARGET, 'line': 23,
+                          'soot_site_id': TARGET + '#u11',
+                          'thrown_type': 'example.TargetException',
+                          'controlled_by': [guard]},
+                         {'method': TARGET, 'line': 23,
+                          'soot_site_id': TARGET + '#u12',
+                          'thrown_type': 'java.lang.Throwable',
+                          'controlled_by': []}]}
+        target = {'method': TARGET, 'site_id': TARGET + '#u11',
+                  'exception_type': 'example.TargetException'}
+        self.assertEqual(selected_target_throw_lines(selection, target), [23])
+
+    def test_selected_explicit_throw_counts_even_if_caught_in_method(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'trace.jsonl'
+            target = {'method': TARGET, 'site_id': SITE,
+                      'check_events': ['CHECK_REACHED'],
+                      'throw_event': 'EXPLICIT_THROW',
+                      'explicit_throw_lines': [23],
+                      'exception_type': 'example.TargetException'}
+            jsonl(path, [
+                {'event': 'METHOD_ENTER', 'seq': 1,
+                 'method': TARGET, 'callId': 7},
+                marker(A, 'FAULT_APPLIED', 2, faultId=fingerprint(A)),
+                {'event': 'CHECK_REACHED', 'seq': 3, 'method': TARGET,
+                 'siteId': SITE, 'callId': 7},
+                {'event': 'EXPLICIT_THROW', 'seq': 4, 'method': TARGET,
+                 'siteId': TARGET + '#bytecode:throw:23:0',
+                 'sourceLine': 23, 'callId': 7,
+                 'runtimeType': 'example.TargetException'},
+                {'event': 'METHOD_EXIT_NORMAL', 'seq': 5,
+                 'method': TARGET, 'callId': 7},
+            ])
+            feedback = trace_feedback(path, target)
+            self.assertTrue(feedback['oracle'])
+            self.assertEqual(feedback['target_exception_count'], 1)
+            target['explicit_throw_lines'] = [24]
+            self.assertFalse(trace_feedback(path, target)['oracle'])
+
+    def test_occurrence_ordinal_distinguishes_repeated_actor_site_events(self):
+        first = marker(A, 'FAULT_POINT_OBSERVED', 1, occurrenceOrdinal=1)
+        second = marker(A, 'FAULT_POINT_OBSERVED', 2, occurrenceOrdinal=2)
+        first_point = point_from_event(first)
+        second_point = point_from_event(second)
+        self.assertNotEqual(fingerprint(first_point), fingerprint(second_point))
+        self.assertEqual(first_point['occurrenceOrdinal'], 1)
+        self.assertEqual(second_point['occurrenceOrdinal'], 2)
+        self.assertIsNone(point_from_event({**second, 'occurrenceOrdinal': 0}))
+        applied = {'applied_count': 1, 'matched_count': 1,
+                   'applied_points': [second_point],
+                   'applied_fault_ids': [fingerprint(second_point)]}
+        self.assertTrue(strict_injection(applied, [second_point]))
+        self.assertFalse(strict_injection(applied, [first_point]))
+
+    def test_regenerated_dfs_client_id_keeps_block_receiver_replayable(self):
+        site = '/<example.DataXceiver: void writeBlock()>#u257'
+        first = ('local/DataXceiver for client DFSClient_NONMAPREDUCE_-529516321_1 '
+                 'at /127.0.0.1:50820 [Receiving block '
+                 'BP-1319269182-128.110.217.200-1791835652282:blk_1073741825_1001]' + site)
+        second = ('local/DataXceiver for client DFSClient_NONMAPREDUCE_1383440130_1 '
+                  'at /127.0.0.1:37998 [Receiving block '
+                  'BP-1605120718-128.110.217.200-1791835769457:blk_1073741825_1001]' + site)
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+
+    def test_timeout_trace_ignores_only_incomplete_final_event(self):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'runtime_trace.jsonl'
+            path.write_text('{"event":"FAULT_APPLIED"}\n{"event":"METHOD_ENT')
+            self.assertEqual(list(rows(path)), [{'event': 'FAULT_APPLIED'}])
+            path.write_text('{"event":"FAULT_APPLIED"}\n{"event":"METHOD_ENT\n')
+            with self.assertRaises(ValueError):
+                list(rows(path))
+
     def test_transient_socket_and_block_ids_keep_replayable_actor_identity(self):
         site = '/<example.DataXceiver: void replaceBlock()>#u101'
         first = ('local/DataXceiver for client /127.0.0.1:49718 '
@@ -528,6 +617,19 @@ class CoverageIoTest(unittest.TestCase):
         self.assertTrue(strict_injection(applied, [point]))
         self.assertFalse(strict_injection({**applied, 'applied_points': [B]},
                                           [point]))
+        self.assertTrue(strict_injection({**applied,
+                                         'applied_points': [{**point,
+                                                            'occurrenceOrdinal': 1}]},
+                                         [point]))
+        ordinal_point = {**point, 'occurrenceOrdinal': 2}
+        ordinal_applied = {**applied,
+                           'applied_points': [ordinal_point],
+                           'applied_fault_ids': [fingerprint(ordinal_point)]}
+        self.assertTrue(strict_injection(ordinal_applied, [ordinal_point]))
+        self.assertFalse(strict_injection(
+            {**ordinal_applied, 'applied_points': [{**ordinal_point,
+                                                   'occurrenceOrdinal': 1}]},
+            [ordinal_point]))
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             config = fixture(root, mode='pre_target', max_trials=1)

@@ -13,10 +13,13 @@ final class OccurrenceIdentity {
             actor = "BPServiceActor heartbeating";
         }
         actor = actor.replaceAll("@[0-9a-fA-F]{3,}", "@instance")
+                .replaceAll("\\bDFSClient_[A-Z_]+-?[0-9]+_[0-9]+\\b", "DFSClient_instance")
                 .replaceAll("(?i)\\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\\b", "uuid")
                 .replaceAll("\\bBP-[0-9]+-[^\\s:]+-[0-9]+\\b", "BP-instance")
                 .replaceAll("\\bblk_[0-9]+_[0-9]+\\b", "blk-instance")
-                .replaceAll("((?:[0-9]{1,3}\\.){3}[0-9]{1,3}):[0-9]{2,5}\\b", "$1:port");
+                .replaceAll("(?i)(\\b(?:[a-z][a-z0-9_.-]*|(?:[0-9]{1,3}\\.){3}[0-9]{1,3})):[0-9]{2,5}\\b", "$1:port")
+                .replaceAll("(\\[[0-9a-fA-F:]+\\]):[0-9]{2,5}\\b", "$1:port")
+                .replaceAll("\\bport=[0-9]{2,5}\\b", "port=port");
         return address.substring(0, nodeEnd + 1) + actor
                 + address.substring(siteStart);
     }

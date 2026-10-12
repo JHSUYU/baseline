@@ -41,6 +41,11 @@ def rows(path: Path) -> Iterable[dict[str, Any]]:
                 try:
                     row = json.loads(line)
                 except json.JSONDecodeError as exc:
+                    # A timed-out JVM can be terminated while writing its
+                    # final event. All earlier newline-terminated events are
+                    # still valid feedback for this attempted trial.
+                    if not line.endswith("\n"):
+                        return
                     raise ValueError(f"{path}:{number}: {exc}") from exc
                 if not isinstance(row, dict):
                     raise ValueError(f"{path}:{number}: expected JSON object")
@@ -91,15 +96,21 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
     site = event.get("siteId", "")
     address = event.get("occurrenceAddress", "")
     ordinal = event.get("hitOrdinal", 0)
+    occurrence_ordinal = event.get("occurrenceOrdinal")
     if (event.get("event") not in FAULT_EVENTS or
             event.get("schemaVersion") != TRACE_SCHEMA or
             not isinstance(marker, str) or not marker.startswith("FAULT:") or
             not isinstance(site, str) or "#u" not in site or
             not isinstance(address, str) or not address.strip() or
-            not isinstance(ordinal, int) or ordinal < 1):
+            not isinstance(ordinal, int) or ordinal < 1 or
+            (occurrence_ordinal is not None and
+             (not isinstance(occurrence_ordinal, int) or
+              isinstance(occurrence_ordinal, bool) or occurrence_ordinal < 1))):
         return None
     point = {"marker": marker, "siteId": site,
              "occurrence": address, "hitOrdinal": ordinal}
+    if occurrence_ordinal is not None:
+        point["occurrenceOrdinal"] = occurrence_ordinal
     if event.get("sourceKey"):
         point["sourceKey"] = event["sourceKey"]
     if event.get("exceptionClass"):
@@ -172,6 +183,7 @@ def trace_feedback(path: Path, target: dict[str, Any],
     summary: dict[str, Any] = {}
     static_selection_digests: list[str] = []
     throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
+    explicit_throw_lines = set(target.get("explicit_throw_lines", []))
     coverage_exclude_sites = set(target.get("coverage_exclude_sites", []))
     coverage_include_prefixes = target.get("coverage_include_prefixes", [])
     coverage_include_methods = set(target.get("coverage_include_methods", []))
@@ -229,7 +241,10 @@ def trace_feedback(path: Path, target: dict[str, Any],
         if kind == throw_event:
             if (event.get("method") == target.get("throw_method", target["method"])
                     and (throw_event != "EXPLICIT_THROW" or
-                         event.get("siteId") == target.get("explicit_throw_site_id"))):
+                         ((target.get("explicit_throw_site_id") is None or
+                           event.get("siteId") == target["explicit_throw_site_id"]) and
+                          (not explicit_throw_lines or
+                           event.get("sourceLine") in explicit_throw_lines)))):
                 exceptions.append(event)
         if (kind in {"METHOD_EXIT_NORMAL", "METHOD_EXIT_THROW"} and
                 event.get("method") == target["method"] and
@@ -454,10 +469,15 @@ def stable_occurrence(address: str) -> str:
     if actor.startswith("BP-") and " heartbeating to " in actor:
         actor = "BPServiceActor heartbeating"
     actor = re.sub(r"@[0-9a-fA-F]{3,}", "@instance", actor)
+    actor = re.sub(r"\bDFSClient_[A-Z_]+-?[0-9]+_[0-9]+\b", "DFSClient_instance", actor)
     actor = re.sub(r"(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", "uuid", actor)
     actor = re.sub(r"\bBP-[0-9]+-[^\s:]+-[0-9]+\b", "BP-instance", actor)
     actor = re.sub(r"\bblk_[0-9]+_[0-9]+\b", "blk-instance", actor)
-    actor = re.sub(r"((?:[0-9]{1,3}\.){3}[0-9]{1,3}):[0-9]{2,5}\b", r"\1:port", actor)
+    actor = re.sub(
+        r"(?i)(\b(?:[a-z][a-z0-9_.-]*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})):[0-9]{2,5}\b",
+        r"\1:port", actor)
+    actor = re.sub(r"(\[[0-9a-fA-F:]+\]):[0-9]{2,5}\b", r"\1:port", actor)
+    actor = re.sub(r"\bport=[0-9]{2,5}\b", "port=port", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 
 
@@ -465,12 +485,20 @@ def strict_injection(result: dict[str, Any],
                      sequence: list[dict[str, Any]]) -> bool:
     """Every requested selector must be proved applied, in requested order."""
     expected = [fingerprint(point) for point in sequence]
-    def stable(point: dict[str, Any]) -> dict[str, Any]:
-        return {**point, "occurrence": stable_occurrence(point["occurrence"])}
-    observed = [stable(point) for point in result.get("applied_points", [])]
+    def stable(point: dict[str, Any], requested: dict[str, Any]) -> dict[str, Any]:
+        normalized = {**point, "occurrence": stable_occurrence(point["occurrence"])}
+        # Checkpoints made before occurrenceOrdinal existed still have a valid
+        # exact actor/site/hit selector. The runtime reports the new field,
+        # but it was not part of their requested fault identity.
+        if "occurrenceOrdinal" not in requested:
+            normalized.pop("occurrenceOrdinal", None)
+        return normalized
+    observed = result.get("applied_points", [])
     return (len(expected) == result.get("applied_count") and
             result.get("matched_count", 0) >= len(expected) and
-            observed == [stable(point) for point in sequence] and
+            len(observed) == len(sequence) and
+            all(stable(actual, requested) == stable(requested, requested)
+                for actual, requested in zip(observed, sequence)) and
             result.get("applied_fault_ids") == expected)
 
 
@@ -527,6 +555,35 @@ def static_reason_priority(reason: str) -> int:
                           "thread_handoff_may_launcher")):
         return 50
     return 0
+
+
+def selected_target_throw_lines(selection: dict[str, Any],
+                                target: dict[str, Any]) -> list[int]:
+    """Find typed throws controlled by the selected check in the Soot result.
+
+    Soot unit ordinals and ASM bytecode ordinals are different coordinates.
+    Match their common source line only after Soot establishes the target
+    branch-to-throw relationship; the runtime event supplies the actual type.
+    """
+    method = target["method"]
+    check_line = selection.get("target_check_line")
+    selected_line = selection.get("target_selected_line")
+    guard_ids = {row.get("site_id") for row in selection.get("branches", [])
+                 if row.get("method") == method and row.get("line") == check_line}
+    lines: set[int] = set()
+    for site in selection.get("target_throw_sites", []):
+        if (site.get("method") != method or
+                site.get("thrown_type") != target["exception_type"]):
+            continue
+        line = site.get("line")
+        if not isinstance(line, int) or line < 1:
+            continue
+        controlled = set(site.get("controlled_by", []))
+        if (guard_ids & controlled or
+                site.get("soot_site_id") == target.get("site_id") or
+                (not guard_ids and line == selected_line)):
+            lines.add(line)
+    return sorted(lines)
 
 
 def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
@@ -986,12 +1043,20 @@ def validate(config: dict[str, Any]) -> None:
         raise ValueError("CALL_SITE_THROW requires throw_site_id or site_id")
     if throw_event == "EXPLICIT_THROW":
         explicit_site = target.get("explicit_throw_site_id")
-        if not isinstance(explicit_site, str) or "#u" not in explicit_site:
-            raise ValueError("EXPLICIT_THROW requires exact explicit_throw_site_id")
-        if explicit_site.split("#u", 1)[0] != target.get("throw_method", target["method"]):
-            raise ValueError("explicit_throw_site_id differs from throw_method")
-        if target.get("throw_site_id") and explicit_site != target["throw_site_id"]:
-            raise ValueError("explicit_throw_site_id differs from throw_site_id")
+        lines = target.get("explicit_throw_lines", [])
+        if (not isinstance(lines, list) or
+                any(not isinstance(line, int) or isinstance(line, bool) or line < 1
+                    for line in lines)):
+            raise ValueError("explicit_throw_lines needs positive source lines")
+        if explicit_site is None and not lines:
+            raise ValueError("EXPLICIT_THROW needs an exact site or selected lines")
+        if explicit_site is not None:
+            method = target.get("throw_method", target["method"])
+            if (not isinstance(explicit_site, str) or
+                    not explicit_site.startswith(method + "#")):
+                raise ValueError("explicit_throw_site_id differs from throw_method")
+            if target.get("throw_site_id") and explicit_site != target["throw_site_id"]:
+                raise ValueError("explicit_throw_site_id differs from throw_site_id")
     if has_guards:
         fatal_guard_paths(target)
     coverage_exclude_sites = target.get("coverage_exclude_sites", [])
@@ -1212,8 +1277,13 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
     with CaseLease(case_dir):
         selection = prepare_static_selection(config, case_dir)
         if selection is not None:
-            config = {**config, "target": {**config["target"],
-                      "coverage_include_methods": selection["coverage_methods"]},
+            selected_lines = selected_target_throw_lines(selection, config["target"])
+            target = {**config["target"],
+                      "coverage_include_methods": selection["coverage_methods"]}
+            if selected_lines and "throw_event" not in target:
+                target.update(throw_event="EXPLICIT_THROW",
+                              explicit_throw_lines=selected_lines)
+            config = {**config, "target": target,
                       "io_scope": {"site_ids": [row["site_id"]
                                                for row in selection["io_calls"]]},
                       "_static_io_priority": {
@@ -1227,6 +1297,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                       "_static_selection_digest": selection.get(
                           "input_digest", selection.get("artifact_sha256")),
                       "_static_selection_artifact": selection["artifact_path"]}
+            validate(config)
             if not config["io_scope"]["site_ids"]:
                 raise ValueError("static selection found no I/O callsites")
         path = case_dir / "state.json"
