@@ -59,6 +59,10 @@ The table records the exact check location, selected JUnit, time, fault
 trials, strict injections, healthy and post-fault target reach, lost-target
 trials, new method and branch coverage, and candidate count.
 
+`healthy_target_reached` refers to the exact selected bytecode site. When
+that site is the `throw` inside a guard, `False` in the healthy run is expected
+and does not imply that the enclosing guard was never evaluated.
+
 `cases/`, the older shared adapters, and `entrypoints.json` preserve the
 previous case-specific campaign and its reproduction records. The Soot
 selected campaign above does not import their per-case I/O or coverage lists.
