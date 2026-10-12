@@ -1,6 +1,7 @@
 package edu.uva.liftlab.crashfuzz.staticselection;
 
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +21,62 @@ public final class SelectionFixture {
 
     static int shared;
     static final Map<Integer, Integer> keys = new HashMap<>();
+    static int watchedValue;
+    static int protocolValue;
+
+    public static final class ProtocolException extends IOException {
+        public ProtocolException(String message) { super(message); }
+    }
+
+    public static final class Protocol {
+        public static int read() throws IOException {
+            return ProtocolParser.parse();
+        }
+    }
+
+    public static final class ProtocolParser {
+        public static int parse() throws IOException {
+            throw new ProtocolException("remote rejected key");
+        }
+    }
+
+    public static final class ProtocolUser {
+        public void check() {
+            if (protocolValue == 7) throw new IllegalStateException("protocol target");
+        }
+
+        public void update() throws IOException {
+            protocolValue = Protocol.read();
+        }
+    }
 
     public static final class Reader {
         public void check() {
             keys.get(1);
             if (shared == 7) throw new IllegalStateException("target");
+        }
+    }
+
+    public static final class WatchedReader {
+        public void check() {
+            if (watchedValue == 7) throw new IllegalStateException("watch target");
+        }
+    }
+
+    public static final class WatchOwner {
+        private static void fetch() {
+            try (FileInputStream file = new FileInputStream("/tmp/watch-state")) {
+                file.read();
+            } catch (IOException ignored) {
+                // This fixture is analyzed, never executed.
+            }
+        }
+
+        public static final class Callback {
+            public void process() {
+                watchedValue = 7;
+                fetch();
+            }
         }
     }
 

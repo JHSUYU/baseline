@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "cases": {
+    "HBASE-27": {
+      "reviewed_candidate_count": 2,
+      "verdict": "rejected_expected_startup_failure",
+      "reason": "The first two target exceptions follow a forced IOException in HMaster.tryMigrateMetaLocationsFromZooKeeper ResultScanner.next. HMaster aborts; the waiting RegionServer receives shutdown and HRegionServer.blockAndCheckIfStopped throws its documented shutdown IOException. The original JUnit fails because the master is no longer alive. These two trials do not show an independent coordination defect.",
+      "evidence": "node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0003-35e682845c0c0374a866/result.json; node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0004-db3b477b19e2fc07db17/result.json"
+    }
+  }
+}

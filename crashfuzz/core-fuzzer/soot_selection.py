@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import fcntl
 import subprocess
 import tempfile
 from pathlib import Path
@@ -36,15 +37,17 @@ def _build_tool() -> tuple[Path, str]:
     classes = TOOL / "target" / "classes"
     dependencies = TOOL / "target" / "runtime-classpath.txt"
     source = TOOL / "src" / "main" / "java"
-    stale = (not dependencies.is_file() or
-             not (classes / "edu/uva/liftlab/crashfuzz/staticselection/CoarseSelector.class").is_file() or
-             any(item.stat().st_mtime_ns >
-                 (classes / "edu/uva/liftlab/crashfuzz/staticselection/CoarseSelector.class")
-                 .stat().st_mtime_ns for item in source.rglob("*.java")))
-    if stale:
-        subprocess.run(["mvn", "-q", "test", "package", "dependency:build-classpath",
-                        "-Dmdep.outputFile=target/runtime-classpath.txt"],
-                       cwd=TOOL, check=True)
+    TOOL.joinpath("target").mkdir(parents=True, exist_ok=True)
+    with TOOL.joinpath("target", ".build.lock").open("a+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        compiled = classes / "edu/uva/liftlab/crashfuzz/staticselection/CoarseSelector.class"
+        stale = (not dependencies.is_file() or not compiled.is_file() or
+                 any(item.stat().st_mtime_ns > compiled.stat().st_mtime_ns
+                     for item in source.rglob("*.java")))
+        if stale:
+            subprocess.run(["mvn", "-q", "test", "package", "dependency:build-classpath",
+                            "-Dmdep.outputFile=target/runtime-classpath.txt"],
+                           cwd=TOOL, check=True)
     return classes, dependencies.read_text().strip()
 
 

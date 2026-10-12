@@ -3,11 +3,28 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from collect_rerun102 import (accepts_remote_case, enrich_live_summary, enrich_live_trials,
+from collect_rerun102 import (accepts_remote_case, apply_candidate_review,
+                              enrich_live_summary, enrich_live_trials,
                               enrich_result_metrics, reconcile_elapsed)
 
 
 class LiveTrialSummaryTest(unittest.TestCase):
+    def test_review_rejects_only_the_examined_candidates(self):
+        reviews = {'CHECK-01': {'reviewed_candidate_count': 2,
+                                'verdict': 'rejected_expected_failure',
+                                'reason': 'documented shutdown',
+                                'evidence': 'trial evidence'}}
+        row = {'case_id': 'CHECK-01', 'bug_mark': 'candidate',
+               'target_exception_candidates': 2}
+        apply_candidate_review(row, reviews)
+        self.assertEqual(row['bug_mark'], 'rejected')
+        self.assertEqual(row['review_verdict'], 'rejected_expected_failure')
+        row['target_exception_candidates'] = 3
+        row['bug_mark'] = 'candidate'
+        apply_candidate_review(row, reviews)
+        self.assertEqual(row['bug_mark'], 'candidate')
+        self.assertEqual(row['review_verdict'], 'pending_source_review')
+
     def test_cross_host_offload_is_reported_only_while_active(self):
         cases = {'HBASE-35': {'state': 'active', 'execution_host': 'node2'},
                  'HBASE-37': {'state': 'mirrored', 'execution_host': 'node2'}}

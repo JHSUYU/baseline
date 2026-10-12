@@ -117,6 +117,19 @@ def fault_point_for_io(point: dict[str, Any]) -> dict[str, Any]:
     return point
 
 
+def fault_variants_for_io(point: dict[str, Any],
+                          static_exceptions: dict[str, list[str]] | None = None
+                          ) -> list[dict[str, Any]]:
+    """Try the generic I/O failure and statically observed protocol failures."""
+    base = fault_point_for_io(point)
+    variants = [base]
+    for name in (static_exceptions or {}).get(point["siteId"], []):
+        typed = {**point, "exceptionClass": name}
+        if typed not in variants:
+            variants.append(typed)
+    return variants
+
+
 def in_io_scope(point: dict[str, Any], scope: dict[str, Any] | None) -> bool:
     """A coarse static hint may reduce the I/O corpus; identity remains exact."""
     if not scope:
@@ -441,6 +454,10 @@ def stable_occurrence(address: str) -> str:
     if actor.startswith("BP-") and " heartbeating to " in actor:
         actor = "BPServiceActor heartbeating"
     actor = re.sub(r"@[0-9a-fA-F]{3,}", "@instance", actor)
+    actor = re.sub(r"(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b", "uuid", actor)
+    actor = re.sub(r"\bBP-[0-9]+-[^\s:]+-[0-9]+\b", "BP-instance", actor)
+    actor = re.sub(r"\bblk_[0-9]+_[0-9]+\b", "blk-instance", actor)
+    actor = re.sub(r"((?:[0-9]{1,3}\.){3}[0-9]{1,3}):[0-9]{2,5}\b", r"\1:port", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 
 
@@ -468,9 +485,9 @@ def enqueue(state: dict[str, Any], sequence: list[dict[str, Any]],
 
 
 def fault_family(point: dict[str, Any]) -> str:
-    """Stable I/O identity for scheduling; an occurrence can vary on retry."""
+    """Stable fault identity; protocol exception types are distinct behaviors."""
     return fingerprint({key: point.get(key) for key in
-                        ("marker", "siteId", "sourceKey")})
+                        ("marker", "siteId", "sourceKey", "exceptionClass")})
 
 
 def identity_priority(point: dict[str, Any]) -> int:
@@ -500,6 +517,8 @@ def static_reason_priority(reason: str) -> int:
         return 95
     if reason.startswith("target_direct_field_writer"):
         return 90
+    if reason.startswith("target_actor_io_family"):
+        return 85
     if reason.startswith("target_short_field_writer"):
         return 80
     if reason.startswith("target_short_call_path"):
@@ -511,7 +530,9 @@ def static_reason_priority(reason: str) -> int:
 
 
 def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
-                       result: dict[str, Any], max_faults: int) -> None:
+                       result: dict[str, Any], max_faults: int,
+                       static_priorities: dict[str, int] | None = None,
+                       static_exceptions: dict[str, list[str]] | None = None) -> None:
     """Extend an admitted run with one I/O actually seen after its final fault."""
     if (len(sequence) >= max_faults or result.get("status") not in
             {"checked", "target_exception_candidate",
@@ -519,14 +540,18 @@ def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
         return
     new_io = set(result.get("new_io_families", []))
     for observed in result.get("point_events", []):
-        point = fault_point_for_io(observed["point"])
-        if (observed.get("seq", -1) > result.get("last_applied_seq", -1)
-                and point not in sequence):
-            enqueue(state, sequence + [point],
-                    priority=10 * result.get("new_coverage_count", 0) +
-                    (50 if fault_family(point) in new_io else 0) +
-                    (3 if result["status"] == "target_exception_candidate" else 0) +
-                    identity_priority(point))
+        if observed.get("seq", -1) <= result.get("last_applied_seq", -1):
+            continue
+        for point in fault_variants_for_io(observed["point"], static_exceptions):
+            if point not in sequence:
+                enqueue(state, sequence + [point],
+                        priority=10 * result.get("new_coverage_count", 0) +
+                        (50 if fault_family(point) in new_io else 0) +
+                        (3 if result["status"] == "target_exception_candidate" else 0) +
+                        (static_priorities or {}).get(point["siteId"], 0) +
+                        (15 if point.get("exceptionClass") in
+                         (static_exceptions or {}).get(point["siteId"], []) else 0) +
+                        identity_priority(point))
 
 
 def completed_sequences(state: dict[str, Any]) -> Iterable[list[dict[str, Any]]]:
@@ -541,7 +566,25 @@ def completed_sequences(state: dict[str, Any]) -> Iterable[list[dict[str, Any]]]
             yield sequence
 
 
-def choose_next_sequence(state: dict[str, Any]) -> int:
+def budget_has_room(state: dict[str, Any], budget: dict[str, Any]) -> bool:
+    """Spend extra trials only when the base run has reached the target."""
+    completed = state["completed"]
+    if len(completed) >= budget["max_trials"]:
+        return False
+    minimum = budget.get("min_target_retained_trials")
+    if minimum is None or len(completed) < budget["base_trials"]:
+        return True
+    retained = sum(item["status"] in {"checked", "target_exception_candidate",
+                                      "baseline_exception_recurrence",
+                                      "target_exception_unlinked"}
+                   for item in completed)
+    # Zero post-fault target observations indicates a workload/scope problem;
+    # spending another large block of trials on it is not a coverage gain.
+    return 0 < retained < minimum
+
+
+def choose_next_sequence(state: dict[str, Any],
+                         static_priorities: dict[str, int] | None = None) -> int:
     """Balance new I/O sites with deeper sequences and diversify roots.
 
     Coverage remains a priority within each diversity tier. This prevents
@@ -556,6 +599,16 @@ def choose_next_sequence(state: dict[str, Any]) -> int:
                 if (len(item["sequence"]) == 1) == (preferred_length == 1)]
     if not eligible:
         eligible = list(enumerate(state["queue"]))
+    # Reserve every third trial for a target-side field writer or actor I/O
+    # found by static analysis. Diversity still ranks sequences within that
+    # tier; the remaining trials can explore all observed I/O families.
+    if len(previous) % 3 == 2 and static_priorities:
+        focused = [(index, item) for index, item in eligible
+                   if max(static_priorities.get(point["siteId"], 0)
+                          for point in (item["sequence"][0],
+                                        item["sequence"][-1])) >= 80]
+        if focused:
+            eligible = focused
     family_counts: dict[str, int] = {}
     root_counts: dict[str, int] = {}
     for sequence in previous:
@@ -687,10 +740,14 @@ def ensure_seed(config: dict[str, Any], state: dict[str, Any],
         return
     state["status"] = "fuzzing"
     static_priorities = config.get("_static_io_priority", {})
-    for point in feedback["points"]:
-        point = fault_point_for_io(point)
-        enqueue(state, [point], priority=20 + identity_priority(point) +
-                static_priorities.get(point["siteId"], 0))
+    for observed in feedback["points"]:
+        for point in fault_variants_for_io(
+                observed, config.get("_static_io_exceptions")):
+            enqueue(state, [point], priority=20 + identity_priority(point) +
+                    static_priorities.get(point["siteId"], 0) +
+                    (15 if point.get("exceptionClass") in config.get(
+                        "_static_io_exceptions", {}).get(point["siteId"], [])
+                     else 0))
 
 
 def process_trial(config: dict[str, Any], state: dict[str, Any],
@@ -823,7 +880,9 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
                                "elapsed_seconds": result["elapsed_seconds"],
                                "sequence": active["sequence"]})
     enqueue_extensions(state, active["sequence"], result,
-                       config["budget"]["max_faults"])
+                       config["budget"]["max_faults"],
+                       config.get("_static_io_priority"),
+                       config.get("_static_io_exceptions"))
     state["active"] = None
 
 
@@ -972,6 +1031,12 @@ def validate(config: dict[str, Any]) -> None:
     budget.setdefault("max_faults", 8)
     if budget["max_trials"] < 1 or budget["max_faults"] < 1:
         raise ValueError("budgets must be positive")
+    if "min_target_retained_trials" in budget:
+        if (not isinstance(budget["min_target_retained_trials"], int) or
+                budget["min_target_retained_trials"] < 1 or
+                not isinstance(budget.get("base_trials"), int) or
+                not 1 <= budget["base_trials"] <= budget["max_trials"]):
+            raise ValueError("adaptive budget needs positive target trials and valid base_trials")
     if (not isinstance(budget.get("max_unmatched_retries", 1), int) or
             budget.get("max_unmatched_retries", 1) < 0):
         raise ValueError("max_unmatched_retries must be nonnegative")
@@ -1155,6 +1220,10 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                           row["site_id"]: static_reason_priority(
                               row.get("selection_reason", ""))
                           for row in selection["io_calls"]},
+                      "_static_io_exceptions": {
+                          row["site_id"]: row.get("exception_candidates", [])
+                          for row in selection["io_calls"]
+                          if row.get("exception_candidates")},
                       "_static_selection_digest": selection.get(
                           "input_digest", selection.get("artifact_sha256")),
                       "_static_selection_artifact": selection["artifact_path"]}
@@ -1167,7 +1236,8 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
         config_digest = fingerprint({key: value for key, value in config.items()
                                      if key not in {"budget", "timeout_seconds",
                                                     "archive_completed_trials",
-                                                    "_static_io_priority"}})
+                                                    "_static_io_priority",
+                                                    "_static_io_exceptions"}})
         if path.exists():
             state = json.loads(path.read_text())
             if state["config_digest"] != config_digest:
@@ -1195,6 +1265,18 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("seed_runtime_seconds", 0.0)
             state.setdefault("fault_runtime_seconds", 0.0)
             state.setdefault("io_families", [])
+            if state.get("fault_family_version", 0) < 2:
+                observed = state.get("seed", {}).get("feedback", {}).get(
+                    "points", []) if state.get("seed") else []
+                families = {fault_family(point) for point in observed}
+                for completed in state.get("completed", []):
+                    result_path = Path(completed["result"])
+                    if result_path.is_file():
+                        result = json.loads(result_path.read_text())
+                        families.update(fault_family(point)
+                                        for point in result.get("points", []))
+                state["io_families"] = sorted(families)
+                state["fault_family_version"] = 2
             if state.get("identity_priority_version", 0) < 1:
                 for queued in state.get("queue", []):
                     queued["priority"] += identity_priority(
@@ -1249,6 +1331,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "coverage": [], "queue": [], "seen_sequences": [],
                      "io_families": [], "active_runtime_seconds": 0.0,
                      "identity_priority_version": 1,
+                     "fault_family_version": 2,
                      "static_priority_version": 1,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,
@@ -1278,9 +1361,10 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             # run did not enter the check. A fault can expose that branch.
             priorities = config.get("_static_io_priority", {})
             for observed in state["seed"]["feedback"].get("points", []):
-                point = fault_point_for_io(observed)
-                enqueue(state, [point], priority=20 + identity_priority(point) +
-                        priorities.get(point["siteId"], 0))
+                for point in fault_variants_for_io(
+                        observed, config.get("_static_io_exceptions")):
+                    enqueue(state, [point], priority=20 + identity_priority(point) +
+                            priorities.get(point["siteId"], 0))
             state["status"] = "fuzzing"
             state["finished"] = False
             atomic_json(path, state)
@@ -1298,9 +1382,11 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             if isinstance(sequence, list) and sequence:
                 result = json.loads(Path(completed["result"]).read_text())
                 enqueue_extensions(state, sequence, result,
-                                   config["budget"]["max_faults"])
+                                   config["budget"]["max_faults"],
+                                   config.get("_static_io_priority"),
+                                   config.get("_static_io_exceptions"))
         max_runtime = config["budget"].get("max_seconds", 1e18)
-        can_resume = (len(state["completed"]) < config["budget"]["max_trials"] and
+        can_resume = (budget_has_room(state, config["budget"]) and
                       (state["active"] or state["active_runtime_seconds"] < max_runtime) and
                       (state["queue"] or state["active"]))
         if can_resume and state.get("finished"):
@@ -1313,11 +1399,12 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                 state["status"] = "fuzzing"
             atomic_json(path, state)
             write_case_result(case_dir, state)
-        while (len(state["completed"]) < config["budget"]["max_trials"] and
+        while (budget_has_room(state, config["budget"]) and
                (state["active"] or state["active_runtime_seconds"] < max_runtime) and
                (state["queue"] or state["active"])):
             if state["active"] is None:
-                item = state["queue"].pop(choose_next_sequence(state))
+                item = state["queue"].pop(choose_next_sequence(
+                    state, config.get("_static_io_priority")))
                 state["active"] = {**item, "number": len(state["completed"]) + 1}
                 atomic_json(path, state)
             process_trial(config, state, case_dir, state["active"])
@@ -1326,7 +1413,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
         state["last_updated"] = time.time()
         state["finished"] = bool(not state["active"] and
                                  (not state["queue"] or
-                                  len(state["completed"]) >= config["budget"]["max_trials"] or
+                                  not budget_has_room(state, config["budget"]) or
                                   state["active_runtime_seconds"] >= max_runtime))
         if state["finished"] and state.get("status") not in TERMINAL:
             valid_trial_statuses = {"checked", "target_exception_candidate",

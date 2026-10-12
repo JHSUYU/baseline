@@ -87,6 +87,14 @@ public final class CoarseSelector {
             return Arrays.asList("call", "sendRpcRequest", "receiveRpcResponse",
                     "getProxy", "waitForProxy").contains(call.name);
         }
+        // HDFS data-transfer SASL is application-level network I/O. The
+        // handshake parses a remote response and can report a typed I/O
+        // failure before the block request is sent.
+        if (call.owner.startsWith(
+                "org.apache.hadoop.hdfs.protocol.datatransfer.sasl.")) {
+            return "socketSend".equals(call.name)
+                    || call.name.startsWith("readSaslMessage");
+        }
         // HDFS DataNode and NameNode code calls the generated client-side
         // translator, rather than the DatanodeProtocol interface directly.
         if (call.owner.startsWith("org.apache.hadoop.hdfs.protocolPB.")
@@ -275,6 +283,17 @@ public final class CoarseSelector {
                 }
             }
         }
+        // The value read by a check may be refreshed by a callback nested in
+        // the same actor as a selected getter or field writer. Callback
+        // dispatch is often invisible to the ordinary call graph, so reserve
+        // a small part of the scope for I/O methods in those actor families.
+        // This runs before broad caller traversal can consume the budget.
+        Set<String> actorRoots = new LinkedHashSet<>(near);
+        actorRoots.addAll(directWriters);
+        actorRoots.addAll(nearWriters);
+        extendActorIoMethods(selected, actorRoots, methods,
+                Math.min(maxMethods, Math.max(fieldWriterLimit, maxMethods * 3 / 4)),
+                Math.max(1, maxMethods / 8), gaps);
         // Prefer the check's directly read fields. Their writers may be
         // wrapped by several local calls before the RPC/async handler that
         // installs a value, so follow that chain farther than other fields.
@@ -286,7 +305,15 @@ public final class CoarseSelector {
         // A field writer can be reached through a message handler whose
         // enclosing actor performs the actual RPC in a sibling method. Follow
         // local calls from the writer's higher callers before the broad walk.
-        extendLocalCallees(selected, writerAncestors, callTargets, methods,
+        Set<String> writerNeighborhood = new LinkedHashSet<>(directWriters);
+        writerNeighborhood.addAll(nearWriters);
+        writerNeighborhood.addAll(writerAncestors);
+        for (Map.Entry<String, String> entry : selected.entrySet()) {
+            if (entry.getValue().startsWith("target_short_writer_caller")) {
+                writerNeighborhood.add(entry.getKey());
+            }
+        }
+        extendLocalCallees(selected, writerNeighborhood, callTargets, methods,
                 2, 8, maxMethods, gaps);
         nearWriters.removeAll(directWriters);
         extendWriterCallers(selected, nearWriters, callers, 2, 8,
@@ -372,6 +399,8 @@ public final class CoarseSelector {
                 row.addProperty("call_descriptor", call.descriptor);
                 row.addProperty("line_ordinal", call.lineOrdinal);
                 row.addProperty("selection_reason", selected.get(signature));
+                row.add("exception_candidates", exceptionCandidates(
+                        call.callee, methods, callTargets));
                 ioCalls.add(row);
             }
             for (Branch branch : info.branches) {
@@ -454,7 +483,10 @@ public final class CoarseSelector {
                     List<String> local = new ArrayList<>();
                     for (String callee : callTargets.getOrDefault(method,
                             Collections.emptySet())) {
-                        if (callee.startsWith(owner + ":")) local.add(callee);
+                        String calleeOwner = callee.substring(0, callee.indexOf(':'));
+                        if (calleeOwner.equals(owner)
+                                || calleeOwner.startsWith(owner + "$")
+                                || owner.startsWith(calleeOwner + "$")) local.add(callee);
                     }
                     local.sort((left, right) -> {
                         boolean leftIo = !methods.get(left).ioCalls.isEmpty();
@@ -473,6 +505,67 @@ public final class CoarseSelector {
                 frontier = next;
             }
         }
+    }
+
+    private static void extendActorIoMethods(Map<String, String> selected,
+            Set<String> roots, Map<String, MethodInfo> methods, int limit,
+            int reserve, Set<String> gaps) {
+        Set<String> families = new LinkedHashSet<>();
+        for (String root : roots) {
+            String owner = root.substring(1, root.indexOf(':'));
+            int nesting = owner.lastIndexOf('$');
+            families.add(nesting >= 0 ? owner.substring(0, nesting) : owner);
+        }
+        int added = 0;
+        for (String family : families) {
+            for (String method : sorted(methods.keySet())) {
+                if (added >= reserve || selected.size() >= limit) return;
+                String owner = method.substring(1, method.indexOf(':'));
+                if (!(owner.equals(family) || owner.startsWith(family + "$"))
+                        || methods.get(method).ioCalls.isEmpty()
+                        || selected.containsKey(method)) continue;
+                add(selected, method, "target_actor_io_family", limit, gaps);
+                if (selected.containsKey(method)) added++;
+            }
+        }
+    }
+
+    private static JsonArray exceptionCandidates(String callee,
+            Map<String, MethodInfo> methods, Map<String, Set<String>> callTargets) {
+        JsonArray result = new JsonArray();
+        String owner = callee.substring(0, callee.indexOf(':'));
+        String packageName = owner.substring(0, owner.lastIndexOf('.') + 1);
+        Deque<String> pending = new ArrayDeque<>();
+        Deque<Integer> depths = new ArrayDeque<>();
+        Set<String> seen = new HashSet<>();
+        Set<String> candidates = new LinkedHashSet<>();
+        pending.add(callee);
+        depths.add(0);
+        while (!pending.isEmpty() && seen.size() < 64) {
+            String method = pending.removeFirst();
+            int depth = depths.removeFirst();
+            if (!seen.add(method) || !methods.containsKey(method)) continue;
+            for (String type : methods.get(method).newTypes) {
+                if (Scene.v().containsClass(type)
+                        && subtype(Scene.v().getSootClass(type),
+                                "java.io.IOException")
+                        && !"java.io.IOException".equals(type)) candidates.add(type);
+            }
+            if (depth >= 8) continue;
+            for (String next : sorted(callTargets.getOrDefault(method,
+                    Collections.emptySet()))) {
+                if (next.startsWith(packageName)) {
+                    pending.addLast(next);
+                    depths.addLast(depth + 1);
+                }
+            }
+        }
+        int count = 0;
+        for (String type : sorted(candidates)) {
+            if (count++ >= 4) break;
+            result.add(type);
+        }
+        return result;
     }
 
     /** A GraphChecker-style field jump is by field signature, not object identity. */

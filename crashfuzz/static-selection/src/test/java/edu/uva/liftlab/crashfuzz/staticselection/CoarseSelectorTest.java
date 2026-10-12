@@ -45,6 +45,50 @@ public class CoarseSelectorTest {
         assertTrue(result.getAsJsonArray("coverage_methods").size() <= 3);
     }
 
+    @Test public void followsIoFromNestedWriterIntoItsOuterClass() {
+        JsonObject input = new JsonObject();
+        input.addProperty("target_method", "<" + PREFIX + "$WatchedReader: void check()>");
+        JsonObject analysis = new JsonObject();
+        JsonArray dirs = new JsonArray();
+        dirs.add("target/test-classes");
+        analysis.add("process_dirs", dirs);
+        analysis.add("classpath", new JsonArray());
+        analysis.addProperty("max_methods", 20);
+        analysis.addProperty("max_callee_depth", 0);
+        analysis.addProperty("max_jump_depth", 0);
+        input.add("analysis", analysis);
+        JsonObject result = CoarseSelector.analyze(input);
+        assertTrue(result.getAsJsonArray("coverage_methods").toString()
+                .contains("$WatchOwner: void fetch()"));
+        assertTrue(result.getAsJsonArray("io_calls").toString()
+                .contains("java.io.FileInputStream: int read()"));
+    }
+
+    @Test public void discoversTypedIoFailureFromSelectedCallee() {
+        JsonObject input = new JsonObject();
+        input.addProperty("target_method", "<" + PREFIX + "$ProtocolUser: void check()>");
+        JsonObject analysis = new JsonObject();
+        JsonArray dirs = new JsonArray();
+        dirs.add("target/test-classes");
+        analysis.add("process_dirs", dirs);
+        analysis.add("classpath", new JsonArray());
+        JsonArray io = new JsonArray();
+        io.add(PREFIX + "$Protocol");
+        analysis.add("io_patterns", io);
+        input.add("analysis", analysis);
+        JsonObject result = CoarseSelector.analyze(input);
+        boolean found = false;
+        for (com.google.gson.JsonElement element : result.getAsJsonArray("io_calls")) {
+            JsonObject row = element.getAsJsonObject();
+            if (row.get("callee").getAsString().contains("$Protocol: int read()")) {
+                assertTrue(row.getAsJsonArray("exception_candidates").toString()
+                        .contains("$ProtocolException"));
+                found = true;
+            }
+        }
+        assertTrue(found);
+    }
+
     @Test public void followsFieldTaskAndDeclaredRpcJumps() throws Exception {
         Path mapping = Files.createTempFile("crashfuzz-wire-", ".jsonl");
         try {
@@ -82,6 +126,8 @@ public class CoarseSelectorTest {
             String heartbeat = "<" + PREFIX + "$Actor: void sendHeartbeat()>";
             assertTrue(selected.contains(heartbeat));
             assertTrue(result.getAsJsonObject("selection_reasons").get(heartbeat)
+                    .getAsString().startsWith("target_actor_io_family")
+                    || result.getAsJsonObject("selection_reasons").get(heartbeat)
                     .getAsString().startsWith("target_writer_actor_callee"));
             assertTrue(selected.contains("$Launcher: void launch("));
             assertTrue(selected.contains("$RpcProducer: void send()"));

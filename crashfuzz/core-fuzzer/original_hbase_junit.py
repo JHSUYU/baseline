@@ -74,6 +74,7 @@ def main() -> int:
             subprocess.run([str(JAVA / 'javac'), '-cp', cp, '-d', str(BUILD),
                             str(source)], check=True)
     command = [str(JAVA / 'java'), '-ea', '-Xmx4g',
+               '-Djava.library.path=' + str(HADOOP / 'lib/native'),
                '-Djava.io.tmpdir=' + str(scratch / 'tmp'),
                '-Dtest.build.data.basedirectory=' + str(scratch),
                '-javaagent:' + str(agent), '-cp', cp, 'RunOriginalJupiter',

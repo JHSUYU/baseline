@@ -9,6 +9,16 @@ system-wide binary and communication mapping paths. Soot derives the coverage
 methods, branches, and I/O callsites; `soot_selection.py` stores them in the
 case's `soot-selection.json`. The runtime agent records and injects only those
 selected sites. No per-check I/O or coverage list is required.
+The coarse selector reserves a bounded part of its method budget for I/O in
+the target's state-reading actor and its callback classes. It also recognizes
+system-level RPC and data-transfer APIs and records concrete I/O exception
+subclasses constructed by a selected callee or its nearby local callees.
+Those classes become additional fault variants alongside generic IOException.
+The replay identity keeps the node, actor role, selected callsite, callee, and
+per-thread hit number. It normalizes ephemeral socket ports, block IDs, UUIDs,
+and JVM object hashes in actor names so a fresh embedded cluster can match an
+observed I/O point. A matched injection is still checked separately from a
+target exception or test failure.
 
 When the healthy trace contains no selected I/O, the worker automatically
 reselects with a wider Soot caller path and reruns that JUnit. It keeps the
@@ -34,16 +44,18 @@ adapters, so its optional `io_scope` and `coverage_include_prefixes` fields
 remain documented for those archived campaigns.
 
 On node0, `archive_completed.py` can watch the result root and copy completed
-80-trial HDFS campaigns without exception candidates to node1. It verifies
+HDFS campaigns without exception candidates to node1. It verifies
 the remote files with an rsync checksum pass before removing local raw trials;
 the local case summary and final result remain. Unfinished cases keep their
 checkpoints in place.
 
 `data/crashfuzz/static102-offloads.json` records HBase cases temporarily
-assigned to node2. Node1 holds each case's local claim lock while node2 runs.
+assigned to node0 or node2. Node1 holds each case's local claim lock while the
+other node runs. On node0, `/users/ZhenyuLi/static-rerun/results` points to the
+local result root so mirrored artifact paths resolve unchanged on node1.
 `mirror_offloads.py --watch` copies a completed case back to node1, verifies
 file checksums, releases the lock, and marks the offload mirrored. The table
-collector reads node2's live summary until that mirror is complete.
+collector reads the execution host's live summary until that mirror is complete.
 
 `original_hdfs_junit.py` runs an unchanged Hadoop 3.4.3 embedded-cluster
 JUnit method in fresh scratch storage. In the current Soot-selected mode, the
@@ -158,18 +170,21 @@ requirement.
 
 ## Budget and decisions
 
-When omitted from `budget`, `max_trials` defaults to **80** and `max_faults`
-to **8**. `max_seconds` limits active run time if supplied. If new production
-method/branch coverage or stable I/O families still appear near trial 80 in
-valid target-retaining trials, raise the existing checkpoint's budget to
-**128 trials / 10 faults** and resume it. Repeated hits or retry ordinals at
-the same I/O family do not justify this extension.
+The standalone fuzzer defaults to **80** trials and **8** faults. The 102-check
+JUnit worker uses **80 base trials, up to 240 total trials, and 10 faults**.
+After 80 trials it continues until 30 trials have both an exact fault match
+and a post-fault target hit, or it reaches the 240-trial cap. If none of the
+first 80 trials reaches the target after an exact fault, the worker stops for
+workload and scope review. A smaller explicit `--max-trials` remains a hard
+cap. `max_seconds` limits active run time if supplied.
 Changing only `budget` or `timeout_seconds` keeps the same completed trials.
 `max_unmatched_retries` defaults to 1: an unmatched sequence gets one fresh
 attempt before it is recorded as unmatched. Every mutation adds exactly one
 fault from the actual trace after the last applied fault. The scheduler
-prefers untested I/O families, then higher coverage priority, while balancing
-one fault and longer sequences.
+prefers untested I/O families and coverage while balancing one fault and
+longer sequences. Every third trial reserves a slot for an I/O point selected
+near a target-side field writer or its actor callback, when one is queued.
+This rule uses the same Soot reasons for every check.
 
 A valid trial must prove all requested faults were applied in exact order and
 must execute the target check after the final fault. A `lost_target` trial is

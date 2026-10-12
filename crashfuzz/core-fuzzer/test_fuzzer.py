@@ -6,10 +6,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from fuzzer import (archive_trial_attempts, campaign, fault_point_for_io, fingerprint,
+from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
+                    choose_next_sequence, fault_family, fault_point_for_io,
+                    fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
                     static_reason_priority, strict_injection, trace_feedback,
-                    validate, write_case_result)
+    stable_occurrence, validate, write_case_result)
 
 TARGET = '<example.Target: void check()>'
 SITE = TARGET + '#u8'
@@ -128,6 +130,43 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_transient_socket_and_block_ids_keep_replayable_actor_identity(self):
+        site = '/<example.DataXceiver: void replaceBlock()>#u101'
+        first = ('local/DataXceiver for client /127.0.0.1:49718 '
+                 '[Replacing block BP-1810136525-128.110.217.200-1791840306052:'
+                 'blk_1073741832_1008 from f5205531-0996-4a38-81d2-6488ad4a823f]' + site)
+        second = ('local/DataXceiver for client /127.0.0.1:55540 '
+                  '[Replacing block BP-1756035988-128.110.217.200-1791840317376:'
+                  'blk_1073741837_1013 from 8046a21a-9288-410a-82aa-227cd5e73437]' + site)
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+        self.assertNotEqual(stable_occurrence(first),
+                            stable_occurrence(second.replace('replaceBlock', 'writeBlock')))
+
+    def test_static_exception_adds_a_typed_variant(self):
+        typed = 'example.ProtocolIOException'
+        variants = fault_variants_for_io(A, {A['siteId']: [typed]})
+        self.assertEqual(variants, [A, {**A, 'exceptionClass': typed}])
+        self.assertNotEqual(fault_family(variants[0]), fault_family(variants[1]))
+
+    def test_adaptive_budget_counts_target_retaining_trials(self):
+        budget = {'max_trials': 240, 'base_trials': 80,
+                  'min_target_retained_trials': 30}
+        state = {'completed': [{'status': 'lost_target'}] * 79}
+        self.assertTrue(budget_has_room(state, budget))
+        state['completed'].append({'status': 'lost_target'})
+        self.assertFalse(budget_has_room(state, budget))
+        state['completed'][0] = {'status': 'checked'}
+        self.assertTrue(budget_has_room(state, budget))
+        state['completed'] = [{'status': 'checked'}] * 30 + [
+            {'status': 'lost_target'}] * 50
+        self.assertFalse(budget_has_room(state, budget))
+
+    def test_every_third_trial_reserves_a_static_target_io(self):
+        state = {'completed': [{'sequence': [A, B]}, {'sequence': [B, A]}],
+                 'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
+                           {'sequence': [A], 'priority': 1, 'created': 2}]}
+        self.assertEqual(choose_next_sequence(state, {A['siteId']: 85}), 1)
+
     def test_zookeeper_fault_uses_connection_loss_and_exact_identity(self):
         observed = {**A, 'sourceKey':
                     '<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String)>'}

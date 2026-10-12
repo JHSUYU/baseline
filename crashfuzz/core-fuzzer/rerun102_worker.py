@@ -360,6 +360,8 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                            'elapsed_seconds': healthy_record['elapsed_seconds']},
                   'trial': {'command': command},
                   'budget': {'max_trials': max_trials, 'max_faults': max_faults,
+                             'base_trials': min(80, max_trials),
+                             'min_target_retained_trials': 30,
                              'max_unmatched_retries': 1},
                   'timeout_seconds': TIMEOUT[family(row['system'])] + 30}
         atomic_json(base / 'campaign-config.json', config)
@@ -431,7 +433,7 @@ def main() -> int:
     parser.add_argument('--exclude-case', action='append', default=[])
     parser.add_argument('--shard-index', type=int, default=0)
     parser.add_argument('--shard-count', type=int, default=1)
-    parser.add_argument('--max-trials', type=int, default=80)
+    parser.add_argument('--max-trials', type=int, default=240)
     parser.add_argument('--max-faults', type=int, default=10)
     parser.add_argument('--campaign-suffix', default='')
     parser.add_argument('--refresh-selection', action='store_true')

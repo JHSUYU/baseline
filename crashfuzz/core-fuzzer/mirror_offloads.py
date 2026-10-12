@@ -28,6 +28,8 @@ def atomic_json(path: Path, value: dict) -> None:
 
 def remote_summary(host: str, cid: str) -> dict | None:
     path = REMOTE_ROOT / cid / 'case-summary.json'
+    if host == 'node0':
+        return json.loads(path.read_text()) if path.is_file() else None
     script = ("import json,pathlib\n"
               f"p=pathlib.Path({str(path)!r})\n"
               "print(json.dumps(json.loads(p.read_text()) if p.is_file() else None))\n")
@@ -38,13 +40,20 @@ def remote_summary(host: str, cid: str) -> dict | None:
 
 
 def mirror_case(cid: str, source: str, destination: str) -> None:
-    staging = STAGING / cid
-    staging.mkdir(parents=True, exist_ok=True)
-    source_dir = f'ZhenyuLi@{source}:{REMOTE_ROOT / cid}/'
+    if source == 'node0':
+        staging = REMOTE_ROOT / cid
+        if not staging.is_dir():
+            raise FileNotFoundError(f'{cid}: local offload result is missing')
+    else:
+        staging = STAGING / cid
+        staging.mkdir(parents=True, exist_ok=True)
+        source_dir = f'ZhenyuLi@{source}:{REMOTE_ROOT / cid}/'
+        subprocess.run(
+            ['rsync', '-a', '--exclude=.run-case.lock', '-e', RSYNC_SHELL,
+             '--delete', source_dir, str(staging) + '/'],
+            check=True, timeout=600)
     destination_dir = f'ZhenyuLi@{destination}:{REMOTE_ROOT / cid}/'
     common = ['rsync', '-a', '--exclude=.run-case.lock', '-e', RSYNC_SHELL]
-    subprocess.run(common + ['--delete', source_dir, str(staging) + '/'],
-                   check=True, timeout=600)
     subprocess.run(common + [str(staging) + '/', destination_dir],
                    check=True, timeout=600)
     verification = subprocess.run(
@@ -70,7 +79,7 @@ def scan() -> bool:
         active = True
         source = assignment['execution_host']
         destination = assignment['mirror_host']
-        if (source, destination) != ('node2', 'node1'):
+        if source not in ('node0', 'node2') or destination != 'node1':
             raise ValueError(f'unexpected offload route: {cid}')
         summary = remote_summary(source, cid)
         if not summary or not summary.get('finished'):

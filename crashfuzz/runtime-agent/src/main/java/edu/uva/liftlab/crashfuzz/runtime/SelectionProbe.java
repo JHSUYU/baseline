@@ -232,7 +232,7 @@ public final class SelectionProbe {
     }
 
     public static void io(String siteId, String callee) throws IOException {
-        String occurrence = stableOccurrence(NODE + "/"
+        String occurrence = OccurrenceIdentity.stable(NODE + "/"
                 + Thread.currentThread().getName() + "/" + siteId);
         Map<String, Integer> hits = HITS.get();
         int hit = hits.getOrDefault(siteId, 0) + 1;
@@ -247,7 +247,7 @@ public final class SelectionProbe {
             if (!MARKER.equals(string(wanted, "marker"))
                     || !siteId.equals(string(wanted, "siteId"))
                     || !callee.equals(string(wanted, "sourceKey"))
-                    || !occurrence.equals(stableOccurrence(string(wanted, "occurrence")))
+                    || !occurrence.equals(OccurrenceIdentity.stable(string(wanted, "occurrence")))
                     || hit != wanted.get("hitOrdinal").getAsInt()) return;
             String exceptionClass = string(wanted, "exceptionClass");
             selectedFault = makeFault(exceptionClass, siteId);
@@ -271,14 +271,20 @@ public final class SelectionProbe {
         if (name.isEmpty() || "java.io.IOException".equals(name)) {
             return new IOException("CrashFuzz injected at " + siteId);
         }
-        if (!"org.apache.zookeeper.KeeperException$ConnectionLossException".equals(name)) {
-            throw new IllegalArgumentException("unsupported fault exception: " + name);
-        }
         try {
             ClassLoader loader = Thread.currentThread().getContextClassLoader();
             if (loader == null) loader = SelectionProbe.class.getClassLoader();
             Class<?> type = Class.forName(name, true, loader);
-            return (Throwable) type.getDeclaredConstructor().newInstance();
+            if (!IOException.class.isAssignableFrom(type)
+                    && !"org.apache.zookeeper.KeeperException$ConnectionLossException".equals(name)) {
+                throw new IllegalArgumentException("unsupported fault exception: " + name);
+            }
+            try {
+                return (Throwable) type.getDeclaredConstructor(String.class)
+                        .newInstance("CrashFuzz injected at " + siteId);
+            } catch (NoSuchMethodException ignored) {
+                return (Throwable) type.getDeclaredConstructor().newInstance();
+            }
         } catch (ReflectiveOperationException error) {
             throw new IllegalStateException("cannot instantiate fault exception " + name, error);
         }
@@ -292,21 +298,6 @@ public final class SelectionProbe {
     private static String string(JsonObject object, String key) {
         JsonElement value = object.get(key);
         return value == null || value.isJsonNull() ? "" : value.getAsString();
-    }
-
-    private static String stableOccurrence(String address) {
-        int nodeEnd = address.indexOf('/');
-        int siteStart = address.lastIndexOf("/<");
-        if (nodeEnd < 0 || siteStart <= nodeEnd) return address;
-        String actor = address.substring(nodeEnd + 1, siteStart);
-        if (actor.startsWith("BP-") && actor.contains(" heartbeating to ")) {
-            actor = "BPServiceActor heartbeating";
-        }
-        // Thread names derived from Object.toString() contain a fresh JVM
-        // identity hash on every run. Preserve the actor class and I/O site.
-        actor = actor.replaceAll("@[0-9a-fA-F]{3,}", "@instance");
-        return address.substring(0, nodeEnd + 1) + actor
-                + address.substring(siteStart);
     }
 
     private static JsonObject faultEvent(String kind, String siteId, String callee,

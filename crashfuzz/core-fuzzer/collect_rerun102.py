@@ -17,7 +17,9 @@ SSH = ['/usr/bin/ssh', '-i', '/users/ZhenyuLi/.ssh/id_ed25519_nodes',
 REMOTE_ROOT = '/users/ZhenyuLi/static-rerun/results'
 LOCAL_ROOT = ROOT / '.study-repairs/static102-rerun'
 OFFLOADS = ROOT / 'data/crashfuzz/static102-offloads.json'
+REVIEWS = ROOT / 'data/crashfuzz/static102-candidate-reviews.json'
 COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
+           'review_verdict', 'review_reason', 'review_evidence',
            'target_file', 'target_function', 'target_line', 'target_site_id',
            'check_code', 'cluster_test', 'total_elapsed_seconds',
            'active_runtime_seconds',
@@ -52,6 +54,21 @@ def reconcile_elapsed(value: dict) -> None:
     value['active_runtime_seconds'] = round(float(active), 3)
     total = value.get('total_elapsed_seconds')
     value['total_elapsed_seconds'] = round(max(float(total or 0), float(active)), 3)
+
+
+def apply_candidate_review(value: dict, reviews: dict[str, dict]) -> None:
+    count = int(value.get('target_exception_candidates') or 0)
+    if count < 1:
+        return
+    review = reviews.get(value['case_id'])
+    if not review or count > review.get('reviewed_candidate_count', 0):
+        value['review_verdict'] = 'pending_source_review'
+        return
+    value['review_verdict'] = review['verdict']
+    value['review_reason'] = review['reason']
+    value['review_evidence'] = review['evidence']
+    if review['verdict'].startswith('rejected_'):
+        value['bug_mark'] = 'rejected'
 
 
 def enrich_result_metrics(value: dict, record: dict) -> None:
@@ -179,6 +196,7 @@ def main() -> int:
     if len(original) != 102:
         raise ValueError(f'expected 102 original checks, got {len(original)}')
     offloads = json.loads(OFFLOADS.read_text()).get('cases', {}) if OFFLOADS.is_file() else {}
+    reviews = json.loads(REVIEWS.read_text()).get('cases', {}) if REVIEWS.is_file() else {}
     summaries = local_summaries()
     for node in ('node1', 'node2'):
         try:
@@ -204,6 +222,7 @@ def main() -> int:
                     'check_code': row.get('check_code'),
                     'cluster_test': row.get('cluster_test')}
         merged = {**baseline, **summaries.get(row['case_id'], {})}
+        apply_candidate_review(merged, reviews)
         writer.writerow({key: (value.replace('\r', ' ').replace('\n', '\\n')
                               if isinstance(value, str) else value)
                          for key, value in merged.items()})
