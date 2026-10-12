@@ -1,11 +1,13 @@
+import hashlib
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from fuzzer import (campaign, fingerprint, in_io_scope, point_from_event, strict_injection,
-                    trace_feedback, validate, write_case_result)
+from fuzzer import (campaign, fault_point_for_io, fingerprint, in_io_scope, point_from_event,
+                    static_reason_priority, strict_injection, trace_feedback,
+                    validate, write_case_result)
 
 TARGET = '<example.Target: void check()>'
 SITE = TARGET + '#u8'
@@ -30,7 +32,7 @@ def marker(point, event, seq, **extra):
 
 
 RUNNER = r'''
-import json, os
+import hashlib, json, os
 from pathlib import Path
 trial = json.loads(Path(os.environ['CAUSYNTH_FAULT_TRIAL']).read_text())
 trace = Path(os.environ['CAUSYNTH_TRACE_OUTPUT_DIR']) / 'runtime_trace.jsonl'
@@ -43,6 +45,12 @@ if os.environ.get('STATE_SNAPSHOT'):
         'finished': state.get('finished'), 'status': state.get('status')}))
 rows = []
 seq = 0
+if os.environ.get('CRASHFUZZ_STATIC_SELECTION'):
+    artifact = Path(os.environ['CRASHFUZZ_STATIC_SELECTION'])
+    selected = json.loads(artifact.read_text())
+    digest = selected.get('input_digest') or hashlib.sha256(artifact.read_bytes()).hexdigest()
+    rows.append({'schemaVersion':3,'event':'STATIC_SELECTION_APPLIED',
+                 'seq':0,'digest':digest})
 if mode == 'pre_target':
     rows.extend([
         {'schemaVersion':3,'event':'METHOD_ENTER','seq':1,
@@ -118,6 +126,52 @@ def fixture(root, *, mode='normal', max_trials=2, max_faults=2):
 
 
 class CoverageIoTest(unittest.TestCase):
+    def test_zookeeper_fault_uses_connection_loss_and_exact_identity(self):
+        observed = {**A, 'sourceKey':
+                    '<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String)>'}
+        requested = fault_point_for_io(observed)
+        self.assertEqual(requested['exceptionClass'],
+                         'org.apache.zookeeper.KeeperException$ConnectionLossException')
+        applied = marker(requested, 'FAULT_APPLIED', 1,
+                         sourceKey=observed['sourceKey'],
+                         exceptionClass=requested['exceptionClass'],
+                         faultId=fingerprint(requested))
+        self.assertTrue(strict_injection({
+            'applied_count': 1, 'matched_count': 1,
+            'applied_points': [point_from_event(applied)],
+            'applied_fault_ids': [applied['faultId']]}, [requested]))
+        self.assertEqual(fault_point_for_io(A), A)
+
+    def test_static_selection_limits_runtime_feedback_to_preselected_sites(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config = fixture(root, max_trials=1, max_faults=2)
+            artifact = root / 'selection.json'
+            artifact.write_text(json.dumps({
+                'schema_version': 1,
+                'analysis_kind': 'crashfuzz_coarse_soot_selection',
+                'target_method': TARGET,
+                'coverage_methods': [TARGET, '<example.Transport: void receive()>'],
+                'io_methods': ['<example.Transport: void receive()>'],
+                'io_calls': [{'method': '<example.Transport: void receive()>',
+                              'site_id': A['siteId'], 'callee':
+                              '<java.io.InputStream: int read()>', 'line': 1,
+                              'unit_index': 2}]}))
+            config['static_selection'] = {'artifact': str(artifact)}
+            seed_events = list(json.loads(line) for line in
+                               Path(config['seed']['trace']).read_text().splitlines())
+            seed_events.insert(0, {'schemaVersion': 3,
+                                   'event': 'STATIC_SELECTION_APPLIED',
+                                   'seq': 0,
+                                   'digest': hashlib.sha256(artifact.read_bytes()).hexdigest()})
+            jsonl(Path(config['seed']['trace']), seed_events)
+            state = campaign(config, root / 'out')
+            result = json.loads(Path(state['completed'][0]['result']).read_text())
+            self.assertEqual(result['new_io_count'], 0)
+            self.assertEqual(state['seed']['feedback']['points'], [A])
+            self.assertEqual(state['queue'], [])
+            self.assertTrue(state['static_selection_digest'])
+
     def test_io_scope_can_keep_a_specific_cross_node_source(self):
         mirror = {**A, 'sourceKey': 'DN->DN:writeBlock:bp1:blk7'}
         proxy = {**A, 'sourceKey': 'DN->DN:replaceBlock:bp1:blk7'}
@@ -350,6 +404,20 @@ class CoverageIoTest(unittest.TestCase):
             again = campaign(config, root / 'out')
             self.assertEqual(again['completed'], state['completed'])
 
+    def test_fault_can_expose_check_absent_from_healthy_seed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            config = fixture(root, max_trials=1)
+            jsonl(Path(config['seed']['trace']),
+                  [marker(A, 'FAULT_POINT_OBSERVED', 1)])
+            state = campaign(config, root / 'out')
+            self.assertFalse(state['seed']['target_reached'])
+            self.assertEqual(len(state['completed']), 1)
+            result = json.loads(Path(state['completed'][0]['result']).read_text())
+            self.assertTrue(result['strict_injection'])
+            self.assertTrue(result['target_reached_after_fault'])
+            self.assertEqual(result['status'], 'target_exception_candidate')
+
     def test_lost_target_discards_feedback_and_descendants(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -421,6 +489,19 @@ class CoverageIoTest(unittest.TestCase):
             self.assertFalse(result['target_reached_after_fault'])
             self.assertEqual(result['status'], 'lost_target')
 
+    def test_datanode_heartbeat_actor_identity_survives_ephemeral_name(self):
+        old = {**A, 'occurrence':
+               'local/BP-9520-127.0.0.1-123 heartbeating to '
+               'localhost/127.0.0.1:34567/' + A['siteId']}
+        new = {**old, 'occurrence':
+               'local/BPServiceActor heartbeating/' + A['siteId']}
+        applied = {'matched_count': 1, 'applied_count': 1,
+                   'applied_points': [new],
+                   'applied_fault_ids': [fingerprint(old)]}
+        self.assertTrue(strict_injection(applied, [old]))
+        self.assertFalse(strict_injection(
+            {**applied, 'applied_points': [{**new, 'hitOrdinal': 2}]}, [old]))
+
     def test_coarse_io_scope_filters_without_changing_exact_identity(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -431,6 +512,12 @@ class CoverageIoTest(unittest.TestCase):
             self.assertEqual(result['new_io_count'], 0)
             self.assertEqual(state['queue'], [])
             self.assertEqual(state['completed'][0]['sequence'], [A])
+
+    def test_target_field_writer_callback_outranks_broad_dispatch(self):
+        self.assertGreater(static_reason_priority('target_short_writer_caller'),
+                           static_reason_priority('callee_may_dispatch'))
+        self.assertGreater(static_reason_priority('target_direct_field_writer'),
+                           static_reason_priority('callee_may_dispatch'))
 
 
 if __name__ == '__main__':

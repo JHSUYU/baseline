@@ -10,9 +10,12 @@ from __future__ import annotations
 
 import argparse
 import fcntl
+import gzip
 import hashlib
 import json
 import os
+import re
+import shutil
 import signal
 import socket
 import subprocess
@@ -22,6 +25,8 @@ import time
 import uuid
 from pathlib import Path
 from typing import Any, Iterable
+
+from soot_selection import prepare as prepare_static_selection
 
 SCHEMA = 1
 TRACE_SCHEMA = 3
@@ -98,6 +103,18 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
              "occurrence": address, "hitOrdinal": ordinal}
     if event.get("sourceKey"):
         point["sourceKey"] = event["sourceKey"]
+    if event.get("exceptionClass"):
+        point["exceptionClass"] = event["exceptionClass"]
+    return point
+
+
+def fault_point_for_io(point: dict[str, Any]) -> dict[str, Any]:
+    """Use the checked exception understood by a ZooKeeper client callsite."""
+    source = point.get("sourceKey", "")
+    if ("org.apache.solr.common.cloud.SolrZkClient:" in source or
+            "org.apache.zookeeper.ZooKeeper:" in source):
+        return {**point, "exceptionClass":
+                "org.apache.zookeeper.KeeperException$ConnectionLossException"}
     return point
 
 
@@ -141,14 +158,18 @@ def trace_feedback(path: Path, target: dict[str, Any],
     target_entries: dict[int, int] = {}
     target_exits: dict[int, int] = {}
     summary: dict[str, Any] = {}
+    static_selection_digests: list[str] = []
     throw_event = target.get("throw_event", "METHOD_EXIT_THROW")
     coverage_exclude_sites = set(target.get("coverage_exclude_sites", []))
     coverage_include_prefixes = target.get("coverage_include_prefixes", [])
+    coverage_include_methods = set(target.get("coverage_include_methods", []))
 
     def coverage_in_scope(event: dict[str, Any]) -> bool:
+        method = event.get("method") or event.get("siteId", "").split("#u", 1)[0]
+        if coverage_include_methods:
+            return isinstance(method, str) and method in coverage_include_methods
         if not coverage_include_prefixes:
             return True
-        method = event.get("method") or event.get("siteId", "").split("#u", 1)[0]
         return isinstance(method, str) and any(
             method.startswith(prefix) for prefix in coverage_include_prefixes)
 
@@ -167,6 +188,8 @@ def trace_feedback(path: Path, target: dict[str, Any],
                 applied.append(event)
         elif kind == "FAULT_TRIAL_SUMMARY":
             summary = event
+        elif kind == "STATIC_SELECTION_APPLIED":
+            static_selection_digests.append(event.get("digest"))
         elif kind == "METHOD_ENTER":
             call_id = event.get("callId")
             if isinstance(call_id, int):
@@ -402,6 +425,7 @@ def trace_feedback(path: Path, target: dict[str, Any],
         "target_after_fault": target_after_fault,
         "oracle": oracle,
         "fault_summary": summary,
+        "static_selection_digests": static_selection_digests,
     }
 
 
@@ -409,14 +433,27 @@ def sequence_id(sequence: list[dict[str, Any]]) -> str:
     return fingerprint(sequence)
 
 
+def stable_occurrence(address: str) -> str:
+    node_end = address.find("/")
+    site_start = address.rfind("/<")
+    if node_end < 0 or site_start <= node_end:
+        return address
+    actor = address[node_end + 1:site_start]
+    if actor.startswith("BP-") and " heartbeating to " in actor:
+        actor = "BPServiceActor heartbeating"
+    return address[:node_end + 1] + actor + address[site_start:]
+
+
 def strict_injection(result: dict[str, Any],
                      sequence: list[dict[str, Any]]) -> bool:
     """Every requested selector must be proved applied, in requested order."""
     expected = [fingerprint(point) for point in sequence]
-    observed = [fingerprint(point) for point in result.get("applied_points", [])]
+    def stable(point: dict[str, Any]) -> dict[str, Any]:
+        return {**point, "occurrence": stable_occurrence(point["occurrence"])}
+    observed = [stable(point) for point in result.get("applied_points", [])]
     return (len(expected) == result.get("applied_count") and
             result.get("matched_count", 0) >= len(expected) and
-            observed == expected and
+            observed == [stable(point) for point in sequence] and
             result.get("applied_fault_ids") == expected)
 
 
@@ -436,6 +473,43 @@ def fault_family(point: dict[str, Any]) -> str:
                         ("marker", "siteId", "sourceKey")})
 
 
+def identity_priority(point: dict[str, Any]) -> int:
+    """Favor replayable observed actors without weakening exact matching."""
+    occurrence = point.get("occurrence", "")
+    source = point.get("sourceKey", "")
+    score = 0
+    if re.search(r"(?:port=|localhost:|127\.0\.0\.1:|qtp)\d+", occurrence):
+        score -= 40
+    if re.search(r"/Thread-\d+/", occurrence):
+        score -= 20
+    if any(name in source for name in ("ClientProtocol:", "DatanodeProtocol:",
+                                       "BlockingService:", "SolrZkClient:",
+                                       "ZooKeeper:")):
+        score += 30
+    if "java.io.FileInputStream:" in source or "java.io.FileOutputStream:" in source:
+        score += 15
+    if source.endswith(" close()>") or "org.apache.hadoop.util.Shell:" in occurrence:
+        score -= 20
+    return score
+
+
+def static_reason_priority(reason: str) -> int:
+    if reason.startswith("target_short_writer_caller"):
+        return 100
+    if reason.startswith("target_writer_actor_callee"):
+        return 95
+    if reason.startswith("target_direct_field_writer"):
+        return 90
+    if reason.startswith("target_short_field_writer"):
+        return 80
+    if reason.startswith("target_short_call_path"):
+        return 60
+    if reason.startswith(("field_may_writer", "rpc_wire_may_producer",
+                          "thread_handoff_may_launcher")):
+        return 50
+    return 0
+
+
 def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
                        result: dict[str, Any], max_faults: int) -> None:
     """Extend an admitted run with one I/O actually seen after its final fault."""
@@ -445,13 +519,14 @@ def enqueue_extensions(state: dict[str, Any], sequence: list[dict[str, Any]],
         return
     new_io = set(result.get("new_io_families", []))
     for observed in result.get("point_events", []):
-        point = observed["point"]
+        point = fault_point_for_io(observed["point"])
         if (observed.get("seq", -1) > result.get("last_applied_seq", -1)
                 and point not in sequence):
             enqueue(state, sequence + [point],
                     priority=10 * result.get("new_coverage_count", 0) +
                     (50 if fault_family(point) in new_io else 0) +
-                    (3 if result["status"] == "target_exception_candidate" else 0))
+                    (3 if result["status"] == "target_exception_candidate" else 0) +
+                    identity_priority(point))
 
 
 def completed_sequences(state: dict[str, Any]) -> Iterable[list[dict[str, Any]]]:
@@ -563,7 +638,11 @@ def ensure_seed(config: dict[str, Any], state: dict[str, Any],
         context = {"case_dir": str(case_dir), "trace_dir": str(trace.parent)}
         environment = {**os.environ, **config.get("env", {}),
                        "TMPDIR": config["workspaces"]["temp"],
-                       "CAUSYNTH_LOCAL_SCRATCH": config["workspaces"]["temp"]}
+                       "CAUSYNTH_LOCAL_SCRATCH": config["workspaces"]["temp"],
+                       "CAUSYNTH_TRACE_OUTPUT_DIR": str(trace.parent)}
+        if config.get("_static_selection_artifact"):
+            environment["CRASHFUZZ_STATIC_SELECTION"] = config[
+                "_static_selection_artifact"]
         result = run_command(command, context, Path(config["cwd"]),
                              environment, case_dir / "seed-command",
                              config["timeout_seconds"])
@@ -594,20 +673,24 @@ def ensure_seed(config: dict[str, Any], state: dict[str, Any],
             state["seed_timing_recorded"] = True
             atomic_json(case_dir / "state.json", state)
     feedback = trace_feedback(trace, config["target"], config.get("io_scope"))
+    if config.get("_static_selection_digest") and feedback[
+            "static_selection_digests"] != [config["_static_selection_digest"]]:
+        raise RuntimeError("healthy JUnit did not apply the selected instrumentation")
     state["seed"] = {"trace": str(trace), "feedback": feedback,
                      "target_reached": feedback["target_reached"],
                      "recorded_at": time.time(),
                      "elapsed_seconds": seed_command_seconds}
     state["coverage"] = feedback["coverage"]
     state["io_families"] = sorted({fault_family(p) for p in feedback["points"]})
-    if not feedback["target_reached"]:
-        state["status"] = "healthy_target_unreached"
-        return
     if not feedback["points"]:
         state["status"] = "no_io_fault_points"
         return
+    state["status"] = "fuzzing"
+    static_priorities = config.get("_static_io_priority", {})
     for point in feedback["points"]:
-        enqueue(state, [point], priority=20)
+        point = fault_point_for_io(point)
+        enqueue(state, [point], priority=20 + identity_priority(point) +
+                static_priorities.get(point["siteId"], 0))
 
 
 def process_trial(config: dict[str, Any], state: dict[str, Any],
@@ -638,6 +721,9 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
                "CAUSYNTH_LOCAL_SCRATCH": config["workspaces"]["temp"],
                "CAUSYNTH_TRACE_OUTPUT_DIR": str(trace_dir),
                "CAUSYNTH_FAULT_TRIAL": str(selector_file)}
+        if config.get("_static_selection_artifact"):
+            env["CRASHFUZZ_STATIC_SELECTION"] = config[
+                "_static_selection_artifact"]
         env.update({key: value.format_map(context)
                     for key, value in config["trial"].get("env", {}).items()})
         options = env.get("CAUSYNTH_WORKLOAD_JAVA_OPTS", "")
@@ -662,6 +748,9 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
             result.update(trace_feedback(trace, config["target"],
                                          config.get("io_scope")))
             result["trace"] = str(trace)
+            if config.get("_static_selection_digest") and result[
+                    "static_selection_digests"] != [config["_static_selection_digest"]]:
+                raise RuntimeError("fault trial did not apply the selected instrumentation")
         else:
             result.update({"trace": None, "matched_count": 0,
                            "applied_count": 0, "target_reached": False,
@@ -720,6 +809,20 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     result["new_io_count"] = len(new_io)
     result["new_io_families"] = sorted(new_io)
     result["status"] = status
+    if config.get("archive_completed_trials") and status != "target_exception_candidate":
+        archived = []
+        for name in ("runtime_trace.jsonl", "junit.log", "jacoco.exec"):
+            path = trial_dir / f"attempt-{active['attempt']:02d}" / "trace" / name
+            if not path.is_file():
+                continue
+            target = path.with_name(path.name + ".gz")
+            with path.open("rb") as source, gzip.open(target, "wb", compresslevel=3) as sink:
+                shutil.copyfileobj(source, sink)
+            path.unlink()
+            archived.append(str(target))
+            if result.get("trace") == str(path):
+                result["trace"] = str(target)
+        result["archived_artifacts"] = archived
     atomic_json(result_file, result)
     if admitted:
         state["coverage"] = sorted(old_coverage | set(result.get("coverage", [])))
@@ -752,7 +855,7 @@ def validate(config: dict[str, Any]) -> None:
             raise ValueError("throw_method differs from throw_site_id's method")
         target["throw_method"] = throw_method
     check_events = target.get("check_events")
-    allowed_checks = {"BRANCH", "CALL_SITE_ENTER", "CALL_SITE_RETURN",
+    allowed_checks = {"BRANCH", "CHECK_REACHED", "CALL_SITE_ENTER", "CALL_SITE_RETURN",
                       "CALL_SITE_THROW"}
     if check_events is not None and (
             not isinstance(check_events, list) or not check_events or
@@ -792,6 +895,11 @@ def validate(config: dict[str, Any]) -> None:
             any(not isinstance(prefix, str) or not prefix
                 for prefix in coverage_include_prefixes)):
         raise ValueError("target.coverage_include_prefixes needs nonempty strings")
+    coverage_include_methods = target.get("coverage_include_methods", [])
+    if (not isinstance(coverage_include_methods, list) or
+            any(not isinstance(method, str) or not method.startswith("<")
+                for method in coverage_include_methods)):
+        raise ValueError("target.coverage_include_methods needs Soot signatures")
     if has_guards and any(guard["siteId"] in coverage_exclude_sites
                           for path in fatal_guard_paths(target)
                           for guard in path):
@@ -897,6 +1005,8 @@ def write_case_result(case_dir: Path, state: dict[str, Any]) -> None:
         "coverage_gain": len(coverage_delta),
         "coverage_gain_by_kind": coverage_gain_by_kind,
         "coverage_include_prefixes": state.get("coverage_include_prefixes", []),
+        "static_selection_digest": state.get("static_selection_digest"),
+        "static_selection_artifact": state.get("static_selection_artifact"),
         "io_family_gain": max(0, len(state.get("io_families", [])) - len({
             fault_family(point) for point in
             seed.get("feedback", {}).get("points", [])})),
@@ -985,20 +1095,67 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
     case_dir.mkdir(parents=True, exist_ok=True)
     Path(config["workspaces"]["temp"]).mkdir(parents=True, exist_ok=True)
     with CaseLease(case_dir):
+        selection = prepare_static_selection(config, case_dir)
+        if selection is not None:
+            config = {**config, "target": {**config["target"],
+                      "coverage_include_methods": selection["coverage_methods"]},
+                      "io_scope": {"site_ids": [row["site_id"]
+                                               for row in selection["io_calls"]]},
+                      "_static_io_priority": {
+                          row["site_id"]: static_reason_priority(
+                              row.get("selection_reason", ""))
+                          for row in selection["io_calls"]},
+                      "_static_selection_digest": selection.get(
+                          "input_digest", selection.get("artifact_sha256")),
+                      "_static_selection_artifact": selection["artifact_path"]}
+            if not config["io_scope"]["site_ids"]:
+                raise ValueError("static selection found no I/O callsites")
         path = case_dir / "state.json"
         # Budgets can grow without changing the JUnit/test/target identity of
         # already completed trials.  A changed workload or fault selector
         # contract still requires a new case directory.
         config_digest = fingerprint({key: value for key, value in config.items()
-                                     if key not in {"budget", "timeout_seconds"}})
+                                     if key not in {"budget", "timeout_seconds",
+                                                    "archive_completed_trials",
+                                                    "_static_io_priority"}})
         if path.exists():
             state = json.loads(path.read_text())
             if state["config_digest"] != config_digest:
                 raise ValueError("case config changed; use a new case directory")
+            if state.get("typed_zookeeper_fault_version", 0) < 1:
+                # Promote pending selectors in place; completed sequences keep
+                # their original identity and are never rerun on resume.
+                seen = set(state.get("seen_sequences", []))
+                queue = []
+                queue_ids = set()
+                for queued in state.get("queue", []):
+                    sequence = [fault_point_for_io(point)
+                                for point in queued["sequence"]]
+                    new_id = sequence_id(sequence)
+                    if new_id in queue_ids:
+                        continue
+                    queue.append({**queued, "id": new_id,
+                                  "sequence": sequence})
+                    queue_ids.add(new_id)
+                    seen.add(new_id)
+                state["queue"] = queue
+                state["seen_sequences"] = sorted(seen)
+                state["typed_zookeeper_fault_version"] = 1
             state.setdefault("active_runtime_seconds", 0.0)
             state.setdefault("seed_runtime_seconds", 0.0)
             state.setdefault("fault_runtime_seconds", 0.0)
             state.setdefault("io_families", [])
+            if state.get("identity_priority_version", 0) < 1:
+                for queued in state.get("queue", []):
+                    queued["priority"] += identity_priority(
+                        queued["sequence"][-1])
+                state["identity_priority_version"] = 1
+            if state.get("static_priority_version", 0) < 1:
+                priorities = config.get("_static_io_priority", {})
+                for queued in state.get("queue", []):
+                    queued["priority"] += priorities.get(
+                        queued["sequence"][-1]["siteId"], 0)
+                state["static_priority_version"] = 1
             state.setdefault("setup_seconds", float(config.get("setup_seconds", 0)))
             state.setdefault("build_seconds", float(config.get("build_seconds", 0)))
             state.setdefault("target_method", config["target"]["method"])
@@ -1013,6 +1170,10 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                              config["target"].get("coverage_exclude_sites", []))
             state.setdefault("coverage_include_prefixes",
                              config["target"].get("coverage_include_prefixes", []))
+            state.setdefault("static_selection_digest", config.get(
+                "_static_selection_digest"))
+            state.setdefault("static_selection_artifact", config.get(
+                "_static_selection_artifact"))
             if state.get("status") in TERMINAL:
                 return state
         else:
@@ -1030,9 +1191,16 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                          "coverage_exclude_sites", []),
                      "coverage_include_prefixes": config["target"].get(
                          "coverage_include_prefixes", []),
+                     "static_selection_digest": config.get(
+                         "_static_selection_digest"),
+                     "static_selection_artifact": config.get(
+                         "_static_selection_artifact"),
                      "config_digest": config_digest, "seed": None,
                      "coverage": [], "queue": [], "seen_sequences": [],
                      "io_families": [], "active_runtime_seconds": 0.0,
+                     "identity_priority_version": 1,
+                     "static_priority_version": 1,
+                     "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,
                      "fault_runtime_seconds": 0.0,
                      "setup_seconds": float(config.get("setup_seconds", 0)),
@@ -1053,6 +1221,18 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                 return state
         if state["seed"] is None:
             ensure_seed(config, state, case_dir)
+            atomic_json(path, state)
+            write_case_result(case_dir, state)
+        elif state.get("status") == "healthy_target_unreached":
+            # Older checkpoints stopped before trying faults when the clean
+            # run did not enter the check. A fault can expose that branch.
+            priorities = config.get("_static_io_priority", {})
+            for observed in state["seed"]["feedback"].get("points", []):
+                point = fault_point_for_io(observed)
+                enqueue(state, [point], priority=20 + identity_priority(point) +
+                        priorities.get(point["siteId"], 0))
+            state["status"] = "fuzzing"
+            state["finished"] = False
             atomic_json(path, state)
             write_case_result(case_dir, state)
         if state.get("status") in {"no_io_fault_points",

@@ -32,13 +32,15 @@ def build() -> None:
                     str(source)], check=True)
 
 
-def main() -> None:
+def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--case-id", required=True)
     parser.add_argument("--test-class", required=True)
     parser.add_argument("--test-method", required=True)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--timeout", type=int, default=180)
+    parser.add_argument("--static-selection", type=Path)
+    parser.add_argument("--fault-trial", type=Path)
     args = parser.parse_args()
     build()
     output = args.output.resolve()
@@ -66,9 +68,21 @@ def main() -> None:
                "-Dtest.build.data=" + str(scratch / "data"),
                "-Djava.io.tmpdir=" + str(scratch / "tmp"),
                "-Dhadoop.log.dir=" + str(scratch / "logs"),
-               "-javaagent:" + str(JACOCO) + "=destfile=" + str(output / "jacoco.exec")
-               + ",includes=org.apache.hadoop.hdfs.*,dumponexit=true,append=false",
                "-cp", cp, "RunOriginalHdfsJUnit", args.test_class, args.test_method]
+    if not args.static_selection:
+        command.insert(command.index("-cp"),
+                       "-javaagent:" + str(JACOCO) + "=destfile=" +
+                       str(output / "jacoco.exec") +
+                       ",includes=org.apache.hadoop.hdfs.*,dumponexit=true,append=false")
+    if args.static_selection:
+        agent = HERE.parent / "runtime-agent" / "target" / "crashfuzz-runtime-agent-0.1.0.jar"
+        if not agent.is_file():
+            raise FileNotFoundError(f"build runtime agent first: {agent}")
+        command.insert(command.index("-cp"), "-javaagent:" + str(agent))
+        env["CRASHFUZZ_STATIC_SELECTION"] = str(args.static_selection.resolve(strict=True))
+        env["CAUSYNTH_TRACE_OUTPUT_DIR"] = str(output)
+        if args.fault_trial:
+            env["CAUSYNTH_FAULT_TRIAL"] = str(args.fault_trial.resolve(strict=True))
     start = time.monotonic()
     with (output / "junit.log").open("w") as log:
         try:
@@ -81,14 +95,18 @@ def main() -> None:
                 "returncode": status, "elapsed_seconds": round(time.monotonic() - start, 3),
                 "classpath_sha256": hashlib.sha256(cp.encode()).hexdigest(),
                 "original_test_jar_sha256": hashlib.sha256(TESTS.read_bytes()).hexdigest(),
-                "jacoco_exec": str(output / "jacoco.exec"),
+                "jacoco_exec": str(output / "jacoco.exec") if not args.static_selection else None,
                 "junit_log": str(output / "junit.log"),
-                "graphchecker_runtime": False, "target_probe": False}
+                "graphchecker_runtime": False,
+                "target_probe": bool(args.static_selection),
+                "trace": str(output / "runtime_trace.jsonl") if args.static_selection else None}
     temp = output / "manifest.json.tmp"
     temp.write_text(json.dumps(manifest, indent=2) + "\n")
     temp.replace(output / "manifest.json")
+    shutil.rmtree(scratch, ignore_errors=True)
     print(json.dumps(manifest))
+    return status
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

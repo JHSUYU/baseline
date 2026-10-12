@@ -1,0 +1,68 @@
+import tempfile
+import json
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+import rerun102_worker
+
+
+class ExceptionResolutionTest(unittest.TestCase):
+    def resolve(self, source, check, line):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            relative = Path('src/Target.java')
+            path = root / rerun102_worker.SOURCE_DIR['HDFS'] / relative
+            path.parent.mkdir(parents=True)
+            path.write_text(source)
+            row = {'system': 'HDFS 3.4.3', 'check_code': check,
+                   'exact_check_location': {'file': str(relative),
+                                            'selected_line': line}}
+            with patch.object(rerun102_worker, 'SOURCE_ROOT', root):
+                return rerun102_worker.exception_type(row)
+
+    def test_java_lang_exception_stays_in_java_lang(self):
+        source = 'package example;\nclass Target { void check() {\nthrow new AssertionError();\n}}\n'
+        self.assertEqual(self.resolve(source, 'throw new AssertionError();', 3),
+                         'java.lang.AssertionError')
+
+    def test_nested_import_and_rethrow_use_binary_class_name(self):
+        source = ('package example;\n'
+                  'import org.apache.zookeeper.KeeperException.SessionExpiredException;\n'
+                  'class Target { void check() {\n'
+                  'try { throw new SessionExpiredException(); }\n'
+                  'catch (SessionExpiredException e) {\n'
+                  'if (true) throw e;\n}}}\n')
+        expected = 'org.apache.zookeeper.KeeperException$SessionExpiredException'
+        self.assertEqual(self.resolve(source, 'throw new SessionExpiredException();', 4),
+                         expected)
+        self.assertEqual(self.resolve(source, 'if (true) throw e;', 6), expected)
+
+    def test_inherited_nested_exception_uses_superclass(self):
+        source = ('package example;\n'
+                  'import org.apache.hadoop.security.token.SecretManager;\n'
+                  'class Target extends SecretManager<String> {\n'
+                  'void check() throws InvalidToken {\n'
+                  'throw new InvalidToken("missing");\n}}\n')
+        self.assertEqual(self.resolve(source, 'throw new InvalidToken("missing");', 5),
+                         'org.apache.hadoop.security.token.SecretManager$InvalidToken')
+
+    def test_unfinished_case_pins_its_static_selection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            artifact = base / 'soot-selection.json'
+            artifact.write_text(json.dumps({'target_method': '<T: void check()>',
+                                            'input_digest': 'digest-a'}))
+            checkpoint = base / 'campaign-old/CHECK-01/state.json'
+            checkpoint.parent.mkdir(parents=True)
+            checkpoint.write_text(json.dumps({'static_selection_digest': 'digest-a',
+                                              'seed': {'trace': 'healthy'},
+                                              'completed': []}))
+            self.assertEqual(rerun102_worker.live_selection_artifact(
+                base, 'CHECK-01', '<T: void check()>'), artifact)
+            self.assertIsNone(rerun102_worker.live_selection_artifact(
+                base, 'CHECK-01', '<Other: void check()>'))
+
+
+if __name__ == '__main__':
+    unittest.main()

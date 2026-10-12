@@ -1,35 +1,55 @@
-# Graph-free coverage-guided fault injection
+# CrashFuzz-style baseline for ad hoc checks
 
-This directory contains the completed CrashFuzz-style baseline for the ad hoc coordination study. It runs each selected original cluster JUnit workload, observes runtime I/O points and the selected target check, injects ordered I/O exceptions using exact runtime identities, and uses production code coverage and new I/O families to prioritize later fault sequences. An exact target exception after an applied fault is a review candidate; its meaning is decided from replay and source code. No causal graph, backward closure, region skeleton, or GraphChecker runtime is used by this campaign.
+The current campaign uses an existing cluster JUnit test for each selected
+check. The checklist supplies the exact target source location and test method.
+It does **not** list I/O fault sites or coverage sites per case.
 
-## Layout
+For each target, `core-fuzzer/rerun102_worker.py` asks the Soot selector in
+`static-selection/` to inspect the corresponding system binaries. The selector
+follows bounded callers and callees, field reads to possible writers, thread
+handoffs, and RPC producer mappings. It writes one `soot-selection.json` with
+selected methods, branches, and I/O callsites. System-wide binary paths and
+the optional HDFS communication mapping are configured in
+`core-fuzzer/prepare_case_selection.py`; they are shared by all checks in that
+system.
 
-- `core-fuzzer/`: common fault-sequence queue, runtime trace parsing, exact match checks, target oracle, checkpointing, and coordinator.
-- `cases/<ID>/`: case-specific workload adapters, instrumentation sources, campaign logic, review notes, and `reproduce.sh` for every selected check.
-- `entrypoints.json`: one explicit original JUnit test, target source location, current campaign runner, and instrumentation source index per check. Shared runners are identified by `shared_campaign_checks`.
-- `hdfs-*`, `qjm-rpc-actor-v2/`, `hbase-namespace-actor-v2/`, `zk-actor-v2/`: shared system adapters used by the selected cases.
-- `vendor/`: one copy of each case-local JAR dependency; case paths are relative symlinks to these files.
-- `checklist.py` and `audit_checklist.py`: render and audit the final table in `../data/crashfuzz/`.
+The ASM Java agent in `runtime-agent/` instruments only the selected sites.
+A healthy run records the I/O points and code paths that actually execute.
+The target branch can be absent in that run; the observed I/O points still
+seed single-fault trials that may expose it.
+`core-fuzzer/fuzzer.py` then mutates ordered exception plans, reruns the same
+JUnit test, and uses new selected I/O and method/branch coverage to choose
+later plans. A fault counts only when its full runtime identity matches and
+the target check still executes afterward. ZooKeeper calls can receive a
+`ConnectionLossException`; other selected calls receive an `IOException`.
+An observed target exception is a candidate for replay and source review.
+The HBase runner supplies the original test-only SSL utility needed by its
+Kerberos cluster JUnit and pins matching Directory API dependencies.
 
-Final results, measured time, selection metadata, and recorded run artifacts live in [`../data/crashfuzz/`](../data/crashfuzz/README.md). Symlinks in case directories preserve paths expected by the original campaign code. The source for each current case instrumentation agent is indexed in `entrypoints.json`.
-
-## One check
+## Run a selected check
 
 ```sh
-./cases/HDFS-54/reproduce.sh           # show the selected test, check and runner
-./cases/HDFS-54/reproduce.sh --check   # validate its local entrypoint
-./cases/HDFS-54/reproduce.sh --run     # invoke its original JUnit fault campaign
+cd /users/ZhenyuLi/baseline/crashfuzz/core-fuzzer
+python3 rerun102_worker.py \
+  --system HDFS \
+  --checklist ../../data/crashfuzz/checklist102.json \
+  --result-root /path/to/isolated-results \
+  --case-id HDFS-01 \
+  --max-trials 80 --max-faults 10
 ```
 
-`--run` invokes the recorded case-specific campaign, including its existing checkpoint behavior. A completed checkpoint may stop immediately. Campaigns that do not expose a separate output argument write in their case directory; use an isolated checkout when restarting or extending one. For the 17 checks marked `no_cluster_test`, `no_usable_cluster_test`, or `source_excluded`, the script explains the recorded screening result and exits with status 3 instead of pretending to run a test. There are 102 originally selected checks and two separately marked HDFS known-issue controls.
+`--system` accepts `HDFS`, `HBase`, `Solr`, or `ZooKeeper`. Omit `--case-id`
+to process the system's checklist. Workers can divide one system with
+`--shard-index` and `--shard-count`. Each case has its own atomic checkpoint;
+restarting a worker resumes unfinished work without replaying completed
+trials. A check without an original cluster JUnit test is marked
+`no_cluster_test`.
 
-To check the complete layout and reproduce the table from case records:
+The current three-node run writes a per-check summary beside each result and
+aggregates the 102 entries in [`../data/crashfuzz/static102-rerun.tsv`](../data/crashfuzz/static102-rerun.tsv).
+The table records the exact check location, selected JUnit, time, fault
+trials, strict injections, post-fault target reach, and candidate count.
 
-```sh
-python3 reproduce.py --check-all
-python3 checklist.py render
-python3 audit_checklist.py --require-terminal
-cd core-fuzzer && python3 -m unittest -q
-```
-
-The per-case runners retain the original source-version and dependency requirements recorded in their READMEs. A path named `.graphchecker-sources` in a runner refers to an external checkout of the system source; it is not a GraphChecker runtime dependency.
+`cases/`, the older shared adapters, and `entrypoints.json` preserve the
+previous case-specific campaign and its reproduction records. The Soot
+selected campaign above does not import their per-case I/O or coverage lists.

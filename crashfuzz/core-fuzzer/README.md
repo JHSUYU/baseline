@@ -1,10 +1,36 @@
 # Coverage guided fault campaign for cluster tests
 
-`original_hdfs_junit.py` is a small calibration helper for an unchanged
-Hadoop 3.4.3 embedded-cluster JUnit method. It runs one method with its
-native fixture in a fresh scratch directory and records JUnit outcome,
-elapsed time, and a raw JaCoCo file. It does not instrument target checks or
-inject faults, so a passing run alone never completes a candidate.
+## Current Soot-selected checklist runner
+
+Use `rerun102_worker.py` for the current 102-check campaign. Its per-check
+inputs are the target source site and an original cluster JUnit method from
+`data/crashfuzz/checklist102.json`. `prepare_case_selection.py` supplies only
+system-wide binary and communication mapping paths. Soot derives the coverage
+methods, branches, and I/O callsites; `soot_selection.py` stores them in the
+case's `soot-selection.json`. The runtime agent records and injects only those
+selected sites. No per-check I/O or coverage list is required.
+
+```sh
+python3 rerun102_worker.py --system Solr \
+  --checklist ../../data/crashfuzz/checklist102.json \
+  --result-root /path/to/isolated-results --case-id SOLR-40
+```
+
+The generic `fuzzer.py` config described below also supports older manual
+adapters, so its optional `io_scope` and `coverage_include_prefixes` fields
+remain documented for those archived campaigns.
+
+On node0, `archive_completed.py` can watch the result root and copy completed
+80-trial HDFS campaigns without exception candidates to node1. It verifies
+the remote files with an rsync checksum pass before removing local raw trials;
+the local case summary and final result remain. Unfinished cases keep their
+checkpoints in place.
+
+`original_hdfs_junit.py` runs an unchanged Hadoop 3.4.3 embedded-cluster
+JUnit method in fresh scratch storage. In the current Soot-selected mode, the
+ASM runtime agent records the target, I/O, and coverage events; the helper
+does not also collect JaCoCo data. Its legacy calibration mode records a raw
+JaCoCo file. A passing JUnit run alone never completes a candidate.
 
 `fuzzer.py` reruns one existing cluster based JUnit test and injects faults at
 I/O points observed in that test. It reads a healthy runtime trace to find the
@@ -132,6 +158,10 @@ discarded from feedback and mutation. An exact post-fault target exception
 that exceeds the healthy exception count is a `target_exception_candidate`.
 This is a **source review and replay candidate**, not a confirmed bug. The
 driver never marks `confirmed_bug` or `quality_complete` automatically.
+The healthy JUnit only has to expose an I/O seed. If its target check is
+unreached, the driver still tests those observed I/O points: a fault may
+expose the target branch. Such a trial contributes feedback only after the
+target is reached following the fault.
 
 Each case stores an atomic `state.json` checkpoint, `result.json`, and trial
 selectors, traces, command logs, and per-attempt results. A pending sequence
