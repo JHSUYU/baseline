@@ -49,6 +49,7 @@ def reconcile_elapsed(value: dict) -> None:
     active = value.get('active_runtime_seconds')
     if active is None:
         return
+    value['active_runtime_seconds'] = round(float(active), 3)
     total = value.get('total_elapsed_seconds')
     value['total_elapsed_seconds'] = round(max(float(total or 0), float(active)), 3)
 
@@ -143,7 +144,9 @@ def remote_summaries(host: str) -> dict[str, dict]:
               "                    row.update(healthy_target_reached=record.get('target_reached'),lost_target_trials=record.get('lost_target_trials'),target_outcome_changed_trials=record.get('target_outcome_changed_trials'),coverage_gain_methods=gain.get('methods'),coverage_gain_branches=gain.get('branch_outcomes'))\n"
               "                break\n"
               "        active=row.get('active_runtime_seconds')\n"
-              "        if active is not None: row['total_elapsed_seconds']=round(max(float(row.get('total_elapsed_seconds') or 0),float(active)),3)\n"
+              "        if active is not None:\n"
+              "            row['active_runtime_seconds']=round(float(active),3)\n"
+              "            row['total_elapsed_seconds']=round(max(float(row.get('total_elapsed_seconds') or 0),float(active)),3)\n"
               "        rows.append(row)\n"
               "    except (OSError, ValueError): pass\n"
               "print(json.dumps(rows))\n")
