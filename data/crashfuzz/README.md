@@ -4,9 +4,12 @@
 current Soot-selected CrashFuzz rerun. It has one row for each original check,
 with the exact source site, chosen cluster JUnit, elapsed time, fault counts,
 strict runtime matches, post-fault target reaches, and candidate status.
-The `fault_trials` and `active_trial` fields also show progress from a live
-checkpoint. Final time, injection, and candidate counts are written when the
-case finishes. A pending or running row is not a tested result.
+The `fault_trials`, `active_trial`, strict injection, target reach, and
+candidate fields reflect completed trials in the live checkpoint. These
+counts can grow while a case is running. `active_runtime_seconds` is the
+cumulative JUnit run time; `total_elapsed_seconds` includes any retained
+worker overhead and is never smaller than that run time after a resume.
+Only a finished row is a terminal case result.
 For completed cases whose raw trials were moved to preserve node0 disk space,
 `archive_host` and `archive_path` locate the checksum-verified copy. The local
 `campaign_result` remains available with the case summary.
