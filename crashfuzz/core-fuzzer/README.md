@@ -9,9 +9,16 @@ system-wide binary and communication mapping paths. Soot derives the coverage
 methods, branches, and I/O callsites; `soot_selection.py` stores them in the
 case's `soot-selection.json`. The runtime agent records and injects only those
 selected sites. No per-check I/O or coverage list is required.
+
 When the healthy trace contains no selected I/O, the worker automatically
 reselects with a wider Soot caller path and reruns that JUnit. It keeps the
 expanded selection and healthy trace beside the initial ones for replay.
+
+Run `audit_rerun102_selection.py --result-root /path/to/isolated-results`
+on each node to verify that the target and I/O sites came from the Soot
+artifact, the healthy JVM applied the same digest, and the campaign did not
+declare per-check I/O or coverage sites. Archived campaigns are checked
+against their retained result and archive receipt.
 
 ```sh
 python3 rerun102_worker.py --system Solr \

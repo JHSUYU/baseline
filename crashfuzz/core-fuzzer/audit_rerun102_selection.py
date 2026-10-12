@@ -1,0 +1,99 @@
+#!/usr/bin/env python3
+"""Verify that original-JUnit campaigns use their Soot-selected sites."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+
+from soot_selection import _validate_selection
+
+ROOT = Path(__file__).resolve().parents[2]
+INCOMPLETE = {'preparing', 'healthy', 'blocked_setup', 'claimed_elsewhere'}
+
+
+def applied_digests(trace: Path) -> list[str]:
+    with trace.open() as stream:
+        return [event.get('digest') for line in stream
+                if (event := json.loads(line)).get('event') == 'STATIC_SELECTION_APPLIED']
+
+
+def audit(result_root: Path, checklist: Path) -> dict:
+    original = {row['case_id']: row for row in json.loads(checklist.read_text())['rows']
+                if row.get('selection_group') == 'original_102'}
+    report = {'audited': 0, 'archived': 0, 'incomplete': [], 'skipped': [],
+              'errors': []}
+    for cid, row in original.items():
+        base = result_root / cid
+        summary_path = base / 'case-summary.json'
+        if not summary_path.is_file():
+            continue
+        try:
+            summary = json.loads(summary_path.read_text())
+            if summary['status'] == 'no_cluster_test':
+                report['skipped'].append(cid)
+                continue
+            if summary['status'] in INCOMPLETE:
+                report['incomplete'].append(cid)
+                continue
+            expanded = summary.get('selection_profile') == 'caller_expanded'
+            artifact = base / ('caller-expanded/soot-selection.json' if expanded
+                               else 'soot-selection.json')
+            selection = json.loads(artifact.read_text())
+            target_site = row['exact_check_location']['site_id']
+            target_method = target_site.split('#u', 1)[0]
+            _validate_selection(selection, target_method)
+            if selection.get('target_site_id') != target_site:
+                raise ValueError('selected target site differs from checklist')
+            if not selection['io_calls']:
+                raise ValueError('Soot selected no I/O callsites')
+            if (summary.get('static_io_calls') != len(selection['io_calls']) or
+                    summary.get('static_coverage_methods') !=
+                    len(selection['coverage_methods'])):
+                raise ValueError('summary counts differ from Soot selection')
+            healthy = base / ('healthy-expanded' if expanded else 'healthy')
+            manifest = json.loads((healthy / 'manifest.json').read_text())
+            if manifest.get('returncode') != 0:
+                raise ValueError('healthy JUnit did not pass')
+            if applied_digests(Path(manifest['trace'])) != [selection['input_digest']]:
+                raise ValueError('runtime selection digest differs from Soot artifact')
+            config = json.loads((base / 'campaign-config.json').read_text())
+            if Path(config['static_selection']['artifact']).resolve() != artifact.resolve():
+                raise ValueError('campaign uses another selection artifact')
+            if ('io_scope' in config or 'coverage_include_methods' in config or
+                    'coverage_include_methods' in config['target']):
+                raise ValueError('campaign declares case-specific I/O or coverage')
+            states = [json.loads(path.read_text()) for path in
+                      base.glob('campaign*/' + cid + '/state.json')]
+            if states:
+                if not any(state.get('static_selection_digest') == selection['input_digest']
+                           for state in states):
+                    raise ValueError('campaign checkpoint has no matching selection digest')
+            else:
+                receipt = json.loads((base / 'archive.json').read_text())
+                final = json.loads((base / 'campaign-result.json').read_text())
+                if (receipt.get('remote_path') != summary.get('archive_path') or
+                        receipt.get('case_id') != cid or
+                        final.get('static_selection_digest') != selection['input_digest']):
+                    raise ValueError('archived campaign digest or receipt differs')
+                report['archived'] += 1
+            report['audited'] += 1
+        except (OSError, KeyError, TypeError, ValueError) as error:
+            report['errors'].append({'case_id': cid, 'error': str(error)})
+    return report
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--result-root', required=True, type=Path)
+    parser.add_argument('--checklist', type=Path,
+                        default=ROOT / 'data/crashfuzz/checklist102.json')
+    args = parser.parse_args()
+    report = audit(args.result_root, args.checklist)
+    print(json.dumps(report, indent=2))
+    return 1 if report['errors'] else 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
