@@ -3,7 +3,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from collect_rerun102 import (accepts_remote_case, apply_candidate_review,
+from collect_rerun102 import (accepts_remote_case, apply_campaign_migration,
+                              apply_candidate_review,
                               enrich_live_summary, enrich_live_trials,
                               enrich_result_metrics, reconcile_elapsed)
 
@@ -53,6 +54,29 @@ class LiveTrialSummaryTest(unittest.TestCase):
                    'active_runtime_seconds': 4969.506}
         reconcile_elapsed(summary)
         self.assertEqual(summary['total_elapsed_seconds'], 4969.506)
+
+    def test_replacement_campaign_counts_only_new_trials_but_all_elapsed(self):
+        migration = {'SOLR-36': {'replacement_campaign': 'identity-v2',
+                                 'prior_elapsed_seconds': 11693.061,
+                                 'prior_completed_trials': 54,
+                                 'prior_strict_injections': 5,
+                                 'audit_path': 'node2:/audit.json'}}
+        old = {'case_id': 'SOLR-36', 'healthy_manifest': '/healthy-expanded-nightly/manifest.json',
+               'total_elapsed_seconds': 11693.061, 'fault_trials': 54}
+        apply_campaign_migration(old, migration)
+        self.assertEqual(old['total_elapsed_seconds'], 11693.061)
+        self.assertNotIn('prior_campaign_elapsed_seconds', old)
+        new = {'case_id': 'SOLR-36',
+               'healthy_manifest': '/healthy-expanded-identity-v2/manifest.json',
+               'total_elapsed_seconds': 250.0, 'active_runtime_seconds': 251.25,
+               'fault_trials': 3, 'strict_injections': 2}
+        apply_campaign_migration(new, migration)
+        self.assertEqual(new['total_elapsed_seconds'], 11944.311)
+        self.assertEqual(new['current_campaign_elapsed_seconds'], 251.25)
+        self.assertEqual(new['prior_campaign_fault_trials'], 54)
+        self.assertEqual(new['current_campaign_fault_trials'], 3)
+        self.assertEqual(new['fault_trials'], 3)
+        self.assertEqual(new['strict_injections'], 2)
 
     def test_live_summary_reads_expanded_selection_campaign(self):
         with tempfile.TemporaryDirectory() as directory:

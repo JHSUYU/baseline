@@ -18,11 +18,15 @@ REMOTE_ROOT = '/users/ZhenyuLi/static-rerun/results'
 LOCAL_ROOT = ROOT / '.study-repairs/static102-rerun'
 OFFLOADS = ROOT / 'data/crashfuzz/static102-offloads.json'
 REVIEWS = ROOT / 'data/crashfuzz/static102-candidate-reviews.json'
+MIGRATIONS = ROOT / 'data/crashfuzz/static102-campaign-migrations.json'
 COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
            'review_verdict', 'review_reason', 'review_evidence',
            'target_file', 'target_function', 'target_line', 'target_site_id',
            'check_code', 'cluster_test', 'total_elapsed_seconds',
            'active_runtime_seconds',
+           'prior_campaign_elapsed_seconds', 'prior_campaign_fault_trials',
+           'prior_campaign_strict_injections', 'current_campaign_elapsed_seconds',
+           'current_campaign_fault_trials', 'migration_audit',
            'healthy_seconds', 'fault_trials', 'active_trial', 'strict_injections',
            'healthy_target_reached', 'post_fault_target_reach_trials',
            'lost_target_trials', 'target_outcome_changed_trials',
@@ -54,6 +58,27 @@ def reconcile_elapsed(value: dict) -> None:
     value['active_runtime_seconds'] = round(float(active), 3)
     total = value.get('total_elapsed_seconds')
     value['total_elapsed_seconds'] = round(max(float(total or 0), float(active)), 3)
+
+
+def apply_campaign_migration(value: dict, migrations: dict[str, dict]) -> None:
+    """Keep retired trials separate while charging their time to the check."""
+    migration = migrations.get(value['case_id'])
+    if not migration:
+        return
+    replacement = migration['replacement_campaign']
+    paths = (value.get('healthy_manifest') or '', value.get('campaign_result') or '')
+    if not any(replacement in path for path in paths):
+        return
+    current = max(float(value.get('total_elapsed_seconds') or 0),
+                  float(value.get('active_runtime_seconds') or 0))
+    prior = float(migration['prior_elapsed_seconds'])
+    value['prior_campaign_elapsed_seconds'] = round(prior, 3)
+    value['prior_campaign_fault_trials'] = migration['prior_completed_trials']
+    value['prior_campaign_strict_injections'] = migration['prior_strict_injections']
+    value['current_campaign_elapsed_seconds'] = round(current, 3)
+    value['current_campaign_fault_trials'] = value.get('fault_trials') or 0
+    value['migration_audit'] = migration['audit_path']
+    value['total_elapsed_seconds'] = round(prior + current, 3)
 
 
 def apply_candidate_review(value: dict, reviews: dict[str, dict]) -> None:
@@ -197,6 +222,8 @@ def main() -> int:
         raise ValueError(f'expected 102 original checks, got {len(original)}')
     offloads = json.loads(OFFLOADS.read_text()).get('cases', {}) if OFFLOADS.is_file() else {}
     reviews = json.loads(REVIEWS.read_text()).get('cases', {}) if REVIEWS.is_file() else {}
+    migrations = (json.loads(MIGRATIONS.read_text()).get('cases', {})
+                  if MIGRATIONS.is_file() else {})
     summaries = local_summaries()
     for node in ('node1', 'node2'):
         try:
@@ -222,6 +249,7 @@ def main() -> int:
                     'check_code': row.get('check_code'),
                     'cluster_test': row.get('cluster_test')}
         merged = {**baseline, **summaries.get(row['case_id'], {})}
+        apply_campaign_migration(merged, migrations)
         apply_candidate_review(merged, reviews)
         writer.writerow({key: (value.replace('\r', ' ').replace('\n', '\\n')
                               if isinstance(value, str) else value)
