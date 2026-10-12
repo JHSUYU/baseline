@@ -32,6 +32,9 @@ on each node to verify that the target and I/O sites came from the Soot
 artifact, the healthy JVM applied the same digest, and the campaign did not
 declare per-check I/O or coverage sites. Archived campaigns are checked
 against their retained result and archive receipt.
+The three-node selection audit snapshot is saved in
+`data/crashfuzz/static102-selection-audit.json`; it distinguishes runnable
+checks from checks without an original cluster JUnit.
 
 ```sh
 python3 rerun102_worker.py --system Solr \

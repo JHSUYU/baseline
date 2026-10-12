@@ -69,7 +69,8 @@ def audit_runtime_scope(trace: Path, selection: dict) -> None:
 def audit(result_root: Path, checklist: Path) -> dict:
     original = {row['case_id']: row for row in json.loads(checklist.read_text())['rows']
                 if row.get('selection_group') == 'original_102'}
-    report = {'audited': 0, 'archived': 0, 'incomplete': [], 'skipped': [],
+    report = {'audited': 0, 'audited_cases': [], 'archived': 0,
+              'incomplete': [], 'skipped': [],
               'errors': []}
     for cid, row in original.items():
         base = result_root / cid
@@ -138,6 +139,7 @@ def audit(result_root: Path, checklist: Path) -> dict:
                     raise ValueError('archived campaign digest or receipt differs')
                 report['archived'] += 1
             report['audited'] += 1
+            report['audited_cases'].append(cid)
         except (OSError, KeyError, TypeError, ValueError) as error:
             report['errors'].append({'case_id': cid, 'error': str(error)})
     return report
