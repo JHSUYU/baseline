@@ -511,6 +511,18 @@ class CoverageIoTest(unittest.TestCase):
         self.assertFalse(strict_injection(
             {**applied, 'applied_points': [{**new, 'hitOrdinal': 2}]}, [old]))
 
+    def test_default_thread_object_hash_does_not_break_replay(self):
+        original = {**A, 'occurrence':
+                    'local/org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker$1@e7a1919/'
+                    + A['siteId']}
+        replayed = {**original, 'occurrence':
+                    'local/org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker$1@29235c48/'
+                    + A['siteId']}
+        applied = {'matched_count': 1, 'applied_count': 1,
+                   'applied_points': [replayed],
+                   'applied_fault_ids': [fingerprint(original)]}
+        self.assertTrue(strict_injection(applied, [original]))
+
     def test_coarse_io_scope_filters_without_changing_exact_identity(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)

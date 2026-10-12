@@ -302,6 +302,9 @@ public final class SelectionProbe {
         if (actor.startsWith("BP-") && actor.contains(" heartbeating to ")) {
             actor = "BPServiceActor heartbeating";
         }
+        // Thread names derived from Object.toString() contain a fresh JVM
+        // identity hash on every run. Preserve the actor class and I/O site.
+        actor = actor.replaceAll("@[0-9a-fA-F]{3,}", "@instance");
         return address.substring(0, nodeEnd + 1) + actor
                 + address.substring(siteStart);
     }

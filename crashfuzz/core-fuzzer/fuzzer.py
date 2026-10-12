@@ -440,6 +440,7 @@ def stable_occurrence(address: str) -> str:
     actor = address[node_end + 1:site_start]
     if actor.startswith("BP-") and " heartbeating to " in actor:
         actor = "BPServiceActor heartbeating"
+    actor = re.sub(r"@[0-9a-fA-F]{3,}", "@instance", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 
 

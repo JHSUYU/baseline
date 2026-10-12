@@ -26,7 +26,9 @@ seed single-fault trials that may expose it.
 `core-fuzzer/fuzzer.py` then mutates ordered exception plans, reruns the same
 JUnit test, and uses new selected I/O and method/branch coverage to choose
 later plans. A fault counts only when its full runtime identity matches and
-the target check still executes afterward. ZooKeeper calls can receive a
+the target check still executes afterward. Object identity hashes in generated
+thread names are normalized across JUnit runs; the I/O site, actor class, and
+hit ordinal remain part of the match. ZooKeeper calls can receive a
 `ConnectionLossException`; other selected calls receive an `IOException`.
 An observed target exception is a candidate for replay and source review.
 The HBase runner supplies the original test-only SSL utility needed by its
