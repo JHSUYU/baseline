@@ -3,11 +3,19 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from collect_rerun102 import (enrich_live_summary, enrich_live_trials,
+from collect_rerun102 import (accepts_remote_case, enrich_live_summary, enrich_live_trials,
                               enrich_result_metrics, reconcile_elapsed)
 
 
 class LiveTrialSummaryTest(unittest.TestCase):
+    def test_cross_host_offload_is_reported_only_while_active(self):
+        cases = {'HBASE-35': {'state': 'active', 'execution_host': 'node2'},
+                 'HBASE-37': {'state': 'mirrored', 'execution_host': 'node2'}}
+        self.assertTrue(accepts_remote_case('node2', 'HBASE-35', cases))
+        self.assertFalse(accepts_remote_case('node2', 'HBASE-37', cases))
+        self.assertFalse(accepts_remote_case('node2', 'HBASE-14', cases))
+        self.assertTrue(accepts_remote_case('node1', 'HBASE-14', cases))
+
     def test_completed_statuses_match_campaign_result_counts(self):
         summary = {'bug_mark': 'none'}
         state = {'completed': [

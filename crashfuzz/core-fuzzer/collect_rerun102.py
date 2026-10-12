@@ -16,6 +16,7 @@ SSH = ['/usr/bin/ssh', '-i', '/users/ZhenyuLi/.ssh/id_ed25519_nodes',
        '-o', 'IdentitiesOnly=yes', '-o', 'BatchMode=yes']
 REMOTE_ROOT = '/users/ZhenyuLi/static-rerun/results'
 LOCAL_ROOT = ROOT / '.study-repairs/static102-rerun'
+OFFLOADS = ROOT / 'data/crashfuzz/static102-offloads.json'
 COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
            'target_file', 'target_function', 'target_line', 'target_site_id',
            'check_code', 'cluster_test', 'total_elapsed_seconds',
@@ -154,6 +155,16 @@ def remote_summaries(host: str) -> dict[str, dict]:
     return {row['case_id']: row for row in json.loads(process.stdout)}
 
 
+def accepts_remote_case(host: str, cid: str, offloads: dict[str, dict]) -> bool:
+    if host == 'node1':
+        return cid.startswith('HBASE-')
+    if host == 'node2':
+        return (cid.startswith(('SOLR-', 'ZOOKEEPER-')) or
+                (offloads.get(cid, {}).get('state') == 'active' and
+                 offloads[cid].get('execution_host') == host))
+    return False
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path,
@@ -164,16 +175,16 @@ def main() -> int:
         if row.get('selection_group') == 'original_102']
     if len(original) != 102:
         raise ValueError(f'expected 102 original checks, got {len(original)}')
+    offloads = json.loads(OFFLOADS.read_text()).get('cases', {}) if OFFLOADS.is_file() else {}
     summaries = local_summaries()
-    for node, prefix in [('node1', 'HBASE-'), ('node2', 'SOLR-')]:
+    for node in ('node1', 'node2'):
         try:
             updates = remote_summaries(node)
         except (RuntimeError, subprocess.TimeoutExpired) as error:
             print(f'collector: {error}', flush=True)
             continue
         for cid, row in updates.items():
-            if cid.startswith(prefix) or (node == 'node2' and
-                                          cid.startswith('ZOOKEEPER-')):
+            if accepts_remote_case(node, cid, offloads):
                 summaries[cid] = row
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=COLUMNS, delimiter='\t',
