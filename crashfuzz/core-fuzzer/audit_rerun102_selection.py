@@ -31,6 +31,19 @@ def healthy_trace_path(manifest: dict, manifest_path: Path) -> Path:
     return trace
 
 
+def case_path(recorded: str | Path, base: Path) -> Path:
+    """Resolve a path retained from another host after mirroring a case."""
+    path = Path(recorded)
+    if path.is_file():
+        return path
+    if base.name in path.parts:
+        suffix = path.parts[path.parts.index(base.name) + 1:]
+        relocated = base.joinpath(*suffix)
+        if relocated.is_file():
+            return relocated
+    return path
+
+
 def audit_runtime_scope(trace: Path, selection: dict) -> None:
     methods = set(selection['coverage_methods'])
     io_sites = {row['site_id'] for row in selection['io_calls']}
@@ -72,7 +85,7 @@ def audit(result_root: Path, checklist: Path) -> dict:
                 report['incomplete'].append(cid)
                 continue
             expanded = summary.get('selection_profile') == 'caller_expanded'
-            artifact = (Path(summary['selection_artifact'])
+            artifact = (case_path(summary['selection_artifact'], base)
                         if summary.get('selection_artifact') else
                         base / ('caller-expanded/soot-selection.json' if expanded
                                 else 'soot-selection.json'))
@@ -92,7 +105,7 @@ def audit(result_root: Path, checklist: Path) -> dict:
                     summary.get('static_coverage_methods') !=
                     len(selection['coverage_methods'])):
                 raise ValueError('summary counts differ from Soot selection')
-            healthy_manifest = (Path(summary['healthy_manifest'])
+            healthy_manifest = (case_path(summary['healthy_manifest'], base)
                                 if summary.get('healthy_manifest') else
                                 base / ('healthy-expanded' if expanded else 'healthy') /
                                 'manifest.json')
@@ -104,7 +117,8 @@ def audit(result_root: Path, checklist: Path) -> dict:
                 raise ValueError('runtime selection digest differs from Soot artifact')
             audit_runtime_scope(trace, selection)
             config = json.loads((base / 'campaign-config.json').read_text())
-            if Path(config['static_selection']['artifact']).resolve() != artifact.resolve():
+            if (case_path(config['static_selection']['artifact'], base).resolve() !=
+                    artifact.resolve()):
                 raise ValueError('campaign uses another selection artifact')
             if ('io_scope' in config or 'coverage_include_methods' in config or
                     'coverage_include_methods' in config['target']):
