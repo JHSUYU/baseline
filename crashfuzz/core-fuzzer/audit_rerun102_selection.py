@@ -22,6 +22,7 @@ def applied_digests(trace: Path) -> list[str]:
 def audit_runtime_scope(trace: Path, selection: dict) -> None:
     methods = set(selection['coverage_methods'])
     io_sites = {row['site_id'] for row in selection['io_calls']}
+    observed_selected_work = False
     with trace.open() as stream:
         for line in stream:
             event = json.loads(line)
@@ -31,6 +32,10 @@ def audit_runtime_scope(trace: Path, selection: dict) -> None:
             if (kind == 'FAULT_POINT_OBSERVED' and
                     event.get('siteId') not in io_sites):
                 raise ValueError('runtime I/O escaped Soot callsite selection')
+            if kind in {'METHOD_ENTER', 'BRANCH', 'FAULT_POINT_OBSERVED'}:
+                observed_selected_work = True
+    if not observed_selected_work:
+        raise ValueError('healthy JUnit executed no Soot-selected work')
 
 
 def audit(result_root: Path, checklist: Path) -> dict:

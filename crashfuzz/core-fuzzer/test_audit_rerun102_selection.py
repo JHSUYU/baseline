@@ -29,8 +29,9 @@ class SelectionAuditTest(unittest.TestCase):
                 'io_methods': [site.split('#u')[0]],
                 'io_calls': [{'method': site.split('#u')[0], 'site_id': site}]}))
             trace = healthy / 'runtime_trace.jsonl'
-            trace.write_text(json.dumps({'event': 'STATIC_SELECTION_APPLIED',
-                                         'digest': 'expected'}) + '\n')
+            trace.write_text('\n'.join(json.dumps(row) for row in (
+                {'event': 'STATIC_SELECTION_APPLIED', 'digest': 'expected'},
+                {'event': 'METHOD_ENTER', 'method': site.split('#u')[0]})) + '\n')
             (healthy / 'manifest.json').write_text(json.dumps({
                 'returncode': 0, 'trace': str(trace)}))
             (base / 'campaign-config.json').write_text(json.dumps({
@@ -40,6 +41,10 @@ class SelectionAuditTest(unittest.TestCase):
             checkpoint.parent.mkdir(parents=True)
             checkpoint.write_text(json.dumps({'static_selection_digest': 'expected'}))
             self.assertEqual(audit(root / 'results', checklist)['errors'], [])
+            trace.write_text(json.dumps({'event': 'STATIC_SELECTION_APPLIED',
+                                         'digest': 'expected'}) + '\n')
+            self.assertIn('healthy JUnit executed no Soot-selected work',
+                          audit(root / 'results', checklist)['errors'][0]['error'])
             trace.write_text('\n'.join(json.dumps(row) for row in (
                 {'event': 'STATIC_SELECTION_APPLIED', 'digest': 'expected'},
                 {'event': 'FAULT_POINT_OBSERVED', 'siteId':

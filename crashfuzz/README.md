@@ -15,6 +15,10 @@ system.
 
 The ASM Java agent in `runtime-agent/` instruments only the selected sites.
 A healthy run records the I/O points and code paths that actually execute.
+The Solr runner enables nightly mode when the selected JUnit source uses
+`@Nightly`; the JUnit launcher rejects assumption-skipped methods so a skipped
+test cannot become a healthy seed. A campaign suffix also gives a replay its
+own healthy trace and checkpoint.
 If that run observes no selected I/O, the worker automatically retries the
 Soot selection with a wider caller path and reruns the same JUnit method.
 If the wider path still observes no I/O, it increases the coarse method budget
