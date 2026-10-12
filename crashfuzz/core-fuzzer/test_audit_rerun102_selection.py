@@ -44,6 +44,12 @@ class SelectionAuditTest(unittest.TestCase):
                                          'digest': 'wrong'}) + '\n')
             self.assertIn('runtime selection digest differs',
                           audit(root / 'results', checklist)['errors'][0]['error'])
+            selected = json.loads((base / 'soot-selection.json').read_text())
+            selected['coverage_methods'].extend(
+                f'<example.Extra{i}: void run()>' for i in range(400))
+            (base / 'soot-selection.json').write_text(json.dumps(selected))
+            self.assertIn('exceeds its method budget',
+                          audit(root / 'results', checklist)['errors'][0]['error'])
 
 
 if __name__ == '__main__':

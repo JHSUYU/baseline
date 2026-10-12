@@ -46,6 +46,10 @@ def audit(result_root: Path, checklist: Path) -> dict:
             target_site = row['exact_check_location']['site_id']
             target_method = target_site.split('#u', 1)[0]
             _validate_selection(selection, target_method)
+            method_budget = (800 if summary.get('selection_profile') ==
+                             'caller_expanded_800' else 400)
+            if len(selection['coverage_methods']) > method_budget:
+                raise ValueError('Soot selection exceeds its method budget')
             if selection.get('target_site_id') != target_site:
                 raise ValueError('selected target site differs from checklist')
             if not selection['io_calls']:
