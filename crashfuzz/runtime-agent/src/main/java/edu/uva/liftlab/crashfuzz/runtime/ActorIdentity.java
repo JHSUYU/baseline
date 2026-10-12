@@ -55,6 +55,11 @@ final class ActorIdentity {
         }
     }
 
+    static Resolution resolve(Object owner, String siteId, String thread) {
+        Resolution hdfs = resolve(owner);
+        return hdfs.applies() ? hdfs : SolrActorIdentity.resolve(siteId, thread);
+    }
+
     private static String dataNodeField(Class<?> type) {
         for (Class<?> current = type; current != null; current = current.getSuperclass()) {
             if (BP_ACTOR.equals(current.getName())) return "dn";

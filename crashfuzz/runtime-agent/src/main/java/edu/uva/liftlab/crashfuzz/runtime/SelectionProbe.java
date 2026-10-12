@@ -294,10 +294,13 @@ public final class SelectionProbe {
 
     private static void ioAtPhase(String siteId, String callee, Object owner,
                                   String phase) throws IOException {
-        String occurrence = OccurrenceIdentity.stable(NODE + "/"
-                + Thread.currentThread().getName() + "/" + siteId);
-        ActorIdentity.Resolution identity = ActorIdentity.resolve(owner);
-        if (identity.applies()) {
+        String thread = Thread.currentThread().getName();
+        ActorIdentity.Resolution identity = ActorIdentity.resolve(owner, siteId, thread);
+        String actor = identity.logicalNodeId != null
+                && identity.logicalNodeId.startsWith("solr:")
+                ? identity.logicalNodeId : thread;
+        String occurrence = OccurrenceIdentity.stable(NODE + "/" + actor + "/" + siteId);
+        if (identity.applies() && !identity.logicalNodeId.startsWith("solr:")) {
             int siteStart = occurrence.lastIndexOf("/<");
             if (siteStart >= 0) {
                 occurrence = occurrence.substring(0, siteStart) + "|"
@@ -313,7 +316,7 @@ public final class SelectionProbe {
             if (identity.gap && seenIdentityGaps.add(identity.logicalNodeId)) {
                 JsonObject gap = event("ACTOR_IDENTITY_GAP");
                 gap.addProperty("siteId", siteId);
-                gap.addProperty("actorClass", owner.getClass().getName());
+                gap.addProperty("actorClass", owner == null ? "" : owner.getClass().getName());
                 gap.addProperty("logicalNodeId", identity.logicalNodeId);
                 gap.addProperty("reason", identity.reason);
                 write(gap, true);
@@ -324,6 +327,12 @@ public final class SelectionProbe {
             String phaseOccurrence = phase + "|" + occurrence;
             int occurrenceOrdinal = occurrenceHits.getOrDefault(phaseOccurrence, 0) + 1;
             occurrenceHits.put(phaseOccurrence, occurrenceOrdinal);
+            if (identity.logicalNodeId != null
+                    && identity.logicalNodeId.startsWith("solr:")) {
+                // Jetty and executor thread numbers change between cluster runs.
+                // Count by stable logical actor instead of the thread-local counter.
+                hit = occurrenceOrdinal;
+            }
             JsonObject observed = faultEvent("FAULT_POINT_OBSERVED", siteId,
                     callee, occurrence, hit, occurrenceOrdinal, identity, phase);
             write(observed, true);
