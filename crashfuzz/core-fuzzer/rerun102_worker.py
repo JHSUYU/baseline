@@ -11,6 +11,7 @@ import argparse
 import fcntl
 import json
 import re
+import shutil
 import subprocess
 import sys
 import time
@@ -142,6 +143,19 @@ def run_logged(argv: list[str], path: Path) -> int:
                               check=False).returncode
 
 
+def run_healthy_with_retry(argv: list[str], log: Path, output: Path) -> int:
+    """Retry one failed clean JUnit; retain its setup failure for diagnosis."""
+    first = run_logged(argv, log)
+    if first == 0:
+        return 0
+    log.replace(log.with_name(log.stem + '-failed-1' + log.suffix))
+    for name in ('junit.log', 'manifest.json'):
+        source = output / name
+        if source.is_file():
+            shutil.copy2(source, output / (name + '.failed-1'))
+    return run_logged(argv, log)
+
+
 def healthy_matches(manifest: Path, digest: str) -> bool:
     if not manifest.is_file():
         return False
@@ -244,7 +258,7 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                     '--case-id', cid, '--test-class', clazz, '--test-method', method,
                     '--output', str(healthy), '--static-selection', str(artifact),
                     '--timeout', str(TIMEOUT[family(row['system'])])]
-            if run_logged(argv, base / 'healthy-run.log') != 0:
+            if run_healthy_with_retry(argv, base / 'healthy-run.log', healthy) != 0:
                 raise RuntimeError('original healthy JUnit did not pass')
         healthy_record = json.loads(manifest.read_text())
         if (not observed_fault_points(Path(healthy_record['trace']))
@@ -274,7 +288,8 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                         '--case-id', cid, '--test-class', clazz, '--test-method', method,
                         '--output', str(healthy), '--static-selection', str(artifact),
                         '--timeout', str(TIMEOUT[family(row['system'])])]
-                if run_logged(argv, base / 'healthy-expanded-run.log') != 0:
+                if run_healthy_with_retry(argv, base / 'healthy-expanded-run.log',
+                                          healthy) != 0:
                     raise RuntimeError('original healthy JUnit did not pass with expanded selection')
             healthy_record = json.loads(manifest.read_text())
         workspace = base / 'campaign-workspace'

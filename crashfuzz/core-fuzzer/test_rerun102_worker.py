@@ -94,6 +94,30 @@ class ExceptionResolutionTest(unittest.TestCase):
                              '{"event":"FAULT_POINT_OBSERVED"}\n')
             self.assertTrue(rerun102_worker.observed_fault_points(trace))
 
+    def test_failed_healthy_junit_is_retained_and_retried_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            output = root / 'healthy'
+            output.mkdir()
+            log = root / 'healthy-run.log'
+            attempts = []
+
+            def run(_argv, path):
+                attempts.append(len(attempts) + 1)
+                path.write_text(f'runner attempt {attempts[-1]}')
+                (output / 'junit.log').write_text(f'JUnit attempt {attempts[-1]}')
+                return 1 if attempts[-1] == 1 else 0
+
+            with patch.object(rerun102_worker, 'run_logged', side_effect=run):
+                self.assertEqual(rerun102_worker.run_healthy_with_retry(
+                    ['runner'], log, output), 0)
+            self.assertEqual(attempts, [1, 2])
+            self.assertEqual((root / 'healthy-run-failed-1.log').read_text(),
+                             'runner attempt 1')
+            self.assertEqual((output / 'junit.log.failed-1').read_text(),
+                             'JUnit attempt 1')
+            self.assertEqual(log.read_text(), 'runner attempt 2')
+
     def test_parallel_claim_preserves_running_case_summary(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
