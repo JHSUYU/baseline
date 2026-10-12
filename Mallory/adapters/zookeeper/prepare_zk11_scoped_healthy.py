@@ -13,13 +13,15 @@ def sha(path: Path) -> str:
 
 
 def prepare(base_config: Path, overlay_receipt: Path, agent_jar: Path,
-            core_release: Path, output: Path) -> None:
+            core_release: Path, output: Path, *,
+            allowed_cases: tuple[str, ...] = ("ZOOKEEPER-11",),
+            local_timeline: bool = True) -> None:
     if output.exists():
         raise FileExistsError(output)
     base = json.loads(base_config.read_text(encoding="utf-8"))
     receipt = json.loads(overlay_receipt.read_text(encoding="utf-8"))
-    if base["case_id"] != "ZOOKEEPER-11" or not agent_jar.is_file():
-        raise ValueError("expected ZK11 and an approved, built agent JAR")
+    if base["case_id"] not in allowed_cases or not agent_jar.is_file():
+        raise ValueError("unexpected case or missing approved, built agent JAR")
     if not (core_release / "manifest.json").is_file():
         raise ValueError("immutable core release manifest is absent")
     manifest = json.loads((core_release / "manifest.json").read_text(encoding="utf-8"))
@@ -57,7 +59,7 @@ def prepare(base_config: Path, overlay_receipt: Path, agent_jar: Path,
                   source_overlay_receipt=str(overlay_receipt.resolve()),
                   source_overlay_receipt_sha256=sha(overlay_receipt),
                   calibration_only=True, auto_promote_if_healthy=False,
-                  allow_local_timeline_doors=True,
+                  allow_local_timeline_doors=local_timeline,
                   reject_coarse_roots=True, require_event_time_paths=True)
     mapping = dict(base["mapping"])
     mapping.update(source_root=str(root), compiled_artifact=str(root / "zookeeper-server/target/classes"),

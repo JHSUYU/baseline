@@ -113,6 +113,20 @@ def validate_config(config: dict[str, Any]) -> None:
         raise ValueError("validated_recovery_exploration_interval must be at least 2")
     if not isinstance(config.get("allow_local_timeline_doors", False), bool):
         raise ValueError("allow_local_timeline_doors must be boolean")
+    if not isinstance(config.get("allow_node_timeline_guidance", False), bool):
+        raise ValueError("allow_node_timeline_guidance must be boolean")
+    timeline_interval = config.get("node_timeline_exploration_interval", 5)
+    if (not isinstance(timeline_interval, int) or isinstance(timeline_interval, bool) or
+            timeline_interval < 2):
+        raise ValueError("node_timeline_exploration_interval must be at least 2")
+    actor_miss_replays = config.get("actor_miss_replays", 0)
+    if (not isinstance(actor_miss_replays, int) or isinstance(actor_miss_replays, bool) or
+            actor_miss_replays < 0):
+        raise ValueError("actor_miss_replays must be a nonnegative integer")
+    target_branch_replays = config.get("target_branch_replays", 0)
+    if (not isinstance(target_branch_replays, int) or isinstance(target_branch_replays, bool) or
+            target_branch_replays < 0):
+        raise ValueError("target_branch_replays must be a nonnegative integer")
     if not isinstance(config.get("reject_coarse_roots", False), bool):
         raise ValueError("reject_coarse_roots must be boolean")
     if not isinstance(config.get("require_event_time_paths", False), bool):
@@ -503,6 +517,8 @@ def _run_trial(config: dict[str, Any], out: Path, trial_id: int,
         feedback = analyze(trace, target, plan,
                            return_code=return_code, timed_out=timed_out,
                            allow_local_timeline_doors=config.get("allow_local_timeline_doors", False),
+                           allow_node_timeline_guidance=config.get(
+                               "allow_node_timeline_guidance", False),
                            reject_coarse_roots=config.get("reject_coarse_roots", False),
                            require_event_time_paths=config.get("require_event_time_paths", False),
                            bootstrap_without_target=bool(config.get("target_absent_bootstrap")))
@@ -593,6 +609,40 @@ def _apply_result(state: dict[str, Any], config: dict[str, Any], result: dict[st
                                           "selection_reason": "candidate_replay",
                                           "replay_of": trial_id, "priority": 1000.0,
                                           "queued_at": trial_id})
+
+    # A faulted run can route the target to another node or reach the same
+    # actor without taking the failing branch. Retry either outcome within a
+    # bound when a graph or target-timeline fault hit a healthy target actor.
+    actor_retry_limit = config.get("actor_miss_replays", 0)
+    branch_retry_limit = config.get("target_branch_replays", 0)
+    if ((actor_retry_limit or branch_retry_limit) and item and len(result["plan"]) == 1 and
+            item.get("selection_reason") in ("dynamic_closure", "node_timeline_candidate",
+                                             "actor_miss_replay", "target_branch_replay") and
+            feedback.get("all_faults_effective") and
+            feedback.get("target_check_reached") and
+            feedback.get("target_identity_complete") and
+            not feedback.get("target_exception_candidate")):
+        fault_node = result["plan"][0].get("point", {}).get("node")
+        healthy_nodes = (state.get("target_binding") or {}).get("nodes", [])
+        observed_nodes = feedback.get("target_check_actors", [])
+        actor_retries = item.get("actor_miss_replay_attempt", 0)
+        branch_retries = item.get("target_branch_replay_attempt", 0)
+        if (fault_node in healthy_nodes and fault_node not in observed_nodes and
+                actor_retries < actor_retry_limit):
+            state["queue"].append({**item,
+                                   "selection_reason": "actor_miss_replay",
+                                   "actor_miss_replay_attempt": actor_retries + 1,
+                                   "actor_miss_of": item.get("actor_miss_of", trial_id),
+                                   "priority": min(float(item.get("priority", 0.0)), 1.0),
+                                   "queued_at": trial_id})
+        elif (fault_node in healthy_nodes and fault_node in observed_nodes and
+              not feedback.get("target_threw") and branch_retries < branch_retry_limit):
+            state["queue"].append({**item,
+                                   "selection_reason": "target_branch_replay",
+                                   "target_branch_replay_attempt": branch_retries + 1,
+                                   "target_branch_of": item.get("target_branch_of", trial_id),
+                                   "priority": min(float(item.get("priority", 0.0)), 1.0),
+                                   "queued_at": trial_id})
 
     bootstrap = config.get("target_absent_bootstrap")
     bootstrap_seed = (trial_id == 0 and bootstrap is not None and

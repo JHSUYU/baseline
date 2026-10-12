@@ -141,7 +141,12 @@ class OccurrenceGraph:
                    ("attempt", "half"), exclusive_consumers=True)
         self._pair("TASK_SUBMIT", "TASK_CLAIM", "task", ("correlation",),
                    ("attempt",), exclusive_consumers=True)
-        self._pair("STATE_WRITE", "STATE_READ", "state", ("object", "key", "version"))
+        self._pair("TASK_COMPLETE", "TASK_JOIN", "task_result",
+                   ("node", "epoch", "correlation"), exclusive_consumers=True)
+        # Probe object IDs and sampled versions are JVM-local. Matching o1
+        # across nodes or restart epochs would fabricate a state relation.
+        self._pair("STATE_WRITE", "STATE_READ", "state",
+                   ("node", "epoch", "object", "key", "version"))
 
     def _add_nested_program_order(self, ids: dict[str, dict[str, Any]]) -> None:
         """Bridge an event in a live parent region to a direct child entry.
@@ -191,13 +196,25 @@ class OccurrenceGraph:
                    for left, right in zip(rows, rows[1:])):
                 self.gaps["program_order_ambiguous_sequence"] += 1
                 continue
-            # Each frame holds the enter and the latest event in that region.
+            # Each frame holds its enter, latest local event, and a child exit
+            # awaiting the first continuation in this frame. The latter is a
+            # real same-thread handoff, not an inferred shared-state edge.
             stack: list[list[dict[str, Any]]] = []
             pending_edges: list[tuple[dict[str, Any], dict[str, Any]]] = []
             balanced = True
             for event in rows:
                 kind = event.get("type")
                 address = event_address(event)
+                if stack and len(stack[-1]) == 3:
+                    parent_enter, _, child_exit = stack[-1]
+                    resumes_parent = (address == event_address(parent_enter) and
+                                      event.get("region") == parent_enter.get("region"))
+                    enters_sibling = (kind == "REGION_ENTER" and
+                                      event.get("parent_id") ==
+                                      parent_enter.get("occurrence"))
+                    if resumes_parent or enters_sibling:
+                        pending_edges.append((child_exit, event))
+                        stack[-1].pop()
                 if kind == "REGION_EXIT":
                     if (not stack or event_address(stack[-1][0]) != address or
                             event.get("region") != stack[-1][0].get("region")):
@@ -205,6 +222,10 @@ class OccurrenceGraph:
                         balanced = False
                         break
                     stack.pop()
+                    if stack:
+                        # A nested exit precedes the parent's next operation.
+                        # Publish only after the entire thread proves balanced.
+                        stack[-1].append(event)
                 elif kind == "REGION_ENTER":
                     if stack and event.get("parent_id") != stack[-1][0].get("occurrence"):
                         self.gaps["program_order_unbalanced_region"] += 1
@@ -238,7 +259,9 @@ class OccurrenceGraph:
             if balanced:
                 for producer, consumer in pending_edges:
                     self._add(producer, consumer, "program_order",
-                              "same_thread_direct_nested_region")
+                              ("same_thread_nested_return" if
+                               producer.get("type") == "REGION_EXIT" else
+                               "same_thread_direct_nested_region"))
 
     def _add(self, producer: dict[str, Any], consumer: dict[str, Any], kind: str,
              evidence: str, *, certainty: str = "observed") -> None:

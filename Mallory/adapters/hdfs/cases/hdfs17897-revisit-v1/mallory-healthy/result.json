@@ -1,0 +1,125 @@
+{
+  "bootstrap_fault_trials": 0,
+  "bootstrap_seed_doors": 0,
+  "bootstrap_seed_valid": false,
+  "calibration_only": true,
+  "case_id": "HDFS-54",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 24,
+  "cluster_test": "org.apache.hadoop.hdfs.TestFileChecksum#testStripedAndReplicatedFileChecksum2",
+  "coverage_ids_seen": 369,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 25.533,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 0,
+  "healthy_eligible_doors": 5,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_06c1e7f08a1347ccb39a6d93409b4e09",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 2
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestFileChecksum-mallory_0000_06c1e7f08a1347ccb39a6d93409b4e09.xml",
+        "sha256": "e571d3c414780adc508df52c0ffc0d79aa0f7a2d1bd6edb58e9b74cd3ca26ba5"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "7df46b4801a6d5ef5a801a9ca7040b84a776b1f191636f53ae30a8a28db3da46",
+    "tests": 2
+  },
+  "healthy_local_timeline_doors": null,
+  "healthy_observed_door_events": 6,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-client"
+    ],
+    "eligible_doors_before_target": 5,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "33e30e2f0280517b0aeaa799566258fcfe5b1e27f7fc4e7e86224805712baa3f",
+    "observed_target_class_sha256": "33e30e2f0280517b0aeaa799566258fcfe5b1e27f7fc4e7e86224805712baa3f",
+    "reasons": [],
+    "site_catalog_sha256": "2458c9c69bb67849843456825833a0673ef0f5ff93c4e45641324abc55e49f53",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "calibration_complete",
+  "strict_injected_trials": 0,
+  "strict_target_trials": 0,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (!checksumBlockGroup(blockGroup)) { throw new PathIOException(...); }",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V@629:branch:4"
+    ],
+    "exception_class": "org.apache.hadoop.fs.PathIOException",
+    "selected_source_line": 629,
+    "selected_throw_line": 631,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+    "throw_site": "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V@631:throw:1"
+  },
+  "target_absent_bootstrap_enabled": false,
+  "target_binding": {
+    "nodes": [
+      "hdfs-client"
+    ]
+  },
+  "target_binding_trial": 0,
+  "target_discovered_trial": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 0,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 25.533,
+      "eligible_doors_before_target": 5,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 2,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 24,
+        "coverage": 369
+      },
+      "observed_door_events": 6,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    }
+  ]
+}

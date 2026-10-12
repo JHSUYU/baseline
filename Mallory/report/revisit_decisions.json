@@ -1,0 +1,476 @@
+{
+  "schema_version": 1,
+  "description": "Case-specific decisions for the selective Mallory revisit. Cases absent here remain pending source review; they are not dismissed as low potential.",
+  "decisions": {
+    "SOLR-40": {
+      "decision": "reproduced",
+      "reason": "Accepted as reproduced: automatic closure-guided v9 injected the selected fault, reached the bound target, and produced the exact target throw plus an automatic replay on the original four-node cluster JUnit. No further SOLR-40 trial is required.",
+      "evidence": "Mallory/adapters/solr/cases/SOLR-40/GRAPH-REVISIT.md"
+    },
+    "SOLR-39": {
+      "decision": "rerun_complete_no_throw",
+      "reason": "The validated Time-routed four-server cluster test passed healthy. A 1200-second graph-guided rerun completed 25 effective fault trials; 20 retained the target and none threw the selected exception.",
+      "evidence": "Mallory/adapters/solr/cases/SOLR-39/graph-auto-v1/README.md"
+    },
+  "SOLR-09": {
+      "decision": "prior_baseline_reproduced_graph_not_reproduced",
+      "reason": "The earlier actor-aware CrashFuzz exact replay reproduced a stale selected-reader failure. Five Mallory graph-directed timing variants have now completed 60 fresh fault trials, including 28 full effective injections and 22 postfault target reaches, without an exact target throw. Further repetition of these selectors is not selected; the positive prior-baseline witness remains separate.",
+      "evidence": "Mallory/adapters/solr/cases/SOLR-09/GRAPH-REVISIT.md"
+    },
+  "HBASE-32": {
+      "decision": "reproduced_candidate_novelty_pending",
+      "reason": "The expected injected target rethrow is not the bug oracle. Two strict same-plan, actor-bound runs instead showed 600-second pre-SCP recovery noncompletion, while a same-role strict control completed. The source-backed wait is credible but eventual recovery and overlap with known HBase issues remain unresolved; no repeat of the completed bounded runs is selected.",
+      "evidence": "data/crashfuzz/reviews/campaign-audits/hbase32-role-v3-three-run-independent-review-2026-10-07.md"
+    },
+    "HDFS-11": {
+      "decision": "workload_gap",
+      "reason": "The existing shortened-key-rotation MiniCluster test throws the selected exception without faults; no reviewed original JUnit combines rotation, a pretarget update, target reach, and a zero-throw healthy run.",
+      "evidence": "Mallory/adapters/hdfs/cases/next-v31/HDFS-11-key-rotation-existing-test-gap-v32.md"
+    },
+    "HDFS-48": {
+      "decision": "not_selected",
+      "reason": "The exact pretarget rename RPC IOException prevents the NameNode target; reviewed alternate tests lack the snapshot-reference precondition or retry path.",
+      "evidence": "Mallory/adapters/hdfs/cases/hdfs48-original102-source-review-v1/HDFS-48-original102-source-review.md"
+    },
+    "HDFS-29": {
+      "decision": "not_selected",
+      "reason": "A clean named three-DataNode healthy seed and observed replica-RPC paths were validated. Those replica RPC exceptions affect recovery participation, not the local DataNode block-pool map tested by the selected null guard; no typed removal path was found.",
+      "evidence": "Mallory/adapters/hdfs/cases/next-v16/HDFS-29-v16-node2-review.md"
+    },
+  "HDFS-30": {
+      "decision": "workload_gap",
+      "reason": "The active-NameNode null guard could involve a queued recovery worker and a later heartbeat state change, but the archived passing target hits have unknown DataNode identity, while a named run timed out before its clean JUnit gate. No existing selected test plus typed heartbeat/worker trace establishes the required race; generic heartbeat exceptions skip the response update and cannot justify a fault campaign.",
+      "evidence": "Mallory/adapters/hdfs/cases/hdfs30-heartbeat-control-admission-v1/README.md"
+    },
+    "HDFS-10": {
+      "decision": "not_selected",
+      "reason": "The 128-effective-trial QJM campaign already produced selected epoch-mismatch throws. Source checkWriteRequest rejects a request whose epoch is not the established writer epoch by protocol; the archived observations have no separate lost-write or recovery invariant failure.",
+      "evidence": "crashfuzz/cases/HDFS-10/README.md"
+    },
+    "HBASE-27": {
+      "decision": "not_selected",
+      "reason": "Eleven strict boot-order faults yielded nine exact throws, but source and log chronology show master abort, JUnit teardown, and region-server stop before the selected shutdown guard throws. The exception is expected after stop.",
+      "evidence": "Mallory/adapters/hbase/pilot/HBASE-27-boot-order-monitor-v1/full-v3/source-triage-v1.json"
+    },
+    "HBASE-28": {
+      "decision": "not_selected",
+      "reason": "The guard checks whether a configured numeric bind address is local before web-server I/O. The original MiniCluster test uses the default local address; no pretarget I/O fault changes that configuration value.",
+      "evidence": "Mallory/adapters/hbase/pilot/original102-source-audit-v1/HBASE-28.source-audit.json"
+    },
+    "HBASE-31": {
+      "decision": "not_selected",
+      "reason": "The selected predicate compares a request start code with the receiving RegionServer incarnation. The reviewed pre-send IOException only retries a request built from the same ServerName; the test never restarts that RegionServer or changes either operand.",
+      "evidence": "Mallory/adapters/hbase/pilot/HBASE-31-typed-admission-v1/predicate-source-gap.json"
+    },
+    "HBASE-37": {
+      "decision": "not_selected",
+      "reason": "The three exact target throws follow injected NoNode on the selected ZooKeeper read: ZKUtil intentionally returns null and MasterAddressTracker throws, while its caller converts the condition to port zero. This is an expected missing-znode guard.",
+      "evidence": "Mallory/adapters/hbase/pilot/HBASE-37-cluster-status-v1/full-v2/README.md"
+    },
+    "SOLR-15": {
+      "decision": "not_selected",
+      "reason": "The exact parent-leader-absence throw has been replayed after resource-bound connection losses, and source classifies it as the split command's protective guard. The completed depth-three campaign did not establish a distinct user-visible coordination failure.",
+      "evidence": "Mallory/adapters/solr/cases/SOLR-15/fault-bootstrap-node0-v3/README.md"
+    },
+    "HDFS-18": {
+      "decision": "workload_gap",
+      "reason": "The original passing cluster JUnit did not reach the duplicate PROVIDED-storage identity assertion. A proposed second-heartbeat adaptation has not yet produced a passing, exact-target healthy seed, so no fault campaign is admissible.",
+      "evidence": "Mallory/adapters/hdfs/cases/original102-source-audit-v2/review.json"
+    },
+    "HDFS-20": {
+      "decision": "not_selected",
+      "reason": "A new original MiniDFSCluster healthy run proved the tokenized NameNode-response-to-target path. The available IOException door fires before sendHeartbeat returns; it cannot create the lower transaction-ID response from the already active NameNode required to violate the assertion. No generic exception rerun is justified.",
+      "evidence": "Mallory/adapters/hdfs/cases/hdfs20-response-scope-healthy-v1/README.md"
+    },
+    "HBASE-16": {
+      "decision": "not_selected",
+      "reason": "The selected CLOSING-state exception intentionally backs off while ServerCrashProcedure handles a restarted RegionServer. The existing recovery workload already ran 73 trials with 63 strict target retentions and no exact throw; no distinct progress violation is evidenced.",
+      "evidence": "Mallory/adapters/hbase/pilot/HBASE-pending-source-triage-v1.json"
+    },
+    "HBASE-18": {
+      "decision": "not_selected",
+      "reason": "The selected confirmOpened exception is an intentional backoff after repeated failed opens; the 80-trial campaign retained the exact target 31 times without throwing. Further exceptions need a separate stuck-region outcome, not just a larger generic fault budget.",
+      "evidence": "data/mallory/cases/HBASE-18/result.json"
+    },
+  "ZOOKEEPER-04": {
+      "decision": "workload_gap",
+      "reason": "The three-peer test writes through a different client while the reconnecting client is down. An alternate five-peer healthy JUnit passed and reached the named guard once, but that check occurred before all test writes and was never revisited. Neither existing test yields a same-client write followed by reconnect at this guard; no fault campaign was admitted.",
+      "evidence": "Mallory/adapters/zookeeper/cases/ZOOKEEPER-04-leader-shutdown-healthy-v1/README.md"
+    },
+    "ZOOKEEPER-05": {
+      "decision": "not_selected",
+      "reason": "The leader-registration method checks and persists the proposed epoch before the selected Follower guard; a packet I/O exception exits earlier. Six strict fault attempts lost the same follower target, so the current protocol/test lacks a target-retaining fault path.",
+      "evidence": "Mallory/adapters/zookeeper/cases/ZOOKEEPER-05-protocol-guard-review-v1/README.md"
+    },
+    "ZOOKEEPER-11": {
+      "decision": "not_selected",
+      "reason": "The selected startup predicate is a local currentEpoch.tmp existence check. The 76-trial campaign found no throw; an exception on the preceding file read erases that check, and packet faults lack observed provenance to this persisted file state.",
+      "evidence": "Mallory/adapters/zookeeper/cases/ZOOKEEPER-11-epoch-causal-precision-audit-v1.md"
+    },
+    "ZOOKEEPER-12": {
+      "decision": "not_selected",
+      "reason": "A typed FileNotFoundException pilot retained the acceptedEpoch/currentEpoch comparison in four target occurrences, but the 18-trial campaign exhausted its queue without a selected throw. The guard would reject inconsistent persisted epoch values as designed; no separate recovery failure is evidenced.",
+      "evidence": "Mallory/adapters/zookeeper/ZOOKEEPER-12-filenotfound-pilot-operand-review.md"
+    },
+    "HDFS-22": {
+      "decision": "not_selected",
+      "reason": "The check compares persisted block-pool namespace ID with NameNode NamespaceInfo during DataNode startup. Eighty actor-qualified target-retaining trials found no throw; the unchanged test's deliberately incompatible VERSION states are expected refusals rather than an I/O-induced coordination failure.",
+      "evidence": "crashfuzz/cases/HDFS-22/README.md"
+    },
+    "HDFS-23": {
+      "decision": "not_selected",
+      "reason": "The check compares the persisted block-pool ID with NamespaceInfo at startup. The actor-qualified 80-trial campaign retained this guard without throwing; fault exceptions do not rewrite either ID, and the test's incompatible VERSION rejection is intentional.",
+      "evidence": "crashfuzz/cases/HDFS-23/README.md"
+    },
+    "HDFS-24": {
+      "decision": "not_selected",
+      "reason": "The layout-version/cTime compatibility guard is deliberately triggered by invalid VERSION fixtures in the original startup test. Its prior 80-trial figures have coarse actor identity, but the selected failure is a local persisted-version refusal with no new source-backed fault-to-operand path.",
+      "evidence": "crashfuzz/cases/HDFS-24/README.md"
+    },
+    "HDFS-25": {
+      "decision": "not_selected",
+      "reason": "The DataNode cTime guard compares a persisted storage property with NamespaceInfo; eighty actor-qualified target-retaining trials found no exception. The test's deliberate incompatible VERSION fixtures explain expected startup refusals.",
+      "evidence": "crashfuzz/cases/HDFS-25/README.md"
+    },
+    "HDFS-26": {
+      "decision": "not_selected",
+      "reason": "The rollback guard compares on-disk previous layout/cTime with namespace metadata. Prior faults retained the target but no selected throw; no reviewed I/O exception changes the stored version values while allowing the same rollback check to continue.",
+      "evidence": "crashfuzz/cases/HDFS-26/README.md"
+    },
+    "HDFS-27": {
+      "decision": "not_selected",
+      "reason": "The upgrade assertion compares local namespace ID against NamespaceInfo in one DataNode startup. Prior 80 trials gave no target failure and the available exceptions do not change either ID before the same check.",
+      "evidence": "crashfuzz/cases/HDFS-27/README.md"
+    },
+    "HDFS-34": {
+      "decision": "not_selected",
+      "reason": "The nonfederated namespace-ID check intentionally rejects incompatible VERSION fixtures; the original healthy test already observes its IOException. Further coarse-actor trial repeats would not distinguish a new fault-induced defect.",
+      "evidence": "crashfuzz/cases/HDFS-34/README.md"
+    },
+    "HDFS-35": {
+      "decision": "not_selected",
+      "reason": "The federated cluster-ID compatibility guard remained nonthrowing across 80 prior fault trials. The available RPC/read exceptions do not create a different persisted cluster ID while preserving the same startup path.",
+      "evidence": "crashfuzz/cases/HDFS-35/README.md"
+    },
+    "HDFS-37": {
+      "decision": "not_selected",
+      "reason": "The rollback VERSION guard intentionally rejects incompatible previous storage in the original test, which already throws without faults. Existing coarse-actor trials do not provide a new causal path to a different persisted layout or cTime.",
+      "evidence": "crashfuzz/cases/HDFS-37/README.md"
+    },
+    "HBASE-13": {
+      "decision": "not_selected",
+      "reason": "The merge procedure's META marker check stayed normal in 80 same-region, target-retaining trials. The source-relevant REGION_INFO IOException aborted preparation before another selected check; it did not create a merge marker.",
+      "evidence": "crashfuzz/cases/HBASE-13/README.md"
+    },
+    "HBASE-14": {
+      "decision": "not_selected",
+      "reason": "The merge procedure's RegionStates null check stayed normal in 80 same-region trials. A precise REGION_INFO IOException ended preparation before the next target rather than deleting the region-state entry.",
+      "evidence": "crashfuzz/cases/HBASE-14/README.md"
+    },
+    "HBASE-15": {
+      "decision": "not_selected",
+      "reason": "The merge procedure's opened-state guard stayed normal in 80 same-region trials; the tested I/O faults did not close either region while allowing the same preparation to continue.",
+      "evidence": "crashfuzz/cases/HBASE-15/README.md"
+    },
+    "HBASE-19": {
+      "decision": "not_selected",
+      "reason": "The selected column-family-count exception occurs in the original invalid ModifyTable workload without faults. Faulted throws retained that expected signature and did not reveal a new table-state violation.",
+      "evidence": "crashfuzz/cases/HBASE-19/README.md"
+    },
+    "HBASE-20": {
+      "decision": "not_selected",
+      "reason": "The coprocessor-modification guard intentionally throws in the original invalid ModifyTable workload. The fault campaign reproduced the healthy exception signature, with no different target behavior.",
+      "evidence": "crashfuzz/cases/HBASE-20/README.md"
+    },
+    "HBASE-21": {
+      "decision": "not_selected",
+      "reason": "The namespace region-quota check throws for an explicit quota violation in the healthy JUnit; the observed exception signature remained expected after injected faults.",
+      "evidence": "crashfuzz/cases/HBASE-21/README.md"
+    },
+    "HBASE-22": {
+      "decision": "not_selected",
+      "reason": "The namespace table/region quota check intentionally rejects the over-limit fixture in the healthy JUnit. Eighty trials did not produce a new selected exception signature or separate quota inconsistency.",
+      "evidence": "crashfuzz/cases/HBASE-22/README.md"
+    },
+    "HBASE-29": {
+      "decision": "not_selected",
+      "reason": "The WAL replay guard compares each entry's encoded region with the request region. Eighty-one faulted JUnit runs kept the normal branch; RPC exceptions do not rewrite the encoded region identity in a retained replay request.",
+      "evidence": "crashfuzz/cases/HBASE-29/README.md"
+    },
+    "HBASE-30": {
+      "decision": "not_selected",
+      "reason": "The check propagates a local HRegion.batchReplay operation status, and all 80,000 sampled statuses across 80 target-retaining fault trials were SUCCESS. It is a local status guard without an observed control-plane mismatch path.",
+      "evidence": "crashfuzz/cases/HBASE-30/README.md"
+    },
+    "HBASE-34": {
+      "decision": "workload_gap",
+      "reason": "The original token-authentication JUnit uses a present master key, and 80 SASL-frame faults retained the lookup without removing that key. The available workload does not combine key rotation/removal with a later token validation on the same cluster.",
+      "evidence": "crashfuzz/cases/HBASE-34/README.md"
+    },
+    "HDFS-01": {
+      "decision": "not_selected",
+      "reason": "The three-DataNode positional-read test has no concurrent truncate/delete to make a successful NameNode block-location response empty at a valid offset. A 128-trial campaign retained 98 exact checks without an EOF throw and had no late I/O/coverage novelty.",
+      "evidence": "crashfuzz/cases/HDFS-01/README.md"
+    },
+    "HDFS-07": {
+      "decision": "not_selected",
+      "reason": "The acceptRecovery assertion protects a committed transaction from a shorter replacement. The actor-aware three-JournalNode campaign retained 128 checks and never triggered it; late coverage novelty was outside a source-backed committed-txid violation path.",
+      "evidence": "crashfuzz/cases/HDFS-07/README.md"
+    },
+    "HDFS-08": {
+      "decision": "not_selected",
+      "reason": "Journal.checkRequest intentionally fences requests carrying an epoch lower than lastPromisedEpoch. The completed actor-aware campaign found no exact throw, and a stale writer rejection would need an external write-loss symptom before counting as a bug.",
+      "evidence": "crashfuzz/cases/HDFS-08/README.md"
+    },
+    "HDFS-09": {
+      "decision": "not_selected",
+      "reason": "Journal.checkRequest protects committedTxnId monotonicity; the actor-aware campaign completed 128 effective target retentions without a selected violation. No observed fault mutates a retained request into a lower committed transaction ID.",
+      "evidence": "crashfuzz/cases/HDFS-09/README.md"
+    },
+    "HDFS-15": {
+      "decision": "not_selected",
+      "reason": "BlockInfo.commitBlock compares immutable block IDs from the stored block and commit message. Eighty target-directed I/O trials found no mismatch or late novelty; a generic exception does not alter either ID on the retained commit path.",
+      "evidence": "crashfuzz/cases/HDFS-15/README.md"
+    },
+    "HDFS-16": {
+      "decision": "not_selected",
+      "reason": "The selected under-construction precondition is a local BlockInfo invariant. Eighty same-actor, same-block postfault trials produced no target exception; 25 target retentions were only commit/cleanup calls, so more generic registration faults have weak causal leverage.",
+      "evidence": "crashfuzz/cases/HDFS-16/actor-v3/README.md"
+    },
+    "HDFS-17": {
+      "decision": "not_selected",
+      "reason": "The constructor's incomplete-block precondition is implied by its only predecessor branch under the NameNode write lock. A precise block-report fault retained nine checks but cannot falsify that source implication.",
+      "evidence": "crashfuzz/cases/HDFS-17/README.md"
+    },
+    "HDFS-19": {
+      "decision": "not_selected",
+      "reason": "The command block-pool ID check validates a NameNode command against the DataNode offer service receiving it. Existing heartbeat exceptions do not rewrite the command's block-pool ID while preserving processing of that same command.",
+      "evidence": "crashfuzz/cases/HDFS-19/README.md"
+    },
+    "HDFS-21": {
+      "decision": "not_selected",
+      "reason": "The NameNode-version guard compares the returned NamespaceInfo version with a local configured minimum. RPC I/O failures prevent receipt; they do not change a successfully returned version or the local minimum in the same check.",
+      "evidence": "crashfuzz/cases/HDFS-21/README.md"
+    },
+    "HDFS-28": {
+      "decision": "not_selected",
+      "reason": "The block-recovery target reads the local DataNode block-pool offer-service map, the same state as HDFS-29. Existing replica RPC faults affect recovery participation but have no observed path to removing the local map entry before this lookup.",
+      "evidence": "Mallory/adapters/hdfs/cases/next-v16/HDFS-29-v16-node2-review.md"
+    },
+    "HDFS-43": {
+      "decision": "not_selected",
+      "reason": "The original double-truncate JUnit expects the selected AlreadyBeingCreatedException for different requested lengths. Its actor-aware 80-trial campaign reproduced only that signature; a separate equal-length 128-trial campaign saw no new throw.",
+      "evidence": "crashfuzz/cases/HDFS-43/README.md"
+    },
+    "HDFS-49": {
+      "decision": "not_selected",
+      "reason": "The snapshot quota guard rejects an explicit over-quota request in the original test. Its result depends on an in-memory quota and snapshot count, with no observed I/O fault that changes either while preserving the same addSnapshot call.",
+      "evidence": "crashfuzz/cases/HDFS-49/README.md"
+    },
+    "HDFS-50": {
+      "decision": "not_selected",
+      "reason": "The same-name snapshot exception is deliberately triggered in the healthy JUnit; 22 strict postfault checks repeated only the expected duplicate-name branch.",
+      "evidence": "crashfuzz/cases/HDFS-50/README.md"
+    },
+    "HDFS-52": {
+      "decision": "not_selected",
+      "reason": "The snapshot-count comparison runs under the namesystem read lock while snapshot creation takes its write lock. A write exception aborts serialization before the guard; a later RPC fault cannot make the locked in-memory counts diverge.",
+      "evidence": "crashfuzz/cases/HDFS-52/README.md"
+    },
+    "HBASE-01": {
+      "decision": "not_selected",
+      "reason": "The meta-location guard also needs the selected server in the client's dead-server listener. Eighty strict Get/scan exception trials drove retries and branch coverage but never marked that server dead, so repeating the same I/O family cannot trigger this predicate.",
+      "evidence": "crashfuzz/cases/HBASE-01/README.md"
+    },
+    "HBASE-02": {
+      "decision": "not_selected",
+      "reason": "The selected disabled-table guard reads meta state through a six-attempt retry loop. Five faults still returned the original enabled state; six exhausted retries and lost the guard. Further orders at the same Get site cannot change the table state.",
+      "evidence": "crashfuzz/cases/HBASE-02/README.md"
+    },
+    "HBASE-04": {
+      "decision": "not_selected",
+      "reason": "The client flush precondition reads enabled TableState before sending the flush RPC. Eighty target-retaining trials covering meta state reads/writes and retries never yielded the selected disabled-state throw; late extra ordinals were not new I/O families.",
+      "evidence": "crashfuzz/cases/HBASE-04/README.md"
+    },
+    "HBASE-07": {
+      "decision": "not_selected",
+      "reason": "The original snapshot-restore JUnit disables the table before each restore. Eighty same-request trials retained the guard and original JUnit success, with no selected throw or late production/I/O novelty.",
+      "evidence": "crashfuzz/cases/HBASE-07/README.md"
+    },
+    "HBASE-08": {
+      "decision": "not_selected",
+      "reason": "The actor-bound two-master namespace campaign applied 678 ZooKeeper faults across 80 effective same-manager lookups without a missing descriptor. Transient namespace-update errors retry; watcher failures abort the master before the selected lookup.",
+      "evidence": "crashfuzz/cases/HBASE-08/README.md"
+    },
+    "HBASE-10": {
+      "decision": "not_selected",
+      "reason": "The selected in-transition procedure guard remained false in 128 effective trials. An ordinary procedure-store IOException aborts the single master and erases the target, while request/response retries did not leave a competing procedure at the same check.",
+      "evidence": "crashfuzz/cases/HBASE-10/README.md"
+    },
+    "HBASE-12": {
+      "decision": "not_selected",
+      "reason": "The disabled-table branch is preempted by an earlier region-state check after the test's synchronous disable. Ninety-eight postfault B3 checks and a separate TableState-write pilot never made B3 true; later disable writes occur after its last evaluation.",
+      "evidence": "crashfuzz/cases/HBASE-12/README.md"
+    },
+    "HBASE-17": {
+      "decision": "not_selected",
+      "reason": "The original three-RS crash/move JUnit reaches the exact abnormal-close assertion. An actor-qualified 80-effective-trial campaign found no AssertionError; its final 20 trials added no coverage or I/O family, and direct META-write failure aborts the master before the guard.",
+      "evidence": "crashfuzz/cases/HBASE-17/README.md"
+    },
+    "ZOOKEEPER-01": {
+      "decision": "not_selected",
+      "reason": "The 84-trial actor-aware campaign never threw the selected closing-session exception. Two reproducible secondary ephemeral-node assertions followed an interrupted close packet; source does not guarantee immediate session expiration after that fault, so they do not establish a target defect.",
+      "evidence": "crashfuzz/cases/ZOOKEEPER-01/README.md"
+    },
+    "ZOOKEEPER-02": {
+      "decision": "not_selected",
+      "reason": "The selected owner-mismatch guard remained normal across 80 effective same-session, same-leader postfault trials, including faults after complete client writes and server responses. Late feedback was exhausted.",
+      "evidence": "crashfuzz/cases/ZOOKEEPER-02/README.md"
+    },
+    "ZOOKEEPER-03": {
+      "decision": "not_selected",
+      "reason": "Multiple original session-move and session-upgrade cluster JUnits produced 174 actor-bound postfault checks across 930 selected trials without the session-expired throw. A quorum response fault usually loses the target rather than changing ownership on a retained request.",
+      "evidence": "crashfuzz/cases/ZOOKEEPER-03/README.md"
+    },
+    "ZOOKEEPER-06": {
+      "decision": "not_selected",
+      "reason": "The leader's follower-ahead check compares the ACKEPOCH state summary with its own summary. The 128-trial rolling-restart campaign retained 85 exact checks with no selected throw or new stable I/O family; an ahead follower rejection is protective protocol behavior.",
+      "evidence": "crashfuzz/cases/ZOOKEEPER-06/README.md"
+    },
+    "ZOOKEEPER-07": {
+      "decision": "not_selected",
+      "reason": "The learner rejects a leader epoch below its persisted accepted epoch by protocol. Eighty I/O fault trials retained 63 checks without a selected throw, and the final 20 added no coverage or I/O family.",
+      "evidence": "crashfuzz/cases/ZOOKEEPER-07/README.md"
+    },
+    "ZOOKEEPER-13": {
+      "decision": "not_selected",
+      "reason": "The original read-only-mode JUnit expects this global-session rejection. Eighty actor/session-bound postfault checks gave only the same protective CloseRequestException, with no new normalized I/O family or separate failure.",
+      "evidence": "crashfuzz/cases/ZOOKEEPER-13/README.md"
+    },
+    "SOLR-01": {
+      "decision": "not_selected",
+      "reason": "The actor-aware 80-trial campaign reproduced the selected getAliases throw only when all three live LISTALIASES endpoints were faulted. The source explicitly raises it after exhausting every endpoint, so it is expected unavailability.",
+      "evidence": "crashfuzz/cases/SOLR-01/README.md"
+    },
+    "SOLR-05": {
+      "decision": "not_selected",
+      "reason": "The selected register null guard needs removal of a replica between wait and reread, but this original test only adds replicas. Actor-bound local and Overseer-write fault queues exhausted without its throw. A separately replayed extra-replica outcome is preserved as an adjacent candidate, not this guard.",
+      "evidence": "crashfuzz/cases/SOLR-05/actor-upstream/POST_WRITE_REVIEW.md"
+    },
+    "SOLR-06": {
+      "decision": "not_selected",
+      "reason": "The original test and 128 actor-bound PULL-replica fault retentions never made a PULL replica leader. Its selected assertion remained false, and late fault/coverage novelty was exhausted.",
+      "evidence": "crashfuzz/cases/SOLR-06/README.md"
+    },
+    "SOLR-07": {
+      "decision": "not_selected",
+      "reason": "The selected guard checks whether CoreContainer.getCore returned null, which requires the local core to be unavailable. All six historical exact throws followed the original JUnit's teardown after CREATE timed out. A state.json read exception alone does not remove that local core, so another state-read timing sweep lacks a source-backed active-cluster failure path.",
+      "evidence": "crashfuzz/cases/SOLR-07/README.md"
+    },
+    "SOLR-10": {
+      "decision": "not_selected",
+      "reason": "The routed-alias guard needs router.type absent after metadata refresh. Prior alias/Overseer ZooKeeper faults retained the check without removing that property; a retry failure exits before it, and the workload creates a valid routed alias.",
+      "evidence": "crashfuzz/cases/SOLR-10/README.md"
+    },
+    "SOLR-13": {
+      "decision": "not_selected",
+      "reason": "Two independent same-alias phases completed 160 effective trials, including cross-node Overseer alias writes, without the missing-created-collection throw. Source refreshes alias metadata after successful ensureCollection; failed writes propagate before the selected membership guard.",
+      "evidence": "crashfuzz/cases/SOLR-13/README.md"
+    },
+    "SOLR-14": {
+      "decision": "workload_gap",
+      "reason": "The first parent-leader liveness guard is reached, but audited original split JUnits stop the parent only after this read. No existing reviewed cluster test creates an early parent-loss condition that leaves this exact check target-relevant under exception-only faults.",
+      "evidence": "crashfuzz/cases/SOLR-14/README.md"
+    },
+    "SOLR-18": {
+      "decision": "not_selected",
+      "reason": "The equal-znode-version alias JSON assertion remained true in 80 same-client effective trials on a second original JUnit. No divergent payload for one version or late relevant I/O novelty was observed.",
+      "evidence": "crashfuzz/cases/SOLR-18/README.md"
+    },
+    "SOLR-19": {
+      "decision": "not_selected",
+      "reason": "The coreNodeName guard validates CREATE request/descriptor parameters before ZooKeeper existence I/O. Eighty same-core, same-CREATE-sender effective trials kept that parameter present; the workload never supplies an external properties override.",
+      "evidence": "crashfuzz/cases/SOLR-19/README.md"
+    },
+    "SOLR-21": {
+      "decision": "not_selected",
+      "reason": "The original reload test performs reload before explicit ZooKeeper session expiry. Its 128 actor-bound postfault checks all retained a nonnull replica; the untested expiry-before/concurrent-reload order is not created by the current exception-only workload.",
+      "evidence": "data/crashfuzz/cases/SOLR-21/result.json"
+    },
+    "SOLR-22": {
+      "decision": "not_selected",
+      "reason": "The check protects a local Lucene commit generation requested by replication GET_FILE_LIST. Current PULL-replica trials retained 33 checks without a stale generation throw; a generic remote read failure does not prove the caller requested a deleted generation while replication kept progressing.",
+      "evidence": "Mallory/adapters/solr/pending-source-triage-v1.md"
+    },
+  "SOLR-31": {
+      "decision": "rerun_attempted_alignment_gap",
+      "reason": "A prior same-server-reader watcher failure remains a promising candidate. The retry-faithful probe found a closer healthy state.json watcher read at the same version as the target. In fresh trials, the transient fault applied and retried successfully but the target used another reader; the exhaustion plan's selected watcher read was absent. Neither trial matched the same-reader postfault target, and no selected exception occurred.",
+      "evidence": "Mallory/adapters/solr/cases/SOLR-31/retry-faithful-v48/README.md"
+    },
+    "SOLR-34": {
+      "decision": "workload_gap",
+      "reason": "The original coordinator cluster JUnit passes and reaches pretarget synthetic-state reads, but the post-create missing-synthetic-collection inner guard remained absent in the healthy run and bounded fault bootstrap. No reviewed alternate original JUnit supplies a passing exact-target seed.",
+      "evidence": "Mallory/adapters/solr/cases/SOLR-34/source-review-after-v4.md"
+    },
+  "SOLR-36": {
+      "decision": "not_selected",
+      "reason": "The selected ACTIVE-child branch intentionally returns a protective 503; 45 strict exact throws passed the original JUnit. Seven nearby doc-count failures are a separate assertion, and the test increments its expected count only after an index request returns, so a timeout can leave its expectation stale even if a write applied. That adjacent result warrants separate oracle work, not more injection at this ad hoc check.",
+      "evidence": "crashfuzz/cases/SOLR-36/README.md"
+    },
+    "SOLR-37": {
+      "decision": "not_selected",
+      "reason": "SplitShardCmd creates child ranges inside the parent, and the parent sender forwards only to a child whose range it sees as a subset. Eighty-two actor-bound HTTP postfault checks never observed a non-subset range or selected throw; adjacent doc-count failures belong to SOLR-36 triage.",
+      "evidence": "crashfuzz/cases/SOLR-37/README.md"
+    },
+  "SOLR-38": {
+      "decision": "rerun_complete_no_throw",
+      "reason": "The source-backed election path is validated. Both eligible typed getChildren doors were injected in the bounded campaign; both retained the same-object descriptor path and target after the fault, and both fell through without the selected exception. The queue was exhausted for this workload, so no repeat is selected.",
+      "evidence": "Mallory/adapters/solr/cases/SOLR-38/election-v3-offline-salvage-v4/README.md"
+    },
+    "HDFS-39": {
+      "decision": "not_selected",
+      "reason": "Actor-aware 80-effective-trial campaign and exact replay classify the selected COMMITTED-block exception as a recoverable client retry; no new feedback at its extension gate.",
+      "evidence": "crashfuzz/cases/HDFS-39/README.md"
+    },
+    "HDFS-40": {
+      "decision": "not_selected",
+      "reason": "Actor-aware 128-trial campaign tested the bound block and post-stop phase with no selected under-replication throw; added budget has no specific new fault path.",
+      "evidence": "crashfuzz/cases/HDFS-40/README.md"
+    },
+    "ZOOKEEPER-10": {
+      "decision": "not_selected",
+      "reason": "The original 20,002-write observer test reached the exact guard repeatedly; the extended 128-trial campaign's last 20 trials added neither coverage nor I/O families.",
+      "evidence": "crashfuzz/cases/ZOOKEEPER-10/README.md"
+    },
+    "HBASE-35": {
+      "decision": "not_selected",
+      "reason": "The selected throw requires a duplicate hbase:meta row; scanner-open RPC exceptions were retried and cannot create that row in the mapped replication-queue test.",
+      "evidence": "crashfuzz/cases/HBASE-35/README.md"
+    },
+    "HBASE-11": {
+      "decision": "not_selected",
+      "reason": "The selected region-state exception is expected in the original test; independent contract review did not establish a client-level correctness violation from response loss.",
+      "evidence": "crashfuzz/cases/HBASE-11/README.md"
+    },
+    "HBASE-23": {
+      "decision": "not_selected",
+      "reason": "The selected branch requires a malformed nonempty reached-child payload; reviewed original cluster tests write PB-magic data, and an injected read exception follows a different handler.",
+      "evidence": "crashfuzz/cases/HBASE-23/README.md"
+    },
+    "HBASE-24": {
+      "decision": "not_selected",
+      "reason": "The selected branch validates one znode's protobuf magic; 80 effective ZooKeeper exception trials retained the guard but all payloads were valid. It is a likely static-selection false positive.",
+      "evidence": "crashfuzz/cases/HBASE-24/README.md"
+    },
+    "HDFS-12": {
+      "decision": "not_selected",
+      "reason": "The actor-bound key-update, local-key-apply, and SASL-read campaign reached 80 effective trials with no null-key throw and no late coverage or I/O novelty.",
+      "evidence": "crashfuzz/cases/HDFS-12/README.md"
+    },
+    "HDFS-14": {
+      "decision": "not_selected",
+      "reason": "The selected check compares a recomputed password with the token's carried password; 128 exact fault sequences retained 51 comparisons and all matched. Exception-only SASL faults do not mutate either password.",
+      "evidence": "crashfuzz/cases/HDFS-14/README.md"
+    }
+  }
+}

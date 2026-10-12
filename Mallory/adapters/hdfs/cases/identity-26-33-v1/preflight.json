@@ -1,0 +1,173 @@
+{
+  "admission": "Build patched adapter in a fresh isolated checkout and substitute template placeholders with SHA-pinned built artifacts. Dispatch may admit one healthy run per case; no fault trial or full fuzz.",
+  "healthy_gate": {
+    "exact_nonthrowing_target_on_named_dn": true,
+    "junit_errors": 0,
+    "junit_failures": 0,
+    "junit_tests": 1,
+    "no_unknown_target_identity_gap": true,
+    "root_free_event_time_path": true
+  },
+  "healthy_templates": {
+    "HDFS-26": {
+      "base": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-triage-v1/HDFS-26-healthy-only.json",
+        "sha256": "4049818a7284fcc2a8f0bac1734885d1d347bc5b00a19bd9e9f507b7c98560eb"
+      },
+      "template": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-26-33-v1/HDFS-26-healthy-only.template.json",
+        "sha256": "e309c1a49c302cc06097440be24c2dc1fee5a9712c87d905805b475aa542845c"
+      }
+    },
+    "HDFS-33": {
+      "base": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-triage-v1/HDFS-33-healthy-only.json",
+        "sha256": "4179caab846cc3a2fc42bafbaeeaea80f6d35fb45357cea6ac619407cf96d638"
+      },
+      "template": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-26-33-v1/HDFS-33-healthy-only.template.json",
+        "sha256": "fc2aae5fc7ed6cb6ad6bcc4ab53a33a151543f7484797af5968e8f5b01dde5d8"
+      }
+    }
+  },
+  "identity_claim": "Configuration object used by one MiniDFSCluster DataNode startup is staged before DataNode construction; the same object's DataNode and DataStorage are registered before block-pool threads start. Later registration must agree on cluster index/epoch.",
+  "no_jvm_or_fault_trial_launched": true,
+  "patches": {
+    "hooks": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-26-33-v1/hdfs-hooks-early-dn.patch",
+      "sha256": "1641199a4b15e1a6d15d8c1667dbe07beaace1cdf00f662154328d23e1344857"
+    },
+    "transformer": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/identity-26-33-v1/hdfs-transformer-early-dn.patch",
+      "sha256": "7a1433c851aafb328a68807ba024fa291e20c5b82b13f7a6cc4eff7e5afc526f"
+    }
+  },
+  "prior_healthy": {
+    "HDFS-26": {
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-26/result.json",
+        "sha256": "cc013f906c76d58e189e44d8f87edae572eefe4cbfe70b13d23b9e7e4d2a436f"
+      },
+      "target_class_sha256": "3585869cf95c5a58dd50ffb3766bceb797c09b532d46bdc08e811ae659c520a9",
+      "target_identity_gaps": [
+        {
+          "epoch": 0,
+          "id": "HDFS-26-r0000:2819",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V:root:1",
+          "seq": 2819,
+          "site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@619:branch:3"
+        },
+        {
+          "epoch": 0,
+          "id": "HDFS-26-r0000:2821",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V:root:1",
+          "seq": 2821,
+          "site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@620:branch:4"
+        },
+        {
+          "epoch": 0,
+          "id": "HDFS-26-r0000:3996",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V:root:2",
+          "seq": 3996,
+          "site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@619:branch:3"
+        },
+        {
+          "epoch": 0,
+          "id": "HDFS-26-r0000:3998",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V:root:2",
+          "seq": 3998,
+          "site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@620:branch:4"
+        },
+        {
+          "epoch": 0,
+          "id": "HDFS-26-r0000:4046",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V:root:3",
+          "seq": 4046,
+          "site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@619:branch:3"
+        },
+        {
+          "epoch": 0,
+          "id": "HDFS-26-r0000:4048",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V:root:3",
+          "seq": 4048,
+          "site": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage#doRollback(Lorg/apache/hadoop/hdfs/server/common/Storage$StorageDirectory;Lorg/apache/hadoop/hdfs/server/protocol/NamespaceInfo;)V@620:branch:4"
+        }
+      ]
+    },
+    "HDFS-33": {
+      "result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-33/result.json",
+        "sha256": "40237a90e1d33a5f23bd5668b1a3604636467b557674c091755825dffaa27ca7"
+      },
+      "target_class_sha256": "6ddba23351786ba9c6aba0e88bb4f9fb6feb9ade5bde23c66ae7c907d5aaa587",
+      "target_identity_gaps": [
+        {
+          "epoch": 0,
+          "id": "HDFS-33-r0000:304",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V:root:1",
+          "seq": 304,
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:4"
+        },
+        {
+          "epoch": 0,
+          "id": "HDFS-33-r0000:306",
+          "node": "unknown",
+          "occurrence": "unknown:0:org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V:root:1",
+          "seq": 306,
+          "site": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder#build()V@259:branch:5"
+        }
+      ]
+    }
+  },
+  "pristine_adapter": {
+    "Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsHooks.java",
+      "sha256": "7a8d2b1171b7e48701e9493fbb3a238ae60902e3eddf62e16e2880fdc9f31458"
+    },
+    "Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java": {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java",
+      "sha256": "98886c4ff83d3a9dd766f43752f3e2bc2c0ecfbd69c8e0668342abe57bd41441"
+    }
+  },
+  "schema_version": 1,
+  "source_refs": [
+    {
+      "lines": "1808-1850",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/MiniDFSCluster.java",
+      "sha256": "2583c9c9f0ad1912cfc00ba1da5b154617306bdf1b8cc5b4d658dd7c68a23338"
+    },
+    {
+      "lines": "531-595,1880-1960,3238-3261",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "sha256": "60db822a82908b520df08ebb6d2e7b8a37ddd7337b9a06ef0eb97dcd496b8de4"
+    },
+    {
+      "lines": "230-266,320-346",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "sha256": "170014db0bb1c4efd6a5be2428f880f5892b4fbc3573ea21762af26f3406b809"
+    },
+    {
+      "lines": "360-383,603-629",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+      "sha256": "3234d407e842dbc76ec4fd5c0671b39108988dfa36b6c6dea9d10f3ad949be8e"
+    },
+    {
+      "lines": "139-203",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java",
+      "sha256": "c5a5ea5ba53bc50950d7af3de48a058ecac81513fba3d231879fa36fe75cd808"
+    },
+    {
+      "lines": "403-425",
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java",
+      "sha256": "17d1e8a27b64ef0a76e189d792cbc8f9f4c52987e9859eb919d14be9cb36b678"
+    }
+  ],
+  "status": "source_only_unbuilt_no_jvm"
+}

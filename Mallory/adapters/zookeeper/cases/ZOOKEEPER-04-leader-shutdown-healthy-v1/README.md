@@ -29,3 +29,16 @@ The existing `readBool` door by itself is insufficient. Admit a full campaign
 only after a bounded fault at such a point is applied exactly and the affected
 actor still reaches the same selected guard. Preserve the healthy trace if
 any condition fails.
+
+## Healthy gate result
+
+The node1 run completed in 19.733 s. The original five-peer JUnit passed and
+the named target was reached once on `zk5` without throwing. However, the
+target event is at timestamp `869982404423549`, after just 140 recorded events:
+only 74 doors precede it, all from startup/quorum traffic or the connect path.
+The test's two `create` calls and both `setData` batches run after that first
+connect. There is no later `TARGET_CHECK` event in the 5,728-event trace.
+Consequently this test does not exhibit the required same-client write followed
+by reconnect and target check. No fault campaign is admitted from this seed.
+The preserved result and events are under
+`data/mallory/zk04_leader_shutdown_healthy_node1/ZOOKEEPER-04/`.

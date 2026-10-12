@@ -1,0 +1,130 @@
+{
+  "artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9/mallory-agent.jar",
+      "sha256": "38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-adapter-next/mallory-hdfs-adapter-v11-recovery-task.jar",
+      "sha256": "d210764e9b7f812a52a56235794677047318648b35c659fe9fb0bf014c4670e7"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/dispatch/releases/fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f/manifest.json",
+      "sha256": "30aab0d0694bf92cc4267b4ca0832d01db7cf00a8737815920a3b6904698cde8"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/test-classes/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.class",
+      "sha256": "a6459e0fcf46aa304ef1569a36789dd6df21d21ca064d7fccb6e3d209662f943"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.class",
+      "sha256": "030e863220ffd2e7df698322e9fedb68dc6cc89bb4ea302fb2cc7dcbafd2be88"
+    },
+    {
+      "path": "/users/ZhenyuLi/.mallory-worktrees/hdfs-lane2/hadoop-hdfs-project/hadoop-hdfs/target/classes/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class",
+      "sha256": "63802647e507cda8ac95931d386a25d963511d7a866222717f03025ba6856bc0"
+    },
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java",
+      "sha256": "5815550fb06429b227cd7c632bf0fe1523d0417c7da0c37105ff1c43db5ec49a"
+    },
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+      "sha256": "928a3e6d159a47a2f8c88e1720211ddf7af62129a5ed2d5a9f133f7ada60499b"
+    },
+    {
+      "path": "/users/ZhenyuLi/.graphchecker-sources/hadoop-3.4.3/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+      "sha256": "fbcb03b86822e71e451242142752706b61c3f3f096d0219f5d90344bc59bb833"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-29-30-v2/prepare.py",
+      "sha256": "de42af04c3748ff21fef149d69707fa57bbacc8f5aa1903dcc3481bf3a8e4b4b"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-29-30-v2/verify_bytecode.py",
+      "sha256": "f7f980da32c684e1f748c8034ca48b4a6a8f870df856747a20ed358bbc672ac1"
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "HDFS-29",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-29-30-v2/HDFS-29-healthy-only.json",
+        "sha256": "1ad8cf5d7018612c99280a76abca35a61e3eda925013afb5d983e3bdd7534368"
+      },
+      "fault_retains_target_verified": false,
+      "healthy_seed_verified": false,
+      "original_calibration_result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-29/trials/r0000/result.json",
+        "sha256": "02ea170cfb517e52c3a2ae34abd838ac6fc4e46546707f0b159f828ea7a2c181"
+      },
+      "original_calibration_stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-29/trials/r0000/stdout.log",
+        "sha256": "8e53a0bee0d0c8ec8e4e683f37727a898fda0d19a9e094f225cc5ada660e6fa0"
+      },
+      "original_site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-29.sites.json",
+        "sha256": "d63f037ba6b8e4b63da497d0d2ef895cc7b385b9d8accd9f016c51fafe6e3e3a"
+      },
+      "selected_door": {
+        "callee": "org.apache.hadoop.hdfs.server.protocol.InterDatanodeProtocol#initReplicaRecovery(Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)Lorg/apache/hadoop/hdfs/server/protocol/ReplicaRecoveryInfo;",
+        "clazz": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker",
+        "descriptor": "(Lorg/apache/hadoop/hdfs/server/protocol/InterDatanodeProtocol;Lorg/apache/hadoop/hdfs/server/protocol/BlockRecoveryCommand$RecoveringBlock;)Lorg/apache/hadoop/hdfs/server/protocol/ReplicaRecoveryInfo;",
+        "exception_class": "java.io.IOException",
+        "line": 561,
+        "method": "callInitReplicaRecovery"
+      },
+      "site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-29-30-v2/HDFS-29.sites.json",
+        "sha256": "a1291141eba79b62d2d5de409df54214fc26a3e5737f85a621641d3995f46bb7"
+      },
+      "source_template": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-triage-v1/HDFS-29-healthy-only.json",
+        "sha256": "1611c676020f8fcbf1e3a3e8e687a4a6c217a24dde41275113a9a68adf4aba39"
+      }
+    },
+    {
+      "case_id": "HDFS-30",
+      "config": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-29-30-v2/HDFS-30-healthy-only.json",
+        "sha256": "a6cedd31099c077e6a69949528e63ffc75d57426b6821ccffa59ad320ccc3f6c"
+      },
+      "fault_retains_target_verified": false,
+      "healthy_seed_verified": false,
+      "original_calibration_result": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-30/trials/r0000/result.json",
+        "sha256": "da9e5d68abcad353d87df2c8ea3023b28b8dd4949ff41aa880441a61aa202f6a"
+      },
+      "original_calibration_stdout": {
+        "path": "/users/ZhenyuLi/baseline/data/mallory/calibration/HDFS-30/trials/r0000/stdout.log",
+        "sha256": "5cbcee89f27f6cac6f6058822d68b1a1c630fffe86f97dc26ca38d3bdd876465"
+      },
+      "original_site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/cases/HDFS-30.sites.json",
+        "sha256": "a4d6fada34d3f354e8b58829b31ecaf60afedff4d0a92b4c768c490d200bca7c"
+      },
+      "selected_door": {
+        "callee": "org.apache.hadoop.hdfs.protocolPB.DatanodeProtocolClientSideTranslatorPB#sendHeartbeat(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeRegistration;[Lorg/apache/hadoop/hdfs/server/protocol/StorageReport;JJIIILorg/apache/hadoop/hdfs/server/protocol/VolumeFailureSummary;ZLorg/apache/hadoop/hdfs/server/protocol/SlowPeerReports;Lorg/apache/hadoop/hdfs/server/protocol/SlowDiskReports;)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;",
+        "clazz": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor",
+        "descriptor": "(Z)Lorg/apache/hadoop/hdfs/server/protocol/HeartbeatResponse;",
+        "exception_class": "java.io.IOException",
+        "line": 563,
+        "method": "sendHeartBeat"
+      },
+      "site_file": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-29-30-v2/HDFS-30.sites.json",
+        "sha256": "d47e169eb8afb389c6eb58077dae37398e8a28191ce4a8104d444186ac838102"
+      },
+      "source_template": {
+        "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/pending-triage-v1/HDFS-30-healthy-only.json",
+        "sha256": "2a39c8ae16f037f5e6d2daf2f4129e0397059fbfcd4d0b93cb14bf9ec1bc8a33"
+      }
+    }
+  ],
+  "hadoop_git_head": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "later_hdfs29_junit_failure": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/calibration_v15/HDFS-29/trials/r0000/junit-receipt.json",
+    "sha256": "633f300d7e1dff0f6546579fe7f2609d57c496a78a9dc7f2d5f6326b0ca093b8"
+  },
+  "status": "source_only_pending_healthy_admission"
+}

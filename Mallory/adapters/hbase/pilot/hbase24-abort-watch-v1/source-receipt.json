@@ -1,0 +1,65 @@
+{
+  "bytecode_check": {
+    "injected_exception_constructors": [
+      "()V"
+    ],
+    "injected_exception_superclass": "org/apache/zookeeper/KeeperException",
+    "keeper_catch": [
+      38,
+      69,
+      121,
+      "org/apache/zookeeper/KeeperException"
+    ],
+    "server_jar_sha256": "27b736c5e7a86288752c7d19ba9c9e1a026b27693068cf56c6827aa13274d696",
+    "start_call_order": [
+      [
+        "watchForAbortedProcedures",
+        360
+      ],
+      [
+        "waitForNewProcedures",
+        361
+      ]
+    ],
+    "status": "bytecode_mapping_valid",
+    "target_class_sha256": "845ed06384339ccc65b1d33c38d75a7265f4245c4b4871454a6662c24814f48b",
+    "watch_invokestatic_offset": 52,
+    "watch_source_line": 137
+  },
+  "case_id": "HBASE-24",
+  "fault_pilot_authorized_by_this_preflight": false,
+  "healthy_admitted": false,
+  "jvm_runs_by_this_preflight": 0,
+  "kind": "source_only_abort_watch_healthy_preflight",
+  "limits": [
+    "This is a source-only reachable route. The staged healthy run must observe an actual named line-137 door before the exact line-205 check on the same member, with the required causal path quality.",
+    "The line-137 abort watcher is upstream of the procedure start but is not a dataflow cause of a malformed PB prefix. An injected ConnectionLoss here would not by itself establish a target exception or coordination bug.",
+    "Direct exceptions at startNewSubprocedure lines 191 and 204 exit before line 205 for the selected member. Prior two-fault pilot retained only other members targets.",
+    "The lane9 runtime paths in healthy.json are node1 staging destinations; source files alone cannot attest their current remote contents."
+  ],
+  "proposed_door": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs#watchForAbortedProcedures()V@137:door:1",
+  "proposed_exception": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+  "same_member_source_chain": [
+    "ZKProcedureMemberRpcs.start(memberName,listener) registers the actor, then calls watchForAbortedProcedures at source lines 355-361.",
+    "A KeeperException from the listChildrenAndWatchForNewChildren call at line 137 is caught at lines 146-149 with procName=null.",
+    "ProcedureMember.controllerConnectionFailure returns for null procName at lines 206-213.",
+    "start continues to waitForNewProcedures at line 361; the test starts all four members at lines 149-155 before coordinator.startProcedure at lines 185-187.",
+    "On the subsequent acquired-node callback, that same member can enter startNewSubprocedure and evaluate the PB-magic check at line 205."
+  ],
+  "schema_version": 1,
+  "sha256": {
+    "adapter_hooks_source": "6f77dd858bfe27f42b6ecc3c823d3c0df42f955c8366ebc20749ae5c85fd2944",
+    "adapter_transformer_source": "60ca093f6dddd7e0d07ff253175505c6e751c3e764320762edba6fb9272e55e0",
+    "healthy_config": "98cc20080ca0876894b7b7df7d3a437dc6bc7dfdd8ecb13caa6cca4bbcb5c311",
+    "junit_source": "0cc57f0c0d21b679997580cc8169e1b8f70ed0bb77e8bbb6bb6d41e5bca8a2b2",
+    "local_adapter_jar": "5f83ae1146141c3559073c13fd5b9b952f09af87e4c9d83d2288fbd2c4fd2827",
+    "local_agent_jar": "07c23da7699217aa4f51c389cde3539ee241ece05efa5d11575bc5d804cf4e80",
+    "offline_verifier": "90c1c22799f1f6bc6fed8621887a4cdbfb62cdd28fe169354938c1532b25b40a",
+    "prior_5a_audit": "e8170a76851755caf05de4d2c90cebaeb77534c190615dda12775edced7f8121",
+    "prior_healthy_result": "ac1c3ea514d271ed5853ce578524ba6b12e81e18d82c8e68a4456bfeb5fe1477",
+    "procedure_member_source": "a6e505f0f3a5e158b2055b16baf9291f7b1bddb0c4e4b8e3fa2c7e507113e615",
+    "site_catalog": "b1976ce742c3fafded745ab3d3fa8fce9a67d469a6a3edc8c753a1f8e9b067a3",
+    "target_source": "ba0ee569fccf2a69057860800bc05a2fe1db0d5a4b368c490485ee542b0c55b2"
+  },
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631"
+}

@@ -23,6 +23,9 @@ class PlanTests(unittest.TestCase):
         faults = plan_from_receipt(receipt(), "exhaust")["faults"]
         self.assertEqual(list(range(1, 9)), [f["point"]["hit"] for f in faults])
         self.assertEqual(8, len({f["fault_id"] for f in faults}))
+        fourteen = receipt()
+        fourteen["binding"]["retry_count"] = 14
+        self.assertEqual(14, len(plan_from_receipt(fourteen, "exhaust")["faults"]))
 
     def test_rejects_unbound_or_changed_source(self):
         bad = receipt()

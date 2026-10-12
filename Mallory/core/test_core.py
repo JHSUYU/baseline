@@ -62,6 +62,22 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(len(feedback["closure_occurrences"]), 2)
         self.assertTrue(feedback["doors"][0]["in_closure"])
 
+    def test_exact_async_result_join_links_worker_to_waiting_target(self):
+        rows = (event("DOOR_OBSERVED", 1, "node1", "worker", thread_id=17),
+                event("TASK_COMPLETE", 2, "node1", "worker", thread_id=17,
+                      correlation="run:result:o7"),
+                event("TASK_JOIN", 3, "node1", "caller", thread_id=18,
+                      correlation="run:result:o7"),
+                event("TARGET_CHECK", 4, "node1", "caller", thread_id=18))
+        graph = OccurrenceGraph(rows, reject_coarse_roots=True)
+        path = graph.event_path(rows[0], rows[-1], require_edge=True)
+        self.assertEqual([("task_result", "e2", "e3")],
+                         [(edge.kind, edge.producer_event, edge.consumer_event)
+                          for edge in path])
+        other_node = dict(rows[2], node="node2")
+        self.assertIsNone(OccurrenceGraph(rows[:2] + (other_node, rows[3]))
+                          .event_path(rows[0], rows[3], require_edge=True))
+
     def test_ambiguous_rpc_never_creates_an_edge(self):
         duplicate = event("SEND", 7, "A", "other", transport="rpc", correlation="c1",
                           attempt=0, half="request", port="p")
@@ -94,14 +110,14 @@ class CoreTest(unittest.TestCase):
         sampled = (
             event("STATE_WRITE", 1, "A", "a", object="o1", key="k", version=1,
                   version_confidence="sampled"),
-            event("STATE_READ", 2, "B", "b", object="o1", key="k", version=1,
+            event("STATE_READ", 2, "A", "b", object="o1", key="k", version=1,
                   version_confidence="sampled"),
         )
         graph = OccurrenceGraph(sampled)
         self.assertEqual(graph.summary()["edges"], 0)
         self.assertEqual(graph.summary()["candidate_edges"], 1)
         self.assertEqual(next(iter(graph.candidate_edges)).certainty, "candidate")
-        target_address = '["B","0","b"]'
+        target_address = '["A","0","b"]'
         self.assertEqual(len(graph.backward_closure(target_address)), 2)
         self.assertEqual(len(graph.backward_closure(target_address,
                                                     include_candidates=False)), 1)
@@ -460,6 +476,43 @@ class CoreTest(unittest.TestCase):
         self.assertEqual(mismatch["status"], "fault_identity_mismatch")
         self.assertFalse(mismatch["target_exception_candidate"])
 
+    def test_role_relative_fault_receipts_are_rechecked_from_trace(self):
+        plan = [
+            {"fault_id": "f0", "point": {"site": "unload"}},
+            {"fault_id": "f1", "point": {"site": "children", "after_fault": 0,
+                                           "same_node_as": 0, "relative_hit": 1}},
+            {"fault_id": "f2", "point": {"site": "data", "after_fault": 1,
+                                           "same_node_as": 0, "relative_hit": 2}},
+        ]
+        events = (
+            event("DOOR_OBSERVED", 1, "node3", "work", site="unload"),
+            event("FAULT_MATCHED", 2, "node3", "work", site="unload", fault_id="f0"),
+            event("FAULT_APPLIED", 3, "node3", "work", site="unload", fault_id="f0"),
+            event("DOOR_OBSERVED", 4, "node2", "watch", site="children"),
+            event("DOOR_OBSERVED", 5, "node3", "watch", site="children"),
+            event("FAULT_MATCHED", 6, "node3", "watch", site="children", fault_id="f1"),
+            event("FAULT_APPLIED", 7, "node3", "watch", site="children", fault_id="f1"),
+            event("DOOR_OBSERVED", 8, "node3", "watch", site="data"),
+            event("DOOR_OBSERVED", 9, "node3", "watch", site="data"),
+            event("FAULT_MATCHED", 10, "node3", "watch", site="data", fault_id="f2"),
+            event("FAULT_APPLIED", 11, "node3", "watch", site="data", fault_id="f2"),
+            event("TARGET_CHECK", 12, "node3", "target", site="T#guard"),
+            event("TARGET_THROW", 13, "node3", "target", site="T#throw",
+                  exception_class="java.lang.IllegalStateException"),
+        )
+        target = {"check_sites": ["T#guard"], "throw_site": "T#throw",
+                  "exception_class": "java.lang.IllegalStateException"}
+        result = analyze(Trace(events), target, plan, return_code=1, timed_out=False)
+        self.assertTrue(result["relative_identity_valid"])
+        self.assertTrue(result["all_faults_effective"])
+        self.assertTrue(result["target_exception_candidate"])
+        wrong = [dict(row) for row in plan]
+        wrong[2]["point"] = {**plan[2]["point"], "relative_hit": 3}
+        mismatch = analyze(Trace(events), target, wrong, return_code=1, timed_out=False)
+        self.assertFalse(mismatch["relative_identity_valid"])
+        self.assertEqual("fault_identity_mismatch", mismatch["status"])
+        self.assertFalse(mismatch["target_exception_candidate"])
+
     def test_local_timeline_door_requires_strict_same_actor_occurrence_order(self):
         target = {"check_sites": ["C#guard"], "throw_site": "C#throw",
                   "exception_class": "java.io.IOException"}
@@ -483,6 +536,43 @@ class CoreTest(unittest.TestCase):
             observed = analyze(Trace((invalid, check)), target, [], return_code=0,
                                timed_out=False, allow_local_timeline_doors=True)
             self.assertEqual(observed["local_timeline_doors"], 0)
+
+    def test_node_timeline_guidance_is_temporal_only_and_opt_in(self):
+        target = {"check_sites": ["C#guard"], "throw_site": "C#throw",
+                  "exception_class": "java.io.IOException"}
+        rows = (event("DOOR_OBSERVED", 1, "zk0", "watch", site="C#read:door:1",
+                      thread_id=7, door_ordinal=1, fault_type="EXCEPTION",
+                      exception_class="java.io.IOException"),
+                event("DOOR_OBSERVED", 2, "zk1", "other", site="C#read:door:1",
+                      thread_id=9, door_ordinal=1, fault_type="EXCEPTION",
+                      exception_class="java.io.IOException"),
+                event("TARGET_CHECK", 3, "zk0", "request", site="C#guard",
+                      thread_id=8))
+        feedback = analyze(Trace(rows), target, [], return_code=0, timed_out=False,
+                           allow_node_timeline_guidance=True,
+                           require_event_time_paths=True)
+        self.assertEqual(feedback["node_timeline_candidate_doors"], 1)
+        self.assertFalse(feedback["doors"][0]["in_closure"])
+        self.assertEqual(feedback["closure_edges"], [])
+        self.assertEqual(feedback["doors"][0]["node_timeline_candidate"]["kind"],
+                         "same_node_temporal_candidate")
+        self.assertNotIn("node_timeline_candidate", feedback["doors"][1])
+        config = {"budget": {"max_faults_per_trial": 2},
+                  "fault_types": ["EXCEPTION"],
+                  "allow_node_timeline_guidance": True,
+                  "explore_outside_closure": False}
+        plans = mutate([], feedback, config)
+        self.assertEqual([row["selection_reason"] for row in plans],
+                         ["node_timeline_candidate"])
+        timeline_plan = {**plans[0], "priority": 8.0, "queued_at": 0}
+        dynamic_plan = {**plans[0], "selection_reason": "dynamic_closure",
+                        "priority": 20.0, "queued_at": 0, "signature": "other"}
+        picked = pick_next([dynamic_plan, timeline_plan], 5, 4, config)
+        self.assertEqual(picked["selection_reason"], "node_timeline_candidate")
+        default = analyze(Trace(rows), target, [], return_code=0, timed_out=False,
+                          require_event_time_paths=True)
+        self.assertNotIn("node_timeline_candidate_doors", default)
+        self.assertNotIn("node_timeline_candidate", default["doors"][0])
 
     def test_static_frontier_location_can_seed_dormant_door(self):
         feedback = {"doors": [{"point": {"site": "pkg.C#work()V@42:door:1",

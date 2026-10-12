@@ -63,6 +63,15 @@ LANES = {
     "lane9-next-h23-handoff": {"cohort": "v21", "cases": ("HBASE-23",),
                                "root_lane": "lane9-next", "source_suffix": "-handoff-fa5f-v1",
                                "release": RELEASE_FA5F},
+    "lane9-next-h23-handoff-r1": {"cohort": "v22", "cases": ("HBASE-23",),
+                                  "root_lane": "lane9-next", "source_suffix": "-handoff-fa5f-repeat01",
+                                  "release": RELEASE_FA5F},
+    "lane9-next-h23-handoff-r2": {"cohort": "v23", "cases": ("HBASE-23",),
+                                  "root_lane": "lane9-next", "source_suffix": "-handoff-fa5f-repeat02",
+                                  "release": RELEASE_FA5F},
+    "lane9-next-h07-stable-door": {"cohort": "v24", "cases": ("HBASE-07",),
+                                    "root_lane": "lane9-next", "source_suffix": "-stable-door-fa5f-v1",
+                                    "release": RELEASE_FA5F},
 }
 CORE_AUDIT_FILES = ("audit.py", "events.py", "graph.py", "feedback.py", "campaign.py")
 

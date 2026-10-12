@@ -25,6 +25,20 @@ public final class SolrHooks {
       "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState"
       + "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;)"
       + "Lorg/apache/solr/common/cloud/DocCollection;@1641:door:watcher";
+  public static final String COLLECTION_STATE_WATCH_READ_DOOR =
+      "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState"
+      + "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;)"
+      + "Lorg/apache/solr/common/cloud/DocCollection;@1641:door:state-watch-getData";
+  public static final String COLLECTION_STATE_READ_DOOR =
+      "org.apache.solr.common.cloud.ZkStateReader#fetchCollectionState"
+      + "(Ljava/lang/String;Lorg/apache/zookeeper/Watcher;Ljava/lang/String;)"
+      + "Lorg/apache/solr/common/cloud/DocCollection;@1641:door:state-getData";
+  public static final String COLLECTION_STATE_WATCH_CHILDREN_DOOR =
+      "org.apache.solr.common.cloud.ZkStateReader$StateWatcher#refreshAndWatchChildren"
+      + "()V@1405:door:state-watch-getChildren";
+  public static final String DELETE_REPLICA_UNLOAD_DOOR =
+      "org.apache.solr.handler.component.ShardRequestor#call()"
+      + "Lorg/apache/solr/handler/component/ShardResponse;@130:door:core-admin-unload";
   private static final String PREFIX = UUID.randomUUID().toString();
   private static final AtomicLong SERIAL = new AtomicLong();
   private static final Map<Object, NodeRef> CONTROLLERS = new IdentityHashMap<Object, NodeRef>();
@@ -162,16 +176,34 @@ public final class SolrHooks {
     if (watches.isEmpty()) STATE_WATCHES.remove();
   }
 
-  /** Only the selected real watcher read can receive this diagnostic fault. */
+  /** Inject at a real collection-state read with a known owning server. */
   public static void beforeQualifiedStateRead(String collection, String path, Object watcher) {
+    if (collection == null ||
+        !("/collections/" + collection + "/state.json").equals(path) ||
+        "unknown".equals(Probe.currentNode())) return;
+    // A direct read on the command thread also influences its eventual guard.
+    // It need not be nested in StateWatcher.refreshAndWatch.
+    Probe.beforeDoor(COLLECTION_STATE_READ_DOOR,
+        "org.apache.zookeeper.KeeperException$ConnectionLossException");
     Deque<StateWatch> watches = STATE_WATCHES.get();
     if (watches.isEmpty()) return;
     StateWatch active = watches.peek();
-    if (active.watcher != watcher || !FORCE_LEADER_COLLECTION.equals(collection)
-        || !collection.equals(active.collection)
-        || !("/collections/" + collection + "/state.json").equals(path)
-        || "unknown".equals(Probe.currentNode())) return;
-    Probe.beforeDoor(FORCE_LEADER_STATE_DOOR,
+    if (active.watcher != watcher || !collection.equals(active.collection)) return;
+    Probe.beforeDoor(FORCE_LEADER_COLLECTION.equals(collection)
+            ? FORCE_LEADER_STATE_DOOR : COLLECTION_STATE_WATCH_READ_DOOR,
+        "org.apache.zookeeper.KeeperException$ConnectionLossException");
+  }
+
+  /** A watched per-replica child read on the same registered server actor. */
+  public static void beforeStateWatchChildren(Object watcher) {
+    Deque<StateWatch> watches = STATE_WATCHES.get();
+    if (watches.isEmpty()) return;
+    StateWatch active = watches.peek();
+    if (active.watcher != watcher || active.collection == null ||
+        !("/collections/" + active.collection + "/state.json")
+            .equals(field(watcher, "collectionPath")) ||
+        "unknown".equals(Probe.currentNode())) return;
+    Probe.beforeDoor(COLLECTION_STATE_WATCH_CHILDREN_DOOR,
         "org.apache.zookeeper.KeeperException$ConnectionLossException");
   }
 
@@ -332,6 +364,24 @@ public final class SolrHooks {
         }
       }
     };
+  }
+
+  public static void completedShardResponse(Object response) {
+    Probe.taskComplete(response, "ShardRequestor#call");
+  }
+
+  /** Select the CoreAdmin UNLOAD request inside ShardRequestor's catch block. */
+  public static void beforeUnloadRequest(Object requestor) {
+    Object params = field(requestor, "params");
+    Object value = invokeStringArg(params, "get", "action");
+    String action = value instanceof String ? (String) value : null;
+    if (!"UNLOAD".equalsIgnoreCase(action) ||
+        "unknown".equals(Probe.currentNode())) return;
+    Probe.beforeDoor(DELETE_REPLICA_UNLOAD_DOOR, "java.io.IOException");
+  }
+
+  public static void joinedShardResponse(Object response) {
+    Probe.taskJoin(response, "HttpShardHandler#take");
   }
 
   private static void end(String expected) {

@@ -35,3 +35,25 @@ boundary does not claim that every response in the cluster is a heartbeat;
 the same-thread heartbeat call-site door and request token establish the
 selected response's role. A passing healthy gate admits a future fault-run
 design; it is not a bug report or a reinterpretation of HDFS-20 v4 traces.
+
+## Completed healthy gate and fault-scope decision
+
+The node2 run completed in 23.503 seconds. Its original MiniDFSCluster JUnit
+passed, and the exact target was reached without throwing. The copied gate at
+`data/mallory/hdfs20_response_scope_healthy_node2/healthy-response-path-gate.json`
+has `status=pass`: one tokenized NameNode response receive preceded the target
+on the same DataNode actor, epoch, and thread, with an observed event-time
+path. The trace recorded 62 heartbeat doors and 56 target checks.
+
+The selected `BPServiceActor.sendHeartBeat` door is **before** the RPC at
+`BPServiceActor.java:563`. An `IOException` there stops that iteration before
+the returned `HeartbeatResponse` reaches
+`updateActorStatesFromHeartbeat` at `BPServiceActor.java:725`. The target
+assertion at `BPOfferService.java:606` requires a response from the *already
+active* NameNode actor whose transaction ID is lower than the last accepted
+active claim. Exceptions at this pre-send door do not synthesize or reorder
+such a response. The named response path is correctly instrumented, but the
+available exception fault cannot drive the assertion's contrary operand.
+This source review does not promote HDFS-20 to another generic exception
+campaign; it would require a separately justified stale-response or response
+reordering model.

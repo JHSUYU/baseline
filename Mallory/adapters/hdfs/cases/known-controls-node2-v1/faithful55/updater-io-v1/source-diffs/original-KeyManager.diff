@@ -1,0 +1,39 @@
+--- released/KeyManager.java
++++ faithful55/original/org/apache/hadoop/hdfs/server/balancer/KeyManager.java
+@@ -84,6 +84,7 @@
+           updateInterval, tokenLifetime, blockpoolID, encryptionAlgorithm,
+           enableProtobuf);
+       this.blockTokenSecretManager.addKeys(keys);
++      Hdfs55FaithfulProbe.managerConstructed(this, namenode, blockpoolID, keys);
+ 
+       // sync block keys with NN more frequently than NN updates its block keys
+       this.blockKeyUpdater = new BlockKeyUpdater(updateInterval / 4);
+@@ -120,8 +121,10 @@
+   public DataEncryptionKey newDataEncryptionKey() {
+     if (encryptDataTransfer) {
+       synchronized (this) {
+-        if (encryptionKey == null ||
+-            encryptionKey.expiryDate < timer.now()) {
++        boolean needsRefresh = encryptionKey == null ||
++            encryptionKey.expiryDate < timer.now();
++        Hdfs55FaithfulProbe.observeKeyCheck(this, encryptionKey, needsRefresh);
++        if (needsRefresh) {
+           // Encryption Key (EK) is generated from Block Key (BK).
+           // Check if EK is expired, and generate a new one using the current BK
+           // if so, otherwise continue to use the previously generated EK.
+@@ -141,6 +144,7 @@
+               "is null." : "expired on " + encryptionKey.expiryDate));
+           encryptionKey = blockTokenSecretManager.generateDataEncryptionKey();
+         }
++        Hdfs55FaithfulProbe.observeKeyDecision(this, encryptionKey, needsRefresh);
+         return encryptionKey;
+       }
+     } else {
+@@ -177,6 +181,7 @@
+       try {
+         while (shouldRun) {
+           try {
++            Hdfs55FaithfulProbe.beforeUpdaterGetBlockKeys(KeyManager.this, namenode);
+             blockTokenSecretManager.addKeys(namenode.getBlockKeys());
+           } catch (IOException e) {
+             LOG.error("Failed to set keys", e);

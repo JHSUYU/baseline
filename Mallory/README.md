@@ -50,7 +50,15 @@ Our adaptation uses explicit region ancestry, matched RPC messages, and
 correlated task handoffs for fuzz guidance in the unit-test clusters. RPC and
 task edges require an explicit, unique correlation. Optional sampled state
 events are an extension, disabled by default; if enabled, they produce only
-candidate edges rather than a proven shared-field read-from relation.
+candidate edges rather than a proven shared-field read-from relation. Sampled
+object IDs are JVM-local, so state candidates are paired only within the same
+logical node and restart epoch. Within one JVM thread, balanced nested region
+entries and exits provide observed execution-continuation edges in both
+directions; they do not imply a join with another thread's task completion.
+The Solr adapter records a separate exact completion/join pair for a
+`ShardResponse` returned through `Future.get()`.
+An opt-in same-node timeline heuristic can rank earlier doors on unrelated
+threads for exploration; those doors remain outside the causal closure.
 Unknown node identity, unpaired messages, and missing target reach are recorded
 as gaps. A campaign is completed when it reaches its configured terminal
 budget or exhausts its fault queue; these gaps describe its result, not a
@@ -90,6 +98,6 @@ healthy trace is available. This is a workload selection decision, separate
 from `no_suitable_cluster_test`, which has additional runtime evidence; neither
 counts as a completed fuzz campaign.
 
-Run `python3 -m unittest discover -s Mallory -p 'test_*.py'` and see each
+Run `python3 -m Mallory.run_tests` and see each
 component README for its other checks. Run `python3 -m Mallory.report.build`
 after any case reaches a terminal result to refresh the table.

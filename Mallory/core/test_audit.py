@@ -25,7 +25,9 @@ class AuditTest(unittest.TestCase):
     def _archive(self, root: Path, *, causal_handoff: bool = True,
                  candidate_only_door_path: bool = False,
                  local_timeline_only: bool = False,
+                 node_timeline_only: bool = False,
                  allow_local_timeline_doors: bool = False,
+                 allow_node_timeline_guidance: bool = False,
                  reject_coarse_roots: bool = False,
                  root_source: bool = False,
                  require_event_time_paths: bool = False,
@@ -39,6 +41,7 @@ class AuditTest(unittest.TestCase):
                   "exception_class": "java.io.IOException"}
         config = {"case_id": "TEST-AUDIT", "target": target,
                   "allow_local_timeline_doors": allow_local_timeline_doors,
+                  "allow_node_timeline_guidance": allow_node_timeline_guidance,
                   "reject_coarse_roots": reject_coarse_roots,
                   "require_event_time_paths": require_event_time_paths}
         (campaign / "config.json").write_text(json.dumps(config))
@@ -61,11 +64,11 @@ class AuditTest(unittest.TestCase):
             if candidate_only_door_path:
                 events += [event("STATE_WRITE", 2, "A", "source", object="o1", key="k",
                                  version=1, version_confidence="sampled"),
-                           event("STATE_READ", 3, "B", "target", object="o1", key="k",
+                           event("STATE_READ", 3, "A", "target", object="o1", key="k",
                                  version=1, version_confidence="sampled"),
                            event("SEND", 4, "C", "other", transport="rpc",
                                  correlation="c2", port="request"),
-                           event("RECV", 5, "B", "target", transport="rpc",
+                           event("RECV", 5, "A", "target", transport="rpc",
                                  correlation="c2", port="request")]
             elif causal_handoff and not local_timeline_only:
                 events += [event("SEND", 20 if late_response else 2, "A", source_occurrence, transport="rpc",
@@ -77,7 +80,8 @@ class AuditTest(unittest.TestCase):
                                  door_ordinal=1, fault_id="f1"),
                            event("FAULT_APPLIED", 9, "A", source_occurrence, site=door_site,
                                  door_ordinal=1, fault_id="f1")]
-            target_node = "A" if local_timeline_only else "B"
+            target_node = ("A" if local_timeline_only or node_timeline_only or
+                           candidate_only_door_path else "B")
             target_occurrence = "source" if local_timeline_only else "target"
             if trial_id:
                 target_node = fault_target_node or target_node
@@ -103,6 +107,7 @@ class AuditTest(unittest.TestCase):
                                if trial_id else target, plan,
                                return_code=1 if trial_id else 0, timed_out=False,
                                allow_local_timeline_doors=allow_local_timeline_doors,
+                               allow_node_timeline_guidance=allow_node_timeline_guidance,
                                reject_coarse_roots=reject_coarse_roots,
                                require_event_time_paths=require_event_time_paths)
             coverage = set(feedback["coverage_ids"])
@@ -130,8 +135,11 @@ class AuditTest(unittest.TestCase):
                                "result": f"trials/r{trial_id:04d}/result.json"})
         summary = {"case_id": "TEST-AUDIT", "status": "budget_exhausted",
                    "target_binding": {"nodes": sorted({
-                       "A" if local_timeline_only else "B",
-                       fault_target_node or ("A" if local_timeline_only else "B")})},
+                       "A" if (local_timeline_only or node_timeline_only or
+                               candidate_only_door_path) else "B",
+                       fault_target_node or ("A" if local_timeline_only or
+                                             node_timeline_only or
+                                             candidate_only_door_path else "B")})},
                    "trials": trial_rows}
         (campaign / "result.json").write_text(json.dumps(summary))
         return campaign
@@ -252,6 +260,25 @@ class AuditTest(unittest.TestCase):
             default_audit = audit_campaign(default, root / "default-audit.json")
             self.assertFalse(default_audit["healthy_closure_proven"])
             self.assertFalse(default_audit["report_gate_passed"])
+
+    def test_node_timeline_candidate_is_audited_without_becoming_causal_proof(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            campaign = self._archive(root, causal_handoff=False,
+                                     node_timeline_only=True,
+                                     allow_node_timeline_guidance=True)
+            artifact = audit_campaign(campaign, root / "timeline-audit.json")
+            self.assertTrue(artifact["guidance_consistent"])
+            self.assertEqual(artifact["trials"][0]["node_timeline_candidate_doors"], 1)
+            self.assertEqual(artifact["healthy_observed_path_doors"], 0)
+            self.assertFalse(artifact["report_gate_passed"])
+
+            trial = campaign / "trials/r0000/result.json"
+            result = json.loads(trial.read_text())
+            result["feedback"]["doors"][0]["node_timeline_candidate"]["target_check_seq"] = 9
+            trial.write_text(json.dumps(result))
+            tampered = audit_campaign(campaign, root / "tampered-timeline-audit.json")
+            self.assertFalse(tampered["guidance_consistent"])
 
     def test_local_timeline_other_actor_or_occurrence_does_not_count(self):
         with tempfile.TemporaryDirectory() as directory:

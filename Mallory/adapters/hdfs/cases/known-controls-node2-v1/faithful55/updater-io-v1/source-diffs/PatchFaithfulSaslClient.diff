@@ -1,0 +1,20 @@
+--- released/PatchSaslClient.java
++++ faithful55/asm/PatchFaithfulSaslClient.java
+@@ -8,7 +8,7 @@
+ import org.objectweb.asm.Opcodes;
+ 
+ /** Hook exactly the six-argument outbound data-transfer SASL setup. */
+-public final class PatchSaslClient {
++public final class PatchFaithfulSaslClient {
+   public static void main(String[] args) throws Exception {
+     if (args.length != 2) throw new IllegalArgumentException("input class, overlay root");
+     int[] hooks = new int[1];
+@@ -26,7 +26,7 @@
+             super.visitVarInsn(Opcodes.ALOAD, 4);
+             super.visitVarInsn(Opcodes.ALOAD, 6);
+             super.visitMethodInsn(Opcodes.INVOKESTATIC,
+-                "org/apache/hadoop/hdfs/server/balancer/Hdfs17899Probe",
++                "org/apache/hadoop/hdfs/server/balancer/Hdfs55FaithfulProbe",
+                 "beforeSocketSend", "(Lorg/apache/hadoop/hdfs/protocol/datatransfer/sasl/DataEncryptionKeyFactory;Lorg/apache/hadoop/hdfs/protocol/DatanodeID;)V", false);
+             hooks[0]++;
+           }

@@ -93,13 +93,19 @@ def mutate(parent: list[dict[str, Any]], feedback: dict[str, Any],
     # dynamic closure has no writer or producer on that path.
     static = [d for d in feedback["doors"] if _static_match(str(d.get("site")), config)
               and d not in validated and d not in dynamic]
+    timeline = ([d for d in feedback["doors"]
+                 if d.get("node_timeline_candidate") and
+                 d not in validated and d not in dynamic and d not in static]
+                if config.get("allow_node_timeline_guidance", False) else [])
     include_outside = bool(config.get("explore_outside_closure", True))
     outside = ([d for d in feedback["doors"]
-                if d not in validated and d not in dynamic and d not in static]
+                if d not in validated and d not in dynamic and d not in static
+                and d not in timeline]
                if include_outside else [])
-    return _make_candidates(parent, validated + dynamic + static + outside,
+    return _make_candidates(parent, validated + dynamic + static + timeline + outside,
                             config, None, feedback,
-                            validated=validated, dynamic=dynamic, static=static)
+                            validated=validated, dynamic=dynamic, static=static,
+                            timeline=timeline)
 
 
 def _make_candidates(parent: list[dict[str, Any]], doors: list[dict[str, Any]],
@@ -107,7 +113,8 @@ def _make_candidates(parent: list[dict[str, Any]], doors: list[dict[str, Any]],
                      feedback: dict[str, Any], *,
                      validated: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
                      dynamic: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
-                     static: tuple[dict[str, Any], ...] | list[dict[str, Any]] = ()) -> list[dict[str, Any]]:
+                     static: tuple[dict[str, Any], ...] | list[dict[str, Any]] = (),
+                     timeline: tuple[dict[str, Any], ...] | list[dict[str, Any]] = ()) -> list[dict[str, Any]]:
     seen = {sequence_signature(parent)}
     result = []
     last_fault_seq = int(feedback.get("last_fault_seq", -1))
@@ -131,6 +138,7 @@ def _make_candidates(parent: list[dict[str, Any]], doors: list[dict[str, Any]],
                 selection_reason = reason or ("validated_recovery" if door in validated else
                                               "dynamic_closure" if door in dynamic else
                                               "static_candidate" if door in static else
+                                              "node_timeline_candidate" if door in timeline else
                                               "bounded_exploration")
                 result.append({"faults": sequence,
                                "selection_reason": selection_reason,
@@ -148,6 +156,8 @@ def score(candidate: dict[str, Any], parent_feedback: dict[str, Any],
     location = (96.0 if reason == "validated_recovery" else
                 12.0 if reason == "dynamic_closure" else
                 6.0 if reason == "static_candidate" else 1.0)
+    if reason == "node_timeline_candidate":
+        location = 4.0
     coverage = (2.0 * novelty.get("closure_coverage", 0) +
                 0.25 * novelty.get("coverage", 0) +
                 3.0 * novelty.get("closure_edges", 0))
@@ -169,6 +179,12 @@ def pick_next(queue: list[dict[str, Any]], next_trial: int,
             config.get("validated_recovery_exploration_interval", 5) == 0):
         for index, item in enumerate(queue):
             if item.get("selection_reason") != "validated_recovery":
+                return queue.pop(index)
+    if (config.get("allow_node_timeline_guidance", False) and
+            (fault_trials_completed + 1) %
+            config.get("node_timeline_exploration_interval", 5) == 0):
+        for index, item in enumerate(queue):
+            if item.get("selection_reason") == "node_timeline_candidate":
                 return queue.pop(index)
     breadth_interval = config.get("single_fault_breadth_interval")
     # Healthy-run coverage can give every initial single-fault candidate a

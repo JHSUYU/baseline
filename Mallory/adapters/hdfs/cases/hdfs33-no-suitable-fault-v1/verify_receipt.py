@@ -9,6 +9,10 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 RECEIPT = HERE / 'source-receipt.json'
+PROJECT_ROOT = HERE.parents[4]
+HISTORICAL_PROBE = ('Mallory/instrumentation/src/main/java/'
+                    'edu/uva/liftlab/mallory/instrumentation/Probe.java')
+HISTORICAL_BASELINE_COMMIT = '2df0e64fb327ec4a326efaa7e4d0081fc22f6b76'
 
 
 def digest(path):
@@ -29,7 +33,17 @@ def main():
     assert head == receipt['source_commit']
     for artifact in receipt['artifacts']:
         path = Path(artifact['path'])
-        if digest(path) != artifact['sha256']:
+        actual = digest(path)
+        if actual != artifact['sha256'] and path.resolve() == (
+                PROJECT_ROOT / HISTORICAL_PROBE).resolve():
+            # This review attests the agent source used for its archived run.
+            # Later instrumentation changes do not rewrite that historical
+            # source; verify the pinned Git blob instead of the working tree.
+            historical = subprocess.check_output(
+                ['git', '-C', str(PROJECT_ROOT), 'show',
+                 HISTORICAL_BASELINE_COMMIT + ':' + HISTORICAL_PROBE])
+            actual = hashlib.sha256(historical).hexdigest()
+        if actual != artifact['sha256']:
             raise RuntimeError(f'artifact hash mismatch: {path}')
     result_path = next(Path(a['path']) for a in receipt['artifacts']
                        if a['path'].endswith('HDFS-33-fresh-healthy-v2/trials/r0000/result.json'))

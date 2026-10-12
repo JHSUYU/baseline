@@ -1,0 +1,222 @@
+{
+  "case_id": "HDFS-54",
+  "control": {
+    "fixed_junit_log_sha256": "f401ea69b7ed68f4e458dc24bdf4601d7f274c5f2f4f2791921a3faec3ae9f85",
+    "fixed_returncode": 0,
+    "graph_used": false,
+    "mechanism": "real NN key expiry, all 3 DN key maps missing cached ID; original repeated PathIOException; fixed cache clear/retry and healthy checksum restored",
+    "original_junit_log_sha256": "d08f68df06e506b8b4b1dc13717496b7bf60ae1a3b7914dfb93fa0edba76626d",
+    "original_returncode": 1
+  },
+  "known_issue": "HDFS-17897",
+  "mallory": {
+    "exact_exception_trials": 0,
+    "fault_trials": 4,
+    "full_offline_audit_sha256": "aafa16a4c9afc7cedb9fc22827604c2dd88bfe1193e5706c1f97b1a00c4ad026",
+    "full_result_sha256": "4ced9b40ee905150f00193cba25bbd97562a8c9c30bed529a5e058014ac1ef39",
+    "healthy_eligible_doors": 5,
+    "healthy_offline_audit_sha256": "d6b966539088e75eff90e6adc7da6236a776e462e0a1f1c1178ce91f2cb384b6",
+    "healthy_seed_valid": true,
+    "healthy_status": "calibration_complete",
+    "interpretation": "Faulted original TestFileChecksum uses generic IOException and lacks encrypted transfer; failed JUnit at NN block-location door does not show stale DEK or target throw.",
+    "strict_injected_trials": 4,
+    "strict_target_trials": 3,
+    "terminal_status": "budget_exhausted",
+    "trials": [
+      {
+        "all_faults_effective": false,
+        "all_faults_matched": true,
+        "feedback_status": "observed",
+        "junit_status": "passed",
+        "plan": [],
+        "result_sha256": "7d2e65b562951700bb4dccaa4c8df19d134e2bfb7dcad5fbf871e1bcf0c7e670",
+        "target_reached": true,
+        "target_threw": false,
+        "trial": 0
+      },
+      {
+        "all_faults_effective": true,
+        "all_faults_matched": true,
+        "feedback_status": "observed",
+        "junit_status": "passed",
+        "plan": [
+          {
+            "exception_class": "java.io.IOException",
+            "fault_id": "fe451c802d3650003d2d2",
+            "fault_type": "EXCEPTION",
+            "point": {
+              "door_ordinal": 2,
+              "epoch": 0,
+              "node": "hdfs-client",
+              "site": "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#tryDatanode(Lorg/apache/hadoop/hdfs/protocol/LocatedStripedBlock;Lorg/apache/hadoop/hdfs/protocol/StripedBlockInfo;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;J)V@686:door:1"
+            }
+          }
+        ],
+        "result_sha256": "fedb8f7a0f1f40fa6470d2df6ff0175bdf4122f1fde545ffafa8c74de8d82aa1",
+        "target_reached": true,
+        "target_threw": false,
+        "trial": 1
+      },
+      {
+        "all_faults_effective": true,
+        "all_faults_matched": true,
+        "feedback_status": "target_lost",
+        "junit_status": "failed",
+        "plan": [
+          {
+            "exception_class": "java.io.IOException",
+            "fault_id": "f6ebd96230b42def4d5b5",
+            "fault_type": "EXCEPTION",
+            "point": {
+              "door_ordinal": 3,
+              "epoch": 0,
+              "node": "hdfs-client",
+              "site": "org.apache.hadoop.hdfs.DFSClient#callGetBlockLocations(Lorg/apache/hadoop/hdfs/protocol/ClientProtocol;Ljava/lang/String;JJ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlocks;@931:door:1"
+            }
+          }
+        ],
+        "result_sha256": "50f5ab8cc7cc9ba5b9cfe7e213a765ef3b33e118518e891114a251d1d5fc5941",
+        "target_reached": false,
+        "target_threw": false,
+        "trial": 2
+      },
+      {
+        "all_faults_effective": true,
+        "all_faults_matched": true,
+        "feedback_status": "observed",
+        "junit_status": "passed",
+        "plan": [
+          {
+            "exception_class": "java.io.IOException",
+            "fault_id": "f7253f9206717064ee217",
+            "fault_type": "EXCEPTION",
+            "point": {
+              "door_ordinal": 1,
+              "epoch": 0,
+              "node": "hdfs-client",
+              "site": "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#tryDatanode(Lorg/apache/hadoop/hdfs/protocol/LocatedStripedBlock;Lorg/apache/hadoop/hdfs/protocol/StripedBlockInfo;Lorg/apache/hadoop/hdfs/protocol/DatanodeInfo;J)V@686:door:1"
+            }
+          }
+        ],
+        "result_sha256": "7941830daac94207e7e862732cafc6a8c37d6c68146137090fd0a2e36b0ea4ed",
+        "target_reached": true,
+        "target_threw": false,
+        "trial": 3
+      },
+      {
+        "all_faults_effective": true,
+        "all_faults_matched": true,
+        "feedback_status": "observed",
+        "junit_status": "failed",
+        "plan": [
+          {
+            "exception_class": "java.io.IOException",
+            "fault_id": "f8d63e3567d08c2e11146",
+            "fault_type": "EXCEPTION",
+            "point": {
+              "door_ordinal": 1,
+              "epoch": 0,
+              "node": "hdfs-client",
+              "site": "org.apache.hadoop.hdfs.DFSClient#callGetBlockLocations(Lorg/apache/hadoop/hdfs/protocol/ClientProtocol;Ljava/lang/String;JJ)Lorg/apache/hadoop/hdfs/protocol/LocatedBlocks;@931:door:1"
+            }
+          }
+        ],
+        "result_sha256": "ac8fabef989ee3b13ebed71d53870d7a19a8d88d6a06661483585fae656d3d10",
+        "target_reached": true,
+        "target_threw": false,
+        "trial": 4
+      }
+    ]
+  },
+  "new_bug": false,
+  "source_commit": "9d50c6884666e794e45102260a4017bb31802e1b",
+  "source_sha256": "2fa3c4f815bfd379038cd4b9448c44f0966d982523d223f675a6ac340f20df27",
+  "typed_exception_path": {
+    "automatic_campaign": {
+      "exact_exception_trials": 0,
+      "fault_trials": 10,
+      "offline_audit_sha256": "264c978fc9be2700f08516ff52ac66210751055fa842c50f4ac6f7a833ee02c0",
+      "result_sha256": "b20eb184bc8d36301d81fbcc7ade68447de49cab875d4fda2cb93dd6c584f196",
+      "strict_injected_trials": 6,
+      "strict_target_trials": 6
+    },
+    "classification": "synthetic typed-exception differential, source-backed HDFS-17897 missing-catch path; not a new bug or faithful stale-key reproduction",
+    "fixed_comparison": {
+      "all_faults_effective": true,
+      "applied_fault_ids": [
+        "hdfs54-targeted-1",
+        "hdfs54-targeted-2",
+        "hdfs54-targeted-3"
+      ],
+      "clear_retry_branch_seen": true,
+      "events_gz_sha256": "5e67df3ed929231502341123c875abf86388880e1268473783bbfb29217291bb",
+      "junit_output_sha256": "80ec47f6ef834409aa53a0ca591b57d278bc3d04f3d21e29c6eacdd49ef20a23",
+      "junit_status": "passed",
+      "result_sha256": "24e259f88232f78bd6d280cf9b5c80c4ffa3999acd41b28d16c751ded07e37b5",
+      "second_checksum_equals_healthy": true,
+      "site_catalog_valid": true,
+      "target_class_sha256": "f1e815a72b29c5154ba514826bfa5264b8d35b80eef885c939451e1cd2a00f49",
+      "target_threw": false,
+      "trial_dir": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs17897-revisit-v1/typed-key-fixed-mapped/trials/r0001"
+    },
+    "graph_derived_three_fault_plan": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs17897-revisit-v1/typed-key-targeted/graph-derived-plan.json",
+    "healthy_seed_valid": true,
+    "limitations": [
+      "original and fixed sites differ by the added catch: connectToDN line 686 vs 694",
+      "faults are injected before actual DN SASL; this workload does not rotate keys or measure DN key-map misses",
+      "three-fault sequence was manually derived from the healthy causal graph after the 10-trial scheduler campaign found no candidate"
+    ],
+    "original_replays": [
+      {
+        "all_faults_effective": true,
+        "applied_fault_ids": [
+          "hdfs54-targeted-1",
+          "hdfs54-targeted-2",
+          "hdfs54-targeted-3"
+        ],
+        "events_gz_sha256": "ced1788e5a5a3d494e7e2c2b659538594ec90af1b5e4259d26a0b1936c52b522",
+        "junit_output_sha256": "360f6782c38b2b0e753491de9a0add6e5b8dc16929073b0f26075f97686b4377",
+        "junit_status": "failed",
+        "result_sha256": "05a3c4c71bee7dd83287f1dce4b121842196b0635e926ef280b26b91bd04e5bc",
+        "target_throw_evidence": [
+          {
+            "epoch": 0,
+            "exception_class": "org.apache.hadoop.fs.PathIOException",
+            "id": "HDFS-54-r0001:169",
+            "node": "hdfs-client",
+            "occurrence": "hdfs-client:0:org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V:root:1",
+            "seq": 169,
+            "site": "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V@631:throw:1"
+          }
+        ],
+        "trial_dir": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs17897-revisit-v1/typed-key-targeted/trials/r0001"
+      },
+      {
+        "all_faults_effective": true,
+        "applied_fault_ids": [
+          "hdfs54-targeted-1",
+          "hdfs54-targeted-2",
+          "hdfs54-targeted-3"
+        ],
+        "events_gz_sha256": "f1a944eb99d6c0056576a97034eb721633983f8304672aeaf04995f5b56cb0e3",
+        "junit_output_sha256": "6aec73f89256f16653280e0f4b98616afdd6391ba8f64a901b539173b2ba5df3",
+        "junit_status": "failed",
+        "result_sha256": "d32061c00e6e80933343ed985d6f8910b4e3c651531f79baf281fcdadc460193",
+        "target_throw_evidence": [
+          {
+            "epoch": 0,
+            "exception_class": "org.apache.hadoop.fs.PathIOException",
+            "id": "HDFS-54-r0001:169",
+            "node": "hdfs-client",
+            "occurrence": "hdfs-client:0:org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V:root:1",
+            "seq": 169,
+            "site": "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V@631:throw:1"
+          }
+        ],
+        "trial_dir": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs17897-revisit-v1/typed-key-targeted-replay/trials/r0001"
+      }
+    ],
+    "source_test": "/users/ZhenyuLi/baseline/Mallory/adapters/hdfs/cases/hdfs17897-revisit-v1/hadoop-worktree/hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestStripedChecksumFaultPath.java",
+    "workload": "case-local encrypted XOR-2-1 TestStripedChecksumFaultPath; no key expiration"
+  }
+}

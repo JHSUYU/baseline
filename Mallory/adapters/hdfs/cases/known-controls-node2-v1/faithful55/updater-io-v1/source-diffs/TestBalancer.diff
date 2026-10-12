@@ -1,0 +1,24 @@
+--- released/TestBalancer.java
++++ faithful55/test/org/apache/hadoop/hdfs/server/balancer/TestBalancer.java
+@@ -698,6 +698,8 @@
+           StartupOption.REGULAR, racks, null, capacities, false);
+       cluster.waitClusterUp();
+       cluster.waitActive();
++      Hdfs55FaithfulProbe.configure(cluster.getNamesystem()
++          .getBlockManager().getBlockTokenSecretManager());
+       client = NameNodeProxies.createProxy(conf,
+           cluster.getFileSystem(0).getUri(), ClientProtocol.class).getProxy();
+ 
+@@ -809,6 +811,12 @@
+       int excludedNodes, boolean checkExcludeNodesUtilization)
+       throws Exception {
+     waitForHeartBeat(totalDfsUsedSpace, totalCapacity, client, cluster);
++    // Choose a fresh NN key at the last boundary before Balancer startup.
++    org.apache.hadoop.hdfs.server.datanode.DataNode targetDn =
++        cluster.getDataNodes().get(cluster.getDataNodes().size() - 1);
++    Hdfs55FaithfulProbe.selectDestination(
++        targetDn.getDatanodeId().getDatanodeUuid(),
++        targetDn.getXferAddress().toString());
+ 
+     int retry = 5;
+     while (retry > 0) {

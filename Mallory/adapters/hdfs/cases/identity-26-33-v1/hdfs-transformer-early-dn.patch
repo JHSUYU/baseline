@@ -1,0 +1,96 @@
+diff --git a/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java b/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
+--- a/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
++++ b/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
+@@ -68,21 +68,52 @@
+           changed = true;
+         }
+       } else if (name.equals("org/apache/hadoop/hdfs/MiniDFSCluster")
+           && method.name.equals("startDataNodes")) {
+-        for (AbstractInsnNode instruction : method.instructions.toArray()) {
+-          if (!(instruction instanceof MethodInsnNode)) continue;
+-          MethodInsnNode call = (MethodInsnNode) instruction;
++        int constructionSites = 0;
++        int daemonSites = 0;
++        for (AbstractInsnNode instruction : method.instructions.toArray()) {
++          if (!(instruction instanceof MethodInsnNode)) continue;
++          MethodInsnNode call = (MethodInsnNode) instruction;
++          if (call.getOpcode() == Opcodes.INVOKESTATIC
++              && call.owner.equals("org/apache/hadoop/hdfs/server/datanode/DataNode")
++              && call.name.equals("instantiateDataNode")
++              && call.desc.equals("([Ljava/lang/String;Lorg/apache/hadoop/conf/Configuration;"
++                  + "Lorg/apache/hadoop/hdfs/server/datanode/SecureDataNodeStarter$SecureResources;)"
++                  + "Lorg/apache/hadoop/hdfs/server/datanode/DataNode;")) {
++            int args = method.maxLocals;
++            int config = args + 1;
++            int resources = args + 2;
++            method.maxLocals += 3;
++            InsnList hook = new InsnList();
++            hook.add(new VarInsnNode(Opcodes.ASTORE, resources));
++            hook.add(new VarInsnNode(Opcodes.ASTORE, config));
++            hook.add(new VarInsnNode(Opcodes.ASTORE, args));
++            hook.add(new VarInsnNode(Opcodes.ALOAD, 0));
++            hook.add(new VarInsnNode(Opcodes.ALOAD, config));
++            hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS,
++                "dataNodeConstructionConfigured",
++                "(Ljava/lang/Object;Ljava/lang/Object;)V", false));
++            hook.add(new VarInsnNode(Opcodes.ALOAD, args));
++            hook.add(new VarInsnNode(Opcodes.ALOAD, config));
++            hook.add(new VarInsnNode(Opcodes.ALOAD, resources));
++            method.instructions.insertBefore(instruction, hook);
++            constructionSites++;
++            changed = true;
++          }
+           if (!call.owner.equals("org/apache/hadoop/hdfs/server/datanode/DataNode")
+               || !call.name.equals("runDatanodeDaemon") || !call.desc.equals("()V")) continue;
++          daemonSites++;
+           InsnList hook = new InsnList();
+           hook.add(new InsnNode(Opcodes.DUP));
+           hook.add(new VarInsnNode(Opcodes.ALOAD, 0));
+           hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS, "dataNodeStarting",
+               "(Ljava/lang/Object;Ljava/lang/Object;)V", false));
+           method.instructions.insertBefore(instruction, hook);
+           changed = true;
+         }
++        if (constructionSites != daemonSites || constructionSites > 1)
++          throw new IllegalStateException("HDFS DataNode construction/daemon hook mismatch");
+       } else if (name.equals("org/apache/hadoop/hdfs/MiniDFSCluster")
+           && (method.name.equals("createNameNode")
+               || method.name.equals("restartNameNode"))) {
+         for (AbstractInsnNode instruction : method.instructions.toArray()) {
+@@ -325,8 +356,26 @@
+               || method.name.equals("updateActorStatesFromHeartbeat"))) {
+         wrap(method, HOOKS, "offerEnter",
+             "(Ljava/lang/Object;)L" + PROBE + "$NodeScope;", PROBE + "$NodeScope", true);
+         changed = true;
++      } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/DataNode")
++          && method.name.equals("startDataNode")) {
++        int refreshes = 0;
++        for (AbstractInsnNode instruction : method.instructions.toArray()) {
++          if (!(instruction instanceof MethodInsnNode)) continue;
++          MethodInsnNode call = (MethodInsnNode) instruction;
++          if (!call.owner.equals("org/apache/hadoop/hdfs/server/datanode/BlockPoolManager")
++              || !call.name.equals("refreshNamenodes")) continue;
++          InsnList hook = new InsnList();
++          hook.add(new VarInsnNode(Opcodes.ALOAD, 0));
++          hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, HOOKS,
++              "dataNodeConstructionReady", "(Ljava/lang/Object;)V", false));
++          method.instructions.insertBefore(instruction, hook);
++          refreshes++;
++          changed = true;
++        }
++        if (refreshes != 1)
++          throw new IllegalStateException("Expected one HDFS block-pool refresh");
+       } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/DataStorage")
+           && method.name.equals("getBlockPoolSliceStorage")) {
+         for (AbstractInsnNode instruction : method.instructions.toArray()) {
+           if (instruction.getOpcode() != Opcodes.ARETURN) continue;
+@@ -547,8 +596,9 @@
+         || name.equals("org/apache/hadoop/ipc/Client")
+         || name.equals("org/apache/hadoop/ipc/Client$Connection")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BPServiceActor")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BPOfferService")
++        || name.equals("org/apache/hadoop/hdfs/server/datanode/DataNode")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/DataStorage")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage$1")
+         || name.equals("org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker")

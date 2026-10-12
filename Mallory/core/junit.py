@@ -30,7 +30,8 @@ def runner_kind(argv: list[str]) -> str | None:
         return "surefire_xml"
     if "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit" in argv:
         return "hbase_junit_platform"
-    if any(Path(arg).name == "run_pilot.py" for arg in argv):
+    if any(Path(arg).name in {"run_pilot.py", "solr_junit_runner_v14.py"}
+           for arg in argv):
         return "solr_junit_wrapper"
     return None
 

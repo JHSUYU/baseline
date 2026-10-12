@@ -54,8 +54,13 @@ The trace uses `type`, `id`, `seq`, `node`, `epoch`, `occurrence`, `site`.
 `TARGET_CHECK` identifies an exact guard branch site. `TARGET_THROW` identifies
 the separate bytecode throw site and carries `exception_class`. A legacy
 single `site` target is accepted only when the two site names coincide.
-The Java agent names these sites `Class#method(desc)@line:branch:N` and
-`Class#method(desc)@line:throw:N`; take the ordinal from its site catalog.
+If the source says `throw helper()` and `helper()` throws internally, the
+caller's `ATHROW` instruction is never executed. Configure a target call rule
+for that invocation and use its `@line:callthrow:N` site from the runtime
+catalog; it records the exception crossing the call into the target method.
+The Java agent names these sites `Class#method(desc)@line:branch:N`,
+`Class#method(desc)@line:throw:N`, and `Class#method(desc)@line:callthrow:N`;
+take the ordinal from its site catalog.
 The target event must belong to a named region occurrence. A healthy run may
 visit the target multiple times and on several named logical nodes. The seed
 binds the set of named actors and retains a separate backward closure for each
@@ -73,6 +78,15 @@ string `coverage_ids` summaries and `METHOD`/`BRANCH` rows remain readable.
 the occurrence because RPC call IDs can change between test runs. The trace
 still keeps the full occurrence for within-run causal edges. Older agents
 without `door_ordinal` fall back to exact occurrence and `hit` matching.
+Directed multi-fault replays can instead use optional `point.after_fault`
+(zero-based earlier fault index), `point.same_node_as` (earlier fault's concrete
+node and epoch), and `point.relative_hit` (one-based count of matching doors
+after `after_fault` applies). These selectors let a later fault follow a
+runtime role without pinning an ephemeral Jetty port. The trace validator
+recounts the matching doors and rejects a receipt with the wrong ordering,
+node, epoch, or relative hit. Ordinary campaign plans still use exact door
+ordinals; a directed replay must be labeled separately from graph-discovered
+plans.
 `DOOR_OBSERVED` also carries `hit` and optionally
 `fault_type`, `fault_types`, and `exception_class`. `FAULT_MATCHED` and
 `FAULT_APPLIED` carry the plan's `fault_id`. SEND/RECV require matching
@@ -81,7 +95,15 @@ without `door_ordinal` fall back to exact occurrence and `hit` matching.
 `attempt` and `half` must agree when present. The graph accepts only unique
 complete message pairs. Missing or ambiguous pairs are counted as gaps.
 State probes installed after field or Map calls report sampled versions and
-form candidate edges, never proven read-from edges. Static candidate sites may
+form candidate edges, never proven read-from edges. Their object IDs restart
+in each JVM, so a state pair must also match node and restart epoch. Balanced
+same-thread region nesting contributes observed parent-to-child and
+child-exit-to-parent-continuation edges. An asynchronous task's completion
+does not imply a continuation edge on the submitting thread without an
+observed join. Solr's `ShardRequestor.call()` return and
+`HttpShardHandler.take()` `Future.get()` now emit `TASK_COMPLETE`/`TASK_JOIN`
+for the exact returned `ShardResponse` object; the graph pairs only a unique
+same-node, same-epoch result. Static candidate sites may
 broaden selection but are never reported as observed causal edges.
 
 The scheduler first tries fault doors within the observed target closure,
@@ -90,6 +112,55 @@ priority exploration doors outside those sets, because instrumentation gaps
 could otherwise leave a reachable target with no testable candidate. Set
 `explore_outside_closure: false` for a strict ablation. Every trial records
 the selection reason.
+
+`allow_node_timeline_guidance: true` adds a lower priority exploration class
+for a door observed before an exact target check on the same node and restart
+epoch, even when different threads have no matched handoff. Its selection
+reason is `node_timeline_candidate`; the feedback records the two event IDs,
+thread IDs and sequence numbers. This is a temporal candidate, not a graph
+edge, closure member, read-from relation, or positive causal-path report.
+When enabled, every fifth fault-trial pick reserves a slot for a queued
+timeline candidate; `node_timeline_exploration_interval` changes that interval.
+The option defaults to false and must be chosen in a new campaign config.
+`actor_miss_replays: N` optionally repeats a single fault selected from the
+dynamic target closure or the target node's timeline when it applied, the
+target ran afterward, but the target ran on another node. Only faults on a
+healthy target actor qualify.
+Each plan receives at most `N` such retries, queued below fresh candidates;
+the result keeps the `actor_miss_replay` selection reason. The default is 0.
+`target_branch_replays: N` similarly repeats an effective single fault when
+the target check executes on the faulted healthy target node without throwing.
+It records `target_branch_replay` and limits each plan to `N` such retries.
+This samples scheduling variation at a relevant fault site; it does not add
+an unobserved causal graph edge. The default is 0.
+
+In the archived SOLR-09 healthy trace, the UNLOAD request is submitted from
+the target's region to another thread and its task claim is observed, but no
+matched completion/join returns to the target thread. The low-level ZooKeeper
+reads from the earlier CrashFuzz replay are not configured as fault doors in
+that trace. The graph therefore cannot assert an UNLOAD-to-target path.
+With the new `ShardResponse` completion/join hooks, a fresh
+`DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup` cluster JUnit run
+recorded an exact UNLOAD send/receive, task completion/join, and target-check
+path. Its five-trial pilot passed offline causal audit, with one observed graph
+path door in the healthy run. Of the four fault trials, three did not match the
+chosen I/O occurrence and one matched but lost the target. No target exception
+was observed, so this pilot validates the graph repair rather than a bug claim.
+The Solr adapter now also exposes exact, typed `ConnectionLossException`
+doors at collection watch `getChildren` and `getData` reads of `state.json`
+by a known server actor. These target reads that can leave a watcher cache
+stale when their exception is caught. A separate SOLR-09 cluster JUnit pilot
+with the `getData` door observed 17 such reads in its
+healthy trace, including one in the target closure and one later same-node
+timeline candidate. In three fault trials, one selected read was unmatched,
+one matched but lost the target, and a different timeout door matched while
+the target stayed nonthrowing. The four-trial archive passed offline causal
+audit; it did not reproduce the earlier CrashFuzz candidate.
+In the archived SOLR-40 trace, the alias watch door and a later target check
+share node3 but run on different threads. Sampled reads of the alias cache do
+not prove a read-from relation or the effect of a failed watch refresh. With
+the optional timeline rule, this watch door becomes an exploration candidate
+while remaining outside the causal closure.
 
 ### Target-absent bootstrap for an existing cluster test
 

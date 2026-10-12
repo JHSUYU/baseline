@@ -1,0 +1,61 @@
+{
+  "doors": [
+    {
+      "callee": "org.apache.hadoop.hdfs.protocol.datatransfer.sasl.SaslDataTransferClient#socketSend(Ljava/net/Socket;Ljava/io/OutputStream;Ljava/io/InputStream;Lorg/apache/hadoop/hdfs/protocol/datatransfer/sasl/DataEncryptionKeyFactory;Lorg/apache/hadoop/security/token/Token;Lorg/apache/hadoop/hdfs/protocol/DatanodeID;)Lorg/apache/hadoop/hdfs/protocol/datatransfer/IOStreamPair;",
+      "clazz": "org.apache.hadoop.hdfs.server.balancer.Dispatcher$PendingMove",
+      "descriptor": "()V",
+      "exception_class": "java.io.IOException",
+      "line": 394,
+      "method": "dispatch"
+    },
+    {
+      "callee": "org.apache.hadoop.hdfs.server.protocol.NamenodeProtocol#getBlockKeys()Lorg/apache/hadoop/hdfs/security/token/block/ExportedBlockKeys;",
+      "clazz": "org.apache.hadoop.hdfs.server.balancer.KeyManager$BlockKeyUpdater",
+      "descriptor": "()V",
+      "exception_class": "java.io.IOException",
+      "line": 180,
+      "method": "run"
+    },
+    {
+      "callee": "org.apache.hadoop.hdfs.security.token.block.BlockPoolTokenSecretManager#addKeys(Ljava/lang/String;Lorg/apache/hadoop/hdfs/security/token/block/ExportedBlockKeys;)V",
+      "clazz": "org.apache.hadoop.hdfs.server.datanode.BPOfferService",
+      "descriptor": "(Lorg/apache/hadoop/hdfs/server/protocol/DatanodeCommand;Ljava/net/InetSocketAddress;)Z",
+      "exception_class": "java.io.IOException",
+      "line": 782,
+      "method": "processCommandFromActive"
+    }
+  ],
+  "nodeBindings": [],
+  "regions": [
+    {
+      "clazz": "org.apache.hadoop.hdfs.server.balancer.KeyManager",
+      "descriptor": "()Lorg/apache/hadoop/hdfs/security/token/block/DataEncryptionKey;",
+      "method": "newDataEncryptionKey"
+    },
+    {
+      "clazz": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager",
+      "descriptor": "(I[B)[B",
+      "method": "retrieveDataEncryptionKey"
+    }
+  ],
+  "targets": [
+    {
+      "clazz": "org.apache.hadoop.hdfs.server.balancer.KeyManager",
+      "descriptor": "()Lorg/apache/hadoop/hdfs/security/token/block/DataEncryptionKey;",
+      "line": 123,
+      "method": "newDataEncryptionKey"
+    },
+    {
+      "clazz": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager",
+      "descriptor": "(I[B)[B",
+      "line": 552,
+      "method": "retrieveDataEncryptionKey"
+    },
+    {
+      "clazz": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager",
+      "descriptor": "(I[B)[B",
+      "line": 555,
+      "method": "retrieveDataEncryptionKey"
+    }
+  ]
+}

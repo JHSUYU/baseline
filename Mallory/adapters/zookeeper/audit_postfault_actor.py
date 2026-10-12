@@ -2,13 +2,11 @@
 """Check exact or observed-path target retention after each applied fault."""
 
 import argparse
-from collections import defaultdict, deque
 import gzip
 import hashlib
 import json
 from pathlib import Path
 
-from Mallory.core.events import event_address
 from Mallory.core.graph import OccurrenceGraph
 
 
@@ -38,38 +36,20 @@ def trace(trial_dir: Path, result: dict) -> tuple[dict, ...]:
     return tuple(json.loads(line) for line in raw.splitlines() if line)
 
 
-def observed_path(graph: OccurrenceGraph, events: tuple[dict, ...],
-                  fault: dict, checks: list[dict]) -> list[dict]:
-    ids = {row.get("id"): row for row in events}
-    edges = defaultdict(list)
-    for edge in graph.edges:
-        producer, consumer = ids.get(edge.producer_event), ids.get(edge.consumer_event)
-        if producer is None or consumer is None:
-            continue
-        if producer["seq"] < consumer["seq"]:
-            edges[edge.source].append((edge, producer["seq"], consumer["seq"]))
-    queue = deque([(event_address(fault), fault["seq"], [])])
-    seen = set()
-    while queue:
-        address, after, path = queue.popleft()
-        if (address, after) in seen:
-            continue
-        seen.add((address, after))
-        # An unscoped node root can contain unrelated packets before and
-        # after a fault. Its chronological order is not a causal handoff.
-        occurrence = json.loads(address)[2]
-        if not isinstance(occurrence, str) or occurrence.startswith("unscoped:"):
-            continue
-        for check in checks:
-            if path and event_address(check) == address and check["seq"] > after:
-                return path
-        for edge, produced, consumed in edges[address]:
-            if produced > after and len(path) < 8:
-                queue.append((edge.target, consumed, path + [{
-                    "kind": edge.kind, "producer_event": edge.producer_event,
-                    "consumer_event": edge.consumer_event,
-                    "source": edge.source, "target": edge.target,
-                }]))
+def observed_path(graph: OccurrenceGraph, fault: dict,
+                  checks: list[dict]) -> list[dict]:
+    # Reuse the pinned core's event-time proof. It checks each edge's exact
+    # producer/consumer IDs and the JVM thread at each occurrence. A bounded
+    # thread-scoped root may be valid; a legacy actor-wide root is rejected
+    # by OccurrenceGraph(reject_coarse_roots=True).
+    for check in checks:
+        witness = graph.event_path(fault, check, require_edge=True)
+        if witness is not None:
+            return [{
+                "kind": edge.kind, "producer_event": edge.producer_event,
+                "consumer_event": edge.consumer_event,
+                "source": edge.source, "target": edge.target,
+            } for edge in witness]
     return []
 
 
@@ -89,16 +69,19 @@ def audit(campaign: Path, output: Path, superseded: Path | None) -> None:
         trial_dir = campaign / "trials" / f"r{trial['trial_id']:04d}"
         result = read(trial_dir / "result.json")
         events = trace(trial_dir, result)
-        graph = OccurrenceGraph(events)
+        graph = OccurrenceGraph(
+            events, reject_coarse_roots=bool(config.get("reject_coarse_roots", False)))
         checks = [row for row in events if row.get("type") == "TARGET_CHECK"
                   and row.get("site") in sites]
         for fault in (row for row in events if row.get("type") == "FAULT_APPLIED"):
             later = [row for row in checks if row["seq"] > fault["seq"]]
             scoped_origin = (isinstance(fault.get("occurrence"), str) and
-                             not fault["occurrence"].startswith("unscoped:"))
+                             not graph._is_coarse_root(fault) and
+                             not graph._is_legacy_unscoped(fault))
             exact = [row for row in later if scoped_origin and all(
-                row.get(key) == fault.get(key) for key in ("node", "epoch", "occurrence"))]
-            path = observed_path(graph, events, fault, later)
+                row.get(key) == fault.get(key) for key in
+                ("node", "epoch", "occurrence", "thread_id"))]
+            path = observed_path(graph, fault, later) if scoped_origin else []
             rows.append({
                 "trial_id": trial["trial_id"], "selection_reason": result.get("selection_reason"),
                 "fault_event_id": fault.get("id"), "fault_seq": fault["seq"],
@@ -113,7 +96,7 @@ def audit(campaign: Path, output: Path, superseded: Path | None) -> None:
             })
     proven = sum(row["postfault_target_causality_proven"] for row in rows)
     record = {
-        "schema_version": 1, "case_id": summary["case_id"],
+        "schema_version": 2, "case_id": summary["case_id"],
         "status": "postfault_target_causality_proven" if proven else "no_proven_postfault_target_causality",
         "pilot_result": str(summary_path.resolve()), "pilot_result_sha256": sha(summary_path),
         "original_offline_audit": str(old_audit_path.resolve()),

@@ -100,9 +100,9 @@ class GraphIndexTest(unittest.TestCase):
         for args in (("SEND", "RECV", "rpc", ("transport", "correlation", "port"),
                       ("attempt", "half"), True),
                      ("TASK_SUBMIT", "TASK_CLAIM", "task", ("correlation",),
-                      ("attempt",), True),
+                     ("attempt",), True),
                      ("STATE_WRITE", "STATE_READ", "state",
-                      ("object", "key", "version"), (), False)):
+                      ("node", "epoch", "object", "key", "version"), (), False)):
             edges, candidates, gaps = _slow_pair(rows, *args)
             expected_edges.update(edges)
             expected_candidates.update(candidates)
@@ -111,6 +111,22 @@ class GraphIndexTest(unittest.TestCase):
         self.assertEqual(expected_edges, graph.edges)
         self.assertEqual(expected_candidates, graph.candidate_edges)
         self.assertEqual(dict(expected_gaps), dict(graph.gaps))
+
+    def test_jvm_local_object_ids_do_not_join_different_nodes_or_epochs(self):
+        def state(kind, index, node, epoch, occurrence):
+            return _event(kind, index, node=node, epoch=epoch,
+                          occurrence=occurrence, object="o1", key="aliases",
+                          version=1, version_confidence="sampled")
+        rows = (state("STATE_WRITE", 1, "n0", 0, "writer"),
+                state("STATE_READ", 2, "n1", 0, "other-node"),
+                state("STATE_READ", 3, "n0", 1, "restarted"),
+                state("STATE_READ", 4, "n0", 0, "same-jvm"))
+        graph = OccurrenceGraph(rows)
+        self.assertEqual({("e1", "e4")},
+                         {(edge.producer_event, edge.consumer_event)
+                          for edge in graph.candidate_edges})
+        self.assertEqual(2, graph.gaps["state_unmatched"])
+        self.assertFalse(graph.edges)
 
     def test_pairing_performs_linear_number_of_identity_lookups(self):
         rows = tuple(_event("RECV" if index & 1 else "SEND", index,

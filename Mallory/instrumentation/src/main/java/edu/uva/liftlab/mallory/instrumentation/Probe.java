@@ -302,6 +302,24 @@ public final class Probe {
     event("TASK_CLAIM", site, fields("correlation", token, "parent_id", token));
   }
 
+  /** Pair a returned asynchronous result with its exact later consumer. */
+  public static void taskComplete(Object result, String site) {
+    if (result == null) return;
+    event("TASK_COMPLETE", site, fields("correlation", resultToken(result)));
+  }
+
+  public static void taskJoin(Object result, String site) {
+    if (result == null) return;
+    event("TASK_JOIN", site, fields("correlation", resultToken(result)));
+  }
+
+  private static String resultToken(Object result) {
+    Sink current = sink;
+    synchronized (STATE_LOCK) {
+      return (current == null ? "run" : current.runId) + ":result:" + objectId(result);
+    }
+  }
+
   public static final class ContextScope implements AutoCloseable {
     private final String previous;
     private ContextScope(String previous) { this.previous = previous; }
@@ -474,14 +492,16 @@ public final class Probe {
         "fault_type", "EXCEPTION",
         "exception_class", defaultExceptionClass));
     synchronized (plan) {
-      for (FaultPlan.Fault fault : plan.faults) {
-        if (!fault.matches(site, context.node, context.epoch, occurrence, hit, doorOrdinal)) continue;
+      for (int index = 0; index < plan.faults.size(); index++) {
+        FaultPlan.Fault fault = plan.faults.get(index);
+        if (!plan.matches(index, site, context.node, context.epoch, occurrence,
+                          hit, doorOrdinal)) continue;
         String faultType = fault.fault_type == null ? "IO_EXCEPTION" : fault.fault_type;
         if (!"IO_EXCEPTION".equals(faultType) && !"EXCEPTION".equals(faultType)
             && !"RUNTIME_EXCEPTION".equals(faultType)) continue;
         Throwable exception = exceptionFor(fault, defaultExceptionClass);
         if (exception == null) continue;
-        fault.markApplied();
+        fault.markApplied(context.node, context.epoch);
         Map<String, Object> details = fields("fault_id", fault.fault_id,
             "fault_type", faultType, "exception_class", exception.getClass().getName(),
             "hit", hit, "door_ordinal", doorOrdinal);

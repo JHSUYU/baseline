@@ -28,12 +28,25 @@ It pins scoped-root agent JAR SHA-256
 `38658059f36552f513c78087db1c0b21caa97b48c599b886a15b124c9f4a41b9`
 and immutable event-time core release
 `fa5f3bde5aef54c0253ff8d783ce107112c196d6c82ae5cd0284a2876f053d3f`.
-No JUnit has run with this configuration while ZK07 holds the lane. It enables `reject_coarse_roots` and
-`require_event_time_paths`, retaining the opt-in exact local timeline rule
-for the source-relevant file read. The fresh healthy trace must pass the
-original JUnit, loaded target class/site attestation, named actor identity,
-and offline causal audit. A one-fault pilot is then generated from that
-specific seed with `--trials 1 --max-faults-per-trial 1`; its exact door is
-selected only after reviewing the new healthy trace. Promotion requires an
-applied named fault and a postfault check in the same actor/occurrence or a
-uniquely observed handoff. A later check elsewhere does not qualify.
+It enables `reject_coarse_roots` and `require_event_time_paths`, retaining
+the opt-in exact local timeline rule for the source-relevant file read.
+
+## Fresh result
+
+The pinned healthy run completed in 39.922 seconds: existing JUnit 1/1 passed,
+loaded `QuorumPeer.class` SHA-256 matched `446279eb1dfd...`, and the exact
+nonthrowing guard ran on `zk0` epoch 2. The fa5f audit passed with one
+`observed_local_timeline` door, `readLongFromFile@2190` event 793 followed by
+the selected guard event 794 in the same occurrence and JVM thread; it found
+zero observed graph-path doors.
+
+The bounded one-fault pilot injected `IOException` at that exact door on
+`zk0` epoch 2 (fault event 734). The guard did not run afterward. Its result
+is `target_lost`, with 1/1 strict injection, zero retained target trials and
+zero target throws in 101.329 seconds; offline gate failed. Source confirms
+that the general `IOException` leaves `loadDataBase` through its outer catch
+before the epoch comparison. The existing test supplies a valid temp epoch
+file and does not restart again after the selected recovery. No full budget
+was launched. The source and SHA-bound trace receipt is
+`data/mallory/admissions/ZOOKEEPER-11-fa5f-fault-model-target-lost.json`
+(SHA-256 `fa47f1854b7d9810d3c4c3c7fe1f8d947ed9f2cf6f7750d5b14ddeb8c95e0837`).

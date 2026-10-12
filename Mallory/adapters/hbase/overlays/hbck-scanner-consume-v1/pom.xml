@@ -1,0 +1,32 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>edu.uva.liftlab.mallory</groupId>
+  <artifactId>mallory-hbck-scanner-consume</artifactId>
+  <version>1.0</version>
+  <properties>
+    <maven.compiler.source>8</maven.compiler.source>
+    <maven.compiler.target>8</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <dependencies>
+    <dependency><groupId>edu.uva.liftlab.mallory</groupId><artifactId>mallory-instrumentation</artifactId><version>1.0-SNAPSHOT</version><scope>provided</scope></dependency>
+    <dependency><groupId>org.ow2.asm</groupId><artifactId>asm</artifactId><version>9.6</version></dependency>
+    <dependency><groupId>org.ow2.asm</groupId><artifactId>asm-tree</artifactId><version>9.6</version></dependency>
+    <dependency><groupId>junit</groupId><artifactId>junit</artifactId><version>4.13.2</version><scope>test</scope></dependency>
+  </dependencies>
+  <build><plugins>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.11.0</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.2.5</version></plugin>
+    <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.5.2</version>
+      <executions><execution><phase>package</phase><goals><goal>shade</goal></goals>
+        <configuration><finalName>mallory-hbck-scanner-consume</finalName>
+          <createDependencyReducedPom>false</createDependencyReducedPom>
+          <relocations><relocation><pattern>org.objectweb.asm</pattern>
+            <shadedPattern>edu.uva.liftlab.mallory.hbase.hbckconsume.shaded.asm</shadedPattern>
+          </relocation></relocations>
+        </configuration>
+      </execution></executions>
+    </plugin>
+  </plugins></build>
+</project>

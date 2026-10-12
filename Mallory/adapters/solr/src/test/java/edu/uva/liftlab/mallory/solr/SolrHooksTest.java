@@ -2,14 +2,23 @@ package edu.uva.liftlab.mallory.solr;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import edu.uva.liftlab.mallory.instrumentation.Probe;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+import java.util.concurrent.FutureTask;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.Test;
 
 public class SolrHooksTest {
@@ -60,7 +69,11 @@ public class SolrHooksTest {
     public final class AliasesManager { }
     public final class StateWatcher {
       private final String coll;
-      StateWatcher(String coll) { this.coll = coll; }
+      private final String collectionPath;
+      StateWatcher(String coll) {
+        this.coll = coll;
+        this.collectionPath = "/collections/" + coll + "/state.json";
+      }
     }
     private final Object zkClient;
     Reader() { this(new Object()); }
@@ -80,6 +93,17 @@ public class SolrHooksTest {
       this.watcher = watcher;
       this.this$0 = client;
     }
+  }
+
+  public static final class Params {
+    private final String action;
+    Params(String action) { this.action = action; }
+    public String get(String key) { return "action".equals(key) ? action : null; }
+  }
+
+  public static final class Requestor {
+    private final Params params;
+    Requestor(String action) { params = new Params(action); }
   }
 
   @Test public void requestHeaderAndLogicalNodeArePaired() {
@@ -145,6 +169,65 @@ public class SolrHooksTest {
     assertTrue(Probe.captureContext().contains("StateWatcher.refreshAndWatch"));
     SolrHooks.endStateWatcher();
     assertEquals("unknown", Probe.currentNode());
+  }
+
+  @Test public void collectionStateWatchReadIsTypedAndOwnerBound() throws Exception {
+    Path trace = Files.createTempFile("mallory-solr-watch-read-", ".jsonl");
+    Method install = null;
+    for (Method candidate : Probe.class.getDeclaredMethods()) {
+      if ("install".equals(candidate.getName())) install = candidate;
+    }
+    assertNotNull(install);
+    install.setAccessible(true);
+    install.invoke(null, "solr-watch-read-test", trace.toFile(), null);
+    try {
+      Controller controller = new Controller();
+      SolrHooks.registerController(controller);
+      Reader.StateWatcher watcher = controller.getZkStateReader().new StateWatcher("collection1");
+      SolrHooks.beginStateWatcher(watcher);
+      try {
+        SolrHooks.beforeQualifiedStateRead("collection1",
+            "/collections/collection1/state.json", watcher);
+        SolrHooks.beforeStateWatchChildren(watcher);
+        SolrHooks.beforeQualifiedStateRead("different",
+            "/collections/collection1/state.json", watcher);
+      } finally {
+        SolrHooks.endStateWatcher();
+      }
+      try (Probe.NodeScope node = Probe.withNode("node1", 0)) {
+        SolrHooks.beforeQualifiedStateRead("collection1",
+            "/collections/collection1/state.json", null);
+        SolrHooks.beforeUnloadRequest(new Requestor("UNLOAD"));
+        SolrHooks.beforeUnloadRequest(new Requestor("STATUS"));
+      }
+      List<String> doors = Files.readAllLines(trace).stream()
+          .filter(s -> s.contains("\"type\":\"DOOR_OBSERVED\""))
+          .collect(java.util.stream.Collectors.toList());
+      assertEquals(5, doors.size());
+      assertTrue(doors.get(0).contains(SolrHooks.COLLECTION_STATE_READ_DOOR));
+      assertTrue(doors.get(1).contains(SolrHooks.COLLECTION_STATE_WATCH_READ_DOOR));
+      assertTrue(doors.get(2).contains(SolrHooks.COLLECTION_STATE_WATCH_CHILDREN_DOOR));
+      assertTrue(doors.get(3).contains(SolrHooks.COLLECTION_STATE_READ_DOOR));
+      assertTrue(doors.get(4).contains(SolrHooks.DELETE_REPLICA_UNLOAD_DOOR));
+      assertTrue(doors.get(0).contains("KeeperException$ConnectionLossException"));
+      assertTrue(doors.get(1).contains("KeeperException$ConnectionLossException"));
+      assertTrue(doors.get(2).contains("KeeperException$ConnectionLossException"));
+      assertTrue(doors.get(4).contains("java.io.IOException"));
+      assertTrue(doors.get(0).contains("\"node\":\"node1\""));
+      assertTrue(doors.get(1).contains("\"node\":\"node1\""));
+      assertEquals("unknown", Probe.currentNode());
+    } finally {
+      Field sink = Probe.class.getDeclaredField("sink");
+      sink.setAccessible(true);
+      Object writer = sink.get(null);
+      if (writer != null) {
+        Method close = writer.getClass().getDeclaredMethod("close");
+        close.setAccessible(true);
+        close.invoke(writer);
+      }
+      sink.set(null, null);
+      Files.deleteIfExists(trace);
+    }
   }
 
   @Test public void zkCallbackSubmitCarriesOnlyTheRegisteredClientOwner() {
@@ -423,6 +506,79 @@ public class SolrHooksTest {
     assertEquals("client", Probe.currentNode());
     SolrHooks.endAliasesManager();
     assertEquals("unknown", Probe.currentNode());
+  }
+
+  @Test public void shardResponseCompletionAndFutureJoinShareExactIdentity() throws Exception {
+    String requestorName = "org/apache/solr/handler/component/ShardRequestor";
+    String handlerName = "org/apache/solr/handler/component/HttpShardHandler";
+    ChildLoader loader = new ChildLoader(getClass().getClassLoader());
+    Class<?> requestor = loader.define(transformFixture(requestorName));
+    Class<?> handler = loader.define(transformFixture(handlerName));
+    Path trace = Files.createTempFile("mallory-solr-return-", ".jsonl");
+    Method install = null;
+    for (Method candidate : Probe.class.getDeclaredMethods()) {
+      if ("install".equals(candidate.getName())) install = candidate;
+    }
+    assertNotNull(install);
+    install.setAccessible(true);
+    install.invoke(null, "solr-return-test", trace.toFile(), null);
+    try {
+      FutureTask<org.apache.solr.handler.component.ShardResponse> future =
+          new FutureTask<org.apache.solr.handler.component.ShardResponse>(() -> {
+            try (Probe.NodeScope ignored = Probe.withNode("node1", 0)) {
+              return (org.apache.solr.handler.component.ShardResponse)
+                  requestor.getMethod("call").invoke(requestor.newInstance());
+            }
+          });
+      Thread worker = new Thread(future, "shard-worker");
+      worker.start();
+      Object received;
+      try (Probe.NodeScope ignored = Probe.withNode("node1", 0)) {
+        received = handler.getMethod("waitForResult").invoke(
+            handler.getConstructor(java.util.concurrent.Future.class).newInstance(future));
+      }
+      worker.join();
+      assertSame(future.get(), received);
+      List<String> lines = Files.readAllLines(trace);
+      assertTrue(lines.stream().anyMatch(s ->
+          s.contains("\"type\":\"DOOR_OBSERVED\"")
+              && s.contains(SolrHooks.DELETE_REPLICA_UNLOAD_DOOR)));
+      String completed = lines.stream().filter(s -> s.contains("\"type\":\"TASK_COMPLETE\""))
+          .findFirst().orElse(null);
+      String joined = lines.stream().filter(s -> s.contains("\"type\":\"TASK_JOIN\""))
+          .findFirst().orElse(null);
+      assertNotNull(completed);
+      assertNotNull(joined);
+      Pattern token = Pattern.compile("\\\"correlation\\\":\\\"([^\\\"]+)\\\"");
+      Matcher first = token.matcher(completed);
+      Matcher second = token.matcher(joined);
+      assertTrue(first.find());
+      assertTrue(second.find());
+      assertEquals(first.group(1), second.group(1));
+    } finally {
+      Field sink = Probe.class.getDeclaredField("sink");
+      sink.setAccessible(true);
+      Object writer = sink.get(null);
+      if (writer != null) {
+        Method close = writer.getClass().getDeclaredMethod("close");
+        close.setAccessible(true);
+        close.invoke(writer);
+      }
+      sink.set(null, null);
+      Files.deleteIfExists(trace);
+    }
+  }
+
+  private byte[] transformFixture(String name) throws Exception {
+    InputStream input = getClass().getClassLoader().getResourceAsStream(name + ".class");
+    assertNotNull(input);
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    byte[] chunk = new byte[4096];
+    for (int read; (read = input.read(chunk)) != -1;) output.write(chunk, 0, read);
+    byte[] woven = new SolrTransformer().transform(getClass().getClassLoader(), name, null,
+        null, output.toByteArray());
+    assertNotNull(woven);
+    return woven;
   }
 
   private static final class ChildLoader extends ClassLoader {

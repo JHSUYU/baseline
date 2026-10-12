@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "kind": "source_only_pending_hbase_seven_triage",
+  "source_commit": "d5f63f523c065f963992ea4e74db268d17816631",
+  "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "scope": "No JVM launched, no full campaign, no canonical table/config/runtime mutation. Evidence SHA values bind earlier immutable artifacts as observed on this node.",
+  "cases": [
+    {
+      "case_id": "HBASE-02",
+      "decision": "existing_healthy_selector_admissible_for_dispatch_review",
+      "selector": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+      "exact_guard": "ConnectionImplementation.relocateRegion @910-911",
+      "source_reason": "The test creates an enabled table, then calls relocateRegion. The guard only throws for a disabled non-META table. Healthy calibration passed one JUnit, hit two exact checks on client, with zero exact throws and one audited observed-path door.",
+      "runtime_gate": "Dispatch can consider the already staged full config after immutable artifact and fresh event-time/actor gate; only an exact @911 throw on the affected target invocation is a candidate.",
+      "source": [
+        {
+          "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
+          "sha256": "f00ec999b43227553f89ecb859ccfe28e4f901adb0f2f37552096d1f72261184"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java",
+          "sha256": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a"
+        }
+      ],
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v2/HBASE-02/result.json",
+        "sha256": "d98cad03ad76e4655674f7013d957333c58c0afa40e923a066cbf8bcc2d07245"
+      },
+      "staged_full_config": {
+        "path": "Mallory/adapters/hbase/pilot/HBASE-02-runtime-attested-full.json",
+        "sha256": "2fb91b23dc5b37465fc7a6131c9cc406e13ef10ac4b4f42c83defdbdb8b884ff"
+      }
+    },
+    {
+      "case_id": "HBASE-10",
+      "decision": "existing_healthy_selector_admissible_for_dispatch_review",
+      "selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+      "exact_guard": "AssignmentManager.preTransitCheck @755-757",
+      "source_reason": "The two-RS MiniCluster unassigns, reassigns, and moves a region. The guard rejects a region whose RegionStateNode already has a procedure. Healthy calibration passed one JUnit, hit four exact checks on master0, with zero exact throws and four audited observed-path doors.",
+      "runtime_gate": "Dispatch can consider the already staged full config after immutable artifact and fresh event-time/actor gate; verify a fault-induced overlapping procedure state rather than class-only HBaseIOException.",
+      "source": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+          "sha256": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+          "sha256": "50f65033ce822967d3dde237c26e60bbf0891bc9587c3dfa004886d55165ec7a"
+        }
+      ],
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v2/HBASE-10/result.json",
+        "sha256": "6ecb211ddd7baafa6772fb3bbb84e9d399c87e2c2d5dbc0f41094753e9516df1"
+      },
+      "staged_full_config": {
+        "path": "Mallory/adapters/hbase/pilot/HBASE-10-runtime-attested-full.json",
+        "sha256": "08b286b6a90944b7a257e6e63e2a092ce110e3348fd35cfbdda39ab26647306f"
+      }
+    },
+    {
+      "case_id": "HBASE-12",
+      "decision": "existing_healthy_selector_admissible_for_dispatch_review",
+      "selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+      "exact_guard": "AssignmentManager.preTransitCheck @762-763",
+      "source_reason": "The test deliberately disables a table and catches DoNotRetryIOException from a move, but the selected exact @763 throw was absent in the healthy trace. It passed one JUnit and hit two exact nonthrowing checks on master0 with two audited observed-path doors. The caught class may originate elsewhere.",
+      "runtime_gate": "Dispatch can consider staged full config only with exact @763 throw and same affected invocation; an alternate normal move in TestBlockEvictionOnRegionMovement#testBlockEvictionOnRegionMove needs fresh healthy calibration.",
+      "source": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+          "sha256": "3363c61f6eeb0a30910b54050709910a9a28ee07839b2cf2173122ea207c5f03"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java",
+          "sha256": "50f65033ce822967d3dde237c26e60bbf0891bc9587c3dfa004886d55165ec7a"
+        }
+      ],
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v2/HBASE-12/result.json",
+        "sha256": "0bd56d2f62c8fe3452fd393d2cc1def2ce567baea7c55dcafac84a3f998f80cd"
+      },
+      "staged_full_config": {
+        "path": "Mallory/adapters/hbase/pilot/HBASE-12-runtime-attested-full.json",
+        "sha256": "d2d00a4e161e86319ff3e868bb857f04490bcb5ec8d776a671294e842f18436d"
+      }
+    },
+    {
+      "case_id": "HBASE-24",
+      "decision": "hold_after_affected_actor_pilot_negative",
+      "selector": "org.apache.hadoop.hbase.procedure.TestZKProcedure#testMultipleMembers",
+      "exact_guard": "ZKProcedureMemberRpcs.startNewSubprocedure @205-210",
+      "source_reason": "The MiniZK test runs four named procedure members. Each selected member reads a znode and checks the PB magic prefix; immediate ZKUtil.getData exception goes to KeeperException handling before the target predicate. In the existing 2/2 matched pilot, the affected named member skipped the target in both trials, while other members reached it. Any-actor target counting is insufficient.",
+      "runtime_gate": "No full run from the current immediate-read door. Admit only a source-supported earlier state-changing fault and a fresh pilot proving the same named member and occurrence reaches @205 after the fault.",
+      "source": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs.java",
+          "sha256": "ba0ee569fccf2a69057860800bc05a2fe1db0d5a4b368c490485ee542b0c55b2"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedure.java",
+          "sha256": "0cc57f0c0d21b679997580cc8169e1b8f70ed0bb77e8bbb6bb6d41e5bca8a2b2"
+        }
+      ],
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v11/HBASE-24/result.json",
+        "sha256": "ac1c3ea514d271ed5853ce578524ba6b12e81e18d82c8e68a4456bfeb5fe1477"
+      },
+      "pilot_evidence": {
+        "path": "data/mallory/pilots_v24_5a/HBASE-24/pilot-receipt.json",
+        "sha256": "6ee44532937a1b054ef29044fc806160e06cd4eac512aa0a237f17fd9d2c83eb"
+      }
+    },
+    {
+      "case_id": "HBASE-28",
+      "decision": "configuration_local_false_positive_for_io_exception_baseline",
+      "selector": "org.apache.hadoop.hbase.TestInfoServers#testInfoServersRedirect",
+      "exact_guard": "HRegionServer.putUpWebUI @2482-2487",
+      "source_reason": "The branch tests whether the configured bind address resolves to a local host; the value comes from hbase.regionserver.info.bindAddress or hbase.master.info.bindAddress, default 0.0.0.0. The test starts a MiniCluster and reads web pages only after the guard. The pretarget InetAddress.getByName call may throw before the selected branch; later InfoServer bind or HTTP exceptions cannot alter the prior configured address. Prior trace hit the branch but target actor was unknown.",
+      "runtime_gate": "Do not schedule fault fuzz from the current selector. Revisit only if an existing passing cluster test provides an I/O-dependent bind address, a named exact nonthrowing target, and a retained pretarget fault door. This is a weak static candidate, not a confirmed coordination bug.",
+      "source": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+          "sha256": "c8a345ad34d12767d0277302ab705b9429626f0e8d7689fd493b2f81f8059023"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java",
+          "sha256": "7b0d83c60833a5427396477fed836873b6d58b297cb656867008a221d0e2067e"
+        }
+      ],
+      "healthy_evidence": {
+        "path": "data/mallory/calibration/HBASE-28/result.json",
+        "sha256": "182c0e1871b8a426982e64c19e078c828581631bb735a6f8f45fe4be67074451"
+      }
+    },
+    {
+      "case_id": "HBASE-33",
+      "decision": "no_suitable_existing_cluster_test_for_inner_guard",
+      "selector": "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation",
+      "exact_guard": "AuthenticationTokenSecretManager.retrievePassword @139-141",
+      "source_reason": "The guard is entered only after allKeys.get(identifier.keyId) misses. The selected test generates a token from currentKey and immediately retrieves its password, so it normally hits the map and bypasses this inner guard. A repository-wide search of Java test sources found only this retrievePassword invocation; TestZKSecretWatcher and TestZKSecretWatcherRefreshKeys exercise key synchronization without retrieval, and the token-authentication RPC test body is commented out. Prior calibration did not reach the target.",
+      "runtime_gate": "Under the existing-cluster-test-only rule, classify as no suitable test. Do not invent an unknown key and treat its expected InvalidToken as a bug.",
+      "source": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+          "sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java",
+          "sha256": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestZKSecretWatcher.java",
+          "sha256": "0d167ad407429d103f249fac97f6e61420b354c662bd3b6bbdc98ef74495123d"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestZKSecretWatcherRefreshKeys.java",
+          "sha256": "c558e063ec785b13b37e1cfaaaf2a178da8053ae6d45c259b386e8367bfcbc0d"
+        }
+      ],
+      "healthy_evidence": {
+        "path": "data/mallory/calibration/HBASE-33/result.json",
+        "sha256": "8c06b8a835e92a8c18b75f2887b03078c8171533cfefef487cec3b90f4befb40"
+      }
+    },
+    {
+      "case_id": "HBASE-35",
+      "decision": "hold_instrumentation_gap",
+      "selector": "org.apache.hadoop.hbase.util.TestHBaseFsckMOB#testQuarantineCorruptMobFile",
+      "exact_guard": "HBaseFsck$3.visit @2715-2720",
+      "source_reason": "The one-RS MiniCluster test runs one HBCK MOB quarantine. Healthy v18 passed one JUnit, reached the exact nonthrowing check on the client four times, and saw 145 pretarget doors. The audit found zero observed door-to-target paths. Source shows MetaTableAccessor.scanMeta obtains each Result from scanner.next then invokes visitor.visit(data) in the same thread; the current scanner completion claim ends before visit, breaking the causal token.",
+      "runtime_gate": "Keep full fuzz blocked. A future hook should carry the actual scanner Result or Future token through visitor.visit without guessing from actor or time. Require a fresh event-time named door-to-target path, then a short same-actor target-retained fault pilot before full campaign.",
+      "source": [
+        {
+          "path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/HBaseFsck.java",
+          "sha256": "eede67720ec29cfcfba04f397ed7b8496f155b8b711f51606435a1ead2a6c2a4"
+        },
+        {
+          "path": "hbase-client/src/main/java/org/apache/hadoop/hbase/MetaTableAccessor.java",
+          "sha256": "1231841a2cdae7a9e2b2dd7354da624dc153fa6862b65e7aa0a22515f80881cd"
+        },
+        {
+          "path": "hbase-server/src/test/java/org/apache/hadoop/hbase/util/TestHBaseFsckMOB.java",
+          "sha256": "f922df109453c4241086f5cd76975529bd8423673d952dab8b192f3685f53d2f"
+        }
+      ],
+      "healthy_evidence": {
+        "path": "data/mallory/calibration_v18/HBASE-35/result.json",
+        "sha256": "c44e05f654a95c6ed9f4c02ade4160376289b5d7479316fc4cd0996ffa0fd9e5"
+      },
+      "causal_audit": {
+        "path": "data/mallory/calibration_v18/HBASE-35/offline-causal-audit.json",
+        "sha256": "99d9b2743bd9952bcc1bb6971c9cac68734f53b6d4b2f5c72a8c1f0761b396d9"
+      },
+      "prior_gap_design": {
+        "path": "Mallory/adapters/hbase/pilot/HBASE-35-scanner-result-handoff-gap-v1.json",
+        "sha256": "41ed747ca6e1f1f2b2ac8465fd772cc5e0739c44a02b59c3f6b540bf469f390e"
+      }
+    }
+  ]
+}

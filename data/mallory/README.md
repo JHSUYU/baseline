@@ -1,6 +1,11 @@
 # Mallory-style campaign records
 
 This directory stores only runs made with the standalone Mallory baseline.
+Generated campaign output is ignored by default because it includes large
+MiniCluster scratch trees and repeated build artifacts. Reviewed summaries,
+configuration, and selected compressed traces are tracked explicitly; use
+`git add -f` when promoting a new evidence file. Historical tracked artifacts
+remain available for the original campaigns.
 The fixed 102-check inventory, original source locations, exact runtime
 mapping, and selected cluster tests are in `Mallory/cases/inventory.json`.
 Historical CrashFuzz data remains under `data/crashfuzz` and does not count as

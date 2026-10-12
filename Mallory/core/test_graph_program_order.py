@@ -50,14 +50,52 @@ class NestedProgramOrderTest(unittest.TestCase):
         self.assertIsNotNone(path)
         self.assertEqual([(edge.kind, edge.producer_event, edge.consumer_event)
                           for edge in path], [("program_order", "e2", "e3")])
-        self.assertEqual(1, graph.summary()["edges_by_kind"]["program_order"])
+        self.assertEqual(2, graph.summary()["edges_by_kind"]["program_order"])
 
     def test_latest_parent_event_carries_earlier_door(self):
         rows = nested_trace()
         insert_between(rows, "METHOD", "parent", "P")
         graph, path = self.path(rows)
         self.assertEqual("extra", path[0].producer_event)
-        self.assertEqual(1, graph.summary()["edges_by_kind"]["program_order"])
+        self.assertEqual(2, graph.summary()["edges_by_kind"]["program_order"])
+
+    def test_child_exit_carries_child_door_to_parent_continuation(self):
+        rows = [event("REGION_ENTER", 1, "parent", region="P", parent_id="root"),
+                event("REGION_ENTER", 2, "child", region="C", parent_id="parent"),
+                event("DOOR_OBSERVED", 3, "child", region="C"),
+                event("REGION_EXIT", 4, "child", region="C"),
+                event("TARGET_CHECK", 5, "parent", region="P"),
+                event("REGION_EXIT", 6, "parent", region="P")]
+        graph, path = self.path(rows)
+        self.assertEqual([("program_order", "e4", "e5")],
+                         [(edge.kind, edge.producer_event, edge.consumer_event)
+                          for edge in path])
+        self.assertEqual("same_thread_nested_return", path[0].evidence)
+
+    def test_child_exit_reaches_next_sibling_and_later_parent(self):
+        rows = [event("REGION_ENTER", 1, "parent", region="P", parent_id="root"),
+                event("REGION_ENTER", 2, "first", region="F", parent_id="parent"),
+                event("DOOR_OBSERVED", 3, "first", region="F"),
+                event("REGION_EXIT", 4, "first", region="F"),
+                event("REGION_ENTER", 5, "second", region="S", parent_id="parent"),
+                event("REGION_EXIT", 6, "second", region="S"),
+                event("TARGET_CHECK", 7, "parent", region="P"),
+                event("REGION_EXIT", 8, "parent", region="P")]
+        _, path = self.path(rows)
+        self.assertEqual([("e4", "e5"), ("e6", "e7")],
+                         [(edge.producer_event, edge.consumer_event) for edge in path])
+
+    def test_later_unbalanced_region_discards_return_edge(self):
+        rows = [event("REGION_ENTER", 1, "parent", region="P", parent_id="root"),
+                event("REGION_ENTER", 2, "child", region="C", parent_id="parent"),
+                event("DOOR_OBSERVED", 3, "child", region="C"),
+                event("REGION_EXIT", 4, "child", region="C"),
+                event("TARGET_CHECK", 5, "parent", region="P"),
+                event("REGION_EXIT", 6, "parent", region="P"),
+                event("REGION_EXIT", 7, "orphan", region="O")]
+        graph, path = self.path(rows)
+        self.assertIsNone(path)
+        self.assertEqual(0, graph.summary()["edges_by_kind"].get("program_order", 0))
 
     def test_later_malformed_exit_discards_earlier_pending_edge(self):
         rows = nested_trace()

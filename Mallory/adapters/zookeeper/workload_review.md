@@ -105,6 +105,68 @@ versioned receipt at `data/mallory/admissions/ZOOKEEPER-04-5a-actor-retention-v1
 supersedes the earlier full-admission recommendation. This pilot does not
 qualify for a full campaign; its raw traces remain preserved.
 
+An isolated v2 healthy run at
+`data/mallory/calibration_fa5f_lane2/ZOOKEEPER-04-readbool-v2` recorded the
+exact `BinaryInputArchive.readBool("readOnly")` IOException door at patched
+line 1420 immediately before the selected guard in the same named `zk2`
+epoch-0 thread and connect occurrence (events 195→196). The original
+three-peer JUnit passed in 29.414 seconds; loaded class SHA-256 was
+`76cc1c01d29c85231d204c6ac302beaab64512b60576494484f78e542ebf0e0b`.
+The fa5f audit passed with `observed_local_timeline` evidence, and the
+independent exact-door attestation receipt SHA-256 is
+`228567b08e1623fa1fef0514ddf3371b9012b1fd6e21e0ecf9619f6e8fa0726e`.
+
+The directed v2 pilot at
+`data/mallory/pilot_fa5f_lane2/ZOOKEEPER-04-readbool-v2` exhausted its two
+eligible single-fault plans in 89.353 seconds. Both faults were precisely
+applied and their JUnit runs passed. The `readBool` trial had
+`FAULT_APPLIED` event 205 followed by the exact guard event 206 in the same
+`zk2`, epoch-0, thread-142, connect occurrence; it did not throw the selected
+exception. The separate `connect.read` trial lost its affected occurrence.
+The independent postfault audit proves one of two exact affected-actor
+continuations. Result/audit/postfault receipt SHA-256 values are respectively
+`7f432e287a7530939917cd2c464e59b3e9aefaaab15123ad8a2cebd05042d49b`,
+`a0c02c3a3e2fe11cdd2a2d6ec93f4b9a3a8104457ed1eb3dcc25ed23123562ff`,
+and `bfd3efc77517988b02d1ca238c86d10f28ef326555462125c17499f30deb7e47`.
+
+The source locally catches this `IOException` and leaves `readOnly=false`;
+the selected guard compares the independent `connReq.lastZxidSeen` with
+`zkDb.dataTree.lastProcessedZxid`. The chosen test creates a session,
+disconnects one follower and reconnects to another without any client write
+before the guard (`ConnectionMetricsTest.java:53-85`). This exact fault
+exercises the check but does not change either compared zxid in this test.
+More repetitions of these two plans would not support a new bug claim.
+
+A source search found the existing three-peer
+`WatchEventWhenAutoResetTest#testNodeDataChanged` as a stronger healthy
+workload. It creates a znode through client 1, shuts peer 1 down, updates
+that znode through client 2, restarts peer 1, and waits for client 1 to
+reconnect (`WatchEventWhenAutoResetTest.java:101-106,128-137`). The pinned
+healthy run at
+`data/mallory/calibration_fa5f_lane2/ZOOKEEPER-04-write-reconnect-v1`
+passed JUnit 1/1 in 19.935 seconds. The exact nonthrowing guard ran on
+`zk1` before restart (epoch 0, event 73) and after restart (epoch 1,
+event 290); the latter had the exact `readBool` door at event 289 in the
+same thread and connect occurrence. The fa5f audit passed with four
+`observed_local_timeline` doors and zero observed graph-path doors. The
+loaded target class SHA matched the pinned compiled class. The independent
+healthy receipt at
+`data/mallory/admissions/ZOOKEEPER-04-fa5f-write-reconnect-v1-healthy.json`
+has SHA-256
+`99baa53c4815521471c9caba444bdd9c0d58bba7a0ab8b550308abcb935657b7`.
+This verifies a write-before-reconnect workload and exact named target
+reach. The write during downtime is performed by client 2, whereas the
+reconnecting client 1 sends the zxid from its own earlier create response
+(`ClientCnxn.java:964,1019`). Thus, dropping only client 2's update would
+not make the restarted peer's zxid lower than client 1's last-seen zxid.
+`Learner.syncWithLeader` can start serving before applying some queued
+commits (`Learner.java:791,812-820`), a plausible state-changing I/O
+surface, but this existing test has no demonstrated target-preserving
+exception door that crosses the selected comparison. The bounded
+source-gap receipt is
+`data/mallory/admissions/ZOOKEEPER-04-fa5f-write-reconnect-v1-fault-model-gap.json`.
+No fault campaign or new bug is claimed from this seed.
+
 ## ZOOKEEPER-05, ZOOKEEPER-06, and ZOOKEEPER-07
 
 The existing three-peer `QuorumRestartTest#testRollingRestart` passed in
@@ -136,6 +198,21 @@ origin. The versioned result is
 the earlier v1 path interpretation remains preserved as superseded
 evidence. ZOOKEEPER-05 is held from a full campaign.
 
+A fresh source review of the same existing JUnit did not justify another
+healthy or pilot replay. `Follower.followLeader` compares the proposed
+epoch immediately after `registerWithLeader`; an injected packet I/O
+exception aborts the same attempt before that guard. The one narrow
+startup recovery exception is a missing `acceptedEpoch` file, but its
+fallback uses the last processed transaction's epoch
+(`QuorumPeer.java:1180-1191`), which cannot raise the accepted-epoch
+operand needed by this selected throw in a valid persisted state. The
+SHA-bound bounded gap is at
+`data/mallory/admissions/ZOOKEEPER-05-5820-fault-model-gap-v2.json`.
+Its six trial entries bind the exact applied-fault event to each raw trace;
+the source-only v1 review is retained separately.
+It keeps the previous six-fault negative evidence and leaves the check
+incomplete for this fault model.
+
 ZOOKEEPER-07 also passed a fresh frozen-core healthy seed in 24.218
 seconds, with the exact nonthrowing guard on named `zk1` and `zk2`, matching
 loaded class hash, and a passing JUnit. Its offline audit verified 75
@@ -154,9 +231,69 @@ ZOOKEEPER-06 reached `Leader.waitForEpochAck` without a graph path: the
 to `Leader.waitForEpochAck`, but the initial adapter retained receive context
 only for `REQUEST` packets. Its closure was singleton. A separate versioned
 overlay now compiles an exact packet-object `ACKEPOCH` context handoff, with
-source and class hashes in the ackepoch overlay receipt. That overlay still
-needs an existing-test healthy run proving the paired packet and target path
-before a fault campaign; this source-backed diagnosis is not a fault result.
+source and class hashes in the ackepoch overlay receipt. Source compilation
+alone did not establish a fault result; a separate healthy run was required
+to prove the paired packet and target path.
+
+A fresh strict-core healthy run now supplies that proof at
+`data/mallory/calibration_fa5f_lane2/ZOOKEEPER-06-ackepoch-v2`. The existing
+three-peer rolling-restart JUnit passed in 22.186 seconds, and the loaded
+`Leader.class` SHA-256 matched
+`2997636daa456c16bbe1168a22da699bef636e27ab6bbd0a224ea0c6718f2256`.
+The offline audit passed with six event-time observed-path doors and coarse
+roots rejected. An independent packet attestor verified one exact follower
+`ACKEPOCH` write door/SEND (events 25/26), leader RECV (27),
+`zookeeper.leader.ackepoch` region (28), and selected nonthrowing guard (32),
+using the same physical packet correlation and named `zk2` to `zk3` actors.
+The result, audit, and attestation receipt SHA-256 values are respectively
+`66258249c2eb35bf39113e884bb4d836b42e123d382f9115880d28686be58bf2`,
+`e77e674be63513f7b393da85146398be732981bb049b0859bd8e121b751b5807`,
+and `36ea3f5fce09bbbf3bf8abac606159693e4efcbf0cdc194eb302d5e1ec518542`.
+This proves healthy packet causality only; a bounded fault pilot must still
+prove that an applied fault leads to a later target check on the affected
+path.
+
+The subsequent six-fault pilot at
+`data/mallory/pilot_fa5f_lane2/ZOOKEEPER-06-ackepoch-v2` completed in
+168.8 seconds. All six faults matched and were applied, and the controller
+observed a later target check in each trial; none threw the selected
+exception. The independent fa5f audit passed raw integrity and healthy
+guidance, but the strict postfault event-time audit found **zero** same
+occurrence or observed-path continuations from the applied fault to a later
+target check. Later checks belonged to other ACKEPOCH paths or peer roles.
+The pilot therefore is not admitted to a full campaign. The result, offline
+audit, and postfault audit SHA-256 values are respectively
+`5c48db1494633f9b660fe8f5ac88b26a3b4fc61f03f9927fb7964028325579f2`,
+`bba1df8f371801a1c5983c74341f303c6452d39e6963935c751da28b19797d24`,
+and `6ff6647643ea2bf25878c1a49f8f63407d5b15e7f6eb3dff7bb728856e4e5192`.
+
+## ZOOKEEPER-10
+
+The existing three-peer `ObserverMasterTest#testObserver` parameterized test
+is a shorter healthy workload than `testInOrderCommits` (which sends 10,001
+asynchronous writes from each of two clients). A pinned node0 run of both
+unmodified parameter values passed 2/2 JUnit cases in 38.693 seconds. The
+exact `ObserverMaster.removeProposedPacket(long)` guard was reached seven
+times on named `zk1`, across epochs 0 and 1, with no selected throw. Its
+loaded class SHA matched the compiled overlay. The strict offline audit
+verified 13 pretarget I/O doors with observed packet/region paths, including
+quorum sender event 94, follower receive 95, `Follower.processPacket` 96,
+`ObserverMaster.proposalCommitted` 97, `removeProposedPacket` 98, and selected
+check 99. The raw campaign is at
+`data/mallory/calibration_fa5f_node0/ZOOKEEPER-10-observer-v1`; the
+SHA-bound healthy receipt is
+`data/mallory/admissions/ZOOKEEPER-10-fa5f-observer-v1-healthy.json`.
+
+All 13 doors in the selected closure are quorum archive `readRecord` or
+`writeRecord` IOException sites. A read failure exits `Follower.followLeader`
+through its outer catch, closes the socket, and stops that ObserverMaster.
+A write failure closes the `LearnerHandler` socket and breaks its sender loop.
+The target queue is updated in `proposalReceived` and inspected immediately
+by `proposalCommitted`; this I/O fault model has no demonstrated way to skip
+one queue update while retaining the same target occurrence. The bounded
+source gap is recorded at
+`data/mallory/admissions/ZOOKEEPER-10-fa5f-observer-v1-fault-model-gap.json`.
+No fault pilot or full campaign was admitted, and no bug is claimed.
 
 ## ZOOKEEPER-11 and ZOOKEEPER-12
 

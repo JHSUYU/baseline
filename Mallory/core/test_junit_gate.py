@@ -121,6 +121,9 @@ print("BUILD SUCCESS")
             self.assertEqual(solr["status"], "passed")
             self.assertEqual(solr["tests"], 1)
             self.assertEqual(len(solr["wrapper_sha256"]), 64)
+            direct_solr = collect_junit_receipt(
+                trial, ["python3", "solr_junit_runner_v14.py"], trial, 0, None)
+            self.assertEqual(direct_solr["status"], "passed")
 
             # JUnit 4 counts an assumption skip as run=1, ignored=0.
             (trial / "junit.log").write_text(

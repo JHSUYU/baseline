@@ -151,6 +151,17 @@ def _door_membership(feedback: dict[str, Any]) -> dict[str, bool]:
     return rows
 
 
+def _node_timeline_receipts(feedback: dict[str, Any]) -> dict[str, str]:
+    rows: dict[str, str] = {}
+    for door in feedback.get("doors", []):
+        candidate = door.get("node_timeline_candidate")
+        if not isinstance(candidate, dict):
+            continue
+        key = digest([door.get("event_id"), door.get("site"), door.get("event_seq")])
+        rows[key] = digest(candidate)
+    return rows
+
+
 def _membership_receipt(rows: dict[str, bool]) -> dict[str, Any]:
     encoded = json.dumps(sorted(rows.items()), separators=(",", ":")).encode()
     return {"count": len(rows), "sha256": hashlib.sha256(encoded).hexdigest(),
@@ -277,6 +288,8 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                                  timed_out=bool(result.get("timed_out")),
                                  allow_local_timeline_doors=config.get(
                                      "allow_local_timeline_doors", False),
+                                 allow_node_timeline_guidance=config.get(
+                                     "allow_node_timeline_guidance", False),
                                  reject_coarse_roots=config.get("reject_coarse_roots", False),
                                  require_event_time_paths=config.get(
                                      "require_event_time_paths", False),
@@ -378,6 +391,9 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
             old_membership = _door_membership(old)
             new_membership = _door_membership(recomputed)
             membership_consistent = old_membership == new_membership
+            old_timeline = _node_timeline_receipts(old)
+            new_timeline = _node_timeline_receipts(recomputed)
+            timeline_consistent = old_timeline == new_timeline
             changed_door_keys = sorted(set(old_membership) | set(new_membership))
             changed_door_keys = [key for key in changed_door_keys
                                  if old_membership.get(key) != new_membership.get(key)]
@@ -386,7 +402,8 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                                               set(recomputed["closure_occurrences"]))
             closure_edges_consistent = (_edge_fingerprints(old) ==
                                         _edge_fingerprints(recomputed))
-            guidance_consistent = (membership_consistent and novelty_consistent and
+            guidance_consistent = (membership_consistent and timeline_consistent and
+                                   novelty_consistent and
                                    closure_occurrences_consistent and closure_edges_consistent)
             old_claim = bool(old.get("target_exception_candidate"))
             claim_reverified = not old_claim or bool(recomputed["target_exception_candidate"])
@@ -423,6 +440,8 @@ def audit_campaign(campaign: Path, out: Path) -> dict[str, Any]:
                              "recomputed": new_membership.get(key)}
                             for key in changed_door_keys[:10]],
                         "eligible_door_membership_consistent": membership_consistent,
+                        "node_timeline_guidance_consistent": timeline_consistent,
+                        "node_timeline_candidate_doors": len(new_timeline),
                         "closure_occurrences_consistent": closure_occurrences_consistent,
                         "closure_edges_consistent": closure_edges_consistent,
                         "old_novelty": result.get("novelty"),

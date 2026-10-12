@@ -1,0 +1,10 @@
+--- historical-control/StripedChecksumStaleKeyControl.java
++++ adapted54/StripedChecksumStaleKeyControl.java
+@@ -109,6 +109,7 @@
+               + repeat.getClass().getName());
+         }
+         System.out.println("CONTROL outcome=known_bug_reproduced");
++        throw new AssertionError("HDFS-17897: original striped checksum failed after stale DEK rejection", error);
+       }
+     } finally {
+       if (dfs != null) dfs.close();

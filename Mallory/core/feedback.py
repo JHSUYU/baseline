@@ -46,6 +46,7 @@ def _skip_graph_for_missing_target(expected: list[str],
 def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             *, return_code: int | None, timed_out: bool,
             allow_local_timeline_doors: bool = False,
+            allow_node_timeline_guidance: bool = False,
             reject_coarse_roots: bool = False,
             require_event_time_paths: bool = False,
             bootstrap_without_target: bool = False) -> dict[str, Any]:
@@ -81,9 +82,52 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
                                 for event in matched + applied
                                 if event.get("fault_id") == fault["fault_id"])
                             if all_matched and all_applied else False)
+    relative_identity_valid = all_matched and all_applied
+    if relative_identity_valid:
+        applied_by_id = {e["fault_id"]: e for e in applied}
+        matched_by_id = {e["fault_id"]: e for e in matched}
+        for index, fault in enumerate(plan):
+            point = fault["point"]
+            receipt = matched_by_id[fault["fault_id"]]
+            same = point.get("same_node_as")
+            after = point.get("after_fault")
+            if same is not None:
+                if not isinstance(same, int) or same < 0 or same >= index:
+                    relative_identity_valid = False
+                    break
+                prior = applied_by_id[plan[same]["fault_id"]]
+                if (receipt.get("node"), receipt.get("epoch")) != (
+                        prior.get("node"), prior.get("epoch")):
+                    relative_identity_valid = False
+                    break
+            if after is not None:
+                if not isinstance(after, int) or after < 0 or after >= index:
+                    relative_identity_valid = False
+                    break
+                anchor = applied_by_id[plan[after]["fault_id"]]
+                if event_seq(anchor) >= event_seq(receipt):
+                    relative_identity_valid = False
+                    break
+                relative_hit = point.get("relative_hit")
+                if relative_hit is not None:
+                    eligible = [e for e in events
+                                if e.get("type") == "DOOR_OBSERVED"
+                                and e.get("site") == point["site"]
+                                and (e.get("node"), e.get("epoch")) == (
+                                    receipt.get("node"), receipt.get("epoch"))
+                                and all(e.get(key) == point[key] for key in (
+                                    "occurrence", "hit", "door_ordinal") if key in point)
+                                and event_seq(anchor) < event_seq(e) < event_seq(receipt)]
+                    if (not isinstance(relative_hit, int) or relative_hit <= 0 or
+                            len(eligible) != relative_hit):
+                        relative_identity_valid = False
+                        break
+            elif point.get("relative_hit") is not None:
+                relative_identity_valid = False
+                break
     effective = (bool(expected) and all_matched and all_applied and
                  fault_order_valid and pairing_order_valid and
-                 fault_identity_valid and not unexpected)
+                 fault_identity_valid and relative_identity_valid and not unexpected)
     last_fault_seq = max((event_seq(e) for e in applied), default=-1)
 
     all_checks = [e for e in events if e.get("type") == "TARGET_CHECK"
@@ -246,6 +290,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
     last_target_seq = max((event_seq(e) for e in anchor_events), default=-1)
     local_checks: dict[tuple[Any, Any, Any], list[dict[str, Any]]] = {}
     local_check_seqs: dict[tuple[Any, Any, Any], list[int]] = {}
+    node_checks: dict[tuple[Any, Any], list[dict[str, Any]]] = {}
+    node_check_seqs: dict[tuple[Any, Any], list[int]] = {}
     if allow_local_timeline_doors:
         for check in (post_checks if expected else checks):
             if _named_node(check.get("node")) and event_address(check) is not None:
@@ -254,6 +300,14 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
         for identity, rows in local_checks.items():
             rows.sort(key=event_seq)
             local_check_seqs[identity] = [event_seq(check) for check in rows]
+    if allow_node_timeline_guidance:
+        for check in (post_checks if expected else checks):
+            if _named_node(check.get("node")) and event_address(check) is not None:
+                identity = (check.get("node"), check.get("epoch"))
+                node_checks.setdefault(identity, []).append(check)
+        for identity, rows in node_checks.items():
+            rows.sort(key=event_seq)
+            node_check_seqs[identity] = [event_seq(check) for check in rows]
     seen_doors: set[str] = set()
     for e in events:
         if e.get("type") != "DOOR_OBSERVED" or not e.get("site"):
@@ -291,6 +345,22 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
                                if require_event_time_paths else event_address(e) in closure),
                 "site": e["site"], "event_id": e.get("id"),
                 "event_seq": event_seq(e)}
+        if allow_node_timeline_guidance and not door["in_closure"]:
+            identity = (e.get("node"), e.get("epoch"))
+            rows = node_checks.get(identity, [])
+            index = bisect_right(node_check_seqs.get(identity, []), event_seq(e))
+            if index < len(rows) and event_seq(e) >= 0:
+                check = rows[index]
+                # This is an observed ordering on one logical JVM, not a
+                # happens-before edge between its unrelated threads.
+                door["node_timeline_candidate"] = {
+                    "kind": "same_node_temporal_candidate",
+                    "door_event_id": e.get("id"), "door_seq": event_seq(e),
+                    "target_check_event_id": check.get("id"),
+                    "target_check_seq": event_seq(check),
+                    "node": identity[0], "epoch": identity[1],
+                    "door_thread_id": e.get("thread_id"),
+                    "target_thread_id": check.get("thread_id")}
         if allow_local_timeline_doors:
             identity = (e.get("node"), e.get("epoch"), e.get("occurrence"))
             rows = local_checks.get(identity, [])
@@ -326,7 +396,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
         status = "target_identity_ambiguous"
     elif unexpected:
         status = "unexpected_fault_applied"
-    elif expected and all_matched and all_applied and not fault_identity_valid:
+    elif expected and all_matched and all_applied and not (
+            fault_identity_valid and relative_identity_valid):
         status = "fault_identity_mismatch"
     elif expected and not effective:
         status = "fault_unmatched"
@@ -357,6 +428,7 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
             "all_faults_effective": effective,
             "pairing_order_valid": pairing_order_valid,
             "fault_identity_valid": fault_identity_valid,
+            "relative_identity_valid": relative_identity_valid,
             "unexpected_applied_fault_ids": [e.get("fault_id") for e in unexpected],
             "target_reached": target_reached, "target_threw": target_threw,
             "target_check_reached": target_check_reached,
@@ -399,4 +471,8 @@ def analyze(trace: Trace, target: dict[str, Any], plan: list[dict[str, Any]],
         feedback["local_timeline_doors"] = sum(
             "local_timeline_evidence" in door for door in doors)
         feedback["allow_local_timeline_doors"] = True
+    if allow_node_timeline_guidance:
+        feedback["node_timeline_candidate_doors"] = sum(
+            "node_timeline_candidate" in door for door in doors)
+        feedback["allow_node_timeline_guidance"] = True
     return feedback

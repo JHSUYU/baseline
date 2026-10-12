@@ -1,0 +1,119 @@
+{
+  "agent_include": [
+    "org.apache.hadoop.hbase.client.ConnectionImplementation",
+    "org.apache.hadoop.hbase.ipc.RpcServer"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/159c74ec50d0703e85cfdfd1b06451e961fc180db04d568926b990aa5458db7a/mallory-agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.hbase.HBaseAdapterTransformer",
+    "auto.io.doors": false,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "allow_local_timeline_doors": false,
+  "auto_promote_if_healthy": false,
+  "budget": {
+    "max_faults_per_trial": 1,
+    "seconds": 720,
+    "trial_timeout_seconds": 600,
+    "trials": 1
+  },
+  "calibration_only": true,
+  "case_id": "HBASE-02",
+  "cluster_test": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+  "command": [
+    "/usr/lib/jvm/java-8-openjdk-amd64/bin/java",
+    "-ea",
+    "-Xmx4g",
+    "-Djava.io.tmpdir={trial_dir}",
+    "-Dtest.build.data.basedirectory={trial_dir}",
+    "-cp",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/mallory-hbase-selected-junit-v3.jar:/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar:/users/ZhenyuLi/baseline/crashfuzz/vendor/0b0beaeb6880a311-junit-platform-launcher-1.13.4.jar:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/conf:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/*:/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/client-facing-thirdparty/*:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/hadoop-common-2.10.0-tests.jar:/users/ZhenyuLi/.baseline-deps/hadoop-2.10.0/share/hadoop/common/lib/*",
+    "edu.uva.liftlab.mallory.hbase.pilot.SelectedJUnit",
+    "org.apache.hadoop.hbase.client.TestConnectionImplementation",
+    "testMetaLookupThreadPoolCreated"
+  ],
+  "core_release": {
+    "manifest_sha256": "fe34361473a6808eb4c3b33d5ca9a535e25cb4642cb7ba28c28de4d6a7f594b3",
+    "release_id": "fc70357f631462023428f6dff385f56ef78188b52ef1a569e23dc1b9033855a4"
+  },
+  "cwd": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+  "env": {
+    "HBASE_HOME": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6"
+  },
+  "expected_target_class_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+  "explore_outside_closure": false,
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "mapping": {
+    "admission_blocked": true,
+    "admission_note": "Current Probe.beforeDoor identity has site, node, epoch and hit/ordinal, but no RPC service/method. Do not dispatch generic RpcServer.call faults. A method-specific overlay requires a new compiled and attested release.",
+    "compiled_class_sha256": "d04a6e5bad1b1933b343eccb7cb858072842df9498552c1cf548218a996abb1f",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-client-2.6.6.jar",
+    "compiled_jar_sha256": "b3c9537a0c5f4b057134c59298b453ae207d2e6279be66d71c80da36d0d2de54",
+    "door_exception_class": "java.io.IOException",
+    "door_site": "org.apache.hadoop.hbase.ipc.RpcServer#call(Lorg/apache/hadoop/hbase/ipc/RpcCall;Lorg/apache/hadoop/hbase/monitoring/MonitoredRPCHandler;)Lorg/apache/hadoop/hbase/util/Pair;@447:door:1",
+    "fault_path_gate": "same named actor and request correlation; prove retry reaches exact target after applied IOException before considering full campaign",
+    "healthy_seed_verified_for_this_stage": false,
+    "prior_healthy_audit": "/users/ZhenyuLi/baseline/data/mallory/calibration_v2/HBASE-02/offline-causal-audit.json",
+    "prior_healthy_audit_sha256": "2dbb163bb7b964d80dc4f59baceb5ec36dfcdf8a3bd804e169d1eae4a2bf84a6",
+    "required_rpc_ports": [
+      "hbase.pb.ClientService.Get"
+    ],
+    "rpc_port_filter_enforced_by_site_rule": false,
+    "rpc_server_compiled_class_sha256": "2ddfc45d9955537897684a392a07e45b277675ca6f75f96bad6354a02f8d81c5",
+    "source_root": "/users/ZhenyuLi/.graphchecker-sources/hbase-2.6.6",
+    "status": "blocked_generic_rpc_door_not_request_scoped",
+    "target_source_sha256": "f00ec999b43227553f89ecb859ccfe28e4f901adb0f2f37552096d1f72261184",
+    "test_source_sha256": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a"
+  },
+  "require_event_time_paths": true,
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/instrumentation/releases/159c74ec50d0703e85cfdfd1b06451e961fc180db04d568926b990aa5458db7a/mallory-agent.jar",
+      "sha256": "7415d7bf1ee4f64e423f2377be86a3af006e20b82dde7ab4e09c097011a9e816"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/releases/future-token-handoffs-v1/mallory-hbase-adapter.jar",
+      "sha256": "ab943e3fda02126261f99703cafeb4b6b0f71b6b5d645a29abb3498d43851cd1"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/mallory-hbase-selected-junit-v3.jar",
+      "sha256": "671a202e8c1418906789aeb7aeb09456e64e1ff5ed52489e2a3a35e22b16b632"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/crashfuzz/vendor/0b0beaeb6880a311-junit-platform-launcher-1.13.4.jar",
+      "sha256": "0b0beaeb6880a31149641d2d848b863712885469670c12099586d7f798522564"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-02-10-12-typed-rpc-v1/HBASE-02.sites.json",
+      "sha256": "76dad94f551bb86ab52fd80b45d4368667a3a5f506c85bb36692e6ad3a3fb9b2"
+    },
+    {
+      "path": "/users/ZhenyuLi/.baseline-deps/hbase-2.6.6/lib/hbase-server-2.6.6-tests.jar",
+      "sha256": "b1f7524b395808c660e7fdaa3a95bc777b1097125aacedb3414ac6799d1832b5"
+    }
+  ],
+  "schema_version": 1,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/hbase/pilot/HBASE-02-10-12-typed-rpc-v1/HBASE-02.sites.json",
+  "system": "hbase",
+  "target": {
+    "check_code": "if (!tableName.equals(TableName.META_TABLE_NAME) && isTableDisabled(tableName)) {\nthrow new TableNotEnabledException(tableName.getNameAsString() + \" is disabled.\");",
+    "check_sites": [
+      "org.apache.hadoop.hbase.client.ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;@910:branch:1",
+      "org.apache.hadoop.hbase.client.ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;@910:branch:2"
+    ],
+    "exception_class": "org.apache.hadoop.hbase.TableNotEnabledException",
+    "function": "org.apache.hadoop.hbase.client.ConnectionImplementation.relocateRegion(org.apache.hadoop.hbase.TableName,byte[],int)",
+    "original_source_line": 911,
+    "site_id": "<org.apache.hadoop.hbase.client.ConnectionImplementation: org.apache.hadoop.hbase.RegionLocations relocateRegion(org.apache.hadoop.hbase.TableName,byte[],int)>#u17",
+    "source_line": 911,
+    "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
+    "throw_site": "org.apache.hadoop.hbase.client.ConnectionImplementation#relocateRegion(Lorg/apache/hadoop/hbase/TableName;[BI)Lorg/apache/hadoop/hbase/RegionLocations;@911:throw:1"
+  }
+}

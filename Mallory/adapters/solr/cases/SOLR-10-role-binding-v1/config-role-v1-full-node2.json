@@ -1,0 +1,188 @@
+{
+  "agent_include": [
+    "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider",
+    "org.apache.solr.cloud.ZkController",
+    "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd",
+    "org.apache.solr.cloud.OverseerTaskProcessor",
+    "org.apache.solr.cloud.api.collections.OverseerCollectionMessageHandler"
+  ],
+  "agent_jar": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/releases/v1/mallory-agent.jar",
+  "agent_properties": {
+    "adapter.jar": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/releases/v1/mallory-solr-adapter.jar",
+    "adapter.transformer": "edu.uva.liftlab.mallory.solr.SolrTransformer",
+    "auto.io.doors": true,
+    "coverage.branches": true,
+    "coverage.methods": true,
+    "state.fields": false,
+    "state.maps": false
+  },
+  "agent_transport": "java_tool_options",
+  "allow_local_timeline_doors": false,
+  "auto_promote_if_healthy": true,
+  "budget": {
+    "max_faults_per_trial": 6,
+    "seconds": 3600,
+    "trial_timeout_seconds": 480,
+    "trials": 80
+  },
+  "calibration_only": false,
+  "case_id": "SOLR-10",
+  "cluster_test": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+  "command": [
+    "python3",
+    "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/run_pilot.py",
+    "SOLR-10",
+    "--source",
+    "/users/ZhenyuLi/.mallory-worktrees/solr-routed-alias-v23",
+    "--output",
+    "{trial_dir}",
+    "--campaign",
+    "--timeout",
+    "420"
+  ],
+  "cwd": "/users/ZhenyuLi/.mallory-worktrees/solr-routed-alias-v23",
+  "env": {
+    "JAVA_TOOL_OPTIONS": "-Dsolr.disableConfigSetsCreateAuthChecks=true",
+    "MALLORY_SOLR_ADAPTER_JAR": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/releases/v1/mallory-solr-adapter.jar",
+    "MALLORY_SOLR_AGENT_JAR": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/releases/v1/mallory-agent.jar",
+    "MALLORY_SOLR_AWAITSFIX": "1"
+  },
+  "expected_target_class_sha256": "e49a19168470644792b32674984a3250e1860116ac873c92df494f60de455d28",
+  "explore_outside_closure": false,
+  "fault_types": [
+    "EXCEPTION"
+  ],
+  "mapping": {
+    "agent_sha256": "ef144323bc4bd2e7a231fc41ae35a7ec4255455146823ad177ebe3735f99ffb9",
+    "compiled_artifact": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-core-8.11.4.jar",
+    "compiled_class_sha256": "e49a19168470644792b32674984a3250e1860116ac873c92df494f60de455d28",
+    "compiled_jar": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4/dist/solr-core-8.11.4.jar",
+    "compiled_jar_sha256": "e83db498c6af8f3eca14483ab42fd9fe30bbf795ceacab3b4d5eaa66f2461536",
+    "distribution_root": "/users/ZhenyuLi/.baseline-deps/solr-8.11.4",
+    "distribution_root_env": "MALLORY_SOLR_DIST_ROOT",
+    "door_status": "exact_overseer_leader_role_verified_one_fault",
+    "healthy_seed_verified": true,
+    "inventory_source_root": "/users/ZhenyuLi/.graphchecker-sources/solr-8.11.4",
+    "node_identity_binding_configured": true,
+    "node_identity_binding_verified": true,
+    "overseer_class_sha256": "98f21c0235c5e9dc7937d67e0a44dfeccd3726582feb2696d7fbe4420ca8a6c0",
+    "overseer_source_sha256": "cae75fa3ae928f085b69dd5d39c4bac978b7d1160692b936b934f8a59838c14b",
+    "role_binding_overrides_healthy_physical_target_nodes": true,
+    "runner_status": "isolated_role_campaign_pending_dispatch_admission",
+    "source_root": "/users/ZhenyuLi/.mallory-worktrees/solr-routed-alias-v23",
+    "source_root_env": "MALLORY_SOLR_SOURCE_ROOT",
+    "status": "role_v1_full_staged_not_admitted",
+    "target_source_sha256": "d9943be304693226243d34e7cc0ae47df26b621c8293b6e8aabe6941c0469db7",
+    "target_throw_kind": "athrow",
+    "test_source_sha256": "727cc38dd0fd0d42e641724b08d96b00e0e9d8ab492d23cbc572284824079d37",
+    "verified_healthy_probe": "/users/ZhenyuLi/baseline/data/mallory/calibration_solr10_role_v1_node2/SOLR-10/role-plan-v1-receipt.json"
+  },
+  "max_queue": 2000,
+  "reject_coarse_roots": true,
+  "require_event_time_paths": true,
+  "revision": "SOLR-10-overseer-role-v1-full-node2",
+  "role_pilot_audit": {
+    "path": "/users/ZhenyuLi/baseline/data/mallory/pilot_solr10_role_v1_node2/SOLR-10/observed-path-audit.json",
+    "sha256": "341a0b28a93f089b91f42ad52f947c2c7c3717bd2a5b108a2329ee078518cc4e"
+  },
+  "runtime_artifacts": [
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/audit_observed_pilot_path.py",
+      "sha256": "6866a787b080fe3024dacf20a46eff0fa295e3e059b6cb6ad52d90ecc676b4dd"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/collect_terminal.py",
+      "sha256": "cdf422188b6f830fa24d7c5697a328651e11c6938aa01213ddf675a3914925a0"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/collect_terminal_node2.sh",
+      "sha256": "ba86bb54fac78164b07fa042fc47f60282b4fd55052a848bcb55020c29542133"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/releases/v1/mallory-agent.jar",
+      "sha256": "ef144323bc4bd2e7a231fc41ae35a7ec4255455146823ad177ebe3735f99ffb9"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/releases/v1/mallory-solr-adapter.jar",
+      "sha256": "8dd63b244ea6073b7cabccf0d539076656a2197cf97dbf2778bef1dafbe3a7da"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/run_full_node2.sh",
+      "sha256": "a45eee1abc2afc25c1a8dba9331ac872f666f0085a6e23ce44981ab1ac4aff38"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/run_pilot.py",
+      "sha256": "6cbe165c2b4c1e48452e5e7a3d09819a7e57fcee8ee005a5fb903fc9590fb731"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/run_pilot_role_v1.py",
+      "sha256": "b18b4a327fc544d0d1d3732745dc7cb43c647c0317333fa5325d5973e45110c5"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/run_role_campaign.py",
+      "sha256": "02805e2f302f5ed8ec83a7588213da7df842b2aa7e0b8192b89b2c8319cc3237"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/work/Mallory/core/__init__.py",
+      "sha256": "8e2c5945bbfb5d5f3dbf2d058a22f95088106d5506e535c0c3c4430b0c33ba1a"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/work/Mallory/core/campaign.py",
+      "sha256": "658bf806c45117db61201042c43015cac8e504a4f82eb3a166dd71c8a2a6d8dd"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/work/Mallory/core/events.py",
+      "sha256": "db6b5ca756fe13d804e4356fdf01ef1924913b9977b5444797544f85cc98bd34"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/work/Mallory/core/feedback.py",
+      "sha256": "7ae1953e388b644c15ce629d2688c38e9d15f66f5e5bb352e0020b20cc99101c"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/work/Mallory/core/graph.py",
+      "sha256": "d712040ee432ddca0e84b6ee7a22fe8da58e0755b8b8437e61ad28164b979f08"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/work/Mallory/core/junit.py",
+      "sha256": "2575ba497b0bcf14c96f9ab8025e855a0602cbcb76f88c21f276d53234629595"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10-role-binding-v1/work/Mallory/core/scheduler.py",
+      "sha256": "454c9f0c0f827c80825849ec670e8026aac1a41db559e5bf89d48455174e58c5"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10/sites-v28-overseer-task.json",
+      "sha256": "d027ae65f30982d7755978fb571430290a13ccfbb64f47e11638b1f2e59f3e3c"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v10/inventory.json",
+      "sha256": "bc1304e3ad206160cbeb1a15bd107278e6b0248e11975048873fdecbb90bd944"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/releases/v10/source_reference.json",
+      "sha256": "ed226d31e940f20396e55ce94e4f578cbf9f48c440753c43d1e3a6bdefc39391"
+    },
+    {
+      "path": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/solr_junit_runner_v8.py",
+      "sha256": "9eedf09ce8fff0e983fa948ce050ff965458d76291dc04356b3c79cbb50dff94"
+    }
+  ],
+  "schema_version": 1,
+  "single_fault_breadth_interval": 3,
+  "site_file": "/users/ZhenyuLi/baseline/Mallory/adapters/solr/cases/SOLR-10/sites-v28-overseer-task.json",
+  "source_equivalent_root": "/users/ZhenyuLi/.mallory-worktrees/solr-routed-alias-v23",
+  "system": "solr",
+  "target": {
+    "check_code": "if (ra == null) {\nthrow new SolrException(SolrException.ErrorCode.SERVER_ERROR, \"MaintainRoutedAlias called on non-routed alias\");",
+    "check_sites": [
+      "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd#call(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)V@116:branch:2"
+    ],
+    "exception_class": "org.apache.solr.common.SolrException",
+    "function": "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd.call(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+    "original_source_line": 117,
+    "site_id": "<org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd: void call(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)>#u28",
+    "source_line": 117,
+    "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/MaintainRoutedAliasCmd.java",
+    "throw_site": "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd#call(Lorg/apache/solr/common/cloud/ClusterState;Lorg/apache/solr/common/cloud/ZkNodeProps;Lorg/apache/solr/common/util/NamedList;)V@117:throw:1"
+  }
+}

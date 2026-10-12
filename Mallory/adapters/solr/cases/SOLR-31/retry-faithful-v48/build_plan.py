@@ -36,7 +36,7 @@ def plan_from_receipt(receipt: dict, mode: str) -> dict:
     if not isinstance(actor, str) or not actor.startswith("shard-") \
             or type(epoch) is not int or epoch < 0 \
             or type(rank) is not int or rank < 1 \
-            or type(retries) is not int or not 2 <= retries <= 12:
+            or type(retries) is not int or not 2 <= retries <= 16:
         raise ValueError("unbound actor, epoch, watcher read, or retry budget")
     if not binding.get("reader_id") or not binding.get("keeper_id") \
             or type(binding.get("session_id")) is not int \

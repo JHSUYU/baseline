@@ -1,0 +1,229 @@
+{
+  "bootstrap_fault_trials": 0,
+  "bootstrap_seed_doors": 0,
+  "bootstrap_seed_valid": false,
+  "calibration_only": false,
+  "case_id": "HDFS-54",
+  "closure_coverage_ids_seen": 0,
+  "closure_edge_fingerprints_seen": 64,
+  "cluster_test": "org.apache.hadoop.hdfs.TestFileChecksum#testStripedAndReplicatedFileChecksum2",
+  "coverage_ids_seen": 369,
+  "dispatch_attempt_ids": [],
+  "duration_seconds": 156.963,
+  "evidence": {
+    "checkpoint": "checkpoint.json",
+    "config": "config.json",
+    "trial_root": "trials/"
+  },
+  "exact_check_location": null,
+  "exact_exception_trials": 0,
+  "fault_trials_completed": 4,
+  "healthy_eligible_doors": 5,
+  "healthy_junit_validation": {
+    "errors": 0,
+    "failures": 0,
+    "report_suffix": "mallory_0000_523895a4ede742b397e340cc0b253550",
+    "reports": [
+      {
+        "counts": {
+          "errors": 0,
+          "failures": 0,
+          "skipped": 0,
+          "tests": 2
+        },
+        "path": "junit-reports/000-TEST-org.apache.hadoop.hdfs.TestFileChecksum-mallory_0000_523895a4ede742b397e340cc0b253550.xml",
+        "sha256": "fd637605a8c184b02d6c04d7d4bdc2aedd41d137a74aa3fd04814c6b449a2bec"
+      }
+    ],
+    "runner": "surefire_xml",
+    "schema_version": 1,
+    "skipped": 0,
+    "status": "passed",
+    "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stdout_sha256": "ecaf73365f68b7db5feca933803708dd07e9007591fb3dc6ab778828b05f66c3",
+    "tests": 2
+  },
+  "healthy_local_timeline_doors": null,
+  "healthy_observed_door_events": 6,
+  "healthy_seed_valid": true,
+  "last_dispatch_attempt_id": null,
+  "new_bug": null,
+  "reproduced_candidates": [],
+  "runtime_attestation": {
+    "bound_nodes": [
+      "hdfs-client"
+    ],
+    "eligible_doors_before_target": 5,
+    "exact_site_catalog_valid": true,
+    "expected_target_class_sha256": "33e30e2f0280517b0aeaa799566258fcfe5b1e27f7fc4e7e86224805712baa3f",
+    "observed_target_class_sha256": "33e30e2f0280517b0aeaa799566258fcfe5b1e27f7fc4e7e86224805712baa3f",
+    "reasons": [],
+    "site_catalog_sha256": "2458c9c69bb67849843456825833a0673ef0f5ff93c4e45641324abc55e49f53",
+    "target_class_loader_ids": [
+      "sun.misc.Launcher$AppClassLoader@18b4aac2"
+    ],
+    "target_identity_gap_count": 0,
+    "valid": true
+  },
+  "schema_version": 1,
+  "source_review_status": "not_reviewed",
+  "status": "budget_exhausted",
+  "strict_injected_trials": 4,
+  "strict_target_trials": 3,
+  "system": "hdfs",
+  "target": {
+    "check_code": "if (!checksumBlockGroup(blockGroup)) { throw new PathIOException(...); }",
+    "check_sites": [
+      "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V@629:branch:4"
+    ],
+    "exception_class": "org.apache.hadoop.fs.PathIOException",
+    "selected_source_line": 629,
+    "selected_throw_line": 631,
+    "source_path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+    "throw_site": "org.apache.hadoop.hdfs.FileChecksumHelper$StripedFileNonStripedChecksumComputer#checksumBlocks()V@631:throw:1"
+  },
+  "target_absent_bootstrap_enabled": false,
+  "target_binding": {
+    "nodes": [
+      "hdfs-client"
+    ]
+  },
+  "target_binding_trial": 0,
+  "target_discovered_trial": null,
+  "target_exception_candidate_trials": [],
+  "target_identity_gaps": [],
+  "target_node_named": true,
+  "target_reached_trials": 3,
+  "trials": [
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": false,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 25.86,
+      "eligible_doors_before_target": 5,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 2,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 24,
+        "coverage": 369
+      },
+      "observed_door_events": 6,
+      "result": "trials/r0000/result.json",
+      "selection_reason": "healthy_seed",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 0
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 25.703,
+      "eligible_doors_before_target": 6,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 2,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 10,
+        "coverage": 0
+      },
+      "observed_door_events": 7,
+      "result": "trials/r0001/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 1
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 53.797,
+      "eligible_doors_before_target": 4,
+      "junit_errors": 1,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 2,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 0,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0002/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "target_lost",
+      "target_exception_candidate": false,
+      "target_reached": false,
+      "trial_id": 2
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 25.704,
+      "eligible_doors_before_target": 6,
+      "junit_errors": 0,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "passed",
+      "junit_tests": 2,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 20,
+        "coverage": 0
+      },
+      "observed_door_events": 7,
+      "result": "trials/r0003/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 3
+    },
+    {
+      "all_faults_applied": true,
+      "all_faults_effective": true,
+      "all_faults_matched": true,
+      "dispatch_attempt_id": null,
+      "duration_seconds": 25.899,
+      "eligible_doors_before_target": 3,
+      "junit_errors": 1,
+      "junit_failures": 0,
+      "junit_skipped": 0,
+      "junit_status": "failed",
+      "junit_tests": 2,
+      "local_timeline_doors": null,
+      "novelty": {
+        "closure_coverage": 0,
+        "closure_edges": 10,
+        "coverage": 0
+      },
+      "observed_door_events": 4,
+      "result": "trials/r0004/result.json",
+      "selection_reason": "dynamic_closure",
+      "status": "observed",
+      "target_exception_candidate": false,
+      "target_reached": true,
+      "trial_id": 4
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+--- a/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
++++ b/Mallory/adapters/hdfs/src/main/java/edu/uva/liftlab/mallory/adapters/hdfs/HdfsMiniClusterTransformer.java
+@@ -322,7 +322,32 @@
+         changed = true;
+       } else if (name.equals("org/apache/hadoop/hdfs/server/datanode/BPOfferService")
+           && (method.name.equals("processCommandFromActive")
++              || method.name.equals("processCommandFromStandby")
+               || method.name.equals("updateActorStatesFromHeartbeat"))) {
++        // The DataNode receives block-key updates through the command queue.
++        // Failing this exact call leaves its allKeys unchanged while the
++        // NameNode and clients can continue to use newer key IDs.
++        if (method.name.equals("processCommandFromActive")
++            || method.name.equals("processCommandFromStandby")) {
++          for (AbstractInsnNode instruction : method.instructions.toArray()) {
++            if (!(instruction instanceof MethodInsnNode)) continue;
++            MethodInsnNode call = (MethodInsnNode) instruction;
++            if (call.getOpcode() != Opcodes.INVOKEVIRTUAL
++                || !call.owner.equals("org/apache/hadoop/hdfs/security/token/block/BlockPoolTokenSecretManager")
++                || !call.name.equals("addKeys")
++                || !call.desc.equals("(Ljava/lang/String;Lorg/apache/hadoop/hdfs/security/token/block/ExportedBlockKeys;)V"))
++              continue;
++            InsnList hook = new InsnList();
++            hook.add(new LdcInsnNode(method.name.equals("processCommandFromActive")
++                ? "hdfs:dn-apply-access-key-update-active"
++                : "hdfs:dn-apply-access-key-update-standby"));
++            hook.add(new LdcInsnNode("java.io.IOException"));
++            hook.add(new MethodInsnNode(Opcodes.INVOKESTATIC, PROBE, "beforeDoor",
++                "(Ljava/lang/String;Ljava/lang/String;)V", false));
++            method.instructions.insertBefore(instruction, hook);
++            changed = true;
++          }
++        }
+         wrap(method, HOOKS, "offerEnter",
+             "(Ljava/lang/Object;)L" + PROBE + "$NodeScope;", PROBE + "$NodeScope", true);
+         changed = true;

@@ -1,0 +1,15 @@
+--- hadoop-3.4.3/BPOfferService.java
++++ faithful55/BPOfferService.java
+@@ -779,6 +779,12 @@
+     case DatanodeProtocol.DNA_ACCESSKEYUPDATE:
+       LOG.info("DatanodeCommand action from active NN {}: DNA_ACCESSKEYUPDATE", nnSocketAddress);
+       if (dn.isBlockTokenEnabled) {
++        // Fault only this NN-to-DN key-distribution I/O, before map installation.
++        // The case-local hook must bind the named DN, exported key IDs and
++        // command identity and may throw a typed IOException. It must never
++        // mutate allKeys or override retrieveDataEncryptionKey's lookup.
++        Hdfs55KeyUpdateIo.beforeAddKeys(dn, getBlockPoolId(),
++            nnSocketAddress, ((KeyUpdateCommand) cmd).getExportedKeys());
+         dn.blockPoolTokenSecretManager.addKeys(
+             getBlockPoolId(), 
+             ((KeyUpdateCommand) cmd).getExportedKeys());
