@@ -39,6 +39,12 @@ the remote files with an rsync checksum pass before removing local raw trials;
 the local case summary and final result remain. Unfinished cases keep their
 checkpoints in place.
 
+`data/crashfuzz/static102-offloads.json` records HBase cases temporarily
+assigned to node2. Node1 holds each case's local claim lock while node2 runs.
+`mirror_offloads.py --watch` copies a completed case back to node1, verifies
+file checksums, releases the lock, and marks the offload mirrored. The table
+collector reads node2's live summary until that mirror is complete.
+
 `original_hdfs_junit.py` runs an unchanged Hadoop 3.4.3 embedded-cluster
 JUnit method in fresh scratch storage. In the current Soot-selected mode, the
 ASM runtime agent records the target, I/O, and coverage events; the helper
