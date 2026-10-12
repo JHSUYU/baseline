@@ -7,11 +7,43 @@ import org.junit.Test;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.lang.reflect.Method;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class CoarseSelectorTest {
     private static final String PREFIX = "edu.uva.liftlab.crashfuzz.staticselection.SelectionFixture";
+
+    @Test public void smallerLaterPhaseCannotGrowAnAlreadyFullSelection() throws Exception {
+        Map<String, String> selected = new LinkedHashMap<>();
+        selected.put("first", "prior phase");
+        selected.put("second", "prior phase");
+        Set<String> gaps = new LinkedHashSet<>();
+        Method add = CoarseSelector.class.getDeclaredMethod("add", Map.class,
+                String.class, String.class, int.class, Set.class);
+        add.setAccessible(true);
+        add.invoke(null, selected, "third", "later phase", 1, gaps);
+        assertEquals(2, selected.size());
+    }
+
+    @Test public void neverExceedsMethodBudgetAcrossSelectionPhases() {
+        JsonObject input = new JsonObject();
+        input.addProperty("target_method", "<" + PREFIX + "$Reader: void check()>");
+        JsonObject analysis = new JsonObject();
+        JsonArray dirs = new JsonArray();
+        dirs.add("target/test-classes");
+        analysis.add("process_dirs", dirs);
+        analysis.add("classpath", new JsonArray());
+        analysis.addProperty("max_methods", 3);
+        input.add("analysis", analysis);
+        JsonObject result = CoarseSelector.analyze(input);
+        assertTrue(result.getAsJsonArray("coverage_methods").size() <= 3);
+    }
 
     @Test public void followsFieldTaskAndDeclaredRpcJumps() throws Exception {
         Path mapping = Files.createTempFile("crashfuzz-wire-", ".jsonl");

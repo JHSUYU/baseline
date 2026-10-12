@@ -685,7 +685,7 @@ public final class CoarseSelector {
     private static void add(Map<String, String> selected, String method, String reason,
                             int limit, Set<String> gaps) {
         if (selected.containsKey(method)) return;
-        if (selected.size() == limit) {
+        if (selected.size() >= limit) {
             gaps.add("method_budget_cut:" + limit);
             return;
         }
