@@ -2,10 +2,10 @@
   "schema_version": 1,
   "cases": {
     "HBASE-27": {
-      "reviewed_candidate_count": 2,
-      "verdict": "rejected_expected_startup_failure",
-      "reason": "The first two target exceptions follow a forced IOException in HMaster.tryMigrateMetaLocationsFromZooKeeper ResultScanner.next. HMaster aborts; the waiting RegionServer receives shutdown and HRegionServer.blockAndCheckIfStopped throws its documented shutdown IOException. The original JUnit fails because the master is no longer alive. These two trials do not show an independent coordination defect.",
-      "evidence": "node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0003-35e682845c0c0374a866/result.json; node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0004-db3b477b19e2fc07db17/result.json"
+      "reviewed_candidate_count": 3,
+      "verdict": "rejected_expected_shutdown_after_injection",
+      "reason": "Healthy JUnit reaches HRegionServer.blockAndCheckIfStopped without throwing. Trials 3, 4, and 9 inject IOException into HMaster.tryMigrateMetaLocationsFromZooKeeper at ResultScanner.next or close. HMaster aborts, the cluster shuts down its sole RegionServer, and HRegionServer.stop sets stopped=true. The selected check then intentionally throws 'Received the shutdown message while waiting.' This is the source-defined shutdown path following the injected master startup failure, not an independent coordination defect.",
+      "evidence": "data/crashfuzz/reviews/campaign-audits/hbase27-static102-three-candidate-source-review-2026-10-12.md; node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0003-35e682845c0c0374a866/result.json; node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0004-db3b477b19e2fc07db17/result.json; node1:/users/ZhenyuLi/static-rerun/results/HBASE-27/campaign/HBASE-27/trials/0009-1baf38aeb3f6c439af62/result.json"
     }
   }
 }
