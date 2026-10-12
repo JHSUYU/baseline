@@ -289,8 +289,9 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                        target_exception_candidates=record['oracle_candidates'],
                        bug_mark=record['bug_mark'],
                        active_runtime_seconds=record['total_elapsed_seconds'],
-                       total_elapsed_seconds=round(previous_seconds +
-                                                   time.monotonic() - started, 3),
+                       total_elapsed_seconds=round(max(
+                           previous_seconds + time.monotonic() - started,
+                           float(record['total_elapsed_seconds'])), 3),
                        campaign_result=str(record_path))
     except Exception as error:
         if str(error).startswith('case already claimed:') and prior is not None:

@@ -26,6 +26,29 @@ COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
            'archive_host', 'archive_path', 'error')
 
 
+def enrich_live_trials(value: dict, state: dict) -> None:
+    completed = state.get('completed', [])
+    statuses = [trial.get('status') for trial in completed]
+    value['fault_trials'] = len(completed)
+    value['strict_injections'] = sum(status not in (None, 'unmatched')
+                                     for status in statuses)
+    value['post_fault_target_reach_trials'] = sum(
+        status not in (None, 'unmatched', 'lost_target') for status in statuses)
+    candidates = statuses.count('target_exception_candidate')
+    value['target_exception_candidates'] = candidates
+    if candidates:
+        value['bug_mark'] = 'candidate'
+
+
+def reconcile_elapsed(value: dict) -> None:
+    """A resumed worker's final wall segment cannot undercount prior trials."""
+    active = value.get('active_runtime_seconds')
+    if active is None:
+        return
+    total = value.get('total_elapsed_seconds')
+    value['total_elapsed_seconds'] = round(max(float(total or 0), float(active)), 3)
+
+
 def enrich_live_summary(base: Path, value: dict) -> None:
     if value.get('status') != 'fuzzing' or value.get('finished'):
         return
@@ -37,7 +60,7 @@ def enrich_live_summary(base: Path, value: dict) -> None:
         state = json.loads(state_path.read_text())
         if digest and state.get('static_selection_digest') != digest:
             continue
-        value['fault_trials'] = len(state.get('completed', []))
+        enrich_live_trials(value, state)
         active = state.get('active')
         value['active_trial'] = active.get('number') if isinstance(active, dict) else None
         value['active_runtime_seconds'] = state.get('active_runtime_seconds')
@@ -55,6 +78,7 @@ def local_summaries() -> dict[str, dict]:
                     value['active_runtime_seconds'] = json.loads(
                         result_path.read_text()).get('total_elapsed_seconds')
             enrich_live_summary(path.parent, value)
+            reconcile_elapsed(value)
             result[value['case_id']] = value
         except (OSError, ValueError, KeyError):
             continue
@@ -78,11 +102,18 @@ def remote_summaries(host: str) -> dict[str, dict]:
               "            for state_path in states:\n"
               "                state=json.load(open(state_path))\n"
               "                if digest and state.get('static_selection_digest')!=digest: continue\n"
-              "                row['fault_trials']=len(state.get('completed',[]))\n"
+              "                statuses=[trial.get('status') for trial in state.get('completed',[])]\n"
+              "                row['fault_trials']=len(statuses)\n"
+              "                row['strict_injections']=sum(s not in (None,'unmatched') for s in statuses)\n"
+              "                row['post_fault_target_reach_trials']=sum(s not in (None,'unmatched','lost_target') for s in statuses)\n"
+              "                row['target_exception_candidates']=statuses.count('target_exception_candidate')\n"
+              "                if row['target_exception_candidates']: row['bug_mark']='candidate'\n"
               "                active=state.get('active')\n"
               "                row['active_trial']=active.get('number') if isinstance(active,dict) else None\n"
               "                row['active_runtime_seconds']=state.get('active_runtime_seconds')\n"
               "                break\n"
+              "        active=row.get('active_runtime_seconds')\n"
+              "        if active is not None: row['total_elapsed_seconds']=round(max(float(row.get('total_elapsed_seconds') or 0),float(active)),3)\n"
               "        rows.append(row)\n"
               "    except (OSError, ValueError): pass\n"
               "print(json.dumps(rows))\n")
