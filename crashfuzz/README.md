@@ -12,6 +12,9 @@ selected methods, branches, and I/O callsites. System-wide binary paths and
 the optional HDFS communication mapping are configured in
 `core-fuzzer/prepare_case_selection.py`; they are shared by all checks in that
 system.
+For mapped RPC values, the selector also follows a bounded chain of callers
+from the sender's value producer to an I/O call. This can select a transport
+send that is several helper calls away from the producer.
 For a check that explicitly throws its target exception, Soot also records
 typed throw sites and the branches that can select them. The fuzzer uses the
 selected source line to recognize the corresponding runtime `ATHROW`; a
@@ -38,6 +41,11 @@ the target check still executes afterward. Object identity hashes in generated
 thread names and temporary cluster ports are normalized across JUnit runs;
 the I/O site, actor class, and hit ordinal remain part of the match. Repeated
 observations with the same normalized address also carry an occurrence ordinal.
+For HDFS embedded-cluster DataNode actors, the agent adds the stable `dataN`
+slot from `dfs.datanode.data.dir` to the runtime address. If that slot cannot
+be resolved, the trace records `ACTOR_IDENTITY_GAP` and the fuzzer does not
+queue that observation as a fault point. This prevents a fault intended for
+one DataNode from matching another DataNode with a similar thread name.
 ZooKeeper calls can receive a
 `ConnectionLossException`; other selected calls receive an `IOException`.
 An observed target exception is a candidate for replay and source review.

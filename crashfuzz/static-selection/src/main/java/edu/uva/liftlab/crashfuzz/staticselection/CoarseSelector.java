@@ -264,6 +264,14 @@ public final class CoarseSelector {
             }
             frontier = accepted;
         }
+        // A mapped wire value is produced on the sending actor. Follow the
+        // producer's callers far enough to reach the actual send boundary:
+        // helper -> encoder -> transport -> RPC handler is commonly longer
+        // than the general two-caller walk. Reserve a bounded slice before
+        // field-writer expansion consumes the method budget.
+        extendWireSenderCallers(selected, near, wireProducers, callers,
+                directIoMethods, Math.min(maxMethods, Math.max(selected.size(),
+                        maxMethods * 3 / 8)), gaps);
         Set<String> directWriters = new LinkedHashSet<>();
         MethodInfo targetInfo = methods.get(target);
         for (String field : sorted(targetInfo.reads)) {
@@ -468,20 +476,8 @@ public final class CoarseSelector {
         for (int depth = 1; depth <= depthLimit && !frontier.isEmpty(); depth++) {
             Set<String> next = new LinkedHashSet<>();
             for (String writer : sorted(frontier)) {
-                List<String> nearCallers = sorted(callers.getOrDefault(writer,
-                        Collections.emptySet()));
-                String owner = writer.substring(0, writer.indexOf(':'));
-                nearCallers.sort((left, right) -> {
-                    // A direct I/O caller is already an injectable boundary,
-                    // including when dispatch crosses into another actor.
-                    int byIo = Boolean.compare(directIoMethods.contains(right),
-                            directIoMethods.contains(left));
-                    if (byIo != 0) return byIo;
-                    boolean leftLocal = left.startsWith(owner + ":");
-                    boolean rightLocal = right.startsWith(owner + ":");
-                    int byLocal = Boolean.compare(rightLocal, leftLocal);
-                    return byLocal != 0 ? byLocal : left.compareTo(right);
-                });
+                List<String> nearCallers = prioritizedCallers(writer, callers,
+                        directIoMethods);
                 for (int i = 0; i < Math.min(fanout, nearCallers.size()); i++) {
                     String caller = nearCallers.get(i);
                     add(selected, caller, "target_short_writer_caller_depth_" + depth,
@@ -495,6 +491,54 @@ public final class CoarseSelector {
             frontier = next;
         }
         return higherCallers;
+    }
+
+    private static List<String> prioritizedCallers(String callee,
+            Map<String, Set<String>> callers, Set<String> directIoMethods) {
+        List<String> result = sorted(callers.getOrDefault(callee,
+                Collections.emptySet()));
+        String owner = callee.substring(0, callee.indexOf(':'));
+        result.sort((left, right) -> {
+            // A direct I/O caller is itself an injectable boundary, including
+            // one reached after dispatch into another actor.
+            int byIo = Boolean.compare(directIoMethods.contains(right),
+                    directIoMethods.contains(left));
+            if (byIo != 0) return byIo;
+            boolean leftLocal = left.startsWith(owner + ":");
+            boolean rightLocal = right.startsWith(owner + ":");
+            int byLocal = Boolean.compare(rightLocal, leftLocal);
+            return byLocal != 0 ? byLocal : left.compareTo(right);
+        });
+        return result;
+    }
+
+    private static void extendWireSenderCallers(Map<String, String> selected,
+            Set<String> consumers, Map<String, Set<String>> wireProducers,
+            Map<String, Set<String>> callers, Set<String> directIoMethods,
+            int limit, Set<String> gaps) {
+        for (String consumer : consumers) {
+            for (String producer : sorted(wireProducers.getOrDefault(consumer,
+                    Collections.emptySet()))) {
+                add(selected, producer, "rpc_wire_may_producer", limit, gaps);
+                if (!selected.containsKey(producer)) continue;
+                Set<String> frontier = Collections.singleton(producer);
+                for (int depth = 1; depth <= 5 && !frontier.isEmpty(); depth++) {
+                    Set<String> next = new LinkedHashSet<>();
+                    for (String method : sorted(frontier)) {
+                        List<String> nearCallers = prioritizedCallers(method,
+                                callers, directIoMethods);
+                        for (int i = 0; i < Math.min(4, nearCallers.size()); i++) {
+                            String caller = nearCallers.get(i);
+                            add(selected, caller,
+                                    "rpc_wire_sender_caller_depth_" + depth,
+                                    limit, gaps);
+                            if (selected.containsKey(caller)) next.add(caller);
+                        }
+                    }
+                    frontier = next;
+                }
+            }
+        }
     }
 
     private static void extendLocalCallees(Map<String, String> selected,

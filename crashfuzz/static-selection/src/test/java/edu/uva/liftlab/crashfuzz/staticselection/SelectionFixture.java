@@ -144,4 +144,29 @@ public final class SelectionFixture {
             shared = 1;
         }
     }
+
+    public static final class WireTarget {
+        public void check(boolean bad) {
+            if (bad) throw new IllegalStateException("wire target");
+        }
+    }
+
+    public static final class WireValueSource {
+        public int encode() {
+            return 7;
+        }
+    }
+
+    public static final class WireSender {
+        public int first() { return new WireValueSource().encode(); }
+        public int second() { return first(); }
+        public int third() { return second(); }
+        public int fourth() { return third(); }
+        public int fifth() throws IOException {
+            try (FileOutputStream file = new FileOutputStream("/tmp/wire-sender")) {
+                file.write(1);
+            }
+            return fourth();
+        }
+    }
 }

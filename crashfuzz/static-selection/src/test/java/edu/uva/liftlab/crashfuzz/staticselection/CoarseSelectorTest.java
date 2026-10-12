@@ -198,4 +198,47 @@ public class CoarseSelectorTest {
             Files.deleteIfExists(mapping);
         }
     }
+
+    @Test public void followsMappedWireProducerToSendingIoBoundary() throws Exception {
+        Path mapping = Files.createTempFile("crashfuzz-wire-sender-", ".jsonl");
+        try {
+            String producer = "<" + PREFIX + "$WireValueSource: int encode()>";
+            String consumer = "<" + PREFIX + "$WireTarget: void check(boolean)>";
+            JsonObject row = new JsonObject();
+            row.addProperty("schemaVersion", 2);
+            row.addProperty("kind", "WIRE_FLOW");
+            row.addProperty("id", "fixture-sender");
+            JsonObject from = new JsonObject();
+            from.addProperty("method", producer);
+            JsonObject to = new JsonObject();
+            to.addProperty("method", consumer);
+            row.add("producer", from);
+            row.add("consumer", to);
+            Files.write(mapping, (row.toString() + "\n").getBytes(StandardCharsets.UTF_8));
+
+            JsonObject input = new JsonObject();
+            input.addProperty("target_method", consumer);
+            JsonObject analysis = new JsonObject();
+            JsonArray dirs = new JsonArray();
+            dirs.add("target/test-classes");
+            analysis.add("process_dirs", dirs);
+            analysis.add("classpath", new JsonArray());
+            JsonArray mappings = new JsonArray();
+            mappings.add(mapping.toString());
+            analysis.add("rpc_mapping_files", mappings);
+            analysis.addProperty("max_methods", 100);
+            input.add("analysis", analysis);
+
+            JsonObject result = CoarseSelector.analyze(input);
+            String sender = "<" + PREFIX + "$WireSender: int fifth()>";
+            assertTrue(result.getAsJsonObject("selection_reasons").has(sender));
+            assertTrue(result.getAsJsonObject("selection_reasons").get(sender)
+                    .getAsString().startsWith("rpc_wire_sender_caller_depth_5"));
+            assertTrue(result.getAsJsonArray("io_calls").toString()
+                    .contains("java.io.FileOutputStream: void write(int)"));
+            assertTrue(result.getAsJsonArray("coverage_methods").size() <= 100);
+        } finally {
+            Files.deleteIfExists(mapping);
+        }
+    }
 }

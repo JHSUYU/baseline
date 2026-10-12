@@ -92,6 +92,8 @@ def fatal_guard_paths(target: dict[str, Any]) -> list[list[dict[str, Any]]]:
 
 
 def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
+    if event.get("identityGap") is True:
+        return None
     marker = event.get("marker", "")
     site = event.get("siteId", "")
     address = event.get("occurrenceAddress", "")

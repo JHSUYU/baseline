@@ -3,6 +3,7 @@ package edu.uva.liftlab.crashfuzz.runtime;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.apache.hadoop.hdfs.server.datanode.BPServiceActor;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -36,6 +37,9 @@ public class ExplicitThrowInstrumentationTest {
             + ": int runSynchronized()>";
     private static final String USER_RETHROW_METHOD = "<" + Fixture.class.getName()
             + ": void runUserRethrow()>";
+    private static final String BP_METHOD = "<" + BPServiceActor.class.getName()
+            + ": void selectedIo()>";
+    private static final String BP_SITE = BP_METHOD + "#u-test";
 
     public static class Fixture {
         private static final Object LOCK = new Object();
@@ -97,6 +101,13 @@ public class ExplicitThrowInstrumentationTest {
                 assertTrue(error.getCause() instanceof IllegalArgumentException);
             }
             verifyLaterOccurrenceCanBeMatched();
+            Class<?> bpActor = instrumentBpActor();
+            bpActor.getMethod("selectedIo").invoke(bpActor.getConstructor(String.class)
+                    .newInstance("[DISK]file:/tmp/run1/data/dfs/data/data1"));
+            bpActor.getMethod("selectedIo").invoke(bpActor.getConstructor(String.class)
+                    .newInstance("[DISK]file:/tmp/run2/data/dfs/data/data3"));
+            bpActor.getMethod("selectedIo").invoke(bpActor.getConstructor(String.class)
+                    .newInstance("file:/var/lib/hdfs/dn"));
             SelectionProbe.selectionApplied("test-flush");
 
             List<JsonObject> throwsSeen = new ArrayList<>();
@@ -105,6 +116,7 @@ public class ExplicitThrowInstrumentationTest {
             int uncaughtExits = 0;
             List<JsonObject> observed = new ArrayList<>();
             List<JsonObject> applied = new ArrayList<>();
+            int identityGaps = 0;
             for (String line : Files.readAllLines(trace, StandardCharsets.UTF_8)) {
                 JsonObject event = JsonParser.parseString(line).getAsJsonObject();
                 if ("EXPLICIT_THROW".equals(event.get("event").getAsString())) {
@@ -122,14 +134,18 @@ public class ExplicitThrowInstrumentationTest {
                     observed.add(event);
                 } else if ("FAULT_APPLIED".equals(event.get("event").getAsString())) {
                     applied.add(event);
+                } else if ("ACTOR_IDENTITY_GAP".equals(event.get("event").getAsString())) {
+                    identityGaps++;
                 }
             }
             assertEquals(2, normalExits);
-            assertEquals(1, weaveRows.size());
+            assertEquals(2, weaveRows.size());
             assertEquals(4, weaveRows.get(0).get("selectedMethods").getAsInt());
             assertEquals(4, weaveRows.get(0).get("wovenMethods").getAsInt());
             assertEquals(1, weaveRows.get(0).get("selectedIo").getAsInt());
             assertEquals(0, weaveRows.get(0).get("wovenIo").getAsInt());
+            assertEquals(1, weaveRows.get(1).get("selectedIo").getAsInt());
+            assertEquals(1, weaveRows.get(1).get("wovenIo").getAsInt());
             assertEquals(2, uncaughtExits);
             assertEquals(6, throwsSeen.size());
             assertEquals("java.lang.IllegalStateException",
@@ -163,7 +179,7 @@ public class ExplicitThrowInstrumentationTest {
                     throwsSeen.get(5).get("runtimeType").getAsString());
             assertNotEquals(throwsSeen.get(4).get("siteId").getAsString(),
                     throwsSeen.get(5).get("siteId").getAsString());
-            assertEquals(3, observed.size());
+            assertEquals(6, observed.size());
             assertEquals(observed.get(0).get("occurrenceAddress").getAsString(),
                     observed.get(1).get("occurrenceAddress").getAsString());
             assertEquals(1, observed.get(0).get("hitOrdinal").getAsInt());
@@ -173,6 +189,12 @@ public class ExplicitThrowInstrumentationTest {
             assertEquals(2, applied.size());
             assertEquals(2, applied.get(0).get("occurrenceOrdinal").getAsInt());
             assertEquals(1, applied.get(1).get("occurrenceOrdinal").getAsInt());
+            assertEquals("hdfs:dn:data1", observed.get(3).get("logicalNodeId").getAsString());
+            assertEquals("hdfs:dn:data3", observed.get(4).get("logicalNodeId").getAsString());
+            assertNotEquals(observed.get(3).get("occurrenceAddress").getAsString(),
+                    observed.get(4).get("occurrenceAddress").getAsString());
+            assertTrue(observed.get(5).get("identityGap").getAsBoolean());
+            assertEquals(1, identityGaps);
         } finally {
             System.clearProperty("crashfuzz.trace.path");
         }
@@ -285,6 +307,39 @@ public class ExplicitThrowInstrumentationTest {
         selection.add("io_calls", ioCalls);
         selection.add("branches", new JsonArray());
 
+        return instrumentClass(Fixture.class, selection);
+    }
+
+    private static Class<?> instrumentBpActor() throws Exception {
+        JsonObject selection = new JsonObject();
+        selection.addProperty("target_method", BP_METHOD);
+        JsonObject spec = new JsonObject();
+        spec.addProperty("signature", BP_METHOD);
+        spec.addProperty("owner", BPServiceActor.class.getName().replace('.', '/'));
+        spec.addProperty("name", "selectedIo");
+        spec.addProperty("descriptor", "()V");
+        JsonArray specs = new JsonArray();
+        specs.add(spec);
+        selection.add("method_specs", specs);
+        JsonObject io = new JsonObject();
+        io.addProperty("method", BP_METHOD);
+        io.addProperty("site_id", BP_SITE);
+        io.addProperty("callee", "<" + BPServiceActor.Sink.class.getName()
+                + ": void write()>");
+        io.addProperty("line", 12);
+        io.addProperty("call_owner", BPServiceActor.Sink.class.getName().replace('.', '/'));
+        io.addProperty("call_name", "write");
+        io.addProperty("call_descriptor", "()V");
+        io.addProperty("line_ordinal", 0);
+        JsonArray ioCalls = new JsonArray();
+        ioCalls.add(io);
+        selection.add("io_calls", ioCalls);
+        selection.add("branches", new JsonArray());
+        return instrumentClass(BPServiceActor.class, selection);
+    }
+
+    private static Class<?> instrumentClass(Class<?> sourceClass, JsonObject selection)
+            throws Exception {
         Method parse = SelectionAgent.class.getDeclaredMethod("parse", JsonObject.class);
         parse.setAccessible(true);
         Map<?, ?> plans = (Map<?, ?>) parse.invoke(null, selection);
@@ -292,19 +347,19 @@ public class ExplicitThrowInstrumentationTest {
         Constructor<?> constructor = transformerClass.getDeclaredConstructor(Map.class);
         constructor.setAccessible(true);
         ClassFileTransformer transformer = (ClassFileTransformer) constructor.newInstance(plans);
-        String internalName = Fixture.class.getName().replace('.', '/');
+        String internalName = sourceClass.getName().replace('.', '/');
         byte[] original;
-        try (InputStream input = Fixture.class.getClassLoader().getResourceAsStream(
+        try (InputStream input = sourceClass.getClassLoader().getResourceAsStream(
                 internalName + ".class")) {
             ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             byte[] buffer = new byte[4096];
             for (int size; (size = input.read(buffer)) != -1;) bytes.write(buffer, 0, size);
             original = bytes.toByteArray();
         }
-        ClassLoader loader = new ClassLoader(Fixture.class.getClassLoader()) {
+        ClassLoader loader = new ClassLoader(sourceClass.getClassLoader()) {
             @Override protected Class<?> loadClass(String name, boolean resolve)
                     throws ClassNotFoundException {
-                if (!name.equals(Fixture.class.getName())) return super.loadClass(name, resolve);
+                if (!name.equals(sourceClass.getName())) return super.loadClass(name, resolve);
                 synchronized (getClassLoadingLock(name)) {
                     Class<?> existing = findLoadedClass(name);
                     if (existing == null) {
@@ -322,6 +377,6 @@ public class ExplicitThrowInstrumentationTest {
                 }
             }
         };
-        return loader.loadClass(Fixture.class.getName());
+        return loader.loadClass(sourceClass.getName());
     }
 }

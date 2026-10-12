@@ -194,6 +194,7 @@ class CoverageIoTest(unittest.TestCase):
         self.assertEqual(first_point['occurrenceOrdinal'], 1)
         self.assertEqual(second_point['occurrenceOrdinal'], 2)
         self.assertIsNone(point_from_event({**second, 'occurrenceOrdinal': 0}))
+        self.assertIsNone(point_from_event({**second, 'identityGap': True}))
         applied = {'applied_count': 1, 'matched_count': 1,
                    'applied_points': [second_point],
                    'applied_fault_ids': [fingerprint(second_point)]}

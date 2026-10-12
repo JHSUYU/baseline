@@ -257,6 +257,7 @@ public final class SelectionAgent {
     private static final class SelectedMethod extends AdviceAdapter {
         final MethodPlan plan;
         final WeaveStats stats;
+        final boolean instanceMethod;
         final Map<String, Integer> ioOrdinals = new HashMap<>();
         final Map<Integer, Integer> branchOrdinals = new HashMap<>();
         final Map<Integer, Integer> throwOrdinals = new HashMap<>();
@@ -265,6 +266,7 @@ public final class SelectionAgent {
         final Label tryEnd = new Label();
         final Label tryHandler = new Label();
         int line = -1;
+        boolean thisAvailable;
         int catchAllExceptionSlot = -1;
         boolean awaitingCatchAllStore;
         boolean lastLoadedCatchAllException;
@@ -274,9 +276,11 @@ public final class SelectionAgent {
             super(Opcodes.ASM9, delegate, access, name, descriptor);
             this.plan = plan;
             this.stats = stats;
+            this.instanceMethod = (access & ACC_STATIC) == 0;
         }
 
         @Override protected void onMethodEnter() {
+            thisAvailable = instanceMethod;
             mv.visitLdcInsn(plan.signature);
             mv.visitMethodInsn(INVOKESTATIC, PROBE, "enter", NO_CALL, false);
             mv.visitLabel(tryStart);
@@ -349,8 +353,10 @@ public final class SelectionAgent {
                 stats.io++;
                 mv.visitLdcInsn(site.siteId);
                 mv.visitLdcInsn(site.callee);
+                if (thisAvailable) mv.visitVarInsn(ALOAD, 0);
+                else mv.visitInsn(ACONST_NULL);
                 mv.visitMethodInsn(INVOKESTATIC, PROBE, "io",
-                        "(Ljava/lang/String;Ljava/lang/String;)V", false);
+                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
             }
             super.visitMethodInsn(opcode, owner, name, descriptor, isInterface);
         }

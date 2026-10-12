@@ -42,6 +42,7 @@ public final class SelectionProbe {
     private static String targetMethod;
     private static final Set<String> seenMethods = new HashSet<>();
     private static final Set<String> seenBranches = new HashSet<>();
+    private static final Set<String> seenIdentityGaps = new HashSet<>();
     private static final Map<String, Integer> occurrenceHits = new HashMap<>();
 
     static {
@@ -277,21 +278,44 @@ public final class SelectionProbe {
     }
 
     public static void io(String siteId, String callee) throws IOException {
+        io(siteId, callee, null);
+    }
+
+    public static void io(String siteId, String callee, Object owner) throws IOException {
         String occurrence = OccurrenceIdentity.stable(NODE + "/"
                 + Thread.currentThread().getName() + "/" + siteId);
+        ActorIdentity.Resolution identity = ActorIdentity.resolve(owner);
+        if (identity.applies()) {
+            int siteStart = occurrence.lastIndexOf("/<");
+            if (siteStart >= 0) {
+                occurrence = occurrence.substring(0, siteStart) + "|"
+                        + identity.logicalNodeId + occurrence.substring(siteStart);
+            }
+        }
         Map<String, Integer> hits = HITS.get();
         int hit = hits.getOrDefault(siteId, 0) + 1;
         hits.put(siteId, hit);
         Throwable selectedFault;
         synchronized (SelectionProbe.class) {
+            if (identity.gap && seenIdentityGaps.add(identity.logicalNodeId)) {
+                JsonObject gap = event("ACTOR_IDENTITY_GAP");
+                gap.addProperty("siteId", siteId);
+                gap.addProperty("actorClass", owner.getClass().getName());
+                gap.addProperty("logicalNodeId", identity.logicalNodeId);
+                gap.addProperty("reason", identity.reason);
+                write(gap, true);
+            }
             // Several short-lived actors can normalize to the same address,
             // each with a thread-local hit of one. Keep their observed order
             // so a fault can address a later occurrence of that actor/site.
             int occurrenceOrdinal = occurrenceHits.getOrDefault(occurrence, 0) + 1;
             occurrenceHits.put(occurrence, occurrenceOrdinal);
             JsonObject observed = faultEvent("FAULT_POINT_OBSERVED", siteId,
-                    callee, occurrence, hit, occurrenceOrdinal);
+                    callee, occurrence, hit, occurrenceOrdinal, identity);
             write(observed, true);
+            // A missing HDFS actor slot must never match a different DN
+            // merely because both thread names normalize to the same actor.
+            if (identity.gap) return;
             if (nextFault >= planned.size()) return;
             JsonObject wanted = planned.get(nextFault).getAsJsonObject();
             if (!MARKER.equals(string(wanted, "marker"))
@@ -304,12 +328,12 @@ public final class SelectionProbe {
             String exceptionClass = string(wanted, "exceptionClass");
             selectedFault = makeFault(exceptionClass, siteId);
             JsonObject matched = faultEvent("FAULT_MATCHED", siteId, callee,
-                    occurrence, hit, occurrenceOrdinal);
+                    occurrence, hit, occurrenceOrdinal, identity);
             matched.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) matched.addProperty("exceptionClass", exceptionClass);
             write(matched, true);
             JsonObject appliedRow = faultEvent("FAULT_APPLIED", siteId, callee,
-                    occurrence, hit, occurrenceOrdinal);
+                    occurrence, hit, occurrenceOrdinal, identity);
             appliedRow.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) appliedRow.addProperty("exceptionClass", exceptionClass);
             write(appliedRow, true);
@@ -353,7 +377,8 @@ public final class SelectionProbe {
     }
 
     private static JsonObject faultEvent(String kind, String siteId, String callee,
-                                         String occurrence, int hit, int occurrenceOrdinal) {
+                                         String occurrence, int hit, int occurrenceOrdinal,
+                                         ActorIdentity.Resolution identity) {
         JsonObject row = event(kind);
         row.addProperty("marker", MARKER);
         row.addProperty("siteId", siteId);
@@ -361,6 +386,10 @@ public final class SelectionProbe {
         row.addProperty("occurrenceAddress", occurrence);
         row.addProperty("hitOrdinal", hit);
         row.addProperty("occurrenceOrdinal", occurrenceOrdinal);
+        if (identity.applies()) {
+            row.addProperty("logicalNodeId", identity.logicalNodeId);
+            if (identity.gap) row.addProperty("identityGap", true);
+        }
         return row;
     }
 }
