@@ -45,6 +45,9 @@ restarting a worker resumes unfinished work without replaying completed
 trials. A case lock prevents overlapping workers from replacing each other's
 summary or setup state. A check without an original cluster JUnit test is marked
 `no_cluster_test`.
+Completed noncandidate trials compress every attempt's trace and JUnit log,
+including attempts retried after an unmatched fault point. Candidate traces
+stay uncompressed for review.
 
 The current three-node run writes a per-check summary beside each result and
 aggregates the 102 entries in [`../data/crashfuzz/static102-rerun.tsv`](../data/crashfuzz/static102-rerun.tsv).
