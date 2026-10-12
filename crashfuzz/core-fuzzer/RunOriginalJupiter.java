@@ -40,8 +40,14 @@ public final class RunOriginalJupiter {
     summary.getFailures().forEach(f -> f.getException().printStackTrace(System.err));
     System.out.println("JUnit original method: found=" + summary.getTestsFoundCount()
         + " succeeded=" + summary.getTestsSucceededCount()
-        + " failed=" + summary.getTestsFailedCount());
-    if (summary.getTestsFoundCount() < 1 || summary.getTestsFailedCount() != 0)
+        + " failed=" + summary.getTestsFailedCount()
+        + " aborted=" + summary.getTestsAbortedCount()
+        + " skipped=" + summary.getTestsSkippedCount());
+    if (summary.getTestsFoundCount() < 1
+        || summary.getTestsSucceededCount() != summary.getTestsFoundCount()
+        || summary.getTestsFailedCount() != 0
+        || summary.getTestsAbortedCount() != 0
+        || summary.getTestsSkippedCount() != 0)
       System.exit(1);
     System.exit(0);
   }

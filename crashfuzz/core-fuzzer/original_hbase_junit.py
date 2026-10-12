@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import os
 from pathlib import Path
@@ -66,10 +67,12 @@ def main() -> int:
                         str(utility)], check=True)
     source = HERE / 'RunOriginalJupiter.java'
     target = BUILD / 'RunOriginalJupiter.class'
-    if not target.is_file() or target.stat().st_mtime_ns < source.stat().st_mtime_ns:
-        BUILD.mkdir(parents=True, exist_ok=True)
-        subprocess.run([str(JAVA / 'javac'), '-cp', cp, '-d', str(BUILD),
-                        str(source)], check=True)
+    with (HERE / '.build-original-hbase-junit.lock').open('a+') as build_lock:
+        fcntl.flock(build_lock, fcntl.LOCK_EX)
+        if not target.is_file() or target.stat().st_mtime_ns < source.stat().st_mtime_ns:
+            BUILD.mkdir(parents=True, exist_ok=True)
+            subprocess.run([str(JAVA / 'javac'), '-cp', cp, '-d', str(BUILD),
+                            str(source)], check=True)
     command = [str(JAVA / 'java'), '-ea', '-Xmx4g',
                '-Djava.io.tmpdir=' + str(scratch / 'tmp'),
                '-Dtest.build.data.basedirectory=' + str(scratch),
