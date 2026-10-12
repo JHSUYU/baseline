@@ -38,8 +38,10 @@ def audit(result_root: Path, checklist: Path) -> dict:
                 report['incomplete'].append(cid)
                 continue
             expanded = summary.get('selection_profile') == 'caller_expanded'
-            artifact = base / ('caller-expanded/soot-selection.json' if expanded
-                               else 'soot-selection.json')
+            artifact = (Path(summary['selection_artifact'])
+                        if summary.get('selection_artifact') else
+                        base / ('caller-expanded/soot-selection.json' if expanded
+                                else 'soot-selection.json'))
             selection = json.loads(artifact.read_text())
             target_site = row['exact_check_location']['site_id']
             target_method = target_site.split('#u', 1)[0]
@@ -52,8 +54,11 @@ def audit(result_root: Path, checklist: Path) -> dict:
                     summary.get('static_coverage_methods') !=
                     len(selection['coverage_methods'])):
                 raise ValueError('summary counts differ from Soot selection')
-            healthy = base / ('healthy-expanded' if expanded else 'healthy')
-            manifest = json.loads((healthy / 'manifest.json').read_text())
+            healthy_manifest = (Path(summary['healthy_manifest'])
+                                if summary.get('healthy_manifest') else
+                                base / ('healthy-expanded' if expanded else 'healthy') /
+                                'manifest.json')
+            manifest = json.loads(healthy_manifest.read_text())
             if manifest.get('returncode') != 0:
                 raise ValueError('healthy JUnit did not pass')
             if applied_digests(Path(manifest['trace'])) != [selection['input_digest']]:

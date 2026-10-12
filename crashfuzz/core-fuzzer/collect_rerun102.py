@@ -64,9 +64,11 @@ def enrich_result_metrics(value: dict, record: dict) -> None:
 def enrich_live_summary(base: Path, value: dict) -> None:
     if value.get('status') != 'fuzzing' or value.get('finished'):
         return
-    artifact = base / ('caller-expanded/soot-selection.json'
-                       if value.get('selection_profile') == 'caller_expanded'
-                       else 'soot-selection.json')
+    artifact = (Path(value['selection_artifact'])
+                if value.get('selection_artifact') else
+                base / ('caller-expanded/soot-selection.json'
+                        if value.get('selection_profile') == 'caller_expanded'
+                        else 'soot-selection.json'))
     digest = (json.loads(artifact.read_text()).get('input_digest')
               if artifact.is_file() else None)
     for state_path in sorted(base.glob('campaign*/' + value['case_id'] + '/state.json'),
@@ -118,7 +120,7 @@ def remote_summaries(host: str) -> dict[str, dict]:
               "            row.update(healthy_target_reached=record.get('target_reached'),lost_target_trials=record.get('lost_target_trials'),target_outcome_changed_trials=record.get('target_outcome_changed_trials'),coverage_gain_methods=gain.get('methods'),coverage_gain_branches=gain.get('branch_outcomes'))\n"
               "            if not row.get('active_runtime_seconds'): row['active_runtime_seconds']=record.get('total_elapsed_seconds')\n"
               "        if row.get('status')=='fuzzing' and not row.get('finished'):\n"
-              "            artifact=base/('caller-expanded/soot-selection.json' if row.get('selection_profile')=='caller_expanded' else 'soot-selection.json')\n"
+              "            artifact=pathlib.Path(row['selection_artifact']) if row.get('selection_artifact') else base/('caller-expanded/soot-selection.json' if row.get('selection_profile')=='caller_expanded' else 'soot-selection.json')\n"
               "            digest=json.load(open(artifact)).get('input_digest') if artifact.is_file() else None\n"
               "            states=sorted(base.glob('campaign*/'+row['case_id']+'/state.json'),key=lambda s:s.stat().st_mtime,reverse=True)\n"
               "            for state_path in states:\n"

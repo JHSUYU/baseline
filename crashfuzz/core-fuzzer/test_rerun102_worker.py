@@ -85,6 +85,24 @@ class ExceptionResolutionTest(unittest.TestCase):
             self.assertEqual(rerun102_worker.live_selection_artifact(
                 base, 'CHECK-01', '<T: void check()>'), expanded)
 
+    def test_wide_selection_is_pinned_before_smaller_profiles(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            wide = base / 'caller-expanded-800/soot-selection.json'
+            wide.parent.mkdir()
+            wide.write_text(json.dumps({'target_method': '<T: void check()>',
+                                        'input_digest': 'wide',
+                                        'selection_profile': 'caller_expanded_800'}))
+            checkpoint = base / 'campaign-wide/CHECK-01/state.json'
+            checkpoint.parent.mkdir(parents=True)
+            checkpoint.write_text(json.dumps({'static_selection_digest': 'wide',
+                                              'seed': {'trace': 'healthy'},
+                                              'completed': []}))
+            self.assertEqual(rerun102_worker.live_selection_artifact(
+                base, 'CHECK-01', '<T: void check()>'), wide)
+            self.assertEqual(rerun102_worker.healthy_dir(
+                base, json.loads(wide.read_text())), base / 'healthy-800')
+
     def test_fault_point_detection_uses_runtime_event(self):
         with tempfile.TemporaryDirectory() as directory:
             trace = Path(directory) / 'trace.jsonl'

@@ -12,7 +12,10 @@ selected sites. No per-check I/O or coverage list is required.
 
 When the healthy trace contains no selected I/O, the worker automatically
 reselects with a wider Soot caller path and reruns that JUnit. It keeps the
-expanded selection and healthy trace beside the initial ones for replay.
+expanded selection and healthy trace beside the initial ones for replay. If
+the wider path still yields no observed I/O, a final automatic selection uses
+an 800-method coarse budget. A transient failure of the healthy JUnit is
+retried once, with the first failure log retained.
 
 Run `audit_rerun102_selection.py --result-root /path/to/isolated-results`
 on each node to verify that the target and I/O sites came from the Soot

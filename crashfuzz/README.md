@@ -17,7 +17,9 @@ The ASM Java agent in `runtime-agent/` instruments only the selected sites.
 A healthy run records the I/O points and code paths that actually execute.
 If that run observes no selected I/O, the worker automatically retries the
 Soot selection with a wider caller path and reruns the same JUnit method.
-The original and expanded selections, healthy traces, and campaign checkpoints
+If the wider path still observes no I/O, it increases the coarse method budget
+from 400 to 800 and repeats the selection and healthy run. The original and
+expanded selections, healthy traces, and campaign checkpoints
 remain separate so a resumed worker uses the selection that produced its trials.
 The target branch can be absent in that run; the observed I/O points still
 seed single-fault trials that may expose it.
