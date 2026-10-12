@@ -83,6 +83,7 @@ def main() -> int:
     command = [str(JDK / "java"), "-ea", "-Xmx3g", "-Djava.awt.headless=true",
                "-Djava.net.preferIPv4Stack=true",
                "-Dtest.build.data=" + str(scratch / "data"),
+               "-Dtest.cache.data=" + str(RESOURCE),
                "-Djava.io.tmpdir=" + str(scratch / "tmp"),
                "-Dhadoop.log.dir=" + str(scratch / "logs"),
                "-cp", cp, "RunOriginalHdfsJUnit", args.test_class, args.test_method]
