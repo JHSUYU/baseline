@@ -19,20 +19,35 @@ def applied_digests(trace: Path) -> list[str]:
                 if (event := json.loads(line)).get('event') == 'STATIC_SELECTION_APPLIED']
 
 
+def healthy_trace_path(manifest: dict, manifest_path: Path) -> Path:
+    trace = Path(manifest['trace'])
+    if trace.is_file():
+        return trace
+    # A case mirrored to another host retains its original absolute trace
+    # path in the manifest.  The same trace is copied beside that manifest.
+    relocated = manifest_path.parent / trace.name
+    if relocated.is_file():
+        return relocated
+    return trace
+
+
 def audit_runtime_scope(trace: Path, selection: dict) -> None:
     methods = set(selection['coverage_methods'])
     io_sites = {row['site_id'] for row in selection['io_calls']}
+    coverage_events = {'METHOD_ENTER', 'METHOD_EXIT_NORMAL',
+                       'METHOD_EXIT_THROW', 'BRANCH', 'CALL_SITE_ENTER',
+                       'CALL_SITE_RETURN', 'CALL_SITE_THROW'}
     observed_selected_work = False
     with trace.open() as stream:
         for line in stream:
             event = json.loads(line)
             kind = event.get('event')
-            if kind in {'METHOD_ENTER', 'BRANCH'} and event.get('method') not in methods:
+            if kind in coverage_events and event.get('method') not in methods:
                 raise ValueError('runtime coverage escaped Soot method selection')
             if (kind == 'FAULT_POINT_OBSERVED' and
                     event.get('siteId') not in io_sites):
                 raise ValueError('runtime I/O escaped Soot callsite selection')
-            if kind in {'METHOD_ENTER', 'BRANCH', 'FAULT_POINT_OBSERVED'}:
+            if kind in coverage_events or kind == 'FAULT_POINT_OBSERVED':
                 observed_selected_work = True
     if not observed_selected_work:
         raise ValueError('healthy JUnit executed no Soot-selected work')
@@ -84,9 +99,10 @@ def audit(result_root: Path, checklist: Path) -> dict:
             manifest = json.loads(healthy_manifest.read_text())
             if manifest.get('returncode') != 0:
                 raise ValueError('healthy JUnit did not pass')
-            if applied_digests(Path(manifest['trace'])) != [selection['input_digest']]:
+            trace = healthy_trace_path(manifest, healthy_manifest)
+            if applied_digests(trace) != [selection['input_digest']]:
                 raise ValueError('runtime selection digest differs from Soot artifact')
-            audit_runtime_scope(Path(manifest['trace']), selection)
+            audit_runtime_scope(trace, selection)
             config = json.loads((base / 'campaign-config.json').read_text())
             if Path(config['static_selection']['artifact']).resolve() != artifact.resolve():
                 raise ValueError('campaign uses another selection artifact')

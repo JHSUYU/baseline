@@ -41,6 +41,9 @@ class SelectionAuditTest(unittest.TestCase):
             checkpoint.parent.mkdir(parents=True)
             checkpoint.write_text(json.dumps({'static_selection_digest': 'expected'}))
             self.assertEqual(audit(root / 'results', checklist)['errors'], [])
+            (healthy / 'manifest.json').write_text(json.dumps({
+                'returncode': 0, 'trace': '/another-host/healthy/runtime_trace.jsonl'}))
+            self.assertEqual(audit(root / 'results', checklist)['errors'], [])
             trace.write_text(json.dumps({'event': 'STATIC_SELECTION_APPLIED',
                                          'digest': 'expected'}) + '\n')
             self.assertIn('healthy JUnit executed no Soot-selected work',
@@ -50,6 +53,14 @@ class SelectionAuditTest(unittest.TestCase):
                 {'event': 'FAULT_POINT_OBSERVED', 'siteId':
                  '<example.Other: void run()>#u1'})) + '\n')
             self.assertIn('runtime I/O escaped Soot callsite selection',
+                          audit(root / 'results', checklist)['errors'][0]['error'])
+            trace.write_text('\n'.join(json.dumps(row) for row in (
+                {'event': 'STATIC_SELECTION_APPLIED', 'digest': 'expected'},
+                {'event': 'METHOD_ENTER', 'method': site.split('#u')[0]},
+                {'event': 'CALL_SITE_ENTER', 'method':
+                 '<example.Other: void run()>', 'siteId':
+                 '<example.Other: void run()>#u1'})) + '\n')
+            self.assertIn('runtime coverage escaped Soot method selection',
                           audit(root / 'results', checklist)['errors'][0]['error'])
             trace.write_text(json.dumps({'event': 'STATIC_SELECTION_APPLIED',
                                          'digest': 'wrong'}) + '\n')
