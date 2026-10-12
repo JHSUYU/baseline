@@ -15,6 +15,10 @@ system.
 
 The ASM Java agent in `runtime-agent/` instruments only the selected sites.
 A healthy run records the I/O points and code paths that actually execute.
+If that run observes no selected I/O, the worker automatically retries the
+Soot selection with a wider caller path and reruns the same JUnit method.
+The original and expanded selections, healthy traces, and campaign checkpoints
+remain separate so a resumed worker uses the selection that produced its trials.
 The target branch can be absent in that run; the observed I/O points still
 seed single-fault trials that may expose it.
 `core-fuzzer/fuzzer.py` then mutates ordered exception plans, reruns the same
@@ -52,7 +56,8 @@ stay uncompressed for review.
 The current three-node run writes a per-check summary beside each result and
 aggregates the 102 entries in [`../data/crashfuzz/static102-rerun.tsv`](../data/crashfuzz/static102-rerun.tsv).
 The table records the exact check location, selected JUnit, time, fault
-trials, strict injections, post-fault target reach, and candidate count.
+trials, strict injections, healthy and post-fault target reach, lost-target
+trials, new method and branch coverage, and candidate count.
 
 `cases/`, the older shared adapters, and `entrypoints.json` preserve the
 previous case-specific campaign and its reproduction records. The Soot
