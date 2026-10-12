@@ -102,6 +102,9 @@ class ExceptionResolutionTest(unittest.TestCase):
                 base, 'CHECK-01', '<T: void check()>'), wide)
             self.assertEqual(rerun102_worker.healthy_dir(
                 base, json.loads(wide.read_text())), base / 'healthy-800')
+            self.assertEqual(rerun102_worker.healthy_dir(
+                base, json.loads(wide.read_text()), 'nightly'),
+                base / 'healthy-800-nightly')
 
     def test_fault_point_detection_uses_runtime_event(self):
         with tempfile.TemporaryDirectory() as directory:

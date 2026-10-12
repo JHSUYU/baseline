@@ -82,16 +82,20 @@ def main() -> int:
     runner = HERE / 'RunOriginalHdfsJUnit.java'
     test_class_file = classes / Path(*args.test_class.split('.')).with_suffix('.class')
     runner_class_file = classes / 'RunOriginalHdfsJUnit.class'
-    if not test_class_file.is_file() or not runner_class_file.is_file():
+    if (not test_class_file.is_file() or not runner_class_file.is_file() or
+            runner_class_file.stat().st_mtime_ns < runner.stat().st_mtime_ns):
         subprocess.run([str(JAVA / 'javac'), '-cp', cp, '-sourcepath', sourcepath,
                         '-d', str(classes), str(test_path), str(runner),
                         *(str(path) for path in dynamic_plugins())], check=True)
+    nightly = bool(re.search(r'^\s*@Nightly\b',
+                             test_path.read_text(errors='replace'), re.M))
     command = [str(JAVA / 'java'), '-ea', '-Xmx3g', '-Djava.awt.headless=true',
                '-Djava.io.tmpdir=' + str(scratch), '-DtempDir=' + str(scratch),
                '-Dtests.seed=F0993D5343E20BA4',
                '-Dtests.src.home=' + str(SOURCE / 'solr/core'),
                '-Dcommon.dir=' + str(SOURCE / 'lucene'),
-               '-Dtests.asserts=true', '-Dtests.slow=true', '-Dtests.nightly=false',
+               '-Dtests.asserts=true', '-Dtests.slow=true',
+               '-Dtests.nightly=' + str(nightly).lower(),
                '-Dtests.awaitsfix=true', '-Dtests.badapples=true',
                '-Dsolr.disableConfigSetsCreateAuthChecks=true',
                '-Dtests.timeoutSuite=86400000', '-Dtests.timeout=86400000',
@@ -115,6 +119,7 @@ def main() -> int:
             code = 124
     result = {'case_id': args.case_id,
               'cluster_test': args.test_class + '#' + args.test_method,
+              'nightly_enabled': nightly,
               'returncode': code, 'elapsed_seconds': round(time.monotonic() - started, 3),
               'trace': str(output / 'runtime_trace.jsonl'),
               'junit_log': str(output / 'junit.log')}

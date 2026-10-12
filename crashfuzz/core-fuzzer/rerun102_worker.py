@@ -200,10 +200,11 @@ def live_selection_artifact(base: Path, cid: str, target: str) -> Path | None:
     return None
 
 
-def healthy_dir(base: Path, selection: dict) -> Path:
+def healthy_dir(base: Path, selection: dict, campaign_suffix: str = '') -> Path:
     profile = selection.get('selection_profile')
-    return base / {'caller_expanded': 'healthy-expanded',
-                   'caller_expanded_800': 'healthy-800'}.get(profile, 'healthy')
+    name = {'caller_expanded': 'healthy-expanded',
+            'caller_expanded_800': 'healthy-800'}.get(profile, 'healthy')
+    return base / (name + ('-' + campaign_suffix if campaign_suffix else ''))
 
 
 def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
@@ -257,7 +258,7 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                        static_io_calls=len(selection['io_calls']),
                        static_coverage_methods=len(selection['coverage_methods']))
         atomic_json(summary_path, summary)
-        healthy = healthy_dir(base, selection)
+        healthy = healthy_dir(base, selection, campaign_suffix)
         manifest = healthy / 'manifest.json'
         if not healthy_matches(manifest, selection['input_digest']):
             argv = ['python3', str(HERE / RUNNER[family(row['system'])]),
@@ -288,7 +289,7 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                            static_coverage_methods=len(selection['coverage_methods']),
                            selection_profile='caller_expanded')
             atomic_json(summary_path, summary)
-            healthy = base / 'healthy-expanded'
+            healthy = healthy_dir(base, selection, campaign_suffix)
             manifest = healthy / 'manifest.json'
             if not healthy_matches(manifest, selection['input_digest']):
                 argv = ['python3', str(HERE / RUNNER[family(row['system'])]),
@@ -319,7 +320,7 @@ def _run_case_unlocked(row: dict, result_root: Path, max_trials: int,
                            static_coverage_methods=len(selection['coverage_methods']),
                            selection_profile='caller_expanded_800')
             atomic_json(summary_path, summary)
-            healthy = healthy_dir(base, selection)
+            healthy = healthy_dir(base, selection, campaign_suffix)
             manifest = healthy / 'manifest.json'
             if not healthy_matches(manifest, selection['input_digest']):
                 argv = ['python3', str(HERE / RUNNER[family(row['system'])]),
