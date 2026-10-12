@@ -435,6 +435,8 @@ class CoverageIoTest(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             config = fixture(root, mode='unmatched', max_trials=1)
+            config['target']['exception_type'] = 'example.OtherException'
+            config['archive_completed_trials'] = True
             state = campaign(config, root / 'out')
             self.assertEqual(len(state['completed']), 1)
             result = json.loads(Path(state['completed'][0]['result']).read_text())
@@ -442,6 +444,11 @@ class CoverageIoTest(unittest.TestCase):
             self.assertTrue(result['strict_injection'])
             self.assertEqual(len(list((root / 'out/CHECK-01/trials').glob(
                 '*/attempt-*/result.json'))), 2)
+            traces = sorted((root / 'out/CHECK-01/trials').glob(
+                '*/attempt-*/trace/runtime_trace.jsonl.gz'))
+            self.assertEqual(len(traces), 2)
+            self.assertFalse(list((root / 'out/CHECK-01/trials').glob(
+                '*/attempt-*/trace/runtime_trace.jsonl')))
             self.assertEqual(len(campaign(config, root / 'out')['completed']), 1)
 
     def test_budget_depth_expansion_uses_saved_trace(self):
