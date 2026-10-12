@@ -15,7 +15,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import signal
 import socket
 import subprocess
@@ -810,19 +809,9 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     result["new_io_families"] = sorted(new_io)
     result["status"] = status
     if config.get("archive_completed_trials") and status != "target_exception_candidate":
-        archived = []
-        for name in ("runtime_trace.jsonl", "junit.log", "jacoco.exec"):
-            path = trial_dir / f"attempt-{active['attempt']:02d}" / "trace" / name
-            if not path.is_file():
-                continue
-            target = path.with_name(path.name + ".gz")
-            with path.open("rb") as source, gzip.open(target, "wb", compresslevel=3) as sink:
-                shutil.copyfileobj(source, sink)
-            path.unlink()
-            archived.append(str(target))
-            if result.get("trace") == str(path):
-                result["trace"] = str(target)
-        result["archived_artifacts"] = archived
+        result["archived_artifacts"] = sorted(set(
+            result.get("archived_artifacts", []) +
+            archive_trial_attempts(trial_dir, result)))
     atomic_json(result_file, result)
     if admitted:
         state["coverage"] = sorted(old_coverage | set(result.get("coverage", [])))
@@ -835,6 +824,53 @@ def process_trial(config: dict[str, Any], state: dict[str, Any],
     enqueue_extensions(state, active["sequence"], result,
                        config["budget"]["max_faults"])
     state["active"] = None
+
+
+def archive_trial_attempts(trial_dir: Path, final_result: dict[str, Any]) -> list[str]:
+    """Compress every completed retry, including attempts before the last one."""
+    archived = []
+    for attempt_dir in sorted(trial_dir.glob("attempt-*")):
+        attempt_result_path = attempt_dir / "result.json"
+        if not attempt_result_path.is_file():
+            continue
+        attempt_result = json.loads(attempt_result_path.read_text())
+        changed = False
+        attempt_archived = []
+        for name in ("runtime_trace.jsonl", "junit.log", "jacoco.exec"):
+            path = attempt_dir / "trace" / name
+            if not path.is_file():
+                continue
+            target = path.with_name(path.name + ".gz")
+            temporary = target.with_name(target.name + f".tmp.{os.getpid()}")
+            try:
+                source_digest = hashlib.sha256()
+                with path.open("rb") as source, gzip.open(
+                        temporary, "wb", compresslevel=3) as sink:
+                    for chunk in iter(lambda: source.read(1024 * 1024), b""):
+                        source_digest.update(chunk)
+                        sink.write(chunk)
+                restored_digest = hashlib.sha256()
+                with gzip.open(temporary, "rb") as restored:
+                    for chunk in iter(lambda: restored.read(1024 * 1024), b""):
+                        restored_digest.update(chunk)
+                if restored_digest.digest() != source_digest.digest():
+                    raise IOError(f"compressed artifact differs from source: {path}")
+                os.replace(temporary, target)
+                path.unlink()
+            finally:
+                temporary.unlink(missing_ok=True)
+            archived.append(str(target))
+            attempt_archived.append(str(target))
+            if attempt_result.get("trace") == str(path):
+                attempt_result["trace"] = str(target)
+            if final_result.get("trace") == str(path):
+                final_result["trace"] = str(target)
+            changed = True
+        if changed:
+            attempt_result["archived_artifacts"] = sorted(set(
+                attempt_result.get("archived_artifacts", []) + attempt_archived))
+            atomic_json(attempt_result_path, attempt_result)
+    return archived
 
 
 def validate(config: dict[str, Any]) -> None:

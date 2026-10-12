@@ -1,11 +1,13 @@
 import hashlib
+import gzip
 import json
 import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-from fuzzer import (campaign, fault_point_for_io, fingerprint, in_io_scope, point_from_event,
+from fuzzer import (archive_trial_attempts, campaign, fault_point_for_io, fingerprint,
+                    in_io_scope, point_from_event,
                     static_reason_priority, strict_injection, trace_feedback,
                     validate, write_case_result)
 
@@ -518,6 +520,28 @@ class CoverageIoTest(unittest.TestCase):
                            static_reason_priority('callee_may_dispatch'))
         self.assertGreater(static_reason_priority('target_direct_field_writer'),
                            static_reason_priority('callee_may_dispatch'))
+
+    def test_completed_retry_archives_every_attempt(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp) / 'trial'
+            for number in (1, 2):
+                attempt = trial / f'attempt-{number:02d}'
+                trace = attempt / 'trace' / 'runtime_trace.jsonl'
+                trace.parent.mkdir(parents=True)
+                trace.write_text(f'attempt {number}\n')
+                (attempt / 'result.json').write_text(json.dumps({'trace': str(trace)}))
+            final = {'trace': str(trial / 'attempt-02/trace/runtime_trace.jsonl')}
+            archived = archive_trial_attempts(trial, final)
+            self.assertEqual(len(archived), 2)
+            for number in (1, 2):
+                attempt = trial / f'attempt-{number:02d}'
+                trace = attempt / 'trace' / 'runtime_trace.jsonl'
+                self.assertFalse(trace.exists())
+                with gzip.open(str(trace) + '.gz', 'rt') as stream:
+                    self.assertEqual(stream.read(), f'attempt {number}\n')
+                record = json.loads((attempt / 'result.json').read_text())
+                self.assertEqual(record['trace'], str(trace) + '.gz')
+            self.assertEqual(final['trace'], str(trial / 'attempt-02/trace/runtime_trace.jsonl.gz'))
 
 
 if __name__ == '__main__':
