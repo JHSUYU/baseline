@@ -248,6 +248,10 @@ public final class ScopePlanner {
         } else {
             fatalThrow = resolveControlledThrow(target, object(input, "target"));
         }
+        if (analysis.has("original_graphchecker_seed")
+                && analysis.get("original_graphchecker_seed").getAsBoolean()) {
+            return originalGraphCheckerSeed(dirs, analysis);
+        }
         // The healthy seed reaches a check branch, not its fatal throw. The
         // throw is an oracle probe, deliberately not a backward value seed:
         // exception construction is irrelevant to what makes the check fail.
@@ -262,6 +266,244 @@ public final class ScopePlanner {
         selectFieldAccessesAndDoors();
         discoverPorts(analysis);
         return output();
+    }
+
+    /**
+     * Experimental exact GraphChecker engine path. The optional bridge lives
+     * in the ORIGINAL GraphChecker package so it can call the package-private
+     * SeedBackwardStaticAnalyzer and CausynthPipeline collaborators directly.
+     * No legacy Mallory backward worklist is run on this path.
+     */
+    private JsonObject originalGraphCheckerSeed(List<String> dirs, JsonObject analysis) {
+        if (fatalThrow == null) throw new IllegalArgumentException(
+                "original GraphChecker seed requires one explicit fatal throw");
+        // runPacks() lowers active bodies after jtp. GraphChecker's original
+        // analyzer reads retrieveActiveBody() and requires Jimple ThrowStmt,
+        // so restore the exact jtp-entry snapshots ONLY for this opt-in path.
+        for (SootClass owner : Scene.v().getApplicationClasses()) {
+            for (SootMethod method : owner.getMethods()) {
+                Body captured = jtpBodies.get(method.getSignature());
+                if (captured != null) method.setActiveBody((Body) captured.clone());
+            }
+        }
+        String directory = string(analysis, "original_engine_output_dir", "");
+        if (directory.isEmpty()) throw new IllegalArgumentException(
+                "analysis.original_engine_output_dir is required");
+        String loopBound = string(analysis, "original_loop_default_bound", "");
+        if (!loopBound.matches("[1-9][0-9]*")) throw new IllegalArgumentException(
+                "analysis.original_loop_default_bound must explicitly name GraphChecker's loop bound");
+        String previousLoopBound = System.getProperty("causynth.loop.default.bound");
+        System.setProperty("causynth.loop.default.bound", loopBound);
+        JsonObject original;
+        try {
+            Class<?> bridge = Class.forName("edu.uva.liftlab.graphchecker.causynth."
+                    + "MalloryOriginalSeedBridge");
+            original = (JsonObject) bridge.getMethod("analyze", List.class, Path.class,
+                    String.class, int.class, String.class).invoke(null,
+                    dirs, Paths.get(directory), fatalThrow.owner.soot
+                            .getDeclaringClass().getName(),
+                    originalExceptionConstructionLine(fatalThrow),
+                    ((ThrowStmt) fatalThrow.unit).getOp().getType().toString());
+        } catch (ReflectiveOperationException error) {
+            Throwable cause = error instanceof java.lang.reflect.InvocationTargetException
+                    ? ((java.lang.reflect.InvocationTargetException) error).getCause() : error;
+            throw new IllegalStateException("original GraphChecker engine unavailable or failed", cause);
+        } finally {
+            if (previousLoopBound == null) System.clearProperty("causynth.loop.default.bound");
+            else System.setProperty("causynth.loop.default.bound", previousLoopBound);
+        }
+        Set<Method> held = new LinkedHashSet<>();
+        for (JsonElement name : original.getAsJsonArray("traceMethods")) {
+            Method method = methods.get(name.getAsString());
+            if (method != null && materializedClasses.contains(
+                    method.soot.getDeclaringClass().getName())) held.add(method);
+        }
+        for (JsonElement item : original.getAsJsonArray("regions")) {
+            JsonObject region = item.getAsJsonObject();
+            for (JsonElement name : region.getAsJsonArray("methods")) {
+                Method method = methods.get(name.getAsString());
+                if (method != null && materializedClasses.contains(
+                        method.soot.getDeclaringClass().getName())) held.add(method);
+            }
+        }
+        held.add(target.owner);
+        List<JsonObject> rows = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        String originalTargetRegion = "";
+        for (JsonElement item : original.getAsJsonArray("staticScopeSites")) {
+            JsonObject source = item.getAsJsonObject();
+            if ("TARGET_SITE".equals(string(source, "role", ""))
+                    && fatalThrow.id.equals(string(source, "siteId", ""))) {
+                originalTargetRegion = string(source, "regionId", "");
+                break;
+            }
+        }
+        if (originalTargetRegion.isEmpty()) throw new IllegalStateException(
+                "original GraphChecker target has no selected region: " + fatalThrow.id);
+        JsonObject checkRow = row("TARGET_SITE", target, "", "");
+        checkRow.addProperty("regionId", originalTargetRegion);
+        addOriginal(rows, seen, checkRow);
+        JsonObject throwRow = row("THROW_SITE", fatalThrow, "", "");
+        throwRow.addProperty("regionId", originalTargetRegion);
+        addOriginal(rows, seen, throwRow);
+        for (JsonElement item : original.getAsJsonArray("staticScopeSites")) {
+            JsonObject source = item.getAsJsonObject();
+            String role = string(source, "role", "");
+            String id = string(source, "siteId", "");
+            Site site = exactSite(id);
+            if (site == null) {
+                if (!id.isEmpty()) analysisGaps.add("original_graphchecker_site_unmapped:" + id);
+                continue;
+            }
+            if (!materializedClasses.contains(site.owner.soot.getDeclaringClass().getName()))
+                continue;
+            if ("TARGET_SITE".equals(role) || "ROOT_SITE".equals(role)
+                    || "DECLARED_SITE".equals(role)) continue;
+            if ("READ_SITE".equals(role) || "WRITE_SITE".equals(role)) {
+                String cell = string(source, "cell", "");
+                if (!cell.isEmpty()) {
+                    JsonObject mapped = row(role, site, cell, "");
+                    mapped.addProperty("regionId", string(source, "regionId", ""));
+                    addOriginal(rows, seen, mapped);
+                }
+            } else if ("EXPORT_SITE".equals(role)) {
+                JsonObject mapped = row(role, site, "", string(source, "portId", ""));
+                mapped.addProperty("regionId", string(source, "regionId", ""));
+                addOriginal(rows, seen, mapped);
+            }
+        }
+        for (JsonElement item : original.getAsJsonArray("demandedDoors")) {
+            JsonObject source = item.getAsJsonObject();
+            String id = string(source, "siteId", "");
+            Site site = exactSite(id);
+            if (site == null || !((Stmt) site.unit).containsInvokeExpr()) {
+                analysisGaps.add("original_graphchecker_door_unmapped:" + id);
+                continue;
+            }
+            SootMethodRef ref = ((Stmt) site.unit).getInvokeExpr().getMethodRef();
+            if (isInstrumentationHelper(site.owner) || !isIoDoor(ref)) {
+                analysisGaps.add("original_graphchecker_door_uninjectable:" + id);
+                continue;
+            }
+            JsonObject door = row("DOOR_SITE", site, "", ref.getSignature());
+            String region = originalRegionHolding(original, site.owner.soot.getSignature());
+            if (!region.isEmpty()) door.addProperty("regionId", region);
+            addOriginal(rows, seen, door);
+        }
+        Map<String, Port> originalPorts = new LinkedHashMap<>();
+        for (JsonElement item : original.getAsJsonArray("regions")) {
+            JsonObject region = item.getAsJsonObject();
+            JsonArray catalog = region.has("communicationPorts")
+                    ? region.getAsJsonArray("communicationPorts") : new JsonArray();
+            for (JsonElement endpoint : catalog) {
+                JsonObject capture = endpoint.getAsJsonObject();
+                String portId = string(capture, "portId", "");
+                String side = string(capture, "regionPortSide", "");
+                String siteId = string(capture, "callSiteId", "");
+                if (exactSite(siteId) == null) {
+                    String method = string(capture, "definitionMethod", "");
+                    int index = integer(capture, "definitionUnitIndex", -1);
+                    if (index >= 0) siteId = method + "#u" + index;
+                }
+                Site site = exactSite(siteId);
+                if (portId.isEmpty() || site == null) {
+                    analysisGaps.add("original_graphchecker_port_unmapped:" + portId + ":" + siteId);
+                    continue;
+                }
+                Port port = originalPorts.computeIfAbsent(portId,
+                        id -> new Port(id, string(capture, "transport", "RPC"), ""));
+                if ("OUT".equals(side)) {
+                    port.producers.add(site);
+                } else if ("IN".equals(side)) {
+                    port.consumers.add(site);
+                } else continue;
+                JsonObject mapped = row("OUT".equals(side) ? "EXPORT_SITE" : "IMPORT_SITE",
+                        site, "", portId);
+                mapped.addProperty("regionId", string(region, "regionId", ""));
+                addOriginal(rows, seen, mapped);
+            }
+        }
+        ports.addAll(originalPorts.values());
+        JsonObject manifest = manifest(rows, held);
+        JsonArray originalRoots = new JsonArray();
+        Set<String> rootKeys = new HashSet<>();
+        for (JsonElement item : original.getAsJsonArray("regions")) {
+            JsonObject region = item.getAsJsonObject();
+            Method method = methods.get(string(region, "rootMethod", ""));
+            if (method == null || !materializedClasses.contains(
+                    method.soot.getDeclaringClass().getName())) continue;
+            String key = string(region, "regionId", "") + "|" + method.soot.getSignature();
+            if (!rootKeys.add(key)) continue;
+            JsonObject ref = methodRef(method);
+            ref.addProperty("regionId", string(region, "regionId", ""));
+            ref.addProperty("sourceOwner", sourceOwner(method));
+            originalRoots.add(ref);
+        }
+        manifest.add("regions", originalRoots);
+        JsonArray scope = new JsonArray();
+        for (JsonObject row : rows) scope.add(row);
+        JsonObject result = new JsonObject();
+        result.addProperty("schemaVersion", 1);
+        result.addProperty("analysisKind", "original_graphchecker_seed_backward");
+        result.addProperty("caseId", string(config, "case_id", ""));
+        result.addProperty("targetSiteId", target.id);
+        result.addProperty("throwSiteId", fatalThrow.id);
+        result.addProperty("sootDependencyClasspathSha256", sha256Full(
+                String.join(File.pathSeparator, strings(analysisConfig.get("classpath")))));
+        result.add("scopeSites", scope);
+        result.add("weaveManifest", manifest);
+        result.add("originalGraphChecker", original);
+        JsonArray gaps = new JsonArray();
+        for (String gap : analysisGaps) gaps.add(gap);
+        result.add("analysisGaps", gaps);
+        return result;
+    }
+
+    private Site exactSite(String id) {
+        int cut = id.lastIndexOf("#u");
+        if (cut <= 0) return null;
+        Method method = methods.get(id.substring(0, cut));
+        if (method == null) return null;
+        try {
+            int index = Integer.parseInt(id.substring(cut + 2));
+            return index < 0 || index >= method.sites.size()
+                    ? null : method.sites.get(index);
+        } catch (NumberFormatException ignored) {
+            return null;
+        }
+    }
+
+    private static String originalRegionHolding(JsonObject original, String method) {
+        for (JsonElement item : original.getAsJsonArray("regions")) {
+            JsonObject region = item.getAsJsonObject();
+            for (JsonElement member : region.getAsJsonArray("methods")) {
+                if (method.equals(member.getAsString()))
+                    return string(region, "regionId", "");
+            }
+        }
+        return "";
+    }
+
+    /** GraphChecker declares the NEW's source line, while Mallory's oracle is THROW. */
+    private int originalExceptionConstructionLine(Site thrown) {
+        Method method = thrown.owner;
+        method.flow();
+        Value operand = ((ThrowStmt) thrown.unit).getOp();
+        if (!(operand instanceof Local)) throw new IllegalStateException(
+                "fatal throw has no local exception allocation: " + thrown.id);
+        List<Unit> definitions = method.defs.getDefsOfAt((Local) operand, thrown.unit);
+        List<Site> allocations = new ArrayList<>();
+        for (Unit definition : definitions) {
+            if (definition instanceof AssignStmt
+                    && ((AssignStmt) definition).getRightOp() instanceof NewExpr) {
+                allocations.add(method.site(definition));
+            }
+        }
+        if (allocations.size() != 1 || allocations.get(0).line <= 0) {
+            throw new IllegalStateException("GraphChecker needs one attributed NEW for "
+                    + thrown.id + "; found " + allocations.size());
+        }
+        return allocations.get(0).line;
     }
 
     private static long elapsed(long started) {
@@ -1510,6 +1752,13 @@ public final class ScopePlanner {
     private static void add(List<JsonObject> rows, Set<String> seen, JsonObject row) {
         String key = row.get("role").getAsString() + "|" + row.get("siteId").getAsString()
                 + "|" + string(row, "cell", "") + "|" + string(row, "portId", "");
+        if (seen.add(key)) rows.add(row);
+    }
+
+    private static void addOriginal(List<JsonObject> rows, Set<String> seen, JsonObject row) {
+        String key = string(row, "regionId", "") + "|" + string(row, "role", "")
+                + "|" + string(row, "siteId", "") + "|" + string(row, "cell", "")
+                + "|" + string(row, "portId", "");
         if (seen.add(key)) rows.add(row);
     }
 
