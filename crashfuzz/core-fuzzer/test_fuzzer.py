@@ -492,6 +492,16 @@ class CoverageIoTest(unittest.TestCase):
                  'repeated_reply_loss_version': 1}
         self.assertEqual(choose_next_sequence(state), 2)
 
+    def test_bounded_slot_keeps_three_fault_descendants_in_budget(self):
+        state = {'completed': [{'sequence': [A]}] * 7,
+                 'queue': [{'sequence': [A], 'priority': 500, 'created': 1},
+                           {'sequence': [A, B], 'priority': 400, 'created': 2},
+                           {'sequence': [A, B, {**B, 'siteId': 'third'}],
+                            'priority': 80,
+                            'target_proximity': 80, 'created': 3}],
+                 'deep_sequence_version': 1}
+        self.assertEqual(choose_next_sequence(state), 2)
+
     def test_target_near_slot_keeps_a_precheck_fault_in_budget(self):
         state = {'completed': [{'sequence': [A]}] * 4,
                  'queue': [{'sequence': [B], 'priority': 1000,

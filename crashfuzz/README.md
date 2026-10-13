@@ -65,6 +65,8 @@ experiment after that RPC has completed.
 One trial in seven is reserved for two observed lost replies from the same
 actor and callsite when such a sequence exists, because the next successful
 RPC can otherwise repair the first failure before the target check.
+One trial in eight selects an observed three-or-more-fault descendant when
+available, so overlapping fault effects get a bounded share of the budget.
 The healthy trace also identifies I/O observed shortly before a target check.
 One trial in five is reserved for these near-check I/O observations when any
 remain; other trials continue to explore the broader Soot-selected scope.

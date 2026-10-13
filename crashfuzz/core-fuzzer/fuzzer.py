@@ -814,6 +814,18 @@ def choose_next_sequence(state: dict[str, Any],
                 -entry[1]["sequence"][-2]["hitOrdinal"],
                 -entry[1].get("target_proximity", 0),
                 -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
+    # Exception effects can overlap across several actors. Give retained
+    # three-or-more-fault descendants a bounded share of the budget instead
+    # of letting their numerous one/two-fault siblings fill the campaign.
+    if (state.get("deep_sequence_version", 0) >= 1 and
+            len(previous) % 8 == 7):
+        deep = [(index, item) for index, item in enumerate(state["queue"])
+                if len(item["sequence"]) >= 3]
+        if deep:
+            return min(deep, key=lambda entry: (
+                -entry[1].get("target_proximity", 0),
+                -entry[1]["priority"], len(entry[1]["sequence"]),
+                entry[1]["created"], entry[0]))[0]
     # A short JUnit can perform several protocol steps in one logarithmic
     # occurrence bucket. Periodically sample another exact invocation of a
     # repeated site after the coarse buckets have been represented.
@@ -1593,6 +1605,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("late_occurrence_diversity_version", 1)
             state.setdefault("exact_late_occurrence_version", 1)
             state.setdefault("repeated_reply_loss_version", 1)
+            state.setdefault("deep_sequence_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1677,6 +1690,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "late_occurrence_diversity_version": 1,
                      "exact_late_occurrence_version": 1,
                      "repeated_reply_loss_version": 1,
+                     "deep_sequence_version": 1,
                      "site_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,
