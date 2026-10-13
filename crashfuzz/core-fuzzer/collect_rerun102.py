@@ -25,7 +25,8 @@ COLUMNS = ('case_id', 'system', 'status', 'finished', 'bug_mark',
            'check_code', 'cluster_test', 'total_elapsed_seconds',
            'active_runtime_seconds',
            'prior_campaign_elapsed_seconds', 'prior_campaign_fault_trials',
-           'prior_campaign_strict_injections', 'current_campaign_elapsed_seconds',
+           'prior_campaign_strict_injections', 'prior_campaign_breakdown',
+           'current_campaign_elapsed_seconds',
            'current_campaign_fault_trials', 'migration_audit',
            'healthy_seconds', 'fault_trials', 'active_trial', 'strict_injections',
            'healthy_target_reached', 'post_fault_target_reach_trials',
@@ -71,13 +72,22 @@ def apply_campaign_migration(value: dict, migrations: dict[str, dict]) -> None:
         return
     current = max(float(value.get('total_elapsed_seconds') or 0),
                   float(value.get('active_runtime_seconds') or 0))
-    prior = float(migration['prior_elapsed_seconds'])
+    retired = migration['retired_campaigns']
+    prior = sum(float(item['elapsed_seconds']) for item in retired)
     value['prior_campaign_elapsed_seconds'] = round(prior, 3)
-    value['prior_campaign_fault_trials'] = migration['prior_completed_trials']
-    value['prior_campaign_strict_injections'] = migration['prior_strict_injections']
+    value['prior_campaign_fault_trials'] = sum(
+        int(item['completed_trials']) for item in retired)
+    value['prior_campaign_strict_injections'] = sum(
+        int(item['strict_injections']) for item in retired)
+    value['prior_campaign_breakdown'] = json.dumps([
+        {'campaign': item['campaign'],
+         'elapsed_seconds': item['elapsed_seconds'],
+         'completed_trials': item['completed_trials'],
+         'budget_trials': item['budget_trials']}
+        for item in retired], separators=(',', ':'))
     value['current_campaign_elapsed_seconds'] = round(current, 3)
     value['current_campaign_fault_trials'] = value.get('fault_trials') or 0
-    value['migration_audit'] = migration['audit_path']
+    value['migration_audit'] = ';'.join(item['audit_path'] for item in retired)
     value['total_elapsed_seconds'] = round(prior + current, 3)
 
 
