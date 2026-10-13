@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import gzip
+import hashlib
 import json
 import os
 import subprocess
@@ -100,6 +102,59 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             self.assertEqual(0, _target_throw_count([{
                 "kind": "TARGET_THROW", "siteId": "throw",
                 "exceptionClass": "java.io.IOException"}], self.TARGET))
+
+    def test_alternate_gzip_levels_keep_exact_archive_receipts(self):
+        content = "".join(json.dumps(row) + "\n" for row in self.rows()).encode()
+        content_sha = hashlib.sha256(content).hexdigest()
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for level in (1, 3, 6, 9):
+                trial = root / f"level-{level}"
+                trial.mkdir()
+                archive = trial / "graphchecker-trace.jsonl.gz"
+                with archive.open("wb") as output:
+                    with gzip.GzipFile(filename="", mode="wb", fileobj=output,
+                                       mtime=0, compresslevel=level) as stream:
+                        stream.write(content)
+                receipt = {"path": archive.name, "encoding": "gzip",
+                           "sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
+                           "bytes": archive.stat().st_size,
+                           "content_sha256": content_sha,
+                           "content_bytes": len(content)}
+                result = {"backend": "graphchecker_native",
+                          "status": "invalid_graphchecker_trace", "case_id": "HDFS-01",
+                          "trace_sha256": content_sha,
+                          "artifacts": {"window_trace": receipt}}
+                (trial / "result.json").write_text(json.dumps(result))
+                verify_trial_artifacts(trial, result, {"window_trace"})
+                self.assertEqual((1, content_sha, receipt["sha256"]),
+                                 _prior_trace_metadata(archive, self.TARGET,
+                                                       "HDFS-01"))
+                with archive.open("ab") as output:
+                    output.write(b"changed")
+                with self.assertRaisesRegex(ValueError, "changed window_trace"):
+                    verify_trial_artifacts(trial, result, {"window_trace"})
+
+    def test_legacy_plain_trial_receipts_remain_readable_and_strict(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            trial = Path(temporary)
+            content = b'{"kind":"TARGET_CHECK","siteId":"check"}\n'
+            paths = {name: trial / filename for name, filename in (
+                ("raw_trace", "graphchecker-raw.jsonl"),
+                ("window_trace", "graphchecker-trace.jsonl"),
+                ("graph", "graphchecker-graph.jsonl"))}
+            for path in paths.values():
+                path.write_bytes(content)
+            digest = hashlib.sha256(content).hexdigest()
+            result = {"backend": "graphchecker_native", "status": "checked",
+                      "raw_trace_sha256": digest, "trace_sha256": digest,
+                      "graph_sha256": digest}
+            verify_trial_artifacts(trial, result)
+            self.assertTrue(all(path.read_bytes() == content
+                                for path in paths.values()))
+            paths["window_trace"].write_bytes(content + b"changed")
+            with self.assertRaisesRegex(ValueError, "changed legacy window_trace"):
+                verify_trial_artifacts(trial, result)
 
     def test_scratch_root_override_and_default(self):
         default = Path("/dev/shm") if Path("/dev/shm").is_dir() else None
