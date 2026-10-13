@@ -96,13 +96,16 @@ def import_case(case_id: str, config: Path, campaign: Path, data_root: Path) -> 
     data_root = data_root.resolve()
     source_paths = {"config": config, "checkpoint": campaign / "checkpoint.json",
                     "summary": campaign / "summary.json"}
+    initial_hashes = {name: sha256(source_paths[name])
+                      for name in ("config", "checkpoint")}
     documents = {name: _json(source_paths[name]) for name in ("config", "checkpoint")}
     if documents["config"].get("case_id") != case_id:
         raise ValueError("config case ID differs")
     if documents["checkpoint"].get("terminal") is not True:
         raise ValueError("cannot publish a running campaign")
+    initial_hashes["summary"] = sha256(source_paths["summary"])
     documents["summary"] = _json(source_paths["summary"])
-    config_hash = sha256(config)
+    config_hash = initial_hashes["config"]
     status, terminal, metrics = _native_status(
         case_id, documents["checkpoint"], documents["summary"], config_hash)
     if not terminal:
@@ -113,8 +116,8 @@ def import_case(case_id: str, config: Path, campaign: Path, data_root: Path) -> 
             raise ValueError("invalid native trial record")
         _trial_result(campaign, case_id, record)
     source_hashes = {name: sha256(path) for name, path in source_paths.items()}
-    if source_hashes["config"] != config_hash:
-        raise ValueError("config changed during native trial verification")
+    if source_hashes != initial_hashes:
+        raise ValueError("terminal receipt changed during native trial verification")
     relative = f"imports/{case_id}/{config_hash[:16]}-{source_hashes['checkpoint'][:12]}"
     destination = data_root / relative
     names = {"config": "config.json", "checkpoint": "checkpoint.json",

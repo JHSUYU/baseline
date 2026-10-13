@@ -2,7 +2,9 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
+import Mallory.dispatch.graphchecker_port.import_case as import_module
 from Mallory.dispatch.graphchecker_port.aggregate import (
     ReceiptReader, aggregate, load_import_index,
 )
@@ -148,6 +150,24 @@ class ImportCaseTest(unittest.TestCase):
             summary.symlink_to(original.name)
             with self.assertRaisesRegex(ValueError, "symlink"):
                 load_import_index(data / "import-index.json")
+
+    def test_checkpoint_change_during_verification_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config, campaign = self.make_campaign(root / "source", "test")
+            verifier = import_module.verify_trial_artifacts
+
+            def change_checkpoint(trial, result):
+                verifier(trial, result)
+                checkpoint = json.loads((campaign / "checkpoint.json").read_text())
+                checkpoint["updated_at"] = "changed while verifying"
+                _write(campaign / "checkpoint.json", checkpoint)
+
+            with patch.object(import_module, "verify_trial_artifacts",
+                              side_effect=change_checkpoint):
+                with self.assertRaisesRegex(ValueError, "changed during"):
+                    import_case("HBASE-01", config, campaign, root / "data")
+            self.assertFalse((root / "data" / "import-index.json").exists())
 
 
 if __name__ == "__main__":
