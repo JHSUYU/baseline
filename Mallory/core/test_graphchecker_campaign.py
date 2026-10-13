@@ -48,6 +48,10 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         return {"schemaVersion": 1, "targetSite": "check",
                 "targetReached": True, "closureOccurrenceIds": ["occ-A"],
                 "closureOccurrenceCutoffs": {"occ-A": 6},
+                "targetThrowClosures": [{
+                    "siteId": "throw", "exceptionClass": "java.io.IOException",
+                    "node": "nn-1#epoch0", "occurrenceId": "occ-A", "seq": 6,
+                    "closureOccurrenceCutoffs": {"occ-A": 6}}],
                 "closureEdgeIds": ["edge-1"], "closureCoverageSiteIds": ["cov-1"],
                 "staticScopeTargetFound": True,
                 "staticMayObservedDoorSiteIds": ["may-door"], "gaps": {}}
@@ -60,6 +64,22 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         self.assertEqual([6], evidence["target_throw_seqs_after_fault"])
         self.assertEqual("observed_closure", evidence["eligible_doors"][0]["tier"])
         self.assertTrue(evidence["injection_specific_target_reached"])
+        self.assertTrue(evidence["injection_specific_target_throw"])
+        self.assertEqual(("candidate", True),
+                         _trial_verdict(evidence, [self.FAULT], 0))
+
+    def test_other_request_throw_does_not_inherit_check_closure(self):
+        rows = self.rows()
+        rows[5]["occurrenceId"] = "occ-B"
+        graph = self.graph()
+        graph["targetThrowClosures"][0]["occurrenceId"] = "occ-B"
+        graph["targetThrowClosures"][0]["closureOccurrenceCutoffs"] = {"occ-B": 6}
+        evidence = summarize_evidence(rows, graph, self.TARGET, [self.FAULT])
+        self.assertTrue(evidence["injection_specific_target_reached"])
+        self.assertTrue(evidence["target_exception_triggered"])
+        self.assertFalse(evidence["injection_specific_target_throw"])
+        self.assertEqual(("needs_causal_review", False),
+                         _trial_verdict(evidence, [self.FAULT], 0))
 
     def test_second_request_target_does_not_validate_first_request_fault(self):
         rows = self.rows()

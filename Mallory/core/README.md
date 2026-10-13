@@ -115,8 +115,11 @@ one-based for its occurrence and site. The controller injects faults in array
 order. A trial is strict only if each planned fault has a same-identity
 `FAULT_DOOR` followed by a matching `FAULT_APPLIED` in that order. A target
 candidate additionally needs a named, exact `TARGET_THROW` at the selected
-site and exception type after the last applied fault. Branch execution and
-whether the throw belongs to the observed closure are reported separately;
+site and exception type after the last applied fault. GraphChecker also emits
+one backward closure per throw event. The last applied fault must be an
+ancestor of that exact throw for automatic candidate classification; a check
+in another request cannot supply the throw's ancestry. Branch execution and
+raw throws are reported separately;
 an incomplete graph cannot hide a real target throw. A passing or failing
 JUnit result is recorded separately. A candidate still needs replay and source
 review before any new-bug claim. When a prior healthy trace is supplied, the
@@ -164,11 +167,11 @@ middle and late repeated I/O occurrences, then adds one later observed fault
 to a successful sequence up to the configured depth. New closure nodes,
 edges and coverage increase a sequence's priority. A fault that loses the
 target is not expanded. A later target in a different request is recorded as
-raw target activity, but only a fault occurrence on the target's exact closure
-with a target-relative cutoff after the fault satisfies
-`injection_specific_target_reached`. An exact target throw outside that
-injected closure remains `needs_causal_review`, never a differential bug
-candidate. New scheduler checkpoints reserve periodic exploration for static
+raw target activity. A fault occurrence on the check's exact closure, before
+its target-relative cutoff, satisfies `injection_specific_target_reached`;
+an automatic bug candidate additionally requires the fault on the exact
+throw event's own closure. An exact target throw outside that throw closure
+remains `needs_causal_review`. New scheduler checkpoints reserve periodic exploration for static
 MAY and selected scope doors, and favor less attempted last fault sites within
 each tier. Old checkpoints retain their pinned scheduler version. A plan whose selected I/O disappears may be retried
 twice, with every unmatched attempt counted against the fault-trial and time

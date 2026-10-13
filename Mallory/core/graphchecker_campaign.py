@@ -889,6 +889,23 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
         check["seq"] < thrown["seq"] and
         check["occurrenceId"] == thrown["occurrenceId"] and
         check["node"] == thrown["node"] for check in checks)]
+    throw_closures = graph.get("targetThrowClosures", [])
+    if not isinstance(throw_closures, list):
+        raise ValueError("GraphChecker target throw closure list is invalid")
+    causal_throw_seqs = []
+    for thrown in exact:
+        for anchored in throw_closures:
+            if not isinstance(anchored, dict) or any(
+                    anchored.get(key) != thrown.get(key) for key in (
+                        "seq", "siteId", "exceptionClass", "node", "occurrenceId")):
+                continue
+            throw_cutoffs = anchored.get("closureOccurrenceCutoffs")
+            if not isinstance(throw_cutoffs, dict):
+                raise ValueError("GraphChecker target throw cutoff map is invalid")
+            fault_cutoff = throw_cutoffs.get(applied[-1]["occurrenceId"])
+            if strict and isinstance(fault_cutoff, int) and applied[-1]["seq"] < fault_cutoff:
+                causal_throw_seqs.append(thrown["seq"])
+            break
     target_reached = bool(graph.get("targetReached") and (checks or throws))
     post_fault_target = bool(last_fault_seq is not None and any(
         row["seq"] > last_fault_seq for row in (*checks, *throws)))
@@ -930,9 +947,11 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             "all_fault_occurrences_in_target_closure": bool(
                 strict and len(fault_occurrences_in_closure) == len(applied)),
             "injection_specific_target_reached": injection_specific_target,
+            "injection_specific_target_throw": bool(causal_throw_seqs),
             "target_throw_seen": bool(throws),
             "target_exception_triggered": bool(faults and strict and exact),
             "target_throw_seqs_after_fault": [row["seq"] for row in exact],
+            "target_throw_seqs_in_fault_closure": causal_throw_seqs,
             "target_throw_rows_after_fault": exact,
             "target_throw_seqs_on_closure_occurrence": [row["seq"] for row in exact
                                                         if row["occurrenceId"] in closure],
@@ -955,11 +974,12 @@ def _trial_verdict(evidence: dict[str, Any], faults: list[dict[str, Any]],
     """Keep an exact post-fault throw distinct from injection-specific evidence."""
     triggered = bool(evidence["target_exception_triggered"])
     specific = bool(evidence["injection_specific_target_reached"])
-    differential = bool(specific and triggered and prior_throw_count is not None and
+    throw_specific = bool(evidence.get("injection_specific_target_throw"))
+    differential = bool(throw_specific and triggered and prior_throw_count is not None and
                         len(evidence["target_throw_rows_after_fault"]) > prior_throw_count)
     if differential:
         return "candidate", True
-    if triggered and not specific:
+    if triggered and not throw_specific:
         return "needs_causal_review", False
     if triggered:
         return ("needs_differential_review" if prior_throw_count is not None

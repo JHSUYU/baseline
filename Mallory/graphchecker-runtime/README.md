@@ -24,6 +24,9 @@ join whose EXPORT follows its ATTACH is rejected. Feedback separates observed cl
 nodes/edges/coverage/doors from `staticMay*` regions and doors. The latter are
 conservative scheduling candidates produced by the Soot scope planner; they
 are never reported as observed causal edges or coverage novelty.
+`targetThrowClosures` also records a separate backward closure and sequence
+cutoff for each attributed `TARGET_THROW`, so a fault linked to a check in one
+request cannot be credited for a throw in another request.
 
 The graph reader accepts plain JSONL and `.gz` archives, streams large traces
 without loading the whole file, and keeps coverage rows as site/sequence pairs.

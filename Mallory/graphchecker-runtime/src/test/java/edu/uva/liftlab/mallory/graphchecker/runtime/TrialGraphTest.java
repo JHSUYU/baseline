@@ -127,6 +127,28 @@ public class TrialGraphTest {
                 feedback.getAsJsonArray("targetCheckOutcomes").get(0).getAsString());
     }
 
+    @Test public void eachThrowKeepsItsOwnCausalClosure() throws Exception {
+        TrialGraph trial = graph(
+                row("kind", "ACTIVATION", "occurrenceId", "request-a",
+                        "regionId", "R", "node", "server", "seq", 1),
+                row("kind", "ACTIVATION", "occurrenceId", "request-b",
+                        "regionId", "R", "node", "server", "seq", 2),
+                row("kind", "TARGET_CHECK", "occurrenceId", "request-a",
+                        "siteId", "check", "node", "server", "seq", 4),
+                row("kind", "TARGET_THROW", "occurrenceId", "request-b",
+                        "siteId", "throw", "node", "server",
+                        "exceptionClass", "java.io.IOException", "seq", 6));
+        JsonObject feedback = trial.feedback("check", null);
+        assertEquals(1, feedback.getAsJsonObject("closureOccurrenceCutoffs").size());
+        JsonObject throwClosure = feedback.getAsJsonArray("targetThrowClosures")
+                .get(0).getAsJsonObject();
+        assertEquals(1, throwClosure.getAsJsonObject("closureOccurrenceCutoffs").size());
+        assertEquals(6, throwClosure.getAsJsonObject("closureOccurrenceCutoffs")
+                .get("request-b").getAsInt());
+        assertFalse(throwClosure.getAsJsonObject("closureOccurrenceCutoffs")
+                .has("request-a"));
+    }
+
     @Test public void staticMayDoorDoesNotBecomeObservedClosure() throws Exception {
         TrialGraph trial = graph(
                 row("kind", "ACTIVATION", "occurrenceId", "target-occ",

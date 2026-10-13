@@ -326,20 +326,28 @@ public final class TrialGraph {
     }
 
     private ClosureResult closureResult(String targetSite) {
-        Map<String, Long> latest = new LinkedHashMap<>();
-        Deque<String> pending = new ArrayDeque<>();
-        Set<String> usedEdges = new LinkedHashSet<>();
+        List<JsonObject> roots = new ArrayList<>();
         for (JsonObject target : targets) {
             if (targetSite == null || targetSite.isEmpty()
                     || targetSite.equals(value(target, "siteId"))) {
-                String id = value(target, "occurrenceId");
-                if (id.isEmpty()) continue;
-                long cutoff = number(target, "seq");
-                if (cutoff < 0) cutoff = Long.MAX_VALUE;
-                if (cutoff > latest.getOrDefault(id, Long.MIN_VALUE)) {
-                    latest.put(id, cutoff);
-                    pending.add(id);
-                }
+                roots.add(target);
+            }
+        }
+        return closureResultForTargets(roots);
+    }
+
+    private ClosureResult closureResultForTargets(List<JsonObject> roots) {
+        Map<String, Long> latest = new LinkedHashMap<>();
+        Deque<String> pending = new ArrayDeque<>();
+        Set<String> usedEdges = new LinkedHashSet<>();
+        for (JsonObject target : roots) {
+            String id = value(target, "occurrenceId");
+            if (id.isEmpty()) continue;
+            long cutoff = number(target, "seq");
+            if (cutoff < 0) cutoff = Long.MAX_VALUE;
+            if (cutoff > latest.getOrDefault(id, Long.MIN_VALUE)) {
+                latest.put(id, cutoff);
+                pending.add(id);
             }
         }
         Map<String, List<JsonObject>> incoming = new HashMap<>();
@@ -494,6 +502,23 @@ public final class TrialGraph {
         row.addProperty("newClosureCoverageSites", newCoverage);
         row.add("closureOccurrenceIds", new com.google.gson.Gson().toJsonTree(closure));
         row.add("closureOccurrenceCutoffs", new com.google.gson.Gson().toJsonTree(exact.cutoffs));
+        // Keep throw ancestry per event. A check in one request must not make
+        // a later throw in an unrelated request look caused by that fault.
+        com.google.gson.JsonArray throwClosures = new com.google.gson.JsonArray();
+        for (JsonObject target : targets) {
+            if (!"TARGET_THROW".equals(value(target, "kind"))
+                    || value(target, "occurrenceId").isEmpty()) continue;
+            JsonObject one = new JsonObject();
+            one.addProperty("siteId", value(target, "siteId"));
+            one.addProperty("exceptionClass", value(target, "exceptionClass"));
+            one.addProperty("node", value(target, "node"));
+            one.addProperty("occurrenceId", value(target, "occurrenceId"));
+            one.addProperty("seq", number(target, "seq"));
+            one.add("closureOccurrenceCutoffs", new com.google.gson.Gson().toJsonTree(
+                    closureResultForTargets(Collections.singletonList(target)).cutoffs));
+            throwClosures.add(one);
+        }
+        row.add("targetThrowClosures", throwClosures);
         row.add("closureEdgeIds", new com.google.gson.Gson().toJsonTree(closureEdges));
         row.add("closureNodeFamilies", new com.google.gson.Gson().toJsonTree(closureNodeFamilies));
         row.add("closureEdgeFamilies", new com.google.gson.Gson().toJsonTree(closureEdgeFamilies));
