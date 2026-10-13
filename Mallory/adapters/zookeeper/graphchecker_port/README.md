@@ -108,6 +108,20 @@ for a persistent campaign. The recipe relocates original Surefire classpath
 entries if the unchanged source build has been copied to persistent storage;
 dependency JAR paths are kept as recorded by the JUnit run.
 
+For an original JUnit that changes epoch files directly, preparation copies
+the selected test's unchanged class files into a separate weave input. The
+post-pass gives that test method a CLIENT occurrence and records a versioned
+WRITE only after a successful `FileUtils.write(File, ...)` call. This rule
+applies to the selected method's calls; helper methods outside the copied test
+class still need an attributed hook. The file version combines canonical path,
+size, modification time, file key and content digest. The common runtime puts
+the version identity in each STATE endpoint's site index while retaining the
+declared transport READ/WRITE port. A fresh ZOOKEEPER-11 original-JUnit pilot
+passed 1/1 and recorded test writes to `currentEpoch` and `currentEpoch.tmp`
+followed by their exact peer reads. Both STATE edges survived graph building;
+only the `currentEpoch` read preceded and entered the target check's closure.
+This pilot is not a completed per-case fuzz result.
+
 The full static overapproximation also selects application work that has no
 ZooKeeper peer source binding. Its trace reports those unattributed regions
 and doors as gaps. Shared-field candidates currently report bounded

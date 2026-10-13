@@ -209,6 +209,33 @@ public final class ZooKeeperWeave {
         }
     }
 
+    /** Attribute unchanged selected JUnit file writes as workload state. */
+    public static void applyWorkloadScope(String clazz, String methodName) {
+        SootClass type = application(clazz);
+        if (type == null) throw new IllegalArgumentException(
+                "selected JUnit class was not materialized: " + clazz);
+        SootMethod selected = null;
+        for (SootMethod method : type.getMethods()) {
+            if (!methodName.equals(method.getName())
+                    || method.getParameterCount() != 0 || !method.isConcrete()) continue;
+            if (selected != null) throw new IllegalArgumentException(
+                    "ambiguous selected JUnit method: " + clazz + "#" + methodName);
+            selected = method;
+        }
+        if (selected == null) throw new IllegalArgumentException(
+                "selected JUnit method absent: " + clazz + "#" + methodName);
+        SootMethodRef exit = fileBridge("workloadExited", 0);
+        int entries = labeledEntry(selected, FILE_BRIDGE, "workloadEntered",
+                clazz + "#" + methodName);
+        int exits = beforeReturns(selected, exit);
+        int failures = afterUncaught(selected, exit);
+        if (entries != 1 || exits == 0 || failures != 1) {
+            throw new IllegalStateException("ZOOKEEPER_JUNIT_SCOPE_MISSING: "
+                    + clazz + "#" + methodName + " " + entries + "/"
+                    + exits + "/" + failures);
+        }
+    }
+
     private static String scopeName(String method) {
         return method.replaceAll("([a-z0-9])([A-Z])", "$1_$2").toUpperCase(
                 java.util.Locale.ROOT);
@@ -258,6 +285,11 @@ public final class ZooKeeperWeave {
     }
 
     private static int selectedTargetEntry(SootMethod method, String scope) {
+        return labeledEntry(method, BRIDGE, "selectedTargetEntered", scope);
+    }
+
+    private static int labeledEntry(SootMethod method, String bridgeClass,
+                                    String hookName, String label) {
         Body body = method.retrieveActiveBody();
         Unit first = null;
         for (Unit unit : body.getUnits()) {
@@ -265,12 +297,12 @@ public final class ZooKeeperWeave {
         }
         if (first == null) return 0;
         SootMethodRef hook = Scene.v().makeMethodRef(
-                Scene.v().loadClassAndSupport(BRIDGE), "selectedTargetEntered",
+                Scene.v().loadClassAndSupport(bridgeClass), hookName,
                 Arrays.asList(RefType.v("java.lang.Object"), RefType.v("java.lang.String")),
                 VoidType.v(), true);
         body.getUnits().insertBefore(Jimple.v().newInvokeStmt(
                 Jimple.v().newStaticInvokeExpr(hook, body.getThisLocal(),
-                        StringConstant.v(scope))), first);
+                        StringConstant.v(label))), first);
         return 1;
     }
 

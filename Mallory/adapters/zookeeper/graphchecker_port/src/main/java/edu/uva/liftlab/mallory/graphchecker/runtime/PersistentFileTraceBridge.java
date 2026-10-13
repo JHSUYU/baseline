@@ -25,8 +25,29 @@ import java.util.concurrent.TimeUnit;
 public final class PersistentFileTraceBridge {
     private static final String TRANSPORT = "ZOOKEEPER_PERSISTED_FILE_V1";
     private static final long MAX_BYTES = 1024L * 1024L;
+    private static final ThreadLocal<Long> WORKLOAD_TICK = new ThreadLocal<>();
 
     private PersistentFileTraceBridge() {
+    }
+
+    /** Attribute successful file changes made by an unchanged JUnit method. */
+    public static void workloadEntered(Object test, String selectedMethod) {
+        Long prior = WORKLOAD_TICK.get();
+        if (prior != null) MessageDoors.endTick(prior);
+        WORKLOAD_TICK.remove();
+        if (test == null || selectedMethod == null || selectedMethod.isEmpty()) {
+            gap("selected JUnit workload has no source identity");
+            return;
+        }
+        MessageDoors.registerSource(test, "JUNIT", "CLIENT",
+                "junit:" + selectedMethod, 0L);
+        WORKLOAD_TICK.set(MessageDoors.beginTick(test, "JUNIT_WORKLOAD"));
+    }
+
+    public static void workloadExited() {
+        Long tick = WORKLOAD_TICK.get();
+        WORKLOAD_TICK.remove();
+        if (tick != null) MessageDoors.endTick(tick);
     }
 
     /** The original test's successful FileUtils.write(File, ...). */

@@ -114,6 +114,59 @@ public class MessageDoorsTest {
         assertTrue(queueGraph.feedback("queue-target", null).getAsJsonArray(
                 "closureEdgeFamilies").toString().contains("HANDOFF"));
 
+        long versionWrite = MessageDoors.beginRequest(sender, "two-file-versions");
+        MessageDoors.stored("FILE", "/epoch#v1", sender);
+        MessageDoors.stored("FILE", "/epoch.tmp#v2", sender);
+        MessageDoors.endRequest(versionWrite, "two-file-versions");
+        long versionRead = MessageDoors.beginRequest(receiver, "read-file-versions");
+        MessageDoors.enterRegion("R.epochReads", "epoch-reads#entry", 0, receiver);
+        MessageDoors.fetched("FILE", "/epoch#v1", receiver);
+        MessageDoors.targetCheck("after-first-version", receiver, "healthy");
+        MessageDoors.fetched("FILE", "/epoch.tmp#v2", receiver);
+        MessageDoors.targetCheck("after-both-versions", receiver, "healthy");
+        MessageDoors.exitRegion("R.epochReads");
+        MessageDoors.endRequest(versionRead, "read-file-versions");
+        List<String> versionLines = Files.readAllLines(trace, StandardCharsets.UTF_8);
+        com.google.gson.JsonObject firstWrite = new com.google.gson.JsonParser().parse(
+                versionLines.stream().filter(line -> line.contains(
+                        "\"kind\":\"WRITE\"") && line.contains("/epoch#v1"))
+                        .findFirst().get()).getAsJsonObject();
+        com.google.gson.JsonObject secondWrite = new com.google.gson.JsonParser().parse(
+                versionLines.stream().filter(line -> line.contains(
+                        "\"kind\":\"WRITE\"") && line.contains("/epoch.tmp#v2"))
+                        .findFirst().get()).getAsJsonObject();
+        com.google.gson.JsonObject firstRead = new com.google.gson.JsonParser().parse(
+                versionLines.stream().filter(line -> line.contains(
+                        "\"kind\":\"READ\"") && line.contains("/epoch#v1"))
+                        .findFirst().get()).getAsJsonObject();
+        com.google.gson.JsonObject secondRead = new com.google.gson.JsonParser().parse(
+                versionLines.stream().filter(line -> line.contains(
+                        "\"kind\":\"READ\"") && line.contains("/epoch.tmp#v2"))
+                        .findFirst().get()).getAsJsonObject();
+        assertEquals(firstWrite.get("occurrenceId"), secondWrite.get("occurrenceId"));
+        assertEquals(firstRead.get("occurrenceId"), secondRead.get("occurrenceId"));
+        assertTrue(firstWrite.get("writer").getAsString().contains("/site:FILE.WRITE/"));
+        assertTrue(firstRead.get("reader").getAsString().contains("/site:FILE.READ/"));
+        assertFalse(firstWrite.get("writerEndpointId").equals(
+                secondWrite.get("writerEndpointId")));
+        assertFalse(firstRead.get("readerEndpointId").equals(
+                secondRead.get("readerEndpointId")));
+        String firstStateEdge = edu.uva.liftlab.mallory.graphchecker.contract.Digest
+                .digest("STATE" + firstWrite.get("writerEndpointId").getAsString()
+                        + firstRead.get("readerEndpointId").getAsString(), 16);
+        String secondStateEdge = edu.uva.liftlab.mallory.graphchecker.contract.Digest
+                .digest("STATE" + secondWrite.get("writerEndpointId").getAsString()
+                        + secondRead.get("readerEndpointId").getAsString(), 16);
+        TrialGraph versionGraph = TrialGraph.read(trace);
+        String firstVersionClosure = versionGraph.feedback("after-first-version", null)
+                .getAsJsonArray("closureEdgeIds").toString();
+        String bothVersionClosure = versionGraph.feedback("after-both-versions", null)
+                .getAsJsonArray("closureEdgeIds").toString();
+        assertTrue(firstVersionClosure.contains(firstStateEdge));
+        assertFalse(firstVersionClosure.contains(secondStateEdge));
+        assertTrue(bothVersionClosure.contains(firstStateEdge));
+        assertTrue(bothVersionClosure.contains(secondStateEdge));
+
         long bridgeScope = MessageDoors.beginRequest(sender, "bridge-scope");
         Object endedCall = MessageDoors.openCall("bridge-end", 0);
         MessageDoors.endRequest(bridgeScope, "bridge-scope");

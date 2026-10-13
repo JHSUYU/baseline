@@ -452,6 +452,21 @@ final class TraceRows {
                         Frame.of("transport.message." + identity, 0))), 0);
     }
 
+    static Endpoint stateEndpoint(Object owner, String site,
+                                  String locationVersion, int attempt) {
+        OccurrenceAddress occurrence = occurrence(owner);
+        if (occurrence == null) return null;
+        // A single occurrence may persist or fetch several versions through
+        // the same port. Keep the declared READ/WRITE port in Endpoint.site,
+        // and distinguish the exact versions in its site index. Otherwise the
+        // graph coalesces their edges and can lose a read before the target.
+        String identity = Digest.digest(locationVersion, 24);
+        return Endpoint.of(occurrence, site,
+                ExecutionIndex.of(java.util.Collections.singletonList(
+                        Frame.of("state.version." + identity, 0))),
+                Math.max(0, attempt));
+    }
+
     private static int nextFrame(Context context, String kind, String site) {
         // A frame's child counts are needed only while that exact frame is
         // active. Its iteration makes the next invocation a distinct parent,

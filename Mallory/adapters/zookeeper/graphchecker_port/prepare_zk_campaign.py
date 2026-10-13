@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import xml.etree.ElementTree as ET
 
@@ -55,6 +56,22 @@ def existing(path: Path, label: str) -> Path:
 
 def classpath_file(path: Path) -> list[str]:
     return [item for item in path.read_text(encoding="utf-8").strip().split(":") if item]
+
+
+def selected_junit_classes(source: Path, scratch: Path, clazz: str) -> Path:
+    """Copy only the unchanged selected JUnit class into a weave overlay."""
+    original = source / "zookeeper-server/target/test-classes"
+    relative = Path(*clazz.split("."))
+    main = original / relative.with_suffix(".class")
+    if not main.is_file():
+        raise FileNotFoundError(f"selected original JUnit class: {main}")
+    overlay = scratch / "junit-class-input"
+    selected = [main, *sorted(main.parent.glob(main.stem + "$*.class"))]
+    for item in selected:
+        destination = overlay / item.relative_to(original)
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(item, destination)
+    return overlay
 
 
 def original_junit_classpath(report: Path, source: Path) -> list[str]:
@@ -141,6 +158,7 @@ def main() -> None:
         # healthy calibration below still executes this case's own JUnit.
         report = reports / "TEST-org.apache.zookeeper.test.QuorumRestartTest.xml"
     report = existing(report, "original module Surefire classpath report")
+    junit_overlay = selected_junit_classes(source, scratch, junit_class)
 
     tool_cp = [str(weaver_jar), str(runtime_jar), str(adapter_classes),
                *classpath_file(adapter_dependencies)]
@@ -213,7 +231,8 @@ def main() -> None:
             "main_class": "edu.uva.liftlab.mallory.graphchecker.causynth.WeaveZooKeeperMain",
             "jvm_args": ["-Xmx4g"],
             "args": ["{generic_woven}", "{classpath}", "{final_woven}",
-                     str(scope_dir / "weave_manifest.json")]},
+                     str(scope_dir / "weave_manifest.json"),
+                     str(junit_overlay), junit_class, junit_method]},
     }
     config_path = scratch / "campaign-config.json"
     config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")

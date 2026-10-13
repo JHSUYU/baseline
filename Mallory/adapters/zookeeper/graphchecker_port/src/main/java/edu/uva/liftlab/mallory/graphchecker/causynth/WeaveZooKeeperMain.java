@@ -13,7 +13,9 @@ import soot.options.Options;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.io.File;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Collections;
 
 /** Standalone, isolated verification of the ZooKeeper production weave. */
@@ -22,17 +24,23 @@ public final class WeaveZooKeeperMain {
     }
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 3 && args.length != 4) {
+        if (args.length != 3 && args.length != 4 && args.length != 7) {
             throw new IllegalArgumentException("usage: WeaveZooKeeperMain "
                     + "<zookeeper-server/target/classes> <classpath> "
-                    + "<isolated-output-dir> [generated-weave-manifest.json]");
+                    + "<isolated-output-dir> [generated-weave-manifest.json "
+                    + "selected-junit-class-dir junit-class junit-method]");
         }
-        ZooKeeperWeave.TargetMethod target = args.length == 4
+        ZooKeeperWeave.TargetMethod target = args.length >= 4
                 ? targetFromManifest(Paths.get(args[3])) : null;
         Path classes = Paths.get(args[0]).toAbsolutePath().normalize();
         Path output = Paths.get(args[2]).toAbsolutePath().normalize();
+        Path junitClasses = args.length == 7
+                ? Paths.get(args[4]).toAbsolutePath().normalize() : null;
         if (!Files.isDirectory(classes) || output.startsWith(classes)
-                || classes.startsWith(output)) {
+                || classes.startsWith(output)
+                || (junitClasses != null && (!Files.isDirectory(junitClasses)
+                    || output.startsWith(junitClasses)
+                    || junitClasses.startsWith(output)))) {
             throw new IllegalArgumentException("source classes must exist; "
                     + "output must be a separate directory");
         }
@@ -40,9 +48,11 @@ public final class WeaveZooKeeperMain {
         G.reset();
         Options.v().set_allow_phantom_refs(true);
         Options.v().set_prepend_classpath(true);
-        Options.v().set_process_dir(Collections.singletonList(
-                classes.toString()));
-        Options.v().set_soot_classpath(args[1]);
+        Options.v().set_process_dir(junitClasses == null
+                ? Collections.singletonList(classes.toString())
+                : Arrays.asList(classes.toString(), junitClasses.toString()));
+        Options.v().set_soot_classpath(junitClasses == null ? args[1]
+                : junitClasses + File.pathSeparator + args[1]);
         Options.v().set_output_dir(output.toString());
         Options.v().set_output_format(Options.output_format_class);
         Options.v().set_keep_line_number(true);
@@ -56,6 +66,9 @@ public final class WeaveZooKeeperMain {
         Scene.v().loadNecessaryClasses();
         ZooKeeperWeave.apply();
         ZooKeeperWeave.applyRuntimeTargetScope(target);
+        if (junitClasses != null) {
+            ZooKeeperWeave.applyWorkloadScope(args[5], args[6]);
+        }
         PackManager.v().writeOutput();
     }
 

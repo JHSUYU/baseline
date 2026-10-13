@@ -493,12 +493,17 @@ public final class MessageDoors {
     /** Key must include the store's actual version, observed after success. */
     public static void stored(String transport, String key, Object owner,
                               byte[] data) {
-        Endpoint writer = TraceRows.endpoint(owner, transport + ".WRITE", 0);
-        if (writer == null || empty(key)) {
+        if (empty(key)) {
             gap("STATE_WRITE_UNNAMED", transport, key);
             return;
         }
         String location = transport + "\n" + key;
+        Endpoint writer = TraceRows.stateEndpoint(owner, transport + ".WRITE",
+                location, 0);
+        if (writer == null) {
+            gap("STATE_WRITE_UNNAMED", transport, key);
+            return;
+        }
         STORED.computeIfAbsent(location, ignored ->
                 java.util.Collections.synchronizedList(new ArrayList<>())).add(writer);
         TraceRows.row("WRITE", writer.occurrence(), TraceRows.fields(
@@ -512,14 +517,19 @@ public final class MessageDoors {
 
     public static void fetched(String transport, String key, Object owner,
                                byte[] data) {
-        int attempt = NOTIFIED.get() == null ? 0 :
-                (int) EXCHANGES.incrementAndGet();
-        Endpoint reader = TraceRows.endpoint(owner, transport + ".READ", attempt);
-        if (reader == null || empty(key)) {
+        if (empty(key)) {
             gap("STATE_READ_UNNAMED", transport, key);
             return;
         }
+        int attempt = NOTIFIED.get() == null ? 0 :
+                (int) EXCHANGES.incrementAndGet();
         String location = transport + "\n" + key;
+        Endpoint reader = TraceRows.stateEndpoint(owner, transport + ".READ",
+                location, attempt);
+        if (reader == null) {
+            gap("STATE_READ_UNNAMED", transport, key);
+            return;
+        }
         List<Endpoint> writers = STORED.get(location);
         Endpoint exact = null;
         if (writers != null) synchronized (writers) {
