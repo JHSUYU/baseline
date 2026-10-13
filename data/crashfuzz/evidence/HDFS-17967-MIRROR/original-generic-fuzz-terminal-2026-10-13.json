@@ -1,0 +1,75 @@
+{
+  "case_id": "HDFS-17967-MIRROR",
+  "system": "HDFS 3.4.3",
+  "workload": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClientPipelineRecovery[0]",
+  "workload_modified": false,
+  "selection": "Soot-derived I/O and coverage; no manually declared fault site",
+  "target": "BlockTokenSecretManager.retrieveDataEncryptionKey at allKeys.get(keyId)",
+  "target_source": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java:555",
+  "healthy_exact_target_throw_count": 1,
+  "qualification": "A fault-induced exact throw must be distinguishable from the original JUnit expected stale-client-key rejection, by an additional throw or independent path evidence. A JUnit assertion failure alone does not qualify.",
+  "campaigns": [
+    {
+      "name": "control",
+      "state_path": "/users/ZhenyuLi/static-rerun/original-known/HDFS-17967-mirror/campaign-control-branch/HDFS-17967-MIRROR/state.json",
+      "status": "budget_or_queue_complete",
+      "completed_trials": 443,
+      "wall_seconds_from_initial_start": 24284.693,
+      "status_counts": {
+        "baseline_exception_recurrence": 256,
+        "checked": 44,
+        "lost_target": 98,
+        "unmatched": 45
+      },
+      "strict_full_plan_trials": 398,
+      "strict_multi_fault_trials": 191,
+      "max_applied_faults_in_one_trial": 10,
+      "accepted_target_retained_trials": 300,
+      "target_reached_after_fault_trials": 320,
+      "exact_target_throw_count_distribution": {
+        "0": 48,
+        "1": 395
+      },
+      "additional_target_throw_trials": 0,
+      "candidate_trials": []
+    },
+    {
+      "name": "response_shape",
+      "state_path": "/users/ZhenyuLi/static-rerun/original-known/HDFS-17967-mirror/campaign-response-shape-v1/HDFS-17967-MIRROR/state.json",
+      "status": "budget_or_queue_complete",
+      "completed_trials": 160,
+      "wall_seconds_from_initial_start": 8253.492,
+      "status_counts": {
+        "baseline_exception_recurrence": 83,
+        "checked": 16,
+        "lost_target": 20,
+        "unmatched": 41
+      },
+      "strict_full_plan_trials": 119,
+      "strict_multi_fault_trials": 50,
+      "max_applied_faults_in_one_trial": 10,
+      "accepted_target_retained_trials": 99,
+      "target_reached_after_fault_trials": 123,
+      "exact_target_throw_count_distribution": {
+        "0": 12,
+        "1": 148
+      },
+      "additional_target_throw_trials": 0,
+      "candidate_trials": []
+    }
+  ],
+  "additional_target_exception_detected": false,
+  "time_to_detection_seconds": null,
+  "excluded_first_post_fault_observation_seconds": 55.859,
+  "excluded_reason": "The original JUnit intentionally triggers one receiver-side InvalidEncryptionKeyException from a stale client key, then clears the cached key and retries. Across 766 archived attempt logs, all 685 logs containing the exact missing-key message show the same key ID in a later client-retry log.",
+  "raw_attempt_log_audit": {
+    "archive_host": "node1",
+    "control_attempt_logs": 543,
+    "control_logs_with_exact_target_message": 480,
+    "control_target_messages_followed_by_same_key_id_in_client_retry": 480,
+    "response_shape_attempt_logs": 223,
+    "response_shape_logs_with_exact_target_message": 205,
+    "response_shape_target_messages_followed_by_same_key_id_in_client_retry": 205,
+    "audit_rule": "For every exact allKeys missing-key message in an archived attempt log, the same key ID appears later in DataStreamer.continueRetryingOrThrow, which states that the client will fetch a new encryption key and retry."
+  }
+}

@@ -7,13 +7,19 @@ generic-fuzz detections.
 
 | Case | Unchanged JUnit and source path | Necessary path reached by the workload | Current generic-fuzz result |
 | --- | --- | --- | --- |
-| HDFS-17897 / HDFS-54 | `TestFileChecksum.testStripedAndReplicatedFileChecksum2[0]`; `FileChecksumHelper.StripedFileNonStripedChecksumComputer.checksumBlocks` | Striped checksum runs, but `TestFileChecksum.setup` sets block access tokens without setting `dfs.encrypt.data.transfer`. The configuration default is `false` (`DFSConfigKeys.java:1382`), so this JUnit does not create a stale data-encryption-key SASL failure. | No target `PathIOException` after the tested faults as of this audit. A failure produced by an unrelated I/O exception would not establish HDFS-17897. |
+| HDFS-17897 / HDFS-54 | `TestFileChecksum.testStripedAndReplicatedFileChecksum2[0]`; `FileChecksumHelper.StripedFileNonStripedChecksumComputer.checksumBlocks` | Striped checksum runs, but `TestFileChecksum.setup` sets block access tokens without setting `dfs.encrypt.data.transfer`. The configuration default is `false` (`DFSConfigKeys.java:1382`), so this JUnit does not create a stale data-encryption-key SASL failure. | Its 80 completed generic-fuzz trials produced no target `PathIOException`. A failure produced by an unrelated I/O exception would not establish HDFS-17897. |
 | HDFS-17897 alternative | `TestEncryptedTransfer.testFileChecksumWithInvalidEncryptionKey` | This original test enables encrypted transfer, expires the client's key, and checks the replicated-file checksum. It never creates an erasure-coded file. The replicated checksum path already catches `InvalidEncryptionKeyException`, clears the key, and retries (`FileChecksumHelper.java:536-545`). | It exercises the recovery counterpart, not the missing striped-file catch. No unchanged JUnit found in the Hadoop 3.4.3 HDFS test tree that both enables encrypted transfer and performs a striped-file checksum. |
 | HDFS-17899 / HDFS-55 | `TestBalancerWithEncryptedTransfer.testEncryptedBalancer0`; `Dispatcher.PendingMove.dispatch` | The JUnit enables encrypted transfer and executes Balancer block moves. The release `dispatch` catches general `IOException` without clearing the cached key (`Dispatcher.java:394-429`). Its current HDFS-55 target is a cache branch in `KeyManager.newDataEncryptionKey`, which has no target exception oracle. | 80 completed generic-fuzz trials; typed one-shot SASL exceptions were injected, but this is not evidence of a stale key retained across moves. No target exception candidate. |
-| HDFS-17899 Balancer and HDFS-17967 proxy / HDFS-11 | Same unchanged Balancer JUnit; `Dispatcher.PendingMove.dispatch`, `DataXceiver.replaceBlock`, and `BlockTokenSecretManager.retrieveDataEncryptionKey` at `allKeys.get(keyId)` | The healthy trace observes 15 Balancer dispatches and 15 `replaceBlock` proxy SASL calls. The Soot selection includes these calls, DataNode handshake, key-updater RPC, and the exact `InvalidEncryptionKeyException` throw. The default block-key update interval and token lifetime are both 600 minutes (`DFSConfigKeys.java:1060-1063`, interpreted as minutes in `BlockManager.java:710-718`); the JUnit timeout is 60 seconds. A natural key rotation is therefore not expected in this workload. | Running in an isolated campaign. This Balancer workload has not itself produced the exact target throw after a fault; its result must remain separate from the pipeline-recovery workload below. |
-| HDFS-17967 mirror and HDFS-17899 DataNode transfer | `TestEncryptedTransfer.testLongLivedClientPipelineRecovery[0]`; `DataXceiver.writeBlock` mirror SASL and `DataNode.DataTransfer.run` | This original four-DataNode JUnit enables encrypted transfer, reduces the key-update interval and token lifetime to 2 seconds, clears old keys, and induces pipeline recovery after stopping a DataNode (`TestEncryptedTransfer.java:376-437`). Its passing healthy trace observes both outbound I/O methods, the NameNode heartbeat RPC, and one expected receiver-side `InvalidEncryptionKeyException` from the client retry path. Soot selects 138 I/O calls and 400 coverage methods without a manual I/O list. A post-call heartbeat failure can prevent a `DNA_ACCESSKEYUPDATE` reply from being queued on one DataNode (`BPServiceActor.java:703-739`), while `BPOfferService.java:779-784` updates local keys only when the command is processed. | **No fault-induced target exception detected in the first 174 trials.** The 55.859-second figure is only the first post-fault *observation* of the same exception the healthy JUnit deliberately triggers once: seed 27.151 seconds and trial 1 28.708 seconds. In that trial, a synthetic handshake failure applied at trace seq 698 on one DataXceiver, while the exact `BlockTokenSecretManager.retrieveDataEncryptionKey` throw at source line 555 occurred later at seq 954 on another DataXceiver. The healthy trace already has the same exact throw at seq 932. No strictly injected trial through 174 has more than the healthy run's one target throw. The separate `CHECK_REACHED` hook missed trial 1, but repairing that bookkeeping does not make its exception new. The campaign resumed from its checkpoint after this correction. |
+| HDFS-17899 Balancer and HDFS-17967 proxy / HDFS-11 | Same unchanged Balancer JUnit; `Dispatcher.PendingMove.dispatch`, `DataXceiver.replaceBlock`, and `BlockTokenSecretManager.retrieveDataEncryptionKey` at `allKeys.get(keyId)` | The healthy trace observes 15 Balancer dispatches and 15 `replaceBlock` proxy SASL calls. The Soot selection includes these calls, DataNode handshake, key-updater RPC, and the exact `InvalidEncryptionKeyException` throw. The default block-key update interval and token lifetime are both 600 minutes (`DFSConfigKeys.java:1060-1063`, interpreted as minutes in `BlockManager.java:710-718`); the JUnit timeout is 60 seconds. A natural key rotation is therefore not expected in this workload. | Its isolated 80-trial original-JUnit campaign completed with no exact target exception candidate. |
+| HDFS-17967 mirror and HDFS-17899 DataNode transfer | `TestEncryptedTransfer.testLongLivedClientPipelineRecovery[0]`; `DataXceiver.writeBlock` mirror SASL and `DataNode.DataTransfer.run` | This original four-DataNode JUnit enables encrypted transfer, reduces the key-update interval and token lifetime to 2 seconds, clears old keys, and induces pipeline recovery after stopping a DataNode (`TestEncryptedTransfer.java:376-437`). Its passing healthy trace observes both outbound I/O methods, the NameNode heartbeat RPC, and one expected receiver-side `InvalidEncryptionKeyException` from the client retry path. Soot selects 138 I/O calls and 400 coverage methods without a manual I/O list. A post-call heartbeat failure can prevent a `DNA_ACCESSKEYUPDATE` reply from being queued on one DataNode (`BPServiceActor.java:703-739`), while `BPOfferService.java:779-784` updates local keys only when the command is processed. | The 443-trial control campaign and 160-trial response-shape campaign both completed with zero additional exact line-555 throws beyond the one the healthy JUnit expects. The earlier 55.859-second observation is a baseline recurrence, not a detection. |
 | HDFS HA alternative | `TestFailoverWithBlockTokensEnabled.TestFailoverAfterAccessKeyUpdate` | This original JUnit shortens block-key update intervals and fails over between NameNodes, but its setup creates only one DataNode and enables block access tokens without `dfs.encrypt.data.transfer` (`TestFailoverWithBlockTokensEnabled.java:67-77, 157-205`). | Excluded for the `DataXceiver.writeBlock` encrypted mirror and `allKeys.get(keyId)` target: no downstream DataNode or encrypted data-transfer handshake exists in this workload. |
 | SOLR-40 | `TimeRoutedAliasUpdateProcessorTest.test` | The original four-node JUnit creates a time-routed alias and immediately adds a document (`TimeRoutedAliasUpdateProcessorTest.java:132-139`). `ZkStateReader.AliasesManager.process` reads the watched alias data; on `ConnectionLossException` it logs and leaves the local cache as-is (`ZkStateReader.java:2302-2317`). The generic Soot selection includes that callback's `getData` I/O sites. | **Detected by the generic selector and unchanged JUnit.** The healthy run had zero target `SolrException` throws. In campaign trial 31, the first of two selected faults applied to alias-watch `getData` on `node2` at trace seq 3776; the same node reached `getAliasProps` at seq 3805 and threw at seq 3810. The second planned fault did not occur, so the full two-fault plan is `unmatched`. Replaying its tool-selected, actually applied one-fault prefix as a strict single-fault plan reproduced the same target throw in attempt 3 of 3; attempts 1 and 2 injected successfully and reached the check without a throw. The failing replay trace shows fault seq 3777, target check seq 3805, and target throw seq 3810. This is a reproducible fault-induced target exception, not a healthy-run recurrence. |
+
+| Final campaign | Completed trials | Newly induced target exception | Time to first observation | Total campaign wall time |
+| --- | ---: | --- | ---: | ---: |
+| HDFS mirror control | 443 | None; every exact throw follows the expected client retry | Not detected | 24,284.693 s |
+| HDFS mirror response shape | 160 | None; every exact throw follows the expected client retry | Not detected | 8,253.492 s |
+| SOLR-40 | 240 | One reproducible strict applied-prefix candidate; full two-fault plan unmatched | 2,102.391 s | 21,291.531 s |
 
 The original HDFS-17897 JUnit choices each cover only one half of the required
 encrypted striped-checksum path. The encrypted pipeline-recovery JUnit is the
@@ -45,8 +51,18 @@ It retains the full-plan mismatch in the result, so strict full-sequence
 statistics are not inflated. The node2 campaign loaded the older runner at
 startup; this result was identified by direct audit of its saved trace and
 validated by strict prefix replay.
+The complete SOLR-40 campaign stopped at its 240-trial cap after 21,291.531
+seconds from its `started` timestamp. Its final statuses were 89 `checked`,
+98 `lost_target`, and 53 `unmatched`; 187 trials strictly matched full fault
+plans, including 79 with at least two faults and a maximum of ten faults in
+one trial. The exact target throw appeared in only trial 31; the other 239
+trials had zero. Thus the campaign has no fully matched multi-fault target
+exception candidate. The trial-31 applied prefix and its strict single-fault
+replay remain the one reproducible fault-induced target-exception candidate.
+The 35-minute 2.391-second timing refers to its first observation in the
+generic campaign, not the total 5-hour 54-minute 51.531-second campaign.
 
-The HDFS mirror campaign remains open. Its healthy JUnit intentionally causes
+The HDFS mirror campaign's healthy JUnit intentionally causes
 one exact `InvalidEncryptionKeyException` at `allKeys.get(keyId)`. A faulted
 run that shows only that same expected throw is `baseline_exception_recurrence`
 and has no detection time. Through trial 189, no strict faulted run produced
@@ -249,6 +265,40 @@ five faults, including four nonempty replies of one node through hit ordinal
 healthy baseline. This validates the shorter-chain selection and replay but
 does not detect an HDFS bug.
 
+The response-shape campaign finished its 160-trial cap after 8,253.492
+seconds from its original `started` timestamp. Of the 160 completed trials,
+119 strictly matched their full fault plans, 50 of those applied at least two
+faults, and the maximum applied fault count was ten. The target was retained
+after a fault in 123 trials. Exact line-555 target throws occurred once in
+148 trials and zero times in twelve; none exceeded the healthy run's one
+expected throw. Final statuses were 83 `baseline_exception_recurrence`, 41
+`unmatched`, 20 `lost_target`, and 16 `checked`. In particular, trials 140,
+147, and 152 strictly applied seven, eight, and six faults respectively,
+but each still produced only the expected client-retry throw. The old key IDs
+in trials 151 and 152 also appear in their subsequent
+`DataStreamer.continueRetryingOrThrow` logs. There is no HDFS target-exception
+candidate and hence no HDFS detection time from this campaign.
+
+The original HDFS mirror checkpoint then completed at trial 443, after
+24,284.693 seconds from its initial `started` timestamp. It stopped when
+300 trials reached the accepted target-retained statuses, before its
+450-trial hard cap. Of the 443 trials, 398 strictly matched full fault plans,
+191 of those applied at least two faults, and the maximum applied fault count
+was ten. The exact line-555 target throw occurred once in 395 trials and
+zero times in 48; no trial had an additional throw. Final statuses were 256
+`baseline_exception_recurrence`, 98 `lost_target`, 45 `unmatched`, and 44
+`checked`. Across this 443-trial campaign and the independent 160-trial
+response-shape campaign, the generic original-JUnit method has **no HDFS
+detection time**. The 55.859-second first post-fault observation is explicitly
+excluded because the healthy JUnit already produces that exception.
+As a path-level cross-check, I scanned all checksum-archived attempt logs on
+node1, including bounded retries: 543 control and 223 response-shape logs.
+The exact missing-key message occurred in 480 and 205 logs respectively.
+For all 685 such logs, the same missing key ID appears later in
+`DataStreamer.continueRetryingOrThrow`, where the client fetches a new key
+and retries. This rules out treating a single same-count throw in these
+attempts as evidence of a distinct mirror or DataTransfer failure.
+
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
 on node1 before their local attempt directories were removed. Their final
@@ -280,6 +330,15 @@ and `.archive-attempts-0091-0110.json` in the respective campaign directories.
 The next checksum-verified batches cover completed control-branch attempts
 391–400 and response-shape attempts 111–120. Their receipts are
 `.archive-attempts-0391-0400.json` and `.archive-attempts-0111-0120.json`.
+The same procedure then archived control-branch attempts 401–410, 411–420,
+and 421–423, as well as response-shape attempts 121–135, 136–145,
+146–150, and 151–160. Each batch has a `.files` list and a corresponding
+`.json` receipt in its campaign directory; the final response-shape batch
+completes its attempt archive on node1.
+The final control-branch attempt batches, 424–435, 436–440, and 441–443,
+were also checksum-verified on node1 before local attempt directories were
+removed. This completes its attempt archive while leaving each trial's
+result, fault plan, and checkpoint on node0.
 
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
