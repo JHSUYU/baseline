@@ -111,6 +111,37 @@ public class NativeClosureMainTest {
         } catch (IllegalArgumentException expected) { }
     }
 
+    @Test public void duplicateActivationCannotRemapNativeCompactOccurrence() {
+        OccurrenceAddress original = OccurrenceAddress.of(NodeId.of("zk-peer-1", 0),
+                "R.target", CausalContext.of(Role.of("SERVER"), "X", 1),
+                ExecutionIndex.empty());
+        OccurrenceAddress other = OccurrenceAddress.of(NodeId.of("zk-peer-1", 0),
+                "R.other", CausalContext.of(Role.of("SERVER"), "X", 1),
+                ExecutionIndex.empty());
+        JsonObject first = event("ACTIVATION", original, 1);
+        JsonObject compact = event("REGION_COMPLETE", original, 3);
+        compact.remove("occurrence");
+        compact.addProperty("occurrenceRef", "ACTIVATION");
+        for (String field : Arrays.asList("occurrence", "node", "regionId")) {
+            JsonObject duplicate = event("ACTIVATION", original, 2);
+            duplicate.addProperty(field, "occurrence".equals(field) ? other.render()
+                    : "node".equals(field) ? "different#epoch0" : "R.other");
+            NativeClosureMain.Adapted adapted = new NativeClosureMain.Adapted();
+            adapted.take(first, "unused");
+            try {
+                adapted.take(duplicate, "unused");
+                adapted.take(compact.deepCopy(), "unused");
+                org.junit.Assert.fail("conflicting " + field + " must fail closed");
+            } catch (IllegalArgumentException expected) { }
+        }
+        NativeClosureMain.Adapted accepted = new NativeClosureMain.Adapted();
+        accepted.take(first, "unused");
+        accepted.take(event("ACTIVATION", original, 2), "unused");
+        JsonObject acceptedCompact = compact.deepCopy();
+        accepted.take(acceptedCompact, "unused");
+        assertEquals(original.render(), acceptedCompact.get("occurrence").getAsString());
+    }
+
     @Test public void copiedPlannerRunsAndExcludesUndemandedMalloryAncestor()
             throws Exception {
         Path root = folder.newFolder().toPath();

@@ -101,6 +101,36 @@ public class TrialGraphTest {
         } catch (IllegalArgumentException expected) { }
     }
 
+    @Test public void duplicateActivationCannotRemapCompactOccurrence()
+            throws Exception {
+        OccurrenceAddress original = OccurrenceAddress.of(NodeId.of("server0", 0),
+                "R.child", CausalContext.of(Role.of("SERVER"), "get", 1),
+                ExecutionIndex.empty());
+        OccurrenceAddress other = OccurrenceAddress.of(NodeId.of("server0", 0),
+                "R.other", CausalContext.of(Role.of("SERVER"), "get", 1),
+                ExecutionIndex.empty());
+        JsonObject first = row("kind", "ACTIVATION", "occurrenceId", original.id(),
+                "occurrence", original.render(), "node", original.node().render(),
+                "regionId", original.regionId(), "seq", 1);
+        JsonObject compact = row("kind", "COVERAGE", "occurrenceId", original.id(),
+                "occurrenceRef", "ACTIVATION", "node", original.node().render(),
+                "regionId", original.regionId(), "siteId", "block", "seq", 3);
+        for (String field : Arrays.asList("occurrence", "node", "regionId")) {
+            JsonObject second = first.deepCopy();
+            second.addProperty("seq", 2);
+            second.addProperty(field, "occurrence".equals(field) ? other.render()
+                    : "node".equals(field) ? "different#epoch0" : "R.other");
+            try {
+                graph(first, second, compact);
+                org.junit.Assert.fail("conflicting " + field + " must fail closed");
+            } catch (IllegalArgumentException expected) { }
+        }
+        JsonObject identical = first.deepCopy();
+        identical.addProperty("seq", 2);
+        assertEquals(1, graph(first, identical, compact).feedback("missing", null)
+                .get("nodes").getAsInt());
+    }
+
     @Test public void compressedAndPlainStreamingTracesAgree() throws Exception {
         String lines = row("kind", "ACTIVATION", "occurrenceId", "o1",
                 "occurrence", "o1-render", "node", "server0", "regionId", "R",

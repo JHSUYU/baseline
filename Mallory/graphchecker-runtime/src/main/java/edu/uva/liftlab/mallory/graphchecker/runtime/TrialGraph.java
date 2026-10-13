@@ -165,7 +165,18 @@ public final class TrialGraph {
                 }
                 if ("ACTIVATION".equals(value(row, "kind"))) {
                     String id = value(row, "occurrenceId");
-                    if (!id.isEmpty() && !value(row, "occurrence").isEmpty()) {
+                    if (!id.isEmpty()) {
+                        JsonObject previous = activations.get(id);
+                        if (previous != null && (!value(previous, "occurrence").equals(
+                                value(row, "occurrence"))
+                                || !value(previous, "node").equals(value(row, "node"))
+                                || !value(previous, "regionId").equals(
+                                        value(row, "regionId")))) {
+                            throw new IllegalArgumentException(
+                                    "conflicting activation for occurrence " + id);
+                        }
+                        // Identical duplicates preserve the prior streaming
+                        // behavior: the latest publication is the anchor.
                         activations.put(id, row);
                     }
                 } else if ("ACTIVATION".equals(value(row, "occurrenceRef"))) {

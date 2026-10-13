@@ -118,7 +118,17 @@ public final class NativeClosureMain {
                 // A compact runtime event may refer only to an activation
                 // already published in this same ordered trace.
                 exactOccurrence(row);
-                activationByOccurrence.put(string(row, "occurrenceId"), row);
+                String id = string(row, "occurrenceId");
+                JsonObject previous = activationByOccurrence.get(id);
+                if (previous != null && (!string(previous, "occurrence").equals(
+                        string(row, "occurrence"))
+                        || !string(previous, "node").equals(string(row, "node"))
+                        || !string(previous, "regionId").equals(
+                                string(row, "regionId")))) {
+                    throw new IllegalArgumentException(
+                            "conflicting activation for occurrence " + id);
+                }
+                activationByOccurrence.put(id, row);
             } else if ("ACTIVATION".equals(string(row, "occurrenceRef"))) {
                 JsonObject activation = activationByOccurrence.get(
                         string(row, "occurrenceId"));
