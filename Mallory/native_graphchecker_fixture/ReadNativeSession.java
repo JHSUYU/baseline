@@ -1,5 +1,7 @@
 import edu.uva.liftlab.graphchecker.contract.SessionReader;
 import java.nio.file.Paths;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /** Ensures the published target and decision resolve through original SessionReader. */
 public final class ReadNativeSession {
@@ -14,8 +16,19 @@ public final class ReadNativeSession {
         String target = session.targets().get(0).phiTerm();
         if (branch.isEmpty() || target.isEmpty()
                 || session.expressions().expression(branch) == null
-                || session.expressions().expression(target) == null) {
+                || session.targets().get(0).observedFatal()) {
             throw new IllegalStateException("native expression references missing");
+        }
+        Matcher refs = Pattern.compile("EXPR\\.[a-f0-9]+").matcher(target);
+        int count = 0;
+        while (refs.find()) {
+            count++;
+            if (session.expressions().expression(refs.group()) == null) {
+                throw new IllegalStateException("native target expression missing");
+            }
+        }
+        if (count == 0) {
+            throw new IllegalStateException("native target has no expression reference");
         }
         System.out.println("SESSION_READER_OK branch=" + branch + " target=" + target);
     }
