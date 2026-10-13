@@ -50,3 +50,35 @@ with every send preceding its receive and no blocking gap. The original
 These are protocol gates. The HDFS key-ID WIRE_FLOW still requires a mapped
 static scope and runtime producer/consumer observation; HDFS-30 additionally
 requires a target-anchored graph and fault-induced target throw.
+
+## Key-ID target gate
+
+The unchanged `TestBalancerWithEncryptedTransfer#testEncryptedBalancer0`
+enables encrypted data transfer and block tokens in its `@Before` method,
+then runs `TestBalancer.testBalancer0Internal(conf)`. This is a suitable
+original-JUnit workload for the SASL transport gate. It is not the HDFS-30
+check: that check is `BlockRecoveryWorker.getActiveNamenodeForBP` at the
+`activeNN == null` guard (line 582) and `IOException` throw (line 583).
+
+The separate HDFS-11 check is
+`BlockTokenSecretManager.retrieveDataEncryptionKey(int, byte[])`. It reads
+`allKeys.get(keyId)` on line 551, tests `key == null` on line 552, and throws
+`InvalidEncryptionKeyException` on line 555. The mapped producer is
+`SaslDataTransferClient.getUserNameFromEncryptionKey`: its compiled code
+passes `DataEncryptionKey.keyId` to `StringBuilder.append(int)` before
+encoding the SASL username. On the server,
+`SaslDataTransferServer.getEncryptionKeyFromUserName` parses the first
+username component and passes it through
+`BlockPoolTokenSecretManager.retrieveDataEncryptionKey` to the HDFS-11
+method. The generic `data-encryption-key-id` WIRE_FLOW row in
+`communication-mappings.jsonl` declares these producer and consumer ports.
+
+Native fault trials can start once the unchanged JUnit passes under the
+mapped weave, reaches the line-552 target check, and records exact
+SEND/RECEIVE identity for the relevant SASL request. Any unresolved symbolic
+key-ID port is recorded as a gap in the approximate graph. A strong key-ID
+causal claim additionally needs both declared ports observed under that same
+request identity. A detected HDFS-11 bug requires a generic selected fault
+and the line-555 target THROW in the fault's target occurrence. A successful
+SASL exchange or a normal key lookup alone does not establish that result.
+Do not alter the JUnit or add a dedicated key-ID fault site to meet this gate.
