@@ -21,6 +21,10 @@ For a check that explicitly throws its target exception, Soot also records
 typed throw sites and the branches that can select them. The fuzzer uses the
 selected source line to recognize the corresponding runtime `ATHROW`; a
 passing JUnit result can still contain a target exception caught by its caller.
+When a Soot throw unit has no matching runtime check probe, the fuzzer also
+observes the nearest controlling branch of that same typed throw. This keeps
+target reach and the exception oracle tied to the selected check without a
+handwritten branch ID.
 
 The ASM Java agent in `runtime-agent/` instruments only the selected sites.
 A healthy run records the I/O points and code paths that actually execute.
