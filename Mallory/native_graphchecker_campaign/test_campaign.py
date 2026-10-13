@@ -17,6 +17,44 @@ from Mallory.native_graphchecker_feedback.feedback import (
 from Mallory.native_graphchecker_campaign import campaign as core
 
 
+class NativeAdmissionLineageTest(unittest.TestCase):
+    def test_selected_skeletons_need_not_equal_static_weave_input(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            static = root / "static.jsonl"
+            woven = root / "woven.jsonl"
+            selected = root / "selected.jsonl"
+            static.write_text("all-regions\n")
+            woven.write_bytes(static.read_bytes())
+            selected.write_text("one-region\n")
+            proof = core._skeleton_lineage(static, woven, selected)
+            self.assertNotEqual(proof["static_skeletons_sha256"],
+                                proof["selected_skeletons_sha256"])
+            woven.write_text("different-static-input\n")
+            with self.assertRaisesRegex(ValueError, "pinned static skeletons"):
+                core._skeleton_lineage(static, woven, selected)
+
+    def test_selected_task_is_exactly_one_row_of_full_schedule(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            full = root / "full.jsonl"
+            chosen = root / "chosen.jsonl"
+            row = '{"taskId":"TASK.B","payload":"original"}\n'
+            full.write_text('{"taskId":"TASK.A"}\n' + row)
+            chosen.write_text(row)
+            proof = core._task_plan_lineage(full, chosen, "TASK.B")
+            self.assertNotEqual(proof["recording_plan_sha256"],
+                                proof["selected_task_plan_sha256"])
+            chosen.write_text('{"taskId":"TASK.B","payload":"changed"}\n')
+            with self.assertRaisesRegex(ValueError, "full schedule"):
+                core._task_plan_lineage(full, chosen, "TASK.B")
+
+    def test_runner_prefix_uses_fresh_trial_result_path(self) -> None:
+        prefix = core._runner_prefix(
+            {"args_before_test": ["{trial_result_file}"]}, Path("/tmp/trial"))
+        self.assertEqual(["/tmp/trial/junit-result.json"], prefix)
+
+
 class WireTemporalProofTest(unittest.TestCase):
     """Two exact actors; VM event IDs and receipt order are separate clocks."""
 

@@ -124,7 +124,12 @@ def _validate_config(config: dict[str, Any]) -> None:
             not isinstance(runner.get("classpath"), list) or
             not all(isinstance(item, str) and item for item in runner["classpath"]) or
             not isinstance(runner.get("jvm_args", []), list) or
-            not all(isinstance(item, str) for item in runner.get("jvm_args", []))):
+            not all(isinstance(item, str) for item in runner.get("jvm_args", [])) or
+            not isinstance(runner.get("args_before_test", []), list) or
+            not all(isinstance(item, str) and item and
+                    ("{" not in item and "}" not in item or
+                     item == "{trial_result_file}")
+                    for item in runner.get("args_before_test", []))):
         raise ValueError("native campaign requires bounded Zero VM JUnit runner")
     budget = config.get("budget")
     if (not isinstance(budget, dict) or any(
@@ -149,6 +154,51 @@ def _scheduler_source() -> Path:
         if class_name not in archive.namelist():
             raise ValueError("source-built original engine omits ConcolicScheduler")
     return source
+
+
+def _skeleton_lineage(static_skeletons: Path, woven_skeletons: Path,
+                      selected_skeletons: Path) -> dict[str, str]:
+    """Bind the weave to the static input and retain the recorder's selection.
+
+    The recorder emits the selected runtime skeleton set. It is intentionally
+    smaller than the static skeleton set supplied to the concolic weave.
+    """
+    if not selected_skeletons.is_file():
+        raise ValueError("original recorder produced no selected region skeletons")
+    static_sha = _sha(static_skeletons)
+    if _sha(woven_skeletons) != static_sha:
+        raise ValueError("woven regions differ from the pinned static skeletons")
+    return {"static_skeletons_sha256": static_sha,
+            "selected_skeletons_sha256": _sha(selected_skeletons)}
+
+
+def _task_plan_lineage(full_plan: Path, woven_plan: Path,
+                       task_id: str) -> dict[str, str]:
+    """Accept the full schedule or one byte-identical task selected from it."""
+    with woven_plan.open("rb") as stream:
+        selected = [line.rstrip(b"\r\n") for line in stream if line.strip()]
+    if not selected:
+        raise ValueError("woven GraphChecker task plan is empty")
+    try:
+        selected_ids = [json.loads(line).get("taskId") for line in selected]
+    except (ValueError, UnicodeDecodeError) as error:
+        raise ValueError("woven GraphChecker task plan is invalid JSONL") from error
+    if task_id not in selected_ids:
+        raise ValueError("weave task ID is absent from its task plan")
+    full_sha = _sha(full_plan)
+    woven_sha = _sha(woven_plan)
+    if full_sha != woven_sha:
+        if len(selected) != 1 or selected_ids != [task_id]:
+            raise ValueError("selected GraphChecker task must contain one exact task")
+        matches = 0
+        with full_plan.open("rb") as stream:
+            for line in stream:
+                if line.rstrip(b"\r\n") == selected[0]:
+                    matches += 1
+        if matches != 1:
+            raise ValueError("selected GraphChecker task differs from full schedule")
+    return {"recording_plan_sha256": full_sha,
+            "selected_task_plan_sha256": woven_sha}
 
 
 def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any]) -> dict[str, str]:
@@ -200,21 +250,16 @@ def _verify_recording_plan(config: dict[str, Any], weave: dict[str, Any]) -> dic
                        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         generated = scheduled / "execution_task_plan.jsonl"
         index = scheduled / "runtime_workflow_schedule_index.json"
-        if not generated.is_file() or not index.is_file() or _sha(generated) != _sha(planned):
-            raise ValueError("pinned GraphChecker task differs from recording-derived schedule")
-        selected_skeletons = output / "region_skeletons.jsonl"
-        if not selected_skeletons.is_file() or _sha(selected_skeletons) != (
-                _sha(woven_skeletons)):
-            raise ValueError("woven regions differ from healthy recording")
-    task_id = weave["task_id"]
-    if not any(json.loads(line).get("taskId") == task_id
-               for line in planned.read_text(encoding="utf-8").splitlines()
-               if line.strip()):
-        raise ValueError("weave task ID is absent from recording-derived plan")
+        if not generated.is_file() or not index.is_file():
+            raise ValueError("original scheduler produced no complete task plan")
+        task_plan_lineage = _task_plan_lineage(generated, planned, weave["task_id"])
+        skeleton_lineage = _skeleton_lineage(
+            skeletons, woven_skeletons, output / "region_skeletons.jsonl")
     return {"recording_manifest_sha256": _sha(trace / "streaming_trace_manifest.json"),
-            "recording_plan_sha256": _sha(planned),
+            **task_plan_lineage,
             "scheduler_source_sha256": _sha(_scheduler_source()),
-            "static_scope_map_sha256": _sha(scope)}
+            "static_scope_map_sha256": _sha(scope),
+            **skeleton_lineage}
 
 
 def _admit(config: dict[str, Any], root: Path) -> dict[str, Any]:
@@ -604,6 +649,11 @@ def _trial_jvm_args(runner: dict[str, Any], workdir: Path) -> list[str]:
             for arg in runner.get("jvm_args", [])]
 
 
+def _runner_prefix(runner: dict[str, Any], iteration: Path) -> list[str]:
+    return [str(iteration / "junit-result.json") if arg == "{trial_result_file}"
+            else arg for arg in runner.get("args_before_test", [])]
+
+
 def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
                    trial: Path, faults: list[dict[str, Any]]) -> dict[str, Any]:
     """Run the same unchanged JUnit method in a fresh Zero VM."""
@@ -626,6 +676,7 @@ def _execute_junit(config: dict[str, Any], admitted: dict[str, Any],
             f"-Dcausynth.concolic.task.id={weave['task_id']}",
             f"-Dcausynth.concolic.results={iteration / 'vm-result.json'}",
             *jvm_args, "-cp", cp, runner["main_class"],
+            *_runner_prefix(runner, iteration),
             config["junit"]["class"], config["junit"]["method"]]
     env = os.environ.copy()
     env.update({"CAUSYNTH_STATIC_SCOPE_MAP": str(Path(config["recording"][
