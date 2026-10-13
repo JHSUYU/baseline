@@ -42,7 +42,10 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                              "last_fault_seq": 4 if plan else None,
                              "eligible_doors": doors or []},
                 "graphchecker_feedback": {"newClosureEdges": 1,
-                                           "newClosureCoverageSites": 2}}
+                                           "newClosureCoverageSites": 2,
+                                           "closureNodeFamilies": ["target"],
+                                           "closureEdgeFamilies": [],
+                                           "closureCoverageSiteIds": []}}
 
     def test_enqueue_samples_late_occurrences_and_excludes_after_target(self):
         state = _new_state(self.config(), self.budget())
@@ -55,6 +58,7 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
 
     def test_mutation_adds_only_later_observed_fault(self):
         state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 4
         first = {key: self.door(2, 1)[key] for key in
                  ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
         doors = [self.door(3, 2), self.door(6, 3)]
@@ -165,6 +169,7 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
 
     def test_v3_retention_history_counts_only_strict_faults(self):
         state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 3
         fault = {key: self.door(1, 1)[key] for key in
                  ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
         state["active"] = {"index": 1, "name": "r0001", "faults": [fault]}
@@ -277,6 +282,7 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
 
     def test_v4_target_absent_bootstraps_only_observed_typed_static_doors(self):
         state = _new_state(self.config(), self.budget())
+        state["scheduler_version"] = 4
         state["active"] = {"index": 0, "name": "r0000", "faults": []}
         doors = [self.door(1, 1, "observed_closure", "fake-closure"),
                  self.door(2, 2, "static_may_observed", "may"),
@@ -314,6 +320,7 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
     def test_v4_bootstrap_expands_only_after_strict_causal_target_discovery(self):
         state = _new_state(self.config(), {**self.budget(),
                                            "max_faults_per_trial": 3})
+        state["scheduler_version"] = 4
         state["active"] = {"index": 0, "name": "r0000", "faults": []}
         healthy = self.result([], [self.door(1, 1, "static_may_observed", "may")])
         healthy["evidence"]["target_reached"] = False
@@ -473,8 +480,8 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
             self.assertTrue(returned["terminal"])
             self.assertTrue((root / "summary.json").is_file())
 
-    def test_checkpoint_policy_is_pinned_without_breaking_v2_v3_replay(self):
-        for version in (2, 3, 4):
+    def test_checkpoint_policy_preserves_v2_v3_v4_replay(self):
+        for version in (2, 3, 4, 5):
             with self.subTest(version=version), tempfile.TemporaryDirectory() as temp:
                 root = Path(temp)
                 config_file = root / "config.json"
@@ -486,6 +493,12 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                 if version < 4:
                     for field in ("bootstrap_policy_version", "bootstrap_limits"):
                         state.pop(field)
+                if version < 5:
+                    for field in ("closure_novelty_policy_version",
+                                  "seen_target_closure_node_families",
+                                  "seen_target_closure_edge_families",
+                                  "seen_target_closure_coverage_sites"):
+                        state.pop(field)
                 (root / "checkpoint.json").write_text(json.dumps(state))
                 with patch("Mallory.core.graphchecker_fuzzer.load_config",
                            return_value=self.config()), patch(
@@ -493,11 +506,129 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                            return_value=self.budget()):
                     self.assertEqual("complete_queue", run_campaign(
                         config_file, root)["status"])
-                    if version == 4:
+                    if version >= 4:
                         state["bootstrap_policy_version"] = 99
                         (root / "checkpoint.json").write_text(json.dumps(state))
                         with self.assertRaisesRegex(ValueError, "bootstrap checkpoint"):
                             run_campaign(config_file, root)
+
+    def test_v5_repeated_target_closure_family_is_rewarded_once(self):
+        state = _new_state(self.config(), {**self.budget(),
+                                           "max_faults_per_trial": 3})
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([], [self.door(1, 1, site="seed")])
+        healthy["graphchecker_feedback"].update(
+            closureNodeFamilies=["target"], closureEdgeFamilies=[],
+            closureCoverageSiteIds=["target-branch"])
+        _accept_result(state, "r0000", healthy)
+        self.assertEqual(0, state["healthy"]["target_closure_novelty"])
+        self.assertEqual(["target"], state["seen_target_closure_node_families"])
+        self.assertEqual(0, state["queue"][0]["novelty"])
+
+        seed = state["queue"].pop()
+        first = self.result(seed["faults"], [self.door(6, 2, site="child-1")])
+        first["graphchecker_feedback"].update(
+            closureNodeFamilies=["target", "recovery"],
+            closureEdgeFamilies=["rpc-to-target"],
+            closureCoverageSiteIds=["target-branch", "recovery-branch"])
+        state["active"] = {"index": 1, "name": "r0001", "faults": seed["faults"]}
+        _accept_result(state, "r0001", first)
+        self.assertEqual(7, state["trials"][-1]["target_closure_novelty"])
+        self.assertEqual({"new_node_families": 1,
+                          "new_edge_families": 1,
+                          "new_coverage_sites": 1},
+                         state["trials"][-1]["target_closure_feedback"])
+        self.assertEqual(7, state["queue"][-1]["novelty"])
+        self.assertEqual(7, state["queue"][-1]["parent_graph_delta"])
+
+        repeat = self.result(seed["faults"], [self.door(7, 3, site="child-2")])
+        repeat["graphchecker_feedback"].update(
+            closureNodeFamilies=["target", "recovery"],
+            closureEdgeFamilies=["rpc-to-target"],
+            closureCoverageSiteIds=["target-branch", "recovery-branch"],
+            newClosureNodes=99, newClosureEdges=99,
+            newClosureCoverageSites=99)
+        state["active"] = {"index": 2, "name": "r0002", "faults": seed["faults"]}
+        _accept_result(state, "r0002", repeat)
+        self.assertEqual(0, state["trials"][-1]["target_closure_novelty"])
+        self.assertEqual(0, state["queue"][-1]["novelty"])
+        self.assertEqual(0, state["queue"][-1]["parent_graph_delta"])
+        self.assertEqual(1, state["site_target_retention"][
+            _actor_site_key(seed["faults"][-1])]["productive"])
+
+    def test_v5_unmatched_or_unrelated_target_does_not_consume_novelty(self):
+        state = _new_state(self.config(), self.budget())
+        fault = {key: self.door(1, 1)[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        for index, strict, specific in ((1, False, False), (2, True, False)):
+            state["active"] = {"index": index, "name": f"r{index:04d}",
+                               "faults": [fault]}
+            trial = self.result([fault])
+            trial["evidence"]["strict_injection"] = strict
+            trial["evidence"]["injection_specific_target_reached"] = specific
+            trial["graphchecker_feedback"].update(
+                closureNodeFamilies=["target", "new"],
+                closureEdgeFamilies=[], closureCoverageSiteIds=[])
+            _accept_result(state, f"r{index:04d}", trial)
+            self.assertEqual(0, state["trials"][-1]["target_closure_novelty"])
+        self.assertEqual([], state["seen_target_closure_node_families"])
+
+    def test_v5_rejects_target_feedback_without_family_identity(self):
+        state = _new_state(self.config(), self.budget())
+        state["active"] = {"index": 0, "name": "r0000", "faults": []}
+        healthy = self.result([])
+        healthy["graphchecker_feedback"].pop("closureEdgeFamilies")
+        with self.assertRaisesRegex(ValueError, "closure family field missing"):
+            _accept_result(state, "r0000", healthy)
+        self.assertEqual([], state["seen_target_closure_node_families"])
+
+    def test_v5_resume_preserves_seen_families_and_reconciles_once(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            state = _new_state(self.config(), self.budget())
+            state["seen_target_closure_node_families"] = ["recovery", "target"]
+            state["seen_target_closure_edge_families"] = ["rpc-to-target"]
+            state["seen_target_closure_coverage_sites"] = ["branch"]
+            fault = {key: self.door(1, 1)[key] for key in
+                     ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+            state["active"] = {"index": 1, "name": "r0001", "faults": [fault]}
+            trial = root / "trials" / "r0001"
+            trial.mkdir(parents=True)
+            result = self.result([fault], [self.door(6, 2, site="child")])
+            result["graphchecker_feedback"].update(
+                closureNodeFamilies=["target", "recovery"],
+                closureEdgeFamilies=["rpc-to-target"],
+                closureCoverageSiteIds=["branch"],
+                newClosureEdges=99)
+            (trial / "result.json").write_text(json.dumps(result))
+            state = json.loads(json.dumps(state))  # checkpoint roundtrip
+            with patch("Mallory.core.graphchecker_fuzzer.run_trial") as runner:
+                _resume_active(state, root, self.config(), root / "prepared")
+            runner.assert_not_called()
+            self.assertEqual(1, state["completed_fault_trials"])
+            self.assertEqual(0, state["trials"][0]["target_closure_novelty"])
+            self.assertEqual(0, state["queue"][0]["novelty"])
+
+            state["status"] = "complete_queue"
+            (root / "checkpoint.json").write_text(json.dumps(state))
+            config_file = root / "config.json"
+            config_file.write_text("{}")
+            with patch("Mallory.core.graphchecker_fuzzer.load_config",
+                       return_value=self.config()), patch(
+                       "Mallory.core.graphchecker_fuzzer._budget",
+                       return_value=self.budget()), patch(
+                       "Mallory.core.graphchecker_fuzzer._verify_recorded_evidence"):
+                self.assertEqual(1, run_campaign(config_file, root)[
+                    "completed_fault_trials"])
+                state["closure_novelty_policy_version"] = 99
+                (root / "checkpoint.json").write_text(json.dumps(state))
+                with self.assertRaisesRegex(ValueError, "closure novelty policy"):
+                    run_campaign(config_file, root)
+                state["closure_novelty_policy_version"] = 1
+                state.pop("seen_target_closure_edge_families")
+                (root / "checkpoint.json").write_text(json.dumps(state))
+                with self.assertRaisesRegex(ValueError, "closure novelty checkpoint"):
+                    run_campaign(config_file, root)
 
 
 if __name__ == "__main__":

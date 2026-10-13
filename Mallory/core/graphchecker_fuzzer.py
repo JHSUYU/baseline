@@ -27,8 +27,9 @@ REPLAY_FIELD = "replayOccurrenceId"
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
                "selected_scope_observed": 35, "outside_closure": 15,
                "after_target": -100}
-SCHEDULER_VERSION = 4
+SCHEDULER_VERSION = 5
 BOOTSTRAP_POLICY_VERSION = 1
+CLOSURE_NOVELTY_POLICY_VERSION = 1
 BOOTSTRAP_MAX_FAULTS = 3
 BOOTSTRAP_MAX_TRIALS = 128
 MAX_QUEUE = 5000
@@ -166,10 +167,71 @@ def _pick(queue: list[dict[str, Any]], completed: int,
 
 
 def _novelty(result: dict[str, Any]) -> int:
+    """Legacy v1-v4 score: each trial compared only with the healthy run."""
     graph = result.get("graphchecker_feedback", {})
     return min(60, 4 * int(graph.get("newClosureEdges", 0)) +
                2 * int(graph.get("newClosureNodes", 0)) +
                int(graph.get("newClosureCoverageSites", 0)))
+
+
+_CLOSURE_FAMILY_FIELDS = (
+    ("closureNodeFamilies", "seen_target_closure_node_families", 2),
+    ("closureEdgeFamilies", "seen_target_closure_edge_families", 4),
+    ("closureCoverageSiteIds", "seen_target_closure_coverage_sites", 1),
+)
+_CLOSURE_FEEDBACK_NAMES = {
+    "closureNodeFamilies": "new_node_families",
+    "closureEdgeFamilies": "new_edge_families",
+    "closureCoverageSiteIds": "new_coverage_sites",
+}
+
+
+def _target_closure_novelty(state: dict[str, Any], result: dict[str, Any]
+                            ) -> tuple[int, dict[str, int]]:
+    """Credit exact target-closure families only on first campaign observation.
+
+    The graph analyzer emits stable families/coverage IDs as well as counts
+    relative to the healthy run. Counts cannot distinguish a new family from
+    one that already appeared in an earlier fault trial. Missing family arrays
+    never inherit the healthy-relative count as a proxy for identity.
+    """
+    evidence = result.get("evidence", {})
+    if (not evidence.get("target_reached") or result.get(
+            "status") == "invalid_graphchecker_trace" or
+            (result.get("fault_plan") and not (
+                evidence.get("strict_injection") and
+                evidence.get("injection_specific_target_reached")))):
+        return 0, {}
+    graph = result.get("graphchecker_feedback", {})
+    if not isinstance(graph, dict):
+        raise ValueError("target closure graph feedback missing")
+    observed: list[tuple[str, str, int, set[str]]] = []
+    for graph_field, state_field, weight in _CLOSURE_FAMILY_FIELDS:
+        values = graph.get(graph_field)
+        if values is None:
+            # A v5 campaign cannot rank a target-reaching trial by a count
+            # that cannot establish identity across trials.
+            raise ValueError(f"target closure family field missing: {graph_field}")
+        if not isinstance(values, list) or any(
+                not isinstance(value, str) or not value for value in values):
+            raise ValueError(f"invalid target closure family field: {graph_field}")
+        observed.append((graph_field, state_field, weight, set(values)))
+    feedback: dict[str, int] = {}
+    score = 0
+    for graph_field, state_field, weight, values in observed:
+        seen = set(state[state_field])
+        new = values - seen
+        state[state_field] = sorted(seen | values)
+        feedback[_CLOSURE_FEEDBACK_NAMES[graph_field]] = len(new)
+        score += weight * len(new)
+    return min(60, score), feedback
+
+
+def _result_novelty(state: dict[str, Any], result: dict[str, Any]
+                    ) -> tuple[int, dict[str, int]]:
+    if state.get("scheduler_version", 1) >= 5:
+        return _target_closure_novelty(state, result)
+    return _novelty(result), {}
 
 
 def _bootstrap_sites(result: dict[str, Any]) -> set[str]:
@@ -219,7 +281,8 @@ def _bootstrap_feedback(state: dict[str, Any], result: dict[str, Any]
 def _enqueue(state: dict[str, Any], result: dict[str, Any],
              prefix: list[dict[str, Any]], *, bootstrap: bool = False,
              bootstrap_novelty: int = 0,
-             bootstrap_new_sites: set[str] | None = None) -> int:
+             bootstrap_new_sites: set[str] | None = None,
+             target_novelty: int | None = None) -> int:
     evidence = result.get("evidence", {})
     if bootstrap and (state.get("scheduler_version", 1) < 4 or
                       evidence.get("target_reached") or
@@ -269,6 +332,9 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
         for tier in schedule:
             if by_tier[tier]:
                 ordered.append(by_tier[tier].popleft())
+    parent_novelty = (target_novelty if target_novelty is not None else
+                      _novelty(result) if state.get("scheduler_version", 1) < 5
+                      else 0)
     for door in ordered:
         if len(state["queue"]) >= MAX_QUEUE:
             break
@@ -285,7 +351,7 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
                 "novelty": (min(60, bootstrap_novelty +
                                 (15 if door["siteId"] in (
                                     bootstrap_new_sites or set()) else 0))
-                            if bootstrap else _novelty(result)),
+                            if bootstrap else parent_novelty),
                 "enqueued_at": state["completed_fault_trials"]}
         if bootstrap:
             item["bootstrap_seed"] = True
@@ -294,7 +360,7 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
                 not bootstrap and prefix and
                 evidence.get("injection_specific_target_reached"))
             item["parent_graph_delta"] = (
-                _novelty(result) if prefix and not bootstrap else 0)
+                parent_novelty if prefix and not bootstrap else 0)
         state["queue"].append(item)
         added += 1
     state["seen_plan_keys"] = sorted(seen)
@@ -319,6 +385,10 @@ def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]
             "bootstrap_seen_coverage_sites": [],
             "bootstrap_max_graph_edges": 0,
             "bootstrap_max_graph_nodes": 0,
+            "closure_novelty_policy_version": CLOSURE_NOVELTY_POLICY_VERSION,
+            "seen_target_closure_node_families": [],
+            "seen_target_closure_edge_families": [],
+            "seen_target_closure_coverage_sites": [],
             "target_discovered_trial": None,
             "last_fault_site_attempts": {}, "last_fault_site_strict": {},
             "last_fault_actor_site_attempts": {},
@@ -354,6 +424,13 @@ def _accept_result(state: dict[str, Any], name: str,
     if active is None or active["name"] != name:
         raise ValueError("checkpoint active trial disagrees with result")
     record = _trial_record(name, result)
+    target_novelty, closure_feedback = _result_novelty(state, result)
+    if active["index"] == 0 and state.get("scheduler_version", 1) >= 5:
+        # The healthy graph seeds the campaign's seen sets, not a reward.
+        target_novelty = 0
+    if state.get("scheduler_version", 1) >= 5:
+        record["target_closure_novelty"] = target_novelty
+        record["target_closure_feedback"] = closure_feedback
     record["unmatched_retry"] = active.get("unmatched_retry", 0)
     if active["index"] > 0:
         record["selection_tier"] = active.get("selection_tier")
@@ -383,7 +460,7 @@ def _accept_result(state: dict[str, Any], name: str,
             else:
                 state["status"] = "no_healthy_target"
         else:
-            _enqueue(state, result, [])
+            _enqueue(state, result, [], target_novelty=target_novelty)
             if not state["queue"]:
                 state["status"] = "no_observed_fault_door"
     else:
@@ -426,7 +503,7 @@ def _accept_result(state: dict[str, Any], name: str,
                     actor_site, {"preserved": 0, "lost": 0, "productive": 0})
                 if evidence.get("injection_specific_target_reached"):
                     history["preserved"] += 1
-                    if _novelty(result) > 0:
+                    if target_novelty > 0:
                         history["productive"] += 1
                 else:
                     history["lost"] += 1
@@ -449,7 +526,8 @@ def _accept_result(state: dict[str, Any], name: str,
                     "unmatched_retry": count + 1})
         if evidence.get("strict_injection") and evidence.get(
                 "injection_specific_target_reached"):
-            _enqueue(state, result, active["faults"])
+            _enqueue(state, result, active["faults"],
+                     target_novelty=target_novelty)
     state["active"] = None
     state["updated_at"] = _now()
     state["terminal"] = state["status"] != "running"
@@ -561,6 +639,13 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                        (row["name"] for row in trials
                         if row["target_exception_triggered"]), None),
                    "updated_at": state["updated_at"]}
+        if state.get("scheduler_version", 1) >= 5:
+            summary["closure_novelty_policy_version"] = state[
+                "closure_novelty_policy_version"]
+            summary["target_closure_unique_counts"] = {
+                "node_families": len(state["seen_target_closure_node_families"]),
+                "edge_families": len(state["seen_target_closure_edge_families"]),
+                "coverage_sites": len(state["seen_target_closure_coverage_sites"])}
         _write_json(root / "summary.json", summary)
     return state
 
@@ -591,6 +676,17 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                         "max_faults_per_trial": min(BOOTSTRAP_MAX_FAULTS,
                                                     budget["max_faults_per_trial"])}):
                 raise ValueError("campaign bootstrap checkpoint policy changed")
+            if state.get("scheduler_version", 1) >= 5:
+                if state.get("closure_novelty_policy_version") != (
+                        CLOSURE_NOVELTY_POLICY_VERSION):
+                    raise ValueError("campaign target closure novelty policy changed")
+                for _, field, _ in _CLOSURE_FAMILY_FIELDS:
+                    values = state.get(field)
+                    if (not isinstance(values, list) or
+                            any(not isinstance(value, str) or not value
+                                for value in values) or
+                            values != sorted(set(values))):
+                        raise ValueError(f"invalid target closure novelty checkpoint: {field}")
             _verify_recorded_evidence(state, root)
         else:
             state = _new_state(config, budget)
