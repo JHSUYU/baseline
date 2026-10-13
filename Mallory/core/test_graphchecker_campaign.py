@@ -3,12 +3,15 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from Mallory.core.graphchecker_campaign import (_archive_jsonl, _check_woven_major,
+from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
+                                                _archive_trace_pair, _trace_digest,
+                                                _check_woven_major,
                                                 _door_types, _runner, _tree_sha256,
                                                 _trial_verdict,
                                                 _trial_arg,
@@ -342,6 +345,91 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "changed window_trace"):
                 verify_trial_artifacts(trial, result)
 
+    def test_identical_traces_share_verified_gzip_but_resume_checks_both(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            content = (b'{"kind":"COVERAGE","siteId":"c"}\n' * 1000)
+            raw.write_bytes(content)
+            window.write_bytes(content)
+            with patch("Mallory.core.graphchecker_campaign._trace_digest",
+                       wraps=_trace_digest) as digest:
+                raw_receipt, window_receipt, shared, timings = _archive_trace_pair(
+                    raw, window, trial)
+                artifacts = {"raw_trace": raw_receipt, "window_trace": window_receipt}
+                result = {"backend": "graphchecker_native",
+                          "status": "invalid_graphchecker_trace", "artifacts": artifacts,
+                          "raw_trace_sha256": raw_receipt["content_sha256"],
+                          "trace_sha256": window_receipt["content_sha256"]}
+                stats = {name: _archive_stat(trial / receipt["path"])
+                         for name, receipt in artifacts.items()}
+                verify_trial_artifacts(trial, result, _fresh_stats=stats)
+                # One gzip decompression verifies the one physical archive;
+                # the other digest is a plain-source comparison.
+                self.assertEqual(1, sum(Path(call.args[0]).suffix == ".gz"
+                                        for call in digest.call_args_list))
+                verify_trial_artifacts(trial, result)
+                self.assertEqual(3, sum(Path(call.args[0]).suffix == ".gz"
+                                        for call in digest.call_args_list))
+            self.assertTrue(shared)
+            self.assertFalse(raw.exists())
+            self.assertFalse(window.exists())
+            self.assertEqual(raw_receipt["sha256"], window_receipt["sha256"])
+            self.assertEqual(raw_receipt["content_sha256"],
+                             window_receipt["content_sha256"])
+            raw_gzip = trial / raw_receipt["path"]
+            window_gzip = trial / window_receipt["path"]
+            self.assertEqual(os.stat(raw_gzip).st_ino, os.stat(window_gzip).st_ino)
+            self.assertLessEqual(0, timings["archive_raw_trace"])
+            self.assertLessEqual(0, timings["window_dedup_check"])
+            self.assertLessEqual(0, timings["archive_window_trace"])
+            with window_gzip.open("r+b") as stream:
+                stream.seek(12)
+                stream.write(b"damage")
+            with self.assertRaisesRegex(ValueError, "changed raw_trace"):
+                verify_trial_artifacts(trial, result)
+
+    def test_distinct_traces_keep_distinct_archives_and_fresh_stat_is_strict(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            raw.write_bytes(b'{"kind":"COVERAGE","seq":1}\n')
+            window.write_bytes(b'{"kind":"COVERAGE","seq":2}\n')
+            raw_receipt, window_receipt, shared, _ = _archive_trace_pair(
+                raw, window, trial)
+            self.assertFalse(shared)
+            self.assertNotEqual(os.stat(trial / raw_receipt["path"]).st_ino,
+                                os.stat(trial / window_receipt["path"]).st_ino)
+            result = {"backend": "graphchecker_native",
+                      "status": "invalid_graphchecker_trace",
+                      "artifacts": {"raw_trace": raw_receipt,
+                                    "window_trace": window_receipt},
+                      "raw_trace_sha256": raw_receipt["content_sha256"],
+                      "trace_sha256": window_receipt["content_sha256"]}
+            stats = {name: _archive_stat(trial / receipt["path"])
+                     for name, receipt in result["artifacts"].items()}
+            verify_trial_artifacts(trial, result, _fresh_stats=stats)
+            verify_trial_artifacts(trial, result)
+            (trial / window_receipt["path"]).unlink()
+            with self.assertRaisesRegex(ValueError, "changed window_trace"):
+                verify_trial_artifacts(trial, result, _fresh_stats=stats)
+
+    def test_trace_hardlink_never_replaces_an_existing_archive(self):
+        with tempfile.TemporaryDirectory() as temp:
+            trial = Path(temp)
+            raw = trial / "graphchecker-raw.jsonl"
+            window = trial / "graphchecker-trace.jsonl"
+            raw.write_bytes(b'{"kind":"TARGET_CHECK"}\n')
+            window.write_bytes(raw.read_bytes())
+            existing = trial / "graphchecker-trace.jsonl.gz"
+            existing.write_bytes(b"other trial evidence")
+            with self.assertRaises(FileExistsError):
+                _archive_trace_pair(raw, window, trial)
+            self.assertEqual(b"other trial evidence", existing.read_bytes())
+            self.assertTrue(window.is_file())
+
     def test_multi_guard_analysis_passes_ordered_sites_to_java(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -363,7 +451,7 @@ class GraphCheckerCampaignTest(unittest.TestCase):
                 analyze_trial(trial, ["guard-a", "guard-b"], jar=jar)
             self.assertEqual(["guard-a", "guard-b"], seen)
 
-    def test_compressed_prior_is_materialized_only_during_graph_analysis(self):
+    def test_compressed_prior_uses_summary_and_plain_prior_remains_supported(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             trial = root / "trial"
@@ -377,18 +465,43 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             observed = []
 
             def fake_run(command, **_):
-                materialized = Path(command[-1])
-                observed.append((materialized, materialized.read_bytes()))
-                (trial / "graphchecker-feedback.json").write_text(
-                    json.dumps({"schemaVersion": 1, "targetSite": "check"}))
+                if "--healthy-summary" in command:
+                    self.assertEqual(root / receipt["path"], Path(command[5]))
+                    Path(command[6]).write_text(json.dumps({
+                        "summaryVersion": 1, "targetSites": ["check"],
+                        "nodeFamilies": ["R"], "edgeFamilies": [],
+                        "coverageSites": []}))
+                else:
+                    selected = Path(command[-1])
+                    observed.append((selected, selected.read_bytes()))
+                    (trial / "graphchecker-feedback.json").write_text(
+                        json.dumps({"schemaVersion": 1, "targetSite": "check"}))
 
             with patch("Mallory.core.graphchecker_trial.subprocess.run",
                        side_effect=fake_run):
                 analyze_trial(trial, "check", root / receipt["path"], jar)
-            self.assertEqual(prior.read_bytes() if prior.exists() else
-                             "".join(json.dumps(row) + "\n" for row in self.rows()).encode(),
-                             observed[0][1])
-            self.assertFalse(observed[0][0].exists())
+            self.assertEqual(trial / "prior.summary.json", observed[0][0])
+            summary = json.loads(observed[0][1])
+            self.assertEqual(1, summary["summaryVersion"])
+            self.assertEqual(["check"], summary["targetSites"])
+            self.assertEqual(64, len(summary["priorTraceSha256"]))
+            self.assertEqual(64, len(summary["graphJarSha256"]))
+            self.assertTrue((root / receipt["path"]).is_file())
+            plain = root / "fallback.jsonl"
+            plain.write_text("".join(json.dumps(row) + "\n" for row in self.rows()))
+            fallback = root / "fallback-trial"
+            fallback.mkdir()
+            (fallback / "graphchecker-trace.jsonl").write_text('{}\n')
+
+            def plain_run(command, **_):
+                self.assertNotIn("--healthy-summary", command)
+                self.assertEqual(plain, Path(command[-1]))
+                (fallback / "graphchecker-feedback.json").write_text(
+                    json.dumps({"schemaVersion": 1, "targetSite": "check"}))
+
+            with patch("Mallory.core.graphchecker_trial.subprocess.run",
+                       side_effect=plain_run):
+                analyze_trial(fallback, "check", plain, jar)
 
     def test_pinned_trial_template_and_java_major_gate(self):
         with tempfile.TemporaryDirectory() as temp:

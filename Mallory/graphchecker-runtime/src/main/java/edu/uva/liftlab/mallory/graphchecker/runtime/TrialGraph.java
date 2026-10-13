@@ -1,5 +1,6 @@
 package edu.uva.liftlab.mallory.graphchecker.runtime;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -21,6 +22,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.zip.GZIPInputStream;
 
@@ -38,8 +40,99 @@ public final class TrialGraph {
     private final Map<String, Set<String>> doors = new LinkedHashMap<>();
     private final Map<String, List<CoverageEvent>> coverageRows = new LinkedHashMap<>();
     private final Map<String, List<JsonObject>> doorRows = new LinkedHashMap<>();
+    private PriorSummary priorSummary;
+
+    private static final class PriorSummary {
+        final List<String> sites;
+        final Set<String> nodes;
+        final Set<String> edges;
+        final Set<String> coverage;
+
+        PriorSummary(List<String> sites, Set<String> nodes, Set<String> edges,
+                     Set<String> coverage) {
+            this.sites = sites;
+            this.nodes = nodes;
+            this.edges = edges;
+            this.coverage = coverage;
+        }
+    }
 
     private TrialGraph() { }
+
+    private static List<String> summaryStrings(JsonObject value, String key) {
+        if (!value.has(key) || !value.get(key).isJsonArray()) {
+            throw new IllegalArgumentException("healthy summary missing string array " + key);
+        }
+        List<String> strings = new ArrayList<>();
+        for (JsonElement item : value.getAsJsonArray(key)) {
+            if (!item.isJsonPrimitive() || !item.getAsJsonPrimitive().isString()
+                    || item.getAsString().isEmpty()) {
+                throw new IllegalArgumentException("invalid healthy summary " + key);
+            }
+            strings.add(item.getAsString());
+        }
+        if (new HashSet<>(strings).size() != strings.size()) {
+            throw new IllegalArgumentException("duplicate healthy summary " + key);
+        }
+        return strings;
+    }
+
+    /** Only the healthy facts used for exact closure novelty in later trials. */
+    public JsonObject healthySummary(List<String> targetSites) {
+        if (targetSites == null || targetSites.isEmpty()
+                || targetSites.contains(null) || targetSites.contains("")
+                || new HashSet<>(targetSites).size() != targetSites.size()) {
+            throw new IllegalArgumentException("target sites must be unique nonempty IDs");
+        }
+        ClosureResult closure = closureResult(new LinkedHashSet<>(targetSites));
+        Set<String> nodeFamilies = new TreeSet<>();
+        Set<String> edgeFamilies = new TreeSet<>();
+        Set<String> coverageSites = new TreeSet<>();
+        for (String id : closure.nodes) nodeFamilies.add(nodeFamily(id));
+        for (String id : closure.edges) {
+            JsonObject edge = edges.get(id);
+            if (edge != null) edgeFamilies.add(edgeFamily(edge));
+        }
+        for (Map.Entry<String, Long> entry : closure.cutoffs.entrySet()) {
+            for (CoverageEvent event : coverageRows.getOrDefault(entry.getKey(),
+                    Collections.emptyList())) {
+                if (event.seq <= entry.getValue()) coverageSites.add(event.site);
+            }
+        }
+        JsonObject result = new JsonObject();
+        result.addProperty("summaryVersion", 1);
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        result.add("targetSites", gson.toJsonTree(targetSites));
+        result.add("nodeFamilies", gson.toJsonTree(nodeFamilies));
+        result.add("edgeFamilies", gson.toJsonTree(edgeFamilies));
+        result.add("coverageSites", gson.toJsonTree(coverageSites));
+        return result;
+    }
+
+    /** Reads a validated summary as the prior input to {@link #feedback}. */
+    public static TrialGraph readHealthySummary(Path path, List<String> targetSites)
+            throws IOException {
+        JsonObject value;
+        try {
+            value = new JsonParser().parse(new String(Files.readAllBytes(path),
+                    StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (RuntimeException invalid) {
+            throw new IllegalArgumentException("invalid healthy summary JSON", invalid);
+        }
+        if (!value.has("summaryVersion") || value.get("summaryVersion").getAsInt() != 1) {
+            throw new IllegalArgumentException("unsupported healthy summary version");
+        }
+        List<String> sites = summaryStrings(value, "targetSites");
+        if (!sites.equals(targetSites)) {
+            throw new IllegalArgumentException("healthy summary target sites differ");
+        }
+        TrialGraph graph = new TrialGraph();
+        graph.priorSummary = new PriorSummary(sites,
+                new HashSet<>(summaryStrings(value, "nodeFamilies")),
+                new HashSet<>(summaryStrings(value, "edgeFamilies")),
+                new HashSet<>(summaryStrings(value, "coverageSites")));
+        return graph;
+    }
 
     public static TrialGraph read(Path trace) throws IOException {
         TrialGraph graph = new TrialGraph();
@@ -508,11 +601,19 @@ public final class TrialGraph {
         Set<String> priorNodes = new HashSet<>();
         Set<String> priorEdges = new HashSet<>();
         if (before != null) {
-            ClosureResult prior = before.closureResult(selected);
-            for (String id : prior.nodes) priorNodes.add(before.nodeFamily(id));
-            for (String id : prior.edges) {
-                JsonObject edge = before.edges.get(id);
-                if (edge != null) priorEdges.add(before.edgeFamily(edge));
+            if (before.priorSummary != null) {
+                if (!before.priorSummary.sites.equals(new ArrayList<>(selected))) {
+                    throw new IllegalArgumentException("healthy summary target sites differ");
+                }
+                priorNodes.addAll(before.priorSummary.nodes);
+                priorEdges.addAll(before.priorSummary.edges);
+            } else {
+                ClosureResult prior = before.closureResult(selected);
+                for (String id : prior.nodes) priorNodes.add(before.nodeFamily(id));
+                for (String id : prior.edges) {
+                    JsonObject edge = before.edges.get(id);
+                    if (edge != null) priorEdges.add(before.edgeFamily(edge));
+                }
             }
         }
         Set<String> closureEdges = exact.edges;
@@ -585,12 +686,16 @@ public final class TrialGraph {
         }
         Set<String> previousCoverage = new HashSet<>();
         if (before != null) {
-            ClosureResult prior = before.closureResult(selected);
-            for (Map.Entry<String, Long> entry : prior.cutoffs.entrySet()) {
-                for (CoverageEvent event : before.coverageRows.getOrDefault(entry.getKey(),
-                        Collections.emptyList())) {
-                    if (event.seq <= entry.getValue()) {
-                        previousCoverage.add(event.site);
+            if (before.priorSummary != null) {
+                previousCoverage.addAll(before.priorSummary.coverage);
+            } else {
+                ClosureResult prior = before.closureResult(selected);
+                for (Map.Entry<String, Long> entry : prior.cutoffs.entrySet()) {
+                    for (CoverageEvent event : before.coverageRows.getOrDefault(entry.getKey(),
+                            Collections.emptyList())) {
+                        if (event.seq <= entry.getValue()) {
+                            previousCoverage.add(event.site);
+                        }
                     }
                 }
             }

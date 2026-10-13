@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Usage: trace graph feedback targetSiteOrJsonArray [priorTrace|-] [staticScopeMap]. */
+/** Usage: trace graph feedback targetSiteOrJsonArray [priorTraceOrSummary|-] [staticScopeMap]. */
 public final class TrialGraphMain {
     private TrialGraphMain() { }
 
@@ -30,13 +30,29 @@ public final class TrialGraphMain {
     }
 
     public static void main(String[] args) throws Exception {
+        if (args.length == 4 && "--healthy-summary".equals(args[0])) {
+            TrialGraph prior = TrialGraph.read(Paths.get(args[1]));
+            Path summaryFile = Paths.get(args[2]);
+            Path parent = summaryFile.toAbsolutePath().getParent();
+            if (parent != null) Files.createDirectories(parent);
+            Files.write(summaryFile,
+                    (prior.healthySummary(targetSites(args[3])).toString() + "\n")
+                            .getBytes(StandardCharsets.UTF_8));
+            return;
+        }
         if (args.length < 4 || args.length > 6) {
-            System.err.println("usage: TrialGraphMain trace graph feedback targetSiteOrJsonArray [priorTrace|-] [staticScopeMap]");
+            System.err.println("usage: TrialGraphMain trace graph feedback targetSiteOrJsonArray [priorTraceOrSummary|-] [staticScopeMap]");
             System.exit(2);
         }
+        List<String> sites = targetSites(args[3]);
         TrialGraph graph = TrialGraph.read(Paths.get(args[0]));
-        TrialGraph prior = args.length >= 5 && !"-".equals(args[4]) ?
-                TrialGraph.read(Paths.get(args[4])) : null;
+        TrialGraph prior = null;
+        if (args.length >= 5 && !"-".equals(args[4])) {
+            Path priorPath = Paths.get(args[4]);
+            prior = priorPath.toString().endsWith(".summary.json")
+                    ? TrialGraph.readHealthySummary(priorPath, sites)
+                    : TrialGraph.read(priorPath);
+        }
         StaticScope staticScope = args.length == 6 ? StaticScope.read(Paths.get(args[5])) : null;
         Path graphFile = Paths.get(args[1]);
         Path feedbackFile = Paths.get(args[2]);
@@ -44,7 +60,7 @@ public final class TrialGraphMain {
         Path parent = feedbackFile.toAbsolutePath().getParent();
         if (parent != null) Files.createDirectories(parent);
         Files.write(feedbackFile,
-                (graph.feedback(targetSites(args[3]), prior, staticScope).toString() + "\n")
+                (graph.feedback(sites, prior, staticScope).toString() + "\n")
                         .getBytes(StandardCharsets.UTF_8));
     }
 }

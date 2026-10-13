@@ -36,6 +36,74 @@ public class TrialGraphTest {
                 .getAsJsonObject("gaps").get("TRACE_ROW_INVALID").getAsInt());
     }
 
+    @Test public void healthySummaryMatchesFullPriorForMultiTargetNovelty()
+            throws Exception {
+        TrialGraph prior = graph(
+                row("kind", "ACTIVATION", "occurrenceId", "old", "node", "server",
+                        "regionId", "R.old", "seq", 1),
+                row("kind", "COVERAGE", "occurrenceId", "old", "siteId", "old-before",
+                        "seq", 2),
+                row("kind", "TARGET_CHECK", "occurrenceId", "old", "siteId", "guard-a",
+                        "outcome", "FALSE", "seq", 3),
+                row("kind", "COVERAGE", "occurrenceId", "old", "siteId", "old-later",
+                        "seq", 4));
+        TrialGraph trial = graph(
+                row("kind", "ACTIVATION", "occurrenceId", "old", "node", "server",
+                        "regionId", "R.old", "seq", 1),
+                row("kind", "COVERAGE", "occurrenceId", "old", "siteId", "old-before",
+                        "seq", 2),
+                row("kind", "TARGET_CHECK", "occurrenceId", "old", "siteId", "guard-a",
+                        "outcome", "FALSE", "seq", 3),
+                row("kind", "COVERAGE", "occurrenceId", "old", "siteId", "old-later",
+                        "seq", 4),
+                row("kind", "WRITE", "occurrenceId", "old", "writerEndpointId", "writer",
+                        "locationVersion", "cell@1", "seq", 5),
+                row("kind", "ACTIVATION", "occurrenceId", "fresh", "node", "server",
+                        "regionId", "R.fresh", "seq", 6),
+                row("kind", "READ", "occurrenceId", "fresh", "readerEndpointId", "reader",
+                        "writerEndpointId", "writer", "writerOccurrenceId", "old",
+                        "locationVersion", "cell@1", "seq", 7),
+                row("kind", "COVERAGE", "occurrenceId", "fresh", "siteId", "new-branch",
+                        "seq", 8),
+                row("kind", "TARGET_CHECK", "occurrenceId", "fresh", "siteId", "guard-b",
+                        "outcome", "TRUE", "seq", 9));
+        java.util.List<String> sites = Arrays.asList("guard-a", "guard-b");
+        JsonObject full = trial.feedback(sites, prior, null);
+        Path summary = Files.createTempFile("mallory-gc-healthy-", ".summary.json");
+        Files.write(summary, prior.healthySummary(sites).toString()
+                .getBytes(StandardCharsets.UTF_8));
+        JsonObject cached = trial.feedback(sites,
+                TrialGraph.readHealthySummary(summary, sites), null);
+        assertEquals(full, cached);
+        assertEquals(full.get("newClosureNodes"), cached.get("newClosureNodes"));
+        assertEquals(full.get("newClosureEdges"), cached.get("newClosureEdges"));
+        assertEquals(full.get("newClosureCoverageSites"),
+                cached.get("newClosureCoverageSites"));
+        try {
+            TrialGraph.readHealthySummary(summary, Arrays.asList("guard-b", "guard-a"));
+            org.junit.Assert.fail("reordered target set must fail closed");
+        } catch (IllegalArgumentException expected) { }
+    }
+
+    @Test public void healthySummaryPreservesNewTargetReachAfterAbsentSeed()
+            throws Exception {
+        TrialGraph prior = graph(row("kind", "ACTIVATION", "occurrenceId", "seed",
+                "node", "server", "regionId", "R.seed", "seq", 1));
+        TrialGraph trial = graph(
+                row("kind", "ACTIVATION", "occurrenceId", "reached",
+                        "node", "server", "regionId", "R.target", "seq", 1),
+                row("kind", "COVERAGE", "occurrenceId", "reached",
+                        "siteId", "new-block", "seq", 2),
+                row("kind", "TARGET_CHECK", "occurrenceId", "reached",
+                        "siteId", "target", "outcome", "FALSE", "seq", 3));
+        java.util.List<String> sites = Arrays.asList("target");
+        Path summary = Files.createTempFile("mallory-gc-absent-", ".summary.json");
+        Files.write(summary, prior.healthySummary(sites).toString()
+                .getBytes(StandardCharsets.UTF_8));
+        assertEquals(trial.feedback(sites, prior, null),
+                trial.feedback(sites, TrialGraph.readHealthySummary(summary, sites), null));
+    }
+
     private static JsonObject row(Object... fields) {
         JsonObject result = new JsonObject();
         for (int i = 0; i < fields.length; i += 2) {

@@ -16,6 +16,7 @@ import os
 import re
 import shutil
 import signal
+import stat
 import subprocess
 import tarfile
 import tempfile
@@ -140,9 +141,73 @@ def _archive_jsonl(path: Path, output: Path) -> dict[str, Any]:
         temporary.unlink(missing_ok=True)
 
 
+def _archive_trace_pair(raw: Path, window: Path, output: Path) -> tuple[
+        dict[str, Any], dict[str, Any], bool, dict[str, float]]:
+    """Archive both trace names, sharing verified gzip bytes when inputs match.
+
+    Both sources are private, completed trial files. The second source is
+    fingerprinted before linking; ``os.link`` creates the second archive
+    exclusively within the same trial directory, without following a symlink
+    or replacing an existing receipt. Resume still verifies each path fully.
+    """
+    timings = {}
+    started = time.monotonic()
+    raw_receipt = _archive_jsonl(raw, output)
+    timings["archive_raw_trace"] = round(time.monotonic() - started, 3)
+    started = time.monotonic()
+    window_stat = _archive_stat(window)
+    window_digest, window_size = _trace_digest(window)
+    if _archive_stat(window) != window_stat:
+        raise ValueError(f"GraphChecker window trace changed during fingerprint: {window}")
+    timings["window_dedup_check"] = round(time.monotonic() - started, 3)
+    if (window_digest, window_size) != (raw_receipt["content_sha256"],
+                                        raw_receipt["content_bytes"]):
+        started = time.monotonic()
+        window_receipt = _archive_jsonl(window, output)
+        timings["archive_window_trace"] = round(time.monotonic() - started, 3)
+        return raw_receipt, window_receipt, False, timings
+    started = time.monotonic()
+    raw_archive = output / raw_receipt["path"]
+    window_archive = output / (window.name + ".gz")
+    source_stat = raw_archive.lstat()
+    if not stat.S_ISREG(source_stat.st_mode) or raw_archive.is_symlink():
+        raise ValueError(f"GraphChecker source archive is not a regular file: {raw_archive}")
+    # link(2) refuses to overwrite an existing name and both paths are in the
+    # trial directory, so this cannot silently replace another artifact.
+    os.link(raw_archive, window_archive, follow_symlinks=False)
+    linked_stat = window_archive.lstat()
+    if ((linked_stat.st_dev, linked_stat.st_ino, linked_stat.st_size) !=
+            (source_stat.st_dev, source_stat.st_ino, source_stat.st_size)):
+        window_archive.unlink()
+        raise ValueError(f"GraphChecker archive hardlink changed: {window_archive}")
+    if _archive_stat(window) != window_stat:
+        window_archive.unlink()
+        raise ValueError(f"GraphChecker window trace changed before archive: {window}")
+    window.unlink()
+    window_receipt = {**raw_receipt, "path": window_archive.name}
+    timings["archive_window_trace"] = round(time.monotonic() - started, 3)
+    return raw_receipt, window_receipt, True, timings
+
+
+def _archive_stat(path: Path) -> tuple[int, int, int, int, int]:
+    """Cheap same-run identity check for an archive already read and verified."""
+    state = path.lstat()
+    if not stat.S_ISREG(state.st_mode) or path.is_symlink():
+        raise ValueError(f"GraphChecker archive is not a regular file: {path}")
+    return (state.st_dev, state.st_ino, state.st_size,
+            state.st_mtime_ns, state.st_ctime_ns)
+
+
 def verify_trial_artifacts(trial: Path, result: dict[str, Any],
-                           names: set[str] | None = None) -> None:
-    """Fail closed if a completed native trial has lost or changed evidence."""
+                           names: set[str] | None = None, *,
+                           _fresh_stats: dict[str, tuple[int, int, int, int, int]] | None = None
+                           ) -> None:
+    """Fail closed on resume; fresh stats only skip a same-run second read.
+
+    The private fresh path is used immediately after ``_archive_jsonl`` has
+    already hashed and decompressed each archive. All callers loading a saved
+    result, including resume, use the default full byte-level verification.
+    """
     if result.get("backend") != "graphchecker_native":
         return
     for filename, field in (("fault-plan.json", "fault_plan_sha256"),
@@ -188,10 +253,17 @@ def verify_trial_artifacts(trial: Path, result: dict[str, Any],
                 not relative.endswith(".jsonl.gz")):
             raise ValueError(f"invalid {name} archive path: {trial}")
         archive = trial / relative
-        if (not archive.is_file() or archive.stat().st_size != receipt.get("bytes") or
-                _sha256(archive) != receipt.get("sha256")):
+        if (not archive.is_file() or archive.stat().st_size != receipt.get("bytes")):
             raise ValueError(f"changed {name} compressed evidence: {archive}")
-        digest, size = _trace_digest(archive)
+        if _fresh_stats is None:
+            if _sha256(archive) != receipt.get("sha256"):
+                raise ValueError(f"changed {name} compressed evidence: {archive}")
+            digest, size = _trace_digest(archive)
+        else:
+            if (name not in _fresh_stats or
+                    _archive_stat(archive) != _fresh_stats[name]):
+                raise ValueError(f"changed fresh {name} archive: {archive}")
+            digest, size = receipt.get("content_sha256"), receipt.get("content_bytes")
         if digest != receipt.get("content_sha256") or size != receipt.get("content_bytes"):
             raise ValueError(f"changed {name} source evidence: {archive}")
         result_field = {"raw_trace": "raw_trace_sha256",
@@ -1118,6 +1190,7 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
                 os.killpg(process.pid, signal.SIGKILL)
                 return_code = process.wait()
     elapsed = round(time.time() - started, 3)
+    phase_seconds = {"junit": elapsed}
     result: dict[str, Any] = {
         "schema_version": SCHEMA, "case_id": config["case_id"],
         "backend": "graphchecker_native", "command": argv,
@@ -1132,15 +1205,21 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         "static_scope_map_sha256": _sha256(config["static_scope_map"]),
         "weave_receipt_sha256": _sha256(prepared / "weave-receipt.json"),
         "trial_cwd_template_sha256": config["trial_cwd_template_sha256"],
+        "phase_seconds": phase_seconds,
         "target_exception_triggered": False,
         "target_exception_candidate": False}
     try:
+        phase_started = time.monotonic()
         rows, window_count = scan_window_trace(raw_trace, trace)
+        phase_seconds["window_scan"] = round(time.monotonic() - phase_started, 3)
         check_sites = _configured_check_sites(config["target"])
         anchor = check_sites if len(check_sites) > 1 else (
             check_sites[0] if check_sites else config["target"]["throw_site_id"])
+        phase_started = time.monotonic()
         graph = analyze_trial(scratch, anchor, prior_trace, config["graph_jar"],
                               config["static_scope_map"])
+        phase_seconds["graph_analysis"] = round(time.monotonic() - phase_started, 3)
+        phase_started = time.monotonic()
         evidence = summarize_evidence(rows, graph, config["target"], faults,
                                       door_types)
         triggered = evidence["target_exception_triggered"]
@@ -1148,31 +1227,55 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         result.update({"status": status,
                        "graphchecker_feedback": graph, "evidence": evidence,
                        "window_rows": window_count,
-                       "trace_sha256": _sha256(trace),
                        "target_exception_triggered": triggered,
                        "target_exception_candidate": candidate,
-                       "graph_sha256": _sha256(scratch / "graphchecker-graph.jsonl"),
                        "feedback_sha256": _sha256(scratch / "graphchecker-feedback.json")})
         shutil.copyfile(scratch / "graphchecker-feedback.json",
                         trial / "graphchecker-feedback.json")
+        phase_seconds["evidence_summary"] = round(time.monotonic() - phase_started, 3)
     except (ValueError, FileNotFoundError, subprocess.SubprocessError, OSError,
             json.JSONDecodeError) as failure:
         result.update({"status": "invalid_graphchecker_trace",
                        "analysis_error": str(failure)})
     artifacts = {}
-    for name, filename in (("raw_trace", "graphchecker-raw.jsonl"),
-                           ("window_trace", "graphchecker-trace.jsonl"),
-                           ("graph", "graphchecker-graph.jsonl")):
-        source = scratch / filename
-        if source.is_file():
-            artifacts[name] = _archive_jsonl(source, trial)
+    raw_source = scratch / "graphchecker-raw.jsonl"
+    window_source = scratch / "graphchecker-trace.jsonl"
+    if raw_source.is_file() and window_source.is_file():
+        raw_receipt, window_receipt, shared, archive_timings = _archive_trace_pair(
+            raw_source, window_source, trial)
+        artifacts.update(raw_trace=raw_receipt, window_trace=window_receipt)
+        result["trace_archives_hardlinked"] = shared
+        phase_seconds.update(archive_timings)
+    else:
+        for name, source in (("raw_trace", raw_source),
+                             ("window_trace", window_source)):
+            if source.is_file():
+                phase_started = time.monotonic()
+                artifacts[name] = _archive_jsonl(source, trial)
+                phase_seconds[f"archive_{name}"] = round(
+                    time.monotonic() - phase_started, 3)
+    graph_source = scratch / "graphchecker-graph.jsonl"
+    if graph_source.is_file():
+        phase_started = time.monotonic()
+        artifacts["graph"] = _archive_jsonl(graph_source, trial)
+        phase_seconds["archive_graph"] = round(time.monotonic() - phase_started, 3)
     result["artifacts"] = artifacts
     result["raw_trace_sha256"] = (artifacts.get("raw_trace") or {}).get("content_sha256")
+    if "window_trace" in artifacts:
+        result["trace_sha256"] = artifacts["window_trace"]["content_sha256"]
+    if "graph" in artifacts:
+        result["graph_sha256"] = artifacts["graph"]["content_sha256"]
+    fresh_stats = {name: _archive_stat(trial / receipt["path"])
+                   for name, receipt in artifacts.items()}
     if result["target_exception_triggered"]:
+        phase_started = time.monotonic()
         result["workdir_artifact"] = _archive_workdir(workdir, trial)
+        phase_seconds["archive_workdir"] = round(time.monotonic() - phase_started, 3)
     shutil.rmtree(scratch)
+    phase_started = time.monotonic()
+    verify_trial_artifacts(trial, result, _fresh_stats=fresh_stats)
+    phase_seconds["fresh_receipt_check"] = round(time.monotonic() - phase_started, 3)
     _write_json(trial / "result.json", result)
-    verify_trial_artifacts(trial, result)
     return result
 
 
