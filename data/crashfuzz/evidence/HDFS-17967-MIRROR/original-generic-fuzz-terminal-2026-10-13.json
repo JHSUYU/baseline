@@ -60,7 +60,6 @@
   ],
   "additional_target_exception_detected": false,
   "time_to_detection_seconds": null,
-  "excluded_first_post_fault_observation_seconds": 55.859,
   "excluded_reason": "The original JUnit intentionally triggers one receiver-side InvalidEncryptionKeyException from a stale client key, then clears the cached key and retries. Across 766 archived attempt logs, all 685 logs containing the exact missing-key message show the same key ID in a later client-retry log.",
   "raw_attempt_log_audit": {
     "archive_host": "node1",
@@ -80,5 +79,15 @@
       "0": 80
     },
     "qualifying_first_trigger_seconds": null
+  },
+  "excluded_first_target_timing": {
+    "healthy_seed_runtime_seconds": 27.151,
+    "first_faulted_trial_runtime_seconds": 28.708,
+    "first_faulted_trial_complete_cumulative_seconds": 55.859,
+    "exact_throw_trace_seq": 954,
+    "nearest_datanode_error_log_timestamp_utc": "2026-10-13T01:15:31.019Z",
+    "seconds_after_initial_campaign_started_to_error_log": 25.883,
+    "approx_seed_plus_time_to_target_seconds": 53.034,
+    "timing_limit": "The trace records event order but no per-event wall timestamp; the DataXceiver error log is a close proxy for the exact throw."
   }
 }
