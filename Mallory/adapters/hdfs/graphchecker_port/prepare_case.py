@@ -118,13 +118,16 @@ def campaign_config(args: argparse.Namespace) -> None:
               and site.get("clazz") == clazz and site.get("method") == method
               and site.get("line") == line
               and site.get("exceptionClass") == exception]
-    checks = [site for site in targets if site.get("kind") == "BRANCH"
-              and site.get("clazz") == clazz and site.get("method") == method]
-    emitted_lines = {site.get("line") for site in checks}
-    if len(throws) != 1 or not set(expected_checks) <= emitted_lines:
-        raise ValueError("Soot did not retain the unique throw and every inventory check branch")
-    if not checks:
-        raise ValueError("Soot emitted no target check anchor")
+    candidates = [site for site in targets if site.get("kind") == "BRANCH"
+                  and site.get("clazz") == clazz and site.get("method") == method]
+    checks = []
+    for check_line in expected_checks:
+        same_line = [site for site in candidates if site.get("line") == check_line]
+        if len(same_line) != 1:
+            raise ValueError("Soot did not retain one unique branch per inventory check line")
+        checks.extend(same_line)
+    if len(throws) != 1:
+        raise ValueError("Soot did not retain the unique target throw")
     primary = read_json(args.scope_output / "analysis.json").get("targetSiteId")
     if primary not in {site.get("siteId") for site in checks}:
         raise ValueError("planner primary check is absent from manifest")
