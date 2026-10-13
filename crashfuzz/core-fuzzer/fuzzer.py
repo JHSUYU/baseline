@@ -1031,8 +1031,9 @@ def choose_next_sequence(state: dict[str, Any],
         chains = [entry for entry in chains if entry[2][0] >= 3]
         if chains:
             return min(chains, key=lambda entry: (
-                -entry[2][0], -entry[2][1],
+                -min(entry[2][0], 4),
                 len(entry[1]["sequence"]),
+                -entry[2][1],
                 -entry[1].get("target_proximity", 0),
                 -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
     # A successful RPC may carry a state-changing command. Reserve a bounded

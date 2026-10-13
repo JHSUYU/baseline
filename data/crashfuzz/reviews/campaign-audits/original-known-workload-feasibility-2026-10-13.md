@@ -222,6 +222,12 @@ or node. The response-shape campaign resumed from its 104 completed trials
 in tmux `crashfuzz-hdfs-reply-chain-v4`; trial 105 was interrupted once and
 retried under the same checkpoint. This is a search-priority adjustment, not
 a bug detection.
+The first new reply-chain selection, trial 113, chose a seven-fault plan,
+but only one fault matched in two attempts; its one target throw was still
+the baseline event. The generic chain priority now caps its depth reward at
+four same-node replies and prefers fewer total faults at that depth. The
+campaign resumed again from 113 completed trials in tmux
+`crashfuzz-hdfs-reply-chain-v5`, retaining trial 114's active checkpoint.
 
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified

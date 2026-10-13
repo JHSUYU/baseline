@@ -528,6 +528,22 @@ class CoverageIoTest(unittest.TestCase):
         state['reply_chain_diversity_version'] = 0
         self.assertEqual(choose_next_sequence(state), 0)
 
+    def test_reply_chain_slot_caps_depth_before_fault_count(self):
+        reply = {**A, 'phase': 'after',
+                 'responseShape': 'example.Reply|commands=[example.Update]',
+                 'occurrence': 'local/heartbeat|node1/<example.Transport: void receive()>#u2'}
+        four = [{**reply, 'hitOrdinal': hit} for hit in (6, 8, 9, 11)]
+        five = [{**reply, 'hitOrdinal': hit} for hit in (6, 8, 9, 11, 13)]
+        five.extend([{**reply, 'hitOrdinal': 7,
+                      'responseShape': 'example.Reply|commands=[]'},
+                     {**reply, 'hitOrdinal': 10,
+                      'responseShape': 'example.Reply|commands=[]'}])
+        state = {'completed': [{'sequence': [B]}] * 8,
+                 'queue': [{'sequence': five, 'priority': 1000, 'created': 1},
+                           {'sequence': four, 'priority': 1, 'created': 2}],
+                 'reply_chain_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+
     def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):
         reply = {**A, 'phase': 'after',
                  'responseShape': 'example.Reply|commands=[example.Update]'}
