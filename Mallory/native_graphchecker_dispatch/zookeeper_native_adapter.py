@@ -141,7 +141,9 @@ def _target(request: dict) -> tuple[str, str, int]:
     method = function.split("(", 1)[0].rsplit(".", 1)[-1]
     if not function.startswith(clazz + ".") or not method:
         raise ValueError("inventory target method differs from exact site")
-    line = target.get("compiled_throw_source_line") or target["source_line"]
+    # The inventory source line names the compiled THROW itself. A legacy
+    # runtime mapping may point at a later token of a multiline statement.
+    line = target["source_line"]
     if not isinstance(line, int) or line <= 0:
         raise ValueError("inventory throw line is invalid")
     return clazz, method, line

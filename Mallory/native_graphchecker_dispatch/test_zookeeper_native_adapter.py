@@ -17,7 +17,7 @@ class ZooKeeperNativeAdapterTest(unittest.TestCase):
         row = next(case for case in cases if case["case_id"] == "ZOOKEEPER-07")
         request = preparation.build_request(row, checklist.DEFAULT_INVENTORY)
         self.assertEqual(("org.apache.zookeeper.server.quorum.Learner",
-                          "registerWithLeader", 528), zk._target(request))
+                          "registerWithLeader", 525), zk._target(request))
         self.assertNotIn("guard_source_lines", request["target"])
         self.assertNotIn("fault_sites", json.dumps(request))
 
