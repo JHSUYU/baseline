@@ -1,6 +1,8 @@
 package edu.uva.liftlab.graphchecker.causynth;
 
 import edu.uva.liftlab.graphchecker.annotation.Debug;
+import edu.uva.liftlab.graphchecker.contract.GapClass;
+import edu.uva.liftlab.graphchecker.contract.GapKind;
 
 import edu.uva.liftlab.graphchecker.smt.JavaContainerTypes;
 import edu.uva.liftlab.graphchecker.smt.JavaPrimitiveBoxing;
@@ -210,6 +212,9 @@ final class SeedBackwardStaticAnalyzer {
     private Predicate<String> systemClass;
     /** {@link #rpcMessages}, computed at the first demanded getter. */
     private Set<String> rpcMessages;
+    /** A discovered RPC message whose method signatures could not be loaded. */
+    private final List<Map<String, Object>> rpcMessageResolutionGaps =
+            new ArrayList<>();
     /** The declared per-loop {@code K_L} (PIPELINE §2). */
     private final DeclaredLoopBodyBounds loopBodyBounds;
     private boolean globalStaticIndexBuilt;
@@ -336,6 +341,7 @@ final class SeedBackwardStaticAnalyzer {
         result.communicationCallSites.addAll(discovered.callSites);
         result.retainedLoops.addAll(discovered.loops);
         result.communicationGaps.addAll(discovered.gaps);
+        result.communicationGaps.addAll(rpcMessageResolutionGaps);
         result.communicationCallSiteCallees.addAll(
                 discovered.callSiteCallees);
     }
@@ -580,7 +586,21 @@ final class SeedBackwardStaticAnalyzer {
             String name = pending.remove(pending.size() - 1);
             if (found.contains(name) || !protobufMessage(name)) continue;
             found.add(name);
-            for (SootMethod method : sceneClass(name).getMethods()) {
+            // A protobuf hierarchy can be loaded without its method table
+            // when the planner runs with whole_program(false). The hierarchy
+            // proves that this is a message, but getMethods requires the
+            // stronger SIGNATURES level. Resolve only this demanded message;
+            // keep the original Jimple phase and classpath unchanged.
+            SootClass message = messageClassWithSignatures(name);
+            if (message == null) {
+                rpcMessageResolutionGaps.add(CommunicationCatalogPlanner.gap(
+                        GapKind.COMMUNICATION_REQUEST_PORT_UNRESOLVED,
+                        GapClass.BLOCKING,
+                        "PROTOBUF_MESSAGE_SIGNATURES_UNRESOLVED", name,
+                        "", name));
+                continue;
+            }
+            for (SootMethod method : message.getMethods()) {
                 if (!method.isStatic()) {
                     pending.add(method.getReturnType().toString());
                 }
@@ -589,6 +609,22 @@ final class SeedBackwardStaticAnalyzer {
         LOG.info("{} protobuf message types cross a process by RPC",
                 found.size());
         return rpcMessages = found;
+    }
+
+    /** Upgrade one real hierarchy-only protobuf message before enumerating getters. */
+    static SootClass messageClassWithSignatures(String name) {
+        SootClass message = sceneClass(name);
+        if (message == null) return null;
+        if (message.resolvingLevel() < SootClass.SIGNATURES) {
+            try {
+                message = Scene.v().forceResolve(name, SootClass.SIGNATURES);
+            } catch (RuntimeException unavailable) {
+                return null;
+            }
+        }
+        return message == null || message.isPhantom()
+                || message.resolvingLevel() < SootClass.SIGNATURES
+                ? null : message;
     }
 
     /**
