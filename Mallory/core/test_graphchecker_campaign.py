@@ -507,7 +507,7 @@ class GraphCheckerCampaignTest(unittest.TestCase):
                        side_effect=plain_run):
                 analyze_trial(fallback, "check", plain, jar)
 
-    def test_old_graph_jar_is_rejected_before_it_can_truncate_prior_archive(self):
+    def test_old_graph_jar_uses_private_plain_prior_without_truncating_archive(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             trial = root / "trial"
@@ -521,17 +521,28 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             archived = root / receipt["path"]
             before = archived.read_bytes()
             commands = []
+            plain_inputs = []
 
             def old_run(command, **_):
                 commands.append(command)
-                return subprocess.CompletedProcess(command, 2, b"", b"usage")
+                if "--capabilities" in command:
+                    return subprocess.CompletedProcess(command, 2, b"", b"usage")
+                self.assertEqual(before, archived.read_bytes())
+                self.assertNotEqual(archived, Path(command[-1]))
+                self.assertEqual(".jsonl", Path(command[-1]).suffix)
+                plain_inputs.append(Path(command[-1]))
+                self.assertEqual(prior_text, plain_inputs[-1].read_text())
+                (trial / "graphchecker-feedback.json").write_text(
+                    json.dumps({"schemaVersion": 1, "targetSite": "check"}))
+                return subprocess.CompletedProcess(command, 0, b"", b"")
 
+            prior_text = "".join(json.dumps(row) + "\n" for row in self.rows())
             with patch("Mallory.core.graphchecker_trial.subprocess.run",
                        side_effect=old_run):
-                with self.assertRaisesRegex(ValueError, "lacks safe healthy-summary"):
-                    analyze_trial(trial, "check", archived, jar)
-            self.assertEqual(1, len(commands))
+                analyze_trial(trial, "check", archived, jar)
+            self.assertEqual(2, len(commands))
             self.assertEqual("--capabilities", commands[0][-1])
+            self.assertFalse(plain_inputs[0].exists())
             self.assertEqual(before, archived.read_bytes())
 
     def test_pinned_trial_template_and_java_major_gate(self):

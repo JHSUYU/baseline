@@ -6,6 +6,7 @@ events or static may-relevance as observed causal edges or target evidence.
 
 from __future__ import annotations
 
+import gzip
 import hashlib
 import json
 import shutil
@@ -58,6 +59,15 @@ def _valid_summary(value: Any, sites: list[str], trace_sha: str,
     return value.get("summarySha256") == _summary_digest(value)
 
 
+def _supports_healthy_summary(jar: Path) -> bool:
+    """Probe with one argument, which older graph jars reject without writes."""
+    probe = subprocess.run(["java", "-jar", str(jar), "--capabilities"],
+                           timeout=30, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, check=False)
+    return probe.returncode == 0 and (
+        probe.stdout.strip() == b"mallory-healthy-summary-v1")
+
+
 def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path) -> Path:
     """Cache only exact prior-closure novelty facts; retain the original gzip."""
     trace_sha = _sha256(prior_trace)
@@ -77,10 +87,7 @@ def _healthy_summary(prior_trace: Path, sites: list[str], jar: Path) -> Path:
     # --healthy-summary command to such a jar would make it treat prior_trace
     # as an output graph path and truncate the evidence. One argument is a
     # safe probe: old jars reject it before opening any output path.
-    probe = subprocess.run(["java", "-jar", str(jar), "--capabilities"],
-                           timeout=30, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, check=False)
-    if probe.returncode != 0 or probe.stdout.strip() != b"mallory-healthy-summary-v1":
+    if not _supports_healthy_summary(jar):
         raise ValueError("GraphChecker jar lacks safe healthy-summary-v1 capability")
     target_arg = json.dumps(sites) if len(sites) > 1 else sites[0]
     with tempfile.NamedTemporaryFile(mode="w", prefix=".healthy-summary-",
@@ -127,22 +134,31 @@ def analyze_trial(trial: Path, target_site: str | list[str], prior_trace: Path |
     sites = target_site if isinstance(target_site, list) else [target_site]
     if not sites:
         raise ValueError("GraphChecker analysis needs a target site")
-    prior_input = prior_trace
-    if prior_trace is not None and prior_trace.suffix == ".gz":
-        cached = _healthy_summary(prior_trace, sites, selected_jar)
-        prior_input = trial / "prior.summary.json"
-        shutil.copyfile(cached, prior_input)
-        if _sha256(cached) != _sha256(prior_input):
-            raise ValueError("healthy summary changed while copying into trial")
-    target_arg = json.dumps(sites) if len(sites) > 1 else sites[0]
-    command = ["java", "-Xmx6g", "-jar", str(selected_jar), str(trace), str(graph),
-               str(feedback), target_arg]
-    if prior_input is not None or static_scope_map is not None:
-        command.append(str(prior_input) if prior_input is not None else "-")
-    if static_scope_map is not None:
-        command.append(str(static_scope_map))
-    subprocess.run(command, check=True, timeout=300, stdout=subprocess.DEVNULL,
-                   stderr=subprocess.PIPE)
+    scratch = Path("/dev/shm") if Path("/dev/shm").is_dir() else None
+    with tempfile.TemporaryDirectory(prefix="mallory-gc-prior-", dir=scratch) as temporary:
+        prior_input = prior_trace
+        if prior_trace is not None and prior_trace.suffix == ".gz":
+            if _supports_healthy_summary(selected_jar):
+                cached = _healthy_summary(prior_trace, sites, selected_jar)
+                prior_input = trial / "prior.summary.json"
+                shutil.copyfile(cached, prior_input)
+                if _sha256(cached) != _sha256(prior_input):
+                    raise ValueError("healthy summary changed while copying into trial")
+            else:
+                # Legacy pinned campaigns still resume: feed their older
+                # graph jar a private plain prior, never the durable gzip.
+                prior_input = Path(temporary) / "prior.jsonl"
+                with gzip.open(prior_trace, "rb") as source, prior_input.open("wb") as target:
+                    shutil.copyfileobj(source, target, length=1024 * 1024)
+        target_arg = json.dumps(sites) if len(sites) > 1 else sites[0]
+        command = ["java", "-Xmx6g", "-jar", str(selected_jar), str(trace), str(graph),
+                   str(feedback), target_arg]
+        if prior_input is not None or static_scope_map is not None:
+            command.append(str(prior_input) if prior_input is not None else "-")
+        if static_scope_map is not None:
+            command.append(str(static_scope_map))
+        subprocess.run(command, check=True, timeout=300, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.PIPE)
     value = json.loads(feedback.read_text(encoding="utf-8"))
     if not isinstance(value, dict) or value.get("schemaVersion") != 1:
         raise ValueError(f"invalid GraphChecker trial feedback: {feedback}")
