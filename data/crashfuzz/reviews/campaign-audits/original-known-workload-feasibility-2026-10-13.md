@@ -189,6 +189,10 @@ runtime-identity pilot were similarly verified and archived under
 `.archive-attempts-0001-0080.json` in its campaign directory. Final results,
 fault plans, and checkpoints remain on node0.
 
+The response-shape pilot's completed attempts 1–40 were checksum-verified on
+node1 before removal from node0; its receipt is
+`campaign-response-shape-v1/HDFS-17967-MIRROR/.archive-attempts-0001-0040.json`.
+
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
 `static-rerun/original-known/SOLR-40` on node2.
