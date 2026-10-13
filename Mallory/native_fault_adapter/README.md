@@ -19,6 +19,13 @@ The selected target branch reports `TARGET_CHECK` immediately before its
 exact occurrence ID. Thus a trial can prove the applied fault precedes a
 reached target within one occurrence; the target row alone has a separate
 GraphChecker sequence clock.
+After `RowRuntime` accepts an export or attach row, its optional observer
+emits `ENDPOINT_EXPORT` or `ENDPOINT_ATTACH` in that same local receipt
+clock. The receipt carries the original endpoint ID, occurrence ID, physical
+actor, session ID, and VM event ID. A mismatched current actor or occurrence
+is a lineage gap, not a temporal proof. The campaign can use these markers
+with original directed wire edges to check fault-before-export and
+attach-before-target order across occurrences.
 Unknown actor or occurrence attribution emits a GraphChecker gap and refuses
 the fault. A JUnit failure alone never counts as an applied fault or target
 throw.
@@ -31,9 +38,10 @@ both the weave dependency classpath and the JUnit runtime classpath.
 
 ## Verification
 
-`mvn -q -f Mallory/native_fault_adapter/pom.xml test package` exercises two
-fresh JVMs, exact door/applied/target-throw receipts, and the original
-`SessionReader`. `python -m unittest
+`mvn -q -f Mallory/native_fault_adapter/pom.xml
+-Dnative.engine.jar=/path/to/pinned-engine.jar test package` exercises two
+fresh JVMs, exact door/applied/target-throw receipts, accepted export and
+attach endpoint receipts, and the original `SessionReader`. `python -m unittest
 Mallory/native_fault_adapter/test_native_weave_contract.py` checks read-only
 pretrial verification and rejection of a changed static manifest.
 

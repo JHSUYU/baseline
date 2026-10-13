@@ -50,8 +50,32 @@ public final class NativeFaultWeaverTest {
         int healthyExit = junit(classes, healthy, "{\"faults\":[]}");
         assertEquals(0, healthyExit);
         List<JsonObject> seed = receipts(healthy.resolve("fault-events.jsonl"));
-        assertEquals(1, seed.size());
+        assertEquals(3, seed.size());
         assertEquals("FAULT_DOOR", seed.get(0).get("kind").getAsString());
+        JsonObject export = seed.get(1);
+        assertEquals("ENDPOINT_EXPORT", export.get("kind").getAsString());
+        assertEquals(seed.get(0).get("occurrenceId").getAsString(),
+                export.get("occurrenceId").getAsString());
+        assertEquals("fixture-node", export.get("node").getAsString());
+        assertEquals(2L, export.get("nativeVmEventId").getAsLong());
+        assertEquals(1L, export.get("seq").getAsLong()
+                - seed.get(0).get("seq").getAsLong());
+        JsonObject attach = seed.get(2);
+        assertEquals("ENDPOINT_ATTACH", attach.get("kind").getAsString());
+        assertEquals(export.get("endpointId").getAsString(),
+                attach.get("producerEndpointId").getAsString());
+        assertEquals(export.get("occurrenceId").getAsString(),
+                attach.get("occurrenceId").getAsString());
+        assertEquals(3L, attach.get("nativeVmEventId").getAsLong());
+        List<SessionReader> healthySessions = SessionReader.readAll(healthy,
+                Collections.emptyList());
+        assertEquals(1, healthySessions.size());
+        assertEquals(1, healthySessions.get(0).exports().size());
+        assertEquals(healthySessions.get(0).exports().get(0).endpoint().id(),
+                export.get("endpointId").getAsString());
+        assertEquals(1, healthySessions.get(0).attaches().size());
+        assertEquals(healthySessions.get(0).attaches().get(0).endpoint().id(),
+                attach.get("endpointId").getAsString());
         JsonObject fault = new JsonObject();
         for (String field : new String[] {"siteId", "node", "actorEpochOrdinal",
                 "ordinal", "exceptionClass"}) fault.add(field, seed.get(0).get(field));
@@ -167,10 +191,13 @@ public final class NativeFaultWeaverTest {
         Files.createDirectories(run);
         Path planFile = run.resolve("fault-plan.json");
         Files.write(planFile, plan.getBytes(StandardCharsets.UTF_8));
-        Path engine = Paths.get("../static_scope_port/original_engine/target/")
-                .resolve("mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar")
+        Path engine = Paths.get(System.getProperty("native.engine.jar",
+                "../static_scope_port/original_engine/target/"
+                + "mallory-original-graphchecker-seed-1.0-SNAPSHOT.jar"))
                 .toAbsolutePath().normalize();
-        Path dependencies = Paths.get("../static_scope_port/original_engine/target/native-original-dependencies.txt")
+        Path dependencies = Paths.get(System.getProperty("native.engine.deps",
+                "../static_scope_port/original_engine/target/"
+                + "native-original-dependencies.txt"))
                 .toAbsolutePath().normalize();
         String cp = classes + File.pathSeparator
                 + Paths.get("target/test-classes").toAbsolutePath() + File.pathSeparator

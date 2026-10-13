@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.uva.liftlab.graphchecker.contract.GapClass;
 import edu.uva.liftlab.graphchecker.contract.GapKind;
+import edu.uva.liftlab.graphchecker.contract.Endpoint;
 import edu.uva.liftlab.graphchecker.contract.OccurrenceAddress;
 
 import java.io.IOException;
@@ -132,6 +133,37 @@ public final class NativeFaultHooks {
         }
     }
 
+    /** Called only after the original session accepts an export or attach row. */
+    private static void endpointPublished(String kind, String sessionId,
+                                          Endpoint endpoint, Endpoint producer,
+                                          long nativeVmEventId) {
+        synchronized (LOCK) {
+            initialize();
+            if (!enabled || endpoint == null) return;
+            SourceRef source = Attribution.resolve(null);
+            OccurrenceAddress occurrence = source == null ? null
+                    : Identity.currentOccurrence(source.key());
+            if (source == null || occurrence == null || occurrence.lineageLost()
+                    || !source.key().equals(endpoint.occurrence().node().render())
+                    || !occurrence.id().equals(endpoint.occurrence().id())) {
+                RowRuntime.gap(GapKind.LINEAGE_LOST, GapClass.DIAGNOSTIC,
+                        endpoint.id(), "accepted endpoint lacks matching physical actor"
+                                + " and exact current occurrence for fault receipt");
+                return;
+            }
+            JsonObject row = new JsonObject();
+            row.addProperty("sessionId", sessionId);
+            row.addProperty("endpointId", endpoint.id());
+            row.addProperty("producerEndpointId", producer == null ? ""
+                    : producer.id());
+            row.addProperty("node", source.id());
+            row.addProperty("actorEpochOrdinal", source.epoch());
+            row.addProperty("occurrenceId", occurrence.id());
+            row.addProperty("nativeVmEventId", nativeVmEventId);
+            emit(kind, row);
+        }
+    }
+
     private static boolean isType(Throwable thrown, String expectedClass) {
         for (Class<?> type = thrown.getClass(); type != null;
                 type = type.getSuperclass()) {
@@ -174,6 +206,22 @@ public final class NativeFaultHooks {
             Path parent = events.getParent();
             if (parent != null) Files.createDirectories(parent);
             enabled = true;
+            RowRuntime.setEndpointObserver(new RowRuntime.EndpointObserver() {
+                @Override public void afterExport(String sessionId,
+                                                  Endpoint endpoint,
+                                                  long nativeVmEventId) {
+                    endpointPublished("ENDPOINT_EXPORT", sessionId, endpoint,
+                            null, nativeVmEventId);
+                }
+
+                @Override public void afterAttach(String sessionId,
+                                                  Endpoint endpoint,
+                                                  Endpoint producer,
+                                                  long nativeVmEventId) {
+                    endpointPublished("ENDPOINT_ATTACH", sessionId, endpoint,
+                            producer, nativeVmEventId);
+                }
+            });
         } catch (IOException | RuntimeException failure) {
             throw new IllegalStateException("invalid native fault plan", failure);
         }

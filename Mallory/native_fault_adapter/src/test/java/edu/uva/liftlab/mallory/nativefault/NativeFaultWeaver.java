@@ -132,13 +132,16 @@ public final class NativeFaultWeaver {
         }
         Files.createDirectories(helper.getParent());
         Files.write(helper, helperBytes);
-        // The hook's nested fault-plan class is also needed in fresh JUnit VMs.
-        String nested = HOOK + "$Fault.class";
-        Path nestedFile = classes.resolve(nested);
-        try (InputStream stream = NativeFaultWeaver.class.getClassLoader().getResourceAsStream(
-                nested)) {
-            if (stream == null) throw new IllegalStateException("fault-plan class unavailable");
-            Files.write(nestedFile, readAll(stream));
+        // Fresh fixture JVMs also need the plan record and observer callback.
+        for (String suffix : new String[] {"$Fault.class", "$1.class"}) {
+            String nested = HOOK + suffix;
+            Path nestedFile = classes.resolve(nested);
+            try (InputStream stream = NativeFaultWeaver.class.getClassLoader()
+                    .getResourceAsStream(nested)) {
+                if (stream == null) throw new IllegalStateException(
+                        "native hook companion class unavailable: " + nested);
+                Files.write(nestedFile, readAll(stream));
+            }
         }
     }
 

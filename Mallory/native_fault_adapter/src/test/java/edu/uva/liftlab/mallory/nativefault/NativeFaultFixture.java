@@ -20,6 +20,14 @@ public final class NativeFaultFixture {
         try {
             try {
                 io();
+                RowRuntime.exported(Identity.currentOccurrence("fixture-node#epoch0"),
+                        2L, "fixture-export-port", 1L, 0,
+                        new JsonObject(), "Ljava/lang/String;", "fixture-value");
+                RowRuntime.attachedAt(RowRuntime.nextEndpoint(
+                                Identity.currentOccurrence("fixture-node#epoch0"),
+                                "fixture-attach-port", 0),
+                        3L, "fixture-attach-port", 1L, "", "fixture-symbol",
+                        "Ljava/lang/String;", "", true, "fixture-value");
                 RowRuntime.target(Identity.currentOccurrence("fixture-node#epoch0"),
                         1L, "fixture-target-anchor", new JsonObject(), false, false, true);
             } catch (IOException failedIo) {
