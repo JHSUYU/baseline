@@ -502,6 +502,18 @@ class CoverageIoTest(unittest.TestCase):
                  'deep_sequence_version': 1}
         self.assertEqual(choose_next_sequence(state), 2)
 
+    def test_deep_slot_prefers_consecutive_replies_from_one_actor(self):
+        replies = [{**A, 'phase': 'after', 'hitOrdinal': ordinal}
+                   for ordinal in (5, 6, 7)]
+        state = {'completed': [{'sequence': [B]}] * 7,
+                 'queue': [{'sequence': [A, B, {**B, 'siteId': 'third'}],
+                            'priority': 1000, 'target_proximity': 80,
+                            'created': 1},
+                           {'sequence': replies, 'priority': 10,
+                            'target_proximity': 50, 'created': 2}],
+                 'deep_sequence_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+
     def test_target_near_slot_keeps_a_precheck_fault_in_budget(self):
         state = {'completed': [{'sequence': [A]}] * 4,
                  'queue': [{'sequence': [B], 'priority': 1000,

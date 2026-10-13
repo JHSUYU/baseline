@@ -624,6 +624,23 @@ def repeated_reply_loss(sequence: list[dict[str, Any]]) -> bool:
             second.get("hitOrdinal", 0) > first.get("hitOrdinal", 0))
 
 
+def consecutive_reply_streak(sequence: list[dict[str, Any]]) -> int:
+    """Length of a multi-fault chain losing adjacent replies of one actor."""
+    if len(sequence) < 2 or any(point.get("phase") != "after"
+                                for point in sequence):
+        return 0
+    actor = sequence[0]["occurrence"].rsplit("/<", 1)[0]
+    site = sequence[0]["siteId"]
+    if any(point["siteId"] != site or
+           point["occurrence"].rsplit("/<", 1)[0] != actor
+           for point in sequence):
+        return 0
+    ordinals = [point.get("hitOrdinal", 0) for point in sequence]
+    return (len(sequence) if all(b == a + 1
+                                 for a, b in zip(ordinals, ordinals[1:]))
+            else 0)
+
+
 def identity_priority(point: dict[str, Any]) -> int:
     """Favor replayable observed actors without weakening exact matching."""
     occurrence = point.get("occurrence", "")
@@ -823,6 +840,7 @@ def choose_next_sequence(state: dict[str, Any],
                 if len(item["sequence"]) >= 3]
         if deep:
             return min(deep, key=lambda entry: (
+                -consecutive_reply_streak(entry[1]["sequence"]),
                 -entry[1].get("target_proximity", 0),
                 -entry[1]["priority"], len(entry[1]["sequence"]),
                 entry[1]["created"], entry[0]))[0]
