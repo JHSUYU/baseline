@@ -123,7 +123,10 @@ public final class ZooKeeperTraceBridge {
         }
         registerPeer(peer);
         MessageDoors.registerSourceAlias(learner, peer);
-        TARGET_TICK.set(MessageDoors.beginTick(peer,
+        // registerWithLeader is a synchronous call inside followLeader. Keep
+        // the same peer's active turn so the completed response can reach the
+        // caller's epoch check after this method returns.
+        TARGET_TICK.set(MessageDoors.beginContinuation(peer,
                 "REGISTER_WITH_LEADER"));
     }
 

@@ -161,6 +161,18 @@ was not injected. The third release therefore remains preliminary. Its
 receipt and the first two releases are archived separately; a larger fourth
 campaign uses the generic scheduler to test further selected observed doors.
 
+The original ZOOKEEPER-05 `Follower.followLeader` check runs after the
+synchronous `registerWithLeader` call returns. Its first 64-trial receipt is
+preliminary: the runtime recorded LEADERINFO EXPORT/ATTACH before the check,
+but a fresh root for `registerWithLeader` cut that WIRE edge out of the outer
+check's closure. The bridge now begins that nested same-peer turn as a
+continuation. In an isolated unchanged-JUnit pilot, the healthy check was
+reached six times and its closure gained six exact WIRE edges; one generic
+fault trial strictly injected an IOException and retained the check with the
+same six WIRE edges. No target throw occurred. A separate ZOOKEEPER-07
+healthy pilot still reached its check twice and retained two WIRE edges.
+These pilots do not replace the first ZOOKEEPER-05 campaign receipt.
+
 ## Boundaries to extend before using all ZooKeeper checks
 
 This port's existing GraphChecker quorum bridge covers LEADERINFO and
