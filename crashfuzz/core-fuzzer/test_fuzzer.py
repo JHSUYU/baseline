@@ -568,7 +568,7 @@ class CoverageIoTest(unittest.TestCase):
         first = {**A, 'occurrence':
                  'local/heartbeat|node1/<example.Transport: void receive()>#u2'}
         same = {**B, 'occurrence':
-                'local/heartbeat|node1/<example.Recovery: void read()>#u3'}
+                'local/dataxceiver|node1/<example.Recovery: void read()>#u3'}
         other = {**B, 'occurrence':
                  'local/transfer|node2/<example.Recovery: void read()>#u3'}
         state = {'completed': [{'sequence': [A]}] * 10,
@@ -580,6 +580,23 @@ class CoverageIoTest(unittest.TestCase):
         self.assertEqual(choose_next_sequence(state), 1)
         state['cross_actor_diversity_version'] = 0
         self.assertEqual(choose_next_sequence(state), 0)
+
+    def test_cross_actor_slot_prefers_confirmed_distinct_nodes(self):
+        unbound_first = {**A, 'occurrence':
+                         'local/heartbeat/<example.Transport: void receive()>#u2'}
+        unbound_second = {**B, 'occurrence':
+                          'local/dataxceiver/<example.Recovery: void read()>#u3'}
+        bound_first = {**A, 'occurrence':
+                       'local/heartbeat|node1/<example.Transport: void receive()>#u2'}
+        bound_second = {**B, 'occurrence':
+                        'local/dataxceiver|node2/<example.Recovery: void read()>#u3'}
+        state = {'completed': [{'sequence': [A]}] * 10,
+                 'queue': [{'sequence': [unbound_first, unbound_second],
+                            'priority': 1000, 'created': 1},
+                           {'sequence': [bound_first, bound_second],
+                            'priority': 10, 'created': 2}],
+                 'cross_actor_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
 
     def test_followup_slot_prefers_same_component_on_less_tried_root(self):
         watch = {**A, 'siteId': '<example.Watch: void process()>#u1',

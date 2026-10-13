@@ -191,8 +191,11 @@ longer sequences. Every third trial reserves a slot for an I/O point selected
 near a target-side field writer or its actor callback, when one is queued.
 This rule uses the same Soot reasons for every check.
 Every eleventh selection reserves a slot for a sequence affecting two or more
-observed runtime actors. This explores reply loss and subsequent I/O on
-different nodes without declaring any case-specific fault site.
+confirmed logical nodes in the observed runtime identities. Heartbeat and data
+threads on one node count as one node. When no queued sequence has two
+confirmed nodes, the scheduler falls back to distinct observed actors. This
+explores reply loss and subsequent I/O across nodes without declaring any
+case-specific fault site.
 New campaigns prefer an untried static I/O callsite in three of every four
 selection rounds. The fourth round retains the existing timing and fault-type
 diversity rule. This keeps phase and later-occurrence variants from crowding

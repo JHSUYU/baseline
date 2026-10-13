@@ -702,9 +702,25 @@ def same_actor_followup(sequence: list[dict[str, Any]]) -> bool:
 
 
 def fault_actors(sequence: list[dict[str, Any]]) -> tuple[str, ...]:
-    """Stable runtime actors affected by one observed fault sequence."""
-    return tuple(sorted({point["occurrence"].rsplit("/<", 1)[0]
+    """Stable runtime nodes affected by one observed fault sequence.
+
+    The runtime identity suffix after ``|`` names the logical node. Threads
+    such as a heartbeat actor and a DataXceiver can belong to that same node;
+    counting them as different nodes would dilute cross-node exploration.
+    Older traces without the suffix retain their observed actor identity.
+    """
+    return tuple(sorted({point["occurrence"].rsplit("/<", 1)[0].rsplit("|", 1)[-1]
                          for point in sequence}))
+
+
+def confirmed_fault_nodes(sequence: list[dict[str, Any]]) -> tuple[str, ...]:
+    """Logical node IDs explicitly carried by observed runtime identities."""
+    nodes = set()
+    for point in sequence:
+        prefix = point["occurrence"].rsplit("/<", 1)[0]
+        if "|" in prefix:
+            nodes.add(prefix.rsplit("|", 1)[1])
+    return tuple(sorted(nodes))
 
 
 def identity_priority(point: dict[str, Any]) -> int:
@@ -892,15 +908,22 @@ def choose_next_sequence(state: dict[str, Any],
     if (state.get("cross_actor_diversity_version", 0) >= 1 and
             len(previous) % 11 == 10):
         cross = [(index, item) for index, item in enumerate(state["queue"])
-                 if len(fault_actors(item["sequence"])) >= 2]
+                 if len(confirmed_fault_nodes(item["sequence"])) >= 2]
+        actor_key = confirmed_fault_nodes
+        if not cross:
+            # Older or generic traces may have actor names but no explicit
+            # logical-node suffix. Preserve their broader exploration.
+            cross = [(index, item) for index, item in enumerate(state["queue"])
+                     if len(fault_actors(item["sequence"])) >= 2]
+            actor_key = fault_actors
         if cross:
             tried: dict[tuple[str, ...], int] = {}
             for sequence in previous:
-                actors = fault_actors(sequence)
+                actors = actor_key(sequence)
                 if len(actors) >= 2:
                     tried[actors] = tried.get(actors, 0) + 1
             return min(cross, key=lambda entry: (
-                tried.get(fault_actors(entry[1]["sequence"]), 0),
+                tried.get(actor_key(entry[1]["sequence"]), 0),
                 len(entry[1]["sequence"]),
                 -entry[1].get("target_proximity", 0),
                 -entry[1]["priority"], entry[1]["created"], entry[0]))[0]

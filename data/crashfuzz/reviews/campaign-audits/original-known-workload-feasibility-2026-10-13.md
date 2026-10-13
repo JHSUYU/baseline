@@ -72,6 +72,20 @@ families: `ClientNamenodeProtocolServerSideTranslatorPB.getDataEncryptionKey`
 `DataNode.DataTransfer.run` (`#u64`). It also includes
 `KeyManager$BlockKeyUpdater.run` (`#u8`) for the Balancer path. These are
 selected by the static scope rather than declared as manual fault sites.
+After the cross-node scheduler began using confirmed runtime node identities,
+trial 242 selected post-call heartbeat `IOException` faults on distinct
+DataNodes `data7` and `data5`. Both faults applied in order and the target was
+reached afterward, but the exact target throw count was still one, matching
+the healthy test. This is a valid cross-node trial and not a detection.
+The first HDFS mirror budget terminated after 261 completed trials, including
+230 strict fault-plan matches, 113 trials with at least two applied faults,
+and 180 retained target trials. Its result had zero target-exception
+candidates: 239 trials had one exact target throw and 22 had none; no trial
+had more than the healthy run's one throw. The confirmed logical-node
+diversity rule was active only near the end of that budget. The same
+checkpoint was therefore resumed with a larger budget of 300 retained target
+trials and a 450-trial cap, without changing the original JUnit, target, or
+Soot-selected I/O scope.
 
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
