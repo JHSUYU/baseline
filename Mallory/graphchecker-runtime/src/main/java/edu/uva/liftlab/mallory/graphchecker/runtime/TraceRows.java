@@ -382,6 +382,17 @@ final class TraceRows {
                 (owner == null ? context.source != null : source(owner) != null);
     }
 
+    static boolean hasActiveCause() {
+        return CURRENT.get().cause != null;
+    }
+
+    static boolean hasSameOwnerCause(Object owner) {
+        Context context = CURRENT.get();
+        SourceRef selected = source(owner);
+        return context.cause != null && context.source != null
+                && context.source.equals(selected);
+    }
+
     private static void flushActivations(Context context) {
         synchronized (LOCK) {
             for (java.util.Iterator<Activation> it =

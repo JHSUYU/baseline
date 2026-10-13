@@ -93,6 +93,16 @@ public final class MessageDoors {
         return TraceRows.begin(owner, role, true);
     }
 
+    /** Keep an observed same-owner inbound/request cause for a nested turn. */
+    public static long beginContinuation(Object owner, String role) {
+        boolean sameOwner = TraceRows.hasSameOwnerCause(owner);
+        if (!sameOwner && TraceRows.hasActiveCause()) {
+            gap("CONTINUATION_SOURCE_MISMATCH", role,
+                    "active cause belongs to another source; start a separate root");
+        }
+        return TraceRows.begin(owner, role, !sameOwner);
+    }
+
     public static void endTick(long token) { TraceRows.end(token); }
 
     public static void enterRegion(String regionId, String callSite,

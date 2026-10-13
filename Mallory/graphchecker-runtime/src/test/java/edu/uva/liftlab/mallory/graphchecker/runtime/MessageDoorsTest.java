@@ -216,5 +216,49 @@ public class MessageDoorsTest {
                 .toString().contains("COMPLETION"));
         assertTrue(returnedFeedback.getAsJsonArray("closureDoorSiteIds")
                 .toString().contains("callee-io"));
+
+        long continuationSend = MessageDoors.beginRequest(sender, "continuation-send");
+        MessageDoors.enterRegion("R.continuationSender", "send#entry", 0, sender);
+        assertTrue(MessageDoors.faultDoorHit("continuation-send-door", sender) != null);
+        MessageDoors.Outbound continuationOutbound = MessageDoors.prepareOutbound(
+                "RPC", "continuation:1", "0", MessageDoors.REQUEST, sender, null);
+        assertTrue(continuationOutbound.active());
+        MessageDoors.sent(continuationOutbound);
+        MessageDoors.exitRegion("R.continuationSender");
+        MessageDoors.endRequest(continuationSend, "continuation-send");
+
+        MessageDoors.Inbound continuationInbound = MessageDoors.inbound(
+                continuationOutbound.trace, "", "RPC", "continuation:1", "0",
+                MessageDoors.REQUEST, receiver, false);
+        MessageDoors.enterRegion("R.continuationHandler", "handler#entry", 0, receiver);
+        long continuation = MessageDoors.beginContinuation(receiver, "selected-target");
+        MessageDoors.enterRegion("R.continuationTarget", "selected#entry", 0, receiver);
+        MessageDoors.targetCheck("continuation-target", receiver, "healthy");
+        MessageDoors.exitRegion("R.continuationTarget");
+        MessageDoors.endTick(continuation);
+        MessageDoors.exitRegion("R.continuationHandler");
+        MessageDoors.endInbound(continuationInbound);
+        List<String> continuationLines = Files.readAllLines(trace, StandardCharsets.UTF_8);
+        assertTrue(continuationLines.stream().anyMatch(line -> line.contains(
+                "\"api\":\"selected-target\"") && line.contains("\"newRoot\":false")));
+        assertFalse(continuationLines.stream().anyMatch(line -> line.contains(
+                "CONTINUATION_SOURCE_MISMATCH")));
+        com.google.gson.JsonObject continuationFeedback = TrialGraph.read(trace)
+                .feedback("continuation-target", null);
+        assertTrue(continuationFeedback.getAsJsonArray("closureEdgeFamilies")
+                .toString().contains("WIRE"));
+        assertTrue(continuationFeedback.getAsJsonArray("closureDoorSiteIds")
+                .toString().contains("continuation-send-door"));
+
+        long foreignOuter = MessageDoors.beginRequest(sender, "foreign-outer");
+        long foreignContinuation = MessageDoors.beginContinuation(
+                receiver, "foreign-continuation");
+        MessageDoors.endTick(foreignContinuation);
+        MessageDoors.endRequest(foreignOuter, "foreign-outer");
+        assertTrue(Files.readAllLines(trace, StandardCharsets.UTF_8).stream()
+                .anyMatch(line -> line.contains("\"api\":\"foreign-continuation\"")
+                        && line.contains("\"newRoot\":true")));
+        assertTrue(Files.readAllLines(trace, StandardCharsets.UTF_8).stream()
+                .anyMatch(line -> line.contains("CONTINUATION_SOURCE_MISMATCH")));
     }
 }
