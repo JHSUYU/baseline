@@ -54,6 +54,8 @@ When one is available, the scheduler reserves one trial in six for a later
 observed invocation of a selected I/O callsite. It groups these invocations
 by callsite, phase, and a coarse ordinal bucket so repeated early faults do
 not consume the entire budget before state changes later in the JUnit run.
+Another bounded slot samples an untried exact invocation when several calls
+from a short JUnit fall in the same coarse bucket.
 An I/O observation with unresolved actor identity is excluded from the fault
 queue and does not count as a replayable healthy I/O point when deciding
 whether to widen the Soot selection.

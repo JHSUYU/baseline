@@ -443,6 +443,16 @@ class CoverageIoTest(unittest.TestCase):
         state['completed'].append({'sequence': [late]})
         self.assertEqual(choose_next_sequence(state), 0)
 
+    def test_exact_late_slot_revisits_a_coarse_bucket_at_new_ordinal(self):
+        fourth = {**A, 'hitOrdinal': 4, 'phase': 'after'}
+        fifth = {**A, 'hitOrdinal': 5, 'phase': 'after'}
+        state = {'completed': [{'sequence': [fourth]}] * 11,
+                 'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
+                           {'sequence': [fifth], 'priority': 20, 'created': 2}],
+                 'exact_late_occurrence_version': 1,
+                 'late_occurrence_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+
     def test_zookeeper_fault_uses_connection_loss_and_exact_identity(self):
         observed = {**A, 'sourceKey':
                     '<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String)>'}
