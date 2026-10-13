@@ -2,6 +2,42 @@
   "schema_version": 1,
   "quality_reviews": [
     {
+      "case_id": "ZOOKEEPER-05",
+      "state": "budget_finished_preliminary",
+      "reason": "The frozen v1 budget finished 64 fault trials in 491.939 cumulative JUnit seconds: 56 strict injections, 55 post-fault target reaches, 49 injection-specific target reaches, 8 unmatched trials, and zero target throws. The healthy graph and early fault graphs omit WIRE from the target closure even though a paired LEADERINFO EXPORT/ATTACH precedes the Follower.followLeader check. The registerWithLeader nested scope returns before the outer followLeader check and the received cause is not continued across that return. A new generic continuation pilot and rerun are needed before a high-quality causal review.",
+      "config_sha256": "7edc5525d30e26e4dac72457393b500d3efd50ef58fb6d957ef110aa8a5b912e",
+      "receipt_status": "complete_trial_budget",
+      "completed_fault_trials": 64,
+      "evidence_paths": [
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/config.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/checkpoint.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/summary.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/r0001-result.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/r0001-feedback.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/r0001-graph.jsonl.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/r0001-raw.jsonl.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-05-v1/source-manifest.json"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-06",
+      "state": "budget_finished_preliminary",
+      "reason": "The frozen v1 budget finished 64 fault trials in 650.370 cumulative JUnit seconds: 56 strict injections, 44 post-fault target reaches, 8 injection-specific target reaches, 8 unmatched trials, and zero target throws. The target-level causal audit is strong: the healthy and r0010 target closures contain six exact WIRE edges, and r0010 strictly injects IOException at FileSnap.serialize before reaching the target five times with that door in its closure. This remains a preliminary method-level result because the frozen campaign predates the required source-built original GraphChecker runtime integration; the same original JUnit and budget require a final run on that implementation.",
+      "config_sha256": "9dd6ab91efa1ee45edfb497f0c24e96939616a0d558feb53cee118f1e089d555",
+      "receipt_status": "complete_trial_budget",
+      "completed_fault_trials": 64,
+      "evidence_paths": [
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/config.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/checkpoint.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/summary.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/r0010-result.json.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/r0010-feedback.json",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/r0010-graph.jsonl.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/r0010-raw.jsonl.gz",
+        "data/mallory/graphchecker_port/evidence/ZOOKEEPER-06-v1/source-manifest.json"
+      ]
+    },
+    {
       "case_id": "ZOOKEEPER-07",
       "state": "budget_finished_preliminary",
       "reason": "The frozen v3 budget finished 64 fault trials in 460.840 cumulative JUnit seconds: 62 strict injections, 48 post-fault target reaches, 43 injection-specific target reaches, and zero target throws. A strict registerWithLeader fault reaches the retry target through a paired same-peer, same-thread PROGRAM_ORDER edge in r0001; r0011 has four strict faults in the target closure. Only 16 distinct fault sites were injected. The verified FileReader(File) read-side door was strictly injected once without retaining the target, while the selected and observed BufferedReader.readLine door was never injected. A separate generic-scheduler v4 run is needed before high-quality review.",
