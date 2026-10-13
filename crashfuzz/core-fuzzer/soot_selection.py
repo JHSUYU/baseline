@@ -74,6 +74,26 @@ def _validate_selection(result: dict[str, Any], target_method: str) -> None:
                 not row["site_id"].startswith(row["method"] + "#u")
                 for row in io_calls)):
         raise ValueError("Soot selection has invalid I/O callsites")
+    throw_sites = result.get("target_throw_sites")
+    if throw_sites is not None:
+        branch_ids = {row.get("site_id") for row in result.get("branches", [])
+                      if isinstance(row, dict)}
+        if (not isinstance(throw_sites, list) or
+                any(not isinstance(row, dict) or
+                    row.get("method") != target_method or
+                    not isinstance(row.get("soot_site_id"), str) or
+                    not row["soot_site_id"].startswith(target_method + "#u") or
+                    not isinstance(row.get("line"), int) or
+                    isinstance(row.get("line"), bool) or
+                    row["line"] < 1 or
+                    not isinstance(row.get("thrown_type"), str) or
+                    not row["thrown_type"] or
+                    not isinstance(row.get("controlled_by"), list) or
+                    any(not isinstance(branch, str)
+                        for branch in row["controlled_by"]) or
+                    not set(row["controlled_by"]).issubset(branch_ids)
+                    for row in throw_sites)):
+            raise ValueError("Soot selection has invalid target throw sites")
 
 
 def prepare(config: dict[str, Any], case_dir: Path) -> dict[str, Any] | None:
@@ -141,6 +161,8 @@ def prepare(config: dict[str, Any], case_dir: Path) -> dict[str, Any] | None:
         cached = json.loads(artifact.read_text())
         if cached.get("input_digest") == input_digest:
             _validate_selection(cached, target)
+            if "target_throw_sites" not in cached:
+                raise ValueError("current Soot selection omits target throw sites")
             if len(cached["coverage_methods"]) > normalized.get("max_methods", 400):
                 raise ValueError("cached Soot selection exceeds its method budget")
             cached["artifact_path"] = str(artifact)
@@ -155,6 +177,8 @@ def prepare(config: dict[str, Any], case_dir: Path) -> dict[str, Any] | None:
                         MAIN, str(input_path), str(output_path)], check=True)
         result = json.loads(output_path.read_text())
     _validate_selection(result, target)
+    if "target_throw_sites" not in result:
+        raise ValueError("generated Soot selection omits target throw sites")
     if normalized.get("post_call_rpc_enabled", False):
         result["post_call_rpc_enabled"] = True
     if len(result["coverage_methods"]) > normalized.get("max_methods", 400):
