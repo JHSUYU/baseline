@@ -8,6 +8,7 @@ import edu.uva.liftlab.graphchecker.causynth.StaticProgram;
 import edu.uva.liftlab.graphchecker.plan.StaticScopeMap;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -60,6 +61,10 @@ public final class MalloryTargetOccurrenceResolver {
     static JsonObject resolve(Path traceDir, String test, File skeletons,
                               File scopeFile, File graph, String check)
             throws Exception {
+        Path traceFile = traceDir.resolve("runtime_trace.jsonl");
+        Path scheduleFile = traceDir.resolve("schedule.jsonl");
+        String traceHash = sha256(traceFile);
+        String scheduleHash = sha256(scheduleFile);
         JsonObject traceManifest = CausynthTraceRecorder.requireClosedTrace(
                 traceDir.resolve("streaming_trace_manifest.json").toFile());
         CausynthTraceRecorder.requireTracedOver(traceManifest, scopeFile,
@@ -76,6 +81,10 @@ public final class MalloryTargetOccurrenceResolver {
         String targetRegion = targetRegion(scope, check);
         CausynthTraceRecorder.TraceData trace =
                 CausynthTraceRecorder.readStateTrace(traceDir.toFile(), test);
+        if (!traceHash.equals(sha256(traceFile))
+                || !scheduleHash.equals(sha256(scheduleFile))) {
+            throw new IOException("CLOSED trace changed while resolving target");
+        }
         List<StaticProgram.RegionRow> candidates = StaticProgram.regionRows(
                 MapFields.readRows(skeletons),
                 RuntimeSelectedRegionFinalizer.SKELETON_KIND, skeletons);
@@ -167,6 +176,8 @@ public final class MalloryTargetOccurrenceResolver {
         receipt.add("reachedEvents", reached);
         receipt.addProperty("traceManifestSha256", sha256(traceDir.resolve(
                 "streaming_trace_manifest.json")));
+        receipt.addProperty("runtimeTraceSha256", traceHash);
+        receipt.addProperty("scheduleSha256", scheduleHash);
         receipt.addProperty("scopeMapSha256", sha256(scopeFile.toPath()));
         receipt.addProperty("candidateGraphSha256", sha256(graph.toPath()));
         receipt.addProperty("regionSkeletonsSha256", sha256(
@@ -225,8 +236,15 @@ public final class MalloryTargetOccurrenceResolver {
     }
 
     private static String sha256(Path path) throws Exception {
-        byte[] bytes = Files.readAllBytes(path);
-        byte[] hash = MessageDigest.getInstance("SHA-256").digest(bytes);
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream input = Files.newInputStream(path)) {
+            byte[] buffer = new byte[65536];
+            int count;
+            while ((count = input.read(buffer)) >= 0) {
+                digest.update(buffer, 0, count);
+            }
+        }
+        byte[] hash = digest.digest();
         StringBuilder result = new StringBuilder();
         for (byte value : hash) result.append(String.format("%02x", value & 255));
         return result.toString();
