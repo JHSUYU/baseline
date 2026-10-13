@@ -1,0 +1,46 @@
+"""Join one GraphChecker trace and keep static may-scope separate from edges.
+
+This module consumes MessageDoors rows only. It never treats legacy Mallory
+events or static may-relevance as observed causal edges or target evidence.
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+from typing import Any
+
+
+def runtime_jar() -> Path:
+    return (Path(__file__).resolve().parents[1] / "graphchecker-runtime" / "target" /
+            "mallory-graphchecker-runtime-1.0-SNAPSHOT-all.jar")
+
+
+def analyze_trial(trial: Path, target_site: str, prior_trace: Path | None = None,
+                  jar: Path | None = None,
+                  static_scope_map: Path | None = None) -> dict[str, Any]:
+    selected_jar = (jar or runtime_jar()).resolve()
+    if not selected_jar.is_file():
+        raise FileNotFoundError(f"build Mallory/graphchecker-runtime first: {selected_jar}")
+    trace = trial / "graphchecker-trace.jsonl"
+    graph = trial / "graphchecker-graph.jsonl"
+    feedback = trial / "graphchecker-feedback.json"
+    command = ["java", "-jar", str(selected_jar), str(trace), str(graph),
+               str(feedback), target_site]
+    if prior_trace is not None or static_scope_map is not None:
+        if prior_trace is not None and not prior_trace.is_file():
+            raise FileNotFoundError(f"prior GraphChecker trace missing: {prior_trace}")
+        command.append(str(prior_trace) if prior_trace is not None else "-")
+    if static_scope_map is not None:
+        if not static_scope_map.is_file():
+            raise FileNotFoundError(f"GraphChecker static scope map missing: {static_scope_map}")
+        command.append(str(static_scope_map))
+    subprocess.run(command, check=True, timeout=120, stdout=subprocess.DEVNULL,
+                   stderr=subprocess.PIPE)
+    value = json.loads(feedback.read_text(encoding="utf-8"))
+    if not isinstance(value, dict) or value.get("schemaVersion") != 1:
+        raise ValueError(f"invalid GraphChecker trial feedback: {feedback}")
+    if value.get("targetSite") != target_site:
+        raise ValueError(f"GraphChecker feedback target differs from {target_site}: {feedback}")
+    return value
