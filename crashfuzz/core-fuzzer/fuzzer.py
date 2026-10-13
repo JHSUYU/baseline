@@ -560,6 +560,14 @@ def temporal_diversity_key(point: dict[str, Any]) -> tuple[str, int]:
     return fault_family(point), bucket
 
 
+def temporal_site_key(point: dict[str, Any]) -> tuple[str, str, int]:
+    """Group repeat executions by callsite, phase, and coarse time bucket."""
+    ordinal = point.get("hitOrdinal")
+    bucket = (min(ordinal.bit_length() - 1, 4)
+              if isinstance(ordinal, int) and ordinal > 0 else 0)
+    return point["siteId"], point.get("phase", "before"), bucket
+
+
 def identity_priority(point: dict[str, Any]) -> int:
     """Favor replayable observed actors without weakening exact matching."""
     occurrence = point.get("occurrence", "")
@@ -733,6 +741,20 @@ def choose_next_sequence(state: dict[str, Any],
     before other observed fault sites have been tested.
     """
     previous = list(completed_sequences(state))
+    # A repeated I/O call can execute after a control-plane state change.
+    # Reserve a bounded slot for a later observed occurrence of one callsite;
+    # fault-type and actor variants must not starve this temporal exploration.
+    if (state.get("late_occurrence_diversity_version", 0) >= 1 and
+            len(previous) % 6 == 5):
+        tried_buckets = {temporal_site_key(sequence[-1])
+                         for sequence in previous}
+        late = [(index, item) for index, item in enumerate(state["queue"])
+                if len(item["sequence"]) == 1 and
+                item["sequence"][-1].get("hitOrdinal", 1) > 1 and
+                temporal_site_key(item["sequence"][-1]) not in tried_buckets]
+        if late:
+            return min(late, key=lambda entry: (
+                -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
     single_done = sum(len(sequence) == 1 for sequence in previous)
     multi_done = len(previous) - single_done
     preferred_length = 1 if single_done <= multi_done else 2
@@ -1465,6 +1487,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             # Preserve the selection order of a campaign that started before
             # temporal buckets were introduced, including after a restart.
             state.setdefault("temporal_diversity_version", 1)
+            state.setdefault("late_occurrence_diversity_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1534,6 +1557,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "fault_family_version": 2,
                      "static_priority_version": 1,
                      "temporal_diversity_version": 2,
+                     "late_occurrence_diversity_version": 1,
                      "site_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,

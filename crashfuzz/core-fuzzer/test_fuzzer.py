@@ -432,6 +432,17 @@ class CoverageIoTest(unittest.TestCase):
         state['completed'] += [{'sequence': [A]}, {'sequence': [B]}]
         self.assertEqual(choose_next_sequence(state), 0)
 
+    def test_bounded_late_occurrence_slot_prevents_family_starvation(self):
+        late = {**A, 'hitOrdinal': 4, 'phase': 'after'}
+        state = {'completed': [{'sequence': [A]}] * 5,
+                 'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
+                           {'sequence': [late], 'priority': 20, 'created': 2}],
+                 'site_diversity_version': 2,
+                 'late_occurrence_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+        state['completed'].append({'sequence': [late]})
+        self.assertEqual(choose_next_sequence(state), 0)
+
     def test_zookeeper_fault_uses_connection_loss_and_exact_identity(self):
         observed = {**A, 'sourceKey':
                     '<org.apache.solr.common.cloud.SolrZkClient: byte[] getData(java.lang.String)>'}
