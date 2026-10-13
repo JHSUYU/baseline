@@ -68,6 +68,10 @@ ALTERNATE_TESTS = {
         "selector": "TestDFSInputStream#testSkipWithRemoteBlockReader",
         "evidence": "MiniDFSCluster creates a four MiB file; testSkipInner reads in-range positions while skipping and does not explicitly request an EOF exception.",
     },
+    "HDFS-29": {
+        "selector": "TestLeaseRecovery#testBlockSynchronization",
+        "evidence": "The unchanged JUnit creates a five-DataNode MiniDFSCluster, expires a lease, and waits for block recovery. A GraphChecker healthy pilot passed and observed the selected BlockRecoveryWorker guard on dn2 without its throw; the recorded HA test timed out when recovery ran on a different DataNode from its Mockito spy.",
+    },
     "HDFS-43": {
         "selector": "TestFileTruncate#testMultipleTruncate",
         "evidence": "@Before builds a three-DataNode MiniDFSCluster. The test immediately repeats the same-length truncate during block recovery; a separate healthy calibration reached the selected nn0 guard seven times without its exception.",
@@ -116,6 +120,7 @@ AWAIT_FIX_OPT_IN_FAILURES = {
 }
 HDFS_PARAMETERIZED_CLASS_SELECTORS = {"HDFS-11", "HDFS-12", "HDFS-14"}
 HEALTHY_PILOT_ATTESTATIONS = {
+    "HDFS-29": "data/mallory/healthy_pilots/HDFS-29.json",
     "HDFS-43": "data/mallory/calibration_v2/HDFS-43/result.json",
     "HDFS-49": "data/mallory/calibration_v2/HDFS-49/result.json",
     "ZOOKEEPER-11": "Mallory/instrumentation/pilots/zookeeper11/attestation.json",
@@ -123,12 +128,14 @@ HEALTHY_PILOT_ATTESTATIONS = {
     "ZOOKEEPER-03": "data/mallory/calibration/ZOOKEEPER-02-03-alternate/healthy/calibration.json",
 }
 VERIFIED_ALTERNATE_SELECTORS = {
+    "HDFS-29": "verified_block_recovery_healthy_alternate",
     "HDFS-43": "verified_three_datanode_healthy_alternate",
     "HDFS-49": "verified_snapshot_healthy_alternate",
     "ZOOKEEPER-02": "verified_three_peer_healthy_alternate",
     "ZOOKEEPER-03": "verified_three_peer_healthy_alternate",
 }
 RECORDED_SELECTOR_STATUSES = {
+    "HDFS-29": "healthy_junit_flaky_primary_spy",
     "HDFS-43": "oracle_unfit_expected_rejection",
     "HDFS-49": "trace_truncated_before_valid_seed",
     "ZOOKEEPER-02": "oracle_unfit_expected_rejection",

@@ -5845,14 +5845,32 @@
         }
       },
       "workload": {
-        "selector_source": "legacy_executed_test",
+        "selector_source": "verified_block_recovery_healthy_alternate",
         "recorded_selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
-        "recorded_selector_status": null,
-        "healthy_pilot_attestation": null,
+        "recorded_selector_status": "healthy_junit_flaky_primary_spy",
+        "healthy_pilot_attestation": "data/mallory/healthy_pilots/HDFS-29.json",
         "mapping_evidence": null,
         "source_oracle_warning": null,
-        "alternate_test_candidates": [],
-        "alternate_mapping_evidence": null,
+        "alternate_test_candidates": [
+          {
+            "raw": "TestLeaseRecovery#testBlockSynchronization",
+            "simple_class": "TestLeaseRecovery",
+            "method": "testBlockSynchronization",
+            "parameter_variant": null,
+            "class": "org.apache.hadoop.hdfs.TestLeaseRecovery",
+            "selector": "org.apache.hadoop.hdfs.TestLeaseRecovery#testBlockSynchronization",
+            "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestLeaseRecovery.java",
+            "source_sha256": "95d7af3e7992bf74285e497492ea9b8a0d362025685acc294ffdcca485605133",
+            "method_line": 108,
+            "has_junit_annotation": true,
+            "test_like": true,
+            "cluster_fixture_markers_in_test_source": [
+              "MiniDFSCluster"
+            ],
+            "resolution": "test_method_found"
+          }
+        ],
+        "alternate_mapping_evidence": "The unchanged JUnit creates a five-DataNode MiniDFSCluster, expires a lease, and waits for block recovery. A GraphChecker healthy pilot passed and observed the selected BlockRecoveryWorker guard on dn2 without its throw; the recorded HA test timed out when recovery ran on a different DataNode from its Mockito spy.",
         "candidates": [
           {
             "raw": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
@@ -5871,18 +5889,35 @@
               "startCluster("
             ],
             "resolution": "test_method_found"
+          },
+          {
+            "raw": "TestLeaseRecovery#testBlockSynchronization",
+            "simple_class": "TestLeaseRecovery",
+            "method": "testBlockSynchronization",
+            "parameter_variant": null,
+            "class": "org.apache.hadoop.hdfs.TestLeaseRecovery",
+            "selector": "org.apache.hadoop.hdfs.TestLeaseRecovery#testBlockSynchronization",
+            "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestLeaseRecovery.java",
+            "source_sha256": "95d7af3e7992bf74285e497492ea9b8a0d362025685acc294ffdcca485605133",
+            "method_line": 108,
+            "has_junit_annotation": true,
+            "test_like": true,
+            "cluster_fixture_markers_in_test_source": [
+              "MiniDFSCluster"
+            ],
+            "resolution": "test_method_found"
           }
         ],
-        "selected_selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
-        "test_class": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover",
-        "test_method": "testFailoverRightBeforeCommitSynchronization",
-        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java",
+        "selected_selector": "org.apache.hadoop.hdfs.TestLeaseRecovery#testBlockSynchronization",
+        "test_class": "org.apache.hadoop.hdfs.TestLeaseRecovery",
+        "test_method": "testBlockSynchronization",
+        "test_source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestLeaseRecovery.java",
         "parameter_variant_note": null
       },
       "eligibility": {
         "state": "ready_for_healthy_seed",
         "may_attempt_seed": true,
-        "cluster_and_target_reach_verified_for_mallory": false,
+        "cluster_and_target_reach_verified_for_mallory": true,
         "historical_status_is_not_eligibility": true,
         "bytecode_mapping_status": "unique_compiled_site",
         "may_dispatch_healthy_seed": true,
@@ -5899,7 +5934,7 @@
           "-ntp",
           "-pl",
           "hadoop-hdfs-project/hadoop-hdfs",
-          "-Dtest=TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+          "-Dtest=TestLeaseRecovery#testBlockSynchronization",
           "-Dsurefire.failIfNoSpecifiedTests=false",
           "surefire:test"
         ],
