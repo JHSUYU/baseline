@@ -12,7 +12,7 @@ from pathlib import Path
 import subprocess
 import xml.etree.ElementTree as ET
 
-from run_original_junit_smoke import BASE, HERE, surefire_classpath
+from run_original_junit_smoke import BASE, HERE
 from verify_source import verify
 
 
@@ -70,14 +70,20 @@ def original_junit_classpath(report: Path, source: Path) -> list[str]:
     if len(basedirs) != 1 or not basedirs[0]:
         raise ValueError(f"Surefire report has no unique basedir: {report}")
     report_source = Path(basedirs[0]).resolve().parent
+    classpaths = [p.get("value") for p in suite.findall("properties/property")
+                  if p.get("name") == "java.class.path"]
+    if len(classpaths) != 1 or not classpaths[0]:
+        raise ValueError(f"Surefire report has no unique classpath: {report}")
     result = []
-    for item in surefire_classpath(report).split(":"):
+    for item in classpaths[0].split(":"):
         if not item:
             continue
         path = Path(item)
         try:
             relative = path.relative_to(report_source)
         except ValueError:
+            if not path.exists():
+                raise FileNotFoundError(f"JUnit classpath entry: {path}")
             result.append(item)
             continue
         relocated = source / relative
