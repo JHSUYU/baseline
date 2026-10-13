@@ -15,9 +15,9 @@ All 102 rows have unique IDs, exact source file/function/line/site, terminal `fi
 
 ## Coverage gaps
 
-Among the 22 `no_valid_target_trial` rows, 13 have `healthy_target_reached=True`: HBASE-02, HBASE-19, HBASE-20, HBASE-28, HDFS-20, HDFS-29, HDFS-30, HDFS-32, HDFS-39, HDFS-40, HDFS-52, SOLR-38, ZOOKEEPER-10. Their unchanged JUnit reaches the check in the healthy seed, but the tested fault sequences lose the target afterward; further generic fault scheduling can help, while the current result should remain a coverage gap.
+Among the 22 `no_valid_target_trial` rows, 14 have `healthy_target_reached=True`: HBASE-02, HBASE-18, HBASE-19, HBASE-20, HBASE-28, HDFS-20, HDFS-29, HDFS-30, HDFS-32, HDFS-39, HDFS-40, HDFS-52, SOLR-38, ZOOKEEPER-10. Their unchanged JUnit reaches the check in the healthy seed, but the tested fault sequences lose the target afterward; further generic fault scheduling can help, while the current result should remain a coverage gap. HBASE-18's old result omitted the reach flag, but its retained healthy trace has an exact `CHECK_REACHED` for selected site `#u73` at seq 712. The collector now recovers a missing true flag from an exact seed trace event.
 
-Eight have `healthy_target_reached=False`: HBASE-33, HDFS-18, SOLR-01, SOLR-15, SOLR-16, SOLR-34, ZOOKEEPER-04, ZOOKEEPER-07. This unchanged JUnit workload does not reach the selected check even without a fault. Another original cluster JUnit would be needed if one exists; simply raising this workload's fault budget will not establish healthy reachability. HBASE-18 has no recorded healthy-target flag and therefore cannot be placed in either group without inspecting its seed trace. None of these 22 is treated as a checked negative finding.
+Eight have `healthy_target_reached=False`: HBASE-33, HDFS-18, SOLR-01, SOLR-15, SOLR-16, SOLR-34, ZOOKEEPER-04, ZOOKEEPER-07. This unchanged JUnit workload does not reach the selected check even without a fault. Another original cluster JUnit would be needed if one exists; simply raising this workload's fault budget will not establish healthy reachability. None of these 22 is treated as a checked negative finding.
 
 ## Exception and evidence audit
 

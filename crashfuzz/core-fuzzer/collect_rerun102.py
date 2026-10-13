@@ -147,6 +147,25 @@ def apply_local_archive(value: dict, base: Path) -> None:
     value['archive_path'] = str(Path(archive['remote_path']) / relative)
 
 
+def infer_healthy_target_reach(value: dict, base: Path) -> None:
+    """Recover an omitted seed reach flag from an exact runtime CHECK_REACHED."""
+    if value.get('healthy_target_reached') is not None:
+        return
+    target = value.get('target_site_id')
+    trace = base / 'healthy/runtime_trace.jsonl'
+    if not target or not trace.is_file():
+        return
+    with trace.open() as events:
+        for line in events:
+            try:
+                event = json.loads(line)
+            except ValueError:
+                continue
+            if event.get('event') == 'CHECK_REACHED' and event.get('siteId') == target:
+                value['healthy_target_reached'] = True
+                return
+
+
 def enrich_result_metrics(value: dict, record: dict) -> None:
     gain = record.get('coverage_gain_by_kind') or {}
     value['healthy_target_reached'] = record.get('target_reached')
@@ -304,6 +323,7 @@ def main() -> int:
                     'cluster_test': row.get('cluster_test')}
         merged = {**baseline, **summaries.get(row['case_id'], {})}
         apply_local_archive(merged, LOCAL_ROOT / row['case_id'])
+        infer_healthy_target_reach(merged, LOCAL_ROOT / row['case_id'])
         apply_campaign_migration(merged, migrations)
         apply_candidate_review(merged, reviews)
         apply_target_exception_review(merged, target_exceptions)

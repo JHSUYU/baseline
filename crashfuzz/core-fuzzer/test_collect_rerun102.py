@@ -7,7 +7,8 @@ from collect_rerun102 import (accepts_remote_case, apply_campaign_migration,
                               apply_candidate_review, apply_target_exception_review,
                               apply_local_archive,
                               enrich_live_summary, enrich_live_trials,
-                              enrich_result_metrics, reconcile_elapsed)
+                              enrich_result_metrics, infer_healthy_target_reach,
+                              reconcile_elapsed)
 
 
 class LiveTrialSummaryTest(unittest.TestCase):
@@ -34,6 +35,21 @@ class LiveTrialSummaryTest(unittest.TestCase):
             self.assertEqual(row['archive_host'], 'node1')
             self.assertEqual(row['archive_path'],
                              '/remote/CHECK-01/campaign/CHECK-01/result.json')
+
+    def test_missing_healthy_reach_is_recovered_from_exact_check_trace(self):
+        with tempfile.TemporaryDirectory() as directory:
+            base = Path(directory)
+            trace = base / 'healthy/runtime_trace.jsonl'
+            trace.parent.mkdir()
+            trace.write_text('\n'.join([
+                json.dumps({'event': 'CHECK_REACHED', 'siteId': 'other'}),
+                json.dumps({'event': 'CHECK_REACHED', 'siteId': 'target'})]) + '\n')
+            row = {'target_site_id': 'target'}
+            infer_healthy_target_reach(row, base)
+            self.assertTrue(row['healthy_target_reached'])
+            row['healthy_target_reached'] = False
+            infer_healthy_target_reach(row, base)
+            self.assertFalse(row['healthy_target_reached'])
 
     def test_review_rejects_only_the_examined_candidates(self):
         reviews = {'CHECK-01': {'reviewed_candidate_count': 2,
