@@ -196,6 +196,12 @@ trial 84, applied all three faults in `data5`, `data7`, `data3` arrival order,
 different from the requested `data7`, `data5`, `data3` order. Strict matching
 passed. The exact target throw count was still one, equal to the healthy
 baseline, so trial 84 is also not a bug detection.
+The same rule applies when the original JUnit fails for another reason.
+For example, response-shape trial 76 strictly injected two faults and its
+JUnit returned failure because Mockito observed two calls to
+`DFSClient.clearDataEncryptionKey()` where the test expects exactly one.
+Its trace still has only one exact target throw, so the failing assertion
+does not establish a new `allKeys.get(keyId)` exception.
 
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
