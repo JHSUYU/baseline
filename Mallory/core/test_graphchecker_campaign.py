@@ -10,6 +10,7 @@ from unittest.mock import patch
 
 from Mallory.core.graphchecker_campaign import (_archive_jsonl, _check_woven_major,
                                                 _door_types, _runner, _tree_sha256,
+                                                _trial_verdict,
                                                 _trial_arg,
                                                 _runner_class_sha256, _verify_prepared,
                                                 load_config, load_trace, prepare,
@@ -58,6 +59,24 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         self.assertTrue(evidence["target_exception_triggered"])
         self.assertEqual([6], evidence["target_throw_seqs_after_fault"])
         self.assertEqual("observed_closure", evidence["eligible_doors"][0]["tier"])
+        self.assertTrue(evidence["injection_specific_target_reached"])
+
+    def test_second_request_target_does_not_validate_first_request_fault(self):
+        rows = self.rows()
+        rows[4]["occurrenceId"] = "occ-B"
+        rows[5]["occurrenceId"] = "occ-B"
+        graph = self.graph()
+        graph["closureOccurrenceIds"] = ["occ-B"]
+        graph["closureOccurrenceCutoffs"] = {"occ-B": 6}
+        evidence = summarize_evidence(rows, graph, self.TARGET, [self.FAULT],
+                                      {"door": "java.io.IOException"})
+        self.assertTrue(evidence["strict_injection"])
+        self.assertTrue(evidence["target_exception_triggered"])
+        self.assertTrue(evidence["post_fault_target_reached"])
+        self.assertFalse(evidence["injection_specific_target_reached"])
+        self.assertEqual([], evidence["fault_occurrences_in_target_closure"])
+        self.assertEqual(("needs_causal_review", False),
+                         _trial_verdict(evidence, [self.FAULT], 0))
 
     def test_same_site_in_other_occurrence_is_not_claimed_as_closure(self):
         rows = self.rows()
@@ -83,6 +102,22 @@ class GraphCheckerCampaignTest(unittest.TestCase):
         evidence = summarize_evidence(rows, self.graph(), self.TARGET,
                                       [self.FAULT])
         self.assertEqual("static_may_observed", evidence["eligible_doors"][1]["tier"])
+        self.assertEqual(["occ-A"], evidence["causal_closure_occurrences"])
+        self.assertEqual(["edge-1"], evidence["causal_closure_edges"])
+
+    def test_selected_observed_door_is_noncausal_exploration(self):
+        rows = self.rows()
+        rows.insert(3, {"kind": "FAULT_DOOR", "seq": 3,
+                        "siteId": "selected-door", "node": "nn-2#epoch0",
+                        "occurrenceId": "occ-B", "doorOrdinal": 1})
+        evidence = summarize_evidence(rows, self.graph(), self.TARGET,
+                                      [self.FAULT],
+                                      {"door": "java.io.IOException",
+                                       "selected-door": "java.io.IOException"})
+        self.assertEqual("selected_scope_observed",
+                         evidence["eligible_doors"][1]["tier"])
+        self.assertEqual(["selected-door"],
+                         evidence["selected_scope_observed_door_sites"])
         self.assertEqual(["occ-A"], evidence["causal_closure_occurrences"])
         self.assertEqual(["edge-1"], evidence["causal_closure_edges"])
 

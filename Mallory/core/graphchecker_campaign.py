@@ -892,6 +892,16 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
     target_reached = bool(graph.get("targetReached") and (checks or throws))
     post_fault_target = bool(last_fault_seq is not None and any(
         row["seq"] > last_fault_seq for row in (*checks, *throws)))
+    fault_occurrences_in_closure = [
+        actual["occurrenceId"] for actual in applied if
+        actual.get("occurrenceId") in closure and
+        isinstance(cutoffs.get(actual["occurrenceId"]), int) and
+        actual["seq"] < cutoffs[actual["occurrenceId"]]]
+    injection_specific_target = bool(
+        strict and target_reached and applied and
+        applied[-1]["occurrenceId"] in closure and
+        isinstance(cutoffs.get(applied[-1]["occurrenceId"]), int) and
+        applied[-1]["seq"] < cutoffs[applied[-1]["occurrenceId"]])
     eligible = []
     for door in doors:
         cutoff = cutoffs.get(door["occurrenceId"])
@@ -901,6 +911,10 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             tier = "after_target"
         elif door["siteId"] in may_sites:
             tier = "static_may_observed"
+        elif door["siteId"] in (door_types or {}):
+            # Instrumented and observed in this JUnit run, but the static
+            # selection alone cannot establish an observed causal edge.
+            tier = "selected_scope_observed"
         else:
             tier = "outside_closure"
         eligible.append({"siteId": door["siteId"], "node": door["node"],
@@ -912,6 +926,10 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             "planned_faults": len(faults), "last_fault_seq": last_fault_seq,
             "target_reached": target_reached,
             "post_fault_target_reached": post_fault_target,
+            "fault_occurrences_in_target_closure": fault_occurrences_in_closure,
+            "all_fault_occurrences_in_target_closure": bool(
+                strict and len(fault_occurrences_in_closure) == len(applied)),
+            "injection_specific_target_reached": injection_specific_target,
             "target_throw_seen": bool(throws),
             "target_exception_triggered": bool(faults and strict and exact),
             "target_throw_seqs_after_fault": [row["seq"] for row in exact],
@@ -926,7 +944,33 @@ def summarize_evidence(rows: list[dict[str, Any]], graph: dict[str, Any],
             "causal_closure_edges": graph.get("closureEdgeIds", []),
             "closure_coverage_sites": graph.get("closureCoverageSiteIds", []),
             "static_may_observed_door_sites": sorted(may_sites),
+            "selected_scope_observed_door_sites": sorted({
+                door["siteId"] for door in eligible
+                if door["tier"] == "selected_scope_observed"}),
             "graph_gaps": graph.get("gaps", {})}
+
+
+def _trial_verdict(evidence: dict[str, Any], faults: list[dict[str, Any]],
+                   prior_throw_count: int | None) -> tuple[str, bool]:
+    """Keep an exact post-fault throw distinct from injection-specific evidence."""
+    triggered = bool(evidence["target_exception_triggered"])
+    specific = bool(evidence["injection_specific_target_reached"])
+    differential = bool(specific and triggered and prior_throw_count is not None and
+                        len(evidence["target_throw_rows_after_fault"]) > prior_throw_count)
+    if differential:
+        return "candidate", True
+    if triggered and not specific:
+        return "needs_causal_review", False
+    if triggered:
+        return ("needs_differential_review" if prior_throw_count is not None
+                else "needs_baseline_review"), False
+    if specific:
+        return "checked", False
+    if faults and not evidence["strict_injection"]:
+        return "unmatched", False
+    if faults and evidence.get("post_fault_target_reached"):
+        return "unrelated_target", False
+    return ("lost_target" if faults else "healthy_seed"), False
 
 
 def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
@@ -1032,21 +1076,13 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         evidence = summarize_evidence(rows, graph, config["target"], faults,
                                       door_types)
         triggered = evidence["target_exception_triggered"]
-        differential = bool(triggered and prior_throw_count is not None and
-                            len(evidence["target_throw_rows_after_fault"]) > prior_throw_count)
-        result.update({"status": "candidate" if differential
-                       else "needs_differential_review" if triggered and
-                       prior_throw_count is not None
-                       else "needs_baseline_review" if triggered
-                       else "checked" if evidence["strict_injection"] and
-                       evidence["post_fault_target_reached"]
-                       else "unmatched" if faults and not evidence["strict_injection"]
-                       else "lost_target" if faults else "healthy_seed",
+        status, candidate = _trial_verdict(evidence, faults, prior_throw_count)
+        result.update({"status": status,
                        "graphchecker_feedback": graph, "evidence": evidence,
                        "window_rows": window_count,
                        "trace_sha256": _sha256(trace),
                        "target_exception_triggered": triggered,
-                       "target_exception_candidate": differential,
+                       "target_exception_candidate": candidate,
                        "graph_sha256": _sha256(scratch / "graphchecker-graph.jsonl"),
                        "feedback_sha256": _sha256(scratch / "graphchecker-feedback.json")})
         shutil.copyfile(scratch / "graphchecker-feedback.json",

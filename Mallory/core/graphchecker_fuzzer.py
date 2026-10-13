@@ -23,7 +23,9 @@ from .graphchecker_campaign import (_json, _write_json, load_config, prepare,
 SCHEMA = 1
 PLAN_FIELDS = ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")
 TIER_WEIGHT = {"observed_closure": 100, "static_may_observed": 55,
-               "outside_closure": 15, "after_target": -100}
+               "selected_scope_observed": 35, "outside_closure": 15,
+               "after_target": -100}
+SCHEDULER_VERSION = 2
 MAX_QUEUE = 5000
 MAX_UNMATCHED_RETRIES = 2
 
@@ -72,7 +74,26 @@ def _score(item: dict[str, Any], completed: int) -> float:
             4 * len(item["faults"]) + min(30, completed - item["enqueued_at"]))
 
 
-def _pick(queue: list[dict[str, Any]], completed: int) -> dict[str, Any]:
+def _pick(queue: list[dict[str, Any]], completed: int,
+          state: dict[str, Any] | None = None) -> dict[str, Any]:
+    if state is not None and state.get("scheduler_version", 1) >= 2:
+        # Two periodic slots reach observed static candidates even while
+        # exact-closure plans are abundant. Neither tier implies causality.
+        requested = {2: "static_may_observed", 5: "selected_scope_observed"}.get(
+            completed % 6)
+        candidates = [item for item in queue if item["tier"] == requested]
+        if not candidates:
+            candidates = queue
+        # Preserve the existing tier score, then prefer a last fault site
+        # selected fewer times within that tier (CrashFuzz fault-ID novelty).
+        tier = max(candidates, key=lambda item: _score(item, completed))["tier"]
+        same_tier = [item for item in candidates if item["tier"] == tier]
+        attempts = state.get("last_fault_site_attempts", {})
+        selected = max(same_tier, key=lambda item: (
+            -int(attempts.get(item["faults"][-1]["siteId"], 0)),
+            _score(item, completed), -item["enqueued_at"], item["key"]))
+        queue.remove(selected)
+        return selected
     # A periodic exploration slot prevents exact-closure sites from starving
     # static MAY and outside-closure sites under a finite trial budget.
     candidates = queue
@@ -104,6 +125,9 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
     groups: dict[tuple[str, str, str], list[dict[str, Any]]] = {}
     for door in evidence.get("eligible_doors", []):
         tier = door.get("tier")
+        if state.get("scheduler_version", 1) < 2 and tier == "selected_scope_observed":
+            tier = "outside_closure"
+            door = {**door, "tier": tier}
         if (tier not in TIER_WEIGHT or tier == "after_target" or
                 door.get("seq", 0) <= last_seq or
                 not all(door.get(key) for key in PLAN_FIELDS)):
@@ -118,12 +142,14 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
         sampled.extend(group[(n - 1) * bucket // 4] for bucket in range(5))
     by_tier = {tier: deque(sorted((door for door in sampled if door["tier"] == tier),
                                   key=lambda door: door["seq"]))
-               for tier in ("observed_closure", "static_may_observed", "outside_closure")}
+               for tier in ("observed_closure", "static_may_observed",
+                            "selected_scope_observed", "outside_closure")}
     # Reserve queue capacity for conservative static and exploratory sites.
     # Their priority during execution remains lower than exact closure sites.
     ordered = []
     schedule = ("observed_closure", "observed_closure", "observed_closure",
-                "static_may_observed", "outside_closure")
+                "static_may_observed", "selected_scope_observed",
+                "outside_closure")
     while any(by_tier.values()) and len(ordered) < MAX_QUEUE:
         for tier in schedule:
             if by_tier[tier]:
@@ -149,6 +175,8 @@ def _enqueue(state: dict[str, Any], result: dict[str, Any],
 def _new_state(config: dict[str, Any], budget: dict[str, int]) -> dict[str, Any]:
     return {"schema_version": SCHEMA, "case_id": config["case_id"],
             "config_sha256": config["config_sha256"], "budget": budget,
+            "scheduler_version": SCHEDULER_VERSION,
+            "last_fault_site_attempts": {}, "last_fault_site_strict": {},
             "target_site_rows": config.get("target_site_rows", []),
             "status": "running", "terminal": False,
             "started_at": _now(), "updated_at": _now(),
@@ -166,6 +194,8 @@ def _trial_record(name: str, result: dict[str, Any]) -> dict[str, Any]:
             "faults": result["fault_plan"],
             "strict_injection": evidence.get("strict_injection", False),
             "post_fault_target_reached": evidence.get("post_fault_target_reached", False),
+            "injection_specific_target_reached": evidence.get(
+                "injection_specific_target_reached", False),
             "target_exception_triggered": result["target_exception_triggered"],
             "target_exception_candidate": result["target_exception_candidate"],
             "junit_passed": result["junit_passed"]}
@@ -196,6 +226,11 @@ def _accept_result(state: dict[str, Any], name: str,
         state["trials"].append(record)
         state["completed_fault_trials"] += 1
         evidence = result.get("evidence", {})
+        if (state.get("scheduler_version", 1) >= 2 and
+                evidence.get("strict_injection") and active["faults"]):
+            site = active["faults"][-1]["siteId"]
+            counts = state.setdefault("last_fault_site_strict", {})
+            counts[site] = int(counts.get(site, 0)) + 1
         if result["status"] == "unmatched" and active["faults"]:
             # The planned I/O may disappear under scheduling nondeterminism.
             # Give this exact plan at most two more chances; each attempt still
@@ -211,9 +246,8 @@ def _accept_result(state: dict[str, Any], name: str,
                     "novelty": -10 * (count + 1),
                     "enqueued_at": state["completed_fault_trials"],
                     "unmatched_retry": count + 1})
-        if evidence.get("strict_injection") and (
-                evidence.get("post_fault_target_reached") or
-                result.get("target_exception_triggered")):
+        if evidence.get("strict_injection") and evidence.get(
+                "injection_specific_target_reached"):
             _enqueue(state, result, active["faults"])
     state["active"] = None
     state["updated_at"] = _now()
@@ -288,6 +322,9 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                    "config_sha256": state["config_sha256"],
                    "target_site_rows": state.get("target_site_rows", []),
                    "budget": state["budget"],
+                   "scheduler_version": state.get("scheduler_version", 1),
+                   "last_fault_site_attempts": state.get("last_fault_site_attempts", {}),
+                   "last_fault_site_strict": state.get("last_fault_site_strict", {}),
                    "completed_fault_trials": state["completed_fault_trials"],
                    "trial_elapsed_seconds": state["trial_elapsed_seconds"],
                    "healthy": state["healthy"],
@@ -296,6 +333,9 @@ def _finish(state: dict[str, Any], root: Path) -> dict[str, Any]:
                                            for row in trials),
                    "post_fault_target_trials": sum(row["post_fault_target_reached"]
                                                    for row in trials),
+                   "injection_specific_target_trials": sum(
+                       row.get("injection_specific_target_reached", False)
+                       for row in trials),
                    "target_exception_triggered_trials": sum(
                        row["target_exception_triggered"] for row in trials),
                    "differential_candidates": sum(
@@ -347,9 +387,13 @@ def run_campaign(config_path: Path, root: Path) -> dict[str, Any]:
                     state["trial_elapsed_seconds"] >= budget["seconds"] or
                     not state["queue"]):
                 break
-            selected = _pick(state["queue"], state["completed_fault_trials"])
+            selected = _pick(state["queue"], state["completed_fault_trials"], state)
             index = state["next_trial_index"]
             state["next_trial_index"] += 1
+            if state.get("scheduler_version", 1) >= 2:
+                site = selected["faults"][-1]["siteId"]
+                counts = state.setdefault("last_fault_site_attempts", {})
+                counts[site] = int(counts.get(site, 0)) + 1
             state["active"] = {"index": index, "name": f"r{index:04d}",
                                "faults": selected["faults"],
                                "selection_tier": selected["tier"],

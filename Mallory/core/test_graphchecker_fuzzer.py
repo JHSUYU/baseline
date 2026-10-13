@@ -22,8 +22,8 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
     def budget(self):
         return {"fault_trials": 4, "seconds": 60, "max_faults_per_trial": 2}
 
-    def door(self, seq, ordinal, tier="observed_closure"):
-        return {"siteId": "io", "node": "nn-1#epoch0",
+    def door(self, seq, ordinal, tier="observed_closure", site="io"):
+        return {"siteId": site, "node": "nn-1#epoch0",
                 "occurrenceId": f"occ-{ordinal}", "ordinal": ordinal,
                 "exceptionClass": "java.io.IOException", "seq": seq,
                 "tier": tier}
@@ -35,6 +35,7 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
                 "target_exception_candidate": False,
                 "evidence": {"strict_injection": bool(plan),
                              "post_fault_target_reached": bool(plan),
+                             "injection_specific_target_reached": bool(plan),
                              "target_reached": True,
                              "last_fault_seq": 4 if plan else None,
                              "eligible_doors": doors or []},
@@ -64,6 +65,40 @@ class GraphCheckerFuzzerTest(unittest.TestCase):
         _enqueue(state, self.result([], [self.door(1, 1),
                                          self.door(2, 2, "static_may_observed")]), [])
         self.assertEqual("static_may_observed", _pick(state["queue"], 4)["tier"])
+
+    def test_v2_periodic_selected_scope_quota_and_site_fairness(self):
+        state = _new_state(self.config(), self.budget())
+        doors = [self.door(1, 1, site="closure-a"),
+                 self.door(2, 2, site="closure-b"),
+                 self.door(3, 3, "static_may_observed", "may"),
+                 self.door(4, 4, "selected_scope_observed", "scope")]
+        _enqueue(state, self.result([], doors), [])
+        state["last_fault_site_attempts"]["closure-a"] = 3
+        first = _pick(state["queue"], 0, state)
+        self.assertEqual("closure-b", first["faults"][-1]["siteId"])
+        self.assertEqual("static_may_observed",
+                         _pick(state["queue"], 2, state)["tier"])
+        self.assertEqual("selected_scope_observed",
+                         _pick(state["queue"], 5, state)["tier"])
+
+    def test_v1_checkpoint_keeps_old_outside_tier(self):
+        state = _new_state(self.config(), self.budget())
+        state.pop("scheduler_version")
+        _enqueue(state, self.result([], [self.door(
+            1, 1, "selected_scope_observed", "scope")]), [])
+        self.assertEqual("outside_closure", state["queue"][0]["tier"])
+
+    def test_unrelated_later_target_does_not_expand_fault_sequence(self):
+        state = _new_state(self.config(), self.budget())
+        fault = {key: self.door(1, 1)[key] for key in
+                 ("siteId", "node", "occurrenceId", "ordinal", "exceptionClass")}
+        state["active"] = {"index": 1, "name": "r0001", "faults": [fault]}
+        result = self.result([fault], [self.door(6, 2)])
+        result["evidence"]["injection_specific_target_reached"] = False
+        result["target_exception_triggered"] = True
+        _accept_result(state, "r0001", result)
+        self.assertEqual([], state["queue"])
+        self.assertEqual(1, state["last_fault_site_strict"]["io"])
 
     def test_reconcile_completed_active_trial_without_rerunning(self):
         with tempfile.TemporaryDirectory() as temp:

@@ -136,11 +136,12 @@ Peak tmpfs use during a fault trial is approximately the current raw trace,
 its JUnit window copy, the generated graph, the fresh cluster cwd, and one
 temporary healthy-window decompression. Only gzip/tar receipts remain on the
 durable filesystem after a completed trial.
-Door tiers are
-`observed_closure`, `static_may_observed`, and `outside_closure`. Static MAY
-membership can guide a later scheduler, but does not add a causal edge or
-count as closure coverage. The old `campaign.py` runner below remains for
-archived campaigns.
+Door tiers are `observed_closure`, `static_may_observed`,
+`selected_scope_observed`, and `outside_closure`. A selected scope door ran in
+the original JUnit trace but has no demonstrated causal edge to the target.
+Static MAY and selected scope membership can guide exploration; neither adds
+a causal edge or counts as closure coverage. The old `campaign.py` runner
+below remains for archived campaigns.
 
 To run a whole per-check campaign, add a bounded budget to the same config:
 
@@ -162,7 +163,14 @@ static MAY scope, with occasional exploration outside both. It samples early,
 middle and late repeated I/O occurrences, then adds one later observed fault
 to a successful sequence up to the configured depth. New closure nodes,
 edges and coverage increase a sequence's priority. A fault that loses the
-target is not expanded. A plan whose selected I/O disappears may be retried
+target is not expanded. A later target in a different request is recorded as
+raw target activity, but only a fault occurrence on the target's exact closure
+with a target-relative cutoff after the fault satisfies
+`injection_specific_target_reached`. An exact target throw outside that
+injected closure remains `needs_causal_review`, never a differential bug
+candidate. New scheduler checkpoints reserve periodic exploration for static
+MAY and selected scope doors, and favor less attempted last fault sites within
+each tier. Old checkpoints retain their pinned scheduler version. A plan whose selected I/O disappears may be retried
 twice, with every unmatched attempt counted against the fault-trial and time
 budgets. The time budget counts actual JUnit trial runtime.
 
