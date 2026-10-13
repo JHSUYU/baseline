@@ -494,6 +494,8 @@ def stable_occurrence(address: str) -> str:
         r"(?i)(\b(?:[a-z][a-z0-9_.-]*|(?:[0-9]{1,3}\.){3}[0-9]{1,3})):[0-9]{2,5}\b",
         r"\1:port", actor)
     actor = re.sub(r"(\[[0-9a-fA-F:]+\]):[0-9]{2,5}\b", r"\1:port", actor)
+    actor = re.sub(r"(?i)\b(localhost|127\.0\.0\.1)/[0-9]{2,5}\b",
+                   r"\1/port", actor)
     actor = re.sub(r"\bport=[0-9]{2,5}\b", "port=port", actor)
     return address[:node_end + 1] + actor + address[site_start:]
 

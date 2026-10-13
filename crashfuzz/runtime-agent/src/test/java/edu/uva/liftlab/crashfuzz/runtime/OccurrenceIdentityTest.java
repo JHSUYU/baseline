@@ -45,4 +45,14 @@ public class OccurrenceIdentityTest {
         assertNotEquals(OccurrenceIdentity.stable(first),
                 OccurrenceIdentity.stable(second.replace("handler=18", "handler=19")));
     }
+
+    @Test
+    public void hbaseListenerSlashPortDoesNotBreakReplay() {
+        String site = "/<example.Listener: void accept()>#u3";
+        String first = "local/Listener at localhost/45157" + site;
+        String second = "local/Listener at localhost/40285" + site;
+        assertEquals(OccurrenceIdentity.stable(first), OccurrenceIdentity.stable(second));
+        assertNotEquals(OccurrenceIdentity.stable(first),
+                OccurrenceIdentity.stable(second.replace("Listener", "Worker")));
+    }
 }

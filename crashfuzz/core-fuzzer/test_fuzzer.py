@@ -169,6 +169,14 @@ class CoverageIoTest(unittest.TestCase):
                   'ms1140:33812' + site)
         self.assertEqual(stable_occurrence(first), stable_occurrence(second))
 
+    def test_hbase_listener_slash_port_keeps_replayable_actor_identity(self):
+        site = '/<example.Listener: void accept()>#u3'
+        first = 'local/Listener at localhost/45157' + site
+        second = 'local/Listener at localhost/40285' + site
+        self.assertEqual(stable_occurrence(first), stable_occurrence(second))
+        self.assertNotEqual(stable_occurrence(first),
+                            stable_occurrence(second.replace('Listener', 'Worker')))
+
     def test_soot_controlled_throw_uses_line_not_unit_ordinal(self):
         guard = TARGET + '#u4'
         selection = {'target_check_line': 20, 'target_selected_line': 23,
