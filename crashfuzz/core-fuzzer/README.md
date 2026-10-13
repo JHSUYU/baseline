@@ -72,6 +72,14 @@ target check, exact fault selectors, and initial method/branch coverage. Each
 faulted run produces a new trace. The driver uses new I/O families and
 production method/branch coverage to schedule the next sequence. It does not
 need a runtime graph, closure plan, or per-trial aggregation.
+For selected RPC calls that return an object, the post-call hook also records
+the return class and the element classes of its immediate object-array fields.
+This bounded response shape becomes part of the observed fault identity. A
+replay can therefore distinguish a state-changing command response from an
+empty response at the same callsite, without declaring either as a per-check
+fault site. The selector reserves one in seven choices for an observed
+nonempty object-array response; other choices retain the existing coverage,
+I/O novelty, temporal, and actor-diversity rules.
 
 ## Run
 

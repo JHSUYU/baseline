@@ -88,6 +88,10 @@ public class ExplicitThrowInstrumentationTest {
         public String reference() { calls++; return "reply"; }
         public int integer() { calls++; return 17; }
         public long wide() { calls++; return 19L; }
+        public RpcResponse payload() {
+            calls++;
+            return new RpcResponse(new Object[]{new RpcCommand()});
+        }
         public void nothing() { calls++; }
         public String fail() throws IOException {
             calls++;
@@ -95,11 +99,18 @@ public class ExplicitThrowInstrumentationTest {
         }
     }
 
+    public static class RpcCommand { }
+    public static class RpcResponse {
+        private final Object[] commands;
+        public RpcResponse(Object[] commands) { this.commands = commands; }
+    }
+
     public static class RpcFixture {
         private final FakeClientSideTranslatorPB rpc = new FakeClientSideTranslatorPB();
         public String reference() { return rpc.reference(); }
         public int integer() { return rpc.integer(); }
         public long wide() { return rpc.wide(); }
+        public RpcResponse payload() { return rpc.payload(); }
         public void nothing() { rpc.nothing(); }
         public String fail() throws IOException { return rpc.fail(); }
     }
@@ -323,10 +334,12 @@ public class ExplicitThrowInstrumentationTest {
                 "org/apache/hbase/thirdparty/com/google/protobuf/RpcChannel", "callMethod",
                 "(Lorg/apache/hbase/thirdparty/com/google/protobuf/RpcCallback;)V"));
 
-        String[] names = {"reference", "integer", "wide", "nothing", "fail"};
-        String[] types = {"java.lang.String", "int", "long", "void", "java.lang.String"};
-        String[] descriptors = {"()Ljava/lang/String;", "()I", "()J", "()V",
-                "()Ljava/lang/String;"};
+        String[] names = {"reference", "integer", "wide", "payload", "nothing", "fail"};
+        String[] types = {"java.lang.String", "int", "long",
+                RpcResponse.class.getName(), "void", "java.lang.String"};
+        String[] descriptors = {"()Ljava/lang/String;", "()I", "()J",
+                "()L" + RpcResponse.class.getName().replace('.', '/') + ";",
+                "()V", "()Ljava/lang/String;"};
         JsonArray specs = new JsonArray();
         JsonArray ioCalls = new JsonArray();
         for (int index = 0; index < names.length; index++) {
@@ -392,6 +405,34 @@ public class ExplicitThrowInstrumentationTest {
                 assertEquals(1, next.getInt(null));
                 assertTrue(latest(trace, "FAULT_APPLIED", site, "after") != null);
             }
+
+            String payloadSite = siteFor(ioCalls, "payload");
+            assertTrue(instrumented.getMethod("payload").invoke(fixture) instanceof RpcResponse);
+            JsonObject payloadObserved = latest(trace, "FAULT_POINT_OBSERVED",
+                    payloadSite, "after");
+            String shape = payloadObserved.get("responseShape").getAsString();
+            assertTrue(shape.contains(RpcCommand.class.getName()));
+            JsonObject wrongShape = nextOccurrence(payloadObserved, "after");
+            wrongShape.addProperty("responseShape", "other-response");
+            JsonArray wrongPlan = new JsonArray();
+            wrongPlan.add(wrongShape);
+            planned.set(null, wrongPlan);
+            next.setInt(null, 0);
+            assertTrue(instrumented.getMethod("payload").invoke(fixture) instanceof RpcResponse);
+            assertEquals(0, next.getInt(null));
+            JsonObject sameShape = nextOccurrence(latest(trace,
+                    "FAULT_POINT_OBSERVED", payloadSite, "after"), "after");
+            sameShape.addProperty("responseShape", shape);
+            JsonArray matchingPlan = new JsonArray();
+            matchingPlan.add(sameShape);
+            planned.set(null, matchingPlan);
+            try {
+                instrumented.getMethod("payload").invoke(fixture);
+                throw new AssertionError("expected payload reply loss");
+            } catch (InvocationTargetException error) {
+                assertTrue(error.getCause() instanceof IOException);
+            }
+            assertEquals(1, next.getInt(null));
 
             planned.set(null, new JsonArray());
             next.setInt(null, 0);

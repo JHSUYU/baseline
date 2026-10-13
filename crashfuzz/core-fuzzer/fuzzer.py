@@ -126,6 +126,10 @@ def point_from_event(event: dict[str, Any]) -> dict[str, Any] | None:
         point["occurrenceOrdinal"] = occurrence_ordinal
     if event.get("sourceKey"):
         point["sourceKey"] = event["sourceKey"]
+    response_shape = event.get("responseShape")
+    if (phase == "after" and isinstance(response_shape, str)
+            and 0 < len(response_shape) <= 1024):
+        point["responseShape"] = response_shape
     if event.get("exceptionClass"):
         point["exceptionClass"] = event["exceptionClass"]
     return point
@@ -602,10 +606,22 @@ def enqueue(state: dict[str, Any], sequence: list[dict[str, Any]],
 def fault_family(point: dict[str, Any]) -> str:
     """Stable fault identity; protocol exception types are distinct behaviors."""
     family = {key: point.get(key) for key in
-              ("marker", "siteId", "sourceKey", "exceptionClass")}
+              ("marker", "siteId", "sourceKey", "exceptionClass",
+               "responseShape")}
     if point.get("phase") == "after":
         family["phase"] = "after"
     return fingerprint(family)
+
+
+def object_array_response(point: dict[str, Any]) -> bool:
+    """A returned object contains at least one object-array element class."""
+    shape = point.get("responseShape")
+    if not isinstance(shape, str) or point.get("phase") != "after":
+        return False
+    return any(value.startswith("[") and value != "[]"
+               for field in shape.split("|")[1:]
+               for _, separator, value in [field.partition("=")]
+               if separator)
 
 
 def temporal_diversity_key(point: dict[str, Any]) -> tuple[str, int]:
@@ -633,7 +649,7 @@ def observed_identity(point: dict[str, Any]) -> tuple[Any, ...]:
     """Match a recorded I/O call to its typed fault variants."""
     return tuple(point.get(key) for key in
                  ("siteId", "occurrence", "hitOrdinal", "occurrenceOrdinal",
-                  "phase", "sourceKey"))
+                  "phase", "sourceKey", "responseShape"))
 
 
 def target_proximity_score(io_seq: int, check_seqs: list[int]) -> int:
@@ -908,6 +924,28 @@ def choose_next_sequence(state: dict[str, Any],
     before other observed fault sites have been tested.
     """
     previous = list(completed_sequences(state))
+    # A successful RPC may carry a state-changing command. Reserve a bounded
+    # share for observed object-array response variants, without naming any
+    # system, command class, or fault callsite in the selector.
+    if (state.get("response_shape_diversity_version", 0) >= 1 and
+            len(previous) % 7 == 5):
+        shaped = [(index, item) for index, item in enumerate(state["queue"])
+                  if len(item["sequence"]) == 1 and
+                  object_array_response(item["sequence"][0])]
+        if shaped:
+            tried: dict[tuple[Any, ...], int] = {}
+            def response_key(point: dict[str, Any]) -> tuple[Any, ...]:
+                return (point["siteId"], point["responseShape"],
+                        fault_actors([point]), point.get("hitOrdinal"))
+            for sequence in previous:
+                point = sequence[-1]
+                if object_array_response(point):
+                    key = response_key(point)
+                    tried[key] = tried.get(key, 0) + 1
+            return min(shaped, key=lambda entry: (
+                tried.get(response_key(entry[1]["sequence"][0]), 0),
+                -entry[1].get("target_proximity", 0),
+                -entry[1]["priority"], entry[1]["created"], entry[0]))[0]
     # A lost control-plane reply on one actor can affect a data operation on
     # another actor. Reserve a bounded share for observed multi-actor plans;
     # keep shorter, less-tested actor combinations ahead of long repeats.
@@ -1791,6 +1829,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
             state.setdefault("deep_sequence_version", 1)
             state.setdefault("same_actor_followup_version", 1)
             state.setdefault("cross_actor_diversity_version", 1)
+            state.setdefault("response_shape_diversity_version", 1)
             if state.get("fault_family_version", 0) < 2:
                 observed = state.get("seed", {}).get("feedback", {}).get(
                     "points", []) if state.get("seed") else []
@@ -1878,6 +1917,7 @@ def campaign(config: dict[str, Any], root: Path) -> dict[str, Any]:
                      "deep_sequence_version": 1,
                      "same_actor_followup_version": 1,
                     "cross_actor_diversity_version": 1,
+                    "response_shape_diversity_version": 1,
                      "site_diversity_version": 2,
                      "typed_zookeeper_fault_version": 1,
                      "seed_runtime_seconds": 0.0,

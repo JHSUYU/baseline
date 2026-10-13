@@ -11,17 +11,22 @@ import java.io.BufferedWriter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Small per-JVM runtime for selected coverage and exact I/O fault identity. */
@@ -308,16 +313,75 @@ public final class SelectionProbe {
     }
 
     public static void io(String siteId, String callee, Object owner) throws IOException {
-        ioAtPhase(siteId, callee, owner, BEFORE);
+        ioAtPhase(siteId, callee, owner, BEFORE, null);
     }
 
     /** Called only after a selected RPC invocation has returned normally. */
     public static void ioAfter(String siteId, String callee, Object owner) throws IOException {
-        ioAtPhase(siteId, callee, owner, AFTER);
+        ioAtPhase(siteId, callee, owner, AFTER, null);
+    }
+
+    /** Distinguish successful RPC responses with different object contents. */
+    public static void ioAfter(String siteId, String callee, Object owner,
+                               Object result) throws IOException {
+        ioAtPhase(siteId, callee, owner, AFTER, responseShape(result));
+    }
+
+    static String responseShape(Object result) {
+        if (result == null) return "null";
+        Class<?> type = result.getClass();
+        StringBuilder shape = new StringBuilder(type.getName());
+        if (type.isArray()) {
+            appendArrayShape(shape, result);
+            return shape.toString();
+        }
+        // Inspect only immediate object-array fields. Their element classes
+        // expose control messages without serializing data or invoking getters.
+        Field[] fields = type.getDeclaredFields();
+        Arrays.sort(fields, (left, right) -> left.getName().compareTo(right.getName()));
+        int inspected = 0;
+        for (Field field : fields) {
+            if (inspected >= 8) break;
+            Class<?> fieldType = field.getType();
+            if (Modifier.isStatic(field.getModifiers()) || !fieldType.isArray()
+                    || fieldType.getComponentType().isPrimitive()) continue;
+            inspected++;
+            try {
+                field.setAccessible(true);
+                Object array = field.get(result);
+                shape.append('|').append(field.getName()).append('=');
+                appendArrayShape(shape, array);
+            } catch (ReflectiveOperationException | RuntimeException ignored) {
+                // A strongly encapsulated response still has its class name.
+            }
+        }
+        return shape.toString();
+    }
+
+    private static void appendArrayShape(StringBuilder shape, Object array) {
+        if (array == null) {
+            shape.append("null");
+            return;
+        }
+        int length = Array.getLength(array);
+        TreeSet<String> elements = new TreeSet<>();
+        for (int index = 0; index < Math.min(length, 16); index++) {
+            Object element = Array.get(array, index);
+            if (element != null) elements.add(element.getClass().getName());
+        }
+        shape.append('[');
+        boolean first = true;
+        for (String element : elements) {
+            if (!first) shape.append(',');
+            shape.append(element);
+            first = false;
+        }
+        if (length > 16) shape.append(first ? "+" : ",+");
+        shape.append(']');
     }
 
     private static void ioAtPhase(String siteId, String callee, Object owner,
-                                  String phase) throws IOException {
+                                  String phase, String responseShape) throws IOException {
         String thread = Thread.currentThread().getName();
         ActorIdentity.Resolution identity = ActorIdentity.resolve(owner, siteId, thread);
         String actor = identity.logicalNodeId != null
@@ -358,7 +422,8 @@ public final class SelectionProbe {
                 hit = occurrenceOrdinal;
             }
             JsonObject observed = faultEvent("FAULT_POINT_OBSERVED", siteId,
-                    callee, occurrence, hit, occurrenceOrdinal, identity, phase);
+                    callee, occurrence, hit, occurrenceOrdinal, identity, phase,
+                    responseShape);
             write(observed, true);
             // A missing HDFS actor slot must never match a different DN
             // merely because both thread names normalize to the same actor.
@@ -372,17 +437,22 @@ public final class SelectionProbe {
                     || !callee.equals(string(wanted, "sourceKey"))
                     || !occurrence.equals(OccurrenceIdentity.stable(string(wanted, "occurrence")))
                     || hit != wanted.get("hitOrdinal").getAsInt()
+                    || (wanted.has("responseShape")
+                    && (responseShape == null
+                    || !responseShape.equals(string(wanted, "responseShape"))))
                     || (wanted.has("occurrenceOrdinal")
                     && occurrenceOrdinal != wanted.get("occurrenceOrdinal").getAsInt())) return;
             String exceptionClass = string(wanted, "exceptionClass");
             selectedFault = makeFault(exceptionClass, siteId);
             JsonObject matched = faultEvent("FAULT_MATCHED", siteId, callee,
-                    occurrence, hit, occurrenceOrdinal, identity, phase);
+                    occurrence, hit, occurrenceOrdinal, identity, phase,
+                    responseShape);
             matched.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) matched.addProperty("exceptionClass", exceptionClass);
             write(matched, true);
             JsonObject appliedRow = faultEvent("FAULT_APPLIED", siteId, callee,
-                    occurrence, hit, occurrenceOrdinal, identity, phase);
+                    occurrence, hit, occurrenceOrdinal, identity, phase,
+                    responseShape);
             appliedRow.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) appliedRow.addProperty("exceptionClass", exceptionClass);
             write(appliedRow, true);
@@ -427,7 +497,8 @@ public final class SelectionProbe {
 
     private static JsonObject faultEvent(String kind, String siteId, String callee,
                                          String occurrence, int hit, int occurrenceOrdinal,
-                                         ActorIdentity.Resolution identity, String phase) {
+                                         ActorIdentity.Resolution identity, String phase,
+                                         String responseShape) {
         JsonObject row = event(kind);
         row.addProperty("marker", MARKER);
         row.addProperty("siteId", siteId);
@@ -436,6 +507,7 @@ public final class SelectionProbe {
         row.addProperty("hitOrdinal", hit);
         row.addProperty("occurrenceOrdinal", occurrenceOrdinal);
         row.addProperty("phase", phase);
+        if (responseShape != null) row.addProperty("responseShape", responseShape);
         if (identity.applies()) {
             row.addProperty("logicalNodeId", identity.logicalNodeId);
             if (identity.gap) row.addProperty("identityGap", true);

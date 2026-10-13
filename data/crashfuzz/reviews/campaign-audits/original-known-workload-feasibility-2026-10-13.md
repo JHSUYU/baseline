@@ -143,6 +143,16 @@ An independent 80-trial campaign using this agent and the same Soot selection
 was started in `campaign-identity-v2`; its original JUnit, target, and fault
 types are unchanged. It is separate from the ongoing 450-trial checkpoint.
 
+A further generic post-call probe records the return object's class and the
+element classes of its immediate object-array fields. With this probe, the
+same unchanged JUnit passed in 27.096 seconds. Its healthy trace had 24
+selected `sendHeartBeat` post-call events: eight responses contained
+`KeyUpdateCommand` and sixteen had an empty command array. This gives the
+fuzzer an observed, replayable distinction between key-bearing and empty
+responses without naming the heartbeat callsite in the selector. The trace
+is in `response-shape-healthy-validation/runtime_trace.jsonl`. This validation
+is not a fault-injection result or a bug detection.
+
 Evidence roots: `static-rerun/original-known/HDFS-54`, `HDFS-55`,
 `HDFS-11-balancer`, and `HDFS-17967-mirror` on node0, and
 `static-rerun/original-known/SOLR-40` on node2.

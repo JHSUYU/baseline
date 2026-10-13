@@ -519,12 +519,25 @@ public final class SelectionAgent {
             // below the probe arguments on the operand stack. If the invocation
             // throws, execution never reaches this hook.
             if (site != null && site.postCallRpc) {
+                Type returnType = Type.getReturnType(descriptor);
+                boolean objectResult = returnType.getSort() == Type.OBJECT
+                        || returnType.getSort() == Type.ARRAY;
+                int resultLocal = -1;
+                if (objectResult) {
+                    resultLocal = newLocal(returnType);
+                    mv.visitVarInsn(ASTORE, resultLocal);
+                }
                 mv.visitLdcInsn(site.siteId);
                 mv.visitLdcInsn(site.callee);
                 if (thisAvailable) mv.visitVarInsn(ALOAD, 0);
                 else mv.visitInsn(ACONST_NULL);
+                if (objectResult) mv.visitVarInsn(ALOAD, resultLocal);
                 mv.visitMethodInsn(INVOKESTATIC, PROBE, "ioAfter",
-                        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V", false);
+                        objectResult
+                            ? "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/Object;)V"
+                            : "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;)V",
+                        false);
+                if (objectResult) mv.visitVarInsn(ALOAD, resultLocal);
             }
         }
 

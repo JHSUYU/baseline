@@ -162,6 +162,16 @@ class CoverageIoTest(unittest.TestCase):
         self.assertEqual(after['phase'], 'after')
         self.assertNotEqual(fingerprint(before), fingerprint(after))
         self.assertNotEqual(fault_family(before), fault_family(after))
+        response = point_from_event(marker(
+            A, 'FAULT_POINT_OBSERVED', 2, phase='after',
+            responseShape='example.Heartbeat|commands=[example.KeyUpdate]'))
+        self.assertEqual(response['responseShape'],
+                         'example.Heartbeat|commands=[example.KeyUpdate]')
+        self.assertNotEqual(fault_family(after), fault_family(response))
+        self.assertNotEqual(fingerprint(after), fingerprint(response))
+        self.assertNotIn('responseShape', point_from_event(marker(
+            A, 'FAULT_POINT_OBSERVED', 1, phase='before',
+            responseShape='example.Heartbeat')))
         self.assertIsNone(point_from_event(marker(A, 'FAULT_POINT_OBSERVED', 3,
                                                    phase='unknown')))
         applied = {'applied_count': 1, 'matched_count': 1,
@@ -466,6 +476,18 @@ class CoverageIoTest(unittest.TestCase):
                  'queue': [{'sequence': [B], 'priority': 1000, 'created': 1},
                            {'sequence': [A], 'priority': 1, 'created': 2}]}
         self.assertEqual(choose_next_sequence(state, {A['siteId']: 85}), 1)
+
+    def test_response_shape_slot_selects_observed_command_reply(self):
+        plain = {**A, 'phase': 'after'}
+        reply = {**A, 'phase': 'after',
+                 'responseShape': 'example.Heartbeat|commands=[example.Update]'}
+        state = {'completed': [{'sequence': [B]}] * 5,
+                 'queue': [{'sequence': [plain], 'priority': 1000, 'created': 1},
+                           {'sequence': [reply], 'priority': 1, 'created': 2}],
+                 'response_shape_diversity_version': 1}
+        self.assertEqual(choose_next_sequence(state), 1)
+        state['response_shape_diversity_version'] = 0
+        self.assertEqual(choose_next_sequence(state), 0)
 
     def test_temporal_diversity_explores_later_occurrences_of_a_site(self):
         later = {**A, 'hitOrdinal': 4}
