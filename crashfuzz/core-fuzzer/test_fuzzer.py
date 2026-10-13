@@ -10,7 +10,7 @@ from fuzzer import (archive_trial_attempts, budget_has_room, campaign,
                     choose_next_sequence, enqueue, fault_family, fault_point_for_io,
                     fault_variants_for_io, fingerprint,
                     in_io_scope, point_from_event,
-                    reply_fanout_degree,
+                    independent_reply_fanout, reply_fanout_degree,
                     rows, static_reason_priority, strict_applied_prefix,
                     strict_injection,
                     retry_lost_target,
@@ -509,6 +509,25 @@ class CoverageIoTest(unittest.TestCase):
         self.assertEqual(choose_next_sequence(state), 1)
         state['reply_fanout_diversity_version'] = 0
         self.assertEqual(choose_next_sequence(state), 0)
+
+    def test_strict_injection_accepts_only_complete_unordered_reply_fanout(self):
+        reply = {**A, 'phase': 'after',
+                 'responseShape': 'example.Reply|commands=[example.Update]'}
+        one = {**reply, 'occurrence': 'local/heartbeat|node1/<example.Transport: void receive()>#u2'}
+        two = {**reply, 'occurrence': 'local/heartbeat|node2/<example.Transport: void receive()>#u2'}
+        plan = [one, two]
+        self.assertTrue(independent_reply_fanout(plan))
+        reversed_result = {'applied_count': 2, 'matched_count': 2,
+                           'applied_points': [two, one],
+                           'applied_fault_ids': [fingerprint(two), fingerprint(one)]}
+        self.assertTrue(strict_injection(reversed_result, plan))
+        partial = {'applied_count': 1, 'matched_count': 1,
+                   'applied_points': [two],
+                   'applied_fault_ids': [fingerprint(two)]}
+        self.assertFalse(strict_injection(partial, plan))
+        self.assertEqual(strict_applied_prefix(partial, plan), [])
+        wrong = {**reversed_result, 'applied_points': [one, one]}
+        self.assertFalse(strict_injection(wrong, plan))
 
     def test_temporal_diversity_explores_later_occurrences_of_a_site(self):
         later = {**A, 'hitOrdinal': 4}

@@ -540,7 +540,7 @@ def stable_occurrence(address: str) -> str:
 
 def strict_injection(result: dict[str, Any],
                      sequence: list[dict[str, Any]]) -> bool:
-    """Every requested selector must be proved applied, in requested order."""
+    """Prove every selector, allowing order only for independent fanout."""
     expected = [fingerprint(point) for point in sequence]
     def stable(point: dict[str, Any], requested: dict[str, Any]) -> dict[str, Any]:
         normalized = {**point, "occurrence": stable_occurrence(point["occurrence"])}
@@ -553,6 +553,18 @@ def strict_injection(result: dict[str, Any],
             normalized.pop("occurrenceOrdinal", None)
         return normalized
     observed = result.get("applied_points", [])
+    if independent_reply_fanout(sequence):
+        applied_ids = result.get("applied_fault_ids", [])
+        if (len(expected) != result.get("applied_count") or
+                result.get("matched_count", 0) < len(expected) or
+                len(observed) != len(sequence) or
+                len(applied_ids) != len(expected) or
+                sorted(applied_ids) != sorted(expected)):
+            return False
+        requested_by_id = {fingerprint(point): point for point in sequence}
+        return all(stable(actual, requested_by_id[fault_id]) ==
+                   stable(requested_by_id[fault_id], requested_by_id[fault_id])
+                   for actual, fault_id in zip(observed, applied_ids))
     return (len(expected) == result.get("applied_count") and
             result.get("matched_count", 0) >= len(expected) and
             len(observed) == len(sequence) and
@@ -572,6 +584,9 @@ def strict_applied_prefix(result: dict[str, Any],
     """
     count = result.get("applied_count", 0)
     if not isinstance(count, int) or not 0 < count < len(sequence):
+        return []
+    # A subset of an unordered fanout plan is not necessarily its prefix.
+    if independent_reply_fanout(sequence):
         return []
     prefix = sequence[:count]
     return prefix if strict_injection(result, prefix) else []
@@ -764,6 +779,28 @@ def reply_fanout_degree(sequence: list[dict[str, Any]]) -> int:
         key = (point["siteId"], point["responseShape"])
         groups.setdefault(key, set()).add(node)
     return max((len(nodes) for nodes in groups.values()), default=0)
+
+
+def independent_reply_fanout(sequence: list[dict[str, Any]]) -> bool:
+    """A whole fault plan targets one reply shape on distinct known nodes."""
+    if len(sequence) < 2 or not all(object_array_response(p) for p in sequence):
+        return False
+    fields = ("marker", "siteId", "sourceKey", "exceptionClass",
+              "phase", "responseShape")
+    family = tuple(sequence[0].get(field) for field in fields)
+    nodes: set[str] = set()
+    for point in sequence:
+        if tuple(point.get(field) for field in fields) != family:
+            return False
+        occurrence = point.get("occurrence", "")
+        actor, separator, _ = occurrence.rpartition("/<")
+        if not separator or "|" not in actor:
+            return False
+        node = actor.rsplit("|", 1)[1]
+        if not node or node in nodes:
+            return False
+        nodes.add(node)
+    return True
 
 
 def identity_priority(point: dict[str, Any]) -> int:

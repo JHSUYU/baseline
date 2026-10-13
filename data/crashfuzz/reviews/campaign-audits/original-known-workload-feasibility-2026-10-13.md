@@ -177,6 +177,21 @@ rerun. The separate runtime-identity pilot completed 80 trials with no
 differential target exception (45 baseline recurrences, 14 lost target, ten
 unmatched, and eleven checked). Its maximum exact target count was one.
 
+Trial 64 exposed a generic replay limitation: its automatically selected
+three-DataNode plan targeted the same nonempty `sendHeartBeat` response shape
+on three distinct DataNodes, but their replies arrived in a different order
+than in the seed trace. The ordered matcher therefore applied only one of
+three requested faults. The runtime matcher and strict result checker now
+accept any arrival order for a complete plan of equivalent post-call replies
+on distinct nodes; all other plans retain ordered matching. Two direct
+replays of trial 64 against the unchanged original JUnit applied all three
+faults, including one replay whose applied order differed from the plan.
+They finished in 33.865 and 33.519 seconds, respectively, and each still
+observed exactly the one target exception present in the healthy run. These
+are replay validation results, not bug detections. The response-shape
+campaign resumed from its existing checkpoint with an isolated build of the
+new matcher; completed trials 1–77 were retained without rerunning them.
+
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
 on node1 before their local attempt directories were removed. Their final

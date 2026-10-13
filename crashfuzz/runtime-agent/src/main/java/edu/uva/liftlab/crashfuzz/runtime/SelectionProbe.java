@@ -45,6 +45,8 @@ public final class SelectionProbe {
     private static long sequence;
     private static JsonArray planned = new JsonArray();
     private static int nextFault;
+    private static boolean independentReplyFanout;
+    private static final Set<Integer> completedFanoutFaults = new HashSet<>();
     private static int applied;
     private static String targetMethod;
     private static final Set<String> seenMethods = new HashSet<>();
@@ -78,6 +80,7 @@ public final class SelectionProbe {
                         Paths.get(trial)), StandardCharsets.UTF_8)).getAsJsonObject();
                 planned = value.getAsJsonArray("faults");
                 if (planned == null) throw new IllegalArgumentException("trial has no faults");
+                independentReplyFanout = IndependentReplyFanout.enabled(planned);
             }
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 synchronized (SelectionProbe.class) {
@@ -429,19 +432,22 @@ public final class SelectionProbe {
             // merely because both thread names normalize to the same actor.
             if (identity.gap) return;
             if (nextFault >= planned.size()) return;
-            JsonObject wanted = planned.get(nextFault).getAsJsonObject();
-            if (!MARKER.equals(string(wanted, "marker"))
-                    || !phase.equals(wanted.has("phase")
-                    ? string(wanted, "phase") : BEFORE)
-                    || !siteId.equals(string(wanted, "siteId"))
-                    || !callee.equals(string(wanted, "sourceKey"))
-                    || !occurrence.equals(OccurrenceIdentity.stable(string(wanted, "occurrence")))
-                    || hit != wanted.get("hitOrdinal").getAsInt()
-                    || (wanted.has("responseShape")
-                    && (responseShape == null
-                    || !responseShape.equals(string(wanted, "responseShape"))))
-                    || (wanted.has("occurrenceOrdinal")
-                    && occurrenceOrdinal != wanted.get("occurrenceOrdinal").getAsInt())) return;
+            int selectedIndex = -1;
+            if (independentReplyFanout) {
+                for (int index = 0; index < planned.size(); index++) {
+                    if (!completedFanoutFaults.contains(index)
+                            && matchesFault(planned.get(index).getAsJsonObject(), siteId,
+                            callee, occurrence, hit, occurrenceOrdinal, phase, responseShape)) {
+                        selectedIndex = index;
+                        break;
+                    }
+                }
+            } else if (matchesFault(planned.get(nextFault).getAsJsonObject(), siteId,
+                    callee, occurrence, hit, occurrenceOrdinal, phase, responseShape)) {
+                selectedIndex = nextFault;
+            }
+            if (selectedIndex < 0) return;
+            JsonObject wanted = planned.get(selectedIndex).getAsJsonObject();
             String exceptionClass = string(wanted, "exceptionClass");
             selectedFault = makeFault(exceptionClass, siteId);
             JsonObject matched = faultEvent("FAULT_MATCHED", siteId, callee,
@@ -456,10 +462,31 @@ public final class SelectionProbe {
             appliedRow.addProperty("faultId", string(wanted, "faultId"));
             if (!exceptionClass.isEmpty()) appliedRow.addProperty("exceptionClass", exceptionClass);
             write(appliedRow, true);
-            nextFault++;
+            if (independentReplyFanout) {
+                completedFanoutFaults.add(selectedIndex);
+                while (completedFanoutFaults.contains(nextFault)) nextFault++;
+            } else {
+                nextFault++;
+            }
             applied++;
         }
         SelectionProbe.<RuntimeException>throwUnchecked(selectedFault);
+    }
+
+    private static boolean matchesFault(JsonObject wanted, String siteId,
+                                        String callee, String occurrence, int hit,
+                                        int occurrenceOrdinal, String phase,
+                                        String responseShape) {
+        return MARKER.equals(string(wanted, "marker"))
+                && phase.equals(wanted.has("phase") ? string(wanted, "phase") : BEFORE)
+                && siteId.equals(string(wanted, "siteId"))
+                && callee.equals(string(wanted, "sourceKey"))
+                && occurrence.equals(OccurrenceIdentity.stable(string(wanted, "occurrence")))
+                && hit == wanted.get("hitOrdinal").getAsInt()
+                && (!wanted.has("responseShape") || (responseShape != null
+                && responseShape.equals(string(wanted, "responseShape"))))
+                && (!wanted.has("occurrenceOrdinal")
+                || occurrenceOrdinal == wanted.get("occurrenceOrdinal").getAsInt());
     }
 
     private static Throwable makeFault(String name, String siteId) throws IOException {
