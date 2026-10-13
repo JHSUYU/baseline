@@ -41,6 +41,14 @@ class SelectionAuditTest(unittest.TestCase):
             checkpoint.parent.mkdir(parents=True)
             checkpoint.write_text(json.dumps({'static_selection_digest': 'expected'}))
             self.assertEqual(audit(root / 'results', checklist)['errors'], [])
+            config_path = base / 'campaign-config.json'
+            config = json.loads(config_path.read_text())
+            config['target']['coverage_include_prefixes'] = ['<example.']
+            config_path.write_text(json.dumps(config))
+            self.assertIn('case-specific I/O or coverage',
+                          audit(root / 'results', checklist)['errors'][0]['error'])
+            del config['target']['coverage_include_prefixes']
+            config_path.write_text(json.dumps(config))
             (healthy / 'manifest.json').write_text(json.dumps({
                 'returncode': 0, 'trace': '/another-host/healthy/runtime_trace.jsonl'}))
             self.assertEqual(audit(root / 'results', checklist)['errors'], [])

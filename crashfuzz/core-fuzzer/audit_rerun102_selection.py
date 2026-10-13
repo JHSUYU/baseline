@@ -129,8 +129,10 @@ def audit(result_root: Path, checklist: Path) -> dict:
             if (case_path(config['static_selection']['artifact'], base).resolve() !=
                     artifact.resolve()):
                 raise ValueError('campaign uses another selection artifact')
-            if ('io_scope' in config or 'coverage_include_methods' in config or
-                    'coverage_include_methods' in config['target']):
+            manual_scope = {'io_scope', 'coverage_include_methods',
+                            'coverage_include_prefixes'}
+            if (manual_scope & config.keys() or
+                    manual_scope & config['target'].keys()):
                 raise ValueError('campaign declares case-specific I/O or coverage')
             states = [json.loads(path.read_text()) for path in
                       base.glob('campaign*/' + cid + '/state.json')]
