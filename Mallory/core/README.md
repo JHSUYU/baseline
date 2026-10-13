@@ -186,13 +186,21 @@ remains `needs_causal_review`.
 When a closure uses a `PROGRAM_ORDER` edge between completed root scopes,
 the edge proves same-thread happens-before; a candidate still needs replay
 and source review to establish that the earlier fault caused a retry or state
-change relevant to the throw. Scheduler v3 uses each trial's closure node,
-edge, and coverage delta as feedback. It rewards fault prefixes that retain
-the target, downweights repeated target loss for the same logical node and
+change relevant to the throw. Scheduler v4 uses each trial's closure node,
+edge, and coverage delta as feedback once the exact target is observed. It
+rewards fault prefixes that retain the target, downweights repeated target
+loss for the same logical node and
 I/O site, and keeps periodic static MAY, selected scope, and sparse outside
 closure exploration. No fault site is removed solely for losing the target.
-Older checkpoints retain their pinned scheduler version. A plan whose selected I/O disappears may be retried
-twice, with every unmatched attempt counted against the fault-trial and time
+If the healthy JUnit passes without reaching the target, v4 starts from
+actually observed, typed I/O doors in the selected static scope. It adds at
+most one later fault to a strictly injected, target-absent trial, up to three
+faults and 128 bootstrap trials or the smaller case budget. This bootstrap
+uses new observed I/O and global graph size as weak feedback; it does not
+invent a target closure. Only a trial with the fault on an observed exact
+target closure can enter closure-guided mutation. Older checkpoints retain
+their pinned scheduler version. A plan whose selected I/O disappears may be
+retried twice, with every unmatched attempt counted against the fault-trial and time
 budgets. The time budget counts actual JUnit trial runtime.
 
 `checkpoint.json` is written atomically before and after each trial. A restart
@@ -201,8 +209,9 @@ and archives an incomplete attempt before retrying its plan. Terminal cases
 have `terminal: true` and `summary.json`; restarting one returns immediately.
 Every trial retains its exact plan, compressed trace and graph, feedback,
 result, and elapsed time. Resume verifies the archived evidence before
-accepting a completed checkpoint; the prior healthy trace is decompressed
-temporarily in `/dev/shm` for GraphChecker. An exact post-fault target throw is
+accepting a completed checkpoint. New analyses cache the healthy trace's
+verified closure-family summary for comparison and retain the original
+compressed trace for audit. An exact post-fault target throw is
 recorded even when the static graph
 has a gap. If the healthy JUnit already throws the same exception, the trial
 is `needs_differential_review`; only an excess exact throw count is called a
