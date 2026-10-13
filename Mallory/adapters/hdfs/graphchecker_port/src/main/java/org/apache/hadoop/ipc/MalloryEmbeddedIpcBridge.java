@@ -140,6 +140,43 @@ public final class MalloryEmbeddedIpcBridge {
     };
   }
 
+  /** Carry the owning DataNode turn into the block-recovery Daemon. */
+  public static Runnable wrapBlockRecoveryRunnable(final Runnable task,
+                                                    Object dataNode) {
+    if (!REGISTERED.containsKey(dataNode)) {
+      MessageDoors.gap("MISSING_BLOCK_RECOVERY_SOURCE",
+          "BlockRecoveryWorker.recoverBlocks",
+          "owning DataNode was not registered before daemon construction");
+      return task;
+    }
+    final Object scope;
+    String id = NODE_IDS.get(dataNode);
+    Long epoch = id == null ? null : EPOCHS.get(id);
+    String current = MessageDoors.currentSourceKey();
+    if (id != null && epoch != null
+        && current.equals(id + "#epoch" + epoch)) {
+      scope = MessageDoors.captureScope();
+    } else {
+      // A parent on another actor cannot be joined by guesswork. Give the
+      // recovery daemon its own DataNode root and retain the explicit gap.
+      MessageDoors.gap("BLOCK_RECOVERY_PARENT_UNPROVEN",
+          "BlockRecoveryWorker.recoverBlocks",
+          "caller source does not match the owning DataNode");
+      long turn = MessageDoors.beginTick(dataNode,
+          "BlockRecoveryWorker.recoverBlocks");
+      try { scope = MessageDoors.captureScope(); }
+      finally { MessageDoors.endTick(turn); }
+    }
+    return new Runnable() {
+      @Override public void run() {
+        long carried = MessageDoors.enterCarriedScope(scope, "DATANODE",
+            "BlockRecoveryWorker.Daemon.run");
+        try { task.run(); }
+        finally { MessageDoors.exitCarriedScope(carried); }
+      }
+    };
+  }
+
   /** Run immediately after NameNode.createNameNode returns, before DNs start. */
   public static void registerEarlyNameNode(Object cluster, Object nameNode) {
     try {

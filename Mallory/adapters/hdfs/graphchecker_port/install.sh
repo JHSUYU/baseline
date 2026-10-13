@@ -64,6 +64,7 @@ for class_file in \
   'org/apache/hadoop/hdfs/qjournal/MiniJournalCluster.class' \
   'org/apache/hadoop/hdfs/qjournal/MiniJournalCluster$Builder.class' \
   'org/apache/hadoop/hdfs/qjournal/client/IPCLoggerChannel.class' \
+  'org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.class' \
   'org/apache/hadoop/hdfs/server/datanode/DataNode.class' \
   'org/apache/hadoop/hdfs/server/datanode/BPServiceActor.class' \
   'org/apache/hadoop/hdfs/tools/DFSAdmin.class' \

@@ -6,6 +6,7 @@ import javassist.CtClass;
 import javassist.CtMethod;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
+import javassist.expr.NewExpr;
 
 /**
  * Patches copies of Hadoop 3.4.3 classes in an isolated classpath overlay.
@@ -133,6 +134,24 @@ public final class PatchEmbeddedIpc {
     }
     loggerChannel.writeFile(args[0]);
     loggerChannel.detach();
+
+    CtClass recoveryWorker = pool.get(
+        "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker");
+    final int[] recoveryDaemons = {0};
+    recoveryWorker.getDeclaredMethod("recoverBlocks").instrument(
+        new ExprEditor() {
+          @Override public void edit(NewExpr created)
+              throws CannotCompileException {
+            if (created.getClassName().equals("org.apache.hadoop.util.Daemon")) {
+              created.replace("{ $_ = $proceed($1, " + BRIDGE
+                  + ".wrapBlockRecoveryRunnable($2, this.datanode)); }");
+              recoveryDaemons[0]++;
+            }
+          }
+        });
+    requireOne("BlockRecoveryWorker Daemon handoff", recoveryDaemons[0]);
+    recoveryWorker.writeFile(args[0]);
+    recoveryWorker.detach();
 
     CtClass dataNode = pool.get(
         "org.apache.hadoop.hdfs.server.datanode.DataNode");

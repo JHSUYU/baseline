@@ -29,6 +29,14 @@ worker; the ordinary IPC hook then exports requests only after transport
 handoff and attaches them at the exact JournalNode server. These are generic
 QJM and IPC boundaries, independent of a target check or selected fault site.
 
+The DataNode block-recovery path also creates a separate `Daemon` in
+`BlockRecoveryWorker.recoverBlocks`. Its `Runnable` carries the submitting
+DataNode scope into the daemon. If the caller has no matching DataNode source,
+the bridge records `BLOCK_RECOVERY_PARENT_UNPROVEN` and opens an independent
+DataNode turn. This attributes the recovery check without inventing a causal
+edge from an unrelated caller. It is a generic daemon handoff, not a fault
+site chosen for one check.
+
 The original Hadoop IPC path has two stages. `Client$Connection.sendRpcRequest`
 offers a `Pair<Call,ResponseBuffer>` to a `SynchronousQueue`, then
 `RpcRequestSender` dequeues the pair and calls `IpcStreams.sendRequest`.
@@ -180,6 +188,17 @@ leaving generic Hadoop common code such as `Configuration$Parser` on the
 dependency classpath. The boundary applies to all HDFS targets that use
 Hadoop IPC; it is not a list of hand-picked sites for this JUnit. File I/O and
 other Hadoop common fault sites remain outside its instrumented scope.
+
+For a resumable campaign, create the overlay and merged byte tree at a
+dedicated path on the shared `/proj` mount before generating the static input.
+Pin `MALLORY_HDFS_GRAPH_PORT_MANIFEST.sha256` and
+`MALLORY_HDFS_CLASS_BYTES.sha256`, and verify the latter from inside the merged
+directory with `sha256sum -c`. Set the first two entries in the exact ordered
+Soot/weaver classpath to that merged tree and overlay. Regenerate the static
+scope whenever either entry or any class byte changes; an old manifest's
+Jimple unit indices are not transferable to patched bytes. The HDFS-29
+recovery pilot stages these inputs under
+`/proj/silentfailure-PG0/ZhenyuLi/mallory-hdfs29-recovery-v2/inputs`.
 
 Select the HDFS-32 target branch at `DataNode.deleteBlockPool:3819`
 and set `analysis.source_owner_classes` to match `DataNode`, whose instance
