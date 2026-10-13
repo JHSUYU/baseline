@@ -1,0 +1,4315 @@
+{
+  "active": null,
+  "budget": {
+    "fault_trials": 64,
+    "max_faults_per_trial": 4,
+    "seconds": 1800
+  },
+  "case_id": "SOLR-09",
+  "completed_fault_trials": 54,
+  "config_sha256": "2f71f0d583e86c545bffa0e292b8e0b9eb06dc1392aa042864770d37ed507a31",
+  "healthy": {
+    "elapsed_seconds": 36.846,
+    "faults": [],
+    "injection_specific_target_reached": false,
+    "junit_passed": true,
+    "name": "r0000",
+    "post_fault_target_reached": false,
+    "result": "trials/r0000/result.json",
+    "status": "healthy_seed",
+    "strict_injection": false,
+    "target_exception_candidate": false,
+    "target_exception_triggered": false,
+    "unmatched_retry": 0
+  },
+  "last_fault_site_attempts": {
+    "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7": 3,
+    "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23": 3,
+    "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3": 2,
+    "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5": 1,
+    "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.util.List listData(java.lang.String,org.apache.zookeeper.Watcher)>#u4": 1,
+    "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.AutoScalingConfig getAutoScalingConfig(org.apache.zookeeper.Watcher)>#u8": 1,
+    "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.VersionedData getData(java.lang.String,org.apache.zookeeper.Watcher)>#u6": 1,
+    "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: void setData(java.lang.String,byte[],int)>#u5": 1,
+    "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5": 3,
+    "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u22": 2,
+    "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u29": 1,
+    "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u24": 1,
+    "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u31": 1,
+    "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20": 1,
+    "<org.apache.solr.common.cloud.ClusterProperties: java.util.Map getClusterProperties()>#u4": 2,
+    "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],boolean)>#u5": 1,
+    "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean update()>#u11": 3,
+    "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24": 3,
+    "<org.apache.solr.common.cloud.ZkStateReader$StateWatcher: void refreshAndWatchChildren()>#u6": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12": 3,
+    "<org.apache.solr.common.cloud.ZkStateReader: void createClusterStateWatchersAndUpdate()>#u4": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u5": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshAliases(org.apache.solr.common.cloud.ZkStateReader$AliasesManager)>#u7": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshCollectionList(org.apache.zookeeper.Watcher)>#u6": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshLegacyClusterState(org.apache.zookeeper.Watcher)>#u5": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshLiveNodes(org.apache.zookeeper.Watcher)>#u5": 2,
+    "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9": 3,
+    "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25": 3
+  },
+  "last_fault_site_strict": {
+    "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7": 3,
+    "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23": 3,
+    "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.AutoScalingConfig getAutoScalingConfig(org.apache.zookeeper.Watcher)>#u8": 1,
+    "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5": 2,
+    "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u29": 1,
+    "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean update()>#u11": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader$StateWatcher: void refreshAndWatchChildren()>#u6": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader: void createClusterStateWatchersAndUpdate()>#u4": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u5": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshAliases(org.apache.solr.common.cloud.ZkStateReader$AliasesManager)>#u7": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshCollectionList(org.apache.zookeeper.Watcher)>#u6": 2,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshLegacyClusterState(org.apache.zookeeper.Watcher)>#u5": 1,
+    "<org.apache.solr.common.cloud.ZkStateReader: void refreshLiveNodes(org.apache.zookeeper.Watcher)>#u5": 2,
+    "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9": 3,
+    "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25": 1
+  },
+  "next_trial_index": 55,
+  "queue": [
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "8011b1b7c5a37063",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "9a659c8718959749af310ef160c9bd124869a9ef4122d38aab642c19f1a531af",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "8011b1b7c5a37063",
+          "ordinal": 56,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "757171e07b910c6e31ae2ceee4e118555bef4415bc6969979dcdff22dba5decf",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "8011b1b7c5a37063",
+          "ordinal": 112,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "b9b87b5861fb35939f1086e877c6219f2b108027fe14ca8fcd765c30072ffc84",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "b5b935b4a2c8e55f",
+          "ordinal": 56,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "c7be07d7627c418806752f35a3bc46b0970701c0cdf11653308c72b3e55f6e1b",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "b5b935b4a2c8e55f",
+          "ordinal": 112,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "fdb595e4b8a0fc1a195e38245981cd7125fc5a9091b0b4ec74dcbfc02aea0820",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "ec58c7d1e2fbbb48",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ClusterProperties: java.util.Map getClusterProperties()>#u4"
+        }
+      ],
+      "key": "46c52bebc3d3866cfea844cb1f3f73a8fb59e3dc0488a3801b65be28526f7800",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "4984bab45aa6ef81",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "db84c11b91a3d91481d40666dc2079d8f7bc633a9b054f25d09313f07dbcd42c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "f540c595f0ca9044",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "a9c73eca4e1bd234cac58dc05d3e8d74238c8ef23b9ab10f045102d93f18ba89",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "01929bab7394d62d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u22"
+        }
+      ],
+      "key": "8bbb952d3b3ffaec66ac46041a2c7edb2b2ad74c80bb43edccf370369797ab34",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "a616a1a3751e3433",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7"
+        }
+      ],
+      "key": "03c4b8263b23d6982f3ba079caa5ff6b889bfb2810b21f99311bb8a9e8577a42",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "f37f654b6d5238ca",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.util.List listData(java.lang.String,org.apache.zookeeper.Watcher)>#u4"
+        }
+      ],
+      "key": "7586c4c4da8b4e5237faf94e42078807315b15ab674b56ea9d7940632648762d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "412b97eec0727ecf",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "c5e77da9ebcf76242744a277449238667e00c22357e4c141aca569b11eff6967",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "8fbb2b35052bc816",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23"
+        }
+      ],
+      "key": "112ef8781a492031c3325fcfce9ce86542d93c695c9ddb0ec10ac46535c7d952",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "ac37df753af96c9e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "78c3531fea1869e0df076d48ef29fef84a47f6e1f73f7183bc481a4373ec8be7",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "b76f183144e98b6d",
+          "ordinal": 52,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "0b27bed548caca2a542028c1501608fd6e77554a432b2ec3f0f8c639917d6e2d",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "0c660a354d4a089e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20"
+        }
+      ],
+      "key": "7c2343a6679ad6c08ced7ebe6b0f071e6d8ccb2d18767b52808a2c81f9fa2c3b",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "9ae5e8dff0e01b6a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "4d69469d30b76c66ac00935e17529c590b425105fa95ae80e872aacbbea44e95",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "6b478ca2541b2ae3",
+          "ordinal": 104,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "75241c1056bbbb43202c90bc04c30ce27938cbae967f073f7f272f9077c30ee5",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "0c660a354d4a089e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u44"
+        }
+      ],
+      "key": "7f222acf7618e98a90a05241dbf015e66c08ba948a55e33fa71e51adbc01876c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "1ae386d25e69ccf6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "addcc0236f7780923f152c465c90c3a0b348e5fcf47289691db2037c2242167c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "ac08e973ca002a67",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6"
+        }
+      ],
+      "key": "975cf5f85bd79bae70f2fb17d98bb16f29d8986e2b1b46f8fc2b264afcea70e3",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "3156314919107579",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "16160a3d5af90579016e9c8018eed69dbfd961aaa8806dcb682680e6eab4a8a4",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "fd617ec28b9871b0",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "ad6d9c151ee7109e897fdf72ce54af15e0d5a7b43b1c9decdf8dd54d5628e055",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a861a86533939706",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.VersionedData getData(java.lang.String,org.apache.zookeeper.Watcher)>#u6"
+        }
+      ],
+      "key": "5a1262d14810b86770b7dac28d03b0fbff58e6c06513966b8e2786fc2722b127",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "979996154421504f",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6"
+        }
+      ],
+      "key": "5cadc5dc3a826da4ae149902d677eeb5c813f512942cecef876e5a86d211856d",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "c0d1d640e04724e1",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: void setData(java.lang.String,byte[],int)>#u5"
+        }
+      ],
+      "key": "166a2310e872ee8850402914d85d139cf68413a1202c890b527e5fd0ad9d55ba",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "efc561af90662113",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20"
+        }
+      ],
+      "key": "921734ef711f399563b579dd87905ebba7fa690ac8df7cf11966863359c80bb2",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "efc561af90662113",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u44"
+        }
+      ],
+      "key": "33589073aac67316a7408f07c06162b20023e9e1a1e9db715eea3a8d227c4417",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "3aee510a026d3a09",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: void setData(java.lang.String,byte[],int)>#u5"
+        }
+      ],
+      "key": "7a1853a01ed1c6ec8ecacc29bf34d2b9264452cef7d0853456990e130f7ab4fe",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "844434c8d8001706",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u44"
+        }
+      ],
+      "key": "6796761f8316f8a69ac91d929b8a2fa65347a297665c03c53af006a6fe08ae11",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "d0179471977aca34",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "62b477d7891921807add615d46ef491f6f59a55259cf5e6cfbd973e924ad6aaa",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "6cab4f6a44735836",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "2730279e8441cbf292c3cd73e680ed0f2ff4d44974bb33d9236bad245237c205",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "c8b7b1595eceec11",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "cbc8597715a0c588f4398361a9fbfc141217b27599b7ac1f9cce0fc73c3e926d",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "440d2af2bf35016a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u24"
+        }
+      ],
+      "key": "45a35bbf740ae14309f528fa7867930a56e786f4b8877ca04af3b8a8adcd87bb",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "fea9699b6b4626c4",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],boolean)>#u5"
+        }
+      ],
+      "key": "071de5c0540e79fd7479b3ca6b32ff3ec54937f63effef06d6398f0de109cdbe",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "440d2af2bf35016a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u31"
+        }
+      ],
+      "key": "8762848a342ab83ce2fc4df8162fae623b08e45d83abd4b43c8043e605fb7945",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "01929bab7394d62d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u35"
+        }
+      ],
+      "key": "1f153c3108b3124c2b496feaf3da4877777c2fe0e12d99d9f09ba41962124f5c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "717c39e7c5b9dce5",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "c31dd5b402d71b0c40c3d5f69748865fa3f20f410e20d34f3c12ed3f227fd0ed",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node2#epoch0",
+          "occurrenceId": "2f0586495c9fe7f3",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "3df5cb0c35ee20255317a44294add6b4728dcbc8d34a82f60aa6319fbd4ff8ae",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node2#epoch0",
+          "occurrenceId": "2f0586495c9fe7f3",
+          "ordinal": 25,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "baed6f5ccf4a21538f0b14545714092480cc8fcdf9ed3115249f12db071ce59c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node2#epoch0",
+          "occurrenceId": "2f0586495c9fe7f3",
+          "ordinal": 50,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "7fd3ac2fbb986a09fa0df20cbf96d7b6e0bb668af645fed9a1afacfe6059c5fc",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node2#epoch0",
+          "occurrenceId": "338d8d9c8769b097",
+          "ordinal": 25,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "5a36d1bd1a9a78f1ffd1fdd7293d32b94c5f8de39895b57679801daa0832eeb7",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node2#epoch0",
+          "occurrenceId": "338d8d9c8769b097",
+          "ordinal": 50,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "2ff383539ba95121bf729d5705b810860153d7d6539afb8d4575dd0862e4a949",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "89764b06b06d6a8d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u24"
+        }
+      ],
+      "key": "666ec196503eec968ea7bb86bc90c155b38aa7f0651f8673256a93182107a7f6",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "57d7d33496e65440",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9"
+        }
+      ],
+      "key": "02874c2067f3a349846d8199bdc2176a7527559f91971a9a06f40a5574cb7150",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "764064ef5746eb1c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "ec056f04916633f5339ae7c5b19357cd5cfe3f1cb3ec287c3546e4c323be5477",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "66862a7104cae10d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "aebe37e4fdfc5ac2f72855db55c44ab071a7ab1ccdbdc5dfd55fd0c9c8be1962",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "00a5e1b93ecceebc",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "36915fdb60c22bf372611754b49632327eff8d9eb6f2d659fc486bbc3d861aca",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 0,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "2119237c4ca1acb2",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "7d2a19d9f85a17276026b065696faa0ef12425d113616324246adefefdb7d5a4",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 3,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "1c164f39b9475c60",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "fec6caae76d73c6deb111dfe3922be3a3b67dfc019928bcad0931818c102367f",
+      "novelty": -10,
+      "tier": "static_may_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 5,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "5bd4eeab9de8f895",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u22"
+        }
+      ],
+      "key": "c4da5ccc22256440da8f147e11b5deac2ea3eed8f660e3cb74b3b34932db896c",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 9,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "aa3952df26c47d3d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean update()>#u11"
+        }
+      ],
+      "key": "faaf03b6b91ebd95742782400ed393966f28a2bb6557098e42c15bf9824415a4",
+      "novelty": -10,
+      "tier": "static_may_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 12,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a86a1bfeb2dd45f2",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "f7d249989eedf273d34b6539583a6b6d041e757da4ce6441b4fd71ac1a06634a",
+      "novelty": -10,
+      "tier": "selected_scope_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 15,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "89764b06b06d6a8d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u31"
+        }
+      ],
+      "key": "f09316809b7b660c1364f6346e51d2c106b236d154e0bea0449d3956e90b34a7",
+      "novelty": -10,
+      "tier": "static_may_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "feee3c7b4f32a8fb",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "8ec1e430d6ed9dbf05dd860320ce406180c6862f1a4083540044dbd6956fc680",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "5d1474b3efbaaf19",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ClusterProperties: java.util.Map getClusterProperties()>#u4"
+        }
+      ],
+      "key": "704825ad9d546e12afc1b2f3c9015d0724cdd899ae4f3c2ed7a322886dddd46b",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "feee3c7b4f32a8fb",
+          "ordinal": 56,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "59ef25b9e8a7df1aebb2a97339d98b97a39169c34e8e2e5a3b1dc4ff49fbab15",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "feee3c7b4f32a8fb",
+          "ordinal": 112,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "b15806943a11b5e24dcd9a3d37f3ec554c4340ca7353635b40d2c1d35ada63cf",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "5e31de2e5708cef8",
+          "ordinal": 56,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "ee6c4c31616fd62c35705ece69813de69a4564925711e4fb87a58f0e87870740",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "5e31de2e5708cef8",
+          "ordinal": 112,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "b219c85ee037d6b301beba4b52bc198f2ae6ef2753e952eb95f8b78d5fafc32d",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "6ed1a6eba9f6ce50",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "0bda6a99c361763ee050af0a8b4527ba646ebaae29a8431718030e6596dadc62",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "57fb34eac3317401",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "e7568214f7edf97cfca6a9f7c813d72f6708fc674faeea4a52bf50b8bba6e6af",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a60e113ce152a545",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.util.List listData(java.lang.String,org.apache.zookeeper.Watcher)>#u4"
+        }
+      ],
+      "key": "c502adafd4ddc9d819061a19676d10988f2779aa5e1edd82195126d4ea856a45",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "9df1a5697030f015",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23"
+        }
+      ],
+      "key": "378b23811ea1f1f51891d8d3702d6eb0597ba2a7f46814f5da5a301b789e61e7",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "e7617171e82942dd",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9"
+        }
+      ],
+      "key": "687bfec863a65470f1aad9f940adb1947312eddfe9b41c6ed3ce9a9386148d48",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "a12b5b2117572935",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u22"
+        }
+      ],
+      "key": "c79f2d9b862028f74a4ad32d4c6b0e3c7b4a9b6dcb8080ce6e2b6e60d1bc6a2c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "f1346565112d4719",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6"
+        }
+      ],
+      "key": "3cc91a329021b12c5953eeba25605a837f79d128826c48599718b47f6ef9591c",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "18651540af60cb8d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7"
+        }
+      ],
+      "key": "404b97e80c901d87a7dcb099bd0dbe9e67c4c6c5d8035daa5f73359a6c8b5c01",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "9b42803e40fe3cda",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.util.List listData(java.lang.String,org.apache.zookeeper.Watcher)>#u4"
+        }
+      ],
+      "key": "6b14d2d02c7418e81e38c269d7033fd327a8ff697e35a52692883062e0378671",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "4b4b0d06a3b6a0ea",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7"
+        }
+      ],
+      "key": "7654e74656915a729b61beed97a0a7782143f42022f4754359d06a53ce74c905",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "8fbb2b35052bc816",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23"
+        }
+      ],
+      "key": "d67b2c2345bf33ba047826e9ee0483df91b82a39ebf4ad86e8e01ae8f4a1835e",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "e34b82229eb12af5",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "189b0e17180ea03cdc8c95b85348f7a6171fc7f271fd02cf3a08f7ad3538e40c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "3483ba30a3cd8cbd",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.AutoScalingConfig getAutoScalingConfig(org.apache.zookeeper.Watcher)>#u8"
+        }
+      ],
+      "key": "f38e23bf937ba8d0a504fe190551e78457503a62bb0e790a8fa27ccdb3833bf2",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "b7ab8825b613b01c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "7ae7c467c7cfa780b593c57f202b9073ac09bc1f7f1ead358400bdba995e84a0",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "b7ab8825b613b01c",
+          "ordinal": 52,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "359063295e2141b0572c0bca9b86e1c41279bc44ee0bf7f0321900f32ee2be80",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "b7ab8825b613b01c",
+          "ordinal": 104,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "0b65887f95765350d021a6554c2fb5cebbe0736cadc0b9b398d770ab061e9caa",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "0a217c29dbe368f6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean update()>#u11"
+        }
+      ],
+      "key": "b61eb5b5aa7f7a5927444673f1854a46829970beed649d9ab42081b08e039521",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "36e0ff6a533f2cbd",
+          "ordinal": 52,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "8cbb7fe8d188b31a521e0a9853f34dc16731078f48c0a80e3cdd77f1e2c8d965",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node1#epoch0",
+          "occurrenceId": "36e0ff6a533f2cbd",
+          "ordinal": 104,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "6afcd520903dac28abde0e56ec4889f07d0a131f12e927eb656f1bd1b71e9b01",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "a9074683cb322291",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "41e24ce87c70a5357de9691fb2755a736f8276fc53f64f09672d490f99d189bf",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "dc0b6cfd0312a2b3",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "15e96a45c9d12da2954523c4599f51effc745637631097dffb6266591e0f2399",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "32aaa767ba51d8e1",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20"
+        }
+      ],
+      "key": "66a5c3d2cbc38275ccf9f88f41426f937e2ce79d7e62be9379b8d5ead6a2c687",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "21c0f11f6a658d7b",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "fb61f2353ce023ce96f039f8049e7044c8efccb14bb82b4f919a368cb978ab62",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "080e6b415aa6b0f8",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.VersionedData getData(java.lang.String,org.apache.zookeeper.Watcher)>#u6"
+        }
+      ],
+      "key": "1eadd0b3625e2f1674a55df831f5413a9d8b2e448b9636fed7635eab958e31c0",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "32aaa767ba51d8e1",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u44"
+        }
+      ],
+      "key": "3d825fb3278beb3328b102a8cc826111ee0ebd35a7b3d28a360997134d301543",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "67d7435f1ed5e3e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "35938e0dd4ddc32a44ce7630484a6c6b54202f668fe0b46196c01767739d8c40",
+      "novelty": 60,
+      "tier": "observed_closure"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "20be3f15bbdfac7b",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "5331a05b9a6fc6e25477e902c449148c073d5c19b3e54f9afef83a6c302bcac7",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "8f7735d4c446a505",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6"
+        }
+      ],
+      "key": "2b6eb804065909695f8aa21cc2648125e6f669e69f224db0f4a85fa9d20cacc2",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a225b198452d28e1",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "61669d6a6614437157f50f3f559a19babc389223d3b23f2ff11a11455d176955",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "9903f63cfd6abddc",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "e079e14d39515a425737d8d7362f28525ee1ddd104bc1031dc068a1d2e859e97",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "e4dde30d56329fe5",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.VersionedData getData(java.lang.String,org.apache.zookeeper.Watcher)>#u6"
+        }
+      ],
+      "key": "9445ed2b95e86a91e0f1f4fe4daca4e4d53d57d4e2a6a99b809dae96c20eae3f",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "b34a761406d62574",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6"
+        }
+      ],
+      "key": "0919d75117d87604679ba03f01ccdaa312d39066773fd35f057ef7da8f42465b",
+      "novelty": 60,
+      "tier": "selected_scope_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "f75789996a54e7f0",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "fe6b990c4e3e55c016153a3a29c7fb0da021f8d1d2206004366d730d8a10c08d",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "734f61147709cfb0",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20"
+        }
+      ],
+      "key": "61d50369c655c612780f956a1646c91d622e94b853e5b88572a6716d375e5a81",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "734f61147709cfb0",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u44"
+        }
+      ],
+      "key": "6053afb96555b780a29df4279b8e65ca594461d3ea6ee877cb48201d08b1d50a",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "dcaa1d172234daf8",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: void setData(java.lang.String,byte[],int)>#u5"
+        }
+      ],
+      "key": "b8402876769f8e25d4590f8fb4c849ae9beff293270cfa47b93d7781a82c915e",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "5b9d5c7608c8ef9e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20"
+        }
+      ],
+      "key": "c3c0d342a78416c0cb12e1e5cc099b9ee82593aff88e94b0b21f222e5da317bd",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "5b9d5c7608c8ef9e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u44"
+        }
+      ],
+      "key": "9e4519e0d6db7e9460c76924bce32edd8aa81808137b7d922117284ac4dc9d1a",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "18352238df9acce3",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "c1a720d6e4a13319c393b6277bba65f1278c9ba714ddd3b52667f60475ebcde1",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "1ba3d2838f9722f0",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "9128c471fffb97d3fd59fcd1af6a63b473d5a94d813dec54de264775f90f22a0",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "8a1d3ee81c5c8a26",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "7c8a607473734eba9e7544f574978a6aea043e7336790df708ad329c0504d29c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "5949d1639c2f6a16",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "4b7f89545daf282e3cc6919c6782c51313690a00af4fa945ccc8c1059a9062fa",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a2efb8245c1b0cff",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],boolean)>#u5"
+        }
+      ],
+      "key": "42ad6e958d7feb0c62135d392ab9675026939d39d2c6607955c6ca141ca3321c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a23e2c41ba06ff3e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u31"
+        }
+      ],
+      "key": "72e0834c128efc8cb36c526ad300c55395c309b77b05e562c85e1466ec2ac222",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "a12b5b2117572935",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u29"
+        }
+      ],
+      "key": "08a556a5408f9629d4136ccd6893841017c3ca55a2955d380629aecac7697e3b",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "a12b5b2117572935",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u35"
+        }
+      ],
+      "key": "a4cfce1f8dd61016e1b67793c5b18a3b26fc51208cd5f2b579c065f9449ffb50",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "9bb6c02f51d863b9",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "b4360920ba95c6e6ee644a38382ea87147ef5a731dbb2bbf92a0ca7bf9317113",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "16944b16e7787648",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "7a8eaeafe2d5dbb5beec61a964487de7ad010b85a4fdb927db436e3a3ff241a5",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "4a485a568157b2aa",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "77a42086227c30d4116fcc6cdf394249fb586ed8e77cc67f95eda0b4927c4728",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "4a485a568157b2aa",
+          "ordinal": 25,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "366bf135d4b9da9d1a06c6a9ab371894c21b3b67fa51df134dce01171bfec4c1",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "4a485a568157b2aa",
+          "ordinal": 50,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "43d5d9454828f1a535feb76337a6264d08c2f66fe11184cf7ba5dc61efe6e76e",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "3209279ee3a12c39",
+          "ordinal": 25,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "bb06058200af80489287bc9731e57ef5412da2754cba3fe852ec2d898a10b1a2",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "3209279ee3a12c39",
+          "ordinal": 50,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "8ea981742d1e9c57bc7e5d58e7c179edebc91b7d2f96671832a727c403f5da3f",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "53043c36ddb19d22",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u24"
+        }
+      ],
+      "key": "50c8cb68c18e8635812889a36027cf5ea4daf7c0a25d017f6e643e7a7d9fc0e6",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "48a78b225dfaba59",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],boolean)>#u5"
+        }
+      ],
+      "key": "6d5ad7d7116b2fb307b4fb4a575281a27ba2685a3dab797e352bef40ce1eae06",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "53043c36ddb19d22",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u31"
+        }
+      ],
+      "key": "d11f95a8cc66ebd2cac32def4a053a69fa30de318c743df0ed23ed91f999c608",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "57d7d33496e65440",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9"
+        }
+      ],
+      "key": "c7c0d12a01edea789d28aca39a3c0f91498964e00399894d1b2b30183a282519",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "764064ef5746eb1c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "ead28b82d8b9bbd151f6c1aaa8b85c2652fe69c1005d614737e04e8b0d1dec3c",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "66862a7104cae10d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "8c8ef47e4834be6775a41a9738432e2574cb337faeff24be9e263166eb790721",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "4f65b21f4701233f",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$StateWatcher: void refreshAndWatchChildren()>#u6"
+        }
+      ],
+      "key": "72a5e418968ebc00005c9357a5d9c229059fa764652b086820e1e1cfb53c0632",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "00a5e1b93ecceebc",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "893e4394f354776d8d1c5bf13c36fe2da0a41063143b1e1c4df282cac9b226c3",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 16,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "2119237c4ca1acb2",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "e9f32ebb9a69079a031ff8c268eaee6117391bd54265c8a33010fa34419521c7",
+      "novelty": 60,
+      "tier": "static_may_observed"
+    },
+    {
+      "enqueued_at": 18,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "5415bb835280a7a5",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6"
+        }
+      ],
+      "key": "d473674665f01a020700e734e80346a96a5c8d3d089b1eadfa1d39552f0eb96d",
+      "novelty": -10,
+      "tier": "selected_scope_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 21,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "43c17fbb4705898a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],boolean)>#u5"
+        }
+      ],
+      "key": "bf1ad4c6618fad14bacc023da3ee1d200eb59b07e64806816d13385495dc27aa",
+      "novelty": -10,
+      "tier": "static_may_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 22,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "4705163090008cd2",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$StateWatcher: void refreshAndWatchChildren()>#u6"
+        }
+      ],
+      "key": "1fa31cb6df7a13622c7ef5bda5285bf5c60bc1551da4ec4a211074e71823076a",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 23,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "b76f183144e98b6d",
+          "ordinal": 104,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "b044829d3e556fece686a3cf32ec7261c6999057295d61dffe109071b888a5ec",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 24,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "441078b3bfbf9fae",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.util.List listData(java.lang.String,org.apache.zookeeper.Watcher)>#u4"
+        }
+      ],
+      "key": "ce096ad8303c99178aabfc812c3086df876c08bb61be811f8073359e204785b7",
+      "novelty": -10,
+      "tier": "selected_scope_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 28,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "44416a4df748f97b",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "481d7206e6401956798dbc7eeb5a55cf0126b13ef525b4cf1a19c49f3796e279",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 30,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "dc78c4538ad3c79c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ClusterProperties: java.util.Map getClusterProperties()>#u4"
+        }
+      ],
+      "key": "a33fab81617397ace5d7c571e987f3916a38a639b410baed3bcce16aea066354",
+      "novelty": -10,
+      "tier": "selected_scope_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 32,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "dda1aadb5b008dca",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u22"
+        }
+      ],
+      "key": "d803fc8d9b7b7a66085645ff7290d849f55f4837354f10f44e4187001d8a84ed",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 34,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "e064565a73df80e1",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "9ff9e19f701fc84bac51024fa1a662aeac157dea6f96edf60715d5b3f3331d20",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 35,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "ac2c5daa5f0e04d7",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "key": "916abd159c9bd7e2a12e9db7ac51396aa73aabfd4160bb5513a7252d265996ef",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 36,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "3bb205f6c094116c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.VersionedData getData(java.lang.String,org.apache.zookeeper.Watcher)>#u6"
+        }
+      ],
+      "key": "978778432ee5917af162b4e140ca52053d8962b60e9f15b4c1ad47dbbe8e008c",
+      "novelty": -10,
+      "tier": "selected_scope_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 38,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "313ddd9dc9ae2a1e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshLegacyClusterState(org.apache.zookeeper.Watcher)>#u5"
+        }
+      ],
+      "key": "60d8549ef4cc7830975d71ba51b23a4886ef529dcb5dfc45c8d08c2ca4f0f8ef",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 39,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "d9590c03f3511889",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "key": "887ee9dc4e7e76a7a227a792d8b2eeccc7cecfd5e7052317b9e467269db7563e",
+      "novelty": -10,
+      "tier": "static_may_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 43,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "6b478ca2541b2ae3",
+          "ordinal": 52,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "key": "a9cfa6e81493187cb5f8b801afa6f4c9204ee99db7a5e183e6163d63c573c096",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 45,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "755c6b91665e2a9c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: void setData(java.lang.String,byte[],int)>#u5"
+        }
+      ],
+      "key": "ca3eaacfdfabadadbad575b8d56e1b4352036b81b370251159e77a2e463d4ea9",
+      "novelty": -10,
+      "tier": "static_may_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 48,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a935430076d28799",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "key": "fd0e4186d2e65a7cbaff82c3d88c90d0cb521f6d23dba6ea1fbfa20434da3470",
+      "novelty": -10,
+      "tier": "selected_scope_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 51,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a23e2c41ba06ff3e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u24"
+        }
+      ],
+      "key": "bbfb96bf9f8885bf4aaa32c6ab823fe9eb021e6e76e58626c7797869d63f755d",
+      "novelty": -10,
+      "tier": "static_may_observed",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 52,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "35a49554b17188ce",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "key": "665b2acfe444e72e63d295038a3fb8545b5a7264db313da2b6996f79dc239950",
+      "novelty": -10,
+      "tier": "observed_closure",
+      "unmatched_retry": 1
+    },
+    {
+      "enqueued_at": 54,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "b174ac1b397dbf55",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ClusterProperties: java.util.Map getClusterProperties()>#u4"
+        }
+      ],
+      "key": "f85da7aabd27740b02764f1f7e2e3fe7e31db19ef9930c80d46efc127c0d8761",
+      "novelty": -10,
+      "tier": "selected_scope_observed",
+      "unmatched_retry": 1
+    }
+  ],
+  "scheduler_version": 2,
+  "schema_version": 1,
+  "seen_plan_keys": [
+    "02874c2067f3a349846d8199bdc2176a7527559f91971a9a06f40a5574cb7150",
+    "03c4b8263b23d6982f3ba079caa5ff6b889bfb2810b21f99311bb8a9e8577a42",
+    "071de5c0540e79fd7479b3ca6b32ff3ec54937f63effef06d6398f0de109cdbe",
+    "08a556a5408f9629d4136ccd6893841017c3ca55a2955d380629aecac7697e3b",
+    "0919d75117d87604679ba03f01ccdaa312d39066773fd35f057ef7da8f42465b",
+    "0b27bed548caca2a542028c1501608fd6e77554a432b2ec3f0f8c639917d6e2d",
+    "0b65887f95765350d021a6554c2fb5cebbe0736cadc0b9b398d770ab061e9caa",
+    "0bda6a99c361763ee050af0a8b4527ba646ebaae29a8431718030e6596dadc62",
+    "0e948543e64378778fc6b94c898a95d0ee68f755b1ec4528b755f64bbefe46da",
+    "112ef8781a492031c3325fcfce9ce86542d93c695c9ddb0ec10ac46535c7d952",
+    "12ef05a9dd0cda4bd98b0a2dc0a22bf3730d1ef6eb2c32e92588b5f49be108b7",
+    "15e96a45c9d12da2954523c4599f51effc745637631097dffb6266591e0f2399",
+    "16160a3d5af90579016e9c8018eed69dbfd961aaa8806dcb682680e6eab4a8a4",
+    "166a2310e872ee8850402914d85d139cf68413a1202c890b527e5fd0ad9d55ba",
+    "180aab1608acce934fd9fdf57bdd9e93f9d4063dfbf239c368f666c4a26a0a5e",
+    "189b0e17180ea03cdc8c95b85348f7a6171fc7f271fd02cf3a08f7ad3538e40c",
+    "1eadd0b3625e2f1674a55df831f5413a9d8b2e448b9636fed7635eab958e31c0",
+    "1f153c3108b3124c2b496feaf3da4877777c2fe0e12d99d9f09ba41962124f5c",
+    "1fa31cb6df7a13622c7ef5bda5285bf5c60bc1551da4ec4a211074e71823076a",
+    "235f45257562e26019f5e6e9fabe1a1547968e88218ec14fcc27d22e06fc685b",
+    "2730279e8441cbf292c3cd73e680ed0f2ff4d44974bb33d9236bad245237c205",
+    "2b6eb804065909695f8aa21cc2648125e6f669e69f224db0f4a85fa9d20cacc2",
+    "2ff383539ba95121bf729d5705b810860153d7d6539afb8d4575dd0862e4a949",
+    "31b9b7db3d908d679d2d4ab80c30543dbcd238ccb641da749687363ff4f113f6",
+    "31f0c1496e0532f18a677e0dc4b93d47d55d00e27d088020be05d03b8dccb625",
+    "33589073aac67316a7408f07c06162b20023e9e1a1e9db715eea3a8d227c4417",
+    "359063295e2141b0572c0bca9b86e1c41279bc44ee0bf7f0321900f32ee2be80",
+    "35938e0dd4ddc32a44ce7630484a6c6b54202f668fe0b46196c01767739d8c40",
+    "366bf135d4b9da9d1a06c6a9ab371894c21b3b67fa51df134dce01171bfec4c1",
+    "36775b0a344af3272c91078eaed59846372f0ace4d84c9f2e7a67d05b6d28840",
+    "36915fdb60c22bf372611754b49632327eff8d9eb6f2d659fc486bbc3d861aca",
+    "378b23811ea1f1f51891d8d3702d6eb0597ba2a7f46814f5da5a301b789e61e7",
+    "3a49b9449b54cb4659fb41dadbc27cf1d0e569b16c6e4fbd80057062aaab3f45",
+    "3cc91a329021b12c5953eeba25605a837f79d128826c48599718b47f6ef9591c",
+    "3d825fb3278beb3328b102a8cc826111ee0ebd35a7b3d28a360997134d301543",
+    "3df5cb0c35ee20255317a44294add6b4728dcbc8d34a82f60aa6319fbd4ff8ae",
+    "404b97e80c901d87a7dcb099bd0dbe9e67c4c6c5d8035daa5f73359a6c8b5c01",
+    "41e24ce87c70a5357de9691fb2755a736f8276fc53f64f09672d490f99d189bf",
+    "42ad6e958d7feb0c62135d392ab9675026939d39d2c6607955c6ca141ca3321c",
+    "43d5d9454828f1a535feb76337a6264d08c2f66fe11184cf7ba5dc61efe6e76e",
+    "45a35bbf740ae14309f528fa7867930a56e786f4b8877ca04af3b8a8adcd87bb",
+    "46c52bebc3d3866cfea844cb1f3f73a8fb59e3dc0488a3801b65be28526f7800",
+    "481d7206e6401956798dbc7eeb5a55cf0126b13ef525b4cf1a19c49f3796e279",
+    "48b29fc61e59985c93c3c62d591031aead3af56ad1a45b8f9e684b7bb56a0c0f",
+    "49e67431e9f53d34c8d8276aea289c847b9b93118094c3954ec807f62296f35b",
+    "4b7f89545daf282e3cc6919c6782c51313690a00af4fa945ccc8c1059a9062fa",
+    "4d69469d30b76c66ac00935e17529c590b425105fa95ae80e872aacbbea44e95",
+    "50c8cb68c18e8635812889a36027cf5ea4daf7c0a25d017f6e643e7a7d9fc0e6",
+    "5331a05b9a6fc6e25477e902c449148c073d5c19b3e54f9afef83a6c302bcac7",
+    "59ef25b9e8a7df1aebb2a97339d98b97a39169c34e8e2e5a3b1dc4ff49fbab15",
+    "5a1262d14810b86770b7dac28d03b0fbff58e6c06513966b8e2786fc2722b127",
+    "5a36d1bd1a9a78f1ffd1fdd7293d32b94c5f8de39895b57679801daa0832eeb7",
+    "5cadc5dc3a826da4ae149902d677eeb5c813f512942cecef876e5a86d211856d",
+    "6053afb96555b780a29df4279b8e65ca594461d3ea6ee877cb48201d08b1d50a",
+    "60d8549ef4cc7830975d71ba51b23a4886ef529dcb5dfc45c8d08c2ca4f0f8ef",
+    "61669d6a6614437157f50f3f559a19babc389223d3b23f2ff11a11455d176955",
+    "61d50369c655c612780f956a1646c91d622e94b853e5b88572a6716d375e5a81",
+    "62b477d7891921807add615d46ef491f6f59a55259cf5e6cfbd973e924ad6aaa",
+    "646e8a51d27534c92eb06d1f7de94ff69adad4f8d7861e413677737a4d202b4b",
+    "665b2acfe444e72e63d295038a3fb8545b5a7264db313da2b6996f79dc239950",
+    "666ec196503eec968ea7bb86bc90c155b38aa7f0651f8673256a93182107a7f6",
+    "66a5c3d2cbc38275ccf9f88f41426f937e2ce79d7e62be9379b8d5ead6a2c687",
+    "6796761f8316f8a69ac91d929b8a2fa65347a297665c03c53af006a6fe08ae11",
+    "68110d049d46333e2a499f61d2743062b8d2453d287a613b31a960da37b7f4c1",
+    "687bfec863a65470f1aad9f940adb1947312eddfe9b41c6ed3ce9a9386148d48",
+    "6afcd520903dac28abde0e56ec4889f07d0a131f12e927eb656f1bd1b71e9b01",
+    "6b14d2d02c7418e81e38c269d7033fd327a8ff697e35a52692883062e0378671",
+    "6d5ad7d7116b2fb307b4fb4a575281a27ba2685a3dab797e352bef40ce1eae06",
+    "704825ad9d546e12afc1b2f3c9015d0724cdd899ae4f3c2ed7a322886dddd46b",
+    "724074918b1cfe2db9c2b4538dc5123aabb981badfcd38c3d4125f5ad0f0e011",
+    "72a5e418968ebc00005c9357a5d9c229059fa764652b086820e1e1cfb53c0632",
+    "72e0834c128efc8cb36c526ad300c55395c309b77b05e562c85e1466ec2ac222",
+    "75241c1056bbbb43202c90bc04c30ce27938cbae967f073f7f272f9077c30ee5",
+    "757171e07b910c6e31ae2ceee4e118555bef4415bc6969979dcdff22dba5decf",
+    "7586c4c4da8b4e5237faf94e42078807315b15ab674b56ea9d7940632648762d",
+    "7654e74656915a729b61beed97a0a7782143f42022f4754359d06a53ce74c905",
+    "77a42086227c30d4116fcc6cdf394249fb586ed8e77cc67f95eda0b4927c4728",
+    "78c3531fea1869e0df076d48ef29fef84a47f6e1f73f7183bc481a4373ec8be7",
+    "7a1853a01ed1c6ec8ecacc29bf34d2b9264452cef7d0853456990e130f7ab4fe",
+    "7a8eaeafe2d5dbb5beec61a964487de7ad010b85a4fdb927db436e3a3ff241a5",
+    "7ae7c467c7cfa780b593c57f202b9073ac09bc1f7f1ead358400bdba995e84a0",
+    "7ba76fbdf74986b19f7119e21636d09835a6088014b4f38b3dc3348b94d489c7",
+    "7c2343a6679ad6c08ced7ebe6b0f071e6d8ccb2d18767b52808a2c81f9fa2c3b",
+    "7c8a607473734eba9e7544f574978a6aea043e7336790df708ad329c0504d29c",
+    "7d2a19d9f85a17276026b065696faa0ef12425d113616324246adefefdb7d5a4",
+    "7d3186d9908a76c857c4c9a7f9bae209773fe2b401aa9cf3ba337a1f87b963d9",
+    "7d9f8ea2598dd1c5a0b1751766f9f4a396bc222fb421422f2afe23ea7e0815b4",
+    "7f222acf7618e98a90a05241dbf015e66c08ba948a55e33fa71e51adbc01876c",
+    "7fd3ac2fbb986a09fa0df20cbf96d7b6e0bb668af645fed9a1afacfe6059c5fc",
+    "8762848a342ab83ce2fc4df8162fae623b08e45d83abd4b43c8043e605fb7945",
+    "887ee9dc4e7e76a7a227a792d8b2eeccc7cecfd5e7052317b9e467269db7563e",
+    "893e4394f354776d8d1c5bf13c36fe2da0a41063143b1e1c4df282cac9b226c3",
+    "8bbb952d3b3ffaec66ac46041a2c7edb2b2ad74c80bb43edccf370369797ab34",
+    "8c8ef47e4834be6775a41a9738432e2574cb337faeff24be9e263166eb790721",
+    "8cbb7fe8d188b31a521e0a9853f34dc16731078f48c0a80e3cdd77f1e2c8d965",
+    "8ea981742d1e9c57bc7e5d58e7c179edebc91b7d2f96671832a727c403f5da3f",
+    "8ec1e430d6ed9dbf05dd860320ce406180c6862f1a4083540044dbd6956fc680",
+    "9128c471fffb97d3fd59fcd1af6a63b473d5a94d813dec54de264775f90f22a0",
+    "916abd159c9bd7e2a12e9db7ac51396aa73aabfd4160bb5513a7252d265996ef",
+    "921734ef711f399563b579dd87905ebba7fa690ac8df7cf11966863359c80bb2",
+    "9445ed2b95e86a91e0f1f4fe4daca4e4d53d57d4e2a6a99b809dae96c20eae3f",
+    "975cf5f85bd79bae70f2fb17d98bb16f29d8986e2b1b46f8fc2b264afcea70e3",
+    "978778432ee5917af162b4e140ca52053d8962b60e9f15b4c1ad47dbbe8e008c",
+    "9a659c8718959749af310ef160c9bd124869a9ef4122d38aab642c19f1a531af",
+    "9e4519e0d6db7e9460c76924bce32edd8aa81808137b7d922117284ac4dc9d1a",
+    "9ff9e19f701fc84bac51024fa1a662aeac157dea6f96edf60715d5b3f3331d20",
+    "a2c2e62cd068d6eb68f9e4fbb941051d3f7d3610101509900dbd6e09ef24d020",
+    "a33fab81617397ace5d7c571e987f3916a38a639b410baed3bcce16aea066354",
+    "a4cfce1f8dd61016e1b67793c5b18a3b26fc51208cd5f2b579c065f9449ffb50",
+    "a56eabd9d5517caf486b24e3a72de1d00482c587d876fa22a10311738f895cbf",
+    "a964860699514ddbf6cf4bd8d9a58c6d35c1e94a9d2ce80102788474682fb6c4",
+    "a9c73eca4e1bd234cac58dc05d3e8d74238c8ef23b9ab10f045102d93f18ba89",
+    "a9cfa6e81493187cb5f8b801afa6f4c9204ee99db7a5e183e6163d63c573c096",
+    "ac2555cafdde1de221b191399cfde07ab577e2538510b5c46cba25bf9da3ff62",
+    "ad6d9c151ee7109e897fdf72ce54af15e0d5a7b43b1c9decdf8dd54d5628e055",
+    "adc44e230ad0e9a4132e089c0eb3bc08ca57225f05628e213b183694c7def3a9",
+    "addcc0236f7780923f152c465c90c3a0b348e5fcf47289691db2037c2242167c",
+    "aebe37e4fdfc5ac2f72855db55c44ab071a7ab1ccdbdc5dfd55fd0c9c8be1962",
+    "b044829d3e556fece686a3cf32ec7261c6999057295d61dffe109071b888a5ec",
+    "b09b6dcdc4550b3d34d9fcad8de202242073831486ac22de949af4403de50e11",
+    "b15806943a11b5e24dcd9a3d37f3ec554c4340ca7353635b40d2c1d35ada63cf",
+    "b1cc62cb1885a569e4aef2c887d4815c41e17f065ffb89cd28c4eff2e8c65c10",
+    "b219c85ee037d6b301beba4b52bc198f2ae6ef2753e952eb95f8b78d5fafc32d",
+    "b4360920ba95c6e6ee644a38382ea87147ef5a731dbb2bbf92a0ca7bf9317113",
+    "b61eb5b5aa7f7a5927444673f1854a46829970beed649d9ab42081b08e039521",
+    "b8402876769f8e25d4590f8fb4c849ae9beff293270cfa47b93d7781a82c915e",
+    "b9b87b5861fb35939f1086e877c6219f2b108027fe14ca8fcd765c30072ffc84",
+    "baed6f5ccf4a21538f0b14545714092480cc8fcdf9ed3115249f12db071ce59c",
+    "bb06058200af80489287bc9731e57ef5412da2754cba3fe852ec2d898a10b1a2",
+    "bbfb96bf9f8885bf4aaa32c6ab823fe9eb021e6e76e58626c7797869d63f755d",
+    "be351724ef05fdc90a747321c361b5106ee3b08f0fedadc9a443b56b40beaece",
+    "bf1ad4c6618fad14bacc023da3ee1d200eb59b07e64806816d13385495dc27aa",
+    "c1a720d6e4a13319c393b6277bba65f1278c9ba714ddd3b52667f60475ebcde1",
+    "c31dd5b402d71b0c40c3d5f69748865fa3f20f410e20d34f3c12ed3f227fd0ed",
+    "c3c0d342a78416c0cb12e1e5cc099b9ee82593aff88e94b0b21f222e5da317bd",
+    "c4da5ccc22256440da8f147e11b5deac2ea3eed8f660e3cb74b3b34932db896c",
+    "c502adafd4ddc9d819061a19676d10988f2779aa5e1edd82195126d4ea856a45",
+    "c5e77da9ebcf76242744a277449238667e00c22357e4c141aca569b11eff6967",
+    "c79f2d9b862028f74a4ad32d4c6b0e3c7b4a9b6dcb8080ce6e2b6e60d1bc6a2c",
+    "c7be07d7627c418806752f35a3bc46b0970701c0cdf11653308c72b3e55f6e1b",
+    "c7c0d12a01edea789d28aca39a3c0f91498964e00399894d1b2b30183a282519",
+    "ca3eaacfdfabadadbad575b8d56e1b4352036b81b370251159e77a2e463d4ea9",
+    "ca43d15ad3ac0465f57d646e2da1d4095ddd901442ac6f160f1ad04d8749aa95",
+    "cbc8597715a0c588f4398361a9fbfc141217b27599b7ac1f9cce0fc73c3e926d",
+    "ce096ad8303c99178aabfc812c3086df876c08bb61be811f8073359e204785b7",
+    "d11f95a8cc66ebd2cac32def4a053a69fa30de318c743df0ed23ed91f999c608",
+    "d15c4ce621fe50f05193d9bb2e5190d85baee62d6d4b7f2e2c08e5677b2820fc",
+    "d165576fff964f8b3202b0e252fd6a21c8e341ecaed2ef4a1935ac37ab8c37f6",
+    "d473674665f01a020700e734e80346a96a5c8d3d089b1eadfa1d39552f0eb96d",
+    "d67b2c2345bf33ba047826e9ee0483df91b82a39ebf4ad86e8e01ae8f4a1835e",
+    "d803fc8d9b7b7a66085645ff7290d849f55f4837354f10f44e4187001d8a84ed",
+    "db84c11b91a3d91481d40666dc2079d8f7bc633a9b054f25d09313f07dbcd42c",
+    "e079e14d39515a425737d8d7362f28525ee1ddd104bc1031dc068a1d2e859e97",
+    "e7568214f7edf97cfca6a9f7c813d72f6708fc674faeea4a52bf50b8bba6e6af",
+    "e9f32ebb9a69079a031ff8c268eaee6117391bd54265c8a33010fa34419521c7",
+    "ead28b82d8b9bbd151f6c1aaa8b85c2652fe69c1005d614737e04e8b0d1dec3c",
+    "ec056f04916633f5339ae7c5b19357cd5cfe3f1cb3ec287c3546e4c323be5477",
+    "ec970ab110dc368204fe1dfd79d4e43cafa132d7a2687b87ed4143f2bab5548f",
+    "ee6c4c31616fd62c35705ece69813de69a4564925711e4fb87a58f0e87870740",
+    "f09316809b7b660c1364f6346e51d2c106b236d154e0bea0449d3956e90b34a7",
+    "f0a321dd95c5d36c6dd675e9becdc0529e12a14c7484e0567603dac7dd398ad6",
+    "f38e23bf937ba8d0a504fe190551e78457503a62bb0e790a8fa27ccdb3833bf2",
+    "f7d249989eedf273d34b6539583a6b6d041e757da4ce6441b4fd71ac1a06634a",
+    "f85da7aabd27740b02764f1f7e2e3fe7e31db19ef9930c80d46efc127c0d8761",
+    "faaf03b6b91ebd95742782400ed393966f28a2bb6557098e42c15bf9824415a4",
+    "fb61f2353ce023ce96f039f8049e7044c8efccb14bb82b4f919a368cb978ab62",
+    "fd0e4186d2e65a7cbaff82c3d88c90d0cb521f6d23dba6ea1fbfa20434da3470",
+    "fdb595e4b8a0fc1a195e38245981cd7125fc5a9091b0b4ec74dcbfc02aea0820",
+    "fe6b990c4e3e55c016153a3a29c7fb0da021f8d1d2206004366d730d8a10c08d",
+    "fec6caae76d73c6deb111dfe3922be3a3b67dfc019928bcad0931818c102367f",
+    "fee834fd2b6d1aa178ec1e7bd165405eef81a4a0f808331b67d8ddd7e8ed6ea7"
+  ],
+  "started_at": "2026-10-13T20:59:39+00:00",
+  "status": "complete_time_budget",
+  "target_site_rows": [
+    {
+      "clazz": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd",
+      "descriptor": "(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V",
+      "exceptionClass": "org.apache.solr.common.SolrException",
+      "kind": "THROW",
+      "line": 278,
+      "method": "deleteCore",
+      "siteId": "<org.apache.solr.cloud.api.collections.DeleteReplicaCmd: void deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)>#u118",
+      "unitIndex": 118
+    },
+    {
+      "clazz": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd",
+      "descriptor": "(Lorg/apache/solr/common/cloud/Slice;Ljava/lang/String;Ljava/lang/String;Lorg/apache/solr/common/cloud/ZkNodeProps;Ljava/lang/String;Lorg/apache/solr/common/util/NamedList;Ljava/lang/Runnable;Z)V",
+      "kind": "BRANCH",
+      "line": 277,
+      "method": "deleteCore",
+      "siteId": "<org.apache.solr.cloud.api.collections.DeleteReplicaCmd: void deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)>#u105",
+      "unitIndex": 105
+    }
+  ],
+  "terminal": true,
+  "trial_elapsed_seconds": 1816.955,
+  "trials": [
+    {
+      "elapsed_seconds": 32.929,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "cf442c193d196af9",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshAliases(org.apache.solr.common.cloud.ZkStateReader$AliasesManager)>#u7"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0001",
+      "post_fault_target_reached": false,
+      "result": "trials/r0001/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 32.479,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "4b4b0d06a3b6a0ea",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0002",
+      "post_fault_target_reached": false,
+      "result": "trials/r0002/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.639,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "1c164f39b9475c60",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0003",
+      "post_fault_target_reached": false,
+      "result": "trials/r0003/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.031,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "275c6c9e828d1868",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0004",
+      "post_fault_target_reached": false,
+      "result": "trials/r0004/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.84,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "5bd4eeab9de8f895",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u22"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0005",
+      "post_fault_target_reached": false,
+      "result": "trials/r0005/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 23.351,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "63f5c71069003e5a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.AutoScalingConfig getAutoScalingConfig(org.apache.zookeeper.Watcher)>#u8"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0006",
+      "post_fault_target_reached": false,
+      "result": "trials/r0006/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 31.625,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "b76f183144e98b6d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0007",
+      "post_fault_target_reached": false,
+      "result": "trials/r0007/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.182,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "313ddd9dc9ae2a1e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshLegacyClusterState(org.apache.zookeeper.Watcher)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0008",
+      "post_fault_target_reached": false,
+      "result": "trials/r0008/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.487,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "aa3952df26c47d3d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean update()>#u11"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0009",
+      "post_fault_target_reached": false,
+      "result": "trials/r0009/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 32.33,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "dc95d8db241a515c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0010",
+      "post_fault_target_reached": false,
+      "result": "trials/r0010/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.933,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "7945587925c223ab",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshCollectionList(org.apache.zookeeper.Watcher)>#u6"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0011",
+      "post_fault_target_reached": false,
+      "result": "trials/r0011/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.59,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a86a1bfeb2dd45f2",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0012",
+      "post_fault_target_reached": false,
+      "result": "trials/r0012/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 32.977,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "6232e903e685648e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void createClusterStateWatchersAndUpdate()>#u4"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0013",
+      "post_fault_target_reached": false,
+      "result": "trials/r0013/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 32.328,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "ddb3ad425ae9fd06",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0014",
+      "post_fault_target_reached": false,
+      "result": "trials/r0014/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.89,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "89764b06b06d6a8d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u31"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0015",
+      "post_fault_target_reached": false,
+      "result": "trials/r0015/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 36.191,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        }
+      ],
+      "injection_specific_target_reached": true,
+      "junit_passed": true,
+      "name": "r0016",
+      "post_fault_target_reached": true,
+      "result": "trials/r0016/result.json",
+      "status": "checked",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.38,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "a4c012b7b9b7f01a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshLiveNodes(org.apache.zookeeper.Watcher)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0017",
+      "post_fault_target_reached": false,
+      "result": "trials/r0017/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.741,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "5415bb835280a7a5",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkCmdExecutor: void ensureExists(java.lang.String,byte[],org.apache.zookeeper.CreateMode,org.apache.solr.common.cloud.SolrZkClient,int)>#u6"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0018",
+      "post_fault_target_reached": false,
+      "result": "trials/r0018/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 20.838,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "9df1a5697030f015",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0019",
+      "post_fault_target_reached": false,
+      "result": "trials/r0019/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 20.586,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0020",
+      "post_fault_target_reached": false,
+      "result": "trials/r0020/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.787,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "43c17fbb4705898a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.SolrZkClient: org.apache.zookeeper.data.Stat setData(java.lang.String,byte[],boolean)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0021",
+      "post_fault_target_reached": false,
+      "result": "trials/r0021/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 36.445,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "4705163090008cd2",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$StateWatcher: void refreshAndWatchChildren()>#u6"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0022",
+      "post_fault_target_reached": false,
+      "result": "trials/r0022/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.371,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "b76f183144e98b6d",
+          "ordinal": 104,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0023",
+      "post_fault_target_reached": false,
+      "result": "trials/r0023/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.889,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "441078b3bfbf9fae",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.util.List listData(java.lang.String,org.apache.zookeeper.Watcher)>#u4"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0024",
+      "post_fault_target_reached": false,
+      "result": "trials/r0024/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 42.078,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "e7617171e82942dd",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0025",
+      "post_fault_target_reached": false,
+      "result": "trials/r0025/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 31.154,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "18651540af60cb8d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0026",
+      "post_fault_target_reached": false,
+      "result": "trials/r0026/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 22.348,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "844434c8d8001706",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.ZkDistributedQueue: void offer(byte[])>#u20"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0027",
+      "post_fault_target_reached": false,
+      "result": "trials/r0027/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 37.08,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "44416a4df748f97b",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0028",
+      "post_fault_target_reached": false,
+      "result": "trials/r0028/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 31.72,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "fe3cce631445b711",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0029",
+      "post_fault_target_reached": false,
+      "result": "trials/r0029/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.13,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "dc78c4538ad3c79c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ClusterProperties: java.util.Map getClusterProperties()>#u4"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0030",
+      "post_fault_target_reached": false,
+      "result": "trials/r0030/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.425,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "42f5678bcdc9317b",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean update()>#u11"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0031",
+      "post_fault_target_reached": false,
+      "result": "trials/r0031/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.651,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "dda1aadb5b008dca",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u22"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0032",
+      "post_fault_target_reached": false,
+      "result": "trials/r0032/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 31.271,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node3#epoch0",
+          "occurrenceId": "01929bab7394d62d",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: org.apache.solr.cloud.OverseerTaskQueue$QueueEvent offer(byte[],long)>#u29"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0033",
+      "post_fault_target_reached": false,
+      "result": "trials/r0033/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.782,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "e064565a73df80e1",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0034",
+      "post_fault_target_reached": false,
+      "result": "trials/r0034/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.942,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "ac2c5daa5f0e04d7",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0035",
+      "post_fault_target_reached": false,
+      "result": "trials/r0035/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.631,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "3bb205f6c094116c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: org.apache.solr.client.solrj.cloud.autoscaling.VersionedData getData(java.lang.String,org.apache.zookeeper.Watcher)>#u6"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0036",
+      "post_fault_target_reached": false,
+      "result": "trials/r0036/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 32.97,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "a4c012b7b9b7f01a",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshLiveNodes(org.apache.zookeeper.Watcher)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0037",
+      "post_fault_target_reached": false,
+      "result": "trials/r0037/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.367,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "313ddd9dc9ae2a1e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshLegacyClusterState(org.apache.zookeeper.Watcher)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0038",
+      "post_fault_target_reached": false,
+      "result": "trials/r0038/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.936,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "d9590c03f3511889",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0039",
+      "post_fault_target_reached": false,
+      "result": "trials/r0039/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 31.823,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "cf442c193d196af9",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshAliases(org.apache.solr.common.cloud.ZkStateReader$AliasesManager)>#u7"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0040",
+      "post_fault_target_reached": false,
+      "result": "trials/r0040/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.629,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "7945587925c223ab",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void refreshCollectionList(org.apache.zookeeper.Watcher)>#u6"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0041",
+      "post_fault_target_reached": false,
+      "result": "trials/r0041/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 39.039,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "4f65b21f4701233f",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$StateWatcher: void refreshAndWatchChildren()>#u6"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0042",
+      "post_fault_target_reached": false,
+      "result": "trials/r0042/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.731,
+      "faults": [
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "node3#epoch0",
+          "occurrenceId": "6b478ca2541b2ae3",
+          "ordinal": 52,
+          "siteId": "<org.apache.solr.servlet.SolrRequestParsers: long parseFormDataContent(java.io.InputStream,long,java.nio.charset.Charset,java.util.Map,boolean)>#u25"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0043",
+      "post_fault_target_reached": false,
+      "result": "trials/r0043/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 29.678,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "fe3cce631445b711",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,org.apache.solr.client.solrj.ResponseParser,java.lang.String)>#u23"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0044",
+      "post_fault_target_reached": false,
+      "result": "trials/r0044/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 34.821,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "755c6b91665e2a9c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: void setData(java.lang.String,byte[],int)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0045",
+      "post_fault_target_reached": false,
+      "result": "trials/r0045/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 30.759,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "dc95d8db241a515c",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.util.FastInputStream: int readWrappedStream(byte[],int,int)>#u9"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0046",
+      "post_fault_target_reached": false,
+      "result": "trials/r0046/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 20.984,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "java.io.IOException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "a616a1a3751e3433",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.HttpSolrClient: org.apache.solr.common.util.NamedList request(org.apache.solr.client.solrj.SolrRequest,java.lang.String)>#u7"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0047",
+      "post_fault_target_reached": false,
+      "result": "trials/r0047/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.38,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a935430076d28799",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.client.solrj.impl.ZkDistribStateManager: boolean hasData(java.lang.String)>#u3"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0048",
+      "post_fault_target_reached": false,
+      "result": "trials/r0048/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 27.952,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "ddb3ad425ae9fd06",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: org.apache.solr.common.cloud.DocCollection fetchCollectionState(java.lang.String,org.apache.zookeeper.Watcher,java.lang.String)>#u12"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0049",
+      "post_fault_target_reached": false,
+      "result": "trials/r0049/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 32.793,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "2a18229c9f3e5d29",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: java.lang.String createData(java.lang.String,byte[],org.apache.zookeeper.CreateMode)>#u5"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0050",
+      "post_fault_target_reached": false,
+      "result": "trials/r0050/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 35.242,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "a23e2c41ba06ff3e",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.cloud.OverseerTaskQueue: void remove(org.apache.solr.cloud.OverseerTaskQueue$QueueEvent)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0051",
+      "post_fault_target_reached": false,
+      "result": "trials/r0051/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 36.56,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "collection-overseer#epoch0",
+          "occurrenceId": "35a49554b17188ce",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$LazyCollectionRef: org.apache.solr.common.cloud.DocCollection get(boolean)>#u24"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0052",
+      "post_fault_target_reached": false,
+      "result": "trials/r0052/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.13,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "42f5678bcdc9317b",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader$AliasesManager: boolean update()>#u11"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": false,
+      "name": "r0053",
+      "post_fault_target_reached": false,
+      "result": "trials/r0053/result.json",
+      "status": "lost_target",
+      "strict_injection": true,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    },
+    {
+      "elapsed_seconds": 33.264,
+      "faults": [
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup#epoch0",
+          "occurrenceId": "3d6723fcfe8e00e6",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ZkStateReader: void loadClusterProperties()>#u34"
+        },
+        {
+          "exceptionClass": "org.apache.zookeeper.KeeperException$ConnectionLossException",
+          "node": "node1#epoch0",
+          "occurrenceId": "b174ac1b397dbf55",
+          "ordinal": 1,
+          "siteId": "<org.apache.solr.common.cloud.ClusterProperties: java.util.Map getClusterProperties()>#u4"
+        }
+      ],
+      "injection_specific_target_reached": false,
+      "junit_passed": true,
+      "name": "r0054",
+      "post_fault_target_reached": false,
+      "result": "trials/r0054/result.json",
+      "status": "unmatched",
+      "strict_injection": false,
+      "target_exception_candidate": false,
+      "target_exception_triggered": false,
+      "unmatched_retry": 0
+    }
+  ],
+  "unmatched_retries": {
+    "1fa31cb6df7a13622c7ef5bda5285bf5c60bc1551da4ec4a211074e71823076a": 1,
+    "481d7206e6401956798dbc7eeb5a55cf0126b13ef525b4cf1a19c49f3796e279": 1,
+    "60d8549ef4cc7830975d71ba51b23a4886ef529dcb5dfc45c8d08c2ca4f0f8ef": 1,
+    "665b2acfe444e72e63d295038a3fb8545b5a7264db313da2b6996f79dc239950": 1,
+    "887ee9dc4e7e76a7a227a792d8b2eeccc7cecfd5e7052317b9e467269db7563e": 1,
+    "916abd159c9bd7e2a12e9db7ac51396aa73aabfd4160bb5513a7252d265996ef": 1,
+    "978778432ee5917af162b4e140ca52053d8962b60e9f15b4c1ad47dbbe8e008c": 1,
+    "9ff9e19f701fc84bac51024fa1a662aeac157dea6f96edf60715d5b3f3331d20": 1,
+    "a33fab81617397ace5d7c571e987f3916a38a639b410baed3bcce16aea066354": 1,
+    "a9cfa6e81493187cb5f8b801afa6f4c9204ee99db7a5e183e6163d63c573c096": 1,
+    "b044829d3e556fece686a3cf32ec7261c6999057295d61dffe109071b888a5ec": 1,
+    "bbfb96bf9f8885bf4aaa32c6ab823fe9eb021e6e76e58626c7797869d63f755d": 1,
+    "bf1ad4c6618fad14bacc023da3ee1d200eb59b07e64806816d13385495dc27aa": 1,
+    "c4da5ccc22256440da8f147e11b5deac2ea3eed8f660e3cb74b3b34932db896c": 1,
+    "ca3eaacfdfabadadbad575b8d56e1b4352036b81b370251159e77a2e463d4ea9": 1,
+    "ce096ad8303c99178aabfc812c3086df876c08bb61be811f8073359e204785b7": 1,
+    "d473674665f01a020700e734e80346a96a5c8d3d089b1eadfa1d39552f0eb96d": 1,
+    "d803fc8d9b7b7a66085645ff7290d849f55f4837354f10f44e4187001d8a84ed": 1,
+    "f09316809b7b660c1364f6346e51d2c106b236d154e0bea0449d3956e90b34a7": 1,
+    "f7d249989eedf273d34b6539583a6b6d041e757da4ce6441b4fd71ac1a06634a": 1,
+    "f85da7aabd27740b02764f1f7e2e3fe7e31db19ef9930c80d46efc127c0d8761": 1,
+    "faaf03b6b91ebd95742782400ed393966f28a2bb6557098e42c15bf9824415a4": 1,
+    "fd0e4186d2e65a7cbaff82c3d88c90d0cb521f6d23dba6ea1fbfa20434da3470": 1,
+    "fec6caae76d73c6deb111dfe3922be3a3b67dfc019928bcad0931818c102367f": 1
+  },
+  "updated_at": "2026-10-13T22:42:07+00:00"
+}
