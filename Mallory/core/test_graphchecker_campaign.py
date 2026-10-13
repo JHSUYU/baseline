@@ -12,6 +12,10 @@ from unittest.mock import patch
 
 from Mallory.core.graphchecker_campaign import (_archive_jsonl, _archive_stat,
                                                 _archive_trace_pair, _trace_digest,
+                                                _prior_trace_metadata,
+                                                _target_throw_count,
+                                                _trial_scratch_root,
+                                                _validate_scratch_root,
                                                 _check_woven_major,
                                                 _door_types, _runner, _tree_sha256,
                                                 _trial_verdict,
@@ -29,6 +33,86 @@ class GraphCheckerCampaignTest(unittest.TestCase):
     FAULT = {"siteId": "door", "node": "nn-1#epoch0",
              "occurrenceId": "occ-A", "ordinal": 1,
              "exceptionClass": "java.io.IOException"}
+
+    def test_prior_trace_receipt_reuses_exact_throw_count_without_decoding(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "graphchecker-trace.jsonl"
+            source.write_text("".join(json.dumps(row) + "\n" for row in self.rows()))
+            receipt = _archive_jsonl(source, root)
+            archived = root / receipt["path"]
+            count = _target_throw_count(self.rows(), self.TARGET)
+            self.assertEqual(1, count)
+            (root / "result.json").write_text(json.dumps({
+                "backend": "graphchecker_native", "status": "pass",
+                "case_id": "HDFS-01", "trace_sha256": receipt["content_sha256"],
+                "target_throw_count_for_differential": count,
+                "target_throw_count_scope": {
+                    "site_id": "throw", "exception_class": "java.io.IOException"},
+                "artifacts": {"window_trace": receipt}}))
+            with patch("Mallory.core.graphchecker_campaign.scan_window_trace",
+                       side_effect=AssertionError("prior trace was rescanned")), patch(
+                       "Mallory.core.graphchecker_campaign._trace_digest",
+                       side_effect=AssertionError("prior trace was decompressed")):
+                self.assertEqual((1, receipt["content_sha256"], receipt["sha256"]),
+                                 _prior_trace_metadata(archived, self.TARGET,
+                                                       "HDFS-01"))
+            result_path = root / "result.json"
+            sealed = result_path.read_text()
+            altered = json.loads(sealed)
+            altered["target_throw_count_scope"]["site_id"] = "another-throw"
+            result_path.write_text(json.dumps(altered))
+            with self.assertRaisesRegex(ValueError, "metadata differs"):
+                _prior_trace_metadata(archived, self.TARGET, "HDFS-01")
+            result_path.write_text(sealed)
+            with archived.open("ab") as output:
+                output.write(b"changed")
+            with self.assertRaisesRegex(ValueError, "archive .*changed"):
+                _prior_trace_metadata(archived, self.TARGET, "HDFS-01")
+
+    def test_prior_trace_frozen_gzip_receipt_uses_full_scan(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "graphchecker-trace.jsonl"
+            source.write_text("".join(json.dumps(row) + "\n" for row in self.rows()))
+            receipt = _archive_jsonl(source, root)
+            archived = root / receipt["path"]
+            (root / "result.json").write_text(json.dumps({
+                "backend": "graphchecker_native", "status": "invalid_graphchecker_trace",
+                "case_id": "HDFS-01", "trace_sha256": receipt["content_sha256"],
+                "artifacts": {"window_trace": receipt}}))
+            with patch("Mallory.core.graphchecker_campaign.scan_window_trace",
+                       wraps=scan_window_trace) as scanned:
+                count, content, archive = _prior_trace_metadata(
+                    archived, self.TARGET, "HDFS-01")
+            self.assertEqual((1, receipt["content_sha256"], receipt["sha256"]),
+                             (count, content, archive))
+            self.assertEqual(1, scanned.call_count)
+
+    def test_prior_trace_old_plain_path_keeps_original_oracle(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            trace = Path(temporary) / "graphchecker-trace.jsonl"
+            trace.write_text("".join(json.dumps(row) + "\n" for row in self.rows()))
+            count, content, archive = _prior_trace_metadata(trace, self.TARGET,
+                                                            "HDFS-01")
+            self.assertEqual((1, _trace_digest(trace)[0], None),
+                             (count, content, archive))
+            self.assertEqual(0, _target_throw_count([{
+                "kind": "TARGET_THROW", "siteId": "throw",
+                "exceptionClass": "java.io.IOException"}], self.TARGET))
+
+    def test_scratch_root_override_and_default(self):
+        default = Path("/dev/shm") if Path("/dev/shm").is_dir() else None
+        self.assertEqual(default, _trial_scratch_root({}))
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.assertEqual(root, _validate_scratch_root(str(root)))
+            self.assertEqual(root, _trial_scratch_root({"scratch_root": root}))
+            alias = root / "alias"
+            alias.symlink_to(root, target_is_directory=True)
+            for invalid in ("relative/path", str(root / "missing"), str(alias)):
+                with self.assertRaisesRegex(ValueError, "scratch_root"):
+                    _validate_scratch_root(invalid)
 
     def rows(self):
         return [
@@ -650,6 +734,11 @@ class GraphCheckerCampaignTest(unittest.TestCase):
             config_path = root / "config.json"
             config_path.write_text(json.dumps(raw))
             config = load_config(config_path)
+            self.assertIsNone(config["scratch_root"])
+            raw["scratch_root"] = str(root)
+            config_path.write_text(json.dumps(raw))
+            self.assertEqual(root, load_config(config_path)["scratch_root"])
+            raw.pop("scratch_root")
             raw["soot_dependency_classpath"] = dependencies[::-1]
             config_path.write_text(json.dumps(raw))
             with self.assertRaisesRegex(ValueError, "ordered Soot dependency classpath"):

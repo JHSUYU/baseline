@@ -1,0 +1,2079 @@
+{
+  "schema_version": 1,
+  "as_of_utc": "2026-10-13",
+  "inventory_path": "Mallory/cases/inventory.json",
+  "inventory_sha256": "4966dae655433f56caee39298120fd87d28def86e934fe7d7d2115eaf340d924",
+  "scope": "Pinned original 102 only; the two additional known-issue controls are excluded. Eligibility and preparer support do not establish a completed healthy seed, fault campaign, or bug. Historical CrashFuzz results are not Mallory GraphChecker results.",
+  "counts": {
+    "cases": 102,
+    "by_system": {
+      "hbase": 30,
+      "hdfs": 38,
+      "solr": 21,
+      "zookeeper": 13
+    },
+    "source_test_gate": {
+      "blocked_original_cluster_junit": 5,
+      "eligible_original_cluster_junit": 97
+    },
+    "preparer_gate": {
+      "blocked_inventory_skipped_junit": 4,
+      "blocked_inventory_workload_target_mismatch": 1,
+      "compiled_input_expansion_required": 1,
+      "generic_inventory_preparer_available": 88,
+      "preparer_protocol_not_supported": 8
+    }
+  },
+  "phase_reuse": {
+    "static_scope": "once per immutable compiled case/classpath; regenerate on changed source, protocol overlay, or classpath",
+    "bytecode_weave": "once per immutable case campaign; receipt verified on reuse",
+    "healthy_trace": "one fault-free original JUnit run per campaign; archived and resumed",
+    "fault_trial_trace": "fresh original JUnit JVM and fresh dynamic trace/graph per fault sequence",
+    "current_avoidable_processing": "New trial receipts cache exact target-throw counts bound to archived trace SHA; old receipts retain full prior-trace scan. The runner still verifies selected woven class hashes per trial; no benchmark-backed change to that check.",
+    "code_evidence": [
+      "Mallory/core/graphchecker_fuzzer.py:run_campaign",
+      "Mallory/core/graphchecker_campaign.py:prepare",
+      "Mallory/core/graphchecker_campaign.py:run_trial",
+      "Mallory/core/graphchecker_trial.py:analyze_trial"
+    ],
+    "scratch_location": "New configs may set scratch_root to an existing absolute nonsymlink directory; absent key retains /dev/shm default. The trial trace remains fresh per fault sequence."
+  },
+  "high_impact_general_preparer_changes": [
+    {
+      "priority": 1,
+      "systems": [
+        "zookeeper"
+      ],
+      "affected_cases": [
+        "ZOOKEEPER-01",
+        "ZOOKEEPER-02",
+        "ZOOKEEPER-03",
+        "ZOOKEEPER-04",
+        "ZOOKEEPER-08",
+        "ZOOKEEPER-09",
+        "ZOOKEEPER-10",
+        "ZOOKEEPER-13"
+      ],
+      "change": "Extend the manifest-driven target scope and protocol bridge to client CONNECT/REQUEST, session-owner handoff, and observer proposal/commit envelopes. Keep exact runtime identities; do not declare per-case I/O doors."
+    },
+    {
+      "priority": 2,
+      "systems": [
+        "solr"
+      ],
+      "affected_cases": [
+        "SOLR-05"
+      ],
+      "change": "Finish generic ExecutorUtil one-use submit-to-worker context transfer and retain target attribution; source/test eligibility of skipped routed-alias cases must be solved separately with an unchanged eligible JUnit."
+    },
+    {
+      "priority": 3,
+      "systems": [
+        "hbase"
+      ],
+      "affected_cases": [
+        "HBASE-01",
+        "HBASE-02",
+        "HBASE-37"
+      ],
+      "change": "Assemble target modules from inventory into exact ordered compiled inputs (including hbase-zookeeper), then regenerate scope/weave; complete generic multicast listener and MetaTableAccessor Cell/ProcedureExecutor causal receipts."
+    },
+    {
+      "priority": 4,
+      "systems": [
+        "hdfs"
+      ],
+      "affected_cases": [
+        "HDFS-13"
+      ],
+      "change": "Keep source-backed original-JUnit alternate admission for an exact target mismatch (HDFS-13); require unchanged test pass and attributed target before fault campaign. HDFS-29 is a verified example of replacing a flaky pinned selector with an unchanged cluster JUnit. Preserve exact classpath and rescan after any overlay change."
+    },
+    {
+      "priority": 5,
+      "systems": [
+        "hbase",
+        "hdfs",
+        "solr",
+        "zookeeper"
+      ],
+      "affected_cases": [
+        "all eligible cases"
+      ],
+      "change": "Resolve all controlling guards by exact class/method/descriptor/site from static output, including multiple guards on the same source line; keep typed doors entirely Soot-selected and gate each case on an attributed healthy target."
+    }
+  ],
+  "cases": [
+    {
+      "case_id": "HBASE-01",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
+        "line": 1106,
+        "function": "org.apache.hadoop.hbase.client.ConnectionImplementation.locateRegionInMeta(org.apache.hadoop.hbase.TableName,byte[],boolean,boolean,int)",
+        "exception": "org.apache.hadoop.hbase.regionserver.RegionServerStoppedException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java"
+      },
+      "blockers": [
+        "Quality gate: ClusterStatusListener.deadServers writer/read-from is unobserved across multicast listener thread."
+      ],
+      "evidence": [
+        "Mallory/adapters/hbase/graphchecker_port/README.md:HBASE-01 deadServers paragraph"
+      ],
+      "source_receipts": {
+        "target_sha256": "f00ec999b43227553f89ecb859ccfe28e4f901adb0f2f37552096d1f72261184",
+        "test_sha256": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a"
+      }
+    },
+    {
+      "case_id": "HBASE-02",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/ConnectionImplementation.java",
+        "line": 911,
+        "function": "org.apache.hadoop.hbase.client.ConnectionImplementation.relocateRegion(org.apache.hadoop.hbase.TableName,byte[],int)",
+        "exception": "org.apache.hadoop.hbase.TableNotEnabledException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.client.TestConnectionImplementation#testMetaLookupThreadPoolCreated",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/client/TestConnectionImplementation.java"
+      },
+      "blockers": [
+        "Quality gate: accepted frozen campaign predates exact hbase:meta table-state Cell and ProcedureExecutor handoff; isolated unchanged-JUnit diagnostic has an exact STATE edge, pending fresh static/weave receipt."
+      ],
+      "evidence": [
+        "Mallory/adapters/hbase/graphchecker_port/README.md:MetaTableAccessor and ProcedureExecutor paragraphs",
+        "Mallory/adapters/hbase/graphchecker_port/NEXT_CASE_QUEUE.md:HBASE-02"
+      ],
+      "source_receipts": {
+        "target_sha256": "f00ec999b43227553f89ecb859ccfe28e4f901adb0f2f37552096d1f72261184",
+        "test_sha256": "78dd18f5eaaf36ae9f2cad8538ca8536b857624a2fd9e0c81dd785951837342a"
+      }
+    },
+    {
+      "case_id": "HBASE-04",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+        "line": 1263,
+        "function": "org.apache.hadoop.hbase.client.HBaseAdmin.flushAsync(org.apache.hadoop.hbase.TableName,java.util.List)",
+        "exception": "org.apache.hadoop.hbase.TableNotEnabledException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.mob.TestMobStoreScanner#testMobStoreScanner",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/mob/TestMobStoreScanner.java"
+      }
+    },
+    {
+      "case_id": "HBASE-07",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-client/src/main/java/org/apache/hadoop/hbase/client/HBaseAdmin.java",
+        "line": 2788,
+        "function": "org.apache.hadoop.hbase.client.HBaseAdmin.restoreSnapshot(java.lang.String,boolean,boolean)",
+        "exception": "org.apache.hadoop.hbase.TableNotDisabledException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.snapshot.TestRestoreFlushSnapshotFromClient#testRestoreSnapshot",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/snapshot/TestRestoreFlushSnapshotFromClient.java"
+      }
+    },
+    {
+      "case_id": "HBASE-08",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/ClusterSchemaServiceImpl.java",
+        "line": 116,
+        "function": "org.apache.hadoop.hbase.master.ClusterSchemaServiceImpl.getNamespace(java.lang.String)",
+        "exception": "org.apache.hadoop.hbase.NamespaceNotFoundException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java"
+      }
+    },
+    {
+      "case_id": "HBASE-10",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "line": 757,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "exception": "org.apache.hadoop.hbase.HBaseIOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java"
+      }
+    },
+    {
+      "case_id": "HBASE-11",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "line": 760,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "exception": "org.apache.hadoop.hbase.client.DoNotRetryRegionException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java"
+      }
+    },
+    {
+      "case_id": "HBASE-12",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/AssignmentManager.java",
+        "line": 763,
+        "function": "org.apache.hadoop.hbase.master.assignment.AssignmentManager.preTransitCheck(org.apache.hadoop.hbase.master.assignment.RegionStateNode,org.apache.hadoop.hbase.master.RegionState$State[])",
+        "exception": "org.apache.hadoop.hbase.DoNotRetryIOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java"
+      }
+    },
+    {
+      "case_id": "HBASE-13",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "line": 495,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "exception": "org.apache.hadoop.hbase.exceptions.MergeRegionException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.assignment.TestMergeTableRegionsProcedure#testMergeTwoRegions",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java"
+      }
+    },
+    {
+      "case_id": "HBASE-14",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "line": 500,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "exception": "org.apache.hadoop.hbase.UnknownRegionException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.assignment.TestMergeTableRegionsProcedure#testMergeTwoRegions",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java"
+      }
+    },
+    {
+      "case_id": "HBASE-15",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/MergeTableRegionsProcedure.java",
+        "line": 503,
+        "function": "org.apache.hadoop.hbase.master.assignment.MergeTableRegionsProcedure.prepareMergeRegion(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv)",
+        "exception": "org.apache.hadoop.hbase.exceptions.MergeRegionException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.assignment.TestMergeTableRegionsProcedure#testMergeTwoRegions",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestMergeTableRegionsProcedure.java"
+      }
+    },
+    {
+      "case_id": "HBASE-16",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+        "line": 371,
+        "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+        "exception": "org.apache.hadoop.hbase.HBaseIOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.assignment.TestCloseRegionWhileRSCrash#testRetryBackoff",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestCloseRegionWhileRSCrash.java"
+      }
+    },
+    {
+      "case_id": "HBASE-17",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+        "line": 379,
+        "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmClosed(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.assignment.TestReportRegionStateTransitionFromDeadServer#test",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestReportRegionStateTransitionFromDeadServer.java"
+      }
+    },
+    {
+      "case_id": "HBASE-18",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/assignment/TransitRegionStateProcedure.java",
+        "line": 325,
+        "function": "org.apache.hadoop.hbase.master.assignment.TransitRegionStateProcedure.confirmOpened(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,org.apache.hadoop.hbase.master.assignment.RegionStateNode)",
+        "exception": "org.apache.hadoop.hbase.HBaseIOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.assignment.TestExceptionInAssignRegion#testExceptionInAssignRegion",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/assignment/TestExceptionInAssignRegion.java"
+      }
+    },
+    {
+      "case_id": "HBASE-19",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "line": 135,
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "exception": "org.apache.hadoop.hbase.HBaseIOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java"
+      }
+    },
+    {
+      "case_id": "HBASE-20",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/master/procedure/ModifyTableProcedure.java",
+        "line": 139,
+        "function": "org.apache.hadoop.hbase.master.procedure.ModifyTableProcedure.preflightChecks(org.apache.hadoop.hbase.master.procedure.MasterProcedureEnv,java.lang.Boolean)",
+        "exception": "org.apache.hadoop.hbase.HBaseIOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.master.procedure.TestModifyTableProcedure#testModifyWillNotReopenRegions",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/master/procedure/TestModifyTableProcedure.java"
+      }
+    },
+    {
+      "case_id": "HBASE-21",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "line": 133,
+        "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceRegionCount(org.apache.hadoop.hbase.TableName,int)",
+        "exception": "org.apache.hadoop.hbase.quotas.QuotaExceededException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testRestoreSnapshotQuotaExceed",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java"
+      }
+    },
+    {
+      "case_id": "HBASE-22",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/namespace/NamespaceStateManager.java",
+        "line": 172,
+        "function": "org.apache.hadoop.hbase.namespace.NamespaceStateManager.checkAndUpdateNamespaceTableCount(org.apache.hadoop.hbase.TableName,int)",
+        "exception": "org.apache.hadoop.hbase.quotas.QuotaExceededException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.namespace.TestNamespaceAuditor#testTableOperations",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/namespace/TestNamespaceAuditor.java"
+      }
+    },
+    {
+      "case_id": "HBASE-23",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureCoordinator.java",
+        "line": 131,
+        "function": "org.apache.hadoop.hbase.procedure.ZKProcedureCoordinator.sendGlobalBarrierReached(org.apache.hadoop.hbase.procedure.Procedure,java.util.List)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.procedure.TestZKProcedureControllers#testZKCoordinatorControllerWithSingleMemberCohort",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedureControllers.java"
+      }
+    },
+    {
+      "case_id": "HBASE-24",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/procedure/ZKProcedureMemberRpcs.java",
+        "line": 210,
+        "function": "org.apache.hadoop.hbase.procedure.ZKProcedureMemberRpcs.startNewSubprocedure(java.lang.String)",
+        "exception": "java.lang.IllegalArgumentException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.procedure.TestZKProcedure#testMultipleMembers",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/procedure/TestZKProcedure.java"
+      }
+    },
+    {
+      "case_id": "HBASE-27",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+        "line": 1053,
+        "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.blockAndCheckIfStopped(org.apache.hadoop.hbase.zookeeper.ZKNodeTracker)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.TestClusterBootOrder#testBootRegionServerFirst",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestClusterBootOrder.java"
+      }
+    },
+    {
+      "case_id": "HBASE-28",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/HRegionServer.java",
+        "line": 2487,
+        "function": "org.apache.hadoop.hbase.regionserver.HRegionServer.putUpWebUI()",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.TestInfoServers#testInfoServersRedirect",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/TestInfoServers.java"
+      }
+    },
+    {
+      "case_id": "HBASE-29",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "line": 2263,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "exception": "org.apache.hadoop.hbase.NotServingRegionException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java"
+      }
+    },
+    {
+      "case_id": "HBASE-30",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "line": 2298,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.replay(org.apache.hbase.thirdparty.com.google.protobuf.RpcController,org.apache.hadoop.hbase.shaded.protobuf.generated.AdminProtos$ReplicateWALEntryRequest)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.replication.regionserver.TestRegionReplicaReplicationEndpoint#testRegionReplicaReplicationWith2Replicas",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/replication/regionserver/TestRegionReplicaReplicationEndpoint.java"
+      }
+    },
+    {
+      "case_id": "HBASE-31",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/RSRpcServices.java",
+        "line": 2011,
+        "function": "org.apache.hadoop.hbase.regionserver.RSRpcServices.throwOnWrongStartCode(long)",
+        "exception": "java.lang.Throwable"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.regionserver.TestRegionMove#testDisableAndMove",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionMove.java"
+      }
+    },
+    {
+      "case_id": "HBASE-32",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/regionserver/handler/RegionReplicaFlushHandler.java",
+        "line": 136,
+        "function": "org.apache.hadoop.hbase.regionserver.handler.RegionReplicaFlushHandler.triggerFlushInPrimaryRegion(org.apache.hadoop.hbase.regionserver.HRegion)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.regionserver.TestRegionReplicaFailover#testLotsOfRegionReplicas",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/TestRegionReplicaFailover.java"
+      }
+    },
+    {
+      "case_id": "HBASE-33",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+        "line": 141,
+        "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+        "exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.security.token.TestTokenAuthentication#testTokenCreation",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestTokenAuthentication.java"
+      },
+      "blockers": [
+        "Protocol validation pending: unchanged secure JUnit must prove key-sync/SASL pairing and target reach before a causal bug claim."
+      ],
+      "evidence": [
+        "Mallory/adapters/hbase/graphchecker_port/README.md:secure token/SASL coverage"
+      ],
+      "source_receipts": {
+        "target_sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f",
+        "test_sha256": "acc0dc7fc7a9a8ca9b20314e594ca9840e4afdd0676cdedaa321704b66cc5f2e"
+      }
+    },
+    {
+      "case_id": "HBASE-34",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/security/token/AuthenticationTokenSecretManager.java",
+        "line": 160,
+        "function": "org.apache.hadoop.hbase.security.token.AuthenticationTokenSecretManager.retrievePassword(org.apache.hadoop.hbase.security.token.AuthenticationTokenIdentifier)",
+        "exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.security.token.TestGenerateDelegationToken#testOnlyToken",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/security/token/TestGenerateDelegationToken.java"
+      },
+      "blockers": [
+        "Protocol validation pending: unchanged secure JUnit must prove key-sync/SASL pairing and target reach before a causal bug claim."
+      ],
+      "evidence": [
+        "Mallory/adapters/hbase/graphchecker_port/README.md:secure token/SASL coverage"
+      ],
+      "source_receipts": {
+        "target_sha256": "457a036cbbaaa6a1b0d66d2f4e35913933e431ef70409bbcaff7f2e59c43d51f",
+        "test_sha256": "0e3d43a6abde10e82b85aca87b1183b91138e36c3d1d3ea19421df01b80ea8bd"
+      }
+    },
+    {
+      "case_id": "HBASE-35",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-server/src/main/java/org/apache/hadoop/hbase/util/HBaseFsck.java",
+        "line": 2720,
+        "function": "org.apache.hadoop.hbase.util.HBaseFsck$3.visit(org.apache.hadoop.hbase.client.Result)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.util.TestHBaseFsckReplication#test",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/util/TestHBaseFsckReplication.java"
+      }
+    },
+    {
+      "case_id": "HBASE-37",
+      "system": "hbase",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "compiled_input_expansion_required",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hbase-zookeeper/src/main/java/org/apache/hadoop/hbase/zookeeper/MasterAddressTracker.java",
+        "line": 206,
+        "function": "org.apache.hadoop.hbase.zookeeper.MasterAddressTracker.getMasterInfoPort(org.apache.hadoop.hbase.zookeeper.ZKWatcher)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hbase.regionserver.http.TestRSStatusPage#testStatusPage",
+        "source_path": "hbase-server/src/test/java/org/apache/hadoop/hbase/regionserver/http/TestRSStatusPage.java"
+      },
+      "blockers": [
+        "Current HBase merged bytecode input omits hbase-zookeeper MasterAddressTracker; exact process dirs/classpath must include that module and be rescanned."
+      ],
+      "evidence": [
+        "Mallory/adapters/hbase/graphchecker_port/README.md:compiled input paragraph",
+        "Mallory/adapters/hbase/graphchecker_port/NEXT_CASE_QUEUE.md:HBASE-37"
+      ],
+      "source_receipts": {
+        "target_sha256": "6c32e94e40bf907b6949d26416c472bc014907f52bc47c0a7ce6d8c6537b0987",
+        "test_sha256": "8643f58811d877d807023356c7d23f8f55530d209f53a2367cfb221e95db292b"
+      }
+    },
+    {
+      "case_id": "HDFS-01",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSInputStream.java",
+        "line": 518,
+        "function": "org.apache.hadoop.hdfs.DFSInputStream.fetchBlockAt(long,long,boolean)",
+        "exception": "java.io.EOFException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestPread#testPreadDFS",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestPread.java"
+      }
+    },
+    {
+      "case_id": "HDFS-07",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 932,
+        "function": "org.apache.hadoop.hdfs.qjournal.server.Journal.acceptRecovery(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo,org.apache.hadoop.hdfs.qjournal.protocol.QJournalProtocolProtos$SegmentStateProto,java.net.URL)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testRecoverAfterIncompleteRecovery",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java"
+      }
+    },
+    {
+      "case_id": "HDFS-08",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 489,
+        "function": "org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testChangeWritersLogsInSync",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java"
+      }
+    },
+    {
+      "case_id": "HDFS-09",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 504,
+        "function": "org.apache.hadoop.hdfs.qjournal.server.Journal.checkRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)",
+        "exception": "java.lang.IllegalArgumentException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testSingleWriter",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java"
+      }
+    },
+    {
+      "case_id": "HDFS-10",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+        "line": 520,
+        "function": "org.apache.hadoop.hdfs.qjournal.server.Journal.checkWriteRequest(org.apache.hadoop.hdfs.qjournal.protocol.RequestInfo)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.qjournal.client.TestQuorumJournalManager#testSingleWriter",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/qjournal/client/TestQuorumJournalManager.java"
+      }
+    },
+    {
+      "case_id": "HDFS-11",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 555,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrieveDataEncryptionKey(int,byte[])",
+        "exception": "org.apache.hadoop.hdfs.protocol.datatransfer.InvalidEncryptionKeyException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java"
+      }
+    },
+    {
+      "case_id": "HDFS-12",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 514,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.retrievePassword(org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier)",
+        "exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testLongLivedClient",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java"
+      }
+    },
+    {
+      "case_id": "HDFS-13",
+      "system": "hdfs",
+      "source_test_gate": "blocked_original_cluster_junit",
+      "preparer_gate": "blocked_inventory_workload_target_mismatch",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 432,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode)",
+        "exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.blockmanagement.TestBlockTokenWithDFS#testEnd2End",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/blockmanagement/TestBlockTokenWithDFS.java"
+      },
+      "blockers": [
+        "Selected MiniCluster test executes six-argument token checkAccess overload; target is four-argument overload."
+      ],
+      "evidence": [
+        "Mallory/cases/inventory.json:HDFS-13.workload.source_oracle_warning",
+        "Mallory/cases/README.md:HDFS-13 workload mismatch"
+      ],
+      "source_receipts": {
+        "target_sha256": "d6f2dd33b2cb82484ab52262a05bf4445113e168de08479af00ad93969911957",
+        "test_sha256": "6f1bcf553da3930d339885c2228f4f66c157dd75671ee7fcfe6a722f5815fd0a"
+      }
+    },
+    {
+      "case_id": "HDFS-14",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/block/BlockTokenSecretManager.java",
+        "line": 412,
+        "function": "org.apache.hadoop.hdfs.security.token.block.BlockTokenSecretManager.checkAccess(org.apache.hadoop.security.token.Token,java.lang.String,org.apache.hadoop.hdfs.protocol.ExtendedBlock,org.apache.hadoop.hdfs.security.token.block.BlockTokenIdentifier$AccessMode,org.apache.hadoop.fs.StorageType[],java.lang.String[])",
+        "exception": "org.apache.hadoop.security.token.SecretManager$InvalidToken"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestEncryptedTransfer#testEncryptedReadDefaultAlgorithmCipherSuite",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestEncryptedTransfer.java"
+      }
+    },
+    {
+      "case_id": "HDFS-15",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
+        "line": 447,
+        "function": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo.commitBlock(org.apache.hadoop.hdfs.protocol.Block)",
+        "exception": "java.lang.IllegalStateException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.security.token.block.TestBlockToken#testBlockTokenInLastLocatedBlockLegacy",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/security/token/block/TestBlockToken.java"
+      }
+    },
+    {
+      "case_id": "HDFS-16",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockInfo.java",
+        "line": 428,
+        "function": "org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo.setGenerationStampAndVerifyReplicas(long)",
+        "exception": "java.lang.IllegalStateException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestClientProtocolForPipelineRecovery#testUpdatePipeLineAfterDNReg",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestClientProtocolForPipelineRecovery.java"
+      }
+    },
+    {
+      "case_id": "HDFS-17",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+        "line": 2851,
+        "function": "org.apache.hadoop.hdfs.server.blockmanagement.BlockManager$StatefulBlockInfo.<init>(org.apache.hadoop.hdfs.server.blockmanagement.BlockInfo,org.apache.hadoop.hdfs.protocol.Block,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$ReplicaState)",
+        "exception": "java.lang.IllegalArgumentException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.TestAddStripedBlocks#testAddUCReplica",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestAddStripedBlocks.java"
+      }
+    },
+    {
+      "case_id": "HDFS-18",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeDescriptor.java",
+        "line": 537,
+        "function": "org.apache.hadoop.hdfs.server.blockmanagement.DatanodeDescriptor.injectStorage(org.apache.hadoop.hdfs.server.blockmanagement.DatanodeStorageInfo)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.aliasmap.TestSecureAliasMap#testSecureConnectionToAliasMap",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/aliasmap/TestSecureAliasMap.java"
+      }
+    },
+    {
+      "case_id": "HDFS-19",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+        "line": 769,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BPOfferService.processCommandFromActive(org.apache.hadoop.hdfs.server.protocol.DatanodeCommand,java.net.InetSocketAddress)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSFinalize#testFinalize",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSFinalize.java"
+      }
+    },
+    {
+      "case_id": "HDFS-20",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+        "line": 606,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BPOfferService.updateActorStatesFromHeartbeat(org.apache.hadoop.hdfs.server.datanode.BPServiceActor,org.apache.hadoop.hdfs.server.protocol.NNHAStatusHeartbeat)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestStandbyIsHot#testStandbyIsHot",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestStandbyIsHot.java"
+      }
+    },
+    {
+      "case_id": "HDFS-21",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPServiceActor.java",
+        "line": 290,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BPServiceActor.checkNNVersion(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "exception": "org.apache.hadoop.hdfs.server.common.IncorrectVersionException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSInputStream#testSkipWithRemoteBlockReader",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSInputStream.java"
+      }
+    },
+    {
+      "case_id": "HDFS-22",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 396,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java"
+      }
+    },
+    {
+      "case_id": "HDFS-23",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 401,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java"
+      }
+    },
+    {
+      "case_id": "HDFS-24",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 424,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSUpgrade#testUpgrade",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSUpgrade.java"
+      }
+    },
+    {
+      "case_id": "HDFS-25",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 186,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.loadStorageDirectory(org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.datanode.StorageLocation,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java"
+      }
+    },
+    {
+      "case_id": "HDFS-26",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 626,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "exception": "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java"
+      }
+    },
+    {
+      "case_id": "HDFS-27",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockPoolSliceStorage.java",
+        "line": 510,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockPoolSliceStorage.doUpgrade(java.lang.String,org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,java.io.File,java.io.File,java.io.File,int,org.apache.hadoop.conf.Configuration)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDatanodeLayoutUpgrade#testUpgradeToIdBasedLayout",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDatanodeLayoutUpgrade.java"
+      }
+    },
+    {
+      "case_id": "HDFS-28",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "line": 539,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getDatanodeID(java.lang.String)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testLeaseRecoveryAfterFailover",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java"
+      }
+    },
+    {
+      "case_id": "HDFS-29",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "attributed_target_in_alternate_original_junit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "line": 578,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getActiveNamenodeForBP(java.lang.String)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestLeaseRecovery#testBlockSynchronization",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestLeaseRecovery.java"
+      },
+      "evidence": [
+        "Mallory/cases/inventory.json:HDFS-29.workload.selected_selector",
+        "Mallory/cases/inventory.json:HDFS-29.workload.healthy_pilot_attestation",
+        "data/mallory/healthy_pilots/HDFS-29.json",
+        "/proj/silentfailure-PG0/ZhenyuLi/mallory-hdfs29-lease-healthy-v3/config/workload-audit.json"
+      ]
+    },
+    {
+      "case_id": "HDFS-30",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+        "line": 583,
+        "function": "org.apache.hadoop.hdfs.server.datanode.BlockRecoveryWorker.getActiveNamenodeForBP(java.lang.String)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.ha.TestPipelinesFailover#testFailoverRightBeforeCommitSynchronization",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/ha/TestPipelinesFailover.java"
+      }
+    },
+    {
+      "case_id": "HDFS-31",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "line": 1835,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.getBPOSForBlock(org.apache.hadoop.hdfs.protocol.ExtendedBlock)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.datanode.TestDiskError#testDataTransferWhenBytesPerChecksumIsZero",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDiskError.java"
+      }
+    },
+    {
+      "case_id": "HDFS-32",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "line": 3822,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataNode.deleteBlockPool(java.lang.String,boolean)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.datanode.TestDeleteBlockPool#testDeleteBlockPool",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDeleteBlockPool.java"
+      },
+      "evidence": [
+        "HDFS adapter agent audit 2026-10-13: unchanged JUnit passed and target reached; campaign active"
+      ]
+    },
+    {
+      "case_id": "HDFS-33",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 259,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage$VolumeBuilder.build()",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.datanode.TestDataNodeHotSwapVolumes#testAddOneNewVolume",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/datanode/TestDataNodeHotSwapVolumes.java"
+      }
+    },
+    {
+      "case_id": "HDFS-34",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 744,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java"
+      }
+    },
+    {
+      "case_id": "HDFS-35",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 752,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doTransition(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo,org.apache.hadoop.hdfs.server.common.HdfsServerConstants$StartupOption,java.util.List,org.apache.hadoop.conf.Configuration)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSStartupVersions#testVersions",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSStartupVersions.java"
+      }
+    },
+    {
+      "case_id": "HDFS-37",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+        "line": 947,
+        "function": "org.apache.hadoop.hdfs.server.datanode.DataStorage.doRollback(org.apache.hadoop.hdfs.server.common.Storage$StorageDirectory,org.apache.hadoop.hdfs.server.protocol.NamespaceInfo)",
+        "exception": "org.apache.hadoop.hdfs.server.common.InconsistentFSStateException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestDFSRollback#testRollback",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestDFSRollback.java"
+      }
+    },
+    {
+      "case_id": "HDFS-39",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+        "line": 132,
+        "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
+        "exception": "org.apache.hadoop.ipc.RetriableException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestFileAppend#testMultipleAppends",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java"
+      }
+    },
+    {
+      "case_id": "HDFS-40",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAppendOp.java",
+        "line": 138,
+        "function": "org.apache.hadoop.hdfs.server.namenode.FSDirAppendOp.appendFile(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker,java.lang.String,java.lang.String,boolean,boolean)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestFileAppend#testFailedAppendBlockRejection",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestFileAppend.java"
+      }
+    },
+    {
+      "case_id": "HDFS-43",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirTruncateOp.java",
+        "line": 117,
+        "function": "org.apache.hadoop.hdfs.server.namenode.FSDirTruncateOp.truncate(org.apache.hadoop.hdfs.server.namenode.FSNamesystem,java.lang.String,long,java.lang.String,java.lang.String,long,org.apache.hadoop.hdfs.server.namenode.INode$BlocksMapUpdateInfo,org.apache.hadoop.hdfs.server.namenode.FSPermissionChecker)",
+        "exception": "org.apache.hadoop.hdfs.protocol.AlreadyBeingCreatedException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.TestFileTruncate#testMultipleTruncate",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFileTruncate.java"
+      }
+    },
+    {
+      "case_id": "HDFS-48",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+        "line": 356,
+        "function": "org.apache.hadoop.hdfs.server.namenode.INodeDirectory.replaceChild(org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INode,org.apache.hadoop.hdfs.server.namenode.INodeMap)",
+        "exception": "java.lang.IllegalStateException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestRenameWithSnapshots#testRenameUndo_1",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestRenameWithSnapshots.java"
+      }
+    },
+    {
+      "case_id": "HDFS-49",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+        "line": 189,
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature.addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)",
+        "exception": "org.apache.hadoop.hdfs.protocol.SnapshotException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.snapshot.TestSnapshot#testUpdateDirectory",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/snapshot/TestSnapshot.java"
+      }
+    },
+    {
+      "case_id": "HDFS-50",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectorySnapshottableFeature.java",
+        "line": 199,
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.DirectorySnapshottableFeature.addSnapshot(org.apache.hadoop.hdfs.server.namenode.INodeDirectory,org.apache.hadoop.hdfs.server.namenode.snapshot.SnapshotManager,java.lang.String,org.apache.hadoop.hdfs.server.namenode.LeaseManager,long)",
+        "exception": "org.apache.hadoop.hdfs.protocol.SnapshotException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.TestSnapshotCommands#testCreateSnapshot",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/TestSnapshotCommands.java"
+      }
+    },
+    {
+      "case_id": "HDFS-52",
+      "system": "hdfs",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+        "line": 467,
+        "function": "org.apache.hadoop.hdfs.server.namenode.snapshot.FSImageFormatPBSnapshot$Saver.serializeSnapshotSection(java.io.OutputStream)",
+        "exception": "java.lang.IllegalStateException"
+      },
+      "original_junit": {
+        "selector": "org.apache.hadoop.hdfs.server.namenode.TestFSImageWithSnapshot#testSaveLoadImage",
+        "source_path": "hadoop-hdfs-project/hadoop-hdfs/src/test/java/org/apache/hadoop/hdfs/server/namenode/TestFSImageWithSnapshot.java"
+      }
+    },
+    {
+      "case_id": "SOLR-01",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/solrj/src/java/org/apache/solr/client/solrj/impl/BaseHttpClusterStateProvider.java",
+        "line": 267,
+        "function": "org.apache.solr.client.solrj.impl.BaseHttpClusterStateProvider.getAliases(boolean)",
+        "exception": "java.lang.RuntimeException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testAliasHandling",
+        "source_path": "solr/solrj/src/test/org/apache/solr/client/solrj/impl/CloudHttp2SolrClientTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-05",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "raw_target_rows_unattributed",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+        "line": 1274,
+        "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/AddReplicaTest.java"
+      },
+      "blockers": [
+        "Original JUnit passed and emitted nine exact TARGET_CHECK rows, but all lacked node/occurrence; TrialGraph targetReached=false until generic ExecutorUtil submit-to-worker scope handoff is verified."
+      ],
+      "evidence": [
+        "Solr adapter agent audit 2026-10-13: AddReplicaTest healthy v1, 96.325s, 9 raw checks",
+        "Mallory/core/graphchecker_campaign.py:summarize_evidence"
+      ],
+      "source_receipts": {
+        "target_sha256": "3492f43225fb1ca0e4f5254082fe4627c31f5c84ad7d60f5171d08f388c2a41e",
+        "test_sha256": "3e37d9e7059f427a76fc67b2865ae855ab7c4d3b360675158aa656c1556df120"
+      }
+    },
+    {
+      "case_id": "SOLR-06",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+        "line": 1315,
+        "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.TestPullReplica#testCreateDelete",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/TestPullReplica.java"
+      }
+    },
+    {
+      "case_id": "SOLR-07",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/ZkController.java",
+        "line": 1326,
+        "function": "org.apache.solr.cloud.ZkController.register(java.lang.String,org.apache.solr.core.CoreDescriptor,boolean,boolean,boolean)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/AddReplicaTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-09",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "attributed_target_in_original_junit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/DeleteReplicaCmd.java",
+        "line": 278,
+        "function": "org.apache.solr.cloud.api.collections.DeleteReplicaCmd.deleteCore(org.apache.solr.common.cloud.Slice,java.lang.String,java.lang.String,org.apache.solr.common.cloud.ZkNodeProps,java.lang.String,org.apache.solr.common.util.NamedList,java.lang.Runnable,boolean)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.DeleteReplicaTest#deleteReplicaAndVerifyDirectoryCleanup",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/DeleteReplicaTest.java"
+      },
+      "evidence": [
+        "Mallory/adapters/solr/graphchecker_port/README.md:V8 full-scope healthy gate and campaign",
+        "Mallory/adapters/solr/graphchecker_port/full_scope_solr09_v8_healthy.json"
+      ]
+    },
+    {
+      "case_id": "SOLR-10",
+      "system": "solr",
+      "source_test_gate": "blocked_original_cluster_junit",
+      "preparer_gate": "blocked_inventory_skipped_junit",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/MaintainRoutedAliasCmd.java",
+        "line": 117,
+        "function": "org.apache.solr.cloud.api.collections.MaintainRoutedAliasCmd.call(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+        "source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java"
+      },
+      "blockers": [
+        "Selected original routed-alias JUnit inherits @AwaitsFix; forced execution fails in setup before target. No verified unchanged eligible replacement is pinned."
+      ],
+      "evidence": [
+        "Mallory/cases/inventory.json:SOLR-10.eligibility.mapping_gaps",
+        "Mallory/adapters/solr/graphchecker_port/README.md:SOLR-40 original test analysis",
+        "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt"
+      ],
+      "source_receipts": {
+        "target_sha256": "d9943be304693226243d34e7cc0ae47df26b621c8293b6e8aabe6941c0469db7",
+        "test_sha256": "727cc38dd0fd0d42e641724b08d96b00e0e9d8ab492d23cbc572284824079d37"
+      }
+    },
+    {
+      "case_id": "SOLR-13",
+      "system": "solr",
+      "source_test_gate": "blocked_original_cluster_junit",
+      "preparer_gate": "blocked_inventory_skipped_junit",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/RoutedAlias.java",
+        "line": 350,
+        "function": "org.apache.solr.cloud.api.collections.RoutedAlias.doSynchronous(org.apache.solr.update.AddUpdateCommand,org.apache.solr.cloud.api.collections.RoutedAlias$CandidateCollection,org.apache.solr.core.CoreContainer)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#testPreemptiveCreation",
+        "source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java"
+      },
+      "blockers": [
+        "Selected original routed-alias JUnit inherits @AwaitsFix; forced execution fails in setup before target. No verified unchanged eligible replacement is pinned."
+      ],
+      "evidence": [
+        "Mallory/cases/inventory.json:SOLR-13.eligibility.mapping_gaps",
+        "Mallory/adapters/solr/graphchecker_port/README.md:SOLR-40 original test analysis",
+        "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt"
+      ],
+      "source_receipts": {
+        "target_sha256": "f422a5ef312e2e52f375cdbea30b711514cfdce35025bdc0af361144a1774a79",
+        "test_sha256": "727cc38dd0fd0d42e641724b08d96b00e0e9d8ab492d23cbc572284824079d37"
+      }
+    },
+    {
+      "case_id": "SOLR-14",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+        "line": 167,
+        "function": "org.apache.solr.cloud.api.collections.SplitShardCmd.split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.SplitShardTest#doTest",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/SplitShardTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-15",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+        "line": 538,
+        "function": "org.apache.solr.cloud.api.collections.SplitShardCmd.split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.SplitShardTest#doTest",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/SplitShardTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-16",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/cloud/api/collections/SplitShardCmd.java",
+        "line": 543,
+        "function": "org.apache.solr.cloud.api.collections.SplitShardCmd.split(org.apache.solr.common.cloud.ClusterState,org.apache.solr.common.cloud.ZkNodeProps,org.apache.solr.common.util.NamedList)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.SplitShardTest#doTest",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/SplitShardTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-18",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/solrj/src/java/org/apache/solr/common/cloud/ZkStateReader.java",
+        "line": 2347,
+        "function": "org.apache.solr.common.cloud.ZkStateReader$AliasesManager.setIfNewer(org.apache.solr.common.cloud.Aliases)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.AliasIntegrationTest#testDeleteAliasWithExistingCollectionName",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/AliasIntegrationTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-19",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/core/CoreContainer.java",
+        "line": 1330,
+        "function": "org.apache.solr.core.CoreContainer.create(java.lang.String,java.nio.file.Path,java.util.Map,boolean)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.AddReplicaTest#testAddMultipleReplicas",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/AddReplicaTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-21",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/core/CoreContainer.java",
+        "line": 1765,
+        "function": "org.apache.solr.core.CoreContainer.reload(java.lang.String,java.util.UUID)",
+        "exception": "java.lang.AssertionError"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.api.collections.CollectionReloadTest#testReloadedLeaderStateAfterZkSessionLoss",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/api/collections/CollectionReloadTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-22",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/core/IndexDeletionPolicyWrapper.java",
+        "line": 177,
+        "function": "org.apache.solr.core.IndexDeletionPolicyWrapper.getAndSaveCommitPoint(java.lang.Long)",
+        "exception": "java.lang.IllegalStateException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.TestPullReplica#testAddDocs",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/TestPullReplica.java"
+      }
+    },
+    {
+      "case_id": "SOLR-31",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/handler/admin/CollectionsHandler.java",
+        "line": 1477,
+        "function": "org.apache.solr.handler.admin.CollectionsHandler.forceLeaderElection(org.apache.solr.request.SolrQueryRequest,org.apache.solr.handler.admin.CollectionsHandler)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.ForceLeaderTest#testReplicasInLowerTerms",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/ForceLeaderTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-34",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/servlet/CoordinatorHttpSolrCall.java",
+        "line": 143,
+        "function": "org.apache.solr.servlet.CoordinatorHttpSolrCall.getCore(org.apache.solr.servlet.CoordinatorHttpSolrCall$Factory,org.apache.solr.servlet.HttpSolrCall,java.lang.String,boolean)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.search.TestCoordinatorRole#testSimple",
+        "source_path": "solr/core/src/test/org/apache/solr/search/TestCoordinatorRole.java"
+      }
+    },
+    {
+      "case_id": "SOLR-36",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java",
+        "line": 987,
+        "function": "org.apache.solr.update.processor.DistributedZkUpdateProcessor.doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/api/collections/ShardSplitTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-37",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java",
+        "line": 995,
+        "function": "org.apache.solr.update.processor.DistributedZkUpdateProcessor.doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.cloud.api.collections.ShardSplitTest#test",
+        "source_path": "solr/core/src/test/org/apache/solr/cloud/api/collections/ShardSplitTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-38",
+      "system": "solr",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/update/processor/DistributedZkUpdateProcessor.java",
+        "line": 1025,
+        "function": "org.apache.solr.update.processor.DistributedZkUpdateProcessor.doDefensiveChecks(org.apache.solr.update.processor.DistributedUpdateProcessor$DistribPhase)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.client.solrj.impl.CloudHttp2SolrClientTest#testAliasHandling",
+        "source_path": "solr/solrj/src/test/org/apache/solr/client/solrj/impl/CloudHttp2SolrClientTest.java"
+      }
+    },
+    {
+      "case_id": "SOLR-39",
+      "system": "solr",
+      "source_test_gate": "blocked_original_cluster_junit",
+      "preparer_gate": "blocked_inventory_skipped_junit",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+        "line": 247,
+        "function": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor.lookupShardLeadersOfCollections()",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+        "source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java"
+      },
+      "blockers": [
+        "Selected original routed-alias JUnit inherits @AwaitsFix; forced execution fails in setup before target. No verified unchanged eligible replacement is pinned."
+      ],
+      "evidence": [
+        "Mallory/cases/inventory.json:SOLR-39.eligibility.mapping_gaps",
+        "Mallory/adapters/solr/graphchecker_port/README.md:SOLR-40 original test analysis",
+        "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt"
+      ],
+      "source_receipts": {
+        "target_sha256": "6ed4337435f68d00ba85d7b05eeb324cea9a14298c34cabd137756d682f24590",
+        "test_sha256": "727cc38dd0fd0d42e641724b08d96b00e0e9d8ab492d23cbc572284824079d37"
+      }
+    },
+    {
+      "case_id": "SOLR-40",
+      "system": "solr",
+      "source_test_gate": "blocked_original_cluster_junit",
+      "preparer_gate": "blocked_inventory_skipped_junit",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "solr/core/src/java/org/apache/solr/update/processor/RoutedAliasUpdateProcessor.java",
+        "line": 133,
+        "function": "org.apache.solr.update.processor.RoutedAliasUpdateProcessor.getAliasProps(org.apache.solr.request.SolrQueryRequest,java.lang.String)",
+        "exception": "org.apache.solr.common.SolrException"
+      },
+      "original_junit": {
+        "selector": "org.apache.solr.update.processor.TimeRoutedAliasUpdateProcessorTest#test",
+        "source_path": "solr/core/src/test/org/apache/solr/update/processor/TimeRoutedAliasUpdateProcessorTest.java"
+      },
+      "blockers": [
+        "Selected original routed-alias JUnit inherits @AwaitsFix; forced execution fails in setup before target. No verified unchanged eligible replacement is pinned."
+      ],
+      "evidence": [
+        "Mallory/cases/inventory.json:SOLR-40.eligibility.mapping_gaps",
+        "Mallory/adapters/solr/graphchecker_port/README.md:SOLR-40 original test analysis",
+        "Mallory/adapters/solr/graphchecker_port/solr40_original_test_failure.txt"
+      ],
+      "source_receipts": {
+        "target_sha256": "6ed4337435f68d00ba85d7b05eeb324cea9a14298c34cabd137756d682f24590",
+        "test_sha256": "727cc38dd0fd0d42e641724b08d96b00e0e9d8ab492d23cbc572284824079d37"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-01",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+        "line": 317,
+        "function": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(long,java.lang.Object)",
+        "exception": "org.apache.zookeeper.KeeperException$SessionExpiredException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.server.quorum.SessionUpgradeQuorumTest#testCloseSessionWhileUpgradeOnLeader",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/SessionUpgradeQuorumTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "baffc60cd94b7b2c9edd3ea21602e02f782c26a32e82e80aac6d88cfe9fdc1bd",
+        "test_sha256": "870ea730de09ce8f7d5f629393ab4c1e184b99772f5b3fbef25955c977f6d9c3"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-02",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+        "line": 323,
+        "function": "org.apache.zookeeper.server.SessionTrackerImpl.checkSession(long,java.lang.Object)",
+        "exception": "org.apache.zookeeper.KeeperException$SessionMovedException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.QuorumTest#testMultiToFollower",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "baffc60cd94b7b2c9edd3ea21602e02f782c26a32e82e80aac6d88cfe9fdc1bd",
+        "test_sha256": "67a3f264bc95434d9fca8de86a3ac2f398f28aa2ad752b803ad1f6411b0181b6"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-03",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/SessionTrackerImpl.java",
+        "line": 330,
+        "function": "org.apache.zookeeper.server.SessionTrackerImpl.setOwner(long,java.lang.Object)",
+        "exception": "org.apache.zookeeper.KeeperException$SessionExpiredException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.QuorumTest#testMultiToFollower",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "baffc60cd94b7b2c9edd3ea21602e02f782c26a32e82e80aac6d88cfe9fdc1bd",
+        "test_sha256": "67a3f264bc95434d9fca8de86a3ac2f398f28aa2ad752b803ad1f6411b0181b6"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-04",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/ZooKeeperServer.java",
+        "line": 1441,
+        "function": "org.apache.zookeeper.server.ZooKeeperServer.processConnectRequest(org.apache.zookeeper.server.ServerCnxn,java.nio.ByteBuffer)",
+        "exception": "org.apache.zookeeper.server.ServerCnxn$CloseRequestException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.server.ConnectionMetricsTest#testRevalidateCount",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/ConnectionMetricsTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "3c883cc64beda7e14e446a6a9cd75791c7a2c12e0118dd41d99e9aedccad0631",
+        "test_sha256": "ce4b810b16bf026e348d17d5211cbac0dc1f5f8d4cd60033e16054ad80e34ebb"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-05",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Follower.java",
+        "line": 103,
+        "function": "org.apache.zookeeper.server.quorum.Follower.followLeader()",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java"
+      },
+      "evidence": [
+        "ZooKeeper adapter agent audit 2026-10-13: healthy target check count 6, zero selected throws; final quality unreviewed"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-06",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Leader.java",
+        "line": 1475,
+        "function": "org.apache.zookeeper.server.quorum.Leader.waitForEpochAck(long,org.apache.zookeeper.server.quorum.StateSummary)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java"
+      },
+      "evidence": [
+        "ZooKeeper adapter agent audit 2026-10-13: healthy target check count 5, zero selected throws; final quality unreviewed"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-07",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/Learner.java",
+        "line": 525,
+        "function": "org.apache.zookeeper.server.quorum.Learner.registerWithLeader(int)",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.QuorumRestartTest#testRollingRestart",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/QuorumRestartTest.java"
+      },
+      "evidence": [
+        "ZooKeeper adapter agent audit 2026-10-13: healthy target check count 2, zero selected throws; final quality unreviewed"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-08",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerSessionTracker.java",
+        "line": 174,
+        "function": "org.apache.zookeeper.server.quorum.LearnerSessionTracker.checkSession(long,java.lang.Object)",
+        "exception": "org.apache.zookeeper.KeeperException$SessionExpiredException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testMultiTransaction",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "98f3708f1679964736af5c7ed840d8dd000b320471e04958303deea16a3a8731",
+        "test_sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-09",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/LearnerSessionTracker.java",
+        "line": 191,
+        "function": "org.apache.zookeeper.server.quorum.LearnerSessionTracker.setOwner(long,java.lang.Object)",
+        "exception": "org.apache.zookeeper.KeeperException$SessionExpiredException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testSessionEstablishment",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "98f3708f1679964736af5c7ed840d8dd000b320471e04958303deea16a3a8731",
+        "test_sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-10",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ObserverMaster.java",
+        "line": 371,
+        "function": "org.apache.zookeeper.server.quorum.ObserverMaster.removeProposedPacket(long)",
+        "exception": "java.lang.RuntimeException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.ObserverMasterTest#testInOrderCommits",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ObserverMasterTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "b65e2d631026d6c9258e0392619d7387783bb0b657b72f03722248dee93a6f06",
+        "test_sha256": "27c4fca7814b9339fd4212fafca77c4ed2234aae8f01fd288f73a594575d985d"
+      }
+    },
+    {
+      "case_id": "ZOOKEEPER-11",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "line": 1175,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java"
+      },
+      "evidence": [
+        "ZooKeeper adapter agent audit 2026-10-13: healthy target check count 1, zero selected throws; final quality unreviewed"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-12",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "generic_inventory_preparer_available",
+      "healthy_target_gate": "reported_attributed_target_in_original_junit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/QuorumPeer.java",
+        "line": 1197,
+        "function": "org.apache.zookeeper.server.quorum.QuorumPeer.loadDataBase()",
+        "exception": "java.io.IOException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.server.quorum.CurrentEpochWriteFailureTest#testReadCurrentEpochFromAcceptedEpochTmpFile",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/server/quorum/CurrentEpochWriteFailureTest.java"
+      },
+      "evidence": [
+        "ZooKeeper adapter agent audit 2026-10-13: healthy target check count 9, zero selected throws; final quality unreviewed"
+      ]
+    },
+    {
+      "case_id": "ZOOKEEPER-13",
+      "system": "zookeeper",
+      "source_test_gate": "eligible_original_cluster_junit",
+      "preparer_gate": "preparer_protocol_not_supported",
+      "healthy_target_gate": "not_verified_by_this_audit",
+      "target": {
+        "source_path": "zookeeper-server/src/main/java/org/apache/zookeeper/server/quorum/ReadOnlyZooKeeperServer.java",
+        "line": 126,
+        "function": "org.apache.zookeeper.server.quorum.ReadOnlyZooKeeperServer.validateSession(org.apache.zookeeper.server.ServerCnxn,long)",
+        "exception": "org.apache.zookeeper.server.ServerCnxn$CloseRequestException"
+      },
+      "original_junit": {
+        "selector": "org.apache.zookeeper.test.ReadOnlyModeTest#testGlobalSessionInRO",
+        "source_path": "zookeeper-server/src/test/java/org/apache/zookeeper/test/ReadOnlyModeTest.java"
+      },
+      "blockers": [
+        "Current CHECK_LINES and causal protocol bridge cover only quorum/epoch 05/06/07/11/12; no generic CONNECT/REQUEST/session adapter, or ObserverMaster envelope for 10."
+      ],
+      "evidence": [
+        "Mallory/adapters/zookeeper/graphchecker_port/prepare_zk_campaign.py:CHECK_LINES",
+        "Mallory/adapters/zookeeper/graphchecker_port/README.md:Boundaries to extend before using all ZooKeeper checks"
+      ],
+      "source_receipts": {
+        "target_sha256": "4df96bf0d3e99ad184933e4483c555f8955e7205070d6604e4861e94e581fd7d",
+        "test_sha256": "14eac3d1debfb52d4e79d890c74265c50a12c860914e79bb2462d4e04ddfe57e"
+      }
+    }
+  ]
+}

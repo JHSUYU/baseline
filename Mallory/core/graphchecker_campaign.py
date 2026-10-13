@@ -63,6 +63,65 @@ def _trace_digest(path: Path) -> tuple[str, int]:
     return digest.hexdigest(), size
 
 
+def _target_throw_count(rows: list[dict[str, Any]], target: dict[str, Any]) -> int:
+    """Count the exact, attributed-to-an-occurrence throw used by the oracle."""
+    return sum(row.get("kind") == "TARGET_THROW" and
+               row.get("siteId") == target["throw_site_id"] and
+               row.get("exceptionClass") == target["exception_class"] and
+               bool(row.get("occurrenceId")) for row in rows)
+
+
+def _prior_trace_metadata(prior_trace: Path, target: dict[str, Any],
+                          case_id: str) -> tuple[int, str, str | None]:
+    """Reuse a prior trial's sealed oracle count; scan old receipts unchanged.
+
+    The archive hash is checked on every use. The content digest and count
+    were recorded together when the prior trace was first analyzed. An older
+    receipt without these fields retains the original full-trace path.
+    """
+    prior_result_path = prior_trace.parent / "result.json"
+    if prior_trace.suffix == ".gz" and prior_result_path.is_file():
+        prior_result = _json(prior_result_path)
+        count = prior_result.get("target_throw_count_for_differential")
+        if count is not None:
+            if (not isinstance(count, int) or isinstance(count, bool) or count < 0 or
+                    prior_result.get("backend") != "graphchecker_native" or
+                    prior_result.get("status") == "invalid_graphchecker_trace" or
+                    prior_result.get("case_id") != case_id or
+                    prior_result.get("target_throw_count_scope") != {
+                        "site_id": target["throw_site_id"],
+                        "exception_class": target["exception_class"]}):
+                raise ValueError("prior target-throw metadata differs from this case")
+            artifacts = prior_result.get("artifacts")
+            archive = artifacts.get("window_trace") if isinstance(artifacts, dict) else None
+            if (not isinstance(archive, dict) or
+                    not isinstance(archive.get("path"), str) or
+                    Path(archive["path"]).name != archive["path"] or
+                    prior_trace != prior_trace.parent / archive["path"] or
+                    archive.get("encoding") != "gzip" or
+                    not isinstance(archive.get("bytes"), int) or
+                    not isinstance(archive.get("content_bytes"), int) or
+                    not re.fullmatch(r"[0-9a-f]{64}", str(archive.get("sha256"))) or
+                    not re.fullmatch(r"[0-9a-f]{64}", str(archive.get("content_sha256"))) or
+                    prior_result.get("trace_sha256") != archive["content_sha256"]):
+                raise ValueError("prior target-throw metadata lacks its trace receipt")
+            before = _archive_stat(prior_trace)
+            if before[2] != archive.get("bytes"):
+                raise ValueError("prior target-throw archive size changed")
+            if _sha256(prior_trace) != archive["sha256"]:
+                raise ValueError("prior target-throw trace archive changed")
+            if _archive_stat(prior_trace) != before:
+                raise ValueError("prior target-throw trace archive changed during verification")
+            return count, archive["content_sha256"], archive["sha256"]
+        # Frozen campaigns have no cached oracle count. Their receipt is
+        # verified, then the old row scan below supplies the exact count.
+        verify_trial_artifacts(prior_trace.parent, prior_result, {"window_trace"})
+    rows, _ = scan_window_trace(prior_trace, selected_kinds={"TARGET_THROW"})
+    digest, _ = _trace_digest(prior_trace)
+    archive_digest = _sha256(prior_trace) if prior_trace.suffix == ".gz" else None
+    return _target_throw_count(rows, target), digest, archive_digest
+
+
 def _tree_sha256(root: Path) -> str:
     """Pin a fixture directory by names, file bytes and file types."""
     digest = hashlib.sha256()
@@ -514,6 +573,26 @@ def _configured_check_sites(target: dict[str, Any]) -> list[str]:
     return sites
 
 
+def _validate_scratch_root(value: Any) -> Path:
+    """Require an existing, direct absolute directory for an opt-in scratch root."""
+    if not isinstance(value, str) or not value:
+        raise ValueError("scratch_root needs a nonempty absolute directory path")
+    root = Path(value)
+    if (not root.is_absolute() or not root.is_dir() or root.is_symlink() or
+            root.resolve() != root):
+        raise ValueError("scratch_root needs an existing nonsymlink absolute directory")
+    if not os.access(root, os.W_OK | os.X_OK):
+        raise ValueError("scratch_root is not writable and searchable")
+    return root
+
+
+def _trial_scratch_root(config: dict[str, Any]) -> Path | None:
+    selected = config.get("scratch_root")
+    if selected is not None:
+        return _validate_scratch_root(str(selected))
+    return Path("/dev/shm") if Path("/dev/shm").is_dir() else None
+
+
 def load_config(path: Path) -> dict[str, Any]:
     """Resolve and validate the immutable inputs of a prepared trial.
 
@@ -547,6 +626,8 @@ def load_config(path: Path) -> dict[str, Any]:
     timeout = raw.get("timeout_seconds", 600)
     if not isinstance(timeout, int) or isinstance(timeout, bool) or timeout <= 0:
         raise ValueError("timeout_seconds must be positive")
+    scratch_root = (_validate_scratch_root(raw["scratch_root"])
+                    if "scratch_root" in raw else None)
     manifest_path = _path(raw.get("weave_manifest"), base, "weave_manifest")
     manifest = _json(manifest_path)
     if manifest.get("faultController", "NONE") not in {"NONE", CONTROLLER}:
@@ -605,6 +686,7 @@ def load_config(path: Path) -> dict[str, Any]:
             "cwd": cwd, "java": java, "java_feature_version": java_feature,
             "runner": runner,
             "post_weave": post_weave,
+            "scratch_root": scratch_root,
             "trial_cwd_template": trial_cwd_template,
             "trial_cwd_template_sha256": template_sha256}
 
@@ -1127,24 +1209,13 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
     prior_digest = None
     prior_archive_digest = None
     if prior_trace is not None:
-        prior_result = prior_trace.parent / "result.json"
-        if prior_trace.suffix == ".gz" and prior_result.is_file():
-            verify_trial_artifacts(prior_trace.parent, _json(prior_result),
-                                   {"window_trace"})
-        prior_rows, _ = scan_window_trace(prior_trace,
-                                          selected_kinds={"TARGET_THROW"})
-        prior_throw_count = sum(
-            row.get("kind") == "TARGET_THROW" and
-            row.get("siteId") == config["target"]["throw_site_id"] and
-            row.get("exceptionClass") == config["target"]["exception_class"] and
-            bool(row.get("occurrenceId")) for row in prior_rows)
-        prior_digest, _ = _trace_digest(prior_trace)
-        prior_archive_digest = _sha256(prior_trace) if prior_trace.suffix == ".gz" else None
+        prior_throw_count, prior_digest, prior_archive_digest = _prior_trace_metadata(
+            prior_trace, config["target"], config["case_id"])
     trial.mkdir(parents=True, exist_ok=False)
     native_plan = trial / "fault-plan.json"
     _write_json(native_plan, {"faults": faults})
-    scratch_root = Path("/dev/shm") if Path("/dev/shm").is_dir() else None
-    scratch = Path(tempfile.mkdtemp(prefix="mallory-gc-trial-", dir=scratch_root))
+    scratch = Path(tempfile.mkdtemp(prefix="mallory-gc-trial-",
+                                   dir=_trial_scratch_root(config)))
     raw_trace = scratch / "graphchecker-raw.jsonl"
     trace = scratch / "graphchecker-trace.jsonl"
     workdir = scratch / "workdir"
@@ -1218,6 +1289,11 @@ def run_trial(config: dict[str, Any], prepared: Path, trial: Path,
         phase_started = time.monotonic()
         rows, window_count = scan_window_trace(raw_trace, trace)
         phase_seconds["window_scan"] = round(time.monotonic() - phase_started, 3)
+        result["target_throw_count_for_differential"] = _target_throw_count(
+            rows, config["target"])
+        result["target_throw_count_scope"] = {
+            "site_id": config["target"]["throw_site_id"],
+            "exception_class": config["target"]["exception_class"]}
         check_sites = _configured_check_sites(config["target"])
         anchor = check_sites if len(check_sites) > 1 else (
             check_sites[0] if check_sites else config["target"]["throw_site_id"])
