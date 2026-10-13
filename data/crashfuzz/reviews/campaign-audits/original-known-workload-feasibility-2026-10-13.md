@@ -202,6 +202,14 @@ JUnit returned failure because Mockito observed two calls to
 `DFSClient.clearDataEncryptionKey()` where the test expects exactly one.
 Its trace still has only one exact target throw, so the failing assertion
 does not establish a new `allKeys.get(keyId)` exception.
+The raw-trace audit counts throws per **attempt**, rather than combining
+retries of one trial: the node1 archives contain 423 control-branch, 92
+response-shape, and 110 runtime-identity attempt traces. None has more than
+the healthy run's one exact line-555 `InvalidEncryptionKeyException` throw.
+Every such throw in those archives came from a `DataXceiver` thread, with
+none observed on a `DataNode.DataTransfer` worker.
+Control-branch trial 360, for instance, has two attempt traces with one
+throw each; adding them would create a false positive.
 
 To keep the three active HDFS runs within disk capacity, completed attempts
 from the first 250 trials of `campaign-control-branch` were checksum-verified
